@@ -1,0 +1,11 @@
+{
+  "extends": "assemblyscript/std/assembly.json",
+  "include": ["./**/*.ts"],
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "paths": {
+      "@gl/*": ["../assemblyscript/@gl/*"]
+    }
+  }
+}

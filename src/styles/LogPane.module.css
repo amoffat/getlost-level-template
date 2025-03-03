@@ -1,0 +1,17 @@
+.container {
+  background: black;
+  overflow: auto;
+  color: white;
+  padding: 10;
+  font-family: monospace;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+}
+
+.warn {
+  color: yellow;
+  font-weight: bold;
+}

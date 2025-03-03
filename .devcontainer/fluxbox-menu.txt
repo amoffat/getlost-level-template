@@ -1,0 +1,7 @@
+[begin] (  Application Menu  )
+    [exec] (Tiled) { tiled }
+    [exec] (File Manager) { nautilus ~ } <>
+    [exec] (Terminal) { tilix -w ~ -e $(readlink -f /proc/$$/exe) -il } <>
+    [config] (Configuration)
+    [workspaces] (Workspaces)
+[end]

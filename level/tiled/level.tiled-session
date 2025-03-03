@@ -1,0 +1,60 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "level.tmj",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "Items.tsj": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "TilesetDesert.tsj": {
+            "dynamicWrapping": false,
+            "scaleInDock": 2,
+            "scaleInEditor": 3
+        },
+        "TilesetFloor.tsj": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "level.tmj": {
+            "scale": 2,
+            "selectedLayer": 10,
+            "viewCenter": {
+                "x": 136.25,
+                "y": -124.75
+            }
+        },
+        "tronFreeTiles.tsj": {
+            "scaleInDock": 1.5
+        }
+    },
+    "last.imagePath": "/home/amoffat/work/getlost-level-template/level/tiled/art/Actor/Boss/DemonCyclop2",
+    "last.objectTypesPath": "/home/amoffat/work/getlost-level-template/.devcontainer/propertytypes.json",
+    "map.fixedSize": false,
+    "map.lastUsedFormat": "json",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "openFiles": [
+        "level.tmj",
+        "TilesetDesert.tsj"
+    ],
+    "project": "level.tiled-project",
+    "property.type": "LightType",
+    "recentFiles": [
+        "TilesetDesert.tsj",
+        "level.tmj",
+        "Items.tsj"
+    ],
+    "tileset.lastUsedFormat": "json",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    },
+    "tileset.type": 1
+}

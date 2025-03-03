@@ -1,0 +1,36 @@
+{
+  "name": "Get Lost level",
+  "image": "arwmoffat/get-lost-codespace:0.1.16",
+  // "build": { "dockerfile": "Dockerfile" },
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/desktop-lite:1": {
+      "password": "getlost"
+    }
+  },
+  "forwardPorts": [5173, 6080],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      },
+      "extensions": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
+    }
+  },
+  "remoteUser": "node",
+  "runArgs": [],
+  "portsAttributes": {
+    "5173": {
+      "label": "Level Preview",
+      "onAutoForward": "openBrowser",
+      "visibility": "public"
+    },
+    "6080": {
+      "label": "desktop"
+    }
+  },
+  "onCreateCommand": "bash .devcontainer/setup.sh",
+  // One day we'll be able to do this declaratively
+  // https://github.com/orgs/community/discussions/4068
+  "postAttachCommand": "gh codespace ports visibility 5173:public -c $CODESPACE_NAME"
+}
