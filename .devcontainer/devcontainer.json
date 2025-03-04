@@ -33,5 +33,6 @@
     }
   },
   "onCreateCommand": "bash .devcontainer/setup.sh",
+  "updateContentCommand": "bash .devcontainer/update.sh",
   "postAttachCommand": "bash .devcontainer/attach.sh"
 }
