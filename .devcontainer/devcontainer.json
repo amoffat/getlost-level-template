@@ -10,6 +10,9 @@
   },
   "forwardPorts": [5173, 6080],
   "customizations": {
+    "codespaces": {
+      "openFiles": ["README.md", "level/code/main.ts"]
+    },
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh"

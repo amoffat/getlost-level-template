@@ -9,6 +9,10 @@
       "problemMatcher": [],
       "runOptions": {
         "runOn": "folderOpen"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
       }
     }
   ]

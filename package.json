@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently 'npm run watch:level' vite",
-    "watch:level": "chokidar 'level/**/*' 'engine_version.txt' --ignore 'level/**/*.tiled-session' -c 'touch vite.config.ts'",
+    "dev": "concurrently -k 'npm run watch:level' vite",
+    "watch:level": "bash scripts/dev_watch.sh",
     "build": "tsc -b && vite build",
     "lint": "eslint ."
   },
