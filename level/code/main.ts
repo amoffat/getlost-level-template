@@ -27,7 +27,7 @@ export function initRoom(): Room {
   // host.time.setSunTime(time);
 
   music = host.sound.loadSound({
-    name: "Musics/1 - Adventure Begin.ogg",
+    name: "Musics/17 - Fight.ogg",
     loop: true,
     autoplay: true,
     volume: 0.3,
