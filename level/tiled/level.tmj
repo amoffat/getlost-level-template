@@ -264,8 +264,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":180,
-                 "y":-174
+                 "x":80,
+                 "y":-96
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -524,7 +524,6 @@
         {
          "draworder":"topdown",
          "id":16,
-         "locked":true,
          "name":"sensors",
          "objects":[
                 {
@@ -561,10 +560,32 @@
                  "width":32,
                  "x":192,
                  "y":-232
+                }, 
+                {
+                 "height":58.6869326392701,
+                 "id":33,
+                 "name":"exit-south",
+                 "rotation":32.7046099568276,
+                 "type":"",
+                 "visible":true,
+                 "width":48,
+                 "x":-52.8603386426321,
+                 "y":28.6881240406878
+                }, 
+                {
+                 "height":54,
+                 "id":34,
+                 "name":"exit-west",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":48,
+                 "x":-94,
+                 "y":-201
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -659,7 +680,6 @@
         {
          "draworder":"topdown",
          "id":7,
-         "locked":true,
          "name":"collisions",
          "objects":[
                 {
@@ -861,10 +881,76 @@
                  "width":24,
                  "x":309,
                  "y":-57
+                }, 
+                {
+                 "height":22,
+                 "id":41,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":41,
+                 "x":-70,
+                 "y":-210
+                }, 
+                {
+                 "height":19,
+                 "id":42,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":42,
+                 "x":-70,
+                 "y":-166
+                }, 
+                {
+                 "height":61,
+                 "id":43,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":24,
+                 "x":-86,
+                 "y":-203
+                }, 
+                {
+                 "height":52.8682,
+                 "id":44,
+                 "name":"",
+                 "rotation":36.6696,
+                 "type":"",
+                 "visible":true,
+                 "width":38,
+                 "x":-58,
+                 "y":-8
+                }, 
+                {
+                 "height":57.271,
+                 "id":45,
+                 "name":"",
+                 "rotation":36.6696,
+                 "type":"",
+                 "visible":true,
+                 "width":38,
+                 "x":-2,
+                 "y":26
+                }, 
+                {
+                 "height":62.8295,
+                 "id":46,
+                 "name":"",
+                 "rotation":301.786,
+                 "type":"",
+                 "visible":true,
+                 "width":38,
+                 "x":-89,
+                 "y":75
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -950,7 +1036,7 @@
          "y":0
         }],
  "nextlayerid":17,
- "nextobjectid":33,
+ "nextobjectid":47,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.1-99-gec89c545",

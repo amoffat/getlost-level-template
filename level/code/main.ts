@@ -75,19 +75,11 @@ export function tileCollisionEvent(
 }
 
 let sawOasisSign = false;
-let lightState = false;
 
 // Called when a sensor is triggered.
 export function sensorEvent(name: string, entered: bool): void {
   log(`Sensor event: ${name}, ${entered}`);
-  if (name === "lamp") {
-    if (entered) {
-      lightState = !lightState;
-    }
-    host.tiles.change(7, 3, "ground objects", "Props", lightState ? 22 : 23);
-    host.tiles.change(7, 4, "ground objects", "Props", lightState ? 56 : 57);
-    host.lights.toggleLight("lamp", lightState);
-  } else if (name === "oasis" && entered && !sawOasisSign) {
+  if (name === "oasis" && entered && !sawOasisSign) {
     host.text.displaySign("oasis-entry-title", "oasis-entry-body");
     sawOasisSign = true;
   } else if (name === "well" && entered) {
@@ -96,9 +88,11 @@ export function sensorEvent(name: string, entered: bool): void {
       "step-back",
     ]);
   } else if (name === "exit-east" && entered) {
-    host.map.exit("main", false);
-  } else if (name === "down-exit" && entered) {
-    host.map.exit("alt", true);
+    host.map.exit("east", false);
+  } else if (name === "exit-west" && entered) {
+    host.map.exit("west", false);
+  } else if (name === "exit-south" && entered) {
+    host.map.exit("south", false);
   }
 }
 

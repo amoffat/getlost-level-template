@@ -5,9 +5,6 @@ import { Exit } from "@gl/types/exit";
 export function exits(): Exit[] {
   return [
     {
-      name: "main",
-    },
-    {
       name: "east",
     },
     {

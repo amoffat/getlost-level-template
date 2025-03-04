@@ -10,9 +10,6 @@
   },
   "forwardPorts": [5173, 6080],
   "customizations": {
-    "codespaces": {
-      "openFiles": ["README.md", "level/code/main.ts"]
-    },
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh"
@@ -25,11 +22,10 @@
   "portsAttributes": {
     "5173": {
       "label": "Level Preview",
-      "onAutoForward": "openBrowser",
       "visibility": "public"
     },
     "6080": {
-      "label": "desktop"
+      "label": "Tiled"
     }
   },
   "onCreateCommand": "bash .devcontainer/setup.sh",

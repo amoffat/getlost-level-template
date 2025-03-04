@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "concurrently -k 'npm run watch:level' vite",
     "watch:level": "bash scripts/dev_watch.sh",
-    "build": "tsc -b && vite build",
     "lint": "eslint ."
   },
   "dependencies": {
