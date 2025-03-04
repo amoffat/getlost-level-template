@@ -23,7 +23,8 @@ if [ $? -eq 0 ]; then
     fbautostart
 fi
 
-/usr/local/bin/tiled /workspaces/$CODESPACE_VSCODE_FOLDER/level/tiled/level.tiled-project &
+printenv > /tmp/flux-env
+/usr/local/bin/tiled "$CODESPACE_VSCODE_FOLDER/level/tiled/level.tiled-project" &
 
 # And last but not least we start fluxbox.
 # Because it is the last app you have to run it with ''exec'' before it.
