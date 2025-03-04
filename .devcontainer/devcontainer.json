@@ -30,7 +30,5 @@
     }
   },
   "onCreateCommand": "bash .devcontainer/setup.sh",
-  // One day we'll be able to do this declaratively
-  // https://github.com/orgs/community/discussions/4068
-  "postAttachCommand": "gh codespace ports visibility 5173:public -c $CODESPACE_NAME"
+  "postAttachCommand": "bash .devcontainer/attach.sh"
 }

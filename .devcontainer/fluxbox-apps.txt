@@ -1,0 +1,8 @@
+[transient] (role=GtkFileChooserDialog)
+  [Dimensions]	{70% 70%}
+  [Position]	(CENTER)	{0 0}
+[end]
+
+[app] (tiled)
+  [Maximized] {yes}
+[end]

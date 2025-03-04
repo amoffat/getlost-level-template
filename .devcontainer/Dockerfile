@@ -1,5 +1,6 @@
 FROM mcr.microsoft.com/devcontainers/javascript-node:latest
 
+# Tiled deps
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -y --no-install-recommends \
@@ -22,3 +23,4 @@ RUN cd /tmp/tiled \
 ENV HOME=/home/node
 COPY fluxbox-menu.txt $HOME/.fluxbox/menu
 COPY fluxbox-startup.sh $HOME/.fluxbox/startup
+COPY fluxbox-apps.txt $HOME/.fluxbox/apps
