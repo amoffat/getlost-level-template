@@ -6,6 +6,7 @@ Welcome! This is a basic level template for the [Get Lost](https://x.com/GetLost
 
 # 🔗 Quickstart links
 
+- [Discord](https://discord.gg/v4AAezkSEu)
 - [Full documentation](https://docs.getlost.gg/latest/)
 - [Main level code](./level/code/main.ts)
 - [Credits code](./level/code/card.ts)
