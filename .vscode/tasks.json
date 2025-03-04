@@ -7,9 +7,6 @@
       "command": "npm run dev",
       "isBackground": true,
       "problemMatcher": [],
-      "runOptions": {
-        "runOn": "folderOpen"
-      },
       "group": {
         "kind": "build",
         "isDefault": true

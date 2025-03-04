@@ -28,7 +28,8 @@
       "label": "Tiled"
     }
   },
-  "onCreateCommand": "bash .devcontainer/setup.sh",
-  "updateContentCommand": "bash .devcontainer/update.sh",
-  "postAttachCommand": "bash .devcontainer/attach.sh"
+  "onCreateCommand": "bash .devcontainer/hooks/onCreate.sh",
+  "updateContentCommand": "bash .devcontainer/hooks/updateContent.sh",
+  "postAttachCommand": "bash .devcontainer/hooks/postAttach.sh",
+  "postStartCommand": "bash .devcontainer/hooks/postStart.sh"
 }

@@ -5,5 +5,5 @@ set -eux
 # https://github.com/orgs/community/discussions/4068
 gh codespace ports visibility 5173:public -c $CODESPACE_NAME
 
-pkill -f "tiled" || true
-tiled "$CODESPACE_VSCODE_FOLDER/level/tiled/level.tiled-project" &
+npx pm2 start --name 'tiled level/tiled/level.tiled-project'
+npx pm2 start --name "npm run dev"
