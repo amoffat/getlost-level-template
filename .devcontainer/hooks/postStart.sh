@@ -5,5 +5,5 @@ set -eux
 # https://github.com/orgs/community/discussions/4068
 gh codespace ports visibility 5173:public -c $CODESPACE_NAME
 
-npx pm2 start --name 'tiled level/tiled/level.tiled-project'
-npx pm2 start --name "npm run dev"
+npx pm2 start --name tiled 'tiled level/tiled/level.tiled-project' --stop-exit-codes 0
+npx pm2 start --name vite "npm run dev" --restart-delay=1000
