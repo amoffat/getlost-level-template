@@ -21,7 +21,6 @@ export function initRoom(): Room {
 
   const room = new Room();
   tsfid = host.filters.addTiltShift(0.06);
-  host.lights.toggleLight("lamp", false);
 
   // const time = Date.UTC(2025, 1, 13, 0, 0, 0, 0);
   // host.time.setSunTime(time);
