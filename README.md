@@ -14,13 +14,13 @@ Welcome! This is a basic level template for the [Get Lost](https://x.com/GetLost
 
 # To use this template
 
-If you're reading this README directly from the `amoffat/getlost-level-template` template repo, scroll to the top of the page and click `Use this template` and select `Create a new repository`. This will create a new repository on your account using this repo as the template. Then proceed to `Starting the codespace`
+If you're reading this README directly from the `amoffat/getlost-level-template` template repo, scroll to the top of the page and click `Use this template` and select `Create a new repository`. This will create a new repository on your account using this repo as the template. Then proceed to the next section.
 
 ![Create codespace](./docs/img/create-codespace.png)
 
 # Starting the codespace
 
-On your personal copy of the repo (created from the previous step), open in in a Codespace. The Codespace will take a minute to fully load and open, but when it's done, you'll see a typical VSCode editor in the browser.
+On your personal copy of the repo (created from the previous step), go to `Code` and then `Open in a Codespace`. The Codespace will take a minute to fully load and open, but when it's done, you'll see a typical VSCode editor in the browser.
 
 ![Open codespace](./docs/img/open-in-codespace.png)
 

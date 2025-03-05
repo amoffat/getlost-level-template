@@ -21,8 +21,7 @@
   "runArgs": [],
   "portsAttributes": {
     "5173": {
-      "label": "Level Preview",
-      "visibility": "public"
+      "label": "Level Preview"
     },
     "6080": {
       "label": "Tiled"
@@ -31,5 +30,6 @@
   "onCreateCommand": "bash .devcontainer/hooks/onCreate.sh",
   "updateContentCommand": "bash .devcontainer/hooks/updateContent.sh",
   "postAttachCommand": "bash .devcontainer/hooks/postAttach.sh",
-  "postStartCommand": "bash .devcontainer/hooks/postStart.sh"
+  "postStartCommand": "bash .devcontainer/hooks/postStart.sh",
+  "postCreateCommand": "bash .devcontainer/hooks/postCreate.sh"
 }
