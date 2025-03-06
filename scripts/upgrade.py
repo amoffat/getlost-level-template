@@ -29,6 +29,8 @@ def upgrade_repo(target_path: Path) -> None:
             "clone",
             "--depth",
             "1",
+            "--branch",
+            "main",
             TEMPLATE_REPO,
             str(temp_clone_dir),
         ],
