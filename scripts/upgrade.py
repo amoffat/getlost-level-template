@@ -35,9 +35,18 @@ def upgrade_repo(target_path: Path) -> None:
         check=True,
     )
 
+    def should_remove(item: Path) -> bool:
+        preserve = [
+            level_backup,
+            temp_clone_dir,
+            target_path / "node_modules",
+            target_path / ".git",
+        ]
+        return item not in preserve
+
     # Remove old contents (except 'level_backup')
     for item in target_path.iterdir():
-        if item != level_backup and item != temp_clone_dir:
+        if should_remove(item):
             if item.is_dir():
                 shutil.rmtree(item)
             else:
