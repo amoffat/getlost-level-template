@@ -48,11 +48,10 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
-            "id": 1,
+            "id": 9,
             "members": [
                 {
                     "name": "animation",
-                    "propertyType": "NPC animation",
                     "type": "string",
                     "value": ""
                 }
@@ -61,7 +60,6 @@
             "type": "class",
             "useAs": [
                 "object",
-                "tile",
                 "project"
             ]
         },
@@ -78,6 +76,24 @@
                 "WalkDown"
             ],
             "valuesAsFlags": true
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 1,
+            "members": [
+                {
+                    "name": "animation",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "NPC Tile",
+            "type": "class",
+            "useAs": [
+                "tile",
+                "project"
+            ]
         },
         {
             "color": "#ffa0a0a4",

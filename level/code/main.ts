@@ -22,7 +22,7 @@ export function initRoom(): Room {
   const room = new Room();
   tsfid = host.filters.addTiltShift(0.06);
 
-  // const time = Date.UTC(2025, 1, 13, 0, 0, 0, 0);
+  // const time = Date.UTC(2025, 1, 13, 9, 0, 0, 0);
   // host.time.setSunTime(time);
 
   music = host.sound.loadSound({
@@ -81,6 +81,10 @@ export function sensorEvent(name: string, entered: bool): void {
   if (name === "oasis" && entered && !sawOasisSign) {
     host.text.displaySign("oasis-entry-title", "oasis-entry-body");
     sawOasisSign = true;
+  } else if (name === "flame" && entered) {
+    host.text.displayInteraction("flame-title", "flame-body", []);
+  } else if (name === "knight" && entered) {
+    host.text.displayInteraction("knight-title", "knight-body", []);
   } else if (name === "well" && entered) {
     host.text.displayInteraction("well-title", "well-body", [
       "jump-down",

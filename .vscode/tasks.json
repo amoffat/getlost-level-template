@@ -11,6 +11,17 @@
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "label": "Upgrade Level",
+      "type": "shell",
+      "command": "python3",
+      "args": ["${workspaceFolder}/scripts/upgrade.py"],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }

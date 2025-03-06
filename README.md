@@ -31,3 +31,7 @@ Next, navigate to the `ports` tab at the bottom of the editor. You'll see 2 port
 If you hover over the `Forwarded Address` field, you have the option to open the ports in a new browser tab. Clicking port 5173 will let you play test the level in your browser, and clicking port 6080 will let you edit your level in the browser.
 
 ![Open in Browser](./docs/img/open-browser.png)
+
+# Upgrading
+
+To upgrade your level to use the latest Get Lost engine, press `ctrl+shift+b` and select `Upgrade Level`. This will copy your level code to a safe place, upgrade your repo to use the latest engine, and then put your level code back. If you have any issues, ask in the Discord.

@@ -264,8 +264,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":80,
-                 "y":-96
+                 "x":-3,
+                 "y":13
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -524,6 +524,7 @@
         {
          "draworder":"topdown",
          "id":16,
+         "locked":true,
          "name":"sensors",
          "objects":[
                 {
@@ -537,6 +538,18 @@
                  "width":59,
                  "x":186,
                  "y":-69
+                }, 
+                {
+                 "ellipse":true,
+                 "height":18,
+                 "id":51,
+                 "name":"flame",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":21,
+                 "x":204,
+                 "y":-52
                 }, 
                 {
                  "height":54,
@@ -582,6 +595,18 @@
                  "width":48,
                  "x":-94,
                  "y":-201
+                }, 
+                {
+                 "ellipse":true,
+                 "height":14,
+                 "id":52,
+                 "name":"knight",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":70,
+                 "y":-85
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -594,83 +619,6 @@
          "id":14,
          "name":"pickups",
          "objects":[],
-         "opacity":1,
-         "type":"objectgroup",
-         "visible":true,
-         "x":0,
-         "y":0
-        }, 
-        {
-         "draworder":"topdown",
-         "id":11,
-         "name":"lights",
-         "objects":[
-                {
-                 "height":0,
-                 "id":17,
-                 "name":"",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"color",
-                         "type":"color",
-                         "value":"#14ffb92d"
-                        }, 
-                        {
-                         "name":"type",
-                         "propertytype":"LightType",
-                         "type":"string",
-                         "value":"campfire"
-                        }],
-                 "rotation":0,
-                 "type":"Light",
-                 "visible":true,
-                 "width":0,
-                 "x":91,
-                 "y":-214
-                }, 
-                {
-                 "height":0,
-                 "id":19,
-                 "name":"",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"color",
-                         "type":"color",
-                         "value":"#14ffb92d"
-                        }, 
-                        {
-                         "name":"type",
-                         "propertytype":"LightType",
-                         "type":"string",
-                         "value":"campfire"
-                        }],
-                 "rotation":0,
-                 "type":"Light",
-                 "visible":true,
-                 "width":0,
-                 "x":40,
-                 "y":-117
-                }, 
-                {
-                 "height":0,
-                 "id":21,
-                 "name":"",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"color",
-                         "type":"color",
-                         "value":"#32ffffff"
-                        }],
-                 "rotation":0,
-                 "type":"Light",
-                 "visible":true,
-                 "width":0,
-                 "x":215,
-                 "y":-39
-                }],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
@@ -956,6 +904,59 @@
         }, 
         {
          "draworder":"topdown",
+         "id":17,
+         "name":"npcs",
+         "objects":[
+                {
+                 "gid":821,
+                 "height":16,
+                 "id":47,
+                 "name":"knight",
+                 "properties":[
+                        {
+                         "name":"animation",
+                         "type":"string",
+                         "value":"Idle"
+                        }],
+                 "rotation":0,
+                 "type":"NPC",
+                 "visible":true,
+                 "width":16,
+                 "x":71,
+                 "y":-74
+                }, 
+                {
+                 "gid":849,
+                 "height":16,
+                 "id":48,
+                 "name":"",
+                 "rotation":0,
+                 "type":"NPC",
+                 "visible":true,
+                 "width":16,
+                 "x":90,
+                 "y":-195
+                }, 
+                {
+                 "gid":869,
+                 "height":16,
+                 "id":50,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":207,
+                 "y":-36
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
          "id":12,
          "locked":true,
          "name":"bounds",
@@ -979,8 +980,84 @@
         }, 
         {
          "draworder":"topdown",
+         "id":11,
+         "name":"lights",
+         "objects":[
+                {
+                 "height":0,
+                 "id":17,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"color",
+                         "type":"color",
+                         "value":"#14ffb92d"
+                        }, 
+                        {
+                         "name":"type",
+                         "propertytype":"LightType",
+                         "type":"string",
+                         "value":"campfire"
+                        }],
+                 "rotation":0,
+                 "type":"Light",
+                 "visible":true,
+                 "width":0,
+                 "x":91,
+                 "y":-214
+                }, 
+                {
+                 "height":0,
+                 "id":19,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"color",
+                         "type":"color",
+                         "value":"#14ffb92d"
+                        }, 
+                        {
+                         "name":"type",
+                         "propertytype":"LightType",
+                         "type":"string",
+                         "value":"campfire"
+                        }],
+                 "rotation":0,
+                 "type":"Light",
+                 "visible":true,
+                 "width":0,
+                 "x":40,
+                 "y":-117
+                }, 
+                {
+                 "height":0,
+                 "id":21,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"color",
+                         "type":"color",
+                         "value":"#560f5fff"
+                        }],
+                 "rotation":0,
+                 "type":"Light",
+                 "visible":true,
+                 "width":0,
+                 "x":215,
+                 "y":-46
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
          "id":13,
-         "locked":true,
          "name":"zooms",
          "objects":[
                 {
@@ -1035,8 +1112,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":17,
- "nextobjectid":47,
+ "nextlayerid":18,
+ "nextobjectid":53,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.1-99-gec89c545",
@@ -1049,6 +1126,18 @@
         {
          "firstgid":241,
          "source":"TilesetFloor.tsj"
+        }, 
+        {
+         "firstgid":813,
+         "source":"Knight.tsj"
+        }, 
+        {
+         "firstgid":841,
+         "source":"Master.tsj"
+        }, 
+        {
+         "firstgid":869,
+         "source":"Spirit.tsj"
         }],
  "tilewidth":16,
  "type":"map",

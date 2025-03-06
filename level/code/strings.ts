@@ -71,5 +71,49 @@ export function strings(): String[] {
         },
       ],
     },
+    {
+      key: "flame-title",
+      description: "The title of the flame interaction.",
+      values: [
+        {
+          text: "The Flame",
+          lang: "en",
+          age: 0,
+        },
+      ],
+    },
+    {
+      key: "flame-body",
+      description: "The body of the flame interaction.",
+      values: [
+        {
+          text: "Can I help you?",
+          lang: "en",
+          age: 0,
+        },
+      ],
+    },
+    {
+      key: "knight-title",
+      description: "The title of the silent knight interaction.",
+      values: [
+        {
+          text: "The Silent Knight",
+          lang: "en",
+          age: 0,
+        },
+      ],
+    },
+    {
+      key: "knight-body",
+      description: "The body of the silent knight interaction.",
+      values: [
+        {
+          text: "...",
+          lang: "en",
+          age: 0,
+        },
+      ],
+    },
   ];
 }

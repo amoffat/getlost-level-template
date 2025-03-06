@@ -13,6 +13,10 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "Spirit.tsj": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "TilesetDesert.tsj": {
             "dynamicWrapping": false,
             "scaleInDock": 2,
@@ -34,6 +38,7 @@
             "scaleInDock": 1.5
         }
     },
+    "frame.defaultDuration": 100,
     "last.imagePath": "/home/amoffat/work/getlost-level-template/level/tiled/art/Actor/Boss/DemonCyclop2",
     "last.objectTypesPath": "/home/amoffat/work/getlost-level-template/.devcontainer/propertytypes.json",
     "map.fixedSize": false,
@@ -45,8 +50,9 @@
         "TilesetDesert.tsj"
     ],
     "project": "level.tiled-project",
-    "property.type": "LightType",
+    "property.type": "string",
     "recentFiles": [
+        "Spirit.tsj",
         "TilesetDesert.tsj",
         "level.tmj",
         "Items.tsj"
@@ -56,5 +62,5 @@
         "height": 16,
         "width": 16
     },
-    "tileset.type": 1
+    "tileset.type": 0
 }
