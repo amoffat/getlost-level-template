@@ -44,6 +44,13 @@ def upgrade_repo(target_path: Path) -> None:
         ]
         return item not in preserve
 
+    def should_restore(item: Path) -> bool:
+        ignore = [
+            temp_clone_dir / "level",
+            temp_clone_dir / ".git",
+        ]
+        return item not in ignore
+
     # Remove old contents (except 'level_backup')
     for item in target_path.iterdir():
         if should_remove(item):
@@ -54,7 +61,7 @@ def upgrade_repo(target_path: Path) -> None:
 
     # Move new contents into place
     for item in temp_clone_dir.iterdir():
-        if item.name != "level":
+        if should_restore(item):
             shutil.move(str(item), str(target_path / item.name))
 
     # Restore 'level' directory
