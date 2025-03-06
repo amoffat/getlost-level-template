@@ -5,10 +5,10 @@ import { Pickup } from "@gl/types/pickup";
 export function pickups(): Pickup[] {
   return [
     {
-      slug: "potion",
-      name: "Sleeping potion",
-      text: "A sturdy flask containing enough sleeping potion to put even a dragon under. The label says 'Property of Maester Mordred.'",
-      uses: 3,
+      slug: "map",
+      name: "Dusty map",
+      text: "A map of an unfamiliar place. There's a clear X marking something important.",
+      uses: -1,
     },
   ];
 }
