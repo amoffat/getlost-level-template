@@ -87,7 +87,29 @@ export function strings(): String[] {
       description: "The body of the flame interaction.",
       values: [
         {
-          text: "Can I help you?",
+          text: "Excuse me, may I help you?",
+          lang: "en",
+          age: 0,
+        },
+      ],
+    },
+    {
+      key: "extinguish",
+      description: "The action to extinguish the flame",
+      values: [
+        {
+          text: "Extinguish them",
+          lang: "en",
+          age: 0,
+        },
+      ],
+    },
+    {
+      key: "just-passing",
+      description: "The choice to pass by the flame",
+      values: [
+        {
+          text: "I'm just passing through, thanks.",
           lang: "en",
           age: 0,
         },

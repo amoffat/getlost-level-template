@@ -48,6 +48,15 @@ export function timerEvent(name: string, userData: i32): void {
 // Called when an async asset has been loaded.
 export function assetLoadedEvent(id: i32): void {}
 
+export function pickupEvent(slug: string, took: bool): void {
+  log(`Pickup event: ${slug}, ${took}`);
+  if (slug === "flame" && took) {
+    host.lights.toggleLight("flame", false);
+    host.sensors.toggleSensor("flame", false);
+    host.sprite.toggleSprite("flame", false);
+  }
+}
+
 // When a key is pressed, this function is called. The `slug` is the key that
 // was pressed, and `down` is true if the key was pressed down, and false if it
 // was released.
@@ -57,6 +66,8 @@ export function choiceMadeEvent(textSlug: string, choice: string): void {
   log(`Choice made for ${textSlug}: ${choice}`);
   if (textSlug === "well-body" && choice === "jump-down") {
     host.map.exit("well", true);
+  } else if (textSlug === "flame-body" && choice === "extinguish") {
+    host.pickup.offerPickup("flame");
   }
 }
 
@@ -82,7 +93,10 @@ export function sensorEvent(name: string, entered: bool): void {
     host.text.displaySign("oasis-entry-title", "oasis-entry-body");
     sawOasisSign = true;
   } else if (name === "flame" && entered) {
-    host.text.displayInteraction("flame-title", "flame-body", []);
+    host.text.displayInteraction("flame-title", "flame-body", [
+      "just-passing",
+      "extinguish",
+    ]);
   } else if (name === "knight" && entered) {
     host.text.displayInteraction("knight-title", "knight-body", []);
   } else if (name === "well" && entered) {

@@ -101,6 +101,11 @@
             "id": 3,
             "members": [
                 {
+                    "name": "hidden",
+                    "type": "bool",
+                    "value": false
+                },
+                {
                     "name": "slug",
                     "type": "string",
                     "value": ""

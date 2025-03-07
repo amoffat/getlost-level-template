@@ -5,7 +5,9 @@ import * as lights from "./lights";
 import * as map from "./map";
 import * as particles from "./particles";
 import * as physics from "./physics";
+import * as pickup from "./pickup";
 import * as player from "./player";
+import * as sensors from "./sensors";
 import * as sound from "./sound";
 import * as sprite from "./sprite";
 import * as text from "./text";
@@ -21,7 +23,9 @@ export {
   map,
   particles,
   physics,
+  pickup,
   player,
+  sensors,
   sound,
   sprite,
   text,
