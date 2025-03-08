@@ -35,15 +35,14 @@
              "name":"",
              "objects":[
                     {
-                     "ellipse":true,
                      "height":3,
-                     "id":1,
+                     "id":3,
                      "name":"",
                      "rotation":0,
                      "type":"",
                      "visible":true,
-                     "width":5,
-                     "x":5,
+                     "width":11,
+                     "x":2,
                      "y":13
                     }],
              "opacity":1,

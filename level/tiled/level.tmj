@@ -264,8 +264,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":2,
-                 "y":10
+                 "x":167.787979671073,
+                 "y":-62.6037241753111
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -524,21 +524,8 @@
         {
          "draworder":"topdown",
          "id":16,
-         "locked":true,
          "name":"sensors",
          "objects":[
-                {
-                 "ellipse":true,
-                 "height":57,
-                 "id":26,
-                 "name":"oasis",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":59,
-                 "x":186,
-                 "y":-69
-                }, 
                 {
                  "ellipse":true,
                  "height":18,
@@ -548,8 +535,8 @@
                  "type":"",
                  "visible":true,
                  "width":21,
-                 "x":204,
-                 "y":-52
+                 "x":205,
+                 "y":-51
                 }, 
                 {
                  "height":54,
@@ -610,7 +597,7 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -636,6 +623,29 @@
                  "width":16,
                  "x":113,
                  "y":12
+                }, 
+                {
+                 "gid":874,
+                 "height":16,
+                 "id":56,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"hidden",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"slug",
+                         "type":"string",
+                         "value":"flame"
+                        }],
+                 "rotation":0,
+                 "type":"Pickup",
+                 "visible":true,
+                 "width":16,
+                 "x":247,
+                 "y":-15
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -956,16 +966,16 @@
                  "y":-195
                 }, 
                 {
-                 "gid":869,
+                 "gid":870,
                  "height":16,
-                 "id":50,
-                 "name":"",
+                 "id":55,
+                 "name":"flame",
                  "rotation":0,
-                 "type":"",
+                 "type":"NPC",
                  "visible":true,
                  "width":16,
-                 "x":207,
-                 "y":-36
+                 "x":208,
+                 "y":-37
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1052,7 +1062,7 @@
                 {
                  "height":0,
                  "id":21,
-                 "name":"",
+                 "name":"flame",
                  "point":true,
                  "properties":[
                         {
@@ -1131,7 +1141,7 @@
          "y":0
         }],
  "nextlayerid":18,
- "nextobjectid":54,
+ "nextobjectid":57,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.1-99-gec89c545",
@@ -1155,6 +1165,10 @@
         }, 
         {
          "firstgid":869,
+         "source":"Fish.tsj"
+        }, 
+        {
+         "firstgid":870,
          "source":"Spirit.tsj"
         }],
  "tilewidth":16,
