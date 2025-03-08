@@ -5,7 +5,7 @@
     "experimentalDecorators": true,
     "baseUrl": ".",
     "paths": {
-      "@gl/*": ["../assemblyscript/@gl/*"]
+      "@gl/*": ["../../assemblyscript/@gl/*"]
     }
   }
 }
