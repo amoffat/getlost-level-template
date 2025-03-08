@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -eux
 
-npm ci
+npm install
