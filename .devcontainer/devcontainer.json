@@ -8,6 +8,9 @@
       "password": "getlost"
     }
   },
+  "remoteEnv": {
+    "DEVCONTAINER": "true"
+  },
   "forwardPorts": [5173, 6080],
   "customizations": {
     "vscode": {

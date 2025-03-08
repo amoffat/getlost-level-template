@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { Plugin } from "vite";
+import { isAllowedOrigin } from "./utils";
 
 export default function levelPlugin(): Plugin {
   const cwd = process.cwd();
@@ -20,6 +21,17 @@ export default function levelPlugin(): Plugin {
         // Check that the decodedPath is within the allowed paths
         if (!decodedPath.startsWith("/level")) {
           return next();
+        }
+
+        const isAllowed = isAllowedOrigin(req.headers.origin);
+
+        if (!isAllowed) {
+          res.writeHead(403, {
+            "Content-Type": "text/plain",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end("Forbidden");
+          return;
         }
 
         // Check if the request starts with /tiled
