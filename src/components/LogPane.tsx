@@ -68,6 +68,11 @@ function parseMessage(event: LogEvent): LogMessage | undefined {
 const LogPane = () => {
   const [logs, setLogs] = useState<LogMessage[]>([]);
 
+  const addMessage = useCallback((msg: LogMessage) => {
+    setLogs((prevLogs) => [msg, ...prevLogs.slice(0, 100)]);
+  }, []);
+
+  // This connects our log pane to the pino logs from the iframe
   useEffect(() => {
     const logListener = (
       event: MessageEvent<{ type: string; data: LogEvent }>
@@ -78,7 +83,7 @@ const LogPane = () => {
       }
       const msg = parseMessage(envelope.data);
       if (msg) {
-        setLogs((prevLogs) => [msg, ...prevLogs.slice(0, 100)]);
+        addMessage(msg);
       }
     };
 
@@ -87,17 +92,36 @@ const LogPane = () => {
     return () => {
       window.removeEventListener("message", logListener);
     };
-  }, []);
+  }, [addMessage]);
+
+  // This connects our log pane to a custom event emitted from our Vite WASM
+  // plugin
+  useEffect(() => {
+    if (import.meta.hot) {
+      const logListener = (data: unknown) => {
+        const msg: LogMessage = {
+          msg: data as string,
+          className: "error",
+        };
+        addMessage(msg);
+      };
+      import.meta.hot.on("gl:wasm-compilation-error", logListener);
+
+      return () => {
+        import.meta.hot!.off("gl:wasm-compilation-error", logListener);
+      };
+    }
+  }, [addMessage]);
 
   const mapMessage = useCallback((msg: LogMessage, i: number) => {
     return (
-      <div
+      <pre
         className={styles[msg.className]}
         key={i}
         style={{ color: msg.color }}
       >
         {msg.msg}
-      </div>
+      </pre>
     );
   }, []);
   const messages = logs.map(mapMessage);

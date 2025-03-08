@@ -30,6 +30,14 @@ class GLMetaAdder extends Transform {
   }
 }
 
+interface CompileError {
+  message: string;
+}
+
+function isCompileError(e: unknown): e is CompileError {
+  return e !== undefined && (e as CompileError).message !== undefined;
+}
+
 const asmLibDir = resolve(__dirname, "..", "..", "assemblyscript");
 const shimDir = asmLibDir;
 const codeDir = resolve(__dirname, "..", "..", "level", "code");
@@ -54,10 +62,12 @@ async function compile(
   ];
   const artifacts: Partial<BuildArtifacts> = {};
 
+  const stderr = asc.createMemoryStream();
+
   // Compile AssemblyScript programmatically
   const { error } = await asc.main(commandLineOptions, {
     stdout: process.stdout,
-    stderr: process.stderr,
+    stderr: stderr,
     transforms: [new GLMetaAdder({ engineVersion })],
 
     // Here we intercept the writeFile function to capture the artifacts without
@@ -85,7 +95,7 @@ async function compile(
   });
 
   if (error) {
-    throw new Error(`Compilation failed: ${error}`);
+    throw { message: stderr.toString() };
   } else {
     return artifacts as BuildArtifacts;
   }
@@ -133,7 +143,12 @@ export default function compileWasmPlugin() {
 
             res.end(artifacts.wasm);
           } catch (e) {
-            console.error(e);
+            if (isCompileError(e)) {
+              server.ws.send("gl:wasm-compilation-error", e.message);
+              console.error(e.message);
+            } else {
+              console.error(e);
+            }
             res.writeHead(500, {
               "Content-Type": "text/plain",
               "Access-Control-Allow-Origin": "*",
