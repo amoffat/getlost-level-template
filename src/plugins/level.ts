@@ -1,7 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { Plugin } from "vite";
-import { isAllowedOrigin } from "./utils";
 
 export default function levelPlugin(): Plugin {
   const cwd = process.cwd();
@@ -23,29 +22,6 @@ export default function levelPlugin(): Plugin {
           return next();
         }
 
-        const isAllowed = isAllowedOrigin(req.headers.origin);
-
-        if (!isAllowed) {
-          res.writeHead(403, {
-            "Content-Type": "text/plain",
-            "Access-Control-Allow-Origin": "*",
-          });
-          res.end("Forbidden");
-          return;
-        }
-
-        // Check if the request starts with /tiled
-        if (req.method === "OPTIONS") {
-          res.setHeader("Access-Control-Allow-Origin", "*");
-          res.setHeader("Access-Control-Allow-Methods", "*");
-          res.setHeader("Access-Control-Allow-Headers", "*");
-          res.setHeader("Access-Control-Allow-Private-Network", "true");
-          res.setHeader("cross-origin-resource-policy", "cross-origin");
-          res.statusCode = 200;
-          res.end();
-          return;
-        }
-
         const subPath = decodedPath.replace(/^\/level\//, "");
         const filePath = path.resolve(levelDir, subPath);
 
@@ -59,13 +35,6 @@ export default function levelPlugin(): Plugin {
 
         try {
           const fileContent = await fs.readFile(filePath);
-
-          // Set CORS headers to allow all origins
-          res.setHeader("Access-Control-Allow-Origin", "*");
-          res.setHeader("Access-Control-Allow-Methods", "*");
-          res.setHeader("Access-Control-Allow-Headers", "*");
-          res.setHeader("Access-Control-Allow-Private-Network", "true");
-          res.setHeader("cross-origin-resource-policy", "cross-origin");
 
           res.statusCode = 200;
           res.end(fileContent);

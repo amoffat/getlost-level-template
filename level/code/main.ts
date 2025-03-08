@@ -53,7 +53,7 @@ export function pickupEvent(slug: string, took: bool): void {
   if (slug === "flame" && took) {
     host.lights.toggleLight("flame", false);
     host.sensors.toggleSensor("flame", false);
-    host.sprite.toggleSprite("flame", false);
+    host.npc.toggleNPC("flame", false);
   }
 }
 

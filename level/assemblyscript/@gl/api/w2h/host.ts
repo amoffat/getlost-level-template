@@ -3,6 +3,7 @@ import * as debug from "./debug";
 import * as filters from "./filters";
 import * as lights from "./lights";
 import * as map from "./map";
+import * as npc from "./npc";
 import * as particles from "./particles";
 import * as physics from "./physics";
 import * as pickup from "./pickup";
@@ -21,6 +22,7 @@ export {
   filters,
   lights,
   map,
+  npc,
   particles,
   physics,
   pickup,
