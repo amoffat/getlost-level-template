@@ -30,7 +30,7 @@ class GLMetaAdder extends Transform {
   }
 }
 
-const asmLibDir = resolve(__dirname, "..", "..", "level", "assemblyscript");
+const asmLibDir = resolve(__dirname, "..", "..", "assemblyscript");
 const shimDir = asmLibDir;
 const codeDir = resolve(__dirname, "..", "..", "level", "code");
 

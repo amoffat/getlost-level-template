@@ -1,3 +1,4 @@
+import basicSsl from "@vitejs/plugin-basic-ssl";
 import react from "@vitejs/plugin-react";
 import { defineConfig, ViteDevServer } from "vite";
 import compileWasmPlugin from "./src/plugins/assemblyscript";
@@ -21,6 +22,7 @@ function addHeadersPlugin() {
         res.setHeader("Access-Control-Allow-Methods", "*");
         res.setHeader("Access-Control-Allow-Headers", "*");
         res.setHeader("Access-Control-Allow-Private-Network", "true");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
 
         res.setHeader("cross-origin-resource-policy", "cross-origin");
         res.setHeader("cross-origin-opener-policy", "same-origin");
@@ -40,7 +42,16 @@ function addHeadersPlugin() {
 
 export default defineConfig(() => {
   return {
-    plugins: [addHeadersPlugin(), react(), compileWasmPlugin(), levelPlugin()],
+    plugins: [
+      basicSsl({
+        name: "test",
+        domains: ["localhost"],
+      }),
+      addHeadersPlugin(),
+      react(),
+      compileWasmPlugin(),
+      levelPlugin(),
+    ],
     define: {
       DEVCONTAINER: process.env.DEVCONTAINER,
     },

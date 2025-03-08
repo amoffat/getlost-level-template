@@ -24,7 +24,8 @@
   "runArgs": [],
   "portsAttributes": {
     "5173": {
-      "label": "Level Preview"
+      "label": "Level Preview",
+      "protocol": "https"
     },
     "6080": {
       "label": "Tiled"
