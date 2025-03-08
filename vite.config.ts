@@ -24,5 +24,8 @@ function addHeadersPlugin() {
 export default defineConfig(() => {
   return {
     plugins: [addHeadersPlugin(), react(), compileWasmPlugin(), levelPlugin()],
+    define: {
+      DEVCONTAINER: process.env.DEVCONTAINER,
+    },
   };
 });
