@@ -43,10 +43,16 @@ function addHeadersPlugin() {
 export default defineConfig(() => {
   return {
     plugins: [
-      basicSsl({
-        name: "test",
-        domains: ["localhost"],
-      }),
+      // There's a bug in Github codespaces. Even though we have our vite port
+      // set as https in the devcontainer.json, Codespaces will set the protocol
+      // as http and won't let you change it. So on codespaces, we don't use
+      // https, which is fine because the Dev Tunnel itself is https.
+      process.env.CODESPACES
+        ? null
+        : basicSsl({
+            name: "test",
+            domains: ["localhost"],
+          }),
       addHeadersPlugin(),
       react(),
       compileWasmPlugin(),
