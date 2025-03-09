@@ -264,8 +264,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":167.787979671073,
-                 "y":-62.6037241753111
+                 "x":5.787979671073,
+                 "y":6.8962758246889
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1068,7 +1068,7 @@
                         {
                          "name":"color",
                          "type":"color",
-                         "value":"#560f5fff"
+                         "value":"#280f5fff"
                         }],
                  "rotation":0,
                  "type":"Light",
@@ -1144,7 +1144,7 @@
  "nextobjectid":57,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.11.1-99-gec89c545",
+ "tiledversion":"1.11.2",
  "tileheight":16,
  "tilesets":[
         {
