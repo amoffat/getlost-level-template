@@ -4,6 +4,7 @@ import { defineConfig, ViteDevServer } from "vite";
 import compileWasmPlugin from "./src/plugins/assemblyscript";
 import levelPlugin from "./src/plugins/level";
 import { isAllowedOrigin } from "./src/plugins/utils";
+import levelWatcher from "./src/plugins/watcher";
 
 // I would like to put these in `server.headers`, but it doesn't appear to work.
 function addHeadersPlugin() {
@@ -57,6 +58,7 @@ export default defineConfig(() => {
       react(),
       compileWasmPlugin(),
       levelPlugin(),
+      levelWatcher(),
     ],
     define: {
       DEVCONTAINER: process.env.DEVCONTAINER,

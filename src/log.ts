@@ -2,7 +2,17 @@ import pino from "pino";
 
 export const log = pino({
   browser: {
-    asObject: true, // logs in a structured format
+    transmit: {
+      send: (_level, logEvent) => {
+        window.top?.postMessage(
+          {
+            type: "pino-log",
+            data: logEvent,
+          },
+          "*" // TODO: tighten this up?
+        );
+      },
+    },
   },
-  level: "debug", // set log level
+  level: "debug",
 });

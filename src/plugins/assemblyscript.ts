@@ -38,9 +38,10 @@ function isCompileError(e: unknown): e is CompileError {
   return e !== undefined && (e as CompileError).message !== undefined;
 }
 
-const asmLibDir = resolve(__dirname, "..", "..", "assemblyscript");
+const repoDir = process.cwd();
+const asmLibDir = resolve(repoDir, "assemblyscript");
 const shimDir = asmLibDir;
-const codeDir = resolve(__dirname, "..", "..", "level", "code");
+const codeDir = resolve(repoDir, "level", "code");
 
 async function compile(
   engineVersion: string,

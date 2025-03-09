@@ -1,10 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as constants from "../constants";
 import { log } from "../log";
 import LogPane from "./LogPane";
 
 export function ShellApp() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [reloadCount, setReloadCount] = useState(0);
 
   // useEffect(() => {
   //   const fn = (event: MessageEvent) => {
@@ -21,6 +22,20 @@ export function ShellApp() {
     src.searchParams.set("levelBaseUrl", levelUrl);
     log.info(`Loading game from ${constants.gameUrl}`);
     iframe.src = src.toString();
+  }, [reloadCount]);
+
+  useEffect(() => {
+    if (import.meta.hot) {
+      const fn = () => {
+        log.info("Reloading level", { dev: true, color: "green" });
+        setReloadCount((count) => count + 1);
+      };
+      import.meta.hot.on("gl:level-reload", fn);
+
+      return () => {
+        import.meta.hot!.off("gl:level-reload", fn);
+      };
+    }
   }, []);
 
   return (
