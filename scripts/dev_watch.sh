@@ -1,5 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
+# In Codespaces, for some reason SHELL isn't set and chokidar fails
+export SHELL=/bin/bash
 chokidar \
     'level/**/*' \
     'engine_version.txt' \
