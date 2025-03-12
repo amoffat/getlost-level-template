@@ -17,7 +17,11 @@
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh"
       },
-      "extensions": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "github.vscode-github-actions"
+      ]
     }
   },
   "remoteUser": "node",
