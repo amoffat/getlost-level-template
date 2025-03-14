@@ -30,7 +30,12 @@ def get_changes():
 
 def send_notification():
     webhook_url = os.environ["DISCORD_WEBHOOK"]
+    if not webhook_url:
+        raise RuntimeError("No Discord webhook URL found.")
+    
     version = os.environ["VERSION"]
+    if not version:
+        raise RuntimeError("No version found.")
 
     changes = get_changes()
     fields = [
