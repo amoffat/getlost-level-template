@@ -1,0 +1,25 @@
+name: publish
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify:
+    name: Send Discord Notification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version
+        id: set-version
+        run: |
+          version=$(jq -r .version package.json | sed 's/\+.*//')
+          echo "version=$version" >> $GITHUB_ENV
+
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          VERSION: ${{ env.version }}
+        run: python3 scripts/discord.py
