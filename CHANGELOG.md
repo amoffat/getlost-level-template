@@ -1,3 +1,7 @@
+## 0.2.1 - 3/15/25
+
+- Added v1.0 licensing agreement
+
 ## 0.2.0 - 3/14/25
 
 - Use engine `0.3.0`
