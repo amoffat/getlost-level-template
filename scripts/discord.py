@@ -50,7 +50,7 @@ def send_notification():
     embed = {
         "title": f"🎮 Level template v{version} Deployed!",
         "url": "https://github.com/amoffat/getlost-level-template",
-        "description": "A new version of the level template is now live! `ctrl+shift+b` => `Upgrade Level` to get it.",
+        "description": "A new version of the level template is now live! [How to upgrade](https://docs.getlost.gg/latest/reference/upgrading/)",
         "color": 5814783,
         "fields": fields,
         "footer": {"text": "Github Deployment"},
