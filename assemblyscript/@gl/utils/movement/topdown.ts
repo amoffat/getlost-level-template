@@ -61,6 +61,8 @@ export class PlayerMovement {
   // Update method to handle position updates per frame
   tick(deltaMS: f32): void {
     const props = host.map.getTileProps(this._pos.x, this._pos.y);
+
+    // Low traction means our impulse is less effective
     const adjImpulse = this.impulse.scaled(props.traction);
 
     const movementVector = this.direction; //.mul(this.impulse);
