@@ -27,7 +27,7 @@ export default function levelWatcher() {
         }
 
         if (gameReload) {
-          console.log("Triggering reload");
+          console.log(`Triggering reload: ${path}`);
           server.ws.send("gl:level-reload");
         }
       });
