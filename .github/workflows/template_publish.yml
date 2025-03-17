@@ -1,4 +1,4 @@
-name: publish
+name: Template Publish
 on:
   push:
     branches:
@@ -6,6 +6,7 @@ on:
 
 jobs:
   notify:
+    if: github.repository == 'amoffat/getlost-level-template'
     name: Send Discord Notification
     runs-on: ubuntu-latest
     steps:

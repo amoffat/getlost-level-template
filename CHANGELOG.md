@@ -3,6 +3,7 @@
 - v1.3 license to handle CC content and third party assets
 - `host.char.getMoveProps()` to get dynamic movement information of a character.
 - Added swimming movement to the `PlayerMovement` controller.
+- Placeholder for level publish workflow
 
 ## 0.2.1 - 3/15/25
 
