@@ -1,6 +1,6 @@
-# Level Submission License Agreement
+**Level Submission License Agreement**
 
-**(v1.0 – Effective 3/15/25)**
+**(v1.1 – Effective 3/16/25)**
 
 This Level Submission License Agreement (“Agreement”) is entered into by and between Get Me In RN LLC (“Company”) and the individual or entity (“Submitter”) submitting a level (“Level”) for use in the Company’s game platform.
 
@@ -33,6 +33,23 @@ Submitter represents and warrants that:
 - The Level does not contain any material that is unlawful, defamatory, obscene, harmful, or otherwise objectionable.
 - Submitter is at least 18 years old or has obtained consent from a parent or legal guardian and has the legal authority to enter into this Agreement.
 - The Level is not generated wholly or substantially by automated means (e.g., AI tools) without appropriate rights to use and license such output.
+
+## 3A. Third-Party and Creative Commons Content
+
+- Submitter shall disclose in writing any third-party content included in the Level that is licensed under a Creative Commons or other open license. This disclosure must include the license type, original author(s), source link(s), and any attribution requirements applicable to the included content.
+
+- Submitter represents and warrants that any such third-party content complies with this Agreement and does not impose obligations that would conflict with the rights granted herein. The Submitter agrees that inclusion of such content does not limit the Company’s ability to exercise its rights under this Agreement.
+
+- The Company may include attribution for Creative Commons content where legally required, in a manner appropriate to the medium. However, the Company is not required to provide prominent, individualized attribution unless explicitly mandated by the license.
+
+- The Submitter agrees not to include in any Level:
+
+  - Any content licensed under a ShareAlike license (e.g., CC BY-SA, GNU GPL) that would require the Level, game, or any derivative work to be licensed under the same or a compatible license;
+  - Any content licensed under a NoDerivatives license (e.g., CC BY-ND), unless the content is included unmodified and used solely in a way that does not constitute a derivative work or adaptation under applicable law;
+  - Any content licensed under a NonCommercial license (e.g., CC BY-NC), which would prohibit commercial use by the Company;
+  - Any other license terms that would restrict the Company’s ability to sublicense, modify, distribute, or commercially exploit the Level under the terms of this Agreement.
+
+- The Company reserves the right to reject or remove any Level that includes third-party content with licensing terms deemed incompatible with this Agreement, at its sole discretion.
 
 ## 4. Indemnification
 
