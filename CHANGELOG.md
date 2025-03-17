@@ -1,3 +1,9 @@
+## 0.2.2 -
+
+- v1.1 license to handle CC content.
+- `host.char.getMoveProps()` to get dynamic movement information of a character.
+- Added swimming movement to the `PlayerMovement` controller.
+
 ## 0.2.1 - 3/15/25
 
 - Added v1.0 licensing agreement

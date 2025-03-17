@@ -1,3 +1,4 @@
+import * as char from "./char";
 import * as controls from "./controls";
 import * as debug from "./debug";
 import * as filters from "./filters";
@@ -17,6 +18,7 @@ import * as time from "./time";
 import * as timer from "./timer";
 
 export {
+  char,
   controls,
   debug,
   filters,
