@@ -1,6 +1,6 @@
 **Level Submission License Agreement**
 
-**(v1.3 – Effective 3/17/25)**
+**(v1.4 – Effective 3/17/25)**
 
 This Level Submission License Agreement (“Agreement”) is entered into by and between Get Me In RN LLC (“Company”) and the individual or entity (“Submitter”) submitting a level (“Level”) for use in the Company’s game platform.
 
@@ -99,7 +99,11 @@ Each submission or update of a Level is subject to the then-current version of t
 
 This Agreement shall be governed by and construed in accordance with the laws of the State of Idaho, United States, without regard to conflict of laws principles. Any disputes shall be resolved in the courts located in Kootenai County, Idaho.
 
-## 11. Entire Agreement
+## 11. Severability
+
+If any provision of this Agreement is found to be invalid, illegal, or unenforceable by a court of competent jurisdiction, the remaining provisions shall remain in full force and effect. The invalid or unenforceable provision shall be deemed modified to the minimum extent necessary to make it enforceable, or if that is not possible, it shall be deemed deleted, but such modification or deletion shall not affect the validity and enforceability of the remaining provisions.
+
+## 12. Entire Agreement
 
 This Agreement constitutes the entire agreement between the parties regarding the subject matter hereof and supersedes all prior agreements or understandings.
 
