@@ -1,6 +1,6 @@
 **Level Submission License Agreement**
 
-**(v1.1 – Effective 3/16/25)**
+**(v1.3 – Effective 3/17/25)**
 
 This Level Submission License Agreement (“Agreement”) is entered into by and between Get Me In RN LLC (“Company”) and the individual or entity (“Submitter”) submitting a level (“Level”) for use in the Company’s game platform.
 
@@ -50,6 +50,20 @@ Submitter represents and warrants that:
   - Any other license terms that would restrict the Company’s ability to sublicense, modify, distribute, or commercially exploit the Level under the terms of this Agreement.
 
 - The Company reserves the right to reject or remove any Level that includes third-party content with licensing terms deemed incompatible with this Agreement, at its sole discretion.
+
+## 3B. Commercial Asset Licensing by Submitters
+
+- Submitter represents and warrants that any third-party asset acquired from a marketplace or other source for inclusion in the Level was purchased with a license that permits commercial use, inclusion in video games, and transfer or sublicensing to the Company as described in this Agreement.
+
+- Where an asset license does not clearly allow redistribution, transfer, or sublicensing, Submitter agrees to either: (a) obtain express written permission from the original licensor for such use; or (b) ensure that the purchase was made explicitly on behalf of the Company and includes a right of use by the Company.
+
+- Submitter shall retain and provide upon request copies of any third-party license documentation and proof of purchase relevant to the Level submission.
+
+- If the asset requires attribution, Submitter must disclose the necessary credit details so that the Company may comply with the attribution terms where legally required.
+
+- The Company reserves the right to reject any Level submission containing assets with unclear or restrictive licensing terms, or to remove such content at a later time if deemed noncompliant.
+
+- In the absence of disclosure by the Submitter that an asset originates from a third-party source, the Company may reasonably rely on the Submitter's warranties and representations that the Level and all of its components are original works by the Submitter or fully licensed to the Company in accordance with this Agreement.
 
 ## 4. Indemnification
 
