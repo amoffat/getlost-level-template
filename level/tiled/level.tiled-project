@@ -48,6 +48,25 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 11,
+            "members": [
+                {
+                    "name": "defaultWalk",
+                    "propertyType": "WalkSound",
+                    "type": "string",
+                    "value": "default"
+                }
+            ],
+            "name": "Map",
+            "type": "class",
+            "useAs": [
+                "map",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 9,
             "members": [
                 {
@@ -62,20 +81,6 @@
                 "object",
                 "project"
             ]
-        },
-        {
-            "id": 2,
-            "name": "NPC animation",
-            "storageType": "string",
-            "type": "enum",
-            "values": [
-                "Idle",
-                "WalkLeft",
-                "WalkRight",
-                "WalkUp",
-                "WalkDown"
-            ],
-            "valuesAsFlags": true
         },
         {
             "color": "#ffa0a0a4",
@@ -94,6 +99,20 @@
                 "tile",
                 "project"
             ]
+        },
+        {
+            "id": 2,
+            "name": "NPC animation",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "Idle",
+                "WalkLeft",
+                "WalkRight",
+                "WalkUp",
+                "WalkDown"
+            ],
+            "valuesAsFlags": true
         },
         {
             "color": "#ffa0a0a4",
@@ -118,6 +137,51 @@
                 "object",
                 "project"
             ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 10,
+            "members": [
+                {
+                    "name": "depth",
+                    "type": "float",
+                    "value": 5
+                },
+                {
+                    "name": "liquid",
+                    "type": "bool",
+                    "value": true
+                },
+                {
+                    "name": "padding",
+                    "type": "float",
+                    "value": 16
+                }
+            ],
+            "name": "Sink",
+            "type": "class",
+            "useAs": [
+                "object",
+                "project"
+            ]
+        },
+        {
+            "id": 5,
+            "name": "WalkSound",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "default",
+                "ice",
+                "wood",
+                "snow",
+                "gravel",
+                "grass",
+                "puddle",
+                "sand"
+            ],
+            "valuesAsFlags": false
         },
         {
             "color": "#ffaa55ff",
@@ -152,21 +216,6 @@
                 "tile",
                 "project"
             ]
-        },
-        {
-            "id": 5,
-            "name": "WalkSound",
-            "storageType": "string",
-            "type": "enum",
-            "values": [
-                "default",
-                "ice",
-                "wood",
-                "snow",
-                "gravel",
-                "grass"
-            ],
-            "valuesAsFlags": false
         }
     ]
 }
