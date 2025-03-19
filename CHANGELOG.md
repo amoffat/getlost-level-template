@@ -1,4 +1,4 @@
-## 0.2.2 - 3/19/25
+## 0.3.0 - 3/19/25
 
 - v1.4 license to handle CC content, third party assets, and severability
 - `host.char.getMoveProps()` to get dynamic movement information of a character.
