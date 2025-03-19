@@ -1,4 +1,5 @@
-{ "compressionlevel":-1,
+{ "class":"Map",
+ "compressionlevel":-1,
  "height":20,
  "infinite":true,
  "layers":[
@@ -264,8 +265,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":18.287979671073,
-                 "y":-1.1037241753111
+                 "x":17.598585731679,
+                 "y":-1.4294817510686
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -594,6 +595,143 @@
                  "width":18,
                  "x":70,
                  "y":-85
+                }, 
+                {
+                 "ellipse":true,
+                 "height":10,
+                 "id":61,
+                 "name":"frank",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16.7272727272727,
+                 "x":89.8181818181818,
+                 "y":-201.454545454545
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":18,
+         "name":"sinks",
+         "objects":[
+                {
+                 "height":0,
+                 "id":57,
+                 "name":"",
+                 "polygon":[
+                        {
+                         "x":-0.181818181818187,
+                         "y":-0.272727272727273
+                        }, 
+                        {
+                         "x":-7.18181818181819,
+                         "y":4.72727272727273
+                        }, 
+                        {
+                         "x":-9.18181818181819,
+                         "y":13.7272727272727
+                        }, 
+                        {
+                         "x":-15.1818181818182,
+                         "y":20.7272727272727
+                        }, 
+                        {
+                         "x":-15.4545454545455,
+                         "y":34.7272727272727
+                        }, 
+                        {
+                         "x":-8.18181818181819,
+                         "y":45.7272727272727
+                        }, 
+                        {
+                         "x":21.8181818181818,
+                         "y":45.7272727272727
+                        }, 
+                        {
+                         "x":30.8181818181818,
+                         "y":37.7272727272727
+                        }, 
+                        {
+                         "x":30.8181818181818,
+                         "y":11.7272727272727
+                        }, 
+                        {
+                         "x":27.8181818181818,
+                         "y":3.72727272727273
+                        }, 
+                        {
+                         "x":20.8181818181818,
+                         "y":-0.272727272727273
+                        }],
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"float",
+                         "value":9
+                        }, 
+                        {
+                         "name":"padding",
+                         "type":"float",
+                         "value":16
+                        }],
+                 "rotation":0,
+                 "type":"Sink",
+                 "visible":true,
+                 "width":0,
+                 "x":208.181818181818,
+                 "y":-62.7272727272727
+                }, 
+                {
+                 "height":0,
+                 "id":60,
+                 "name":"",
+                 "polygon":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":8.18181818181819,
+                         "y":-8.36363636363636
+                        }, 
+                        {
+                         "x":12.5454545454546,
+                         "y":-7.27272727272727
+                        }, 
+                        {
+                         "x":12.5454545454546,
+                         "y":1.27272727272727
+                        }, 
+                        {
+                         "x":7.45454545454547,
+                         "y":5.45454545454545
+                        }, 
+                        {
+                         "x":0.727272727272748,
+                         "y":4.54545454545455
+                        }],
+                 "properties":[
+                        {
+                         "name":"depth",
+                         "type":"float",
+                         "value":2
+                        }, 
+                        {
+                         "name":"padding",
+                         "type":"float",
+                         "value":5
+                        }],
+                 "rotation":0,
+                 "type":"Sink",
+                 "visible":true,
+                 "width":0,
+                 "x":178.515151515152,
+                 "y":-54.0909090909091
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -957,7 +1095,7 @@
                  "gid":849,
                  "height":16,
                  "id":48,
-                 "name":"",
+                 "name":"frank",
                  "rotation":0,
                  "type":"NPC",
                  "visible":true,
@@ -1014,7 +1152,7 @@
                 {
                  "height":0,
                  "id":17,
-                 "name":"",
+                 "name":"frank-light",
                  "point":true,
                  "properties":[
                         {
@@ -1038,7 +1176,7 @@
                 {
                  "height":0,
                  "id":19,
-                 "name":"",
+                 "name":"house-light-1",
                  "point":true,
                  "properties":[
                         {
@@ -1140,9 +1278,16 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":18,
- "nextobjectid":57,
+ "nextlayerid":19,
+ "nextobjectid":62,
  "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"defaultWalk",
+         "propertytype":"WalkSound",
+         "type":"string",
+         "value":"sand"
+        }],
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
  "tileheight":16,
