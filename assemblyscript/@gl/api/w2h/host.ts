@@ -12,6 +12,7 @@ import * as player from "./player";
 import * as sensors from "./sensors";
 import * as sound from "./sound";
 import * as sprite from "./sprite";
+import * as stdlib from "./stdlib";
 import * as text from "./text";
 import * as tiles from "./tiles";
 import * as time from "./time";
@@ -32,6 +33,7 @@ export {
   sensors,
   sound,
   sprite,
+  stdlib,
   text,
   tiles,
   time,
