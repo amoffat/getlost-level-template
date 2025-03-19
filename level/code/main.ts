@@ -218,9 +218,9 @@ export function tickRoom(timestep: f32): void {
   host.filters.setTiltShiftY(tsfid, player.pos.y - 10);
 
   // This syncs the time of day with the real world.
-  // host.time.setSunTime(Date.now());
+  host.time.setSunTime(Date.now());
 
   // Or we can advance the time of day manually, increasing the step size to
   // make the days faster.
-  host.time.advanceSunTime(timestep * 1000);
+  // host.time.advanceSunTime(timestep * 1000);
 }
