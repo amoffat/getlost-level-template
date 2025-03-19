@@ -1,9 +1,11 @@
-## 0.2.2 -
+## 0.2.2 - 3/19/25
 
 - v1.4 license to handle CC content, third party assets, and severability
 - `host.char.getMoveProps()` to get dynamic movement information of a character.
 - Added swimming movement to the `PlayerMovement` controller.
 - Placeholder for level publish workflow
+- `host.time.advanceSunTime`
+- `host.time.setSunEvent`
 
 ## 0.2.1 - 3/15/25
 

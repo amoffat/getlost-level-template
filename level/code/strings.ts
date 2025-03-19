@@ -109,7 +109,7 @@ export function strings(): String[] {
       description: "The choice to pass by the flame",
       values: [
         {
-          text: "I'm just passing through, thanks.",
+          text: "I'm just swimming through, thanks.",
           lang: "en",
           age: 0,
         },
@@ -132,6 +132,50 @@ export function strings(): String[] {
       values: [
         {
           text: "...",
+          lang: "en",
+          age: 0,
+        },
+      ],
+    },
+    {
+      key: "frank-title",
+      description: "The title of the interaction with Frank.",
+      values: [
+        {
+          text: "Frank",
+          lang: "en",
+          age: 0,
+        },
+      ],
+    },
+    {
+      key: "frank-body",
+      description: "The body of the interaction with Frank.",
+      values: [
+        {
+          text: "Did you know a strange fire creature appears on the pond? But only at night.",
+          lang: "en",
+          age: 0,
+        },
+      ],
+    },
+    {
+      key: "wait-morning",
+      description: "The option to wait until morning.",
+      values: [
+        {
+          text: "Wait until morning",
+          lang: "en",
+          age: 0,
+        },
+      ],
+    },
+    {
+      key: "wait-night",
+      description: "The option to wait until night.",
+      values: [
+        {
+          text: "Wait until night",
           lang: "en",
           age: 0,
         },
