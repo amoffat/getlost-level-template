@@ -1,3 +1,4 @@
+import * as char from "./char";
 import * as controls from "./controls";
 import * as debug from "./debug";
 import * as filters from "./filters";
@@ -11,12 +12,14 @@ import * as player from "./player";
 import * as sensors from "./sensors";
 import * as sound from "./sound";
 import * as sprite from "./sprite";
+import * as stdlib from "./stdlib";
 import * as text from "./text";
 import * as tiles from "./tiles";
 import * as time from "./time";
 import * as timer from "./timer";
 
 export {
+  char,
   controls,
   debug,
   filters,
@@ -30,6 +33,7 @@ export {
   sensors,
   sound,
   sprite,
+  stdlib,
   text,
   tiles,
   time,

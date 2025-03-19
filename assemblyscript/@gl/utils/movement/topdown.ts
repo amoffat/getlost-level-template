@@ -60,8 +60,25 @@ export class PlayerMovement {
 
   // Update method to handle position updates per frame
   tick(deltaMS: f32): void {
-    const props = host.map.getTileProps(this._pos.x, this._pos.y);
-    const adjImpulse = this.impulse.scaled(props.traction);
+    const props = host.char.getMoveProps("player");
+
+    // If we're in deep water, we want to decrease the friction and decrease the
+    // traction, proportionally to the amount we're sunk. This lets us glide
+    // more, like we're swimming.
+    let friction = (props.friction *
+      Math.max(1.0 - props.sink.amt / 0.7, 0.2)) as f32;
+    let traction = (props.traction *
+      Math.max(1.0 - props.sink.amt / 0.55, 0.03)) as f32;
+
+    // If we're in shallow water, we want to increase friction and leave the
+    // traction alone. This lets us slow down more, like we're wading.
+    if (props.sink.amt < 0.4) {
+      friction = props.friction + (0.3 * props.sink.amt) / 0.3;
+      traction = props.traction;
+    }
+
+    // Low traction means our impulse is less effective
+    const adjImpulse = this.impulse.scaled(traction);
 
     const movementVector = this.direction; //.mul(this.impulse);
 
@@ -76,8 +93,8 @@ export class PlayerMovement {
       this._velocity.cap(this.maxVelocity);
 
       // Apply friction to velocity
-      this._velocity.x *= 1 - props.friction;
-      this._velocity.y *= 1 - props.friction;
+      this._velocity.x *= 1 - friction;
+      this._velocity.y *= 1 - friction;
 
       // Where would we ideally end up if no collisions?
       const proposedTrans = this._velocity.scaled(deltaMS / 1000);
@@ -107,8 +124,8 @@ export class PlayerMovement {
       // }
     } else {
       // Only apply friction when idle to slow down gradually
-      this._velocity.x *= 1 - props.friction;
-      this._velocity.y *= 1 - props.friction;
+      this._velocity.x *= 1 - friction;
+      this._velocity.y *= 1 - friction;
 
       this._velocity.truncate(0.001);
 

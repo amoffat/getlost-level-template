@@ -1,7 +1,10 @@
 import * as host from "@gl/api/w2h/host";
 
 import { Room } from "@gl/types/room";
+import { getSunEventName, SunEvent } from "@gl/types/time";
 import { Player } from "@gl/utils/player";
+import { isNight } from "@gl/utils/time";
+
 export { card } from "./card";
 export { exits } from "./exits";
 export { pickups } from "./pickups";
@@ -24,14 +27,18 @@ export function initRoom(): Room {
   const room = new Room();
   tsfid = host.filters.addTiltShift(0.06);
 
-  // const time = Date.UTC(2025, 1, 13, 9, 0, 0, 0);
+  /**
+   * You can set a fixed time for the level like this.
+   * Be sure to comment out the setSunTime call in `tickRoom` if you do this.
+   */
+  // const time = Date.UTC(2025, 1, 13, 0, 0, 0, 0);
   // host.time.setSunTime(time);
 
   music = host.sound.loadSound({
     name: "Musics/17 - Fight.ogg",
     loop: true,
     autoplay: true,
-    volume: 0.3,
+    volume: 0.5,
   });
 
   return room;
@@ -102,6 +109,12 @@ export function choiceMadeEvent(textSlug: string, choice: string): void {
     host.map.exit("well", true);
   } else if (textSlug === "flame-body" && choice === "extinguish") {
     host.pickup.offerPickup("flame");
+  } else if (textSlug === "frank-body") {
+    if (choice === "wait-morning") {
+      host.time.setSunEvent(SunEvent.Sunrise, 10);
+    } else if (choice === "wait-night") {
+      host.time.setSunEvent(SunEvent.Night, 10);
+    }
   }
 }
 
@@ -157,6 +170,29 @@ export function sensorEvent(name: string, entered: bool): void {
     host.map.exit("west", false);
   } else if (name === "exit-south" && entered) {
     host.map.exit("south", false);
+  } else if (name === "frank" && entered) {
+    host.text.displayInteraction("frank-title", "frank-body", [
+      "wait-morning",
+      "wait-night",
+    ]);
+  }
+}
+
+/**
+ * Called when there's a time event change, for example, from Sunrise to
+ * SunriseEnd
+ */
+export function timeChangedEvent(event: SunEvent): void {
+  log(`Time changed: ${getSunEventName(event)}`);
+
+  const night = isNight(event);
+  host.lights.toggleLight("flame", night);
+  host.sensors.toggleSensor("flame", night);
+  host.npc.toggleNPC("flame", night);
+
+  const lights = ["frank-light", "house-light-1"];
+  for (let i = 0; i < lights.length; i++) {
+    host.lights.toggleLight(lights[i], night);
   }
 }
 
@@ -181,6 +217,10 @@ export function tickRoom(timestep: f32): void {
   host.player.setPos(player.pos.x, player.pos.y);
   host.filters.setTiltShiftY(tsfid, player.pos.y - 10);
 
-  // Uncomment this to sync the time of day with the real world.
-  // host.time.setSunTime(Date.now());
+  // This syncs the time of day with the real world.
+  host.time.setSunTime(Date.now());
+
+  // Or we can advance the time of day manually, increasing the step size to
+  // make the days faster.
+  // host.time.advanceSunTime(timestep * 1000);
 }

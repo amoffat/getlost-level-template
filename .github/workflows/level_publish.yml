@@ -1,0 +1,25 @@
+name: Level Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      license_agreement:
+        description: "I agree to the Level Submission License Agreement"
+        required: true
+        default: false
+        type: boolean
+      license_disclosures:
+        description: "I have disclosed all third-party assets used in this level"
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.license_agreement == 'true' && github.event.inputs.license_disclosures == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Publish
+        run: echo "Level publishing coming soon!"
