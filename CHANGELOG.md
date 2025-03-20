@@ -1,4 +1,4 @@
-##
+## 0.3.2 - 3/20/25
 
 - Reset level script
 - Only upgrade level if git working tree and index are clean
