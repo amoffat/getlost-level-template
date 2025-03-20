@@ -1,5 +1,6 @@
 ##
 
+- Reset level script
 - Only upgrade level if git working tree and index are clean
 - v1.5 license better indemnification, trademarks, and likenesses
 

@@ -21,7 +21,43 @@
       "group": {
         "kind": "build",
         "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
       }
+    },
+    {
+      "label": "Reset Level",
+      "type": "shell",
+      "command": "python3",
+      "args": ["${workspaceFolder}/scripts/reset.py"],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "options": {
+        "env": {
+          "CONFIRM_RESET": "${input:confirmReset}"
+        }
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "confirmReset",
+      "type": "promptString",
+      "description": "Type 'yes' to confirm reset",
+      "default": ""
     }
   ]
 }
