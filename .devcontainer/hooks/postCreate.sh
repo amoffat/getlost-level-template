@@ -14,3 +14,4 @@ fi
 
 npx pm2 start --name vite "$vite_cmd" --restart-delay=1000
 npx pm2 start --name tiled 'tiled level/tiled/level.tiled-project' --stop-exit-codes 0
+npx pm2 save

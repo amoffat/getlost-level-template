@@ -1,3 +1,7 @@
+## 0.3.1 - 3/20/25
+
+- Bugfix where local devcontainer restart broke vite
+
 ## 0.3.0 - 3/19/25
 
 - v1.4 license to handle CC content, third party assets, and severability
