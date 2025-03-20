@@ -1,3 +1,7 @@
+##
+
+- Only upgrade level if git working tree and index are clean
+
 ## 0.3.1 - 3/20/25
 
 - Bugfix where local devcontainer restart broke vite
