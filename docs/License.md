@@ -1,6 +1,6 @@
 **Level Submission License Agreement**
 
-**(v1.4 – Effective 3/17/25)**
+**(v1.5 – Effective 3/20/25)**
 
 This Level Submission License Agreement (“Agreement”) is entered into by and between Get Me In RN LLC (“Company”) and the individual or entity (“Submitter”) submitting a level (“Level”) for use in the Company’s game platform.
 
@@ -28,11 +28,15 @@ Submitter retains ownership of any copyrights in the Level but agrees that:
 
 Submitter represents and warrants that:
 
-- The Level is the Submitter’s original work and does not infringe upon any copyright, trademark, trade secret, moral rights, contract, or any other rights of any third party.
+- The Level is the Submitter’s original work and does not infringe upon any copyright, trademark, trade secret, patent, trade dress, moral rights, contract, or any other rights of any third party.
+- The Level does not contain any trademarks, logos, brand names, trade dress, or other identifiers owned by third parties without express written permission.
+- The Level does not include the name, likeness, voice, or other identifiable attributes of any real person without proper legal consent.
 - Submitter has obtained all necessary rights, licenses, permissions, and releases for any third-party content (e.g., music, images, code, characters, dialogue, names, likenesses, assets) included in the Level.
 - The Level does not contain any material that is unlawful, defamatory, obscene, harmful, or otherwise objectionable.
 - Submitter is at least 18 years old or has obtained consent from a parent or legal guardian and has the legal authority to enter into this Agreement.
 - The Level is not generated wholly or substantially by automated means (e.g., AI tools) without appropriate rights to use and license such output.
+- The Level does not contain confidential or proprietary information obtained through employment, contractor work, or other agreements with third parties, and does not violate any nondisclosure or non-compete obligations.
+- Submitter is not located in a country subject to U.S. government sanctions and is not listed on any U.S. government restricted party list.
 
 ## 3A. Third-Party and Creative Commons Content
 
@@ -71,7 +75,8 @@ Submitter agrees to fully defend, indemnify, and hold harmless Get Me In RN LLC,
 
 - Any alleged or actual infringement or misappropriation of third-party rights,
 - Any breach of Submitter’s warranties,
-- Any claims that the Level violates applicable law.
+- Any claims that the Level violates applicable law,
+- Any damages, penalties, settlement amounts, or legal costs arising from the Company’s commercial use, sale, or exploitation of a Level that violates the terms of this Agreement or applicable laws or rights.
 
 This obligation survives termination of this Agreement.
 
