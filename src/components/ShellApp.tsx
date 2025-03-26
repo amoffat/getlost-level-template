@@ -40,12 +40,14 @@ export function ShellApp() {
 
   return (
     <>
-      <iframe
-        tabIndex={-1}
-        ref={iframeRef}
-        id="dev-frame"
-        allowFullScreen
-      ></iframe>
+      <div id="frame-container">
+        <iframe
+          tabIndex={-1}
+          ref={iframeRef}
+          id="dev-frame"
+          allowFullScreen
+        ></iframe>
+      </div>
       <div id="log-messages">
         <LogPane />
       </div>

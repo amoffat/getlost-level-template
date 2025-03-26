@@ -1,6 +1,7 @@
 ##
 
 - Faster water movement
+- Improve dev canvas layout
 
 ## 0.3.2 - 3/20/25
 
