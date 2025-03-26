@@ -27,3 +27,4 @@ dist-ssr
 # mine
 /.vite
 .stignore
+digikam.uuid
