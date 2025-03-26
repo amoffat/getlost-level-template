@@ -73,7 +73,7 @@ export class PlayerMovement {
     // If we're in shallow water, we want to increase friction and leave the
     // traction alone. This lets us slow down more, like we're wading.
     if (props.sink.amt < 0.4) {
-      friction = props.friction + (0.3 * props.sink.amt) / 0.3;
+      friction = props.friction + (0.5 * props.sink.amt) / 0.3;
       traction = props.traction;
     }
 
