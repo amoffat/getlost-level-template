@@ -1,7 +1,8 @@
-##
+## 0.3.3 - 3/26/25
 
 - Faster water movement
 - Improve dev canvas layout
+- Engine version v0.5.1
 
 ## 0.3.2 - 3/20/25
 
