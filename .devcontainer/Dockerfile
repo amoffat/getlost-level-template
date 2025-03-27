@@ -13,7 +13,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Build Tiled from source
-RUN git clone https://github.com/mapeditor/tiled.git /tmp/tiled
+RUN git clone --depth=1 https://github.com/mapeditor/tiled.git /tmp/tiled
 RUN cd /tmp/tiled \
     && qbs setup-toolchains --detect \
     && qbs build config:release \
@@ -24,3 +24,6 @@ ENV HOME=/home/node
 COPY fluxbox-menu.txt $HOME/.fluxbox/menu
 COPY fluxbox-startup.sh $HOME/.fluxbox/startup
 COPY fluxbox-apps.txt $HOME/.fluxbox/apps
+
+USER node
+RUN git clone --depth=1 https://github.com/klembot/twinejs.git $HOME/twinejs
