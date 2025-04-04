@@ -1,0 +1,139 @@
+diff --git a/src/routes/story-edit/story-edit-route.tsx b/src/routes/story-edit/story-edit-route.tsx
+index a87c1d2e..7541ccaf 100644
+--- a/src/routes/story-edit/story-edit-route.tsx
++++ b/src/routes/story-edit/story-edit-route.tsx
+@@ -8,15 +8,16 @@ import {
+ 	UndoableStoriesContextProvider,
+ 	useUndoableStoriesContext
+ } from '../../store/undoable-stories';
++import {storyToTwee} from '../../util/twee';
+ import {MarqueeablePassageMap} from './marqueeable-passage-map';
+ import {PassageFuzzyFinder} from './passage-fuzzy-finder';
++import './story-edit-route.css';
+ import {StoryEditToolbar} from './toolbar';
+ import {useInitialPassageCreation} from './use-initial-passage-creation';
+ import {usePassageChangeHandlers} from './use-passage-change-handlers';
+ import {useViewCenter} from './use-view-center';
+ import {useZoomShortcuts} from './use-zoom-shortcuts';
+ import {useZoomTransition} from './use-zoom-transition';
+-import './story-edit-route.css';
+ 
+ export const InnerStoryEditRoute: React.FC = () => {
+ 	const {storyId} = useParams<{storyId: string}>();
+@@ -37,6 +38,39 @@ export const InnerStoryEditRoute: React.FC = () => {
+ 	useZoomShortcuts(story);
+ 	useInitialPassageCreation(story, getCenter);
+ 
++	React.useEffect(() => {
++		const apiUrl = `${window.origin}/api/twee`;
++		let lastTweeData = '';
++
++		const intervalId = setInterval(async () => {
++			try {
++				// Convert the story to Twee format
++				const tweeData = storyToTwee(story);
++
++				// Only send the data if it has changed
++				if (tweeData !== lastTweeData) {
++					const response = await fetch(apiUrl, {
++						method: 'POST',
++						headers: {
++							'Content-Type': 'application/json'
++						},
++						body: JSON.stringify({twee: tweeData})
++					});
++
++					if (!response.ok) {
++						throw new Error('Failed to post Twee data');
++					}
++
++					lastTweeData = tweeData; // Update the last sent data
++				}
++			} catch (error) {
++				console.error('Error posting Twee data:', error);
++			}
++		}, 500);
++
++		return () => clearInterval(intervalId); // Cleanup on unmount
++	}, [story]);
++
+ 	return (
+ 		<div className="story-edit-route">
+ 			<DocumentTitle title={story.name} />
+diff --git a/src/store/prefs/defaults.ts b/src/store/prefs/defaults.ts
+index 2715ef0c..c922fc14 100644
+--- a/src/store/prefs/defaults.ts
++++ b/src/store/prefs/defaults.ts
+@@ -24,8 +24,8 @@ export const defaults = (): PrefsState => ({
+ 		version: '1.0.0'
+ 	},
+ 	storyFormat: {
+-		name: 'Harlowe',
+-		version: '3.3.9'
++		name: 'SugarCube',
++		version: '2.37.3'
+ 	},
+ 	storyFormatListFilter: 'current',
+ 	storyListSort: 'name',
+diff --git a/vite.config.mts b/vite.config.mts
+index caa48fb2..7ed3cd25 100644
+--- a/vite.config.mts
++++ b/vite.config.mts
+@@ -1,5 +1,6 @@
+ import react from '@vitejs/plugin-react-swc';
+ import browserslistToEsbuild from 'browserslist-to-esbuild';
++import fs from 'fs';
+ import {defineConfig} from 'vite';
+ import checker from 'vite-plugin-checker';
+ import {nodePolyfills} from 'vite-plugin-node-polyfills';
+@@ -52,7 +53,49 @@ export default defineConfig({
+ 			workbox: {
+ 				globPatterns: ['**/*.{js,css,html,svg,woff,woff2}']
+ 			}
+-		})
++		}),
++		{
++			name: 'save-twee-data',
++			configureServer(server) {
++				server.middlewares.use('/api/twee', async (req, res) => {
++					if (req.method === 'POST') {
++						let body = '';
++						req.on('data', chunk => {
++							body += chunk;
++						});
++						req.on('end', () => {
++							try {
++								const {twee} = JSON.parse(body);
++								const outputPath = process.env.TWEE_OUTPUT_PATH;
++								if (!outputPath) {
++									console.error(
++										'Environment variable TWEE_OUTPUT_PATH is not defined.'
++									);
++									res.statusCode = 500;
++									res.end(
++										JSON.stringify({
++											error:
++												'Server misconfiguration: TWEE_OUTPUT_PATH is not defined'
++										})
++									);
++									return;
++								}
++								fs.writeFileSync(outputPath, twee, 'utf-8');
++								res.statusCode = 200;
++								res.end();
++							} catch (error) {
++								console.error('Error saving Twee data:', error);
++								res.statusCode = 500;
++								res.end();
++							}
++						});
++					} else {
++						res.statusCode = 405;
++						res.end(JSON.stringify({error: 'Method not allowed'}));
++					}
++				});
++			}
++		}
+ 	],
+ 	server: {
+ 		open: true

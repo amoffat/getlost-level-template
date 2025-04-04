@@ -14,11 +14,13 @@ export declare function displaySign(title: string, msg: string): void;
  * @param title The title key of the interaction.
  * @param msg The message key of the interaction.
  * @param choices The choices of the interaction.
+ * @param params The parameters to interpolate.
  */
 export declare function displayInteraction(
   title: string,
   msg: string,
-  choices: string[]
+  choices: string[],
+  params: Map<string, string>
 ): void;
 
 export const _keep_displaySign = displaySign;

@@ -1,0 +1,141 @@
+?start: body
+
+body: (link | macro | text)+
+
+?macro: wrapping_macro | callable_macro | if_macro
+?callable_macro: "<<" callable_macros ">>"
+wrapping_macro: "<<" wrap_macros ">>" body "<</" _WORD ">>"
+
+?if_macro: "<<" "if" expression ">>" body elseif_macro* else_macro? "<</if>>"
+elseif_macro: "<<" "elseif" expression ">>" body
+else_macro: "<<" "else" ">>" body
+
+?callable_macros: set_macro | custom_macro
+?wrap_macros: widget_macro
+
+custom_macro: MACRO_NAME
+set_macro: "set" variable "to" expression
+widget_macro: "widget" ("\"" WIDGET_NAME "\""  | "'" WIDGET_NAME "'") -> widget
+
+MACRO_NAME: /[a-zA-Z-]+/
+WIDGET_NAME:  /[a-zA-Z-]+/
+
+?expression: \
+    ESCAPED_STRING 
+    | comparison
+    | pickup_check 
+    | NUMBER 
+    | boolean 
+    | variable 
+    | function_call
+    | js_object
+
+comparison_operator: "==" | "!=" | "<" | "<=" | ">" | ">="
+pickup_check: "pickups.has" "(" pickup_spec ")"
+?boolean: TRUE | FALSE
+?variable: global_var | local_var
+
+global_var : "$" VAR_NAME
+local_var : "_" VAR_NAME
+
+VAR_NAME: WORD ("." WORD)*
+
+function_call: function_name "(" arguments? ")"
+?function_name: \
+    VISITED
+    | HAS_VISITED
+    | LAST_VISITED
+    | RANDOM
+    | RANDOM_FLOAT
+    | EITHER
+
+VISITED: "visited"
+HAS_VISITED: "hasVisited"
+LAST_VISITED: "lastVisited"
+RANDOM: "random"
+RANDOM_FLOAT: "randomFloat"
+EITHER: "either"
+?arguments: argument ("," argument)*
+?argument: expression
+
+link: "[[" LINK_TEXT (("->" | "|") LINK_TARGET)? "]]"
+LINK_TEXT: /(?:(?!(\]\]|\|)).)+/
+LINK_TARGET: /(?:(?!\]\]).)+/
+text: TEXT
+TEXT: /(?:(?!(\[\[|<<)).)+/
+
+// Pickups
+?pickup_spec: _LBRACE pickup_spec_body _RBRACE
+?pickup_spec_body: pickup_tag_pair ("," pickup_tag_pair)* ","?
+pickup_tag_pair: pickup_tag ":" pickup_tag_value
+?pickup_tag: ESCAPED_STRING | WORD
+?pickup_tag_value: ESCAPED_STRING | NUMBER | TRUE | FALSE | NULL | UNDEFINED
+
+// basic js grammar
+js_object: _LBRACE [pair ("," pair)* ","?] _RBRACE
+pair: key ":" js_value
+?key: ESCAPED_STRING | WORD
+?js_value: ESCAPED_STRING | NUMBER | js_object | array | TRUE | FALSE | NULL | UNDEFINED
+array: "[" [js_value ("," js_value)*] "]"
+_LBRACE: "{"
+_RBRACE: "}"
+
+?comparison: \
+    binary_comparison
+    | unary_op
+    | comparison AND comparison
+    | comparison OR comparison
+
+binary_comparison: expression binary_op expression
+
+?binary_op: \
+    STRICT_EQ 
+    | STRICT_NEQ 
+    | EQUIV 
+    | NEQUIV
+    | GT 
+    | GTE 
+    | LT 
+    | LTE      
+    | AND 
+    | OR
+
+unary_op: \
+    NOT 
+    | DEF 
+    | NDEF
+
+// Equality operators
+STRICT_EQ: "is" | "==="
+STRICT_NEQ: "isnot" | "!=="
+EQUIV: "eq" | "=="
+NEQUIV: "neq" | "!="
+
+// Relational operators
+GT: "gt" | ">"
+GTE: "gte" | ">="
+LT: "lt" | "<"
+LTE: "lte" | "<="
+
+// Logical operators
+NOT: "not" | "!"
+AND: "and" | "&&"
+OR: "or" | "||"
+
+// Definition operators (SugarCube-specific)
+DEF: "def"
+NDEF: "ndef"
+
+TRUE: "true"
+FALSE: "false"
+NULL: "null"
+UNDEFINED: "undefined"
+
+_WORD: WORD
+ESCAPED_STRING : "'" _STRING_ESC_INNER "'" | "\"" _STRING_ESC_INNER "\""
+
+%import common.WS
+%import common.WORD
+%import common.NUMBER
+%import common._STRING_ESC_INNER
+%ignore WS

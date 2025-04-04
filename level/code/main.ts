@@ -4,11 +4,12 @@ import { Room } from "@gl/types/room";
 import { getSunEventName, SunEvent } from "@gl/types/time";
 import { Player } from "@gl/utils/player";
 import { isNight } from "@gl/utils/time";
+import * as dialogue from "./dialogue";
 
 export { card } from "./card";
+export { choiceMadeEvent, strings } from "./dialogue";
 export { exits } from "./exits";
 export { pickups } from "./pickups";
-export { strings } from "./strings";
 
 const log = host.debug.log;
 
@@ -98,27 +99,6 @@ export function pickupEvent(slug: string, took: bool): void {
 export function buttonPressEvent(slug: string, down: bool): void {}
 
 /**
- * Called when the player interacts with a choice dialog.
- *
- * @param textSlug The slug of the text dialog that the user interacted with.
- * @param choice The slug of the text choice that the user made.
- */
-export function choiceMadeEvent(textSlug: string, choice: string): void {
-  log(`Choice made for ${textSlug}: ${choice}`);
-  if (textSlug === "well-body" && choice === "jump-down") {
-    host.map.exit("well", true);
-  } else if (textSlug === "flame-body" && choice === "extinguish") {
-    host.pickup.offerPickup("flame");
-  } else if (textSlug === "frank-body") {
-    if (choice === "wait-morning") {
-      host.time.setSunEvent(SunEvent.Sunrise, 10);
-    } else if (choice === "wait-night") {
-      host.time.setSunEvent(SunEvent.Night, 10);
-    }
-  }
-}
-
-/**
  * When a tile collision event occurs, this function is called. You can use this
  * similar to a sensor event, but it's triggered by the collision of a tile. Most
  * times you'll probably want to respond to a sensor event instead.
@@ -153,17 +133,11 @@ export function sensorEvent(name: string, entered: bool): void {
     host.text.displaySign("oasis-entry-title", "oasis-entry-body");
     sawOasisSign = true;
   } else if (name === "flame" && entered) {
-    host.text.displayInteraction("flame-title", "flame-body", [
-      "just-passing",
-      "extinguish",
-    ]);
+    dialogue.passage_c141faa8();
   } else if (name === "knight" && entered) {
-    host.text.displayInteraction("knight-title", "knight-body", []);
+    dialogue.passage_491e88c5();
   } else if (name === "well" && entered) {
-    host.text.displayInteraction("well-title", "well-body", [
-      "jump-down",
-      "step-back",
-    ]);
+    dialogue.passage_bdc7e965();
   } else if (name === "exit-east" && entered) {
     host.map.exit("east", false);
   } else if (name === "exit-west" && entered) {
@@ -171,10 +145,7 @@ export function sensorEvent(name: string, entered: bool): void {
   } else if (name === "exit-south" && entered) {
     host.map.exit("south", false);
   } else if (name === "frank" && entered) {
-    host.text.displayInteraction("frank-title", "frank-body", [
-      "wait-morning",
-      "wait-night",
-    ]);
+    dialogue.passage_db605e8f();
   }
 }
 

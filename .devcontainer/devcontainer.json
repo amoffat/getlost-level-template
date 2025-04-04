@@ -11,7 +11,7 @@
   "remoteEnv": {
     "DEVCONTAINER": "true"
   },
-  "forwardPorts": [5173, 6080],
+  "forwardPorts": [5173, 5174, 6080],
   "customizations": {
     "vscode": {
       "settings": {
@@ -26,14 +26,16 @@
     }
   },
   "remoteUser": "node",
-  "runArgs": [],
   "portsAttributes": {
     "5173": {
       "label": "Level Preview",
       "protocol": "https"
     },
+    "5174": {
+      "label": "Twine - Dialogue"
+    },
     "6080": {
-      "label": "Tiled"
+      "label": "Tiled - Map"
     }
   },
   "onCreateCommand": "bash .devcontainer/hooks/onCreate.sh",

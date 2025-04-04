@@ -1,0 +1,118 @@
+import * as host from "@gl/api/w2h/host";
+import { String } from "@gl/types/i18n";
+
+const log = host.debug.log;
+
+{% for cls in state_classes %}
+{{cls}}
+{% endfor %}
+
+let state = new State();
+const visitCount = new Map<string, u32>();
+const passageLookup = new Map<string, string>();
+{% for name, pid in passage_lookup.items() -%}
+passageLookup.set("{{name}}", "{{pid}}");
+{% endfor %}
+
+
+function visited(id: string): u32 {
+    if (!visitCount.has(id)) {
+        return 0;
+    }
+    return visitCount.get(id);
+}
+
+function hasVisited(id: string): bool {
+    return visitCount.has(id);
+}
+
+function lastVisited(passage: string): u32 {
+    return 0;
+}
+
+function random(min: f32, max: f32): f32 {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomFloat(min: f32, max: f32): f32 {
+    return Math.random() * (max - min) + min;
+}
+
+function either<T>(options: T[]): T {
+    const idx = Math.floor(Math.random() * options.length) as u32;
+    return options[idx];
+}
+
+function incrementVisitCount(id: string): void {
+    if (!visitCount.has(id)) {
+        visitCount.set(id, 0);
+    }
+    visitCount.set(id, visitCount.get(id) + 1);
+}
+
+
+
+{% macro passage(p) %}
+// {{p.name}}
+export function passage_{{p.id}}(): void {
+    incrementVisitCount("{{p.id}}");
+
+    let title = {{p.title}};
+    let text = "";
+    let choices: string[] = [];
+    let params = new Map<string, string>();
+
+{% for line in p.init %}
+    {{line}}
+{%- endfor %}
+
+{{p.content}}
+
+    host.text.displayInteraction(title, text, choices, params);
+}
+{% endmacro %}
+
+export function strings(): String[] {
+    return [
+    {% for key, string in all_strings.items() %}
+        {
+            key: "{{key}}",
+            values: [
+                {
+                    "text": {{string}},
+                    "lang": "en"
+                }
+            ]
+        }{% if not loop.last %},{% endif %}
+    {% endfor %}
+    ];
+}
+
+/**
+ * Called when the player interacts with a choice dialog.
+ *
+ * @param passageId The id of the passage that the user interacted with.
+ * @param passageId The id of the choice that the user made.
+ */
+export function choiceMadeEvent(passageId: string, choiceId: string): void {
+    log(`Choice made for ${passageId}: ${choiceId}`);
+    dispatch(choiceId);
+}
+
+{% for p in passages %}
+{{ passage(p) }}
+{% endfor %}
+
+export function dispatch(passageId: string): void {
+    let found = false;
+    {% for p in passages %}
+    if (passageId === "{{p.id}}") {
+        found = true;
+        passage_{{p.id}}();
+    }
+    {% endfor %}
+
+    if (!found) {
+        log(`No passage found for ${passageId}, does it have content?`);
+    }
+}

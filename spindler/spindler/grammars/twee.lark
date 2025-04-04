@@ -1,0 +1,43 @@
+start: story
+
+story: story_title story_data (passage)* story_script?
+story_title: _PASSAGE_PREFIX "StoryTitle" "\n" PASSAGE_BODY _PASSAGE_TERM
+story_data: _PASSAGE_PREFIX "StoryData" "\n" json _PASSAGE_TERM
+story_script: _PASSAGE_PREFIX "StoryScript" (tags)? "\n" PASSAGE_BODY
+
+passage: passage_header passage_body? _PASSAGE_TERM
+passage_header: _PASSAGE_PREFIX passage_name metadata "\n"
+?metadata: (tags)? ui_metadata?
+
+ui_metadata: UI_METADATA
+UI_METADATA: LBRACE /.+/ RBRACE
+
+_PASSAGE_TERM: "\n\n\n"
+
+// basic JSON grammar
+json: object
+object: LBRACE [pair ("," pair)*] RBRACE
+pair: ESCAPED_STRING ":" value
+value: ESCAPED_STRING | NUMBER | object | array | "true" | "false" | "null"
+array: "[" [value ("," value)*] "]"
+LBRACE: "{"
+RBRACE: "}"
+
+passage_name: PASSAGE_NAME
+PASSAGE_NAME: /[^\s\n\t\[\{][^\n\t\[\{]+(?=\s)/
+tags: "[" TAG ("," TAG)* "]"
+TAG: /[^\]\[\n\t]+/
+
+passage_body: PASSAGE_BODY
+// Any characters except for the passage delimiter. Followed by either 3
+// newlines and the passage delimiter, 3 newlines and EOF, or EOF.
+PASSAGE_BODY: /((?!::).)+?(?=(\n{3}::|\n{3}$|$))/s
+
+_PASSAGE_PREFIX: "::"
+
+%import common.NUMBER
+%import common.DIGIT
+%import common.WORD
+%import common.WS
+%import common.ESCAPED_STRING
+%ignore WS
