@@ -2,6 +2,8 @@ import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Union, cast
+import subprocess
+
 
 import jinja2
 from lark import ParseTree, Token, Tree
@@ -22,6 +24,25 @@ class Variable:
     name: str
     type: str
     value: str
+
+
+def format(code: str) -> str:
+    result = subprocess.run(
+        [
+            "npx",
+            "prettier",
+            "--parser",
+            "typescript",
+            "--trailing-comma",
+            "all",
+        ],
+        input=code.encode("utf-8"),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"Prettier error: {result.stderr.decode()}")
+    return result.stdout.decode()
 
 
 def make_state_class_name(suffix: str) -> str:
@@ -429,5 +450,6 @@ def render(passages: dict[str, ParsedPassage]) -> str:
         passages=passage_functions,
         passage_lookup=passage_name_to_id,
     )
+    output = format(output)
 
     return output

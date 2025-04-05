@@ -19,8 +19,10 @@ function visited(id: string): u32 {
     if (!visitCount.has(id)) {
         return 0;
     }
-    return visitCount.get(id);
+    const count = visitCount.get(id);
+    return count;
 }
+
 
 function hasVisited(id: string): bool {
     return visitCount.has(id);
@@ -55,8 +57,6 @@ function incrementVisitCount(id: string): void {
 {% macro passage(p) %}
 // {{p.name}}
 export function passage_{{p.id}}(): void {
-    incrementVisitCount("{{p.id}}");
-
     let title = {{p.title}};
     let text = "";
     let choices: string[] = [];
@@ -68,6 +68,7 @@ export function passage_{{p.id}}(): void {
 
 {{p.content}}
 
+    incrementVisitCount("{{p.id}}");
     host.text.displayInteraction(title, text, choices, params);
 }
 {% endmacro %}

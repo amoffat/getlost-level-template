@@ -38,6 +38,7 @@ class State {
 let state = new State();
 const visitCount = new Map<string, u32>();
 const passageLookup = new Map<string, string>();
+passageLookup.set("Any new news?", "d2db7db2");
 passageLookup.set("Do you have a name?", "562cd4ad");
 passageLookup.set("Fire", "c141faa8");
 passageLookup.set("Frank", "db605e8f");
@@ -59,6 +60,7 @@ passageLookup.set("Ignore the fire", "690c49a8");
 passageLookup.set("Is your son Omar ok?", "f7c260b3");
 passageLookup.set("Jump down", "7535a35a");
 passageLookup.set("Maybe I will. Where is he?", "875f1c9b");
+passageLookup.set("No?", "2b5f13fb");
 passageLookup.set("None of your business", "e0a2d72f");
 passageLookup.set("Ok ok I'll tell you", "bd7ea662");
 passageLookup.set("Pretty busy are you?", "a50fd415");
@@ -83,13 +85,15 @@ passageLookup.set("Who are you?", "80495816");
 passageLookup.set("Who is the Sheikh?", "885ce2f8");
 passageLookup.set("Whoa, who are you?", "4e9c58df");
 passageLookup.set("Why this town?", "198a1009");
+passageLookup.set("Yes", "85a39ab3");
 passageLookup.set("silence", "e6c18fdb");
 
 function visited(id: string): u32 {
   if (!visitCount.has(id)) {
     return 0;
   }
-  return visitCount.get(id);
+  const count = visitCount.get(id);
+  return count;
 }
 
 function hasVisited(id: string): bool {
@@ -213,10 +217,20 @@ export function strings(): String[] {
     },
 
     {
-      key: "0185ed2a",
+      key: "66212495",
       values: [
         {
-          text: "You're back",
+          text: "Welcome back",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "d2db7db2",
+      values: [
+        {
+          text: "Any new news?",
           lang: "en",
         },
       ],
@@ -227,6 +241,16 @@ export function strings(): String[] {
       values: [
         {
           text: "Hello",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "3639efcd",
+      values: [
+        {
+          text: "Hi",
           lang: "en",
         },
       ],
@@ -253,20 +277,40 @@ export function strings(): String[] {
     },
 
     {
-      key: "3639efcd",
+      key: "96f38b61",
       values: [
         {
-          text: "Hi",
+          text: "That's not your concern.",
           lang: "en",
         },
       ],
     },
 
     {
-      key: "96f38b61",
+      key: "894872ef",
       values: [
         {
-          text: "That's not your concern.",
+          text: "Are you here with the Knight?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "2b5f13fb",
+      values: [
+        {
+          text: "No?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "85a39ab3",
+      values: [
+        {
+          text: "Yes",
           lang: "en",
         },
       ],
@@ -737,8 +781,6 @@ export function choiceMadeEvent(passageId: string, choiceId: string): void {
 
 // Do you have a name?
 export function passage_562cd4ad(): void {
-  incrementVisitCount("562cd4ad");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -768,13 +810,12 @@ export function passage_562cd4ad(): void {
     choices.push("562cd4ad");
   }
 
+  incrementVisitCount("562cd4ad");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // Fire
 export function passage_c141faa8(): void {
-  incrementVisitCount("c141faa8");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -787,39 +828,39 @@ export function passage_c141faa8(): void {
   // Ignore the fire
   choices.push("690c49a8");
 
+  incrementVisitCount("c141faa8");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // Frank
 export function passage_db605e8f(): void {
-  incrementVisitCount("db605e8f");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
   let params = new Map<string, string>();
 
   if (visited("db605e8f")) {
-    // You're back
-    text = "0185ed2a";
+    // Welcome back
+    text = "66212495";
+    // Any new news?
+    choices.push("d2db7db2");
   } else {
     // Hello
     text = "185f8db3";
+    // Hi
+    choices.push("3639efcd");
   }
   if (visited(passageLookup.get("Silent Knight"))) {
     // What do you know about that knight?
     choices.push("f213214a");
   }
-  // Hi
-  choices.push("3639efcd");
 
+  incrementVisitCount("db605e8f");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // Guard from what?
 export function passage_99e18287(): void {
-  incrementVisitCount("99e18287");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -849,13 +890,30 @@ export function passage_99e18287(): void {
     choices.push("562cd4ad");
   }
 
+  incrementVisitCount("99e18287");
+  host.text.displayInteraction(title, text, choices, params);
+}
+
+// Hi
+export function passage_3639efcd(): void {
+  let title = "FIXME";
+  let text = "";
+  let choices: string[] = [];
+  let params = new Map<string, string>();
+
+  // Are you here with the Knight?
+  text = "894872ef";
+  // No?
+  choices.push("2b5f13fb");
+  // Yes
+  choices.push("85a39ab3");
+
+  incrementVisitCount("3639efcd");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // How did you get this job?
 export function passage_379dcdf1(): void {
-  incrementVisitCount("379dcdf1");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -889,13 +947,12 @@ export function passage_379dcdf1(): void {
     choices.push("562cd4ad");
   }
 
+  incrementVisitCount("379dcdf1");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // How long ago was this?
 export function passage_f6ded42f(): void {
-  incrementVisitCount("f6ded42f");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -904,13 +961,12 @@ export function passage_f6ded42f(): void {
   // Only a week ago.
   text = "dff1fa28";
 
+  incrementVisitCount("f6ded42f");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // Is your son Omar ok?
 export function passage_f7c260b3(): void {
-  incrementVisitCount("f7c260b3");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -921,13 +977,12 @@ export function passage_f7c260b3(): void {
   // What's different?
   choices.push("accf28f0");
 
+  incrementVisitCount("f7c260b3");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // None of your business
 export function passage_e0a2d72f(): void {
-  incrementVisitCount("e0a2d72f");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -940,13 +995,12 @@ export function passage_e0a2d72f(): void {
   // I guess you don't want to know the incredible story behind it.
   choices.push("2bb0d7e2");
 
+  incrementVisitCount("e0a2d72f");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // Pretty busy are you?
 export function passage_a50fd415(): void {
-  incrementVisitCount("a50fd415");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -956,13 +1010,12 @@ export function passage_a50fd415(): void {
   text = "3a7bedf8";
   state.upsetKnight = true;
 
+  incrementVisitCount("a50fd415");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // Silent Knight
 export function passage_491e88c5(): void {
-  incrementVisitCount("491e88c5");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -990,13 +1043,12 @@ export function passage_491e88c5(): void {
     choices.push("80495816");
   }
 
+  incrementVisitCount("491e88c5");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // Start
 export function passage_e4bb9f1e(): void {
-  incrementVisitCount("e4bb9f1e");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -1011,13 +1063,12 @@ export function passage_e4bb9f1e(): void {
   // Well
   choices.push("bdc7e965");
 
+  incrementVisitCount("e4bb9f1e");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // Well
 export function passage_bdc7e965(): void {
-  incrementVisitCount("bdc7e965");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -1030,13 +1081,12 @@ export function passage_bdc7e965(): void {
   // Step back
   choices.push("b863269e");
 
+  incrementVisitCount("bdc7e965");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // What did it say?
 export function passage_147664cc(): void {
-  incrementVisitCount("147664cc");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -1054,13 +1104,12 @@ export function passage_147664cc(): void {
   choices.push("216c5e8c");
   state.learnedKnightStory = true;
 
+  incrementVisitCount("147664cc");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // What do you know about that knight?
 export function passage_f213214a(): void {
-  incrementVisitCount("f213214a");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -1073,13 +1122,12 @@ export function passage_f213214a(): void {
   // Is your son Omar ok?
   choices.push("f7c260b3");
 
+  incrementVisitCount("f213214a");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // What do you mean he showed up?
 export function passage_9d4f68e2(): void {
-  incrementVisitCount("9d4f68e2");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -1090,13 +1138,12 @@ export function passage_9d4f68e2(): void {
   // What did it say?
   choices.push("147664cc");
 
+  incrementVisitCount("9d4f68e2");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // What is he guarding you from?
 export function passage_216c5e8c(): void {
-  incrementVisitCount("216c5e8c");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -1107,13 +1154,12 @@ export function passage_216c5e8c(): void {
   // I'll try
   choices.push("250fbdc1");
 
+  incrementVisitCount("216c5e8c");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // What's different?
 export function passage_accf28f0(): void {
-  incrementVisitCount("accf28f0");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -1126,13 +1172,12 @@ export function passage_accf28f0(): void {
   // Sounds like he probably wants to be left alone.
   choices.push("875599d3");
 
+  incrementVisitCount("accf28f0");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // Who are you?
 export function passage_80495816(): void {
-  incrementVisitCount("80495816");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -1161,13 +1206,12 @@ export function passage_80495816(): void {
     choices.push("562cd4ad");
   }
 
+  incrementVisitCount("80495816");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // Who is the Sheikh?
 export function passage_885ce2f8(): void {
-  incrementVisitCount("885ce2f8");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -1197,13 +1241,12 @@ export function passage_885ce2f8(): void {
     choices.push("562cd4ad");
   }
 
+  incrementVisitCount("885ce2f8");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // Whoa, who are you?
 export function passage_4e9c58df(): void {
-  incrementVisitCount("4e9c58df");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -1216,13 +1259,12 @@ export function passage_4e9c58df(): void {
   // What are you looking for?
   choices.push("e3ad92be");
 
+  incrementVisitCount("4e9c58df");
   host.text.displayInteraction(title, text, choices, params);
 }
 
 // Why this town?
 export function passage_198a1009(): void {
-  incrementVisitCount("198a1009");
-
   let title = "FIXME";
   let text = "";
   let choices: string[] = [];
@@ -1252,6 +1294,7 @@ export function passage_198a1009(): void {
     choices.push("562cd4ad");
   }
 
+  incrementVisitCount("198a1009");
   host.text.displayInteraction(title, text, choices, params);
 }
 
@@ -1276,6 +1319,11 @@ export function dispatch(passageId: string): void {
   if (passageId === "99e18287") {
     found = true;
     passage_99e18287();
+  }
+
+  if (passageId === "3639efcd") {
+    found = true;
+    passage_3639efcd();
   }
 
   if (passageId === "379dcdf1") {
