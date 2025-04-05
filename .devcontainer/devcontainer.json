@@ -21,7 +21,8 @@
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
         "github.vscode-github-actions",
-        "ms-python.python"
+        "ms-python.python",
+        "ms-python.black-formatter"
       ]
     }
   },
