@@ -214,8 +214,10 @@ def infer_variable_types(
 
 
 @dataclass
-class PassageLinks:
-    passage_id: str
+class TraverseState:
+    # The entry point passage ID
+    passage_id: str | None = None
+    # Children that this passage links to
     children: list[str] = field(default_factory=list)
 
 
@@ -241,16 +243,15 @@ def render(passages: dict[str, TweePassage]) -> str:
     def escape_and_quote(s: str) -> str:
         return f'"{escape_string(s)}"'
 
-    record_links = False
-    cur_passage_id: str | None = None
     passage_init: list[str] = []
     all_strings: dict[str, str] = {}
-    passage_to_children: dict[str | None, list[str]] = defaultdict(list)
 
-    def traverse(node: ParseTree | Token, indent: int = 0) -> str:
-        nonlocal cur_passage_id, record_links
+    def traverse(
+        *,
+        state: TraverseState,
+        node: ParseTree | Token,
+    ) -> str:
 
-        ind = "    " * indent
         if isinstance(node, Token):
             if node.type == "TRUE":
                 return "true"
@@ -277,60 +278,54 @@ def render(passages: dict[str, TweePassage]) -> str:
 
         if node.data == "body":
             return "\n".join(
-                traverse(cast(ParseTree, child), indent) for child in node.children
+                traverse(state=state, node=cast(ParseTree, child))
+                for child in node.children
             )
         elif node.data == "link":
-            text = traverse(node.children[0])
+            text = traverse(state=state, node=node.children[0])
             target = hash_name(text)
             if len(node.children) > 1:
                 target = hash_name(cast(Token, node.children[1]).value)
 
-            if record_links:
-                passage_to_children[cur_passage_id].append(target)
-
-            choices = f"""\
-{ind}// {text}
-{ind}choices.push("{target}");\
-"""
+            state.children.append(target)
+            choices = f'// {text}\nchoices.push("{target}");'
             return choices
         elif node.data == "if_macro":
-            condition = traverse(cast(ParseTree, node.children[0]))
-            body = traverse(cast(ParseTree, node.children[1]), indent + 1)
+            condition = traverse(state=state, node=cast(ParseTree, node.children[0]))
+            body = traverse(state=state, node=cast(ParseTree, node.children[1]))
             elseif_blocks = "".join(
-                traverse(cast(ParseTree, child), indent)
+                traverse(state=state, node=cast(ParseTree, child))
                 for child in node.children[2:-1]
             )
             else_block = (
-                traverse(cast(ParseTree, node.children[-1]), indent)
+                traverse(state=state, node=cast(ParseTree, node.children[-1]))
                 if len(node.children) > 2
                 and cast(ParseTree, node.children[-1]).data == "else_macro"
                 else ""
             )
-            return (
-                f"{ind}if ({condition}) {{\n{body}\n{ind}}}{elseif_blocks}{else_block}"
-            )
+            return f"if ({condition}) {{\n{body}\n}}{elseif_blocks}{else_block}"
         elif node.data == "elseif_macro":
-            condition = traverse(cast(ParseTree, node.children[0]))
-            body = traverse(cast(ParseTree, node.children[1]), indent + 1)
-            return f" else if ({condition}) {{\n{body}\n{ind}}}"
+            condition = traverse(state=state, node=cast(ParseTree, node.children[0]))
+            body = traverse(state=state, node=cast(ParseTree, node.children[1]))
+            return f" else if ({condition}) {{\n{body}\n}}"
         elif node.data == "else_macro":
-            body = traverse(cast(ParseTree, node.children[0]), indent + 1)
-            return f" else {{\n{body}\n{ind}}}"
+            body = traverse(state=state, node=cast(ParseTree, node.children[0]))
+            return f" else {{\n{body}\n}}"
         elif node.data == "set_macro":
             var = cast(ParseTree, node.children[0])
             value_node = node.children[1]
-            value = traverse(value_node)
+            value = traverse(state=state, node=value_node)
 
             if isinstance(value_node, Tree) and value_node.data == "js_object":
                 return ""
 
             if var.data == "global_var":
                 var_name = cast(Token, var.children[0]).value
-                return f"{ind}state.{var_name} = {value};"
+                return f"state.{var_name} = {value};"
 
             elif var.data == "local_var":
                 var_name = cast(Token, var.children[0]).value
-                return f"{ind}state.{var_name} = {value};"
+                return f"state.{var_name} = {value};"
 
             else:
                 raise ValueError(f"Unknown variable type: {var.data}")
@@ -339,39 +334,36 @@ def render(passages: dict[str, TweePassage]) -> str:
             text_expr = cast(Token, node.children[0]).value
             text_id = hash_name(text_expr)
             all_strings[text_id] = escape_and_quote(text_expr)
-            text = f"""\
-{ind}// {text_expr}
-{ind}text = "{text_id}";\
-"""
+            text = f'// {text_expr}\ntext = "{text_id}";'
             return text
         elif node.data == "function_call":
             function_name = cast(Token, node.children[0]).value
             if function_name == "visited" and len(node.children) == 1:
                 # Special case: hard code self passage as the argument
-                return f'{ind}{function_name}("{cur_passage_id}")'
+                return f'{function_name}("{state.passage_id}")'
 
             def resolve_passage(expr: str) -> str:
                 return f"passageLookup.get({expr})"
 
             arguments = ", ".join(
-                resolve_passage(traverse(cast(ParseTree, arg)))
+                resolve_passage(traverse(state=state, node=cast(ParseTree, arg)))
                 for arg in node.children[1:]
             )
-            return f"{ind}{function_name}({arguments})"
+            return f"{function_name}({arguments})"
         elif node.data == "global_var":
             var_name = cast(Token, node.children[0]).value
-            return f"{ind}state.{var_name}"
+            return f"state.{var_name}"
 
         elif node.data == "local_var":
             var_name = cast(Token, node.children[0]).value
-            return f"{ind}state.{var_name}"
+            return f"state.{var_name}"
 
         elif node.data == "pickup_check":
             tags = {}
             for pair in node.children:
                 pair = cast(ParseTree, pair)
                 tag = cast(Token, pair.children[0]).value
-                value = traverse(pair.children[1])
+                value = traverse(state=state, node=pair.children[1])
                 if value == "null":
                     value = '""'
                 tags[tag] = value
@@ -380,12 +372,12 @@ def render(passages: dict[str, TweePassage]) -> str:
             passage_init.append(f"let {tag_var_name} = new Map<string, string>();")
             for tag, value in tags.items():
                 passage_init.append(f'{tag_var_name}.set("{tag}", {value});')
-            return f"{ind}host.pickup.has({tag_var_name})"
+            return f"host.pickup.has({tag_var_name})"
 
         elif node.data == "binary_comparison":
-            left = traverse(cast(ParseTree, node.children[0]))
+            left = traverse(state=state, node=cast(ParseTree, node.children[0]))
             operator = map_op(cast(Token, node.children[1]).value)
-            right = traverse(cast(ParseTree, node.children[2]))
+            right = traverse(state=state, node=cast(ParseTree, node.children[2]))
             return f"{left} {operator} {right}"
 
         elif node.data == "wrapping_macro":
@@ -398,8 +390,8 @@ def render(passages: dict[str, TweePassage]) -> str:
             return f"<<macro {macro_name}>>"
 
         # Add more cases for other constructs...
-        data = "\n".join(f"{ind}// {line}" for line in node.pretty().split("\n"))
-        return f"{ind}// FIXME: MISSING RULES:\n{data}"
+        data = "\n".join(f"// {line}" for line in node.pretty().split("\n"))
+        return f"// FIXME: MISSING RULES:\n{data}"
 
     state_classes = find_state_classes([p for p in passages.values() if p is not None])
     variable_types = infer_variable_types(passages, state_classes)
@@ -424,16 +416,17 @@ def render(passages: dict[str, TweePassage]) -> str:
             start_passage = passage
             continue
 
-        hashed_name = hash_name(name)
-        passage_name_to_id[name] = hashed_name
-        passage_id_to_passage[hashed_name] = passage
+        passage_id = hash_name(name)
+        passage_name_to_id[name] = passage_id
+        passage_id_to_passage[passage_id] = passage
 
     assert start_passage is not None, "No start passage found"
 
+    passage_to_children: dict[str, set[str]] = defaultdict(set)
+
     # Create our macro registry. We'll replace all invocations of the macro with
     # the macro body
-    macro_registry: dict[str, str] = {}
-    record_links = False
+    macro_registry: dict[str, tuple[str, TraverseState]] = {}
     for passage in passages.values():
         if passage.tree is None:
             continue
@@ -441,19 +434,20 @@ def render(passages: dict[str, TweePassage]) -> str:
             macro_name = cast(ParseTree, node.children[0])
             if macro_name.data == "widget":
                 widget_name = cast(Token, macro_name.children[0]).value
-                body = traverse(cast(ParseTree, node.children[1]))
-                macro_registry[widget_name] = body
+                state = TraverseState()
+                body = traverse(state=state, node=cast(ParseTree, node.children[1]))
+                macro_registry[widget_name] = (body, state)
 
     # Generate our individual passage functions
     passage_functions: list[ConstructPassage] = []
-    record_links = True
     for name, passage in passages.items():
 
         # If we're the root node passage, we only need to traverse the tree to
         # populate links, but otherwise we don't treat it like a normal passage.
         if passage is start_passage:
-            cur_passage_id = None
-            traverse(passage.tree)
+            state = TraverseState()
+            traverse(state=state, node=passage.tree)
+            passage_to_children[None].update(state.children)
             continue
 
         if name == STORY_INIT:
@@ -462,19 +456,25 @@ def render(passages: dict[str, TweePassage]) -> str:
         if passage.tree is None:
             continue
 
-        hashed_name = passage_name_to_id[name]
-        cur_passage_id = hashed_name
-        content = traverse(passage.tree, indent=1)
+        passage_id = passage_name_to_id[name]
+        state = TraverseState(passage_id=passage_id)
+        content = traverse(state=state, node=passage.tree)
+
+        # Merge our mapping of passage IDs to their children
+        passage_to_children[passage_id].update(state.children)
 
         # Using regex, find and replace all <<macro {macro_name}>> with the
         # macro content from macro_registry
-        for to_expand, expanded_macro in macro_registry.items():
-            content = content.replace(f"<<macro {to_expand}>>", expanded_macro)
+        for to_expand, (expanded_macro, state) in macro_registry.items():
+            to_replace = f"<<macro {to_expand}>>"
+            if to_replace in content:
+                content = content.replace(to_replace, expanded_macro)
+                passage_to_children[passage_id].update(state.children)
 
         passage_functions.append(
             ConstructPassage(
                 name=name,
-                id=hashed_name,
+                id=passage_id,
                 title=None,
                 init=passage_init.copy(),
                 content=content,
@@ -485,7 +485,10 @@ def render(passages: dict[str, TweePassage]) -> str:
     # Walk our passage links to propagate the tag names
     passage_to_title: dict[str, tuple[str, str] | None] = {}
 
+    tag_node_visited = set()
+
     def propagate_tags(passage_id: str, tag: str | None = None):
+        tag_node_visited.add(passage_id)
         passage = passage_id_to_passage[passage_id]
         children = passage_to_children.get(passage_id, [])
 
@@ -496,6 +499,9 @@ def render(passages: dict[str, TweePassage]) -> str:
 
         passage_to_title[passage_id] = tag
         for child_id in children:
+            if child_id in tag_node_visited:
+                continue
+
             if child_id:
                 propagate_tags(child_id, tag)
 

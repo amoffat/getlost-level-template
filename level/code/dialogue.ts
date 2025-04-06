@@ -766,10 +766,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "a03b221c",
+      key: "f24b5246",
       values: [
         {
-          text: "???",
+          text: "Knight",
           lang: "en",
         },
       ],
@@ -794,16 +794,6 @@ export function strings(): String[] {
         },
       ],
     },
-
-    {
-      key: "f24b5246",
-      values: [
-        {
-          text: "Knight",
-          lang: "en",
-        },
-      ],
-    },
   ];
 }
 
@@ -820,8 +810,8 @@ export function choiceMadeEvent(passageId: string, choiceId: string): void {
 
 // Do you have a name?
 export function passage_562cd4ad(): void {
-  // "???"
-  const title = "a03b221c";
+  // "Knight"
+  const title = "f24b5246";
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
@@ -903,8 +893,8 @@ export function passage_db605e8f(): void {
 
 // Guard from what?
 export function passage_99e18287(): void {
-  // "???"
-  const title = "a03b221c";
+  // "Knight"
+  const title = "f24b5246";
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
@@ -958,8 +948,8 @@ export function passage_3639efcd(): void {
 
 // How did you get this job?
 export function passage_379dcdf1(): void {
-  // "???"
-  const title = "a03b221c";
+  // "Knight"
+  const title = "f24b5246";
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
@@ -1049,8 +1039,8 @@ export function passage_e0a2d72f(): void {
 
 // Pretty busy are you?
 export function passage_a50fd415(): void {
-  // "???"
-  const title = "a03b221c";
+  // "Knight"
+  const title = "f24b5246";
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
@@ -1249,8 +1239,8 @@ export function passage_80495816(): void {
 
 // Who is the Sheikh?
 export function passage_885ce2f8(): void {
-  // "???"
-  const title = "a03b221c";
+  // "Knight"
+  const title = "f24b5246";
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
@@ -1304,8 +1294,8 @@ export function passage_4e9c58df(): void {
 
 // Why this town?
 export function passage_198a1009(): void {
-  // "???"
-  const title = "a03b221c";
+  // "Knight"
+  const title = "f24b5246";
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
