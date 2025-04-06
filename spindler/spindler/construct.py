@@ -1,23 +1,21 @@
+import subprocess
 from collections import defaultdict
-import hashlib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Union, cast
-import subprocess
-
 
 import jinja2
 from lark import ParseTree, Token, Tree
 
 from .types.passage import ConstructPassage, TweePassage
+from .utils.name import hash_name
 
 THIS_DIR = Path(__file__).parent
 _TMPL_ENV = jinja2.Environment(
     loader=jinja2.FileSystemLoader(THIS_DIR / "templates"),
     undefined=jinja2.StrictUndefined,
 )
-STORY_INIT = "StoryInit"
-START_PASSAGE = "Start"
+
 INVENTORY_VAR = "inventory"
 
 # Tags that should not control the dialogue title
@@ -92,11 +90,11 @@ def create_state_class(name: str, variable_types: dict[str, Variable]) -> str:
     """
     state_class = f"class {name} {{\n"
     for var_name, variable in variable_types.items():
-        state_class += f"    {var_name}: {variable.type};\n"
-    state_class += "    constructor() {\n"
+        state_class += f"{var_name}: {variable.type};\n"
+    state_class += "constructor() {\n"
     for var_name, variable in variable_types.items():
-        state_class += f"        this.{var_name} = {variable.value};\n"
-    state_class += "    }\n"
+        state_class += f"this.{var_name} = {variable.value};\n"
+    state_class += "}\n"
     state_class += "}"
     return state_class
 
@@ -149,7 +147,8 @@ def find_state_classes(passages: list[TweePassage]) -> dict[str, str]:
                             value = pair.children[1]
                             prop_types[key] = infer_basic_type(value)
 
-                        # Generate a class name and state class for the js_object
+                        # Generate a class name and state class for the
+                        # js_object
                         state_class = create_state_class(
                             class_name,
                             {
@@ -163,7 +162,7 @@ def find_state_classes(passages: list[TweePassage]) -> dict[str, str]:
 
 
 def infer_variable_types(
-    passages: dict[str, TweePassage],
+    passages: list[TweePassage],
     state_classes: dict[str, str],
 ) -> dict[str, Variable]:
     """
@@ -172,7 +171,7 @@ def infer_variable_types(
     """
     variable_types: dict[str, Variable] = {}
 
-    for passage in passages.values():
+    for passage in passages:
         parse_tree = passage.tree
 
         if parse_tree is None:
@@ -213,6 +212,30 @@ def infer_variable_types(
     return variable_types
 
 
+def topological_sort(
+    passage_to_children: dict[str, set[str]],
+) -> list[str]:
+    """
+    Perform a topological sort of passages based on their dependencies. Returns
+    a list of passage IDs in topological order.
+    """
+    visited = set()
+    stack = []
+
+    def visit(passage_id: str):
+        if passage_id in visited:
+            return
+        visited.add(passage_id)
+        for child_id in passage_to_children.get(passage_id, set()):
+            visit(child_id)
+        stack.append(passage_id)
+
+    for passage_id in passage_to_children:
+        visit(passage_id)
+
+    return stack[::-1]  # Reverse the stack to get the topological order
+
+
 @dataclass
 class TraverseState:
     # The entry point passage ID
@@ -221,16 +244,13 @@ class TraverseState:
     children: list[str] = field(default_factory=list)
 
 
-def render(passages: dict[str, TweePassage]) -> str:
+def render(passages: list[TweePassage]) -> str:
     """
     Converts a dictionary of Sugarcube parse trees into Typescript code.
     Each passage is converted into a function named by a hash of the passage name.
     """
 
     name_num = 0
-
-    def hash_name(name: str) -> str:
-        return hashlib.sha256(name.encode()).hexdigest()[:8]
 
     def get_temp_name(prefix: str) -> str:
         nonlocal name_num
@@ -338,17 +358,23 @@ def render(passages: dict[str, TweePassage]) -> str:
             return text
         elif node.data == "function_call":
             function_name = cast(Token, node.children[0]).value
-            if function_name == "visited" and len(node.children) == 1:
-                # Special case: hard code self passage as the argument
-                return f'{function_name}("{state.passage_id}")'
+            if function_name == "visited":
+                if len(node.children) == 1:
+                    # Special case: hard code self passage as the argument
+                    return f'{function_name}("{state.passage_id}")'
 
-            def resolve_passage(expr: str) -> str:
-                return f"passageLookup.get({expr})"
+                def resolve_passage(expr: str) -> str:
+                    return f"passageLookup.get({expr})"
 
-            arguments = ", ".join(
-                resolve_passage(traverse(state=state, node=cast(ParseTree, arg)))
-                for arg in node.children[1:]
-            )
+                arguments = ", ".join(
+                    resolve_passage(traverse(state=state, node=cast(ParseTree, arg)))
+                    for arg in node.children[1:]
+                )
+            else:
+                arguments = ", ".join(
+                    traverse(state=state, node=cast(ParseTree, arg))
+                    for arg in node.children[1:]
+                )
             return f"{function_name}({arguments})"
         elif node.data == "global_var":
             var_name = cast(Token, node.children[0]).value
@@ -393,41 +419,29 @@ def render(passages: dict[str, TweePassage]) -> str:
         data = "\n".join(f"// {line}" for line in node.pretty().split("\n"))
         return f"// FIXME: MISSING RULES:\n{data}"
 
-    state_classes = find_state_classes([p for p in passages.values() if p is not None])
-    variable_types = infer_variable_types(passages, state_classes)
-    state_class = create_state_class("State", variable_types)
-
-    # Create our state definition classes
-    state_class_defs = []
-    for name, class_def in state_classes.items():
-        state_class_defs.append(class_def)
-    state_class_defs.append(state_class)
-
     # Create a mapping from passage names to their hashed names
-    passage_name_to_id: dict[str, str] = {}
     passage_id_to_passage: dict[str, TweePassage] = {}
+    passage_name_to_id: dict[str, str] = {}
     start_passage: TweePassage | None = None
-    for name, passage in passages.items():
-        if name == STORY_INIT:
-            continue
-
-        if name == START_PASSAGE:
-            passage_id_to_passage[None] = passage
+    init_passage: TweePassage | None = None
+    for passage in passages:
+        if passage.is_start:
             start_passage = passage
-            continue
+        elif passage.is_init:
+            init_passage = passage
 
-        passage_id = hash_name(name)
-        passage_name_to_id[name] = passage_id
-        passage_id_to_passage[passage_id] = passage
+        passage_id_to_passage[passage.id] = passage
+        passage_name_to_id[passage.name] = passage.id
 
     assert start_passage is not None, "No start passage found"
+    assert init_passage is not None, "No init passage found"
 
     passage_to_children: dict[str, set[str]] = defaultdict(set)
 
     # Create our macro registry. We'll replace all invocations of the macro with
     # the macro body
     macro_registry: dict[str, tuple[str, TraverseState]] = {}
-    for passage in passages.values():
+    for passage in passages:
         if passage.tree is None:
             continue
         for node in passage.tree.find_data("wrapping_macro"):
@@ -440,28 +454,27 @@ def render(passages: dict[str, TweePassage]) -> str:
 
     # Generate our individual passage functions
     passage_functions: list[ConstructPassage] = []
-    for name, passage in passages.items():
+    for passage in passages:
 
         # If we're the root node passage, we only need to traverse the tree to
         # populate links, but otherwise we don't treat it like a normal passage.
-        if passage is start_passage:
+        if passage.is_start and passage.tree:
             state = TraverseState()
             traverse(state=state, node=passage.tree)
-            passage_to_children[None].update(state.children)
+            passage_to_children[passage.id].update(state.children)
             continue
 
-        if name == STORY_INIT:
+        if passage.is_init:
             continue
 
         if passage.tree is None:
             continue
 
-        passage_id = passage_name_to_id[name]
-        state = TraverseState(passage_id=passage_id)
+        state = TraverseState(passage_id=passage.id)
         content = traverse(state=state, node=passage.tree)
 
         # Merge our mapping of passage IDs to their children
-        passage_to_children[passage_id].update(state.children)
+        passage_to_children[passage.id].update(state.children)
 
         # Using regex, find and replace all <<macro {macro_name}>> with the
         # macro content from macro_registry
@@ -469,12 +482,12 @@ def render(passages: dict[str, TweePassage]) -> str:
             to_replace = f"<<macro {to_expand}>>"
             if to_replace in content:
                 content = content.replace(to_replace, expanded_macro)
-                passage_to_children[passage_id].update(state.children)
+                passage_to_children[passage.id].update(state.children)
 
         passage_functions.append(
             ConstructPassage(
-                name=name,
-                id=passage_id,
+                name=passage.name,
+                id=passage.id,
                 title=None,
                 init=passage_init.copy(),
                 content=content,
@@ -483,14 +496,14 @@ def render(passages: dict[str, TweePassage]) -> str:
         passage_init.clear()
 
     # Walk our passage links to propagate the tag names
-    passage_to_title: dict[str, tuple[str, str] | None] = {}
+    passage_to_title: dict[str | None, str | None] = {}
 
     tag_node_visited = set()
 
     def propagate_tags(passage_id: str, tag: str | None = None):
         tag_node_visited.add(passage_id)
         passage = passage_id_to_passage[passage_id]
-        children = passage_to_children.get(passage_id, [])
+        children = passage_to_children.get(passage_id, set())
 
         for cand_tag in passage.tags:
             if cand_tag not in SPECIAL_TAGS:
@@ -505,15 +518,35 @@ def render(passages: dict[str, TweePassage]) -> str:
             if child_id:
                 propagate_tags(child_id, tag)
 
-    propagate_tags(None)
+    propagate_tags(start_passage.id)
 
     # Now backfill our titles
-    for passage in passage_functions:
-        title = passage_to_title.get(passage.id) or "???"
+    for cons_passage in passage_functions:
+        title = passage_to_title.get(cons_passage.id) or "???"
         title_id = hash_name(title)
-        passage.title = escape_and_quote(title)
-        all_strings[title_id] = passage.title
-        passage.title_id = title_id
+        cons_passage.title = escape_and_quote(title)
+        all_strings[title_id] = cons_passage.title
+        cons_passage.title_id = title_id
+
+    # Perform a topological sort of our passages so that when we start deriving
+    # our state classes below, variables are initialized with the value that
+    # they were first set to.
+    passage_order = topological_sort(passage_to_children)
+    passages = [passage_id_to_passage[passage_id] for passage_id in passage_order]
+
+    # Insert the init passage at the start of the list because it often contains var
+    # initializations
+    passages.insert(0, init_passage)
+
+    state_classes = find_state_classes([p for p in passages if p is not None])
+    variable_types = infer_variable_types(passages, state_classes)
+    state_class = create_state_class("State", variable_types)
+
+    # Create our state definition classes
+    state_class_defs = []
+    for name, class_def in state_classes.items():
+        state_class_defs.append(class_def)
+    state_class_defs.append(state_class)
 
     code_tmpl = _TMPL_ENV.get_template("code.j2")
     output = code_tmpl.render(

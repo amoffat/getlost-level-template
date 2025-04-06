@@ -28,8 +28,8 @@ with open(SUGARCUBE_GRAMMAR, "r") as h:
     )
 
 
-def parse(text) -> dict[str, TweePassage]:
-    passages: dict[str, TweePassage] = {}
+def parse(text) -> list[TweePassage]:
+    passages: list[TweePassage] = []
     parsed_twee = twee_grammar.parse(text)
 
     for passage_tree in parsed_twee.find_data("passage"):
@@ -53,8 +53,20 @@ def parse(text) -> dict[str, TweePassage]:
             except:  # noqa
                 print(f"Error parsing passage '{name}': {body}")
                 raise
-            passages[name] = TweePassage(tree=parsed_passage, tags=tags)
+            passages.append(
+                TweePassage(
+                    name=name,
+                    tree=parsed_passage,
+                    tags=tags,
+                )
+            )
         else:
-            passages[name] = TweePassage(tree=None, tags=tags)
+            passages.append(
+                TweePassage(
+                    name=name,
+                    tree=None,
+                    tags=tags,
+                )
+            )
 
     return passages
