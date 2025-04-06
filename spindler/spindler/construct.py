@@ -303,12 +303,18 @@ def render(passages: list[TweePassage]) -> str:
             )
         elif node.data == "link":
             text = traverse(state=state, node=node.children[0])
-            target = hash_name(text)
+            target_id = hash_name(text)
             if len(node.children) > 1:
-                target = hash_name(cast(Token, node.children[1]).value)
+                # This is counterintuitive, but the string id is of the link
+                # target, but it's value is the text of the link. This is
+                # because we want to use the target id in our code, but render
+                # the text of the link as the string.
+                target_name = cast(Token, node.children[1]).value
+                target_id = hash_name(target_name)
+                all_strings[target_id] = escape_and_quote(text)
 
-            state.children.append(target)
-            choices = f'// {text}\nchoices.push("{target}");'
+            state.children.append(target_id)
+            choices = f'// {text}\nchoices.push("{target_id}");'
             return choices
         elif node.data == "if_macro":
             condition = traverse(state=state, node=cast(ParseTree, node.children[0]))

@@ -3,10 +3,6 @@ import { String } from "@gl/types/i18n";
 
 const log = host.debug.log;
 
-class State_frankOpts {
-  constructor() {}
-}
-
 class State_knightOpts {
   whyTown: bool;
   whoSheikh: bool;
@@ -22,16 +18,20 @@ class State_knightOpts {
   }
 }
 
+class State_frankOpts {
+  constructor() {}
+}
+
 class State {
   upsetKnight: bool;
-  learnedKnightStory: bool;
-  frankOpts: State_frankOpts;
   knightOpts: State_knightOpts;
+  frankOpts: State_frankOpts;
+  learnedKnightStory: bool;
   constructor() {
-    this.upsetKnight = true;
-    this.learnedKnightStory = true;
-    this.frankOpts = new State_frankOpts();
+    this.upsetKnight = false;
     this.knightOpts = new State_knightOpts();
+    this.frankOpts = new State_frankOpts();
+    this.learnedKnightStory = true;
   }
 }
 
@@ -69,7 +69,9 @@ passageLookup.set(
   "Sounds like he probably wants to be left alone.",
   "875599d3",
 );
+passageLookup.set("Start", ">start");
 passageLookup.set("Step back", "b863269e");
+passageLookup.set("StoryInit", ">init");
 passageLookup.set("Well", "bdc7e965");
 passageLookup.set("What are you looking for?", "e3ad92be");
 passageLookup.set("What did it say?", "147664cc");
@@ -476,6 +478,16 @@ export function strings(): String[] {
     },
 
     {
+      key: "e6c18fdb",
+      values: [
+        {
+          text: "Yeah hi, what is this place?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "80495816",
       values: [
         {
@@ -496,7 +508,27 @@ export function strings(): String[] {
     },
 
     {
+      key: "db605e8f",
+      values: [
+        {
+          text: "Frank",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "dd146f7d",
+      values: [
+        {
+          text: "Talk to Silent Knight",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "491e88c5",
       values: [
         {
           text: "Talk to Silent Knight",
@@ -510,6 +542,16 @@ export function strings(): String[] {
       values: [
         {
           text: "Talk to Omar",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "c141faa8",
+      values: [
+        {
+          text: "Fire",
           lang: "en",
         },
       ],
@@ -770,26 +812,6 @@ export function strings(): String[] {
       values: [
         {
           text: "Knight",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "c141faa8",
-      values: [
-        {
-          text: "Fire",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "db605e8f",
-      values: [
-        {
-          text: "Frank",
           lang: "en",
         },
       ],
@@ -1064,7 +1086,7 @@ export function passage_491e88c5(): void {
   let pickup_tags_1 = new Map<string, string>();
   pickup_tags_1.set("map", "");
 
-  if (host.pickup.has(pickup_tags_1)) {
+  if (host.pickup.has(pickup_tags_1) && false) {
     // Hey, where did you get that map?
     text = "1c61a154";
     // I found it by the water
@@ -1328,6 +1350,21 @@ export function passage_198a1009(): void {
   host.text.displayInteraction(title, text, choices, params);
 }
 
+// silence
+export function passage_e6c18fdb(): void {
+  // "Knight"
+  const title = "f24b5246";
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+
+  // ...
+  text = "ab5df625";
+
+  incrementVisitCount("e6c18fdb");
+  host.text.displayInteraction(title, text, choices, params);
+}
+
 export function dispatch(passageId: string): void {
   let found = false;
 
@@ -1434,6 +1471,11 @@ export function dispatch(passageId: string): void {
   if (passageId === "198a1009") {
     found = true;
     passage_198a1009();
+  }
+
+  if (passageId === "e6c18fdb") {
+    found = true;
+    passage_e6c18fdb();
   }
 
   if (!found) {
