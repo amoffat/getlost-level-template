@@ -4,7 +4,7 @@ from lark import ParseTree
 
 
 @dataclass
-class ParsedPassage:
+class TweePassage:
     tree: ParseTree | None
     tags: list[str]
 
@@ -13,6 +13,7 @@ class ParsedPassage:
 class ConstructPassage:
     name: str
     id: str
-    title: str
     init: list[str]
     content: str
+    title: str | None = None
+    title_id: str | None = None

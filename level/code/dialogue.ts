@@ -35,7 +35,7 @@ class State {
   }
 }
 
-let state = new State();
+export const state = new State();
 const visitCount = new Map<string, u32>();
 const passageLookup = new Map<string, string>();
 passageLookup.set("Any new news?", "d2db7db2");
@@ -46,14 +46,14 @@ passageLookup.set("Guard from what?", "99e18287");
 passageLookup.set("Hi", "3639efcd");
 passageLookup.set(
   "How about I get you a glass of water and you tell me?",
-  "9c9f3b81"
+  "9c9f3b81",
 );
 passageLookup.set("How did you get this job?", "379dcdf1");
 passageLookup.set("How long ago was this?", "f6ded42f");
 passageLookup.set("I found it by the water", "0e624e86");
 passageLookup.set(
   "I guess you don't want to know the incredible story behind it.",
-  "2bb0d7e2"
+  "2bb0d7e2",
 );
 passageLookup.set("I'll try", "250fbdc1");
 passageLookup.set("Ignore the fire", "690c49a8");
@@ -67,9 +67,8 @@ passageLookup.set("Pretty busy are you?", "a50fd415");
 passageLookup.set("Silent Knight", "491e88c5");
 passageLookup.set(
   "Sounds like he probably wants to be left alone.",
-  "875599d3"
+  "875599d3",
 );
-passageLookup.set("Start", "e4bb9f1e");
 passageLookup.set("Step back", "b863269e");
 passageLookup.set("Well", "bdc7e965");
 passageLookup.set("What are you looking for?", "e3ad92be");
@@ -237,10 +236,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "185f8db3",
+      key: "e7375922",
       values: [
         {
-          text: "Hello",
+          text: "Hello there, who are you?",
           lang: "en",
         },
       ],
@@ -765,6 +764,46 @@ export function strings(): String[] {
         },
       ],
     },
+
+    {
+      key: "a03b221c",
+      values: [
+        {
+          text: "???",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "c141faa8",
+      values: [
+        {
+          text: "Fire",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "db605e8f",
+      values: [
+        {
+          text: "Frank",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "f24b5246",
+      values: [
+        {
+          text: "Knight",
+          lang: "en",
+        },
+      ],
+    },
   ];
 }
 
@@ -781,10 +820,11 @@ export function choiceMadeEvent(passageId: string, choiceId: string): void {
 
 // Do you have a name?
 export function passage_562cd4ad(): void {
-  let title = "FIXME";
+  // "???"
+  const title = "a03b221c";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   state.knightOpts.yourName = false;
   // Sir Azure
@@ -816,10 +856,11 @@ export function passage_562cd4ad(): void {
 
 // Fire
 export function passage_c141faa8(): void {
-  let title = "FIXME";
+  // "Fire"
+  const title = "c141faa8";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // Greetings.... traveller...
   text = "bbe687cd";
@@ -834,10 +875,11 @@ export function passage_c141faa8(): void {
 
 // Frank
 export function passage_db605e8f(): void {
-  let title = "FIXME";
+  // "Frank"
+  const title = "db605e8f";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   if (visited("db605e8f")) {
     // Welcome back
@@ -845,8 +887,8 @@ export function passage_db605e8f(): void {
     // Any new news?
     choices.push("d2db7db2");
   } else {
-    // Hello
-    text = "185f8db3";
+    // Hello there, who are you?
+    text = "e7375922";
     // Hi
     choices.push("3639efcd");
   }
@@ -861,10 +903,11 @@ export function passage_db605e8f(): void {
 
 // Guard from what?
 export function passage_99e18287(): void {
-  let title = "FIXME";
+  // "???"
+  const title = "a03b221c";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   state.knightOpts.guardWhat = false;
   // That's not your concern.
@@ -896,10 +939,11 @@ export function passage_99e18287(): void {
 
 // Hi
 export function passage_3639efcd(): void {
-  let title = "FIXME";
+  // "Frank"
+  const title = "db605e8f";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // Are you here with the Knight?
   text = "894872ef";
@@ -914,10 +958,11 @@ export function passage_3639efcd(): void {
 
 // How did you get this job?
 export function passage_379dcdf1(): void {
-  let title = "FIXME";
+  // "???"
+  const title = "a03b221c";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   state.knightOpts.howJob = false;
   // I.. uh... I volunteered. It's a long story, and I don't have time to tell it.
@@ -953,10 +998,11 @@ export function passage_379dcdf1(): void {
 
 // How long ago was this?
 export function passage_f6ded42f(): void {
-  let title = "FIXME";
+  // "Frank"
+  const title = "db605e8f";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // Only a week ago.
   text = "dff1fa28";
@@ -967,10 +1013,11 @@ export function passage_f6ded42f(): void {
 
 // Is your son Omar ok?
 export function passage_f7c260b3(): void {
-  let title = "FIXME";
+  // "Frank"
+  const title = "db605e8f";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // Yes, thank God, he is fine physically. But something changed about him. He does not talk like he once did. There is something dark in him now.
   text = "cb86050b";
@@ -983,10 +1030,11 @@ export function passage_f7c260b3(): void {
 
 // None of your business
 export function passage_e0a2d72f(): void {
-  let title = "FIXME";
+  // "Knight"
+  const title = "f24b5246";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // Fine. I shouldn't even be talking with you. Move along.
   text = "54524775";
@@ -1001,10 +1049,11 @@ export function passage_e0a2d72f(): void {
 
 // Pretty busy are you?
 export function passage_a50fd415(): void {
-  let title = "FIXME";
+  // "???"
+  const title = "a03b221c";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // Yeah, actually I am, kid. Get Lost.
   text = "3a7bedf8";
@@ -1016,10 +1065,11 @@ export function passage_a50fd415(): void {
 
 // Silent Knight
 export function passage_491e88c5(): void {
-  let title = "FIXME";
+  // "Knight"
+  const title = "f24b5246";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   let pickup_tags_1 = new Map<string, string>();
   pickup_tags_1.set("map", "");
@@ -1047,32 +1097,13 @@ export function passage_491e88c5(): void {
   host.text.displayInteraction(title, text, choices, params);
 }
 
-// Start
-export function passage_e4bb9f1e(): void {
-  let title = "FIXME";
-  let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
-
-  // Talk to Frank
-  choices.push("db605e8f");
-  // Talk to Silent Knight
-  choices.push("491e88c5");
-  // Talk to Omar
-  choices.push("c141faa8");
-  // Well
-  choices.push("bdc7e965");
-
-  incrementVisitCount("e4bb9f1e");
-  host.text.displayInteraction(title, text, choices, params);
-}
-
 // Well
 export function passage_bdc7e965(): void {
-  let title = "FIXME";
+  // "Well"
+  const title = "bdc7e965";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // There's something at the bottom of the well.
   text = "0c71b61e";
@@ -1087,10 +1118,11 @@ export function passage_bdc7e965(): void {
 
 // What did it say?
 export function passage_147664cc(): void {
-  let title = "FIXME";
+  // "Frank"
+  const title = "db605e8f";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // It said "This soldier should be treated like your brother. In return he will guard the city." Nothing else. But it had the Sheikh's seal. It was unmistakable.
   text = "75eaa53d";
@@ -1110,10 +1142,11 @@ export function passage_147664cc(): void {
 
 // What do you know about that knight?
 export function passage_f213214a(): void {
-  let title = "FIXME";
+  // "Frank"
+  const title = "db605e8f";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // Well, I know he's not from around here. There was a battle nearby. My son Omar was in it...he was injured. After the battle, the knight showed up.
   text = "339e4f5f";
@@ -1128,10 +1161,11 @@ export function passage_f213214a(): void {
 
 // What do you mean he showed up?
 export function passage_9d4f68e2(): void {
-  let title = "FIXME";
+  // "Frank"
+  const title = "db605e8f";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // I mean he arrived on foot, without weapons, bleeding everywhere. We all stayed away. We thought he left the battle to raid our village. But he had with him a decree from the Sheikh.
   text = "8c9ec535";
@@ -1144,10 +1178,11 @@ export function passage_9d4f68e2(): void {
 
 // What is he guarding you from?
 export function passage_216c5e8c(): void {
-  let title = "FIXME";
+  // "Frank"
+  const title = "db605e8f";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // I don't know. When I told my son, I saw fear in him and he hasn't spoken since. Maybe you could have more luck.
   text = "4f777751";
@@ -1160,10 +1195,11 @@ export function passage_216c5e8c(): void {
 
 // What's different?
 export function passage_accf28f0(): void {
-  let title = "FIXME";
+  // "Frank"
+  const title = "db605e8f";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // He is quiet. I don't know. Go talk to him yourself.
   text = "313cd195";
@@ -1178,10 +1214,11 @@ export function passage_accf28f0(): void {
 
 // Who are you?
 export function passage_80495816(): void {
-  let title = "FIXME";
+  // "Knight"
+  const title = "f24b5246";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // I'm here on behalf of the Sheikh. I am to guard this town.
   text = "5f61c819";
@@ -1212,10 +1249,11 @@ export function passage_80495816(): void {
 
 // Who is the Sheikh?
 export function passage_885ce2f8(): void {
-  let title = "FIXME";
+  // "???"
+  const title = "a03b221c";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   state.knightOpts.whoSheikh = false;
   // He sent me here to guard the town.
@@ -1247,10 +1285,11 @@ export function passage_885ce2f8(): void {
 
 // Whoa, who are you?
 export function passage_4e9c58df(): void {
-  let title = "FIXME";
+  // "Fire"
+  const title = "c141faa8";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   // A fellow traveller, like you. I'm here to observe.
   text = "597e02b3";
@@ -1265,10 +1304,11 @@ export function passage_4e9c58df(): void {
 
 // Why this town?
 export function passage_198a1009(): void {
-  let title = "FIXME";
+  // "???"
+  const title = "a03b221c";
   let text = "";
-  let choices: string[] = [];
-  let params = new Map<string, string>();
+  const choices: string[] = [];
+  const params = new Map<string, string>();
 
   state.knightOpts.whyTown = false;
   // The Sheikh asked me to.
@@ -1356,11 +1396,6 @@ export function dispatch(passageId: string): void {
     passage_491e88c5();
   }
 
-  if (passageId === "e4bb9f1e") {
-    found = true;
-    passage_e4bb9f1e();
-  }
-
   if (passageId === "bdc7e965") {
     found = true;
     passage_bdc7e965();
@@ -1415,3 +1450,4 @@ export function dispatch(passageId: string): void {
     log(`No passage found for ${passageId}, does it have content?`);
   }
 }
+

@@ -3,7 +3,7 @@ from typing import cast
 
 from lark import Lark, Token
 
-from spindler.types.passage import ParsedPassage
+from spindler.types.passage import TweePassage
 
 THIS_DIR = Path(__file__).parent
 GRAMMAR_DIR = THIS_DIR / "grammars"
@@ -28,8 +28,8 @@ with open(SUGARCUBE_GRAMMAR, "r") as h:
     )
 
 
-def parse(text) -> dict[str, ParsedPassage]:
-    passages: dict[str, ParsedPassage] = {}
+def parse(text) -> dict[str, TweePassage]:
+    passages: dict[str, TweePassage] = {}
     parsed_twee = twee_grammar.parse(text)
 
     for passage_tree in parsed_twee.find_data("passage"):
@@ -53,8 +53,8 @@ def parse(text) -> dict[str, ParsedPassage]:
             except:  # noqa
                 print(f"Error parsing passage '{name}': {body}")
                 raise
-            passages[name] = ParsedPassage(tree=parsed_passage, tags=tags)
+            passages[name] = TweePassage(tree=parsed_passage, tags=tags)
         else:
-            passages[name] = ParsedPassage(tree=None, tags=tags)
+            passages[name] = TweePassage(tree=None, tags=tags)
 
     return passages

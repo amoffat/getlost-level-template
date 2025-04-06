@@ -7,7 +7,7 @@ const log = host.debug.log;
 {{cls}}
 {% endfor %}
 
-let state = new State();
+export const state = new State();
 const visitCount = new Map<string, u32>();
 const passageLookup = new Map<string, string>();
 {% for name, pid in passage_lookup.items() -%}
@@ -57,10 +57,11 @@ function incrementVisitCount(id: string): void {
 {% macro passage(p) %}
 // {{p.name}}
 export function passage_{{p.id}}(): void {
-    let title = {{p.title}};
+    // {{p.title}}
+    const title = "{{p.title_id}}"; 
     let text = "";
-    let choices: string[] = [];
-    let params = new Map<string, string>();
+    const choices: string[] = [];
+    const params = new Map<string, string>();
 
 {% for line in p.init %}
     {{line}}
