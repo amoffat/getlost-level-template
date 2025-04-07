@@ -83,6 +83,14 @@ def map_op(op: str) -> str:
     return operator_map.get(op, op)
 
 
+def escape_string(s: str) -> str:
+    return s.replace('"', '\\"')
+
+
+def escape_and_quote(s: str) -> str:
+    return f'"{escape_string(s)}"'
+
+
 def create_state_class(name: str, variable_types: dict[str, Variable]) -> str:
     """
     Generates the TypeScript State class definition based on the inferred
@@ -105,7 +113,9 @@ def infer_basic_type(value_node: Union[ParseTree, Token]) -> tuple[str, str]:
             # FIXME not everything is a float...
             return ("f32", value_node.value)
         elif value_node.type == "STRING":
-            return ("string", value_node.value)
+            return ("string", escape_and_quote(value_node.value))
+        elif value_node.type == "ESCAPED_STRING":
+            return ("string", value_node)
         elif value_node.type in {"TRUE", "FALSE"}:
             return ("bool", value_node.value)
 
@@ -242,6 +252,8 @@ class TraverseState:
     passage_id: str | None = None
     # Children that this passage links to
     children: list[str] = field(default_factory=list)
+    # The passage init code
+    init: list[str] = field(default_factory=list)
 
 
 def render(passages: list[TweePassage]) -> str:
@@ -257,13 +269,6 @@ def render(passages: list[TweePassage]) -> str:
         name_num += 1
         return f"{prefix}_{name_num}"
 
-    def escape_string(s: str) -> str:
-        return s.replace('"', '\\"')
-
-    def escape_and_quote(s: str) -> str:
-        return f'"{escape_string(s)}"'
-
-    passage_init: list[str] = []
     all_strings: dict[str, str] = {}
 
     def traverse(
@@ -401,9 +406,9 @@ def render(passages: list[TweePassage]) -> str:
                 tags[tag] = value
 
             tag_var_name = get_temp_name("pickup_tags")
-            passage_init.append(f"let {tag_var_name} = new Map<string, string>();")
+            state.init.append(f"let {tag_var_name} = new Map<string, string>();")
             for tag, value in tags.items():
-                passage_init.append(f'{tag_var_name}.set("{tag}", {value});')
+                state.init.append(f'{tag_var_name}.set("{tag}", {value});')
             return f"host.pickup.has({tag_var_name})"
 
         elif node.data == "binary_comparison":
@@ -427,11 +432,13 @@ def render(passages: list[TweePassage]) -> str:
                 traverse(state=state, node=cast(ParseTree, arg))
                 for arg in node.children[1:]
             )
-            return f"host.{function_name}({arguments})"
+            return f"{function_name}({arguments})"
 
         # Add more cases for other constructs...
         data = "\n".join(f"// {line}" for line in node.pretty().split("\n"))
-        return f'// FIXME: MISSING RULES:\n{data}\nlog("Missing rule: {node.data}")'
+        return (
+            f'// FIXME: MISSING RULES:\n{data}\nlogError("Missing rule: {node.data}")'
+        )
 
     # Create a mapping from passage names to their hashed names
     passage_id_to_passage: dict[str, TweePassage] = {}
@@ -503,11 +510,10 @@ def render(passages: list[TweePassage]) -> str:
                 name=passage.name,
                 id=passage.id,
                 title=None,
-                init=passage_init.copy(),
+                init=state.init,
                 content=content,
             )
         )
-        passage_init.clear()
 
     # Walk our passage links to propagate the tag names
     passage_to_title: dict[str | None, str | None] = {}

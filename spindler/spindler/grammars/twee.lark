@@ -12,7 +12,8 @@ passage_header: _PASSAGE_PREFIX passage_name metadata "\n"
 ui_metadata: UI_METADATA
 UI_METADATA: LBRACE /.+/ RBRACE
 
-_PASSAGE_TERM: "\n\n\n"
+// The last passage in the file just has a single newline before EOF
+_PASSAGE_TERM: "\n\n\n" | "\n"
 
 // basic JSON grammar
 json: object

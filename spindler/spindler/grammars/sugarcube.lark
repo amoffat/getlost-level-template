@@ -18,7 +18,7 @@ set_macro: "set" variable "to" expression
 widget_macro: "widget" ("\"" WIDGET_NAME "\""  | "'" WIDGET_NAME "'") -> widget
 host_call: HOST_CALL_NAME "(" _arguments? ")"
 
-HOST_CALL_NAME: WORD "." WORD
+HOST_CALL_NAME: "host" "." WORD "." WORD
 MACRO_NAME: /[a-zA-Z-]+/
 WIDGET_NAME:  /[a-zA-Z-]+/
 
