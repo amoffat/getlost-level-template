@@ -421,9 +421,17 @@ def render(passages: list[TweePassage]) -> str:
             macro_name = cast(Token, node.children[0]).value
             return f"<<macro {macro_name}>>"
 
+        elif node.data == "host_call":
+            function_name = cast(Token, node.children[0]).value
+            arguments = ", ".join(
+                traverse(state=state, node=cast(ParseTree, arg))
+                for arg in node.children[1:]
+            )
+            return f"host.{function_name}({arguments})"
+
         # Add more cases for other constructs...
         data = "\n".join(f"// {line}" for line in node.pretty().split("\n"))
-        return f"// FIXME: MISSING RULES:\n{data}"
+        return f'// FIXME: MISSING RULES:\n{data}\nlog("Missing rule: {node.data}")'
 
     # Create a mapping from passage names to their hashed names
     passage_id_to_passage: dict[str, TweePassage] = {}

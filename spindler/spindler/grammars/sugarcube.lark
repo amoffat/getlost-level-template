@@ -10,13 +10,15 @@ wrapping_macro: "<<" wrap_macros ">>" body "<</" _WORD ">>"
 elseif_macro: "<<" "elseif" expression ">>" body
 else_macro: "<<" "else" ">>" body
 
-?callable_macros: set_macro | custom_macro
+?callable_macros: set_macro | custom_macro | host_call
 ?wrap_macros: widget_macro
 
 custom_macro: MACRO_NAME
 set_macro: "set" variable "to" expression
 widget_macro: "widget" ("\"" WIDGET_NAME "\""  | "'" WIDGET_NAME "'") -> widget
+host_call: HOST_CALL_NAME "(" _arguments? ")"
 
+HOST_CALL_NAME: WORD "." WORD
 MACRO_NAME: /[a-zA-Z-]+/
 WIDGET_NAME:  /[a-zA-Z-]+/
 
@@ -40,7 +42,7 @@ local_var : "_" VAR_NAME
 
 VAR_NAME: WORD ("." WORD)*
 
-function_call: function_name "(" arguments? ")"
+function_call: function_name "(" _arguments? ")"
 ?function_name: \
     VISITED
     | HAS_VISITED
@@ -55,7 +57,8 @@ LAST_VISITED: "lastVisited"
 RANDOM: "random"
 RANDOM_FLOAT: "randomFloat"
 EITHER: "either"
-?arguments: argument ("," argument)*
+
+_arguments: argument ("," argument)*
 ?argument: expression
 
 link: "[[" LINK_TEXT (("->" | "|") LINK_TARGET)? "]]"

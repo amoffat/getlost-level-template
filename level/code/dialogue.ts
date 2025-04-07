@@ -39,6 +39,7 @@ export const state = new State();
 const visitCount = new Map<string, u32>();
 const passageLookup = new Map<string, string>();
 passageLookup.set("Any new news?", "d2db7db2");
+passageLookup.set("Climb down", "909a9cff");
 passageLookup.set("Do you have a name?", "562cd4ad");
 passageLookup.set("Fire", "c141faa8");
 passageLookup.set("Frank", "db605e8f");
@@ -58,7 +59,6 @@ passageLookup.set(
 passageLookup.set("I'll try", "250fbdc1");
 passageLookup.set("Ignore the fire", "690c49a8");
 passageLookup.set("Is your son Omar ok?", "f7c260b3");
-passageLookup.set("Jump down", "7535a35a");
 passageLookup.set("Maybe I will. Where is he?", "875f1c9b");
 passageLookup.set("No?", "2b5f13fb");
 passageLookup.set("None of your business", "e0a2d72f");
@@ -84,10 +84,10 @@ passageLookup.set("Where are you from?", "63265a79");
 passageLookup.set("Where does the knight stay?", "629dcfff");
 passageLookup.set("Who are you?", "80495816");
 passageLookup.set("Who is the Sheikh?", "885ce2f8");
-passageLookup.set("Whoa, who are you?", "4e9c58df");
 passageLookup.set("Why this town?", "198a1009");
 passageLookup.set("Yes", "85a39ab3");
 passageLookup.set("silence", "e6c18fdb");
+passageLookup.set("who-fire", "3d787171");
 
 function visited(id: string): u32 {
   if (!visitCount.has(id)) {
@@ -178,6 +178,16 @@ export function strings(): String[] {
     },
 
     {
+      key: "219e54e3",
+      values: [
+        {
+          text: "well",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "006d3ad6",
       values: [
         {
@@ -198,10 +208,20 @@ export function strings(): String[] {
     },
 
     {
-      key: "4e9c58df",
+      key: "80495816",
       values: [
         {
-          text: "Whoa, who are you?",
+          text: "Who are you?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "3d787171",
+      values: [
+        {
+          text: "Who are you?",
           lang: "en",
         },
       ],
@@ -488,16 +508,6 @@ export function strings(): String[] {
     },
 
     {
-      key: "80495816",
-      values: [
-        {
-          text: "Who are you?",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
       key: "3c837c3f",
       values: [
         {
@@ -568,20 +578,30 @@ export function strings(): String[] {
     },
 
     {
-      key: "0c71b61e",
+      key: "68064898",
       values: [
         {
-          text: "There's something at the bottom of the well.",
+          text: "Maybe another time.",
           lang: "en",
         },
       ],
     },
 
     {
-      key: "7535a35a",
+      key: "0e865942",
       values: [
         {
-          text: "Jump down",
+          text: "There's a ladder going down, but you cannot see the bottom.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "909a9cff",
+      values: [
+        {
+          text: "Climb down",
           lang: "en",
         },
       ],
@@ -768,6 +788,16 @@ export function strings(): String[] {
     },
 
     {
+      key: "769e3c29",
+      values: [
+        {
+          text: "The Sheikh asked me to.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "597e02b3",
       values: [
         {
@@ -798,16 +828,6 @@ export function strings(): String[] {
     },
 
     {
-      key: "769e3c29",
-      values: [
-        {
-          text: "The Sheikh asked me to.",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
       key: "f24b5246",
       values: [
         {
@@ -828,6 +848,22 @@ export function strings(): String[] {
 export function choiceMadeEvent(passageId: string, choiceId: string): void {
   log(`Choice made for ${passageId}: ${choiceId}`);
   dispatch(choiceId);
+}
+
+// Climb down
+export function passage_909a9cff(): void {
+  // "Well"
+  const title = "bdc7e965";
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+
+  host.map.exit("well", true);
+
+  incrementVisitCount("909a9cff");
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // Do you have a name?
@@ -863,7 +899,9 @@ export function passage_562cd4ad(): void {
   }
 
   incrementVisitCount("562cd4ad");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // Fire
@@ -876,13 +914,15 @@ export function passage_c141faa8(): void {
 
   // Greetings.... traveller...
   text = "bbe687cd";
-  // Whoa, who are you?
-  choices.push("4e9c58df");
+  // Who are you?
+  choices.push("3d787171");
   // Ignore the fire
   choices.push("690c49a8");
 
   incrementVisitCount("c141faa8");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // Frank
@@ -910,7 +950,9 @@ export function passage_db605e8f(): void {
   }
 
   incrementVisitCount("db605e8f");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // Guard from what?
@@ -946,7 +988,9 @@ export function passage_99e18287(): void {
   }
 
   incrementVisitCount("99e18287");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // Hi
@@ -965,7 +1009,9 @@ export function passage_3639efcd(): void {
   choices.push("85a39ab3");
 
   incrementVisitCount("3639efcd");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // How did you get this job?
@@ -1005,7 +1051,9 @@ export function passage_379dcdf1(): void {
   }
 
   incrementVisitCount("379dcdf1");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // How long ago was this?
@@ -1020,7 +1068,9 @@ export function passage_f6ded42f(): void {
   text = "dff1fa28";
 
   incrementVisitCount("f6ded42f");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // Is your son Omar ok?
@@ -1037,7 +1087,9 @@ export function passage_f7c260b3(): void {
   choices.push("accf28f0");
 
   incrementVisitCount("f7c260b3");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // None of your business
@@ -1056,7 +1108,9 @@ export function passage_e0a2d72f(): void {
   choices.push("2bb0d7e2");
 
   incrementVisitCount("e0a2d72f");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // Pretty busy are you?
@@ -1072,7 +1126,9 @@ export function passage_a50fd415(): void {
   state.upsetKnight = true;
 
   incrementVisitCount("a50fd415");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // Silent Knight
@@ -1106,7 +1162,26 @@ export function passage_491e88c5(): void {
   }
 
   incrementVisitCount("491e88c5");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
+}
+
+// Step back
+export function passage_b863269e(): void {
+  // "Well"
+  const title = "bdc7e965";
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+
+  // Maybe another time.
+  text = "68064898";
+
+  incrementVisitCount("b863269e");
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // Well
@@ -1117,15 +1192,17 @@ export function passage_bdc7e965(): void {
   const choices: string[] = [];
   const params = new Map<string, string>();
 
-  // There's something at the bottom of the well.
-  text = "0c71b61e";
-  // Jump down
-  choices.push("7535a35a");
+  // There's a ladder going down, but you cannot see the bottom.
+  text = "0e865942";
+  // Climb down
+  choices.push("909a9cff");
   // Step back
   choices.push("b863269e");
 
   incrementVisitCount("bdc7e965");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // What did it say?
@@ -1149,7 +1226,9 @@ export function passage_147664cc(): void {
   state.learnedKnightStory = true;
 
   incrementVisitCount("147664cc");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // What do you know about that knight?
@@ -1168,7 +1247,9 @@ export function passage_f213214a(): void {
   choices.push("f7c260b3");
 
   incrementVisitCount("f213214a");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // What do you mean he showed up?
@@ -1185,7 +1266,9 @@ export function passage_9d4f68e2(): void {
   choices.push("147664cc");
 
   incrementVisitCount("9d4f68e2");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // What is he guarding you from?
@@ -1202,7 +1285,9 @@ export function passage_216c5e8c(): void {
   choices.push("250fbdc1");
 
   incrementVisitCount("216c5e8c");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // What's different?
@@ -1221,7 +1306,9 @@ export function passage_accf28f0(): void {
   choices.push("875599d3");
 
   incrementVisitCount("accf28f0");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // Who are you?
@@ -1256,7 +1343,9 @@ export function passage_80495816(): void {
   }
 
   incrementVisitCount("80495816");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // Who is the Sheikh?
@@ -1292,26 +1381,9 @@ export function passage_885ce2f8(): void {
   }
 
   incrementVisitCount("885ce2f8");
-  host.text.displayInteraction(title, text, choices, params);
-}
-
-// Whoa, who are you?
-export function passage_4e9c58df(): void {
-  // "Fire"
-  const title = "c141faa8";
-  let text = "";
-  const choices: string[] = [];
-  const params = new Map<string, string>();
-
-  // A fellow traveller, like you. I'm here to observe.
-  text = "597e02b3";
-  // Where are you from?
-  choices.push("63265a79");
-  // What are you looking for?
-  choices.push("e3ad92be");
-
-  incrementVisitCount("4e9c58df");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // Why this town?
@@ -1347,7 +1419,9 @@ export function passage_198a1009(): void {
   }
 
   incrementVisitCount("198a1009");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 // silence
@@ -1362,11 +1436,39 @@ export function passage_e6c18fdb(): void {
   text = "ab5df625";
 
   incrementVisitCount("e6c18fdb");
-  host.text.displayInteraction(title, text, choices, params);
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
+}
+
+// who-fire
+export function passage_3d787171(): void {
+  // "Fire"
+  const title = "c141faa8";
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+
+  // A fellow traveller, like you. I'm here to observe.
+  text = "597e02b3";
+  // Where are you from?
+  choices.push("63265a79");
+  // What are you looking for?
+  choices.push("e3ad92be");
+
+  incrementVisitCount("3d787171");
+  if (text.length > 0) {
+    host.text.displayInteraction(title, text, choices, params);
+  }
 }
 
 export function dispatch(passageId: string): void {
   let found = false;
+
+  if (passageId === "909a9cff") {
+    found = true;
+    passage_909a9cff();
+  }
 
   if (passageId === "562cd4ad") {
     found = true;
@@ -1423,6 +1525,11 @@ export function dispatch(passageId: string): void {
     passage_491e88c5();
   }
 
+  if (passageId === "b863269e") {
+    found = true;
+    passage_b863269e();
+  }
+
   if (passageId === "bdc7e965") {
     found = true;
     passage_bdc7e965();
@@ -1463,11 +1570,6 @@ export function dispatch(passageId: string): void {
     passage_885ce2f8();
   }
 
-  if (passageId === "4e9c58df") {
-    found = true;
-    passage_4e9c58df();
-  }
-
   if (passageId === "198a1009") {
     found = true;
     passage_198a1009();
@@ -1476,6 +1578,11 @@ export function dispatch(passageId: string): void {
   if (passageId === "e6c18fdb") {
     found = true;
     passage_e6c18fdb();
+  }
+
+  if (passageId === "3d787171") {
+    found = true;
+    passage_3d787171();
   }
 
   if (!found) {

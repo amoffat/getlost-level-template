@@ -70,7 +70,9 @@ export function passage_{{p.id}}(): void {
 {{p.content}}
 
     incrementVisitCount("{{p.id}}");
-    host.text.displayInteraction(title, text, choices, params);
+    if (text.length > 0) {
+        host.text.displayInteraction(title, text, choices, params);
+    }
 }
 {% endmacro %}
 
