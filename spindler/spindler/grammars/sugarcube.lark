@@ -33,7 +33,7 @@ WIDGET_NAME:  /[a-zA-Z-]+/
     | js_object
 
 comparison_operator: "==" | "!=" | "<" | "<=" | ">" | ">="
-pickup_check: "pickups.has" "(" pickup_spec ")"
+pickup_check: "host.pickup.get" "(" pickup_spec ")"
 ?boolean: TRUE | FALSE
 ?variable: global_var | local_var
 

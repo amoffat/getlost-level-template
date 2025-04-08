@@ -45,3 +45,4 @@ class ConstructPassage:
     content: str
     title: str | None = None
     title_id: str | None = None
+    is_sign: bool = False

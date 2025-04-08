@@ -26,8 +26,8 @@ RBRACE: "}"
 
 passage_name: PASSAGE_NAME
 PASSAGE_NAME: /[^\s\n\t\[\{][^\n\t\[\{]+(?=\s)/
-tags: "[" TAG ("," TAG)* "]"
-TAG: /[^\]\[\n\t]+/
+tags: "[" TAG TAG* "]"
+TAG: /[a-zA-Z0-9-]+/
 
 passage_body: PASSAGE_BODY
 // Any characters except for the passage delimiter. Followed by either 3

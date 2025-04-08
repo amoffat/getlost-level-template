@@ -119,8 +119,6 @@ export function tileCollisionEvent(
   // log(`Collision event: ${tsTileId}, ${gid}, ${entered} @ ${column}, ${row}`);
 }
 
-let sawOasisSign = false;
-
 /**
  * Called when a sensor event occurs.
  *
@@ -129,10 +127,7 @@ let sawOasisSign = false;
  */
 export function sensorEvent(name: string, entered: bool): void {
   log(`Sensor event: ${name}, ${entered}`);
-  if (name === "oasis" && entered && !sawOasisSign) {
-    host.text.displaySign("oasis-entry-title", "oasis-entry-body");
-    sawOasisSign = true;
-  } else if (name === "flame" && entered) {
+  if (name === "flame" && entered) {
     dialogue.passage_c141faa8();
   } else if (name === "knight" && entered) {
     dialogue.passage_491e88c5();
@@ -144,8 +139,8 @@ export function sensorEvent(name: string, entered: bool): void {
     host.map.exit("west", false);
   } else if (name === "exit-south" && entered) {
     host.map.exit("south", false);
-  } else if (name === "frank" && entered) {
-    dialogue.passage_db605e8f();
+  } else if (name === "nazar" && entered) {
+    dialogue.passage_e1ffb1d2();
   }
 }
 
@@ -161,7 +156,7 @@ export function timeChangedEvent(event: SunEvent): void {
   host.sensors.toggleSensor("flame", night);
   host.npc.toggleNPC("flame", night);
 
-  const lights = ["frank-light", "house-light-1"];
+  const lights = ["nazar-light", "house-light-1"];
   for (let i = 0; i < lights.length; i++) {
     host.lights.toggleLight(lights[i], night);
   }

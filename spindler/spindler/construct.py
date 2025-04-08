@@ -1,6 +1,7 @@
 import subprocess
 from collections import defaultdict
 from dataclasses import dataclass, field
+from itertools import chain
 from pathlib import Path
 from typing import Union, cast
 
@@ -19,7 +20,7 @@ _TMPL_ENV = jinja2.Environment(
 INVENTORY_VAR = "inventory"
 
 # Tags that should not control the dialogue title
-SPECIAL_TAGS = {"widget"}
+SPECIAL_TAGS = {"widget", "sign"}
 
 
 @dataclass
@@ -409,7 +410,7 @@ def render(passages: list[TweePassage]) -> str:
             state.init.append(f"let {tag_var_name} = new Map<string, string>();")
             for tag, value in tags.items():
                 state.init.append(f'{tag_var_name}.set("{tag}", {value});')
-            return f"host.pickup.has({tag_var_name})"
+            return f"host.pickup.get({tag_var_name})"
 
         elif node.data == "binary_comparison":
             left = traverse(state=state, node=cast(ParseTree, node.children[0]))
@@ -499,11 +500,11 @@ def render(passages: list[TweePassage]) -> str:
 
         # Using regex, find and replace all <<macro {macro_name}>> with the
         # macro content from macro_registry
-        for to_expand, (expanded_macro, state) in macro_registry.items():
+        for to_expand, (expanded_macro, macro_state) in macro_registry.items():
             to_replace = f"<<macro {to_expand}>>"
             if to_replace in content:
                 content = content.replace(to_replace, expanded_macro)
-                passage_to_children[passage.id].update(state.children)
+                passage_to_children[passage.id].update(macro_state.children)
 
         passage_functions.append(
             ConstructPassage(
@@ -516,33 +517,42 @@ def render(passages: list[TweePassage]) -> str:
         )
 
     # Walk our passage links to propagate the tag names
-    passage_to_title: dict[str | None, str | None] = {}
+    passage_to_tags: dict[str, list[str]] = defaultdict(list)
 
     tag_node_visited = set()
 
-    def propagate_tags(passage_id: str, tag: str | None = None):
+    def propagate_tags(passage_id: str, parent_tags: list[str] = []):
+
         tag_node_visited.add(passage_id)
         passage = passage_id_to_passage[passage_id]
         children = passage_to_children.get(passage_id, set())
 
-        for cand_tag in passage.tags:
-            if cand_tag not in SPECIAL_TAGS:
-                tag = cand_tag
-                break
+        our_tags = passage.tags
+        all_tags = list(chain(parent_tags, our_tags))
+        passage_to_tags[passage_id].extend(all_tags)
 
-        passage_to_title[passage_id] = tag
         for child_id in children:
             if child_id in tag_node_visited:
                 continue
 
             if child_id:
-                propagate_tags(child_id, tag)
+                propagate_tags(child_id, all_tags)
 
     propagate_tags(start_passage.id)
 
     # Now backfill our titles
     for cons_passage in passage_functions:
-        title = passage_to_title.get(cons_passage.id) or "???"
+        tags = passage_to_tags[cons_passage.id]
+
+        title = "???"
+        for tag in reversed(tags):
+            if tag in SPECIAL_TAGS:
+                if tag == "sign":
+                    cons_passage.is_sign = True
+                continue
+            title = tag
+            break
+
         title_id = hash_name(title)
         cons_passage.title = escape_and_quote(title)
         all_strings[title_id] = cons_passage.title

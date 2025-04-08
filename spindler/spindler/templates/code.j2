@@ -60,6 +60,7 @@ function incrementVisitCount(id: string): void {
 export function passage_{{p.id}}(): void {
     // {{p.title}}
     const title = "{{p.title_id}}"; 
+    const animate = {{"false" if p.is_sign else "true"}};
     let text = "";
     const choices: string[] = [];
     const params = new Map<string, string>();
@@ -72,7 +73,7 @@ export function passage_{{p.id}}(): void {
 {{p.content}}
 
     if (text.length > 0) {
-        host.text.displayInteraction(title, text, choices, params);
+        host.text.display(title, text, choices, params, animate);
     }
 }
 {% endmacro %}
