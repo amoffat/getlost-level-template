@@ -1,5 +1,6 @@
 import * as host from "@gl/api/w2h/host";
 import { String } from "@gl/types/i18n";
+import * as timeUtils from "@gl/utils/time";
 
 const log = host.debug.log;
 const logError = host.debug.logError;
@@ -15,6 +16,16 @@ const passageLookup = new Map<string, string>();
 passageLookup.set("{{name}}", "{{pid}}");
 {% endfor %}
 
+
+function isNight(): bool {
+    const ev = host.time.getSunEvent();
+    return timeUtils.isNight(ev);
+}
+
+function isDay(): bool {
+    const ev = host.time.getSunEvent();
+    return timeUtils.isDay(ev);
+}
 
 function visited(id: string): u32 {
     if (!visitCount.has(id)) {

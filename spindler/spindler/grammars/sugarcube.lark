@@ -43,20 +43,9 @@ local_var : "_" VAR_NAME
 VAR_NAME: WORD ("." WORD)*
 
 function_call: function_name "(" _arguments? ")"
-?function_name: \
-    VISITED
-    | HAS_VISITED
-    | LAST_VISITED
-    | RANDOM
-    | RANDOM_FLOAT
-    | EITHER
+?function_name: FUNCTION_NAME
 
-VISITED: "visited"
-HAS_VISITED: "hasVisited"
-LAST_VISITED: "lastVisited"
-RANDOM: "random"
-RANDOM_FLOAT: "randomFloat"
-EITHER: "either"
+FUNCTION_NAME: /[a-zA-Z_]+/
 
 _arguments: argument ("," argument)*
 ?argument: expression

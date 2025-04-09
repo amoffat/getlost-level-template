@@ -22,6 +22,17 @@ INVENTORY_VAR = "inventory"
 # Tags that should not control the dialogue title
 SPECIAL_TAGS = {"widget", "sign"}
 
+ALLOWED_FUNCTIONS = {
+    "visited",
+    "hasVisited",
+    "lastVisited",
+    "random",
+    "randomFloat",
+    "either",
+    "isDay",
+    "isNight",
+}
+
 
 @dataclass
 class Variable:
@@ -370,6 +381,12 @@ def render(passages: list[TweePassage]) -> str:
             return text
         elif node.data == "function_call":
             function_name = cast(Token, node.children[0]).value
+
+            if function_name not in ALLOWED_FUNCTIONS:
+                raise NotImplementedError(
+                    f"Function '{function_name}' is not allowed in this context."
+                )
+
             if function_name == "visited":
                 if len(node.children) == 1:
                     # Special case: hard code self passage as the argument
@@ -456,7 +473,6 @@ def render(passages: list[TweePassage]) -> str:
         passage_name_to_id[passage.name] = passage.id
 
     assert start_passage is not None, "No start passage found"
-    assert init_passage is not None, "No init passage found"
 
     passage_to_children: dict[str, set[str]] = defaultdict(set)
 
@@ -566,7 +582,8 @@ def render(passages: list[TweePassage]) -> str:
 
     # Insert the init passage at the start of the list because it often contains var
     # initializations
-    passages.insert(0, init_passage)
+    if init_passage:
+        passages.insert(0, init_passage)
 
     state_classes = find_state_classes([p for p in passages if p is not None])
     variable_types = infer_variable_types(passages, state_classes)
