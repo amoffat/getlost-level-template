@@ -12,49 +12,36 @@ Level
     "Frank": "red",
     "Knight": "green",
     "Fire": "orange",
-    "Well": "blue"
+    "Well": "blue",
+    "Nazar": "red"
   },
   "zoom": 0.6
 }
 
 
-:: Any new news? {"position":"2050,1400","size":"100,100"}
+:: Bye {"position":"1725,2000","size":"100,100"}
+Goodbye.
 
 
+:: Climb down {"position":"4200,1525","size":"100,100"}
+<<host.map.exit("well", true)>>
 
-:: Climb down {"position":"3125,1450","size":"100,100"}
-<<map.exit("well", true)>>
 
-
-:: Do you have a name? {"position":"1150,1800","size":"100,100"}
+:: Do you have a name? {"position":"1550,2000","size":"100,100"}
 <<set $knightOpts.yourName to false>>
 Sir Azure
 
 <<knight-choices>>
 
 
-:: Fire [Fire] {"position":"2525,1275","size":"100,100"}
+:: Fire [Fire] {"position":"2950,1325","size":"100,100"}
 Greetings.... traveller...
 
 [[Who are you?|who-fire]]
 [[Ignore the fire]]
 
 
-:: Frank [Frank] {"position":"1625,1250","size":"100,100"}
-<<if visited() >>
-Welcome back
-[[Any new news?]]
-<<else>>
-Hello there, who are you?
-[[Hi]]
-<</if>>
-
-<<if visited("Silent Knight")>>
-[[What do you know about that knight?]]
-<</if>>
-
-
-:: Guard from what? {"position":"575,1800","size":"100,100"}
+:: Guard from what? {"position":"975,2000","size":"100,100"}
 <<set $knightOpts.guardWhat to false>>
 
 That's not your concern.
@@ -62,18 +49,22 @@ That's not your concern.
 <<knight-choices>>
 
 
-:: Hi {"position":"1850,1450","size":"100,100"}
-Are you here with the Knight?
-
-[[No?]]
-[[Yes]]
-
-
-:: How about I get you a glass of water and you tell me? {"position":"875,2125","size":"100,100"}
+:: Hand him the map {"position":"650,1800","size":"100,100"}
 
 
 
-:: How did you get this job? {"position":"975,1800","size":"100,100"}
+:: Hi, I'm $playerName {"position":"2300,2850","size":"100,100"}
+I haven't seen you before, are you here with the Knight?
+
+[[What Knight?|what-knight]]
+[[Yes|yes-knight]]
+
+
+:: How about I get you a glass of water and you tell me? {"position":"1275,2325","size":"100,100"}
+
+
+
+:: How did you get this job? {"position":"1375,2000","size":"100,100"}
 <<set $knightOpts.howJob to false>>
 I.. uh... I volunteered. It's a long story, and I don't have time to tell it.
 
@@ -82,161 +73,24 @@ I.. uh... I volunteered. It's a long story, and I don't have time to tell it.
 <<knight-choices>>
 
 
-:: How long ago was this? {"position":"1975,2225","size":"100,100"}
+:: How long ago was this? {"position":"2500,3650","size":"100,100"}
 Only a week ago.
 
 
-:: I found it by the water {"position":"450,1600","size":"100,100"}
+:: I found it by the water {"position":"675,1600","size":"100,100"}
+Give it to me.
 
+[[No.|no-map]]
+[[Hand him the map]]
 
 
-:: I guess you don't want to know the incredible story behind it. {"position":"50,1750","size":"100,100"}
+:: I guess you don't want to know the incredible story behind it. {"position":"275,1750","size":"100,100"}
 
 
 
-:: I'll try {"position":"2300,2375","size":"100,100"}
+:: I know why you're here. {"position":"1200,1525","size":"100,100"}
+You talked to Nazar...
 
-
-
-:: Ignore the fire {"position":"2700,1500","size":"100,100"}
-
-
-
-:: Is your son Omar ok? {"position":"1475,1875","size":"100,100"}
-Yes, thank God, he is fine physically. But something changed about him. He does not talk like he once did. There is something dark in him now.
-
-[[What's different?]]
-
-
-:: Maybe I will. Where is he? {"position":"1325,2325","size":"100,100"}
-
-
-
-:: No? {"position":"1850,1625","size":"100,100"}
-
-
-
-:: None of your business {"position":"225,1600","size":"100,100"}
-Fine. I shouldn't even be talking with you. Move along.
-
-[[Ok ok I'll tell you]]
-[[I guess you don't want to know the incredible story behind it.]]
-
-
-:: Ok ok I'll tell you {"position":"250,1800","size":"100,100"}
-
-
-
-:: Pretty busy are you? {"position":"1025,2100","size":"100,100"}
-Yeah, actually I am, kid. Get Lost.
-<<set $upsetKnight to true>>
-
-
-:: Silent Knight [Knight] {"position":"350,1375","size":"100,100"}
-<<if pickups.has({map: null}) and false>>
-Hey, where did you get that map?
-[[I found it by the water]]
-[[None of your business]]
-<<elseif $upsetKnight>>
-I thought I said go away.
-<<else>>
-...
-[[Yeah hi, what is this place?|silence]]
-[[Who are you?]]
-<</if>>
-
-
-:: Sounds like he probably wants to be left alone. {"position":"1475,2325","size":"100,100"}
-
-
-
-:: Start {"position":"1675,100","size":"100,100"}
-[[Talk to Frank|Frank]]
-[[Talk to Silent Knight|Silent Knight]]
-[[Talk to Omar|Fire]]
-[[Well]]
-
-
-:: Step back {"position":"3400,1450","size":"100,100"}
-Maybe another time.
-
-
-:: StoryInit {"position":"925,75","size":"100,100"}
-<<set $inventory to {
-  map: {
-    tags: {
-      map: true
-    }
-  }
-}>>
-<<set $upsetKnight to false>>
-
-
-:: Well [Well] {"position":"3250,1225","size":"100,100"}
-There's a ladder going down, but you cannot see the bottom.
-
-[[Climb down]]
-[[Step back]]
-
-
-:: What are you looking for? {"position":"2525,1700","size":"100,100"}
-
-
-
-:: What did it say? {"position":"1975,2050","size":"100,100"}
-It said "This soldier should be treated like your brother. In return he will guard the city." Nothing else. But it had the Sheikh's seal. It was unmistakable.
-
-[[How long ago was this?]]
-[[Where does the knight stay?]]
-[[When does the knight leave?]]
-[[What is he guarding you from?]]
-
-<<set $learnedKnightStory to true>>
-
-
-:: What do you know about that knight? {"position":"1525,1475","size":"100,100"}
-<<set $frankOpts to {
-}>>
-
-
-Well, I know he's not from around here. There was a battle nearby. My son Omar was in it...he was injured. After the battle, the knight showed up.
-
-[[What do you mean he showed up?]]
-[[Is your son Omar ok?]]
-
-
-:: What do you mean he showed up? {"position":"1925,1875","size":"100,100"}
-I mean he arrived on foot, without weapons, bleeding everywhere. We all stayed away. We thought he left the battle to raid our village. But he had with him a decree from the Sheikh.
-
-[[What did it say?]]
-
-
-:: What is he guarding you from? {"position":"2275,2200","size":"100,100"}
-I don't know. When I told my son, I saw fear in him and he hasn't spoken since. Maybe you could have more luck.
-
-[[I'll try]]
-
-
-:: What's different? {"position":"1450,2050","size":"100,100"}
-He is quiet. I don't know. Go talk to him yourself.
-
-[[Maybe I will. Where is he?]]
-[[Sounds like he probably wants to be left alone.]]
-
-
-:: When does the knight leave? {"position":"1825,2225","size":"100,100"}
-
-
-
-:: Where are you from? {"position":"2325,1700","size":"100,100"}
-
-
-
-:: Where does the knight stay? {"position":"2125,2200","size":"100,100"}
-
-
-
-:: Who are you? [widget] {"position":"900,1500","size":"100,100"}
 <<set $knightOpts to {
 	whyTown: true,
     whoSheikh: true,
@@ -261,14 +115,163 @@ He is quiet. I don't know. Go talk to him yourself.
   <<if $knightOpts.yourName>>
 [[Do you have a name?]]
 	<</if>>
+    [[Bye]]
 <</widget>>
-
-I'm here on behalf of the Sheikh. I am to guard this town.
 
 <<knight-choices>>
 
 
-:: Who is the Sheikh? {"position":"825,1800","size":"100,100"}
+:: I saw a strange fire {"position":"2725,2850","size":"100,100"}
+
+
+
+:: Ignore the fire {"position":"3125,1550","size":"100,100"}
+
+
+
+:: Is your son Omar ok? {"position":"1650,3450","size":"100,100"}
+Yes, thank God, he is fine physically. But something changed about him. He does not talk like he once did. There is something dark in him now.
+
+[[What's different?]]
+
+
+:: Maybe I will. Where is he? {"position":"1800,3750","size":"100,100"}
+
+
+
+:: Nazar [Nazar] {"position":"2100,2675","size":"100,100"}
+<<if visited() > 1 >>
+Hello again.
+[[What's new?]]
+<<else>>
+Welcome, I'm Nazar
+[[Hi, I'm $playerName]]
+<</if>>
+
+<<if visited("Silent Knight")>>
+[[What do you know about that knight?]]
+<</if>>
+
+<<if visited("Fire")>>
+[[I saw a strange fire]]
+<</if>>
+
+
+:: None of your business {"position":"450,1600","size":"100,100"}
+Fine. I shouldn't even be talking with you. Move along.
+
+[[Ok ok I'll tell you]]
+[[I guess you don't want to know the incredible story behind it.]]
+
+
+:: Ok ok I'll tell you {"position":"475,1800","size":"100,100"}
+
+
+
+:: Pretty busy are you? {"position":"1425,2300","size":"100,100"}
+Yeah, actually I am, kid. Get Lost.
+<<set $upsetKnight to true>>
+
+
+:: Silent Knight [Knight] {"position":"800,1300","size":"100,100"}
+<<if isNight()>>
+...zzzzz....
+<<else>>
+  <<if host.pickup.get({map: null})>>
+Hey, where did you get that map?
+[[I found it by the water]]
+[[None of your business]]
+  <<elseif $learnedKnightStory>>
+[[I know why you're here.]]
+  <<elseif $upsetKnight>>
+I thought I said go away.
+  <<else>>
+...
+[[Hi|silence]]
+  <</if>>
+<</if>>
+
+
+:: Sounds like he probably wants to be left alone. {"position":"1950,3750","size":"100,100"}
+
+
+
+:: Start {"position":"1675,100","size":"100,100"}
+[[Talk to Nazar|Nazar]]
+[[Talk to Silent Knight|Silent Knight]]
+[[Talk to Omar|Fire]]
+[[Well]]
+
+
+:: Step back {"position":"4475,1525","size":"100,100"}
+Maybe another time.
+
+
+:: StoryInit {"position":"925,75","size":"100,100"}
+<<set $inventory to {
+  map: {
+    tags: {
+      map: false
+    }
+  }
+}>>
+<<set $upsetKnight to false>>
+<<set $playerName to "James">>
+
+
+:: Well [Well sign] {"position":"4325,1300","size":"100,100"}
+There's a ladder going down, but you cannot see the bottom.
+
+[[Climb down]]
+[[Step back]]
+
+
+:: What are you looking for? {"position":"2950,1750","size":"100,100"}
+
+
+
+:: What battle? {"position":"1875,3150","size":"100,100"}
+You're really not from around here, are you?
+
+
+:: What do you know about that knight? {"position":"2000,2900","size":"100,100"}
+Well, I know he's not from around here. There was a battle. Then he showed up.
+
+[[What do you mean he showed up?]]
+[[What battle?]]
+
+
+:: What do you mean he showed up? {"position":"2400,3300","size":"100,100"}
+I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.
+
+[[What did the letter say?|what-did-letter-say]]
+[[Who is the Sheikh?|nazar-who-shiekh]]
+
+
+:: What is he guarding you from? {"position":"2725,3650","size":"100,100"}
+You'll have to ask him.
+
+
+:: What's different? {"position":"1925,3475","size":"100,100"}
+He is quiet. I don't know. Go talk to him yourself.
+
+[[Maybe I will. Where is he?]]
+[[Sounds like he probably wants to be left alone.]]
+
+
+:: What's new? {"position":"1725,2900","size":"100,100"}
+Not much.
+
+
+:: When does the knight leave? {"position":"2300,3650","size":"100,100"}
+
+
+
+:: Where are you from? {"position":"2750,1750","size":"100,100"}
+
+
+
+:: Who is the Sheikh? {"position":"1225,2000","size":"100,100"}
 <<set $knightOpts.whoSheikh to false>>
 
 He sent me here to guard the town.
@@ -276,7 +279,7 @@ He sent me here to guard the town.
 <<knight-choices>>
 
 
-:: Why this town? {"position":"700,1800","size":"100,100"}
+:: Why this town? {"position":"1100,2000","size":"100,100"}
 <<set $knightOpts.whyTown to false>>
 
 The Sheikh asked me to.
@@ -284,29 +287,40 @@ The Sheikh asked me to.
 <<knight-choices>>
 
 
-:: Yes {"position":"2050,1625","size":"100,100"}
+:: nazar-who-shiekh {"position":"2675,3400","size":"100,100"}
+The Sheikh created this village.
+
+[[So what did the letter say?|what-did-letter-say]]
+
+
+:: no-map {"position":"825,1775","size":"100,100"}
 
 
 
-:: silence {"position":"125,1300","size":"100,100"}
+:: silence {"position":"500,1250","size":"100,100"}
 ...
 
 
-:: who-fire {"position":"2425,1500","size":"100,100"}
+:: what-did-letter-say {"position":"2450,3475","size":"100,100"}
+It said "Give food and water to this soldier. In return he will guard the village." It had the Sheikh's seal. It was unmistakable.
+
+[[How long ago was this?]]
+[[When does the knight leave?]]
+[[What is he guarding you from?]]
+
+<<set $learnedKnightStory to true>>
+
+
+:: what-knight {"position":"2450,3100","size":"100,100"}
+There's a knight to the south. He doesn't talk much. Go see for yourself.
+
+
+:: who-fire {"position":"2850,1550","size":"100,100"}
 A fellow traveller, like you. I'm here to observe.
 
 [[Where are you from?]]
 [[What are you looking for?]]
 
 
-:: StoryScript [script]
-window.pickups = {
-  has: function(tags) {
-    const inventory = State.getVar("$inventory") || {};
-    return Object.values(inventory).some(item => {
-      return Object.entries(tags).every(([tag, value]) => {
-        return value === null ? tag in item.tags : item.tags[tag] === value;
-      });
-    });
-  }
-};
+:: yes-knight {"position":"2650,3100","size":"100,100"}
+I see... let me know if you need anything.

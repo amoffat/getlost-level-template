@@ -1,12 +1,9 @@
 import * as host from "@gl/api/w2h/host";
 import { String } from "@gl/types/i18n";
+import * as timeUtils from "@gl/utils/time";
 
 const log = host.debug.log;
 const logError = host.debug.logError;
-
-class State_frankOpts {
-  constructor() {}
-}
 
 class State_knightOpts {
   whyTown: bool;
@@ -26,13 +23,11 @@ class State_knightOpts {
 class State {
   upsetKnight: bool;
   playerName: string;
-  frankOpts: State_frankOpts;
   learnedKnightStory: bool;
   knightOpts: State_knightOpts;
   constructor() {
     this.upsetKnight = false;
     this.playerName = "James";
-    this.frankOpts = new State_frankOpts();
     this.learnedKnightStory = true;
     this.knightOpts = new State_knightOpts();
   }
@@ -79,7 +74,6 @@ passageLookup.set("StoryInit", ">init");
 passageLookup.set("Well", "bdc7e965");
 passageLookup.set("What are you looking for?", "e3ad92be");
 passageLookup.set("What battle?", "e45c4215");
-passageLookup.set("What did it say?", "147664cc");
 passageLookup.set("What do you know about that knight?", "f213214a");
 passageLookup.set("What do you mean he showed up?", "9d4f68e2");
 passageLookup.set("What is he guarding you from?", "216c5e8c");
@@ -89,11 +83,23 @@ passageLookup.set("When does the knight leave?", "9b70a051");
 passageLookup.set("Where are you from?", "63265a79");
 passageLookup.set("Who is the Sheikh?", "885ce2f8");
 passageLookup.set("Why this town?", "198a1009");
+passageLookup.set("nazar-who-shiekh", "d20fad6e");
 passageLookup.set("no-map", "2a9618c1");
 passageLookup.set("silence", "e6c18fdb");
+passageLookup.set("what-did-letter-say", "aff68fcf");
 passageLookup.set("what-knight", "a61db43e");
 passageLookup.set("who-fire", "3d787171");
 passageLookup.set("yes-knight", "5c07303d");
+
+function isNight(): bool {
+  const ev = host.time.getSunEvent();
+  return timeUtils.isNight(ev);
+}
+
+function isDay(): bool {
+  const ev = host.time.getSunEvent();
+  return timeUtils.isDay(ev);
+}
 
 function visited(id: string): u32 {
   if (!visitCount.has(id)) {
@@ -434,10 +440,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "c45705cb",
+      key: "18083266",
       values: [
         {
-          text: "Hello again",
+          text: "Hello again.",
           lang: "en",
         },
       ],
@@ -548,6 +554,16 @@ export function strings(): String[] {
       values: [
         {
           text: "Yeah, actually I am, kid. Get Lost.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "18984c49",
+      values: [
+        {
+          text: "...zzzzz....",
           lang: "en",
         },
       ],
@@ -744,40 +760,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "f5654ac2",
+      key: "4d4371a9",
       values: [
         {
-          text: 'It said "Give food and water to this soldier. In return he will guard the village." It had the Sheikh\'s seal. It was unmistakable.',
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "f6ded42f",
-      values: [
-        {
-          text: "How long ago was this?",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "9b70a051",
-      values: [
-        {
-          text: "When does the knight leave?",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "216c5e8c",
-      values: [
-        {
-          text: "What is he guarding you from?",
+          text: "You're really not from around here, are you?",
           lang: "en",
         },
       ],
@@ -814,20 +800,40 @@ export function strings(): String[] {
     },
 
     {
-      key: "89a3b5f9",
+      key: "a7b6d713",
       values: [
         {
-          text: "I mean he arrived on foot, without weapons, covered in blood. We thought he left the battle to raid our village. But he had with him a decree from the Sheikh.",
+          text: "I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.",
           lang: "en",
         },
       ],
     },
 
     {
-      key: "147664cc",
+      key: "e2092668",
       values: [
         {
-          text: "What did it say?",
+          text: "What did the letter say?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "aff68fcf",
+      values: [
+        {
+          text: "So what did the letter say?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "d20fad6e",
+      values: [
+        {
+          text: "Who is the Sheikh?",
           lang: "en",
         },
       ],
@@ -898,6 +904,66 @@ export function strings(): String[] {
       values: [
         {
           text: "The Sheikh asked me to.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "6c3f1cc4",
+      values: [
+        {
+          text: "The Sheikh created this village.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "c40b2d30",
+      values: [
+        {
+          text: "So what did the letter say?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "f5654ac2",
+      values: [
+        {
+          text: 'It said "Give food and water to this soldier. In return he will guard the village." It had the Sheikh\'s seal. It was unmistakable.',
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "f6ded42f",
+      values: [
+        {
+          text: "How long ago was this?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "9b70a051",
+      values: [
+        {
+          text: "When does the knight leave?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "216c5e8c",
+      values: [
+        {
+          text: "What is he guarding you from?",
           lang: "en",
         },
       ],
@@ -1304,8 +1370,8 @@ export function passage_e1ffb1d2(): void {
   incrementVisitCount("e1ffb1d2");
 
   if (visited("e1ffb1d2") > 1) {
-    // Hello again
-    text = "c45705cb";
+    // Hello again.
+    text = "18083266";
     // What's new?
     choices.push("623aab5c");
   } else {
@@ -1382,24 +1448,29 @@ export function passage_491e88c5(): void {
   let pickup_tags_1 = new Map<string, string>();
   pickup_tags_1.set("map", "");
 
-  if (host.pickup.get(pickup_tags_1)) {
-    // Hey, where did you get that map?
-    text = "1c61a154";
-    // I found it by the water
-    choices.push("0e624e86");
-    // None of your business
-    choices.push("e0a2d72f");
-  } else if (state.learnedKnightStory) {
-    // I know why you're here.
-    choices.push("a2b8560b");
-  } else if (state.upsetKnight) {
-    // I thought I said go away.
-    text = "be9529b7";
+  if (isNight()) {
+    // ...zzzzz....
+    text = "18984c49";
   } else {
-    // ...
-    text = "ab5df625";
-    // Hi
-    choices.push("e6c18fdb");
+    if (host.pickup.get(pickup_tags_1)) {
+      // Hey, where did you get that map?
+      text = "1c61a154";
+      // I found it by the water
+      choices.push("0e624e86");
+      // None of your business
+      choices.push("e0a2d72f");
+    } else if (state.learnedKnightStory) {
+      // I know why you're here.
+      choices.push("a2b8560b");
+    } else if (state.upsetKnight) {
+      // I thought I said go away.
+      text = "be9529b7";
+    } else {
+      // ...
+      text = "ab5df625";
+      // Hi
+      choices.push("e6c18fdb");
+    }
   }
 
   if (text.length > 0) {
@@ -1447,25 +1518,18 @@ export function passage_bdc7e965(): void {
   }
 }
 
-// What did it say?
-export function passage_147664cc(): void {
+// What battle?
+export function passage_e45c4215(): void {
   // "Nazar"
   const title = "e1ffb1d2";
   const animate = true;
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("147664cc");
+  incrementVisitCount("e45c4215");
 
-  // It said "Give food and water to this soldier. In return he will guard the village." It had the Sheikh's seal. It was unmistakable.
-  text = "f5654ac2";
-  // How long ago was this?
-  choices.push("f6ded42f");
-  // When does the knight leave?
-  choices.push("9b70a051");
-  // What is he guarding you from?
-  choices.push("216c5e8c");
-  state.learnedKnightStory = true;
+  // You're really not from around here, are you?
+  text = "4d4371a9";
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1504,10 +1568,12 @@ export function passage_9d4f68e2(): void {
   const params = new Map<string, string>();
   incrementVisitCount("9d4f68e2");
 
-  // I mean he arrived on foot, without weapons, covered in blood. We thought he left the battle to raid our village. But he had with him a decree from the Sheikh.
-  text = "89a3b5f9";
-  // What did it say?
-  choices.push("147664cc");
+  // I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.
+  text = "a7b6d713";
+  // What did the letter say?
+  choices.push("aff68fcf");
+  // Who is the Sheikh?
+  choices.push("d20fad6e");
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1654,6 +1720,26 @@ export function passage_198a1009(): void {
   }
 }
 
+// nazar-who-shiekh
+export function passage_d20fad6e(): void {
+  // "Nazar"
+  const title = "e1ffb1d2";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  incrementVisitCount("d20fad6e");
+
+  // The Sheikh created this village.
+  text = "6c3f1cc4";
+  // So what did the letter say?
+  choices.push("aff68fcf");
+
+  if (text.length > 0) {
+    host.text.display(title, text, choices, params, animate);
+  }
+}
+
 // silence
 export function passage_e6c18fdb(): void {
   // "Knight"
@@ -1666,6 +1752,31 @@ export function passage_e6c18fdb(): void {
 
   // ...
   text = "ab5df625";
+
+  if (text.length > 0) {
+    host.text.display(title, text, choices, params, animate);
+  }
+}
+
+// what-did-letter-say
+export function passage_aff68fcf(): void {
+  // "Nazar"
+  const title = "e1ffb1d2";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  incrementVisitCount("aff68fcf");
+
+  // It said "Give food and water to this soldier. In return he will guard the village." It had the Sheikh's seal. It was unmistakable.
+  text = "f5654ac2";
+  // How long ago was this?
+  choices.push("f6ded42f");
+  // When does the knight leave?
+  choices.push("9b70a051");
+  // What is he guarding you from?
+  choices.push("216c5e8c");
+  state.learnedKnightStory = true;
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1818,9 +1929,9 @@ export function dispatch(passageId: string): void {
     passage_bdc7e965();
   }
 
-  if (passageId === "147664cc") {
+  if (passageId === "e45c4215") {
     found = true;
-    passage_147664cc();
+    passage_e45c4215();
   }
 
   if (passageId === "f213214a") {
@@ -1858,9 +1969,19 @@ export function dispatch(passageId: string): void {
     passage_198a1009();
   }
 
+  if (passageId === "d20fad6e") {
+    found = true;
+    passage_d20fad6e();
+  }
+
   if (passageId === "e6c18fdb") {
     found = true;
     passage_e6c18fdb();
+  }
+
+  if (passageId === "aff68fcf") {
+    found = true;
+    passage_aff68fcf();
   }
 
   if (passageId === "a61db43e") {
