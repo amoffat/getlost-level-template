@@ -3,6 +3,7 @@ Helps debug spindler
 """
 
 from pathlib import Path
+
 from spindler import process
 
 THIS_DIR = Path(__file__).parent
