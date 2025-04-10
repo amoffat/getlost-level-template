@@ -28,7 +28,7 @@ class State {
   constructor() {
     this.upsetKnight = false;
     this.playerName = "James";
-    this.learnedKnightStory = true;
+    this.learnedKnightStory = false;
     this.knightOpts = new State_knightOpts();
   }
 }
@@ -36,6 +36,7 @@ class State {
 export const state = new State();
 const visitCount = new Map<string, u32>();
 const passageLookup = new Map<string, string>();
+passageLookup.set("*ahem*... I said 'Hi'", "41876c52");
 passageLookup.set("Bye", "12890122");
 passageLookup.set("Climb down", "909a9cff");
 passageLookup.set("Do you have a name?", "562cd4ad");
@@ -43,31 +44,18 @@ passageLookup.set("Fire", "c141faa8");
 passageLookup.set("Guard from what?", "99e18287");
 passageLookup.set("Hand him the map", "8cf42533");
 passageLookup.set("Hi, I'm $playerName", "b6ea4b6d");
-passageLookup.set(
-  "How about I get you a glass of water and you tell me?",
-  "9c9f3b81",
-);
 passageLookup.set("How did you get this job?", "379dcdf1");
 passageLookup.set("How long ago was this?", "f6ded42f");
 passageLookup.set("I found it by the water", "0e624e86");
-passageLookup.set(
-  "I guess you don't want to know the incredible story behind it.",
-  "2bb0d7e2",
-);
 passageLookup.set("I know why you're here.", "a2b8560b");
 passageLookup.set("I saw a strange fire", "3bc44a17");
+passageLookup.set("I'm...new here", "559c302f");
 passageLookup.set("Ignore the fire", "690c49a8");
-passageLookup.set("Is your son Omar ok?", "f7c260b3");
-passageLookup.set("Maybe I will. Where is he?", "875f1c9b");
 passageLookup.set("Nazar", "e1ffb1d2");
 passageLookup.set("None of your business", "e0a2d72f");
-passageLookup.set("Ok ok I'll tell you", "bd7ea662");
-passageLookup.set("Pretty busy are you?", "a50fd415");
+passageLookup.set("Observe what?", "813cdd9a");
+passageLookup.set("Oh you mean the knight?", "2ecf7f34");
 passageLookup.set("Silent Knight", "491e88c5");
-passageLookup.set(
-  "Sounds like he probably wants to be left alone.",
-  "875599d3",
-);
 passageLookup.set("Start", ">start");
 passageLookup.set("Step back", "b863269e");
 passageLookup.set("StoryInit", ">init");
@@ -77,12 +65,12 @@ passageLookup.set("What battle?", "e45c4215");
 passageLookup.set("What do you know about that knight?", "f213214a");
 passageLookup.set("What do you mean he showed up?", "9d4f68e2");
 passageLookup.set("What is he guarding you from?", "216c5e8c");
-passageLookup.set("What's different?", "accf28f0");
 passageLookup.set("What's new?", "623aab5c");
 passageLookup.set("When does the knight leave?", "9b70a051");
 passageLookup.set("Where are you from?", "63265a79");
 passageLookup.set("Who is the Sheikh?", "885ce2f8");
 passageLookup.set("Why this town?", "198a1009");
+passageLookup.set("bye-silence", "9b7360e5");
 passageLookup.set("nazar-who-shiekh", "d20fad6e");
 passageLookup.set("no-map", "2a9618c1");
 passageLookup.set("silence", "e6c18fdb");
@@ -200,10 +188,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "2b687db6",
+      key: "aa225fe0",
       values: [
         {
-          text: "Goodbye.",
+          text: "Be well.",
           lang: "en",
         },
       ],
@@ -330,30 +318,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "66adb12b",
+      key: "bc301063",
       values: [
         {
-          text: "I.. uh... I volunteered. It's a long story, and I don't have time to tell it.",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "a50fd415",
-      values: [
-        {
-          text: "Pretty busy are you?",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "9c9f3b81",
-      values: [
-        {
-          text: "How about I get you a glass of water and you tell me?",
+          text: "I.. uh... I volunteered. It's a long story, and I'm very busy right now.",
           lang: "en",
         },
       ],
@@ -370,10 +338,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "c0074ea4",
+      key: "1de8ad8f",
       values: [
         {
-          text: "Give it to me.",
+          text: "I left it there. Give it to me.",
           lang: "en",
         },
       ],
@@ -393,7 +361,7 @@ export function strings(): String[] {
       key: "2a9618c1",
       values: [
         {
-          text: "No.",
+          text: "Run away",
           lang: "en",
         },
       ],
@@ -410,30 +378,20 @@ export function strings(): String[] {
     },
 
     {
-      key: "2a073c31",
+      key: "13ac241f",
       values: [
         {
-          text: "You talked to Nazar...",
+          text: "So you talked to Nazar...",
           lang: "en",
         },
       ],
     },
 
     {
-      key: "cb86050b",
+      key: "be1ca5bd",
       values: [
         {
-          text: "Yes, thank God, he is fine physically. But something changed about him. He does not talk like he once did. There is something dark in him now.",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "accf28f0",
-      values: [
-        {
-          text: "What's different?",
+          text: "You are? Interesting...",
           lang: "en",
         },
       ],
@@ -520,60 +478,90 @@ export function strings(): String[] {
     },
 
     {
-      key: "54524775",
+      key: "21316f2a",
       values: [
         {
-          text: "Fine. I shouldn't even be talking with you. Move along.",
+          text: "That's mine. Give it to me.",
           lang: "en",
         },
       ],
     },
 
     {
-      key: "bd7ea662",
+      key: "05e44e9b",
       values: [
         {
-          text: "Ok ok I'll tell you",
+          text: "Run away",
           lang: "en",
         },
       ],
     },
 
     {
-      key: "2bb0d7e2",
+      key: "b4c1d391",
       values: [
         {
-          text: "I guess you don't want to know the incredible story behind it.",
+          text: "I was told this village would be getting a new visitor.",
           lang: "en",
         },
       ],
     },
 
     {
-      key: "3a7bedf8",
+      key: "559c302f",
       values: [
         {
-          text: "Yeah, actually I am, kid. Get Lost.",
+          text: "I'm...new here",
           lang: "en",
         },
       ],
     },
 
     {
-      key: "18984c49",
+      key: "2ecf7f34",
       values: [
         {
-          text: "...zzzzz....",
+          text: "Oh you mean the knight?",
           lang: "en",
         },
       ],
     },
 
     {
-      key: "1c61a154",
+      key: "0d053e12",
       values: [
         {
-          text: "Hey, where did you get that map?",
+          text: "The person I am seeking carries a map",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "fdf9e577",
+      values: [
+        {
+          text: "...zzzzz....h-huh? I'm awake! Oh, it's you. Leave me alone.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "33dffa18",
+      values: [
+        {
+          text: "map",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "80251c82",
+      values: [
+        {
+          text: "Where did you get that map?",
           lang: "en",
         },
       ],
@@ -760,10 +748,20 @@ export function strings(): String[] {
     },
 
     {
-      key: "4d4371a9",
+      key: "d6e3cd9f",
       values: [
         {
-          text: "You're really not from around here, are you?",
+          text: "A map...",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "25aa4cfa",
+      values: [
+        {
+          text: "You're really not from around here, are you? We've been at war since before I was born.",
           lang: "en",
         },
       ],
@@ -850,40 +848,20 @@ export function strings(): String[] {
     },
 
     {
-      key: "313cd195",
-      values: [
-        {
-          text: "He is quiet. I don't know. Go talk to him yourself.",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "875f1c9b",
-      values: [
-        {
-          text: "Maybe I will. Where is he?",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "875599d3",
-      values: [
-        {
-          text: "Sounds like he probably wants to be left alone.",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
       key: "88d44f50",
       values: [
         {
           text: "Not much.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "fe9df577",
+      values: [
+        {
+          text: "A different place.",
           lang: "en",
         },
       ],
@@ -900,10 +878,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "769e3c29",
+      key: "76f7e319",
       values: [
         {
-          text: "The Sheikh asked me to.",
+          text: "The Sheikh asked me to. That's all I can tell you.",
           lang: "en",
         },
       ],
@@ -924,6 +902,26 @@ export function strings(): String[] {
       values: [
         {
           text: "So what did the letter say?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "41876c52",
+      values: [
+        {
+          text: "*ahem*... I said 'Hi'",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "9b7360e5",
+      values: [
+        {
+          text: "Bye",
           lang: "en",
         },
       ],
@@ -980,10 +978,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "597e02b3",
+      key: "e4de013f",
       values: [
         {
-          text: "A fellow traveller, like you. I'm here to observe.",
+          text: "A fellow traveller...like you. I'm here to seek and observe.",
           lang: "en",
         },
       ],
@@ -994,6 +992,16 @@ export function strings(): String[] {
       values: [
         {
           text: "Where are you from?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "813cdd9a",
+      values: [
+        {
+          text: "Observe what?",
           lang: "en",
         },
       ],
@@ -1028,16 +1036,6 @@ export function strings(): String[] {
         },
       ],
     },
-
-    {
-      key: "a03b221c",
-      values: [
-        {
-          text: "???",
-          lang: "en",
-        },
-      ],
-    },
   ];
 }
 
@@ -1062,8 +1060,8 @@ export function passage_12890122(): void {
   const params = new Map<string, string>();
   incrementVisitCount("12890122");
 
-  // Goodbye.
-  text = "2b687db6";
+  // Be well.
+  text = "aa225fe0";
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1224,12 +1222,8 @@ export function passage_379dcdf1(): void {
   incrementVisitCount("379dcdf1");
 
   state.knightOpts.howJob = false;
-  // I.. uh... I volunteered. It's a long story, and I don't have time to tell it.
-  text = "66adb12b";
-  // Pretty busy are you?
-  choices.push("a50fd415");
-  // How about I get you a glass of water and you tell me?
-  choices.push("9c9f3b81");
+  // I.. uh... I volunteered. It's a long story, and I'm very busy right now.
+  text = "bc301063";
   if (state.knightOpts.whyTown) {
     // Why this town?
     choices.push("198a1009");
@@ -1286,8 +1280,8 @@ export function passage_0e624e86(): void {
   const params = new Map<string, string>();
   incrementVisitCount("0e624e86");
 
-  // Give it to me.
-  text = "c0074ea4";
+  // I left it there. Give it to me.
+  text = "1de8ad8f";
   // No.
   choices.push("2a9618c1");
   // Hand him the map
@@ -1308,8 +1302,8 @@ export function passage_a2b8560b(): void {
   const params = new Map<string, string>();
   incrementVisitCount("a2b8560b");
 
-  // You talked to Nazar...
-  text = "2a073c31";
+  // So you talked to Nazar...
+  text = "13ac241f";
 
   if (state.knightOpts.whyTown) {
     // Why this town?
@@ -1339,20 +1333,18 @@ export function passage_a2b8560b(): void {
   }
 }
 
-// Is your son Omar ok?
-export function passage_f7c260b3(): void {
-  // "???"
-  const title = "a03b221c";
+// I'm...new here
+export function passage_559c302f(): void {
+  // "Fire"
+  const title = "c141faa8";
   const animate = true;
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("f7c260b3");
+  incrementVisitCount("559c302f");
 
-  // Yes, thank God, he is fine physically. But something changed about him. He does not talk like he once did. There is something dark in him now.
-  text = "cb86050b";
-  // What's different?
-  choices.push("accf28f0");
+  // You are? Interesting...
+  text = "be1ca5bd";
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1404,31 +1396,52 @@ export function passage_e0a2d72f(): void {
   const params = new Map<string, string>();
   incrementVisitCount("e0a2d72f");
 
-  // Fine. I shouldn't even be talking with you. Move along.
-  text = "54524775";
-  // Ok ok I'll tell you
-  choices.push("bd7ea662");
-  // I guess you don't want to know the incredible story behind it.
-  choices.push("2bb0d7e2");
+  // That's mine. Give it to me.
+  text = "21316f2a";
+  // Run away
+  choices.push("2a9618c1");
+  // Hand him the map
+  choices.push("8cf42533");
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
   }
 }
 
-// Pretty busy are you?
-export function passage_a50fd415(): void {
-  // "Knight"
-  const title = "f24b5246";
+// Observe what?
+export function passage_813cdd9a(): void {
+  // "Fire"
+  const title = "c141faa8";
   const animate = true;
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("a50fd415");
+  incrementVisitCount("813cdd9a");
 
-  // Yeah, actually I am, kid. Get Lost.
-  text = "3a7bedf8";
-  state.upsetKnight = true;
+  // I was told this village would be getting a new visitor.
+  text = "b4c1d391";
+  // I'm...new here
+  choices.push("559c302f");
+  // Oh you mean the knight?
+  choices.push("2ecf7f34");
+
+  if (text.length > 0) {
+    host.text.display(title, text, choices, params, animate);
+  }
+}
+
+// Oh you mean the knight?
+export function passage_2ecf7f34(): void {
+  // "Fire"
+  const title = "c141faa8";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  incrementVisitCount("2ecf7f34");
+
+  // The person I am seeking carries a map
+  text = "0d053e12";
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1445,16 +1458,17 @@ export function passage_491e88c5(): void {
   const params = new Map<string, string>();
   incrementVisitCount("491e88c5");
 
-  let pickup_tags_1 = new Map<string, string>();
-  pickup_tags_1.set("map", "");
+  const pickup_tags_1 = new Array<string>();
+  pickup_tags_1.push("type");
+  pickup_tags_1.push("map");
 
   if (isNight()) {
-    // ...zzzzz....
-    text = "18984c49";
+    // ...zzzzz....h-huh? I'm awake! Oh, it's you. Leave me alone.
+    text = "fdf9e577";
   } else {
-    if (host.pickup.get(pickup_tags_1)) {
-      // Hey, where did you get that map?
-      text = "1c61a154";
+    if (host.pickup.get(pickup_tags_1).length > 0) {
+      // Where did you get that map?
+      text = "80251c82";
       // I found it by the water
       choices.push("0e624e86");
       // None of your business
@@ -1518,6 +1532,24 @@ export function passage_bdc7e965(): void {
   }
 }
 
+// What are you looking for?
+export function passage_e3ad92be(): void {
+  // "Fire"
+  const title = "c141faa8";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  incrementVisitCount("e3ad92be");
+
+  // A map...
+  text = "d6e3cd9f";
+
+  if (text.length > 0) {
+    host.text.display(title, text, choices, params, animate);
+  }
+}
+
 // What battle?
 export function passage_e45c4215(): void {
   // "Nazar"
@@ -1528,8 +1560,8 @@ export function passage_e45c4215(): void {
   const params = new Map<string, string>();
   incrementVisitCount("e45c4215");
 
-  // You're really not from around here, are you?
-  text = "4d4371a9";
+  // You're really not from around here, are you? We've been at war since before I was born.
+  text = "25aa4cfa";
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1598,28 +1630,6 @@ export function passage_216c5e8c(): void {
   }
 }
 
-// What's different?
-export function passage_accf28f0(): void {
-  // "???"
-  const title = "a03b221c";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  const params = new Map<string, string>();
-  incrementVisitCount("accf28f0");
-
-  // He is quiet. I don't know. Go talk to him yourself.
-  text = "313cd195";
-  // Maybe I will. Where is he?
-  choices.push("875f1c9b");
-  // Sounds like he probably wants to be left alone.
-  choices.push("875599d3");
-
-  if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
-  }
-}
-
 // What's new?
 export function passage_623aab5c(): void {
   // "Nazar"
@@ -1632,6 +1642,24 @@ export function passage_623aab5c(): void {
 
   // Not much.
   text = "88d44f50";
+
+  if (text.length > 0) {
+    host.text.display(title, text, choices, params, animate);
+  }
+}
+
+// Where are you from?
+export function passage_63265a79(): void {
+  // "Fire"
+  const title = "c141faa8";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  incrementVisitCount("63265a79");
+
+  // A different place.
+  text = "fe9df577";
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1690,8 +1718,8 @@ export function passage_198a1009(): void {
   incrementVisitCount("198a1009");
 
   state.knightOpts.whyTown = false;
-  // The Sheikh asked me to.
-  text = "769e3c29";
+  // The Sheikh asked me to. That's all I can tell you.
+  text = "76f7e319";
   if (state.knightOpts.whyTown) {
     // Why this town?
     choices.push("198a1009");
@@ -1752,6 +1780,10 @@ export function passage_e6c18fdb(): void {
 
   // ...
   text = "ab5df625";
+  // *ahem*... I said 'Hi'
+  choices.push("41876c52");
+  // Bye
+  choices.push("9b7360e5");
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1811,10 +1843,12 @@ export function passage_3d787171(): void {
   const params = new Map<string, string>();
   incrementVisitCount("3d787171");
 
-  // A fellow traveller, like you. I'm here to observe.
-  text = "597e02b3";
+  // A fellow traveller...like you. I'm here to seek and observe.
+  text = "e4de013f";
   // Where are you from?
   choices.push("63265a79");
+  // Observe what?
+  choices.push("813cdd9a");
   // What are you looking for?
   choices.push("e3ad92be");
 
@@ -1894,9 +1928,9 @@ export function dispatch(passageId: string): void {
     passage_a2b8560b();
   }
 
-  if (passageId === "f7c260b3") {
+  if (passageId === "559c302f") {
     found = true;
-    passage_f7c260b3();
+    passage_559c302f();
   }
 
   if (passageId === "e1ffb1d2") {
@@ -1909,9 +1943,14 @@ export function dispatch(passageId: string): void {
     passage_e0a2d72f();
   }
 
-  if (passageId === "a50fd415") {
+  if (passageId === "813cdd9a") {
     found = true;
-    passage_a50fd415();
+    passage_813cdd9a();
+  }
+
+  if (passageId === "2ecf7f34") {
+    found = true;
+    passage_2ecf7f34();
   }
 
   if (passageId === "491e88c5") {
@@ -1927,6 +1966,11 @@ export function dispatch(passageId: string): void {
   if (passageId === "bdc7e965") {
     found = true;
     passage_bdc7e965();
+  }
+
+  if (passageId === "e3ad92be") {
+    found = true;
+    passage_e3ad92be();
   }
 
   if (passageId === "e45c4215") {
@@ -1949,14 +1993,14 @@ export function dispatch(passageId: string): void {
     passage_216c5e8c();
   }
 
-  if (passageId === "accf28f0") {
-    found = true;
-    passage_accf28f0();
-  }
-
   if (passageId === "623aab5c") {
     found = true;
     passage_623aab5c();
+  }
+
+  if (passageId === "63265a79") {
+    found = true;
+    passage_63265a79();
   }
 
   if (passageId === "885ce2f8") {

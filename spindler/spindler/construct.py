@@ -424,10 +424,11 @@ def render(passages: list[TweePassage]) -> str:
                 tags[tag] = value
 
             tag_var_name = get_temp_name("pickup_tags")
-            state.init.append(f"let {tag_var_name} = new Map<string, string>();")
+            state.init.append(f"const {tag_var_name} = new Array<string>();")
             for tag, value in tags.items():
-                state.init.append(f'{tag_var_name}.set("{tag}", {value});')
-            return f"host.pickup.get({tag_var_name})"
+                state.init.append(f'{tag_var_name}.push("{tag}");')
+                state.init.append(f"{tag_var_name}.push({value});")
+            return f"host.pickup.get({tag_var_name}).length > 0"
 
         elif node.data == "binary_comparison":
             left = traverse(state=state, node=cast(ParseTree, node.children[0]))
