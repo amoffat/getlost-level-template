@@ -1,3 +1,4 @@
+import re
 import subprocess
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -282,6 +283,7 @@ def render(passages: list[TweePassage]) -> str:
         return f"{prefix}_{name_num}"
 
     all_strings: dict[str, str] = {}
+    string_id_to_passage_id: dict[str, str] = {}
 
     def traverse(
         *,
@@ -320,18 +322,20 @@ def render(passages: list[TweePassage]) -> str:
             )
         elif node.data == "link":
             text = traverse(state=state, node=node.children[0])
-            target_id = hash_name(text)
+            string_id = hash_name(text)
+            all_strings[string_id] = escape_and_quote(text)
+
+            # Do we have a target slug? Then we need to record it as the child
+            # of this passage.
             if len(node.children) > 1:
-                # This is counterintuitive, but the string id is of the link
-                # target, but it's value is the text of the link. This is
-                # because we want to use the target id in our code, but render
-                # the text of the link as the string.
                 target_name = cast(Token, node.children[1]).value
                 target_id = hash_name(target_name)
-                all_strings[target_id] = escape_and_quote(text)
+                string_id_to_passage_id[string_id] = target_id
+            else:
+                target_id = string_id
 
             state.children.append(target_id)
-            choices = f'// {text}\nchoices.push("{target_id}");'
+            choices = f'// {text}\nchoices.push("{string_id}");'
             return choices
         elif node.data == "if_macro":
             condition = traverse(state=state, node=cast(ParseTree, node.children[0]))
@@ -393,7 +397,7 @@ def render(passages: list[TweePassage]) -> str:
                     return f'{function_name}("{state.passage_id}")'
 
                 def resolve_passage(expr: str) -> str:
-                    return f"passageLookup.get({expr})"
+                    return f"<<id-replace {expr}>>"
 
                 arguments = ", ".join(
                     resolve_passage(traverse(state=state, node=cast(ParseTree, arg)))
@@ -475,6 +479,12 @@ def render(passages: list[TweePassage]) -> str:
 
     assert start_passage is not None, "No start passage found"
 
+    # Now that we have our passage ids mapped to passages, we need to map
+    # strings that point to slug-based passage ids to the real passage.
+    for string_id, target_id in string_id_to_passage_id.items():
+        passage = passage_id_to_passage[string_id]
+        passage_id_to_passage[target_id] = passage
+
     passage_to_children: dict[str, set[str]] = defaultdict(set)
 
     # Create our macro registry. We'll replace all invocations of the macro with
@@ -522,6 +532,18 @@ def render(passages: list[TweePassage]) -> str:
             if to_replace in content:
                 content = content.replace(to_replace, expanded_macro)
                 passage_to_children[passage.id].update(macro_state.children)
+
+        # Now that we know all of our passage ids, let's do some replacements.
+        # This is for functions like `visited("Passage Name")` where the Twine
+        # code doesn't know what passage id it is, but we do now.
+        def repl_cb(match: re.Match) -> str:
+            passage_id = match.group(1)
+            if passage_id in passage_name_to_id:
+                return f'"{passage_name_to_id[passage_id]}"'
+            else:
+                raise ValueError(f"Passage ID '{passage_id}' not found.")
+
+        content = re.sub(r"<<id-replace (?:'|\")(.*?)(?:'|\")>>", repl_cb, content)
 
         passage_functions.append(
             ConstructPassage(
@@ -601,7 +623,7 @@ def render(passages: list[TweePassage]) -> str:
         all_strings=all_strings,
         state_classes=state_class_defs,
         passages=passage_functions,
-        passage_lookup=passage_name_to_id,
+        choice_to_passage=string_id_to_passage_id,
     )
     output = format(output)
 

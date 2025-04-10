@@ -35,49 +35,25 @@ class State {
 
 export const state = new State();
 const visitCount = new Map<string, u32>();
-const passageLookup = new Map<string, string>();
-passageLookup.set("*ahem*... I said 'Hi'", "41876c52");
-passageLookup.set("Bye", "12890122");
-passageLookup.set("Climb down", "909a9cff");
-passageLookup.set("Do you have a name?", "562cd4ad");
-passageLookup.set("Fire", "c141faa8");
-passageLookup.set("Guard from what?", "99e18287");
-passageLookup.set("Hand him the map", "8cf42533");
-passageLookup.set("Hi, I'm $playerName", "b6ea4b6d");
-passageLookup.set("How did you get this job?", "379dcdf1");
-passageLookup.set("How long ago was this?", "f6ded42f");
-passageLookup.set("I found it by the water", "0e624e86");
-passageLookup.set("I know why you're here.", "a2b8560b");
-passageLookup.set("I saw a strange fire", "3bc44a17");
-passageLookup.set("I'm...new here", "559c302f");
-passageLookup.set("Ignore the fire", "690c49a8");
-passageLookup.set("Nazar", "e1ffb1d2");
-passageLookup.set("None of your business", "e0a2d72f");
-passageLookup.set("Observe what?", "813cdd9a");
-passageLookup.set("Oh you mean the knight?", "2ecf7f34");
-passageLookup.set("Silent Knight", "491e88c5");
-passageLookup.set("Start", ">start");
-passageLookup.set("Step back", "b863269e");
-passageLookup.set("StoryInit", ">init");
-passageLookup.set("Well", "bdc7e965");
-passageLookup.set("What are you looking for?", "e3ad92be");
-passageLookup.set("What battle?", "e45c4215");
-passageLookup.set("What do you know about that knight?", "f213214a");
-passageLookup.set("What do you mean he showed up?", "9d4f68e2");
-passageLookup.set("What is he guarding you from?", "216c5e8c");
-passageLookup.set("What's new?", "623aab5c");
-passageLookup.set("When does the knight leave?", "9b70a051");
-passageLookup.set("Where are you from?", "63265a79");
-passageLookup.set("Who is the Sheikh?", "885ce2f8");
-passageLookup.set("Why this town?", "198a1009");
-passageLookup.set("bye-silence", "9b7360e5");
-passageLookup.set("nazar-who-shiekh", "d20fad6e");
-passageLookup.set("no-map", "2a9618c1");
-passageLookup.set("silence", "e6c18fdb");
-passageLookup.set("what-did-letter-say", "aff68fcf");
-passageLookup.set("what-knight", "a61db43e");
-passageLookup.set("who-fire", "3d787171");
-passageLookup.set("yes-knight", "5c07303d");
+const choiceToPassage = new Map<string, string>();
+choiceToPassage.set("80495816", "3d787171");
+choiceToPassage.set("141a8032", "50c96f21");
+choiceToPassage.set("6451edb5", "a61db43e");
+choiceToPassage.set("85a39ab3", "5c07303d");
+choiceToPassage.set("38178a20", "2a9618c1");
+choiceToPassage.set("05e44e9b", "2a9618c1");
+choiceToPassage.set("3639efcd", "e6c18fdb");
+choiceToPassage.set("7fafd7d4", "e1ffb1d2");
+choiceToPassage.set("dd146f7d", "491e88c5");
+choiceToPassage.set("98bd5b29", "c141faa8");
+choiceToPassage.set("e2092668", "aff68fcf");
+choiceToPassage.set("885ce2f8", "d20fad6e");
+choiceToPassage.set("c40b2d30", "aff68fcf");
+choiceToPassage.set("3e769b34", "90212c36");
+choiceToPassage.set("41876c52", "e6c18fdb");
+choiceToPassage.set("12890122", "9b7360e5");
+choiceToPassage.set("813cdd9a", "90212c36");
+choiceToPassage.set("b27a0c1e", "50c96f21");
 
 function isNight(): bool {
   const ev = host.time.getSunEvent();
@@ -128,10 +104,10 @@ function incrementVisitCount(id: string): void {
 export function strings(): String[] {
   return [
     {
-      key: "198a1009",
+      key: "3c0aa10d",
       values: [
         {
-          text: "Why this town?",
+          text: "Why are you guarding this town?",
           lang: "en",
         },
       ],
@@ -218,6 +194,36 @@ export function strings(): String[] {
     },
 
     {
+      key: "33dffa18",
+      values: [
+        {
+          text: "map",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "f4886e4d",
+      values: [
+        {
+          text: "You've found it... Please, give it to me...",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "dffd1999",
+      values: [
+        {
+          text: "You've returned.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "bbe687cd",
       values: [
         {
@@ -238,16 +244,6 @@ export function strings(): String[] {
     },
 
     {
-      key: "3d787171",
-      values: [
-        {
-          text: "Who are you?",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
       key: "690c49a8",
       values: [
         {
@@ -258,10 +254,60 @@ export function strings(): String[] {
     },
 
     {
+      key: "2aa61a95",
+      values: [
+        {
+          text: "In the place where I'm from, we wouldn't be having this conversation because there is no you or I.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "c8a7d597",
+      values: [
+        {
+          text: "Gotcha...",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "4540b6fa",
+      values: [
+        {
+          text: "Anything else you'd like to know?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "141a8032",
+      values: [
+        {
+          text: "You said you were seeking something?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "96f38b61",
       values: [
         {
           text: "That's not your concern.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "eb8848da",
+      values: [
+        {
+          text: "I'd like to chat, but it's getting late. Come back during the day.",
           lang: "en",
         },
       ],
@@ -288,27 +334,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "a61db43e",
-      values: [
-        {
-          text: "What Knight?",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
       key: "85a39ab3",
-      values: [
-        {
-          text: "Yes",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "5c07303d",
       values: [
         {
           text: "Yes",
@@ -358,16 +384,6 @@ export function strings(): String[] {
     },
 
     {
-      key: "2a9618c1",
-      values: [
-        {
-          text: "Run away",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
       key: "8cf42533",
       values: [
         {
@@ -378,10 +394,20 @@ export function strings(): String[] {
     },
 
     {
-      key: "13ac241f",
+      key: "aa053912",
       values: [
         {
-          text: "So you talked to Nazar...",
+          text: "You talked to the old man...",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "0ff99cc5",
+      values: [
+        {
+          text: "You've lost your mind. Please go.",
           lang: "en",
         },
       ],
@@ -418,20 +444,20 @@ export function strings(): String[] {
     },
 
     {
-      key: "83e37e65",
+      key: "6bb62fa6",
       values: [
         {
-          text: "Welcome, I'm Nazar",
+          text: "Welcome, I'm Nazar.",
           lang: "en",
         },
       ],
     },
 
     {
-      key: "b6ea4b6d",
+      key: "7d52fd29",
       values: [
         {
-          text: "Hi, I'm $playerName",
+          text: "Hi Nazar, I'm $playerName.",
           lang: "en",
         },
       ],
@@ -468,10 +494,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "3bc44a17",
+      key: "3ca52efa",
       values: [
         {
-          text: "I saw a strange fire",
+          text: "I saw fire on the water.",
           lang: "en",
         },
       ],
@@ -498,36 +524,6 @@ export function strings(): String[] {
     },
 
     {
-      key: "b4c1d391",
-      values: [
-        {
-          text: "I was told this village would be getting a new visitor.",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "559c302f",
-      values: [
-        {
-          text: "I'm...new here",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "2ecf7f34",
-      values: [
-        {
-          text: "Oh you mean the knight?",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
       key: "0d053e12",
       values: [
         {
@@ -538,20 +534,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "fdf9e577",
+      key: "74fb74d6",
       values: [
         {
-          text: "...zzzzz....h-huh? I'm awake! Oh, it's you. Leave me alone.",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "33dffa18",
-      values: [
-        {
-          text: "map",
+          text: "...zzzzz....h-huh? I'm awake!",
           lang: "en",
         },
       ],
@@ -628,30 +614,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "e6c18fdb",
-      values: [
-        {
-          text: "Hi",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
       key: "7fafd7d4",
       values: [
         {
           text: "Talk to Nazar",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "e1ffb1d2",
-      values: [
-        {
-          text: "Nazar",
           lang: "en",
         },
       ],
@@ -668,30 +634,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "491e88c5",
+      key: "98bd5b29",
       values: [
         {
-          text: "Talk to Silent Knight",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "fac5b768",
-      values: [
-        {
-          text: "Talk to Omar",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "c141faa8",
-      values: [
-        {
-          text: "Fire",
+          text: "Talk to Fire",
           lang: "en",
         },
       ],
@@ -748,20 +694,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "d6e3cd9f",
+      key: "e4657ad8",
       values: [
         {
-          text: "A map...",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "25aa4cfa",
-      values: [
-        {
-          text: "You're really not from around here, are you? We've been at war since before I was born.",
+          text: "You're really not from around here, are you? My people have been at war since before I was born.",
           lang: "en",
         },
       ],
@@ -818,26 +754,6 @@ export function strings(): String[] {
     },
 
     {
-      key: "aff68fcf",
-      values: [
-        {
-          text: "So what did the letter say?",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "d20fad6e",
-      values: [
-        {
-          text: "Who is the Sheikh?",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
       key: "7c1dac67",
       values: [
         {
@@ -858,10 +774,30 @@ export function strings(): String[] {
     },
 
     {
-      key: "fe9df577",
+      key: "092afab4",
       values: [
         {
-          text: "A different place.",
+          text: "Find it for me and I'll show you.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "f304833e",
+      values: [
+        {
+          text: "A different place. Your language lacks the words for it.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "15874eac",
+      values: [
+        {
+          text: "Give it a shot.",
           lang: "en",
         },
       ],
@@ -908,20 +844,70 @@ export function strings(): String[] {
     },
 
     {
-      key: "41876c52",
+      key: "b4c1d391",
       values: [
         {
-          text: "*ahem*... I said 'Hi'",
+          text: "I was told this village would be getting a new visitor.",
           lang: "en",
         },
       ],
     },
 
     {
-      key: "9b7360e5",
+      key: "559c302f",
       values: [
         {
-          text: "Bye",
+          text: "I'm...new here",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "2ecf7f34",
+      values: [
+        {
+          text: "Oh you mean the knight?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "d6e3cd9f",
+      values: [
+        {
+          text: "A map...",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "255e6fab",
+      values: [
+        {
+          text: "What's so special about a map?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "3e769b34",
+      values: [
+        {
+          text: "You said you were observing? What?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "41876c52",
+      values: [
+        {
+          text: "*ahem*... I said 'Hi'",
           lang: "en",
         },
       ],
@@ -978,10 +964,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "e4de013f",
+      key: "15dd9ed6",
       values: [
         {
-          text: "A fellow traveller...like you. I'm here to seek and observe.",
+          text: "A fellow traveller.... I'm here to seek and observe.",
           lang: "en",
         },
       ],
@@ -1008,10 +994,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "e3ad92be",
+      key: "b27a0c1e",
       values: [
         {
-          text: "What are you looking for?",
+          text: "What are you seeking?",
           lang: "en",
         },
       ],
@@ -1036,6 +1022,26 @@ export function strings(): String[] {
         },
       ],
     },
+
+    {
+      key: "c141faa8",
+      values: [
+        {
+          text: "Fire",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "e1ffb1d2",
+      values: [
+        {
+          text: "Nazar",
+          lang: "en",
+        },
+      ],
+    },
   ];
 }
 
@@ -1047,6 +1053,9 @@ export function strings(): String[] {
  */
 export function choiceMadeEvent(passageId: string, choiceId: string): void {
   log(`Choice made for ${passageId}: ${choiceId}`);
+  if (choiceToPassage.has(choiceId)) {
+    choiceId = choiceToPassage.get(choiceId);
+  }
   dispatch(choiceId);
 }
 
@@ -1099,8 +1108,8 @@ export function passage_562cd4ad(): void {
   // Sir Azure
   text = "006d3ad6";
   if (state.knightOpts.whyTown) {
-    // Why this town?
-    choices.push("198a1009");
+    // Why are you guarding this town?
+    choices.push("3c0aa10d");
   }
   if (state.knightOpts.whoSheikh) {
     // Who is the Sheikh?
@@ -1136,12 +1145,66 @@ export function passage_c141faa8(): void {
   const params = new Map<string, string>();
   incrementVisitCount("c141faa8");
 
-  // Greetings.... traveller...
-  text = "bbe687cd";
-  // Who are you?
-  choices.push("3d787171");
-  // Ignore the fire
-  choices.push("690c49a8");
+  const pickup_tags_1 = new Array<string>();
+  pickup_tags_1.push("type");
+  pickup_tags_1.push("map");
+
+  if (host.pickup.get(pickup_tags_1).length > 0) {
+    // You've found it... Please, give it to me...
+    text = "f4886e4d";
+  } else {
+    if (visited("c141faa8") > 1) {
+      // You've returned.
+      text = "dffd1999";
+    } else {
+      // Greetings.... traveller...
+      text = "bbe687cd";
+      // Who are you?
+      choices.push("80495816");
+      // Ignore the fire
+      choices.push("690c49a8");
+    }
+  }
+
+  if (text.length > 0) {
+    host.text.display(title, text, choices, params, animate);
+  }
+}
+
+// Give it a shot.
+export function passage_15874eac(): void {
+  // "Fire"
+  const title = "c141faa8";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  incrementVisitCount("15874eac");
+
+  // In the place where I'm from, we wouldn't be having this conversation because there is no you or I.
+  text = "2aa61a95";
+  // Gotcha...
+  choices.push("c8a7d597");
+
+  if (text.length > 0) {
+    host.text.display(title, text, choices, params, animate);
+  }
+}
+
+// Gotcha...
+export function passage_c8a7d597(): void {
+  // "Fire"
+  const title = "c141faa8";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  incrementVisitCount("c8a7d597");
+
+  // Anything else you'd like to know?
+  text = "4540b6fa";
+  // You said you were seeking something?
+  choices.push("141a8032");
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1162,8 +1225,8 @@ export function passage_99e18287(): void {
   // That's not your concern.
   text = "96f38b61";
   if (state.knightOpts.whyTown) {
-    // Why this town?
-    choices.push("198a1009");
+    // Why are you guarding this town?
+    choices.push("3c0aa10d");
   }
   if (state.knightOpts.whoSheikh) {
     // Who is the Sheikh?
@@ -1189,22 +1252,27 @@ export function passage_99e18287(): void {
   }
 }
 
-// Hi, I'm $playerName
-export function passage_b6ea4b6d(): void {
+// Hi Nazar, I'm $playerName.
+export function passage_7d52fd29(): void {
   // "Nazar"
   const title = "e1ffb1d2";
   const animate = true;
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("b6ea4b6d");
+  incrementVisitCount("7d52fd29");
 
-  // I haven't seen you before, are you here with the Knight?
-  text = "159272d5";
-  // What Knight?
-  choices.push("a61db43e");
-  // Yes
-  choices.push("5c07303d");
+  if (isNight()) {
+    // I'd like to chat, but it's getting late. Come back during the day.
+    text = "eb8848da";
+  } else {
+    // I haven't seen you before, are you here with the Knight?
+    text = "159272d5";
+    // What Knight?
+    choices.push("6451edb5");
+    // Yes
+    choices.push("85a39ab3");
+  }
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1225,8 +1293,8 @@ export function passage_379dcdf1(): void {
   // I.. uh... I volunteered. It's a long story, and I'm very busy right now.
   text = "bc301063";
   if (state.knightOpts.whyTown) {
-    // Why this town?
-    choices.push("198a1009");
+    // Why are you guarding this town?
+    choices.push("3c0aa10d");
   }
   if (state.knightOpts.whoSheikh) {
     // Who is the Sheikh?
@@ -1283,7 +1351,7 @@ export function passage_0e624e86(): void {
   // I left it there. Give it to me.
   text = "1de8ad8f";
   // No.
-  choices.push("2a9618c1");
+  choices.push("38178a20");
   // Hand him the map
   choices.push("8cf42533");
 
@@ -1302,12 +1370,12 @@ export function passage_a2b8560b(): void {
   const params = new Map<string, string>();
   incrementVisitCount("a2b8560b");
 
-  // So you talked to Nazar...
-  text = "13ac241f";
+  // You talked to the old man...
+  text = "aa053912";
 
   if (state.knightOpts.whyTown) {
-    // Why this town?
-    choices.push("198a1009");
+    // Why are you guarding this town?
+    choices.push("3c0aa10d");
   }
   if (state.knightOpts.whoSheikh) {
     // Who is the Sheikh?
@@ -1327,6 +1395,24 @@ export function passage_a2b8560b(): void {
   }
   // Bye
   choices.push("12890122");
+
+  if (text.length > 0) {
+    host.text.display(title, text, choices, params, animate);
+  }
+}
+
+// I saw fire on the water.
+export function passage_3ca52efa(): void {
+  // "Nazar"
+  const title = "e1ffb1d2";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  incrementVisitCount("3ca52efa");
+
+  // You've lost your mind. Please go.
+  text = "0ff99cc5";
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1367,18 +1453,18 @@ export function passage_e1ffb1d2(): void {
     // What's new?
     choices.push("623aab5c");
   } else {
-    // Welcome, I'm Nazar
-    text = "83e37e65";
-    // Hi, I'm $playerName
-    choices.push("b6ea4b6d");
+    // Welcome, I'm Nazar.
+    text = "6bb62fa6";
+    // Hi Nazar, I'm $playerName.
+    choices.push("7d52fd29");
   }
-  if (visited(passageLookup.get("Silent Knight"))) {
+  if (visited("491e88c5")) {
     // What do you know about that knight?
     choices.push("f213214a");
   }
-  if (visited(passageLookup.get("Fire"))) {
-    // I saw a strange fire
-    choices.push("3bc44a17");
+  if (visited("c141faa8")) {
+    // I saw fire on the water.
+    choices.push("3ca52efa");
   }
 
   if (text.length > 0) {
@@ -1399,31 +1485,9 @@ export function passage_e0a2d72f(): void {
   // That's mine. Give it to me.
   text = "21316f2a";
   // Run away
-  choices.push("2a9618c1");
+  choices.push("05e44e9b");
   // Hand him the map
   choices.push("8cf42533");
-
-  if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
-  }
-}
-
-// Observe what?
-export function passage_813cdd9a(): void {
-  // "Fire"
-  const title = "c141faa8";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  const params = new Map<string, string>();
-  incrementVisitCount("813cdd9a");
-
-  // I was told this village would be getting a new visitor.
-  text = "b4c1d391";
-  // I'm...new here
-  choices.push("559c302f");
-  // Oh you mean the knight?
-  choices.push("2ecf7f34");
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1458,15 +1522,15 @@ export function passage_491e88c5(): void {
   const params = new Map<string, string>();
   incrementVisitCount("491e88c5");
 
-  const pickup_tags_1 = new Array<string>();
-  pickup_tags_1.push("type");
-  pickup_tags_1.push("map");
+  const pickup_tags_2 = new Array<string>();
+  pickup_tags_2.push("type");
+  pickup_tags_2.push("map");
 
   if (isNight()) {
-    // ...zzzzz....h-huh? I'm awake! Oh, it's you. Leave me alone.
-    text = "fdf9e577";
+    // ...zzzzz....h-huh? I'm awake!
+    text = "74fb74d6";
   } else {
-    if (host.pickup.get(pickup_tags_1).length > 0) {
+    if (host.pickup.get(pickup_tags_2).length > 0) {
       // Where did you get that map?
       text = "80251c82";
       // I found it by the water
@@ -1483,7 +1547,7 @@ export function passage_491e88c5(): void {
       // ...
       text = "ab5df625";
       // Hi
-      choices.push("e6c18fdb");
+      choices.push("3639efcd");
     }
   }
 
@@ -1532,24 +1596,6 @@ export function passage_bdc7e965(): void {
   }
 }
 
-// What are you looking for?
-export function passage_e3ad92be(): void {
-  // "Fire"
-  const title = "c141faa8";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  const params = new Map<string, string>();
-  incrementVisitCount("e3ad92be");
-
-  // A map...
-  text = "d6e3cd9f";
-
-  if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
-  }
-}
-
 // What battle?
 export function passage_e45c4215(): void {
   // "Nazar"
@@ -1560,8 +1606,8 @@ export function passage_e45c4215(): void {
   const params = new Map<string, string>();
   incrementVisitCount("e45c4215");
 
-  // You're really not from around here, are you? We've been at war since before I was born.
-  text = "25aa4cfa";
+  // You're really not from around here, are you? My people have been at war since before I was born.
+  text = "e4657ad8";
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1603,9 +1649,9 @@ export function passage_9d4f68e2(): void {
   // I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.
   text = "a7b6d713";
   // What did the letter say?
-  choices.push("aff68fcf");
+  choices.push("e2092668");
   // Who is the Sheikh?
-  choices.push("d20fad6e");
+  choices.push("885ce2f8");
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1648,6 +1694,24 @@ export function passage_623aab5c(): void {
   }
 }
 
+// What's so special about a map?
+export function passage_255e6fab(): void {
+  // "Fire"
+  const title = "c141faa8";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  incrementVisitCount("255e6fab");
+
+  // Find it for me and I'll show you.
+  text = "092afab4";
+
+  if (text.length > 0) {
+    host.text.display(title, text, choices, params, animate);
+  }
+}
+
 // Where are you from?
 export function passage_63265a79(): void {
   // "Fire"
@@ -1658,8 +1722,10 @@ export function passage_63265a79(): void {
   const params = new Map<string, string>();
   incrementVisitCount("63265a79");
 
-  // A different place.
-  text = "fe9df577";
+  // A different place. Your language lacks the words for it.
+  text = "f304833e";
+  // Give it a shot.
+  choices.push("15874eac");
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1680,8 +1746,8 @@ export function passage_885ce2f8(): void {
   // He sent me here to guard the town.
   text = "8afcb04f";
   if (state.knightOpts.whyTown) {
-    // Why this town?
-    choices.push("198a1009");
+    // Why are you guarding this town?
+    choices.push("3c0aa10d");
   }
   if (state.knightOpts.whoSheikh) {
     // Who is the Sheikh?
@@ -1707,22 +1773,22 @@ export function passage_885ce2f8(): void {
   }
 }
 
-// Why this town?
-export function passage_198a1009(): void {
+// Why are you guarding this town?
+export function passage_3c0aa10d(): void {
   // "Knight"
   const title = "f24b5246";
   const animate = true;
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("198a1009");
+  incrementVisitCount("3c0aa10d");
 
   state.knightOpts.whyTown = false;
   // The Sheikh asked me to. That's all I can tell you.
   text = "76f7e319";
   if (state.knightOpts.whyTown) {
-    // Why this town?
-    choices.push("198a1009");
+    // Why are you guarding this town?
+    choices.push("3c0aa10d");
   }
   if (state.knightOpts.whoSheikh) {
     // Who is the Sheikh?
@@ -1761,7 +1827,51 @@ export function passage_d20fad6e(): void {
   // The Sheikh created this village.
   text = "6c3f1cc4";
   // So what did the letter say?
-  choices.push("aff68fcf");
+  choices.push("c40b2d30");
+
+  if (text.length > 0) {
+    host.text.display(title, text, choices, params, animate);
+  }
+}
+
+// observe-what
+export function passage_90212c36(): void {
+  // "Fire"
+  const title = "c141faa8";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  incrementVisitCount("90212c36");
+
+  // I was told this village would be getting a new visitor.
+  text = "b4c1d391";
+  // I'm...new here
+  choices.push("559c302f");
+  // Oh you mean the knight?
+  choices.push("2ecf7f34");
+
+  if (text.length > 0) {
+    host.text.display(title, text, choices, params, animate);
+  }
+}
+
+// seek-what
+export function passage_50c96f21(): void {
+  // "Fire"
+  const title = "c141faa8";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  incrementVisitCount("50c96f21");
+
+  // A map...
+  text = "d6e3cd9f";
+  // What's so special about a map?
+  choices.push("255e6fab");
+  // You said you were observing? What?
+  choices.push("3e769b34");
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1783,7 +1893,7 @@ export function passage_e6c18fdb(): void {
   // *ahem*... I said 'Hi'
   choices.push("41876c52");
   // Bye
-  choices.push("9b7360e5");
+  choices.push("12890122");
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1843,14 +1953,14 @@ export function passage_3d787171(): void {
   const params = new Map<string, string>();
   incrementVisitCount("3d787171");
 
-  // A fellow traveller...like you. I'm here to seek and observe.
-  text = "e4de013f";
+  // A fellow traveller.... I'm here to seek and observe.
+  text = "15dd9ed6";
   // Where are you from?
   choices.push("63265a79");
   // Observe what?
   choices.push("813cdd9a");
-  // What are you looking for?
-  choices.push("e3ad92be");
+  // What are you seeking?
+  choices.push("b27a0c1e");
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1898,14 +2008,24 @@ export function dispatch(passageId: string): void {
     passage_c141faa8();
   }
 
+  if (passageId === "15874eac") {
+    found = true;
+    passage_15874eac();
+  }
+
+  if (passageId === "c8a7d597") {
+    found = true;
+    passage_c8a7d597();
+  }
+
   if (passageId === "99e18287") {
     found = true;
     passage_99e18287();
   }
 
-  if (passageId === "b6ea4b6d") {
+  if (passageId === "7d52fd29") {
     found = true;
-    passage_b6ea4b6d();
+    passage_7d52fd29();
   }
 
   if (passageId === "379dcdf1") {
@@ -1928,6 +2048,11 @@ export function dispatch(passageId: string): void {
     passage_a2b8560b();
   }
 
+  if (passageId === "3ca52efa") {
+    found = true;
+    passage_3ca52efa();
+  }
+
   if (passageId === "559c302f") {
     found = true;
     passage_559c302f();
@@ -1941,11 +2066,6 @@ export function dispatch(passageId: string): void {
   if (passageId === "e0a2d72f") {
     found = true;
     passage_e0a2d72f();
-  }
-
-  if (passageId === "813cdd9a") {
-    found = true;
-    passage_813cdd9a();
   }
 
   if (passageId === "2ecf7f34") {
@@ -1966,11 +2086,6 @@ export function dispatch(passageId: string): void {
   if (passageId === "bdc7e965") {
     found = true;
     passage_bdc7e965();
-  }
-
-  if (passageId === "e3ad92be") {
-    found = true;
-    passage_e3ad92be();
   }
 
   if (passageId === "e45c4215") {
@@ -1998,6 +2113,11 @@ export function dispatch(passageId: string): void {
     passage_623aab5c();
   }
 
+  if (passageId === "255e6fab") {
+    found = true;
+    passage_255e6fab();
+  }
+
   if (passageId === "63265a79") {
     found = true;
     passage_63265a79();
@@ -2008,14 +2128,24 @@ export function dispatch(passageId: string): void {
     passage_885ce2f8();
   }
 
-  if (passageId === "198a1009") {
+  if (passageId === "3c0aa10d") {
     found = true;
-    passage_198a1009();
+    passage_3c0aa10d();
   }
 
   if (passageId === "d20fad6e") {
     found = true;
     passage_d20fad6e();
+  }
+
+  if (passageId === "90212c36") {
+    found = true;
+    passage_90212c36();
+  }
+
+  if (passageId === "50c96f21") {
+    found = true;
+    passage_50c96f21();
   }
 
   if (passageId === "e6c18fdb") {
