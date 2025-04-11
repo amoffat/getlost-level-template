@@ -1,7 +1,13 @@
 {
   "name": "Get Lost level",
-  "image": "arwmoffat/get-lost-codespace:0.1.16",
+  "image": "arwmoffat/get-lost-codespace:0.2.0",
   // "build": { "dockerfile": "Dockerfile" },
+  // Don't use the docker-compose file for now. You can't select what `features`
+  // apply to other containers, which means you can't use the `desktop-lite`
+  // feature in the `tiled` container, without installing it yourself, which is
+  // a huge pain. For now, stick with our PM2 setup, with a single container.
+  //
+  // "dockerComposeFile": "docker-compose.yml", "service": "preview",
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/desktop-lite:1": {
@@ -11,7 +17,7 @@
   "remoteEnv": {
     "DEVCONTAINER": "true"
   },
-  "forwardPorts": [5173, 6080],
+  "forwardPorts": [5173, 5174, 6080],
   "customizations": {
     "vscode": {
       "settings": {
@@ -21,19 +27,26 @@
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
         "github.vscode-github-actions",
-        "ms-python.python"
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-azuretools.vscode-docker",
+        "ms-python.mypy-type-checker",
+        "ms-python.isort",
+        "ms-python.flake8"
       ]
     }
   },
   "remoteUser": "node",
-  "runArgs": [],
   "portsAttributes": {
     "5173": {
       "label": "Level Preview",
       "protocol": "https"
     },
+    "5174": {
+      "label": "Twine - Dialogue"
+    },
     "6080": {
-      "label": "Tiled"
+      "label": "Tiled - Map"
     }
   },
   "onCreateCommand": "bash .devcontainer/hooks/onCreate.sh",

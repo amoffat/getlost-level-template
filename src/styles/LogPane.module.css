@@ -2,8 +2,12 @@
   background: black;
   overflow: auto;
   color: white;
-  padding: 10;
   font-family: monospace;
+}
+
+.success {
+  color: limegreen;
+  font-weight: bold;
 }
 
 .error {

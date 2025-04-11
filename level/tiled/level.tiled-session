@@ -59,11 +59,11 @@
         "TilesetDesert.tsj"
     ],
     "project": "level.tiled-project",
-    "property.type": "bool",
+    "property.type": "float",
     "recentFiles": [
+        "Spirit.tsj",
         "TilesetDesert.tsj",
         "level.tmj",
-        "Spirit.tsj",
         "Items.tsj"
     ],
     "tileset.lastUsedFormat": "json",

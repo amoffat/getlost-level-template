@@ -1,25 +1,18 @@
 /**
- * Displays a sign with a title and a message. A sign is a dialog whose text
- * appears immediately and has no interactions.
- *
- * @param title The title key of the sign.
- * @param msg The message key of the sign.
- */
-export declare function displaySign(title: string, msg: string): void;
-
-/**
- * Displays an interaction with a title, message, and choices. An interaction is
- * a dialog whose text appears incrementally and optionally has interactions.
+ * Displays an interaction with a title, message, and choices.
  *
  * @param title The title key of the interaction.
  * @param msg The message key of the interaction.
  * @param choices The choices of the interaction.
+ * @param params The parameters to interpolate.
+ * @param animate Whether to animate the interaction.
  */
-export declare function displayInteraction(
+export declare function display(
   title: string,
   msg: string,
-  choices: string[]
+  choices: string[],
+  params: Map<string, string>,
+  animate: bool
 ): void;
 
-export const _keep_displaySign = displaySign;
-export const _keep_displayInteraction = displayInteraction;
+export const _keep_display = display;

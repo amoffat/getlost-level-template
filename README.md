@@ -24,7 +24,7 @@ On your personal copy of the repo (created from the previous step), go to `Code`
 
 ![Open codespace](./docs/img/open-in-codespace.png)
 
-Next, navigate to the `ports` tab at the bottom of the editor. You'll see 2 ports, one for previewing your level (public port 5173) and one for editing your level (private port 6080)
+Next, navigate to the `ports` tab at the bottom of the editor. You'll see 3 ports, one for previewing your level (public port 5173), one for editing your level (private port 6080), and one for editing the dialogue (private port 5174).
 
 ![Ports](./docs/img/ports.png)
 

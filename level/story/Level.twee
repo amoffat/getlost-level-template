@@ -1,0 +1,353 @@
+:: StoryTitle
+Level
+
+
+:: StoryData
+{
+  "ifid": "E432B450-3C64-4169-BB74-CEE16381AEA1",
+  "format": "SugarCube",
+  "format-version": "2.37.3",
+  "start": "Start",
+  "tag-colors": {
+    "Frank": "red",
+    "Knight": "green",
+    "Fire": "orange",
+    "Well": "blue",
+    "Nazar": "red"
+  },
+  "zoom": 0.6
+}
+
+
+:: Bye {"position":"1650,2000","size":"100,100"}
+Be well.
+
+
+:: Climb down {"position":"4200,1525","size":"100,100"}
+<<host.map.exit("well", true)>>
+
+
+:: Do you have a name? {"position":"1500,2000","size":"100,100"}
+<<set $knightOpts.yourName to false>>
+Sir Azure
+
+<<knight-choices>>
+
+
+:: Fire [Fire] {"position":"2950,1325","size":"100,100"}
+<<if host.pickup.get({type: "map"})>>
+You've found it... Please, give it to me...
+<<else>>
+<<if visited() gt 1>>
+You've returned.
+<<else>>
+Greetings.... traveller...
+
+[[Who are you?|who-fire]]
+[[Ignore the fire]]
+<</if>>
+<</if>>
+
+
+:: Give it a shot. {"position":"2625,1950","size":"100,100"}
+In the place where I'm from, we wouldn't be having this conversation because there is no you or I.
+
+[[Gotcha...]]
+
+
+:: Gotcha... {"position":"2775,2100","size":"100,100"}
+Anything else you'd like to know?
+
+[[You said you were seeking something?|seek-what]]
+
+
+:: Guard from what? {"position":"925,2000","size":"100,100"}
+<<set $knightOpts.guardWhat to false>>
+
+That's not your concern.
+
+<<knight-choices>>
+
+
+:: Hi Nazar, I'm $playerName. {"position":"2350,2450","size":"100,100"}
+I haven't seen you before, are you here with the Knight?
+
+[[What Knight?|what-knight]]
+[[Yes|yes-knight]]
+
+
+:: How did you get this job? {"position":"1375,2000","size":"100,100"}
+<<set $knightOpts.howJob to false>>
+I.. uh... I volunteered. It's a long story, and I'm very busy right now.
+
+<<knight-choices>>
+
+
+:: How long ago was this? {"position":"2275,3250","size":"100,100"}
+Only a week ago.
+
+
+:: I found it up north. {"position":"675,1600","size":"100,100"}
+I left it there. Give it to me.
+
+<<if visited("special-map")>>
+[[I think I'll bring it to that fire on the water.]]
+<</if>>
+
+[[No.|no-map]]
+[[Hand him the map|give-map-knight]]
+
+
+:: I know why you're here. {"position":"1200,1525","size":"100,100"}
+You talked to the old man...
+
+<<set $knightOpts to {
+	whyTown: true,
+    whoSheikh: true,
+    howJob: true,
+    guardWhat: true,
+    yourName: true,
+}>>
+
+<<widget "knight-choices">>
+  <<if $knightOpts.whyTown>>
+[[Why are you guarding this town?]]
+  <</if>>
+  <<if $knightOpts.whoSheikh>>
+[[Who is the Sheikh?]]
+  <</if>>
+  <<if $knightOpts.howJob>>
+[[How did you get this job?]]
+  <</if>>
+  <<if $knightOpts.guardWhat>>
+[[Guard from what?]]
+  <</if>>
+  <<if $knightOpts.yourName>>
+[[Do you have a name?]]
+	<</if>>
+    [[Bye]]
+<</widget>>
+
+<<knight-choices>>
+
+
+:: I saw fire on the water. {"position":"2650,2425","size":"100,100"}
+You've lost your mind. Please go.
+
+
+:: I think I'll bring it to that fire on the water. {"position":"850,1775","size":"100,100"}
+
+
+
+:: I'm...new here {"position":"3125,1950","size":"100,100"}
+You are? Interesting...
+
+
+:: Ignore the fire {"position":"3250,1525","size":"100,100"}
+
+
+
+:: Nazar [Nazar] {"position":"2200,2200","size":"100,100"}
+<<if isNight()>>
+I'd like to chat, but it's getting late. Come back during the day.
+<<else>>
+
+<<if visited() > 1 >>
+Hello again.
+[[What's new?]]
+<<else>>
+Welcome, I'm Nazar.
+[[Hi Nazar, I'm $playerName.]]
+<</if>>
+
+<<if visited("Silent Knight")>>
+[[What do you know about that knight?]]
+<</if>>
+
+<<if visited("Fire")>>
+[[I saw fire on the water.]]
+<</if>>
+
+<</if>>
+
+
+:: None of your business {"position":"450,1600","size":"100,100"}
+Listen to me carefully. I'm getting that map.
+
+[[Run away|no-map]]
+[[Ok, calm down, here you go.|give-map-knight]]
+
+
+:: Oh you mean the knight? {"position":"3325,1950","size":"100,100"}
+The person I am seeking carries a map
+
+
+:: Silent Knight [Knight] {"position":"800,1300","size":"100,100"}
+<<if isNight()>>
+...zzzzz...zzzzz.....zzzz...
+<<else>>
+  <<if host.pickup.get({type: "map"})>>
+Where did you get that map?
+[[I found it up north.]]
+[[None of your business]]
+  <<elseif $learnedKnightStory>>
+[[I know why you're here.]]
+  <<elseif $upsetKnight>>
+I thought I said go away.
+  <<else>>
+...
+[[Hi|silence]]
+  <</if>>
+<</if>>
+
+
+:: Start {"position":"1675,100","size":"100,100"}
+[[Talk to Nazar|Nazar]]
+[[Talk to Silent Knight|Silent Knight]]
+[[Talk to Fire|Fire]]
+[[Well]]
+
+
+:: Step back {"position":"4475,1525","size":"100,100"}
+
+
+
+:: StoryInit {"position":"925,75","size":"100,100"}
+<<set $inventory to {
+  map: {
+    tags: {
+      map: false
+    }
+  }
+}>>
+<<set $upsetKnight to false>>
+<<set $playerName to "James">>
+<<set $learnedKnightStory to false>>
+
+
+:: Well [Well sign] {"position":"4325,1300","size":"100,100"}
+There's a ladder going down, but you cannot see the bottom.
+
+[[Climb down]]
+[[Step back]]
+
+
+:: What battle? {"position":"1975,2675","size":"100,100"}
+You're really not from around here, are you? My people have been at war since before I was born.
+
+
+:: What do you know about that knight? {"position":"2100,2425","size":"100,100"}
+Well, I know he's not from around here. There was a battle. Then he showed up.
+
+[[What do you mean he showed up?]]
+[[What battle?]]
+
+
+:: What do you mean he showed up? {"position":"2175,2900","size":"100,100"}
+I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.
+
+[[What did the letter say?|what-did-letter-say]]
+[[Who is the Sheikh?|nazar-who-shiekh]]
+
+
+:: What is he guarding you from? {"position":"2500,3250","size":"100,100"}
+You'll have to ask him.
+
+
+:: What's new? {"position":"1825,2425","size":"100,100"}
+Not much.
+
+
+:: When does the knight leave? {"position":"2075,3250","size":"100,100"}
+
+
+
+:: Where are you from? {"position":"2675,1750","size":"100,100"}
+A different place. Your language lacks the words for it.
+
+[[Give it a shot.]]
+
+
+:: Who is the Sheikh? {"position":"1225,2000","size":"100,100"}
+<<set $knightOpts.whoSheikh to false>>
+
+He sent me here to guard the town.
+
+<<knight-choices>>
+
+
+:: Why are you guarding this town? {"position":"1075,2000","size":"100,100"}
+<<set $knightOpts.whyTown to false>>
+
+The Sheikh asked me to. That's all I can tell you.
+
+<<knight-choices>>
+
+
+:: bye-silence {"position":"325,1400","size":"100,100"}
+
+
+
+:: give-map-knight {"position":"450,1850","size":"100,100"}
+
+
+
+:: nazar-who-shiekh {"position":"2450,3000","size":"100,100"}
+The Sheikh created this village.
+
+[[So what did the letter say?|what-did-letter-say]]
+
+
+:: no-map {"position":"700,1875","size":"100,100"}
+
+
+
+:: observe-what {"position":"3200,1750","size":"100,100"}
+I was told this village would be getting a new visitor.
+
+[[I'm...new here]]
+[[Oh you mean the knight?]]
+
+
+:: seek-what {"position":"2875,1750","size":"100,100"}
+A map...
+
+[[What's so special about a map?|special-map]]
+[[You said you were observing? What?|observe-what]]
+
+
+:: silence {"position":"475,1250","size":"100,100"}
+...
+
+[[*ahem*... I said 'Hi'|silence]]
+[[Bye|bye-silence]]
+
+
+:: special-map {"position":"2975,2050","size":"100,100"}
+Find it for me and I'll show you.
+
+
+:: what-did-letter-say {"position":"2225,3075","size":"100,100"}
+It said "Give food and water to this soldier. In return he will guard the village." It had the Sheikh's seal. It was unmistakable.
+
+[[How long ago was this?]]
+[[When does the knight leave?]]
+[[What is he guarding you from?]]
+
+<<set $learnedKnightStory to true>>
+
+
+:: what-knight {"position":"2500,2700","size":"100,100"}
+There's a knight to the south. He doesn't talk much. Go see for yourself.
+
+
+:: who-fire {"position":"2850,1550","size":"100,100"}
+A fellow traveller.... I'm here to seek and observe.
+
+[[Where are you from?]]
+[[Observe what?|observe-what]]
+[[What are you seeking?|seek-what]]
+
+
+:: yes-knight {"position":"2700,2700","size":"100,100"}
+I see... let me know if you need anything. I'm here to help.

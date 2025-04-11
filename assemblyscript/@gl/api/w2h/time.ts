@@ -38,7 +38,15 @@ export declare function setSunEvent(event: SunEvent, duration: f32): void;
  */
 export declare function setSunColor(r: f32, g: f32, b: f32, a: f32): void;
 
+/**
+ * Fetches the current sun event.
+ *
+ * @returns The current sun event.
+ */
+export declare function getSunEvent(): SunEvent;
+
 export const _keep_setSunTime = setSunTime;
 export const _keep_advanceSunTime = advanceSunTime;
 export const _keep_setSunEvent = setSunEvent;
 export const _keep_setSunColor = setSunColor;
+export const _keep_getSunEvent = getSunEvent;

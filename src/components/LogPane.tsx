@@ -98,17 +98,10 @@ const LogPane = () => {
   // plugin
   useEffect(() => {
     if (import.meta.hot) {
-      const logListener = (data: unknown) => {
-        const msg: LogMessage = {
-          msg: data as string,
-          className: "error",
-        };
-        addMessage(msg);
-      };
-      import.meta.hot.on("gl:wasm-compilation-error", logListener);
+      import.meta.hot.on("gl:wasm-compiler", addMessage);
 
       return () => {
-        import.meta.hot!.off("gl:wasm-compilation-error", logListener);
+        import.meta.hot!.off("gl:wasm-compiler", addMessage);
       };
     }
   }, [addMessage]);

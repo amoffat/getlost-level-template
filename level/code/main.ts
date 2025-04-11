@@ -4,11 +4,12 @@ import { Room } from "@gl/types/room";
 import { getSunEventName, SunEvent } from "@gl/types/time";
 import { Player } from "@gl/utils/player";
 import { isNight } from "@gl/utils/time";
+import * as dialogue from "./dialogue";
 
 export { card } from "./card";
+export { choiceMadeEvent, strings } from "./dialogue";
 export { exits } from "./exits";
 export { pickups } from "./pickups";
-export { strings } from "./strings";
 
 const log = host.debug.log;
 
@@ -95,26 +96,10 @@ export function pickupEvent(slug: string, took: bool): void {
  * @param slug The slug of the button that was pressed.
  * @param down Whether the button was pressed down or released.
  */
-export function buttonPressEvent(slug: string, down: bool): void {}
-
-/**
- * Called when the player interacts with a choice dialog.
- *
- * @param textSlug The slug of the text dialog that the user interacted with.
- * @param choice The slug of the text choice that the user made.
- */
-export function choiceMadeEvent(textSlug: string, choice: string): void {
-  log(`Choice made for ${textSlug}: ${choice}`);
-  if (textSlug === "well-body" && choice === "jump-down") {
-    host.map.exit("well", true);
-  } else if (textSlug === "flame-body" && choice === "extinguish") {
-    host.pickup.offerPickup("flame");
-  } else if (textSlug === "frank-body") {
-    if (choice === "wait-morning") {
-      host.time.setSunEvent(SunEvent.Sunrise, 10);
-    } else if (choice === "wait-night") {
-      host.time.setSunEvent(SunEvent.Night, 10);
-    }
+export function buttonPressEvent(slug: string, down: bool): void {
+  if (slug.startsWith("passage/") && down) {
+    const passage = slug.split("/")[1];
+    dialogue.dispatch(passage);
   }
 }
 
@@ -130,6 +115,7 @@ export function choiceMadeEvent(textSlug: string, choice: string): void {
  * @param row The row of the tile in the map.
  */
 export function tileCollisionEvent(
+  initiator: string,
   tsTileId: i32,
   gid: i32,
   entered: bool,
@@ -139,42 +125,40 @@ export function tileCollisionEvent(
   // log(`Collision event: ${tsTileId}, ${gid}, ${entered} @ ${column}, ${row}`);
 }
 
-let sawOasisSign = false;
-
 /**
  * Called when a sensor event occurs.
  *
- * @param name The name of the sensor that was triggered. This is set in Tiled.
+ * @param initiator The name of the entity that triggered the sensor. This is
+ * usually the player, but can be other entities as well.
+ * @param sensorName The name of the sensor that was triggered. This is set in
+ * Tiled.
  * @param entered Whether the player entered or exited the sensor.
  */
-export function sensorEvent(name: string, entered: bool): void {
-  log(`Sensor event: ${name}, ${entered}`);
-  if (name === "oasis" && entered && !sawOasisSign) {
-    host.text.displaySign("oasis-entry-title", "oasis-entry-body");
-    sawOasisSign = true;
-  } else if (name === "flame" && entered) {
-    host.text.displayInteraction("flame-title", "flame-body", [
-      "just-passing",
-      "extinguish",
-    ]);
-  } else if (name === "knight" && entered) {
-    host.text.displayInteraction("knight-title", "knight-body", []);
-  } else if (name === "well" && entered) {
-    host.text.displayInteraction("well-title", "well-body", [
-      "jump-down",
-      "step-back",
-    ]);
-  } else if (name === "exit-east" && entered) {
+export function sensorEvent(
+  initiator: string,
+  sensorName: string,
+  entered: bool
+): void {
+  log(
+    `Sensor event: '${initiator}' ${entered ? "entered" : "left"} '${sensorName}'`
+  );
+  if (initiator !== "player") {
+    return;
+  }
+  if (sensorName === "flame") {
+    dialogue.stage_c141faa8(entered);
+  } else if (sensorName === "knight") {
+    dialogue.stage_491e88c5(entered);
+  } else if (sensorName === "well") {
+    dialogue.stage_bdc7e965(entered);
+  } else if (sensorName === "exit-east" && entered) {
     host.map.exit("east", false);
-  } else if (name === "exit-west" && entered) {
+  } else if (sensorName === "exit-west" && entered) {
     host.map.exit("west", false);
-  } else if (name === "exit-south" && entered) {
+  } else if (sensorName === "exit-south" && entered) {
     host.map.exit("south", false);
-  } else if (name === "frank" && entered) {
-    host.text.displayInteraction("frank-title", "frank-body", [
-      "wait-morning",
-      "wait-night",
-    ]);
+  } else if (sensorName === "nazar") {
+    dialogue.stage_e1ffb1d2(entered);
   }
 }
 
@@ -190,7 +174,7 @@ export function timeChangedEvent(event: SunEvent): void {
   host.sensors.toggleSensor("flame", night);
   host.npc.toggleNPC("flame", night);
 
-  const lights = ["frank-light", "house-light-1"];
+  const lights = ["nazar-light", "house-light-1"];
   for (let i = 0; i < lights.length; i++) {
     host.lights.toggleLight(lights[i], night);
   }
