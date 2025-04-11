@@ -5,6 +5,11 @@
   font-family: monospace;
 }
 
+.success {
+  color: limegreen;
+  font-weight: bold;
+}
+
 .error {
   color: red;
   font-weight: bold;

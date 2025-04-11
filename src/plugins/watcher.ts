@@ -1,4 +1,5 @@
 import { ViteDevServer } from "vite";
+import { sharedState } from "./shared";
 
 const repoDir = process.cwd();
 
@@ -44,6 +45,7 @@ export default function levelWatcher() {
         }
 
         if (gameReload) {
+          sharedState.assemblyscriptTainted = true;
           console.log(`Triggering reload: ${path}`);
           server.ws.send("gl:level-reload");
         }

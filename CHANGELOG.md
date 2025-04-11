@@ -5,6 +5,7 @@
 - `host.pickup.get(tags)` for querying inventory
 - Unify `displaySign` and `displayInteraction` to `display` with animate arg
 - `sensorEvent` and `tileCollisionEvent` take `initiator` arg
+- 2x WebAssembly compilation speed
 - Update all deps
 
 ## 0.3.3 - 3/26/25
