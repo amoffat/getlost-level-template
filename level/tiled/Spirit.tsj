@@ -6,7 +6,7 @@
  "name":"Spirit",
  "spacing":0,
  "tilecount":16,
- "tiledversion":"1.11.1-99-gec89c545",
+ "tiledversion":"1.11.2",
  "tileheight":16,
  "tiles":[
         {
@@ -31,7 +31,6 @@
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {
@@ -56,6 +55,11 @@
                  "name":"animation",
                  "type":"string",
                  "value":"Idle"
+                }, 
+                {
+                 "name":"groundOffset",
+                 "type":"float",
+                 "value":10
                 }],
          "type":"NPC Tile"
         }],

@@ -317,16 +317,6 @@ export function strings(): String[] {
     },
 
     {
-      key: "eb8848da",
-      values: [
-        {
-          text: "I'd like to chat, but it's getting late. Come back during the day.",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
       key: "159272d5",
       values: [
         {
@@ -451,6 +441,16 @@ export function strings(): String[] {
       values: [
         {
           text: "You are? Interesting...",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "eb8848da",
+      values: [
+        {
+          text: "I'd like to chat, but it's getting late. Come back during the day.",
           lang: "en",
         },
       ],
@@ -1399,17 +1399,12 @@ export function passage_7d52fd29(): void {
   const params = new Map<string, string>();
   incrementVisitCount("7d52fd29");
 
-  if (isNight()) {
-    // I'd like to chat, but it's getting late. Come back during the day.
-    text = "eb8848da";
-  } else {
-    // I haven't seen you before, are you here with the Knight?
-    text = "159272d5";
-    // What Knight?
-    choices.push("6451edb5");
-    // Yes
-    choices.push("85a39ab3");
-  }
+  // I haven't seen you before, are you here with the Knight?
+  text = "159272d5";
+  // What Knight?
+  choices.push("6451edb5");
+  // Yes
+  choices.push("85a39ab3");
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -1679,24 +1674,29 @@ export function passage_e1ffb1d2(): void {
   const params = new Map<string, string>();
   incrementVisitCount("e1ffb1d2");
 
-  if (visited("e1ffb1d2") > 1) {
-    // Hello again.
-    text = "18083266";
-    // What's new?
-    choices.push("623aab5c");
+  if (isNight()) {
+    // I'd like to chat, but it's getting late. Come back during the day.
+    text = "eb8848da";
   } else {
-    // Welcome, I'm Nazar.
-    text = "6bb62fa6";
-    // Hi Nazar, I'm $playerName.
-    choices.push("7d52fd29");
-  }
-  if (visited("491e88c5")) {
-    // What do you know about that knight?
-    choices.push("f213214a");
-  }
-  if (visited("c141faa8")) {
-    // I saw fire on the water.
-    choices.push("3ca52efa");
+    if (visited("e1ffb1d2") > 1) {
+      // Hello again.
+      text = "18083266";
+      // What's new?
+      choices.push("623aab5c");
+    } else {
+      // Welcome, I'm Nazar.
+      text = "6bb62fa6";
+      // Hi Nazar, I'm $playerName.
+      choices.push("7d52fd29");
+    }
+    if (visited("491e88c5")) {
+      // What do you know about that knight?
+      choices.push("f213214a");
+    }
+    if (visited("c141faa8")) {
+      // I saw fire on the water.
+      choices.push("3ca52efa");
+    }
   }
 
   if (text.length > 0) {

@@ -69,19 +69,11 @@ That's not your concern.
 <<knight-choices>>
 
 
-:: Hand him the map {"position":"450,1875","size":"100,100"}
-
-
-
 :: Hi Nazar, I'm $playerName. {"position":"2350,2450","size":"100,100"}
-<<if isNight()>>
-I'd like to chat, but it's getting late. Come back during the day.
-<<else>>
 I haven't seen you before, are you here with the Knight?
 
 [[What Knight?|what-knight]]
 [[Yes|yes-knight]]
-<</if>>
 
 
 :: How did you get this job? {"position":"1375,2000","size":"100,100"}
@@ -95,11 +87,15 @@ I.. uh... I volunteered. It's a long story, and I'm very busy right now.
 Only a week ago.
 
 
-:: I found it by the water {"position":"675,1600","size":"100,100"}
+:: I found it up north. {"position":"675,1600","size":"100,100"}
 I left it there. Give it to me.
 
+<<if visited("special-map")>>
+[[I think I'll bring it to that fire on the water.]]
+<</if>>
+
 [[No.|no-map]]
-[[Hand him the map]]
+[[Hand him the map|give-map-knight]]
 
 
 :: I know why you're here. {"position":"1200,1525","size":"100,100"}
@@ -139,6 +135,10 @@ You talked to the old man...
 You've lost your mind. Please go.
 
 
+:: I think I'll bring it to that fire on the water. {"position":"850,1775","size":"100,100"}
+
+
+
 :: I'm...new here {"position":"3125,1950","size":"100,100"}
 You are? Interesting...
 
@@ -148,6 +148,10 @@ You are? Interesting...
 
 
 :: Nazar [Nazar] {"position":"2200,2200","size":"100,100"}
+<<if isNight()>>
+I'd like to chat, but it's getting late. Come back during the day.
+<<else>>
+
 <<if visited() > 1 >>
 Hello again.
 [[What's new?]]
@@ -164,12 +168,14 @@ Welcome, I'm Nazar.
 [[I saw fire on the water.]]
 <</if>>
 
+<</if>>
+
 
 :: None of your business {"position":"450,1600","size":"100,100"}
-That's mine. Give it to me.
+Listen to me carefully. I'm getting that map.
 
 [[Run away|no-map]]
-[[Hand him the map]]
+[[Ok, calm down, here you go.|give-map-knight]]
 
 
 :: Oh you mean the knight? {"position":"3325,1950","size":"100,100"}
@@ -178,11 +184,11 @@ The person I am seeking carries a map
 
 :: Silent Knight [Knight] {"position":"800,1300","size":"100,100"}
 <<if isNight()>>
-...zzzzz....h-huh? I'm awake!
+...zzzzz...zzzzz.....zzzz...
 <<else>>
   <<if host.pickup.get({type: "map"})>>
 Where did you get that map?
-[[I found it by the water]]
+[[I found it up north.]]
 [[None of your business]]
   <<elseif $learnedKnightStory>>
 [[I know why you're here.]]
@@ -203,7 +209,7 @@ I thought I said go away.
 
 
 :: Step back {"position":"4475,1525","size":"100,100"}
-Maybe another time.
+
 
 
 :: StoryInit {"position":"925,75","size":"100,100"}
@@ -252,10 +258,6 @@ You'll have to ask him.
 Not much.
 
 
-:: What's so special about a map? {"position":"2975,2050","size":"100,100"}
-Find it for me and I'll show you.
-
-
 :: When does the knight leave? {"position":"2075,3250","size":"100,100"}
 
 
@@ -286,6 +288,10 @@ The Sheikh asked me to. That's all I can tell you.
 
 
 
+:: give-map-knight {"position":"450,1850","size":"100,100"}
+
+
+
 :: nazar-who-shiekh {"position":"2450,3000","size":"100,100"}
 The Sheikh created this village.
 
@@ -306,7 +312,7 @@ I was told this village would be getting a new visitor.
 :: seek-what {"position":"2875,1750","size":"100,100"}
 A map...
 
-[[What's so special about a map?]]
+[[What's so special about a map?|special-map]]
 [[You said you were observing? What?|observe-what]]
 
 
@@ -315,6 +321,10 @@ A map...
 
 [[*ahem*... I said 'Hi'|silence]]
 [[Bye|bye-silence]]
+
+
+:: special-map {"position":"2975,2050","size":"100,100"}
+Find it for me and I'll show you.
 
 
 :: what-did-letter-say {"position":"2225,3075","size":"100,100"}
@@ -340,4 +350,4 @@ A fellow traveller.... I'm here to seek and observe.
 
 
 :: yes-knight {"position":"2700,2700","size":"100,100"}
-I see... let me know if you need anything.
+I see... let me know if you need anything. I'm here to help.
