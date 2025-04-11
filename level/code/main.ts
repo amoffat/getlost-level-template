@@ -38,7 +38,7 @@ export function initRoom(): Room {
   music = host.sound.loadSound({
     name: "Musics/17 - Fight.ogg",
     loop: true,
-    autoplay: true,
+    autoplay: false,
     volume: 0.5,
   });
 
@@ -96,7 +96,12 @@ export function pickupEvent(slug: string, took: bool): void {
  * @param slug The slug of the button that was pressed.
  * @param down Whether the button was pressed down or released.
  */
-export function buttonPressEvent(slug: string, down: bool): void {}
+export function buttonPressEvent(slug: string, down: bool): void {
+  if (slug.startsWith("passage/") && down) {
+    const passage = slug.split("/")[1];
+    dialogue.dispatch(passage);
+  }
+}
 
 /**
  * When a tile collision event occurs, this function is called. You can use this
@@ -110,6 +115,7 @@ export function buttonPressEvent(slug: string, down: bool): void {}
  * @param row The row of the tile in the map.
  */
 export function tileCollisionEvent(
+  initiator: string,
   tsTileId: i32,
   gid: i32,
   entered: bool,
@@ -122,25 +128,37 @@ export function tileCollisionEvent(
 /**
  * Called when a sensor event occurs.
  *
- * @param name The name of the sensor that was triggered. This is set in Tiled.
+ * @param initiator The name of the entity that triggered the sensor. This is
+ * usually the player, but can be other entities as well.
+ * @param sensorName The name of the sensor that was triggered. This is set in
+ * Tiled.
  * @param entered Whether the player entered or exited the sensor.
  */
-export function sensorEvent(name: string, entered: bool): void {
-  log(`Sensor event: ${name}, ${entered}`);
-  if (name === "flame" && entered) {
-    dialogue.passage_c141faa8();
-  } else if (name === "knight" && entered) {
-    dialogue.passage_491e88c5();
-  } else if (name === "well" && entered) {
-    dialogue.passage_bdc7e965();
-  } else if (name === "exit-east" && entered) {
+export function sensorEvent(
+  initiator: string,
+  sensorName: string,
+  entered: bool
+): void {
+  log(
+    `Sensor event: '${initiator}' ${entered ? "entered" : "left"} '${sensorName}'`
+  );
+  if (initiator !== "player") {
+    return;
+  }
+  if (sensorName === "flame") {
+    dialogue.stage_c141faa8(entered);
+  } else if (sensorName === "knight") {
+    dialogue.stage_491e88c5(entered);
+  } else if (sensorName === "well") {
+    dialogue.stage_bdc7e965(entered);
+  } else if (sensorName === "exit-east" && entered) {
     host.map.exit("east", false);
-  } else if (name === "exit-west" && entered) {
+  } else if (sensorName === "exit-west" && entered) {
     host.map.exit("west", false);
-  } else if (name === "exit-south" && entered) {
+  } else if (sensorName === "exit-south" && entered) {
     host.map.exit("south", false);
-  } else if (name === "nazar" && entered) {
-    dialogue.passage_e1ffb1d2();
+  } else if (sensorName === "nazar") {
+    dialogue.stage_e1ffb1d2(entered);
   }
 }
 
