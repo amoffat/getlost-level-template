@@ -1,6 +1,7 @@
 ## 0.4.0 -
 
 - TwineJs integration for dialogue authoring
+- Use engine v0.6.0
 
 ## 0.3.3 - 3/26/25
 
