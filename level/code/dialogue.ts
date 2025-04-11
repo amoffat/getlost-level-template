@@ -41,7 +41,9 @@ choiceToPassage.set("141a8032", "50c96f21");
 choiceToPassage.set("6451edb5", "a61db43e");
 choiceToPassage.set("85a39ab3", "5c07303d");
 choiceToPassage.set("38178a20", "2a9618c1");
+choiceToPassage.set("8cf42533", "4306feba");
 choiceToPassage.set("05e44e9b", "2a9618c1");
+choiceToPassage.set("448fd9e9", "4306feba");
 choiceToPassage.set("3639efcd", "e6c18fdb");
 choiceToPassage.set("7fafd7d4", "e1ffb1d2");
 choiceToPassage.set("dd146f7d", "491e88c5");
@@ -49,6 +51,7 @@ choiceToPassage.set("98bd5b29", "c141faa8");
 choiceToPassage.set("e2092668", "aff68fcf");
 choiceToPassage.set("885ce2f8", "d20fad6e");
 choiceToPassage.set("c40b2d30", "aff68fcf");
+choiceToPassage.set("255e6fab", "ff810fb6");
 choiceToPassage.set("3e769b34", "90212c36");
 choiceToPassage.set("41876c52", "e6c18fdb");
 choiceToPassage.set("12890122", "9b7360e5");
@@ -103,6 +106,16 @@ function incrementVisitCount(id: string): void {
 
 export function strings(): String[] {
   return [
+    {
+      key: "interact",
+      values: [
+        {
+          text: "Interact",
+          lang: "en",
+        },
+      ],
+    },
+
     {
       key: "3c0aa10d",
       values: [
@@ -374,6 +387,26 @@ export function strings(): String[] {
     },
 
     {
+      key: "58544bd4",
+      values: [
+        {
+          text: "special-map",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "b2a5f392",
+      values: [
+        {
+          text: "I think I'll bring it to that fire on the water.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "38178a20",
       values: [
         {
@@ -504,10 +537,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "21316f2a",
+      key: "2dd162b5",
       values: [
         {
-          text: "That's mine. Give it to me.",
+          text: "Listen to me carefully. I'm getting that map.",
           lang: "en",
         },
       ],
@@ -524,6 +557,16 @@ export function strings(): String[] {
     },
 
     {
+      key: "448fd9e9",
+      values: [
+        {
+          text: "Ok, calm down, here you go.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "0d053e12",
       values: [
         {
@@ -534,10 +577,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "74fb74d6",
+      key: "b5cbd2a3",
       values: [
         {
-          text: "...zzzzz....h-huh? I'm awake!",
+          text: "...zzzzz...zzzzz.....zzzz...",
           lang: "en",
         },
       ],
@@ -554,10 +597,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "0e624e86",
+      key: "c503743a",
       values: [
         {
-          text: "I found it by the water",
+          text: "I found it up north.",
           lang: "en",
         },
       ],
@@ -648,16 +691,6 @@ export function strings(): String[] {
       values: [
         {
           text: "Well",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "68064898",
-      values: [
-        {
-          text: "Maybe another time.",
           lang: "en",
         },
       ],
@@ -768,16 +801,6 @@ export function strings(): String[] {
       values: [
         {
           text: "Not much.",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "092afab4",
-      values: [
-        {
-          text: "Find it for me and I'll show you.",
           lang: "en",
         },
       ],
@@ -914,6 +937,16 @@ export function strings(): String[] {
     },
 
     {
+      key: "092afab4",
+      values: [
+        {
+          text: "Find it for me and I'll show you.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "f5654ac2",
       values: [
         {
@@ -1004,10 +1037,10 @@ export function strings(): String[] {
     },
 
     {
-      key: "f2cb5115",
+      key: "7ad97537",
       values: [
         {
-          text: "I see... let me know if you need anything.",
+          text: "I see... let me know if you need anything. I'm here to help.",
           lang: "en",
         },
       ],
@@ -1059,6 +1092,19 @@ export function choiceMadeEvent(passageId: string, choiceId: string): void {
   dispatch(choiceId);
 }
 
+export function stage_12890122(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/12890122",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // Bye
 export function passage_12890122(): void {
   // "Knight"
@@ -1077,6 +1123,19 @@ export function passage_12890122(): void {
   }
 }
 
+export function stage_909a9cff(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/909a9cff",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // Climb down
 export function passage_909a9cff(): void {
   // "Well"
@@ -1091,6 +1150,19 @@ export function passage_909a9cff(): void {
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_562cd4ad(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/562cd4ad",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1135,6 +1207,19 @@ export function passage_562cd4ad(): void {
   }
 }
 
+export function stage_c141faa8(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/c141faa8",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // Fire
 export function passage_c141faa8(): void {
   // "Fire"
@@ -1171,6 +1256,19 @@ export function passage_c141faa8(): void {
   }
 }
 
+export function stage_15874eac(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/15874eac",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // Give it a shot.
 export function passage_15874eac(): void {
   // "Fire"
@@ -1191,6 +1289,19 @@ export function passage_15874eac(): void {
   }
 }
 
+export function stage_c8a7d597(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/c8a7d597",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // Gotcha...
 export function passage_c8a7d597(): void {
   // "Fire"
@@ -1208,6 +1319,19 @@ export function passage_c8a7d597(): void {
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_99e18287(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/99e18287",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1252,6 +1376,19 @@ export function passage_99e18287(): void {
   }
 }
 
+export function stage_7d52fd29(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/7d52fd29",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // Hi Nazar, I'm $playerName.
 export function passage_7d52fd29(): void {
   // "Nazar"
@@ -1276,6 +1413,19 @@ export function passage_7d52fd29(): void {
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_379dcdf1(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/379dcdf1",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1320,6 +1470,19 @@ export function passage_379dcdf1(): void {
   }
 }
 
+export function stage_f6ded42f(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/f6ded42f",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // How long ago was this?
 export function passage_f6ded42f(): void {
   // "Nazar"
@@ -1338,18 +1501,35 @@ export function passage_f6ded42f(): void {
   }
 }
 
-// I found it by the water
-export function passage_0e624e86(): void {
+export function stage_c503743a(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/c503743a",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// I found it up north.
+export function passage_c503743a(): void {
   // "Knight"
   const title = "f24b5246";
   const animate = true;
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("0e624e86");
+  incrementVisitCount("c503743a");
 
   // I left it there. Give it to me.
   text = "1de8ad8f";
+  if (visited("ff810fb6")) {
+    // I think I'll bring it to that fire on the water.
+    choices.push("b2a5f392");
+  }
   // No.
   choices.push("38178a20");
   // Hand him the map
@@ -1357,6 +1537,19 @@ export function passage_0e624e86(): void {
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_a2b8560b(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/a2b8560b",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1401,6 +1594,19 @@ export function passage_a2b8560b(): void {
   }
 }
 
+export function stage_3ca52efa(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/3ca52efa",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // I saw fire on the water.
 export function passage_3ca52efa(): void {
   // "Nazar"
@@ -1419,6 +1625,19 @@ export function passage_3ca52efa(): void {
   }
 }
 
+export function stage_559c302f(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/559c302f",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // I'm...new here
 export function passage_559c302f(): void {
   // "Fire"
@@ -1434,6 +1653,19 @@ export function passage_559c302f(): void {
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_e1ffb1d2(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/e1ffb1d2",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1472,6 +1704,19 @@ export function passage_e1ffb1d2(): void {
   }
 }
 
+export function stage_e0a2d72f(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/e0a2d72f",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // None of your business
 export function passage_e0a2d72f(): void {
   // "Knight"
@@ -1482,15 +1727,28 @@ export function passage_e0a2d72f(): void {
   const params = new Map<string, string>();
   incrementVisitCount("e0a2d72f");
 
-  // That's mine. Give it to me.
-  text = "21316f2a";
+  // Listen to me carefully. I'm getting that map.
+  text = "2dd162b5";
   // Run away
   choices.push("05e44e9b");
-  // Hand him the map
-  choices.push("8cf42533");
+  // Ok, calm down, here you go.
+  choices.push("448fd9e9");
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_2ecf7f34(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/2ecf7f34",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1512,6 +1770,19 @@ export function passage_2ecf7f34(): void {
   }
 }
 
+export function stage_491e88c5(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/491e88c5",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // Silent Knight
 export function passage_491e88c5(): void {
   // "Knight"
@@ -1527,14 +1798,14 @@ export function passage_491e88c5(): void {
   pickup_tags_2.push("map");
 
   if (isNight()) {
-    // ...zzzzz....h-huh? I'm awake!
-    text = "74fb74d6";
+    // ...zzzzz...zzzzz.....zzzz...
+    text = "b5cbd2a3";
   } else {
     if (host.pickup.get(pickup_tags_2).length > 0) {
       // Where did you get that map?
       text = "80251c82";
-      // I found it by the water
-      choices.push("0e624e86");
+      // I found it up north.
+      choices.push("c503743a");
       // None of your business
       choices.push("e0a2d72f");
     } else if (state.learnedKnightStory) {
@@ -1556,21 +1827,16 @@ export function passage_491e88c5(): void {
   }
 }
 
-// Step back
-export function passage_b863269e(): void {
-  // "Well"
-  const title = "bdc7e965";
-  const animate = false;
-  let text = "";
-  const choices: string[] = [];
-  const params = new Map<string, string>();
-  incrementVisitCount("b863269e");
-
-  // Maybe another time.
-  text = "68064898";
-
-  if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+export function stage_bdc7e965(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/bdc7e965",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1596,6 +1862,19 @@ export function passage_bdc7e965(): void {
   }
 }
 
+export function stage_e45c4215(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/e45c4215",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // What battle?
 export function passage_e45c4215(): void {
   // "Nazar"
@@ -1611,6 +1890,19 @@ export function passage_e45c4215(): void {
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_f213214a(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/f213214a",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1636,6 +1928,19 @@ export function passage_f213214a(): void {
   }
 }
 
+export function stage_9d4f68e2(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/9d4f68e2",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // What do you mean he showed up?
 export function passage_9d4f68e2(): void {
   // "Nazar"
@@ -1658,6 +1963,19 @@ export function passage_9d4f68e2(): void {
   }
 }
 
+export function stage_216c5e8c(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/216c5e8c",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // What is he guarding you from?
 export function passage_216c5e8c(): void {
   // "Nazar"
@@ -1673,6 +1991,19 @@ export function passage_216c5e8c(): void {
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_623aab5c(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/623aab5c",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1694,21 +2025,16 @@ export function passage_623aab5c(): void {
   }
 }
 
-// What's so special about a map?
-export function passage_255e6fab(): void {
-  // "Fire"
-  const title = "c141faa8";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  const params = new Map<string, string>();
-  incrementVisitCount("255e6fab");
-
-  // Find it for me and I'll show you.
-  text = "092afab4";
-
-  if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+export function stage_63265a79(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/63265a79",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1729,6 +2055,19 @@ export function passage_63265a79(): void {
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_885ce2f8(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/885ce2f8",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1773,6 +2112,19 @@ export function passage_885ce2f8(): void {
   }
 }
 
+export function stage_3c0aa10d(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/3c0aa10d",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // Why are you guarding this town?
 export function passage_3c0aa10d(): void {
   // "Knight"
@@ -1814,6 +2166,19 @@ export function passage_3c0aa10d(): void {
   }
 }
 
+export function stage_d20fad6e(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/d20fad6e",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // nazar-who-shiekh
 export function passage_d20fad6e(): void {
   // "Nazar"
@@ -1831,6 +2196,19 @@ export function passage_d20fad6e(): void {
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_90212c36(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/90212c36",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1856,6 +2234,19 @@ export function passage_90212c36(): void {
   }
 }
 
+export function stage_50c96f21(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/50c96f21",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // seek-what
 export function passage_50c96f21(): void {
   // "Fire"
@@ -1878,6 +2269,19 @@ export function passage_50c96f21(): void {
   }
 }
 
+export function stage_e6c18fdb(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/e6c18fdb",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // silence
 export function passage_e6c18fdb(): void {
   // "Knight"
@@ -1897,6 +2301,50 @@ export function passage_e6c18fdb(): void {
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_ff810fb6(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/ff810fb6",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// special-map
+export function passage_ff810fb6(): void {
+  // "Fire"
+  const title = "c141faa8";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  incrementVisitCount("ff810fb6");
+
+  // Find it for me and I'll show you.
+  text = "092afab4";
+
+  if (text.length > 0) {
+    host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_aff68fcf(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/aff68fcf",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1925,6 +2373,19 @@ export function passage_aff68fcf(): void {
   }
 }
 
+export function stage_a61db43e(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/a61db43e",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // what-knight
 export function passage_a61db43e(): void {
   // "Nazar"
@@ -1940,6 +2401,19 @@ export function passage_a61db43e(): void {
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
+  }
+}
+
+export function stage_3d787171(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/3d787171",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
   }
 }
 
@@ -1967,6 +2441,19 @@ export function passage_3d787171(): void {
   }
 }
 
+export function stage_5c07303d(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/5c07303d",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
 // yes-knight
 export function passage_5c07303d(): void {
   // "Nazar"
@@ -1977,8 +2464,8 @@ export function passage_5c07303d(): void {
   const params = new Map<string, string>();
   incrementVisitCount("5c07303d");
 
-  // I see... let me know if you need anything.
-  text = "f2cb5115";
+  // I see... let me know if you need anything. I'm here to help.
+  text = "7ad97537";
 
   if (text.length > 0) {
     host.text.display(title, text, choices, params, animate);
@@ -2038,9 +2525,9 @@ export function dispatch(passageId: string): void {
     passage_f6ded42f();
   }
 
-  if (passageId === "0e624e86") {
+  if (passageId === "c503743a") {
     found = true;
-    passage_0e624e86();
+    passage_c503743a();
   }
 
   if (passageId === "a2b8560b") {
@@ -2078,11 +2565,6 @@ export function dispatch(passageId: string): void {
     passage_491e88c5();
   }
 
-  if (passageId === "b863269e") {
-    found = true;
-    passage_b863269e();
-  }
-
   if (passageId === "bdc7e965") {
     found = true;
     passage_bdc7e965();
@@ -2111,11 +2593,6 @@ export function dispatch(passageId: string): void {
   if (passageId === "623aab5c") {
     found = true;
     passage_623aab5c();
-  }
-
-  if (passageId === "255e6fab") {
-    found = true;
-    passage_255e6fab();
   }
 
   if (passageId === "63265a79") {
@@ -2151,6 +2628,11 @@ export function dispatch(passageId: string): void {
   if (passageId === "e6c18fdb") {
     found = true;
     passage_e6c18fdb();
+  }
+
+  if (passageId === "ff810fb6") {
+    found = true;
+    passage_ff810fb6();
   }
 
   if (passageId === "aff68fcf") {

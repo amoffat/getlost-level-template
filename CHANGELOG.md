@@ -1,3 +1,7 @@
+## 0.4.0 -
+
+- TwineJs integration for dialogue authoring
+
 ## 0.3.3 - 3/26/25
 
 - Faster water movement

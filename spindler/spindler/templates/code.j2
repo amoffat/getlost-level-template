@@ -67,6 +67,19 @@ function incrementVisitCount(id: string): void {
 
 
 {% macro passage(p) %}
+export function stage_{{p.id}}(entered: bool): void {
+    if (entered) {
+        host.controls.setButtons([
+            {
+                label: "interact",
+                slug: "passage/{{p.id}}",
+            }
+        ]);
+    } else {
+        host.controls.setButtons([]);
+    }
+}
+
 // {{p.name}}
 export function passage_{{p.id}}(): void {
     // {{p.title}}
@@ -89,18 +102,23 @@ export function passage_{{p.id}}(): void {
 }
 {% endmacro %}
 
+{% macro stringEntry(key, string) %}
+    {
+        key: "{{key}}",
+        values: [
+            {
+                "text": {{string}},
+                "lang": "en"
+            }
+        ]
+    },
+{% endmacro %}
+
 export function strings(): String[] {
     return [
+        {{ stringEntry("interact", '"Interact"') }}
     {% for key, string in all_strings.items() %}
-        {
-            key: "{{key}}",
-            values: [
-                {
-                    "text": {{string}},
-                    "lang": "en"
-                }
-            ]
-        }{% if not loop.last %},{% endif %}
+        {{ stringEntry(key, string) }}
     {% endfor %}
     ];
 }
