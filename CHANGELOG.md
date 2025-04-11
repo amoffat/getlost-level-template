@@ -7,6 +7,10 @@
 - `sensorEvent` and `tileCollisionEvent` take `initiator` arg
 - 2x WebAssembly compilation speed
 - Update all deps
+- `logError` and `logWarning` now available
+- `host.pickup.get` for checking player's inventory
+- Added `host.time.getSunEvent` for current event ("morning", "dusk", etc)
+- Added template version to compiled WASM file
 
 ## 0.3.3 - 3/26/25
 
