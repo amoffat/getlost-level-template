@@ -38,7 +38,7 @@ export function initRoom(): Room {
   music = host.sound.loadSound({
     name: "Musics/17 - Fight.ogg",
     loop: true,
-    autoplay: false,
+    autoplay: true,
     volume: 0.5,
   });
 

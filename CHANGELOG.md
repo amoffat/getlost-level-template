@@ -1,7 +1,10 @@
-## 0.4.0 -
+## 0.4.0 - 4/11/25
 
 - TwineJs integration for dialogue authoring
 - Use engine v0.6.0
+- `host.pickup.get(tags)` for querying inventory
+- Unify `displaySign` and `displayInteraction` to `display` with animate arg
+- `sensorEvent` and `tileCollisionEvent` take `initiator` arg
 
 ## 0.3.3 - 3/26/25
 
