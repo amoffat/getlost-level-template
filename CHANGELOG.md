@@ -1,3 +1,7 @@
+## 0.4.2 - 4/12/25
+
+- Bugfix with hardcoded workspace dir in pm2 ecosystem file
+
 ## 0.4.1 - 4/12/25
 
 - Fix bad `WORKSPACE_DIR` env var

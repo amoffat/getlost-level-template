@@ -1,6 +1,11 @@
 const VITE_PORT = 5173;
 const TWINE_PORT = 5174;
-const LEVEL_DIR = "/workspaces/getlost-level-template";
+const fs = require("fs");
+const path = require("path");
+
+const WORKSPACE_DIR = fs
+  .readdirSync("/workspaces")
+  .map((dir) => path.resolve("/workspaces", dir))[0];
 
 const isCodespace = !!process.env.CODESPACE_NAME;
 
@@ -30,7 +35,7 @@ module.exports = {
       cwd: process.env.HOME + "/twinejs",
       restart_delay: 1000,
       env: {
-        TWEE_OUTPUT_PATH: `${LEVEL_DIR}/level/story/Level.twee`,
+        TWEE_OUTPUT_PATH: `${WORKSPACE_DIR}/level/story/Level.twee`,
       },
     },
   ],
