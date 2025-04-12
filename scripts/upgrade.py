@@ -6,6 +6,7 @@ from typing import NoReturn
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE_REPO = "https://github.com/amoffat/getlost-level-template.git"
 
+
 def check_clean_working_tree(target_path: Path) -> None:
     result = subprocess.run(
         ["git", "status", "--porcelain"],
@@ -14,8 +15,11 @@ def check_clean_working_tree(target_path: Path) -> None:
         text=True,
     )
     if result.stdout.strip():
-        print("Error: Working tree or index is not clean. Please commit or stash your changes.")
+        print(
+            "Error: Working tree or index is not clean. Please commit or stash your changes."
+        )
         exit(1)
+
 
 def upgrade_repo(target_path: Path) -> None:
     level_dir = target_path / "level"
@@ -111,9 +115,11 @@ def upgrade_repo(target_path: Path) -> None:
     else:
         print("No changes detected. Skipping commit.")
 
+
 def main() -> NoReturn:
     upgrade_repo(ROOT)
     exit(0)
+
 
 if __name__ == "__main__":
     main()
