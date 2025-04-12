@@ -36,7 +36,6 @@ COPY fluxbox-apps.txt $HOME/.fluxbox/apps
 USER node
 ENV VIRTUAL_ENV=$HOME/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-ENV WORKSPACE_DIR=/workspaces/getlost-level-template
 
 RUN python3 -m venv $VIRTUAL_ENV
 
