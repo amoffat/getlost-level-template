@@ -1,3 +1,7 @@
+##
+
+- Infer start node of Twine story
+
 ## 0.4.2 - 4/12/25
 
 - Bugfix with hardcoded workspace dir in pm2 ecosystem file
