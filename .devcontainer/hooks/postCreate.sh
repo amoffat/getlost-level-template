@@ -8,3 +8,6 @@ ls -la "$ECOSYSTEM_FILE"
 echo "Starting PM2 in the background..."
 npx pm2 start "$ECOSYSTEM_FILE"
 npx pm2 save
+
+# https://github.com/devcontainers/features/issues/453
+rm ~/.docker/config.json

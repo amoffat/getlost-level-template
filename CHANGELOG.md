@@ -1,3 +1,8 @@
+## 0.4.1 - 4/11/25
+
+- Fix bad `WORKSPACE_DIR` env var
+- Bugfix for bad DIND config
+
 ## 0.4.0 - 4/11/25
 
 - TwineJs integration for dialogue authoring
