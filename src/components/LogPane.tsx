@@ -65,12 +65,15 @@ function parseMessage(event: LogEvent): LogMessage | undefined {
   return msg;
 }
 
-const LogPane = () => {
+const LogPane = ({ maxMessages }: { maxMessages: number }) => {
   const [logs, setLogs] = useState<LogMessage[]>([]);
 
-  const addMessage = useCallback((msg: LogMessage) => {
-    setLogs((prevLogs) => [msg, ...prevLogs.slice(0, 100)]);
-  }, []);
+  const addMessage = useCallback(
+    (msg: LogMessage) => {
+      setLogs((prevLogs) => [msg, ...prevLogs.slice(0, maxMessages)]);
+    },
+    [maxMessages]
+  );
 
   // This connects our log pane to the pino logs from the iframe
   useEffect(() => {

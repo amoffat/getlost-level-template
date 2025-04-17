@@ -1,6 +1,7 @@
 import * as host from "@gl/api/w2h/host";
 import { String } from "@gl/types/i18n";
 import * as timeUtils from "@gl/utils/time";
+import * as userDialogue from "../main";
 
 const log = host.debug.log;
 const logError = host.debug.logError;
@@ -27,7 +28,7 @@ function isDay(): bool {
     return timeUtils.isDay(ev);
 }
 
-function visited(id: string): u32 {
+export function visited(id: string): u32 {
     if (!visitCount.has(id)) {
         return 0;
     }
@@ -36,11 +37,11 @@ function visited(id: string): u32 {
 }
 
 
-function hasVisited(id: string): bool {
+export function hasVisited(id: string): bool {
     return visitCount.has(id);
 }
 
-function lastVisited(passage: string): u32 {
+export function lastVisited(passage: string): u32 {
     return 0;
 }
 
@@ -97,7 +98,7 @@ export function passage_{{p.id}}(): void {
 {{p.content}}
 
     if (text.length > 0) {
-        host.text.display(title, text, choices, params, animate);
+        host.text.display("{{p.id}}", title, text, choices, params, animate);
     }
 }
 {% endmacro %}
@@ -130,6 +131,11 @@ export function strings(): String[] {
  * @param passageId The id of the choice that the user made.
  */
 export function choiceMadeEvent(passageId: string, choiceId: string): void {
+    if (choiceId === "") {
+        log(`Passage ${passageId} closed.`);
+        userDialogue.dialogClosedEvent(passageId);
+        return;
+    }
     log(`Choice made for ${passageId}: ${choiceId}`);
     if (choiceToPassage.has(choiceId)) {
         choiceId = choiceToPassage.get(choiceId);

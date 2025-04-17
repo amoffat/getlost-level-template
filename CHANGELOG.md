@@ -1,6 +1,15 @@
-##
+## 0.5.0 - 4/17/25
 
-- Infer start node of Twine story
+- Automatically infer start node of Twine story
+- Expose `visited`, `hasVisited`, and `lastVisited` Twine functions to AS
+- `dialogCloseEvent` now called when choice-less dialog is closed
+- Increase log pane number of messages
+- Move generated dialogue file to generated directory
+- `host.sound.loadAndPlay`
+- `host.npc.setAnimation`
+- `host.npc.flip`
+- Ping-pong and repeat support in `Animator` class
+- Use engine 0.7.0
 
 ## 0.4.2 - 4/12/25
 

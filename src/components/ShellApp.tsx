@@ -49,7 +49,7 @@ export function ShellApp() {
         ></iframe>
       </div>
       <div id="log-messages">
-        <LogPane />
+        <LogPane maxMessages={300} />
       </div>
     </>
   );

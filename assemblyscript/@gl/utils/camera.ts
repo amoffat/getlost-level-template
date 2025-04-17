@@ -1,6 +1,6 @@
 import { MapSize } from "../api/types/map";
 import * as host from "../api/w2h/host";
-import { Animator } from "./animation";
+import { Animator, AnimatorOpts } from "./animation";
 import { Box } from "./box";
 import { easeInOutQuad } from "./easing";
 import { Matrix } from "./la/mat";
@@ -33,7 +33,10 @@ export class Camera {
 
   constructor(target: TargetFn) {
     this.desiredTileWidth = 10;
-    this._moveAnimation = new Animator(1700, easeInOutQuad);
+    const opts = new AnimatorOpts();
+    opts.duration = 1700;
+    opts.forwardCurve = easeInOutQuad;
+    this._moveAnimation = new Animator(opts);
     this._targetPos = target;
     this.target(target);
   }

@@ -47,6 +47,7 @@ const asmLibDir = resolve(repoDir, "assemblyscript");
 const shimDir = asmLibDir;
 const levelDir = resolve(repoDir, "level");
 const codeDir = resolve(repoDir, "level", "code");
+const genDir = resolve(codeDir, "generated");
 let cachedWasm: Uint8Array = new Uint8Array(0);
 
 const execAsync = util.promisify(exec);
@@ -64,7 +65,7 @@ async function compile(
 
   // Run the spindler command and write its output to dialogue.ts
   const spindlerInput = resolve(levelDir, "story", "Level.twee");
-  const spindlerOutput = resolve(codeDir, "dialogue.ts");
+  const spindlerOutput = resolve(genDir, "dialogue.ts");
   try {
     const { stdout } = await execAsync(`spindler ${spindlerInput}`);
     await fs.writeFile(spindlerOutput, stdout);

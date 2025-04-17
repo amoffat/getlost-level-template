@@ -1,6 +1,7 @@
 import * as host from "@gl/api/w2h/host";
 import { String } from "@gl/types/i18n";
 import * as timeUtils from "@gl/utils/time";
+import * as userDialogue from "../main";
 
 const log = host.debug.log;
 const logError = host.debug.logError;
@@ -68,7 +69,7 @@ function isDay(): bool {
   return timeUtils.isDay(ev);
 }
 
-function visited(id: string): u32 {
+export function visited(id: string): u32 {
   if (!visitCount.has(id)) {
     return 0;
   }
@@ -76,11 +77,11 @@ function visited(id: string): u32 {
   return count;
 }
 
-function hasVisited(id: string): bool {
+export function hasVisited(id: string): bool {
   return visitCount.has(id);
 }
 
-function lastVisited(passage: string): u32 {
+export function lastVisited(passage: string): u32 {
   return 0;
 }
 
@@ -1085,6 +1086,11 @@ export function strings(): String[] {
  * @param passageId The id of the choice that the user made.
  */
 export function choiceMadeEvent(passageId: string, choiceId: string): void {
+  if (choiceId === "") {
+    log(`Passage ${passageId} closed.`);
+    userDialogue.dialogClosedEvent(passageId);
+    return;
+  }
   log(`Choice made for ${passageId}: ${choiceId}`);
   if (choiceToPassage.has(choiceId)) {
     choiceId = choiceToPassage.get(choiceId);
@@ -1119,7 +1125,7 @@ export function passage_12890122(): void {
   text = "aa225fe0";
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("12890122", title, text, choices, params, animate);
   }
 }
 
@@ -1149,7 +1155,7 @@ export function passage_909a9cff(): void {
   host.map.exit("well", true);
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("909a9cff", title, text, choices, params, animate);
   }
 }
 
@@ -1203,7 +1209,7 @@ export function passage_562cd4ad(): void {
   choices.push("12890122");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("562cd4ad", title, text, choices, params, animate);
   }
 }
 
@@ -1252,7 +1258,7 @@ export function passage_c141faa8(): void {
   }
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("c141faa8", title, text, choices, params, animate);
   }
 }
 
@@ -1285,7 +1291,7 @@ export function passage_15874eac(): void {
   choices.push("c8a7d597");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("15874eac", title, text, choices, params, animate);
   }
 }
 
@@ -1318,7 +1324,7 @@ export function passage_c8a7d597(): void {
   choices.push("141a8032");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("c8a7d597", title, text, choices, params, animate);
   }
 }
 
@@ -1372,7 +1378,7 @@ export function passage_99e18287(): void {
   choices.push("12890122");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("99e18287", title, text, choices, params, animate);
   }
 }
 
@@ -1407,7 +1413,7 @@ export function passage_7d52fd29(): void {
   choices.push("85a39ab3");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("7d52fd29", title, text, choices, params, animate);
   }
 }
 
@@ -1461,7 +1467,7 @@ export function passage_379dcdf1(): void {
   choices.push("12890122");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("379dcdf1", title, text, choices, params, animate);
   }
 }
 
@@ -1492,7 +1498,7 @@ export function passage_f6ded42f(): void {
   text = "dff1fa28";
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("f6ded42f", title, text, choices, params, animate);
   }
 }
 
@@ -1531,7 +1537,7 @@ export function passage_c503743a(): void {
   choices.push("8cf42533");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("c503743a", title, text, choices, params, animate);
   }
 }
 
@@ -1585,7 +1591,7 @@ export function passage_a2b8560b(): void {
   choices.push("12890122");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("a2b8560b", title, text, choices, params, animate);
   }
 }
 
@@ -1616,7 +1622,7 @@ export function passage_3ca52efa(): void {
   text = "0ff99cc5";
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("3ca52efa", title, text, choices, params, animate);
   }
 }
 
@@ -1647,7 +1653,7 @@ export function passage_559c302f(): void {
   text = "be1ca5bd";
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("559c302f", title, text, choices, params, animate);
   }
 }
 
@@ -1700,7 +1706,7 @@ export function passage_e1ffb1d2(): void {
   }
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("e1ffb1d2", title, text, choices, params, animate);
   }
 }
 
@@ -1735,7 +1741,7 @@ export function passage_e0a2d72f(): void {
   choices.push("448fd9e9");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("e0a2d72f", title, text, choices, params, animate);
   }
 }
 
@@ -1766,7 +1772,7 @@ export function passage_2ecf7f34(): void {
   text = "0d053e12";
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("2ecf7f34", title, text, choices, params, animate);
   }
 }
 
@@ -1823,7 +1829,7 @@ export function passage_491e88c5(): void {
   }
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("491e88c5", title, text, choices, params, animate);
   }
 }
 
@@ -1858,7 +1864,7 @@ export function passage_bdc7e965(): void {
   choices.push("b863269e");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("bdc7e965", title, text, choices, params, animate);
   }
 }
 
@@ -1889,7 +1895,7 @@ export function passage_e45c4215(): void {
   text = "e4657ad8";
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("e45c4215", title, text, choices, params, animate);
   }
 }
 
@@ -1924,7 +1930,7 @@ export function passage_f213214a(): void {
   choices.push("e45c4215");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("f213214a", title, text, choices, params, animate);
   }
 }
 
@@ -1959,7 +1965,7 @@ export function passage_9d4f68e2(): void {
   choices.push("885ce2f8");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("9d4f68e2", title, text, choices, params, animate);
   }
 }
 
@@ -1990,7 +1996,7 @@ export function passage_216c5e8c(): void {
   text = "7c1dac67";
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("216c5e8c", title, text, choices, params, animate);
   }
 }
 
@@ -2021,7 +2027,7 @@ export function passage_623aab5c(): void {
   text = "88d44f50";
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("623aab5c", title, text, choices, params, animate);
   }
 }
 
@@ -2054,7 +2060,7 @@ export function passage_63265a79(): void {
   choices.push("15874eac");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("63265a79", title, text, choices, params, animate);
   }
 }
 
@@ -2108,7 +2114,7 @@ export function passage_885ce2f8(): void {
   choices.push("12890122");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("885ce2f8", title, text, choices, params, animate);
   }
 }
 
@@ -2162,7 +2168,7 @@ export function passage_3c0aa10d(): void {
   choices.push("12890122");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("3c0aa10d", title, text, choices, params, animate);
   }
 }
 
@@ -2195,7 +2201,7 @@ export function passage_d20fad6e(): void {
   choices.push("c40b2d30");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("d20fad6e", title, text, choices, params, animate);
   }
 }
 
@@ -2230,7 +2236,7 @@ export function passage_90212c36(): void {
   choices.push("2ecf7f34");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("90212c36", title, text, choices, params, animate);
   }
 }
 
@@ -2265,7 +2271,7 @@ export function passage_50c96f21(): void {
   choices.push("3e769b34");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("50c96f21", title, text, choices, params, animate);
   }
 }
 
@@ -2300,7 +2306,7 @@ export function passage_e6c18fdb(): void {
   choices.push("12890122");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("e6c18fdb", title, text, choices, params, animate);
   }
 }
 
@@ -2331,7 +2337,7 @@ export function passage_ff810fb6(): void {
   text = "092afab4";
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("ff810fb6", title, text, choices, params, animate);
   }
 }
 
@@ -2369,7 +2375,7 @@ export function passage_aff68fcf(): void {
   state.learnedKnightStory = true;
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("aff68fcf", title, text, choices, params, animate);
   }
 }
 
@@ -2400,7 +2406,7 @@ export function passage_a61db43e(): void {
   text = "d95d75d7";
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("a61db43e", title, text, choices, params, animate);
   }
 }
 
@@ -2437,7 +2443,7 @@ export function passage_3d787171(): void {
   choices.push("b27a0c1e");
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("3d787171", title, text, choices, params, animate);
   }
 }
 
@@ -2468,7 +2474,7 @@ export function passage_5c07303d(): void {
   text = "7ad97537";
 
   if (text.length > 0) {
-    host.text.display(title, text, choices, params, animate);
+    host.text.display("5c07303d", title, text, choices, params, animate);
   }
 }
 

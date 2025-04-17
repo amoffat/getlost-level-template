@@ -4,11 +4,11 @@ import { Room } from "@gl/types/room";
 import { getSunEventName, SunEvent } from "@gl/types/time";
 import { Player } from "@gl/utils/player";
 import { isNight } from "@gl/utils/time";
-import * as dialogue from "./dialogue";
+import * as dialogue from "./generated/dialogue";
 
 export { card } from "./card";
-export { choiceMadeEvent, strings } from "./dialogue";
 export { exits } from "./exits";
+export { choiceMadeEvent, strings } from "./generated/dialogue";
 export { pickups } from "./pickups";
 
 const log = host.debug.log;
@@ -124,6 +124,8 @@ export function tileCollisionEvent(
 ): void {
   // log(`Collision event: ${tsTileId}, ${gid}, ${entered} @ ${column}, ${row}`);
 }
+
+export function dialogClosedEvent(passageId: string): void {}
 
 /**
  * Called when a sensor event occurs.

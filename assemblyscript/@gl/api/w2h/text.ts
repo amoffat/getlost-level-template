@@ -8,6 +8,7 @@
  * @param animate Whether to animate the interaction.
  */
 export declare function display(
+  refId: string,
   title: string,
   msg: string,
   choices: string[],
