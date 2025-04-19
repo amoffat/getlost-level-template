@@ -1098,6 +1098,7 @@ export function choiceMadeEvent(passageId: string, choiceId: string): void {
   dispatch(choiceId);
 }
 
+// Show interact button for "Bye"
 export function stage_12890122(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1111,7 +1112,7 @@ export function stage_12890122(entered: bool): void {
   }
 }
 
-// Bye
+// "Bye"
 export function passage_12890122(): void {
   // "Knight"
   const title = "f24b5246";
@@ -1129,6 +1130,7 @@ export function passage_12890122(): void {
   }
 }
 
+// Show interact button for "Climb down"
 export function stage_909a9cff(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1142,7 +1144,7 @@ export function stage_909a9cff(entered: bool): void {
   }
 }
 
-// Climb down
+// "Climb down"
 export function passage_909a9cff(): void {
   // "Well"
   const title = "bdc7e965";
@@ -1159,6 +1161,7 @@ export function passage_909a9cff(): void {
   }
 }
 
+// Show interact button for "Do you have a name?"
 export function stage_562cd4ad(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1172,7 +1175,7 @@ export function stage_562cd4ad(entered: bool): void {
   }
 }
 
-// Do you have a name?
+// "Do you have a name?"
 export function passage_562cd4ad(): void {
   // "Knight"
   const title = "f24b5246";
@@ -1213,6 +1216,7 @@ export function passage_562cd4ad(): void {
   }
 }
 
+// Show interact button for "Fire"
 export function stage_c141faa8(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1226,7 +1230,7 @@ export function stage_c141faa8(entered: bool): void {
   }
 }
 
-// Fire
+// "Fire"
 export function passage_c141faa8(): void {
   // "Fire"
   const title = "c141faa8";
@@ -1262,6 +1266,7 @@ export function passage_c141faa8(): void {
   }
 }
 
+// Show interact button for "Give it a shot."
 export function stage_15874eac(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1275,7 +1280,7 @@ export function stage_15874eac(entered: bool): void {
   }
 }
 
-// Give it a shot.
+// "Give it a shot."
 export function passage_15874eac(): void {
   // "Fire"
   const title = "c141faa8";
@@ -1295,6 +1300,7 @@ export function passage_15874eac(): void {
   }
 }
 
+// Show interact button for "Gotcha..."
 export function stage_c8a7d597(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1308,7 +1314,7 @@ export function stage_c8a7d597(entered: bool): void {
   }
 }
 
-// Gotcha...
+// "Gotcha..."
 export function passage_c8a7d597(): void {
   // "Fire"
   const title = "c141faa8";
@@ -1328,6 +1334,7 @@ export function passage_c8a7d597(): void {
   }
 }
 
+// Show interact button for "Guard from what?"
 export function stage_99e18287(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1341,7 +1348,7 @@ export function stage_99e18287(entered: bool): void {
   }
 }
 
-// Guard from what?
+// "Guard from what?"
 export function passage_99e18287(): void {
   // "Knight"
   const title = "f24b5246";
@@ -1382,6 +1389,7 @@ export function passage_99e18287(): void {
   }
 }
 
+// Show interact button for "Hi Nazar, I'm $playerName."
 export function stage_7d52fd29(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1395,7 +1403,7 @@ export function stage_7d52fd29(entered: bool): void {
   }
 }
 
-// Hi Nazar, I'm $playerName.
+// "Hi Nazar, I'm $playerName."
 export function passage_7d52fd29(): void {
   // "Nazar"
   const title = "e1ffb1d2";
@@ -1417,6 +1425,7 @@ export function passage_7d52fd29(): void {
   }
 }
 
+// Show interact button for "How did you get this job?"
 export function stage_379dcdf1(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1430,7 +1439,7 @@ export function stage_379dcdf1(entered: bool): void {
   }
 }
 
-// How did you get this job?
+// "How did you get this job?"
 export function passage_379dcdf1(): void {
   // "Knight"
   const title = "f24b5246";
@@ -1471,6 +1480,7 @@ export function passage_379dcdf1(): void {
   }
 }
 
+// Show interact button for "How long ago was this?"
 export function stage_f6ded42f(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1484,7 +1494,7 @@ export function stage_f6ded42f(entered: bool): void {
   }
 }
 
-// How long ago was this?
+// "How long ago was this?"
 export function passage_f6ded42f(): void {
   // "Nazar"
   const title = "e1ffb1d2";
@@ -1502,6 +1512,7 @@ export function passage_f6ded42f(): void {
   }
 }
 
+// Show interact button for "I found it up north."
 export function stage_c503743a(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1515,7 +1526,7 @@ export function stage_c503743a(entered: bool): void {
   }
 }
 
-// I found it up north.
+// "I found it up north."
 export function passage_c503743a(): void {
   // "Knight"
   const title = "f24b5246";
@@ -1541,6 +1552,7 @@ export function passage_c503743a(): void {
   }
 }
 
+// Show interact button for "I know why you're here."
 export function stage_a2b8560b(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1554,7 +1566,7 @@ export function stage_a2b8560b(entered: bool): void {
   }
 }
 
-// I know why you're here.
+// "I know why you're here."
 export function passage_a2b8560b(): void {
   // "Knight"
   const title = "f24b5246";
@@ -1595,6 +1607,7 @@ export function passage_a2b8560b(): void {
   }
 }
 
+// Show interact button for "I saw fire on the water."
 export function stage_3ca52efa(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1608,7 +1621,7 @@ export function stage_3ca52efa(entered: bool): void {
   }
 }
 
-// I saw fire on the water.
+// "I saw fire on the water."
 export function passage_3ca52efa(): void {
   // "Nazar"
   const title = "e1ffb1d2";
@@ -1626,6 +1639,7 @@ export function passage_3ca52efa(): void {
   }
 }
 
+// Show interact button for "I'm...new here"
 export function stage_559c302f(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1639,7 +1653,7 @@ export function stage_559c302f(entered: bool): void {
   }
 }
 
-// I'm...new here
+// "I'm...new here"
 export function passage_559c302f(): void {
   // "Fire"
   const title = "c141faa8";
@@ -1657,6 +1671,7 @@ export function passage_559c302f(): void {
   }
 }
 
+// Show interact button for "Nazar"
 export function stage_e1ffb1d2(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1670,7 +1685,7 @@ export function stage_e1ffb1d2(entered: bool): void {
   }
 }
 
-// Nazar
+// "Nazar"
 export function passage_e1ffb1d2(): void {
   // "Nazar"
   const title = "e1ffb1d2";
@@ -1710,6 +1725,7 @@ export function passage_e1ffb1d2(): void {
   }
 }
 
+// Show interact button for "None of your business"
 export function stage_e0a2d72f(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1723,7 +1739,7 @@ export function stage_e0a2d72f(entered: bool): void {
   }
 }
 
-// None of your business
+// "None of your business"
 export function passage_e0a2d72f(): void {
   // "Knight"
   const title = "f24b5246";
@@ -1745,6 +1761,7 @@ export function passage_e0a2d72f(): void {
   }
 }
 
+// Show interact button for "Oh you mean the knight?"
 export function stage_2ecf7f34(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1758,7 +1775,7 @@ export function stage_2ecf7f34(entered: bool): void {
   }
 }
 
-// Oh you mean the knight?
+// "Oh you mean the knight?"
 export function passage_2ecf7f34(): void {
   // "Fire"
   const title = "c141faa8";
@@ -1776,6 +1793,7 @@ export function passage_2ecf7f34(): void {
   }
 }
 
+// Show interact button for "Silent Knight"
 export function stage_491e88c5(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1789,7 +1807,7 @@ export function stage_491e88c5(entered: bool): void {
   }
 }
 
-// Silent Knight
+// "Silent Knight"
 export function passage_491e88c5(): void {
   // "Knight"
   const title = "f24b5246";
@@ -1833,6 +1851,7 @@ export function passage_491e88c5(): void {
   }
 }
 
+// Show interact button for "Well"
 export function stage_bdc7e965(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1846,7 +1865,7 @@ export function stage_bdc7e965(entered: bool): void {
   }
 }
 
-// Well
+// "Well"
 export function passage_bdc7e965(): void {
   // "Well"
   const title = "bdc7e965";
@@ -1868,6 +1887,7 @@ export function passage_bdc7e965(): void {
   }
 }
 
+// Show interact button for "What battle?"
 export function stage_e45c4215(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1881,7 +1901,7 @@ export function stage_e45c4215(entered: bool): void {
   }
 }
 
-// What battle?
+// "What battle?"
 export function passage_e45c4215(): void {
   // "Nazar"
   const title = "e1ffb1d2";
@@ -1899,6 +1919,7 @@ export function passage_e45c4215(): void {
   }
 }
 
+// Show interact button for "What do you know about that knight?"
 export function stage_f213214a(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1912,7 +1933,7 @@ export function stage_f213214a(entered: bool): void {
   }
 }
 
-// What do you know about that knight?
+// "What do you know about that knight?"
 export function passage_f213214a(): void {
   // "Nazar"
   const title = "e1ffb1d2";
@@ -1934,6 +1955,7 @@ export function passage_f213214a(): void {
   }
 }
 
+// Show interact button for "What do you mean he showed up?"
 export function stage_9d4f68e2(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1947,7 +1969,7 @@ export function stage_9d4f68e2(entered: bool): void {
   }
 }
 
-// What do you mean he showed up?
+// "What do you mean he showed up?"
 export function passage_9d4f68e2(): void {
   // "Nazar"
   const title = "e1ffb1d2";
@@ -1969,6 +1991,7 @@ export function passage_9d4f68e2(): void {
   }
 }
 
+// Show interact button for "What is he guarding you from?"
 export function stage_216c5e8c(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -1982,7 +2005,7 @@ export function stage_216c5e8c(entered: bool): void {
   }
 }
 
-// What is he guarding you from?
+// "What is he guarding you from?"
 export function passage_216c5e8c(): void {
   // "Nazar"
   const title = "e1ffb1d2";
@@ -2000,6 +2023,7 @@ export function passage_216c5e8c(): void {
   }
 }
 
+// Show interact button for "What's new?"
 export function stage_623aab5c(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2013,7 +2037,7 @@ export function stage_623aab5c(entered: bool): void {
   }
 }
 
-// What's new?
+// "What's new?"
 export function passage_623aab5c(): void {
   // "Nazar"
   const title = "e1ffb1d2";
@@ -2031,6 +2055,7 @@ export function passage_623aab5c(): void {
   }
 }
 
+// Show interact button for "Where are you from?"
 export function stage_63265a79(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2044,7 +2069,7 @@ export function stage_63265a79(entered: bool): void {
   }
 }
 
-// Where are you from?
+// "Where are you from?"
 export function passage_63265a79(): void {
   // "Fire"
   const title = "c141faa8";
@@ -2064,6 +2089,7 @@ export function passage_63265a79(): void {
   }
 }
 
+// Show interact button for "Who is the Sheikh?"
 export function stage_885ce2f8(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2077,7 +2103,7 @@ export function stage_885ce2f8(entered: bool): void {
   }
 }
 
-// Who is the Sheikh?
+// "Who is the Sheikh?"
 export function passage_885ce2f8(): void {
   // "Knight"
   const title = "f24b5246";
@@ -2118,6 +2144,7 @@ export function passage_885ce2f8(): void {
   }
 }
 
+// Show interact button for "Why are you guarding this town?"
 export function stage_3c0aa10d(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2131,7 +2158,7 @@ export function stage_3c0aa10d(entered: bool): void {
   }
 }
 
-// Why are you guarding this town?
+// "Why are you guarding this town?"
 export function passage_3c0aa10d(): void {
   // "Knight"
   const title = "f24b5246";
@@ -2172,6 +2199,7 @@ export function passage_3c0aa10d(): void {
   }
 }
 
+// Show interact button for "nazar-who-shiekh"
 export function stage_d20fad6e(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2185,7 +2213,7 @@ export function stage_d20fad6e(entered: bool): void {
   }
 }
 
-// nazar-who-shiekh
+// "nazar-who-shiekh"
 export function passage_d20fad6e(): void {
   // "Nazar"
   const title = "e1ffb1d2";
@@ -2205,6 +2233,7 @@ export function passage_d20fad6e(): void {
   }
 }
 
+// Show interact button for "observe-what"
 export function stage_90212c36(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2218,7 +2247,7 @@ export function stage_90212c36(entered: bool): void {
   }
 }
 
-// observe-what
+// "observe-what"
 export function passage_90212c36(): void {
   // "Fire"
   const title = "c141faa8";
@@ -2240,6 +2269,7 @@ export function passage_90212c36(): void {
   }
 }
 
+// Show interact button for "seek-what"
 export function stage_50c96f21(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2253,7 +2283,7 @@ export function stage_50c96f21(entered: bool): void {
   }
 }
 
-// seek-what
+// "seek-what"
 export function passage_50c96f21(): void {
   // "Fire"
   const title = "c141faa8";
@@ -2275,6 +2305,7 @@ export function passage_50c96f21(): void {
   }
 }
 
+// Show interact button for "silence"
 export function stage_e6c18fdb(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2288,7 +2319,7 @@ export function stage_e6c18fdb(entered: bool): void {
   }
 }
 
-// silence
+// "silence"
 export function passage_e6c18fdb(): void {
   // "Knight"
   const title = "f24b5246";
@@ -2310,6 +2341,7 @@ export function passage_e6c18fdb(): void {
   }
 }
 
+// Show interact button for "special-map"
 export function stage_ff810fb6(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2323,7 +2355,7 @@ export function stage_ff810fb6(entered: bool): void {
   }
 }
 
-// special-map
+// "special-map"
 export function passage_ff810fb6(): void {
   // "Fire"
   const title = "c141faa8";
@@ -2341,6 +2373,7 @@ export function passage_ff810fb6(): void {
   }
 }
 
+// Show interact button for "what-did-letter-say"
 export function stage_aff68fcf(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2354,7 +2387,7 @@ export function stage_aff68fcf(entered: bool): void {
   }
 }
 
-// what-did-letter-say
+// "what-did-letter-say"
 export function passage_aff68fcf(): void {
   // "Nazar"
   const title = "e1ffb1d2";
@@ -2379,6 +2412,7 @@ export function passage_aff68fcf(): void {
   }
 }
 
+// Show interact button for "what-knight"
 export function stage_a61db43e(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2392,7 +2426,7 @@ export function stage_a61db43e(entered: bool): void {
   }
 }
 
-// what-knight
+// "what-knight"
 export function passage_a61db43e(): void {
   // "Nazar"
   const title = "e1ffb1d2";
@@ -2410,6 +2444,7 @@ export function passage_a61db43e(): void {
   }
 }
 
+// Show interact button for "who-fire"
 export function stage_3d787171(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2423,7 +2458,7 @@ export function stage_3d787171(entered: bool): void {
   }
 }
 
-// who-fire
+// "who-fire"
 export function passage_3d787171(): void {
   // "Fire"
   const title = "c141faa8";
@@ -2447,6 +2482,7 @@ export function passage_3d787171(): void {
   }
 }
 
+// Show interact button for "yes-knight"
 export function stage_5c07303d(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
@@ -2460,7 +2496,7 @@ export function stage_5c07303d(entered: bool): void {
   }
 }
 
-// yes-knight
+// "yes-knight"
 export function passage_5c07303d(): void {
   // "Nazar"
   const title = "e1ffb1d2";
