@@ -17,6 +17,7 @@ import * as text from "./text";
 import * as tiles from "./tiles";
 import * as time from "./time";
 import * as timer from "./timer";
+import * as ui from "./ui";
 
 export {
   char,
@@ -38,4 +39,5 @@ export {
   tiles,
   time,
   timer,
+  ui,
 };

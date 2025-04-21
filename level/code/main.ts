@@ -1,14 +1,16 @@
 import * as host from "@gl/api/w2h/host";
 
+import { String } from "@gl/types/i18n";
 import { Room } from "@gl/types/room";
 import { getSunEventName, SunEvent } from "@gl/types/time";
+import { Periodic } from "@gl/utils/periodic";
 import { Player } from "@gl/utils/player";
 import { isNight } from "@gl/utils/time";
 import * as dialogue from "./generated/dialogue";
 
 export { card } from "./card";
 export { exits } from "./exits";
-export { choiceMadeEvent, strings } from "./generated/dialogue";
+export { choiceMadeEvent } from "./generated/dialogue";
 export { pickups } from "./pickups";
 
 const log = host.debug.log;
@@ -16,6 +18,11 @@ const log = host.debug.log;
 let tsfid!: i32;
 let player!: Player;
 let music!: i32;
+let hearts: f32 = 1;
+const magicColor = "limegreen";
+let magic: f32 = 1.0;
+let inWater: bool = false;
+const healingPool = new Periodic(200, 1000);
 
 /**
  * This function initializes your level. It's called once when the level is
@@ -34,6 +41,7 @@ export function initRoom(): Room {
    */
   // const time = Date.UTC(2025, 1, 13, 0, 0, 0, 0);
   // host.time.setSunTime(time);
+  // host.time.setSunEvent(SunEvent.SolarNoon, 0);
 
   music = host.sound.loadSound({
     name: "Musics/17 - Fight.ogg",
@@ -42,7 +50,32 @@ export function initRoom(): Room {
     volume: 0.5,
   });
 
+  host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+  host.ui.setProgressBar(1, 0, "magic", magic, magicColor);
+
   return room;
+}
+
+/**
+ * Called on level initialization to expose what strings we use in our level.
+ * This is used for localization.
+ *
+ * @returns The strings that our level uses.
+ */
+export function strings(): String[] {
+  const ourStrings: String[] = [
+    {
+      key: "magic",
+      values: [
+        {
+          text: "Magic",
+          lang: "en",
+        },
+      ],
+    },
+  ];
+  const dialogueStrings = dialogue.strings();
+  return ourStrings.concat(dialogueStrings);
 }
 
 /**
@@ -74,6 +107,15 @@ export function timerEvent(id: u32): void {
  * @param id The ID of the asset that was loaded.
  */
 export function assetLoadedEvent(id: i32): void {}
+
+/**
+ * Called when an async event is triggered. This is usually used for things like
+ * animations being finished. This is to support the fact that AS doesn't yet
+ * support promises or async/await.
+ *
+ * @param id The async event id.
+ */
+export function asyncEvent(id: i32): void {}
 
 /**
  * Called when a pickup event occurs.
@@ -161,6 +203,8 @@ export function sensorEvent(
     host.map.exit("south", false);
   } else if (sensorName === "nazar") {
     dialogue.stage_e1ffb1d2(entered);
+  } else if (sensorName === "water") {
+    inWater = entered;
   }
 }
 
@@ -202,6 +246,11 @@ export function tickRoom(timestep: f32): void {
   host.player.setAction(player.action);
   host.player.setPos(player.pos.x, player.pos.y);
   host.filters.setTiltShiftY(tsfid, player.pos.y - 10);
+
+  if (inWater && hearts < 5 && healingPool.tick(timestep)) {
+    hearts++;
+    host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+  }
 
   // This syncs the time of day with the real world.
   host.time.setSunTime(Date.now());

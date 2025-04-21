@@ -1,3 +1,8 @@
+## 0.6.0 - 4/20/25
+
+- Upgrade engine to 0.8.0
+- Add `Periodic` class for periodic events
+
 ## 0.5.0 - 4/17/25
 
 - Automatically infer start node of Twine story
