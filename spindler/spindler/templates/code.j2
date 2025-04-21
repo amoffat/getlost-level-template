@@ -68,6 +68,7 @@ function incrementVisitCount(id: string): void {
 
 
 {% macro passage(p) %}
+// Show interact button for "{{p.name}}"
 export function stage_{{p.id}}(entered: bool): void {
     if (entered) {
         host.controls.setButtons([
@@ -81,7 +82,7 @@ export function stage_{{p.id}}(entered: bool): void {
     }
 }
 
-// {{p.name}}
+// "{{p.name}}"
 export function passage_{{p.id}}(): void {
     // {{p.title}}
     const title = "{{p.title_id}}"; 

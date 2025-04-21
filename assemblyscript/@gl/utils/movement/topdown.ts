@@ -24,8 +24,8 @@ export class PlayerMovement {
   private _velocity: Vec2;
   public direction: Vec2;
   private impulse: Vec2;
-  private mass: f32;
-  private maxVelocity: Vec2;
+  public mass: f32;
+  public maxVelocity: Vec2;
   private _action: PlayerAction = PlayerAction.Idle;
 
   constructor(initialPos: Vec2, impulse: Vec2, maxVelocity: Vec2, mass: f32) {
@@ -56,6 +56,10 @@ export class PlayerMovement {
 
   get action(): PlayerAction {
     return this._action;
+  }
+
+  get isMoving(): bool {
+    return this._action != PlayerAction.Idle;
   }
 
   // Update method to handle position updates per frame

@@ -18,9 +18,19 @@ export function card(): Card {
         link: "https://your-website.com",
       },
       {
-        name: "Collaborator name",
-        role: "Artist",
-        link: "https://artist-website.com",
+        name: "Collaborator",
+        role: "Level design",
+        link: "https://website.com",
+      },
+      {
+        name: "Designer",
+        role: "Level design",
+        link: "https://website.com",
+      },
+      {
+        name: "Musician",
+        role: "Sound design",
+        link: "https://website.com",
       },
     ],
   };

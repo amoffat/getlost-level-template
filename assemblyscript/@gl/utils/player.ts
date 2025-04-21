@@ -3,10 +3,10 @@ import { Vec2 } from "./la/vec2";
 import { PlayerAction, PlayerMovement } from "./movement/topdown";
 
 export class Player {
-  private _controller: PlayerMovement;
+  c: PlayerMovement;
 
   constructor(controller: PlayerMovement) {
-    this._controller = controller;
+    this.c = controller;
   }
 
   static default(): Player {
@@ -22,22 +22,26 @@ export class Player {
   }
 
   get direction(): Vec2 {
-    return this._controller.direction;
+    return this.c.direction;
   }
 
   set direction(dir: Vec2) {
-    this._controller.direction = dir;
+    this.c.direction = dir;
   }
 
   get pos(): Vec2 {
-    return this._controller.pos;
+    return this.c.pos;
   }
 
   get action(): PlayerAction {
-    return this._controller.action;
+    return this.c.action;
+  }
+
+  get isMoving(): bool {
+    return this.c.isMoving;
   }
 
   tick(deltaMS: f32): void {
-    this._controller.tick(deltaMS);
+    this.c.tick(deltaMS);
   }
 }
