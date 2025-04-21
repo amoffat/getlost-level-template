@@ -26,6 +26,7 @@
       },
       "extensions": [
         "esbenp.prettier-vscode",
+        "eamodio.gitlens",
         "dbaeumer.vscode-eslint",
         "github.vscode-github-actions",
         "ms-python.python",
