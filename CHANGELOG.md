@@ -2,6 +2,9 @@
 
 - Upgrade engine to 0.8.0
 - Add `Periodic` class for periodic events
+- `host.ui.setRating`
+- `host.ui.setProgressBar`
+- Expose `player.isMoving` property
 
 ## 0.5.0 - 4/17/25
 
