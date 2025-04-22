@@ -139,6 +139,9 @@ export function pickupEvent(slug: string, took: bool): void {
  * @param down Whether the button was pressed down or released.
  */
 export function buttonPressEvent(slug: string, down: bool): void {
+  // If our dialogue was staged via a `dialogue.stage_<id>` call, then the event
+  // may be a press of the "interact" button. This checks for that, and if it
+  // is, we'll dispatch to the correct passage.
   if (slug.startsWith("passage/") && down) {
     const passage = slug.split("/")[1];
     dialogue.dispatch(passage);

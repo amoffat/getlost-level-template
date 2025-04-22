@@ -12,6 +12,9 @@ const logError = host.debug.logError;
 
 export const state = new State();
 const visitCount = new Map<string, u32>();
+
+// If we're using an alias on our link, then we need to map from our shown
+// choice id to our alias choice id.
 const choiceToPassage = new Map<string, string>();
 {% for choice_id, pid in choice_to_passage.items() -%}
 choiceToPassage.set("{{choice_id}}", "{{pid}}");
