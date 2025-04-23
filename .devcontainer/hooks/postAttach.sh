@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eux
+set -euo pipefail
 
 PUBLIC_PORT=5173
 

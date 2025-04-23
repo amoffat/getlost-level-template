@@ -50,6 +50,45 @@
           "CONFIRM_RESET": "${input:confirmReset}"
         }
       }
+    },
+    {
+      "label": "Export License Key",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/export_license_key.sh",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "Import License Key",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/import_license_key.sh",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      },
+      "options": {
+        "env": {
+          "LICENSE_KEY": "${input:licenseKey}"
+        }
+      }
     }
   ],
   "inputs": [
@@ -57,6 +96,13 @@
       "id": "confirmReset",
       "type": "promptString",
       "description": "Type 'yes' to confirm reset",
+      "default": ""
+    },
+    {
+      "id": "licenseKey",
+      "type": "promptString",
+      "description": "Enter the license key",
+      "password": true,
       "default": ""
     }
   ]

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eux
+set -euo pipefail
 
 WORKSPACE_DIR=$(realpath /workspaces/*)
 

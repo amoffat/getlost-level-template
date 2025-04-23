@@ -1,6 +1,6 @@
 {
   "name": "Get Lost level",
-  "image": "arwmoffat/get-lost-codespace:0.2.1",
+  "image": "arwmoffat/get-lost-codespace:0.3.0",
   // "build": { "dockerfile": "Dockerfile" },
   // Don't use the docker-compose file for now. You can't select what `features`
   // apply to other containers, which means you can't use the `desktop-lite`
@@ -10,9 +10,16 @@
   // "dockerComposeFile": "docker-compose.yml", "service": "preview",
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    // If I uncomment this, for some reason, my ssh agent socket from the host
+    // no longer works.
+    // "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/desktop-lite:1": {
       "password": "getlost"
+    }
+  },
+  "secrets": {
+    "LICENSE_KEY": {
+      "description": "License key for unlocking protected assets"
     }
   },
   "remoteEnv": {
@@ -22,15 +29,17 @@
   "customizations": {
     "vscode": {
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "zsh"
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "python.defaultInterpreterPath": "/home/node/venv/bin/python"
       },
       "extensions": [
         "esbenp.prettier-vscode",
+        "eamodio.gitlens",
         "dbaeumer.vscode-eslint",
         "github.vscode-github-actions",
         "ms-python.python",
         "ms-python.black-formatter",
-        "ms-azuretools.vscode-docker",
+        // "ms-azuretools.vscode-docker",
         "ms-python.mypy-type-checker",
         "ms-python.isort",
         "ms-python.flake8"

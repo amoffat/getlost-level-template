@@ -559,6 +559,7 @@ def render(passages: list[TweePassage]) -> str:
     passage_to_tags: dict[str, list[str]] = defaultdict(list)
 
     tag_node_visited = set()
+    passage_id_to_nice_id: dict[str, str] = {}
 
     def propagate_tags(passage_id: str, parent_tags: list[str] = []):
 
@@ -567,6 +568,15 @@ def render(passages: list[TweePassage]) -> str:
         children = passage_to_children.get(passage_id, set())
 
         our_tags = passage.tags
+
+        # While we're propagating the tags, let's make a note of the tags that
+        # belong to the passage (are not inherited). We'll use the first tag as
+        # the passage id, which makes it more convenient and stable to reference
+        # in the level code. For example `passage_Guy()` instead of
+        # `passage_123456()`.
+        if our_tags:
+            passage_id_to_nice_id[passage_id] = our_tags[0]
+
         all_tags = list(chain(parent_tags, our_tags))
         passage_to_tags[passage_id].extend(all_tags)
 
@@ -617,6 +627,11 @@ def render(passages: list[TweePassage]) -> str:
     for name, class_def in state_classes.items():
         state_class_defs.append(class_def)
     state_class_defs.append(state_class)
+
+    # Backfill the nice ids, which are based on tag names
+    for cons_passage in passage_functions:
+        if cons_passage.id in passage_id_to_nice_id:
+            cons_passage.nice_id = passage_id_to_nice_id[cons_passage.id]
 
     code_tmpl = _TMPL_ENV.get_template("code.j2")
     output = code_tmpl.render(
