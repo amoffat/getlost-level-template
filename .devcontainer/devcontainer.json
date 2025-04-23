@@ -29,7 +29,8 @@
   "customizations": {
     "vscode": {
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "zsh"
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "python.defaultInterpreterPath": "/home/node/venv/bin/python"
       },
       "extensions": [
         "esbenp.prettier-vscode",
