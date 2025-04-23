@@ -10,7 +10,9 @@
   // "dockerComposeFile": "docker-compose.yml", "service": "preview",
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    // If I uncomment this, for some reason, my ssh agent socket from the host
+    // no longer works.
+    // "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/desktop-lite:1": {
       "password": "getlost"
     }
