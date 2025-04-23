@@ -7,6 +7,6 @@ if [ -z "$LICENSE_KEY" ]; then
     exit 1
 fi
 
-# git-crypt unlock
+git-crypt unlock <("$LICENSE_KEY" | base64 -d)
 
 echo "License key successfully imported."
