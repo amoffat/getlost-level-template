@@ -36,6 +36,9 @@ class State {
 
 export const state = new State();
 const visitCount = new Map<string, u32>();
+
+// If we're using an alias on our link, then we need to map from our shown
+// choice id to our alias choice id.
 const choiceToPassage = new Map<string, string>();
 choiceToPassage.set("80495816", "3d787171");
 choiceToPassage.set("141a8032", "50c96f21");
@@ -1217,7 +1220,7 @@ export function passage_562cd4ad(): void {
 }
 
 // Show interact button for "Fire"
-export function stage_c141faa8(entered: bool): void {
+export function stage_Fire(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
@@ -1231,7 +1234,7 @@ export function stage_c141faa8(entered: bool): void {
 }
 
 // "Fire"
-export function passage_c141faa8(): void {
+export function passage_Fire(): void {
   // "Fire"
   const title = "c141faa8";
   const animate = true;
@@ -1672,7 +1675,7 @@ export function passage_559c302f(): void {
 }
 
 // Show interact button for "Nazar"
-export function stage_e1ffb1d2(entered: bool): void {
+export function stage_Nazar(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
@@ -1686,7 +1689,7 @@ export function stage_e1ffb1d2(entered: bool): void {
 }
 
 // "Nazar"
-export function passage_e1ffb1d2(): void {
+export function passage_Nazar(): void {
   // "Nazar"
   const title = "e1ffb1d2";
   const animate = true;
@@ -1794,7 +1797,7 @@ export function passage_2ecf7f34(): void {
 }
 
 // Show interact button for "Silent Knight"
-export function stage_491e88c5(entered: bool): void {
+export function stage_Knight(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
@@ -1808,7 +1811,7 @@ export function stage_491e88c5(entered: bool): void {
 }
 
 // "Silent Knight"
-export function passage_491e88c5(): void {
+export function passage_Knight(): void {
   // "Knight"
   const title = "f24b5246";
   const animate = true;
@@ -1852,7 +1855,7 @@ export function passage_491e88c5(): void {
 }
 
 // Show interact button for "Well"
-export function stage_bdc7e965(entered: bool): void {
+export function stage_Well(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
@@ -1866,7 +1869,7 @@ export function stage_bdc7e965(entered: bool): void {
 }
 
 // "Well"
-export function passage_bdc7e965(): void {
+export function passage_Well(): void {
   // "Well"
   const title = "bdc7e965";
   const animate = false;
@@ -2534,7 +2537,7 @@ export function dispatch(passageId: string): void {
 
   if (passageId === "c141faa8") {
     found = true;
-    passage_c141faa8();
+    passage_Fire();
   }
 
   if (passageId === "15874eac") {
@@ -2589,7 +2592,7 @@ export function dispatch(passageId: string): void {
 
   if (passageId === "e1ffb1d2") {
     found = true;
-    passage_e1ffb1d2();
+    passage_Nazar();
   }
 
   if (passageId === "e0a2d72f") {
@@ -2604,12 +2607,12 @@ export function dispatch(passageId: string): void {
 
   if (passageId === "491e88c5") {
     found = true;
-    passage_491e88c5();
+    passage_Knight();
   }
 
   if (passageId === "bdc7e965") {
     found = true;
-    passage_bdc7e965();
+    passage_Well();
   }
 
   if (passageId === "e45c4215") {

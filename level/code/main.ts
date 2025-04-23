@@ -193,11 +193,11 @@ export function sensorEvent(
     return;
   }
   if (sensorName === "flame") {
-    dialogue.stage_c141faa8(entered);
+    dialogue.stage_Fire(entered);
   } else if (sensorName === "knight") {
-    dialogue.stage_491e88c5(entered);
+    dialogue.stage_Knight(entered);
   } else if (sensorName === "well") {
-    dialogue.stage_bdc7e965(entered);
+    dialogue.stage_Well(entered);
   } else if (sensorName === "exit-east" && entered) {
     host.map.exit("east", false);
   } else if (sensorName === "exit-west" && entered) {
@@ -205,7 +205,7 @@ export function sensorEvent(
   } else if (sensorName === "exit-south" && entered) {
     host.map.exit("south", false);
   } else if (sensorName === "nazar") {
-    dialogue.stage_e1ffb1d2(entered);
+    dialogue.stage_Nazar(entered);
   } else if (sensorName === "water") {
     inWater = entered;
   }

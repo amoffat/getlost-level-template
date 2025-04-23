@@ -72,7 +72,7 @@ function incrementVisitCount(id: string): void {
 
 {% macro passage(p) %}
 // Show interact button for "{{p.name}}"
-export function stage_{{p.id}}(entered: bool): void {
+export function stage_{{p.nice_id or p.id}}(entered: bool): void {
     if (entered) {
         host.controls.setButtons([
             {
@@ -86,7 +86,7 @@ export function stage_{{p.id}}(entered: bool): void {
 }
 
 // "{{p.name}}"
-export function passage_{{p.id}}(): void {
+export function passage_{{p.nice_id or p.id}}(): void {
     // {{p.title}}
     const title = "{{p.title_id}}"; 
     const animate = {{"false" if p.is_sign else "true"}};
@@ -156,7 +156,7 @@ export function dispatch(passageId: string): void {
     {% for p in passages %}
     if (passageId === "{{p.id}}") {
         found = true;
-        passage_{{p.id}}();
+        passage_{{p.nice_id or p.id}}();
     }
     {% endfor %}
 
