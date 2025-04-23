@@ -1,6 +1,6 @@
 {
   "name": "Get Lost level",
-  "image": "arwmoffat/get-lost-codespace:0.2.1",
+  "image": "arwmoffat/get-lost-codespace:0.3.0",
   // "build": { "dockerfile": "Dockerfile" },
   // Don't use the docker-compose file for now. You can't select what `features`
   // apply to other containers, which means you can't use the `desktop-lite`
@@ -13,6 +13,11 @@
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/desktop-lite:1": {
       "password": "getlost"
+    }
+  },
+  "secrets": {
+    "LICENSE_KEY": {
+      "description": "License key for unlocking protected assets"
     }
   },
   "remoteEnv": {

@@ -3,6 +3,8 @@ FROM mcr.microsoft.com/devcontainers/javascript-node:latest
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -y --no-install-recommends \
+    # Base deps
+    git-crypt \
     # Tiled deps
     qtbase5-dev \
     libqt5svg5-dev \
@@ -13,6 +15,7 @@ RUN apt-get update \
     # Python deps
     python3-pip \
     python3-venv \
+    # cleanup
     && rm -rf /var/lib/apt/lists/*
 
 # Build Tiled from source
