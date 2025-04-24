@@ -1,7 +1,7 @@
 import * as host from "@gl/api/w2h/host";
 import { String } from "@gl/types/i18n";
 import * as twine from "@gl/utils/twine";
-import * as userDialogue from "../main";
+import * as level from "../main";
 
 const log = host.debug.log;
 const logError = host.debug.logError;
@@ -51,7 +51,6 @@ choiceToPassage.set("3639efcd", "e6c18fdb");
 choiceToPassage.set("7fafd7d4", "e1ffb1d2");
 choiceToPassage.set("dd146f7d", "491e88c5");
 choiceToPassage.set("98bd5b29", "c141faa8");
-choiceToPassage.set("fac5b768", "2dd1283e");
 choiceToPassage.set("e2092668", "aff68fcf");
 choiceToPassage.set("885ce2f8", "d20fad6e");
 choiceToPassage.set("c40b2d30", "aff68fcf");
@@ -535,36 +534,6 @@ export function strings(): String[] {
     },
 
     {
-      key: "3be35e22",
-      values: [
-        {
-          text: "What up, I'm Omar.",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "564825cf",
-      values: [
-        {
-          text: "Hi, who are you?",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "8f420f9d",
-      values: [
-        {
-          text: "How did I get here?",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
       key: "b5cbd2a3",
       values: [
         {
@@ -669,16 +638,6 @@ export function strings(): String[] {
       values: [
         {
           text: "Talk to Fire",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "fac5b768",
-      values: [
-        {
-          text: "Talk to Omar",
           lang: "en",
         },
       ],
@@ -1073,16 +1032,6 @@ export function strings(): String[] {
         },
       ],
     },
-
-    {
-      key: "2dd1283e",
-      values: [
-        {
-          text: "Omar",
-          lang: "en",
-        },
-      ],
-    },
   ];
 }
 
@@ -1095,7 +1044,7 @@ export function strings(): String[] {
 export function choiceMadeEvent(passageId: string, choiceId: string): void {
   if (choiceId === "") {
     log(`Passage ${passageId} closed.`);
-    userDialogue.dialogClosedEvent(passageId);
+    level.dialogClosedEvent(passageId);
     return;
   }
   log(`Choice made for ${passageId}: ${choiceId}`);
@@ -1161,7 +1110,7 @@ export function passage_909a9cff(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("909a9cff");
 
-  host.map.exit("well", true);
+  twine.exit("well", true);
 
   if (text.length > 0) {
     host.text.display("909a9cff", title, text, choices, params, animate);
@@ -1247,11 +1196,10 @@ export function passage_Fire(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("c141faa8");
 
-  const objlit_1 = new Array<string>();
-  objlit_1.push("type");
-  objlit_1.push("map");
+  const objlit_1 = new Map<string, string>();
+  objlit_1.set("type", "map");
 
-  if (host.pickup.get(objlit_1)) {
+  if (twine.hasPickup(objlit_1)) {
     // You've found it... Please, give it to me...
     text = "f4886e4d";
   } else {
@@ -1800,42 +1748,6 @@ export function passage_2ecf7f34(): void {
   }
 }
 
-// Show interact button for "Omar"
-export function stage_Omar(entered: bool): void {
-  if (entered) {
-    host.controls.setButtons([
-      {
-        label: "interact",
-        slug: "passage/2dd1283e",
-      },
-    ]);
-  } else {
-    host.controls.setButtons([]);
-  }
-}
-
-// "Omar"
-export function passage_Omar(): void {
-  // "Omar"
-  const title = "2dd1283e";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  const params = new Map<string, string>();
-  twine.incrementVisitCount("2dd1283e");
-
-  // What up, I'm Omar.
-  text = "3be35e22";
-  // Hi, who are you?
-  choices.push("564825cf");
-  // How did I get here?
-  choices.push("8f420f9d");
-
-  if (text.length > 0) {
-    host.text.display("2dd1283e", title, text, choices, params, animate);
-  }
-}
-
 // Show interact button for "Silent Knight"
 export function stage_Knight(entered: bool): void {
   if (entered) {
@@ -1860,15 +1772,14 @@ export function passage_Knight(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("491e88c5");
 
-  const objlit_2 = new Array<string>();
-  objlit_2.push("type");
-  objlit_2.push("map");
+  const objlit_2 = new Map<string, string>();
+  objlit_2.set("type", "map");
 
   if (twine.isNight()) {
     // ...zzzzz...zzzzz.....zzzz...
     text = "b5cbd2a3";
   } else {
-    if (host.pickup.get(objlit_2)) {
+    if (twine.hasPickup(objlit_2)) {
       // Where did you get that map?
       text = "80251c82";
       // I found it up north.
@@ -2643,11 +2554,6 @@ export function dispatch(passageId: string): void {
   if (passageId === "2ecf7f34") {
     found = true;
     passage_2ecf7f34();
-  }
-
-  if (passageId === "2dd1283e") {
-    found = true;
-    passage_Omar();
   }
 
   if (passageId === "491e88c5") {

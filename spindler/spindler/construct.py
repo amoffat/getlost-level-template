@@ -24,17 +24,6 @@ TWINE_FN_NS = "twine"
 # Tags that should not control the dialogue title
 SPECIAL_TAGS = {"widget", "sign"}
 
-ALLOWED_FUNCTIONS = {
-    "visited",
-    "hasVisited",
-    "lastVisited",
-    "random",
-    "randomFloat",
-    "either",
-    "isDay",
-    "isNight",
-}
-
 
 @dataclass
 class Variable:
@@ -388,11 +377,6 @@ def render(passages: list[TweePassage]) -> str:
         elif node.data == "function_call":
             function_name = cast(Token, node.children[0]).value
 
-            if function_name not in ALLOWED_FUNCTIONS:
-                raise NotImplementedError(
-                    f"Function '{function_name}' is not allowed in this context."
-                )
-
             if function_name == "visited":
                 if len(node.children) == 1:
                     # Special case: hard code self passage as the argument
@@ -430,11 +414,11 @@ def render(passages: list[TweePassage]) -> str:
             if macro_name.data == "widget":
                 return ""
 
-        elif node.data == "custom_macro":
-            macro_name = cast(Token, node.children[0]).value
-            return f"<<macro {macro_name}>>"
+        elif node.data == "custom_widget":
+            widget_name = cast(Token, node.children[0]).value
+            return f"<<expand-widget {widget_name}>>"
 
-        elif node.data == "host_call":
+        elif node.data == "level_call":
             function_name = cast(Token, node.children[0]).value
             arguments = ", ".join(
                 traverse(state=state, node=cast(ParseTree, arg))
@@ -454,10 +438,9 @@ def render(passages: list[TweePassage]) -> str:
                 obj_lit[key] = value
 
             objlit_name = get_temp_name("objlit")
-            state.init.append(f"const {objlit_name} = new Array<string>();")
+            state.init.append(f"const {objlit_name} = new Map<string, string>();")
             for key, value in obj_lit.items():
-                state.init.append(f'{objlit_name}.push("{key}");')
-                state.init.append(f"{objlit_name}.push({value});")
+                state.init.append(f'{objlit_name}.set("{key}", {value});')
 
             return f"{objlit_name}"
 
@@ -493,7 +476,7 @@ def render(passages: list[TweePassage]) -> str:
 
     # Create our macro registry. We'll replace all invocations of the macro with
     # the macro body
-    macro_registry: dict[str, tuple[str, TraverseState]] = {}
+    widget_registry: dict[str, tuple[str, TraverseState]] = {}
     for passage in passages:
         if passage.tree is None:
             continue
@@ -503,7 +486,7 @@ def render(passages: list[TweePassage]) -> str:
                 widget_name = cast(Token, macro_name.children[0]).value
                 state = TraverseState()
                 body = traverse(state=state, node=cast(ParseTree, node.children[1]))
-                macro_registry[widget_name] = (body, state)
+                widget_registry[widget_name] = (body, state)
 
     # Generate our individual passage functions
     passage_functions: list[ConstructPassage] = []
@@ -531,11 +514,11 @@ def render(passages: list[TweePassage]) -> str:
 
         # Using regex, find and replace all <<macro {macro_name}>> with the
         # macro content from macro_registry
-        for to_expand, (expanded_macro, macro_state) in macro_registry.items():
-            to_replace = f"<<macro {to_expand}>>"
+        for to_expand, (expanded_widget, widget_state) in widget_registry.items():
+            to_replace = f"<<expand-widget {to_expand}>>"
             if to_replace in content:
-                content = content.replace(to_replace, expanded_macro)
-                passage_to_children[passage.id].update(macro_state.children)
+                content = content.replace(to_replace, expanded_widget)
+                passage_to_children[passage.id].update(widget_state.children)
 
         # Now that we know all of our passage ids, let's do some replacements.
         # This is for functions like `visited("Passage Name")` where the Twine

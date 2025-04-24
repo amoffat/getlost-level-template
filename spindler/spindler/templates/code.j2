@@ -1,7 +1,7 @@
 import * as host from "@gl/api/w2h/host";
 import { String } from "@gl/types/i18n";
 import * as twine from "@gl/utils/twine";
-import * as userDialogue from "../main";
+import * as level from "../main";
 
 const log = host.debug.log;
 const logError = host.debug.logError;
@@ -87,7 +87,7 @@ export function strings(): String[] {
 export function choiceMadeEvent(passageId: string, choiceId: string): void {
     if (choiceId === "") {
         log(`Passage ${passageId} closed.`);
-        userDialogue.dialogClosedEvent(passageId);
+        level.dialogClosedEvent(passageId);
         return;
     }
     log(`Choice made for ${passageId}: ${choiceId}`);

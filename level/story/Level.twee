@@ -24,7 +24,7 @@ Be well.
 
 
 :: Climb down {"position":"4200,1525","size":"100,100"}
-<<host.map.exit("well", true)>>
+<<exit("well", true)>>
 
 
 :: Do you have a name? {"position":"1500,2000","size":"100,100"}
@@ -35,7 +35,7 @@ Sir Azure
 
 
 :: Fire [Fire] {"position":"2950,1325","size":"100,100"}
-<<if host.pickup.get({type: "map"})>>
+<<if hasPickup({type: "map"})>>
 You've found it... Please, give it to me...
 <<else>>
 <<if visited() gt 1>>
@@ -186,7 +186,7 @@ The person I am seeking carries a map
 <<if isNight()>>
 ...zzzzz...zzzzz.....zzzz...
 <<else>>
-  <<if host.pickup.get({type: "map"})>>
+  <<if hasPickup({type: "map"})>>
 Where did you get that map?
 [[I found it up north.]]
 [[None of your business]]

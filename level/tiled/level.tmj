@@ -265,8 +265,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":10.598585731679,
-                 "y":-182.846148417736
+                 "x":15,
+                 "y":-181
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1090,6 +1090,24 @@
                  "width":16,
                  "x":208,
                  "y":-37
+                }, 
+                {
+                 "gid":886,
+                 "height":16,
+                 "id":63,
+                 "name":"omar",
+                 "properties":[
+                        {
+                         "name":"animation",
+                         "type":"string",
+                         "value":"Idle"
+                        }],
+                 "rotation":0,
+                 "type":"NPC",
+                 "visible":true,
+                 "width":16,
+                 "x":6,
+                 "y":-104
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1255,7 +1273,7 @@
          "y":0
         }],
  "nextlayerid":19,
- "nextobjectid":63,
+ "nextobjectid":64,
  "orientation":"orthogonal",
  "properties":[
         {
@@ -1291,6 +1309,10 @@
         {
          "firstgid":870,
          "source":"Spirit.tsj"
+        }, 
+        {
+         "firstgid":886,
+         "source":"Omar.tsj"
         }],
  "tilewidth":16,
  "type":"map",

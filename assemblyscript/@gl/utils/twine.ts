@@ -13,8 +13,8 @@ export function isDay(): bool {
   return timeUtils.isDay(ev);
 }
 
-export function random(min: f32, max: f32): f32 {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+export function random(min: i32, max: i32): i32 {
+  return Math.floor((Math.random() * (max - min + 1)) as f32) + min;
 }
 
 export function randomFloat(min: f32, max: f32): f32 {
@@ -47,4 +47,20 @@ export function incrementVisitCount(id: string): void {
     visitCount.set(id, 0);
   }
   visitCount.set(id, visitCount.get(id) + 1);
+}
+
+export function exit(name: string, force: bool = false): void {
+  host.map.exit(name, force);
+}
+
+export function hasPickup(tags: Map<string, string>): bool {
+  const keys = tags.keys();
+  const tagArr = new Array<string>(keys.length);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const value = tags.get(key);
+    tagArr[i] = value;
+  }
+  const pickups = host.pickup.get(tagArr);
+  return pickups.length > 0;
 }

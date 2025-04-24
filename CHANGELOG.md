@@ -1,7 +1,9 @@
-## 0.8.0 -
+## 0.8.0 - 4/24/25
 
 - Move Twine-accessible functions out of the transpiler template and to twine.ts
 - Use engine version 0.8.1
+- Allow Twine dialogue logic to call level-defined AssemblyScript functions
+- Added Omar for dialogue tutorial
 
 ## 0.7.0 - 4/23/25
 

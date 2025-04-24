@@ -10,23 +10,22 @@ wrapping_macro: "<<" wrap_macros ">>" body "<</" _WORD ">>"
 elseif_macro: "<<" "elseif" expression ">>" body
 else_macro: "<<" "else" ">>" body
 
-?callable_macros: set_macro | custom_macro | host_call
+?callable_macros: set_macro | custom_widget | level_call | function_call
 ?wrap_macros: widget_macro
 
-custom_macro: MACRO_NAME
+custom_widget: WIDGET_NAME
 set_macro: "set" variable "to" expression
 widget_macro: "widget" ("\"" WIDGET_NAME "\""  | "'" WIDGET_NAME "'") -> widget
-host_call: HOST_CALL_NAME "(" _arguments? ")"
+level_call: LEVEL_CALL_NAME "(" _arguments? ")"
 
-HOST_CALL_NAME: "host" "." WORD "." WORD
-MACRO_NAME: /[a-zA-Z-]+/
+LEVEL_CALL_NAME: "level" "." WORD
 WIDGET_NAME:  /[a-zA-Z-]+/
 
 ?expression: \
     ESCAPED_STRING 
     | comparison
     | NUMBER
-    | host_call
+    | level_call
     | boolean 
     | variable 
     | function_call
