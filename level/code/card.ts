@@ -15,22 +15,22 @@ export function card(): Card {
       {
         name: "Your name",
         role: "Author",
-        link: "https://your-website.com",
+        link: "https://x.com/GetLostTheGame",
       },
       {
-        name: "Collaborator",
+        name: "Andrew",
         role: "Level design",
-        link: "https://website.com",
+        link: "https://x.com/GetLostTheGame",
       },
       {
-        name: "Designer",
-        role: "Level design",
-        link: "https://website.com",
+        name: "Pixel Boy",
+        role: "Music",
+        link: "https://x.com/2Pblog1",
       },
       {
-        name: "Musician",
-        role: "Sound design",
-        link: "https://website.com",
+        name: "Pixel Boy",
+        role: "Tileset artist",
+        link: "https://x.com/2Pblog1",
       },
     ],
   };
