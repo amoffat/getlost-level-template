@@ -1,6 +1,6 @@
 import * as host from "@gl/api/w2h/host";
 import { String } from "@gl/types/i18n";
-import * as timeUtils from "@gl/utils/time";
+import * as twine from "@gl/utils/twine";
 import * as userDialogue from "../main";
 
 const log = host.debug.log;
@@ -35,7 +35,6 @@ class State {
 }
 
 export const state = new State();
-const visitCount = new Map<string, u32>();
 
 // If we're using an alias on our link, then we need to map from our shown
 // choice id to our alias choice id.
@@ -52,6 +51,7 @@ choiceToPassage.set("3639efcd", "e6c18fdb");
 choiceToPassage.set("7fafd7d4", "e1ffb1d2");
 choiceToPassage.set("dd146f7d", "491e88c5");
 choiceToPassage.set("98bd5b29", "c141faa8");
+choiceToPassage.set("fac5b768", "2dd1283e");
 choiceToPassage.set("e2092668", "aff68fcf");
 choiceToPassage.set("885ce2f8", "d20fad6e");
 choiceToPassage.set("c40b2d30", "aff68fcf");
@@ -61,52 +61,6 @@ choiceToPassage.set("41876c52", "e6c18fdb");
 choiceToPassage.set("12890122", "9b7360e5");
 choiceToPassage.set("813cdd9a", "90212c36");
 choiceToPassage.set("b27a0c1e", "50c96f21");
-
-function isNight(): bool {
-  const ev = host.time.getSunEvent();
-  return timeUtils.isNight(ev);
-}
-
-function isDay(): bool {
-  const ev = host.time.getSunEvent();
-  return timeUtils.isDay(ev);
-}
-
-export function visited(id: string): u32 {
-  if (!visitCount.has(id)) {
-    return 0;
-  }
-  const count = visitCount.get(id);
-  return count;
-}
-
-export function hasVisited(id: string): bool {
-  return visitCount.has(id);
-}
-
-export function lastVisited(passage: string): u32 {
-  return 0;
-}
-
-function random(min: f32, max: f32): f32 {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function randomFloat(min: f32, max: f32): f32 {
-  return Math.random() * (max - min) + min;
-}
-
-function either<T>(options: T[]): T {
-  const idx = Math.floor(Math.random() * options.length) as u32;
-  return options[idx];
-}
-
-function incrementVisitCount(id: string): void {
-  if (!visitCount.has(id)) {
-    visitCount.set(id, 0);
-  }
-  visitCount.set(id, visitCount.get(id) + 1);
-}
 
 export function strings(): String[] {
   return [
@@ -581,6 +535,36 @@ export function strings(): String[] {
     },
 
     {
+      key: "3be35e22",
+      values: [
+        {
+          text: "What up, I'm Omar.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "564825cf",
+      values: [
+        {
+          text: "Hi, who are you?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "8f420f9d",
+      values: [
+        {
+          text: "How did I get here?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "b5cbd2a3",
       values: [
         {
@@ -685,6 +669,16 @@ export function strings(): String[] {
       values: [
         {
           text: "Talk to Fire",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "fac5b768",
+      values: [
+        {
+          text: "Talk to Omar",
           lang: "en",
         },
       ],
@@ -1079,6 +1073,16 @@ export function strings(): String[] {
         },
       ],
     },
+
+    {
+      key: "2dd1283e",
+      values: [
+        {
+          text: "Omar",
+          lang: "en",
+        },
+      ],
+    },
   ];
 }
 
@@ -1123,7 +1127,7 @@ export function passage_12890122(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("12890122");
+  twine.incrementVisitCount("12890122");
 
   // Be well.
   text = "aa225fe0";
@@ -1155,7 +1159,7 @@ export function passage_909a9cff(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("909a9cff");
+  twine.incrementVisitCount("909a9cff");
 
   host.map.exit("well", true);
 
@@ -1186,7 +1190,7 @@ export function passage_562cd4ad(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("562cd4ad");
+  twine.incrementVisitCount("562cd4ad");
 
   state.knightOpts.yourName = false;
   // Sir Azure
@@ -1241,17 +1245,17 @@ export function passage_Fire(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("c141faa8");
+  twine.incrementVisitCount("c141faa8");
 
-  const pickup_tags_1 = new Array<string>();
-  pickup_tags_1.push("type");
-  pickup_tags_1.push("map");
+  const objlit_1 = new Array<string>();
+  objlit_1.push("type");
+  objlit_1.push("map");
 
-  if (host.pickup.get(pickup_tags_1).length > 0) {
+  if (host.pickup.get(objlit_1)) {
     // You've found it... Please, give it to me...
     text = "f4886e4d";
   } else {
-    if (visited("c141faa8") > 1) {
+    if (twine.visited("c141faa8") > 1) {
       // You've returned.
       text = "dffd1999";
     } else {
@@ -1291,7 +1295,7 @@ export function passage_15874eac(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("15874eac");
+  twine.incrementVisitCount("15874eac");
 
   // In the place where I'm from, we wouldn't be having this conversation because there is no you or I.
   text = "2aa61a95";
@@ -1325,7 +1329,7 @@ export function passage_c8a7d597(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("c8a7d597");
+  twine.incrementVisitCount("c8a7d597");
 
   // Anything else you'd like to know?
   text = "4540b6fa";
@@ -1359,7 +1363,7 @@ export function passage_99e18287(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("99e18287");
+  twine.incrementVisitCount("99e18287");
 
   state.knightOpts.guardWhat = false;
   // That's not your concern.
@@ -1414,7 +1418,7 @@ export function passage_7d52fd29(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("7d52fd29");
+  twine.incrementVisitCount("7d52fd29");
 
   // I haven't seen you before, are you here with the Knight?
   text = "159272d5";
@@ -1450,7 +1454,7 @@ export function passage_379dcdf1(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("379dcdf1");
+  twine.incrementVisitCount("379dcdf1");
 
   state.knightOpts.howJob = false;
   // I.. uh... I volunteered. It's a long story, and I'm very busy right now.
@@ -1505,7 +1509,7 @@ export function passage_f6ded42f(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("f6ded42f");
+  twine.incrementVisitCount("f6ded42f");
 
   // Only a week ago.
   text = "dff1fa28";
@@ -1537,11 +1541,11 @@ export function passage_c503743a(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("c503743a");
+  twine.incrementVisitCount("c503743a");
 
   // I left it there. Give it to me.
   text = "1de8ad8f";
-  if (visited("ff810fb6")) {
+  if (twine.visited("ff810fb6")) {
     // I think I'll bring it to that fire on the water.
     choices.push("b2a5f392");
   }
@@ -1577,7 +1581,7 @@ export function passage_a2b8560b(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("a2b8560b");
+  twine.incrementVisitCount("a2b8560b");
 
   // You talked to the old man...
   text = "aa053912";
@@ -1632,7 +1636,7 @@ export function passage_3ca52efa(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("3ca52efa");
+  twine.incrementVisitCount("3ca52efa");
 
   // You've lost your mind. Please go.
   text = "0ff99cc5";
@@ -1664,7 +1668,7 @@ export function passage_559c302f(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("559c302f");
+  twine.incrementVisitCount("559c302f");
 
   // You are? Interesting...
   text = "be1ca5bd";
@@ -1696,13 +1700,13 @@ export function passage_Nazar(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("e1ffb1d2");
+  twine.incrementVisitCount("e1ffb1d2");
 
-  if (isNight()) {
+  if (twine.isNight()) {
     // I'd like to chat, but it's getting late. Come back during the day.
     text = "eb8848da";
   } else {
-    if (visited("e1ffb1d2") > 1) {
+    if (twine.visited("e1ffb1d2") > 1) {
       // Hello again.
       text = "18083266";
       // What's new?
@@ -1713,11 +1717,11 @@ export function passage_Nazar(): void {
       // Hi Nazar, I'm $playerName.
       choices.push("7d52fd29");
     }
-    if (visited("491e88c5")) {
+    if (twine.visited("491e88c5")) {
       // What do you know about that knight?
       choices.push("f213214a");
     }
-    if (visited("c141faa8")) {
+    if (twine.visited("c141faa8")) {
       // I saw fire on the water.
       choices.push("3ca52efa");
     }
@@ -1750,7 +1754,7 @@ export function passage_e0a2d72f(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("e0a2d72f");
+  twine.incrementVisitCount("e0a2d72f");
 
   // Listen to me carefully. I'm getting that map.
   text = "2dd162b5";
@@ -1786,13 +1790,49 @@ export function passage_2ecf7f34(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("2ecf7f34");
+  twine.incrementVisitCount("2ecf7f34");
 
   // The person I am seeking carries a map
   text = "0d053e12";
 
   if (text.length > 0) {
     host.text.display("2ecf7f34", title, text, choices, params, animate);
+  }
+}
+
+// Show interact button for "Omar"
+export function stage_Omar(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/2dd1283e",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// "Omar"
+export function passage_Omar(): void {
+  // "Omar"
+  const title = "2dd1283e";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  twine.incrementVisitCount("2dd1283e");
+
+  // What up, I'm Omar.
+  text = "3be35e22";
+  // Hi, who are you?
+  choices.push("564825cf");
+  // How did I get here?
+  choices.push("8f420f9d");
+
+  if (text.length > 0) {
+    host.text.display("2dd1283e", title, text, choices, params, animate);
   }
 }
 
@@ -1818,17 +1858,17 @@ export function passage_Knight(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("491e88c5");
+  twine.incrementVisitCount("491e88c5");
 
-  const pickup_tags_2 = new Array<string>();
-  pickup_tags_2.push("type");
-  pickup_tags_2.push("map");
+  const objlit_2 = new Array<string>();
+  objlit_2.push("type");
+  objlit_2.push("map");
 
-  if (isNight()) {
+  if (twine.isNight()) {
     // ...zzzzz...zzzzz.....zzzz...
     text = "b5cbd2a3";
   } else {
-    if (host.pickup.get(pickup_tags_2).length > 0) {
+    if (host.pickup.get(objlit_2)) {
       // Where did you get that map?
       text = "80251c82";
       // I found it up north.
@@ -1876,7 +1916,7 @@ export function passage_Well(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("bdc7e965");
+  twine.incrementVisitCount("bdc7e965");
 
   // There's a ladder going down, but you cannot see the bottom.
   text = "0e865942";
@@ -1912,7 +1952,7 @@ export function passage_e45c4215(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("e45c4215");
+  twine.incrementVisitCount("e45c4215");
 
   // You're really not from around here, are you? My people have been at war since before I was born.
   text = "e4657ad8";
@@ -1944,7 +1984,7 @@ export function passage_f213214a(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("f213214a");
+  twine.incrementVisitCount("f213214a");
 
   // Well, I know he's not from around here. There was a battle. Then he showed up.
   text = "e245bb27";
@@ -1980,7 +2020,7 @@ export function passage_9d4f68e2(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("9d4f68e2");
+  twine.incrementVisitCount("9d4f68e2");
 
   // I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.
   text = "a7b6d713";
@@ -2016,7 +2056,7 @@ export function passage_216c5e8c(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("216c5e8c");
+  twine.incrementVisitCount("216c5e8c");
 
   // You'll have to ask him.
   text = "7c1dac67";
@@ -2048,7 +2088,7 @@ export function passage_623aab5c(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("623aab5c");
+  twine.incrementVisitCount("623aab5c");
 
   // Not much.
   text = "88d44f50";
@@ -2080,7 +2120,7 @@ export function passage_63265a79(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("63265a79");
+  twine.incrementVisitCount("63265a79");
 
   // A different place. Your language lacks the words for it.
   text = "f304833e";
@@ -2114,7 +2154,7 @@ export function passage_885ce2f8(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("885ce2f8");
+  twine.incrementVisitCount("885ce2f8");
 
   state.knightOpts.whoSheikh = false;
   // He sent me here to guard the town.
@@ -2169,7 +2209,7 @@ export function passage_3c0aa10d(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("3c0aa10d");
+  twine.incrementVisitCount("3c0aa10d");
 
   state.knightOpts.whyTown = false;
   // The Sheikh asked me to. That's all I can tell you.
@@ -2224,7 +2264,7 @@ export function passage_d20fad6e(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("d20fad6e");
+  twine.incrementVisitCount("d20fad6e");
 
   // The Sheikh created this village.
   text = "6c3f1cc4";
@@ -2258,7 +2298,7 @@ export function passage_90212c36(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("90212c36");
+  twine.incrementVisitCount("90212c36");
 
   // I was told this village would be getting a new visitor.
   text = "b4c1d391";
@@ -2294,7 +2334,7 @@ export function passage_50c96f21(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("50c96f21");
+  twine.incrementVisitCount("50c96f21");
 
   // A map...
   text = "d6e3cd9f";
@@ -2330,7 +2370,7 @@ export function passage_e6c18fdb(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("e6c18fdb");
+  twine.incrementVisitCount("e6c18fdb");
 
   // ...
   text = "ab5df625";
@@ -2366,7 +2406,7 @@ export function passage_ff810fb6(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("ff810fb6");
+  twine.incrementVisitCount("ff810fb6");
 
   // Find it for me and I'll show you.
   text = "092afab4";
@@ -2398,7 +2438,7 @@ export function passage_aff68fcf(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("aff68fcf");
+  twine.incrementVisitCount("aff68fcf");
 
   // It said "Give food and water to this soldier. In return he will guard the village." It had the Sheikh's seal. It was unmistakable.
   text = "f5654ac2";
@@ -2437,7 +2477,7 @@ export function passage_a61db43e(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("a61db43e");
+  twine.incrementVisitCount("a61db43e");
 
   // There's a knight to the south. He doesn't talk much. Go see for yourself.
   text = "d95d75d7";
@@ -2469,7 +2509,7 @@ export function passage_3d787171(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("3d787171");
+  twine.incrementVisitCount("3d787171");
 
   // A fellow traveller.... I'm here to seek and observe.
   text = "15dd9ed6";
@@ -2507,7 +2547,7 @@ export function passage_5c07303d(): void {
   let text = "";
   const choices: string[] = [];
   const params = new Map<string, string>();
-  incrementVisitCount("5c07303d");
+  twine.incrementVisitCount("5c07303d");
 
   // I see... let me know if you need anything. I'm here to help.
   text = "7ad97537";
@@ -2603,6 +2643,11 @@ export function dispatch(passageId: string): void {
   if (passageId === "2ecf7f34") {
     found = true;
     passage_2ecf7f34();
+  }
+
+  if (passageId === "2dd1283e") {
+    found = true;
+    passage_Omar();
   }
 
   if (passageId === "491e88c5") {

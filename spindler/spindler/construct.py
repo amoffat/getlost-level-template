@@ -19,6 +19,7 @@ _TMPL_ENV = jinja2.Environment(
 )
 
 INVENTORY_VAR = "inventory"
+TWINE_FN_NS = "twine"
 
 # Tags that should not control the dialogue title
 SPECIAL_TAGS = {"widget", "sign"}
@@ -158,12 +159,12 @@ def find_state_classes(passages: list[TweePassage]) -> dict[str, str]:
                     continue
 
                 if isinstance(value_node, Tree):
-                    if value_node.data == "js_object":
+                    if value_node.data == "object_literal":
                         class_name = make_state_class_name(var_name)
                         if var_name in state_classes:
                             continue
 
-                        # Recursively infer types for js_object
+                        # Recursively infer types for object_literal
                         prop_types = {}
                         for pair in value_node.find_data("pair"):
                             key = cast(Token, pair.children[0]).value
@@ -171,7 +172,7 @@ def find_state_classes(passages: list[TweePassage]) -> dict[str, str]:
                             prop_types[key] = infer_basic_type(value)
 
                         # Generate a class name and state class for the
-                        # js_object
+                        # object_literal
                         state_class = create_state_class(
                             class_name,
                             {
@@ -361,10 +362,11 @@ def render(passages: list[TweePassage]) -> str:
         elif node.data == "set_macro":
             var = cast(ParseTree, node.children[0])
             value_node = node.children[1]
-            value = traverse(state=state, node=value_node)
 
-            if isinstance(value_node, Tree) and value_node.data == "js_object":
+            if isinstance(value_node, Tree) and value_node.data == "object_literal":
                 return ""
+
+            value = traverse(state=state, node=value_node)
 
             if var.data == "global_var":
                 var_name = cast(Token, var.children[0]).value
@@ -394,7 +396,7 @@ def render(passages: list[TweePassage]) -> str:
             if function_name == "visited":
                 if len(node.children) == 1:
                     # Special case: hard code self passage as the argument
-                    return f'{function_name}("{state.passage_id}")'
+                    return f'{TWINE_FN_NS}.{function_name}("{state.passage_id}")'
 
                 def resolve_passage(expr: str) -> str:
                     return f"<<id-replace {expr}>>"
@@ -408,7 +410,7 @@ def render(passages: list[TweePassage]) -> str:
                     traverse(state=state, node=cast(ParseTree, arg))
                     for arg in node.children[1:]
                 )
-            return f"{function_name}({arguments})"
+            return f"{TWINE_FN_NS}.{function_name}({arguments})"
         elif node.data == "global_var":
             var_name = cast(Token, node.children[0]).value
             return f"state.{var_name}"
@@ -416,23 +418,6 @@ def render(passages: list[TweePassage]) -> str:
         elif node.data == "local_var":
             var_name = cast(Token, node.children[0]).value
             return f"state.{var_name}"
-
-        elif node.data == "pickup_check":
-            tags = {}
-            for pair in node.children:
-                pair = cast(ParseTree, pair)
-                tag = cast(Token, pair.children[0]).value
-                value = traverse(state=state, node=pair.children[1])
-                if value == "null":
-                    value = '""'
-                tags[tag] = value
-
-            tag_var_name = get_temp_name("pickup_tags")
-            state.init.append(f"const {tag_var_name} = new Array<string>();")
-            for tag, value in tags.items():
-                state.init.append(f'{tag_var_name}.push("{tag}");')
-                state.init.append(f"{tag_var_name}.push({value});")
-            return f"host.pickup.get({tag_var_name}).length > 0"
 
         elif node.data == "binary_comparison":
             left = traverse(state=state, node=cast(ParseTree, node.children[0]))
@@ -456,6 +441,25 @@ def render(passages: list[TweePassage]) -> str:
                 for arg in node.children[1:]
             )
             return f"{function_name}({arguments})"
+
+        elif node.data == "object_literal":
+
+            obj_lit = {}
+            for pair in node.children:
+                pair = cast(ParseTree, pair)
+                key = cast(Token, pair.children[0]).value
+                value = traverse(state=state, node=pair.children[1])
+                if value == "null":
+                    value = '""'
+                obj_lit[key] = value
+
+            objlit_name = get_temp_name("objlit")
+            state.init.append(f"const {objlit_name} = new Array<string>();")
+            for key, value in obj_lit.items():
+                state.init.append(f'{objlit_name}.push("{key}");')
+                state.init.append(f"{objlit_name}.push({value});")
+
+            return f"{objlit_name}"
 
         # Add more cases for other constructs...
         data = "\n".join(f"// {line}" for line in node.pretty().split("\n"))

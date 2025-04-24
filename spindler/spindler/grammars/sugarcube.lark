@@ -25,15 +25,14 @@ WIDGET_NAME:  /[a-zA-Z-]+/
 ?expression: \
     ESCAPED_STRING 
     | comparison
-    | pickup_check 
-    | NUMBER 
+    | NUMBER
+    | host_call
     | boolean 
     | variable 
     | function_call
-    | js_object
+    | object_literal
 
 comparison_operator: "==" | "!=" | "<" | "<=" | ">" | ">="
-pickup_check: "host.pickup.get" "(" pickup_spec ")"
 ?boolean: TRUE | FALSE
 ?variable: global_var | local_var
 
@@ -56,18 +55,11 @@ LINK_TARGET: /(?:(?!\]\]).)+/
 text: TEXT
 TEXT: /(?:(?!(\[\[|<<)).)+/
 
-// Pickups
-?pickup_spec: _LBRACE pickup_spec_body _RBRACE
-?pickup_spec_body: pickup_tag_pair ("," pickup_tag_pair)* ","?
-pickup_tag_pair: pickup_tag ":" pickup_tag_value
-?pickup_tag: ESCAPED_STRING | WORD
-?pickup_tag_value: ESCAPED_STRING | NUMBER | TRUE | FALSE | NULL | UNDEFINED
-
 // basic js grammar
-js_object: _LBRACE [pair ("," pair)* ","?] _RBRACE
+object_literal: _LBRACE [pair ("," pair)* ","?] _RBRACE
 pair: key ":" js_value
 ?key: ESCAPED_STRING | WORD
-?js_value: ESCAPED_STRING | NUMBER | js_object | array | TRUE | FALSE | NULL | UNDEFINED
+?js_value: ESCAPED_STRING | NUMBER | object_literal | array | TRUE | FALSE | NULL | UNDEFINED
 array: "[" [js_value ("," js_value)*] "]"
 _LBRACE: "{"
 _RBRACE: "}"
