@@ -1,6 +1,7 @@
 ## 0.8.0 -
 
 - Move Twine-accessible functions out of the transpiler template and to twine.ts
+- Use engine version 0.8.1
 
 ## 0.7.0 - 4/23/25
 
