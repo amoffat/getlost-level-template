@@ -44,6 +44,10 @@ export default function levelWatcher() {
           gameReload = false;
         }
 
+        if (path.endsWith("engine_version.txt")) {
+          gameReload = true;
+        }
+
         if (gameReload) {
           sharedState.assemblyscriptTainted = true;
           console.log(`Triggering reload: ${path}`);
