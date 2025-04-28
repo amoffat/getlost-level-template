@@ -1,3 +1,7 @@
+## 0.8.1 -
+
+- Update all deps
+
 ## 0.8.0 - 4/24/25
 
 - Move Twine-accessible functions out of the transpiler template and to twine.ts

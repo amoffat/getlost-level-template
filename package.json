@@ -8,28 +8,28 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "formidable": "^3.5.2",
+    "formidable": "^3.5.4",
     "pino": "^9.6.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.24.0",
+    "@eslint/js": "^9.25.1",
     "@types/formidable": "^3.4.5",
-    "@types/react": "^19.1.0",
+    "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-basic-ssl": "^2.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "assemblyscript": "^0.27.35",
-    "eslint": "^9.24.0",
+    "@vitejs/plugin-react": "^4.4.1",
+    "assemblyscript": "^0.27.36",
+    "eslint": "^9.25.1",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
+    "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.0.0",
-    "npm-check-updates": "^17.1.18",
+    "npm-check-updates": "^18.0.1",
     "pm2": "^6.0.5",
     "prettier": "^3.5.3",
     "typescript": "~5.8.3",
-    "typescript-eslint": "^8.29.1",
-    "vite": "^6.2.6"
+    "typescript-eslint": "^8.31.0",
+    "vite": "^6.3.3"
   }
 }
