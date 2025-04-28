@@ -39,12 +39,24 @@
             "dynamicWrapping": false,
             "scaleInDock": 1
         },
-        "level.tmj": {
-            "scale": 2,
-            "selectedLayer": 10,
+        "blank.tmj": {
+            "scale": 46.609375,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 101.5,
-                "y": -128.5
+                "x": 8.013409319477038,
+                "y": 8.013409319477038
+            }
+        },
+        "level.tmj": {
+            "expandedObjectLayers": [
+                17,
+                8
+            ],
+            "scale": 3,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 121.16666666666666,
+                "y": -118.16666666666666
             }
         },
         "tronFreeTiles.tsj": {

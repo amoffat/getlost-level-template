@@ -1,5 +1,7 @@
 ## 0.8.1 -
 
+- Resetting Tiled level now auto-creates useful layers
+- Add Tiled missing custom types
 - Update all deps
 
 ## 0.8.0 - 4/24/25
