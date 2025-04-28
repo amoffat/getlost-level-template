@@ -40,11 +40,11 @@
             "scaleInDock": 1
         },
         "blank.tmj": {
-            "scale": 46.609375,
-            "selectedLayer": 4,
+            "scale": 11,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 8.013409319477038,
-                "y": 8.013409319477038
+                "x": 2.8636363636363598,
+                "y": 22.318181818181817
             }
         },
         "level.tmj": {
@@ -77,6 +77,7 @@
     "project": "level.tiled-project",
     "property.type": "float",
     "recentFiles": [
+        "blank.tmj",
         "Omar.tsj",
         "TilesetDesert.tsj",
         "level.tmj",
