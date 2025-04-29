@@ -3,6 +3,10 @@
 - Resetting Tiled level now auto-creates useful layers
 - Add Tiled missing custom types
 - Update all deps
+- Added `influence` control to ColorMatrix
+- Added a `Ripple` filter for heat / underwater fx
+- `host.time.getSunEventProgress` function
+- `host.filters.setFilterInfluence` for controlling visual fx
 
 ## 0.8.0 - 4/24/25
 

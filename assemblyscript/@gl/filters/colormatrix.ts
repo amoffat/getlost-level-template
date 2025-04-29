@@ -17,7 +17,11 @@ export class ColorMatrixFilter {
     this._id = filters.addColorMatrix();
   }
 
-  sync(): void {
+  set influence(amt: f32) {
+    filters.setFilterInfluence(this._id, amt);
+  }
+
+  private _sync(): void {
     filters.setColorMatrix(this._id, this._matrix);
   }
 
@@ -27,7 +31,7 @@ export class ColorMatrixFilter {
       this._multiply(newMatrix, this.matrix, matrix);
     }
     this._matrix = newMatrix;
-    this.sync();
+    this._sync();
   }
 
   public brightness(b: f32, multiply: boolean = false): void {
@@ -247,6 +251,24 @@ export class ColorMatrixFilter {
     ];
 
     this._loadMatrix(matrix, multiply);
+  }
+
+  public water(multiply: boolean = false): void {
+    // prettier-ignore
+    const matrix: ColorMatrix = [
+         0.2, 0.1, 0.2, 0, 0,
+         0.1, 0.5, 0.2, 0, 0,
+         0.3, 0.5, 1.0, 0, 0,
+         0, 0, 0, 1, 0,
+    ];
+
+    this._loadMatrix(matrix, multiply);
+  }
+
+  public hot(multiply: boolean = false): void {
+    this.tint(0.7, 0.5, 0.4, multiply);
+    this.brightness(1.8, true);
+    this.contrast(0.4, true);
   }
 
   public reset(): void {
