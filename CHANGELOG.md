@@ -8,6 +8,7 @@
 - `host.time.getSunEventProgress` function
 - `host.filters.setFilterInfluence` for controlling visual fx
 - Level now has visual heat fx during the day, but not at night
+- `host.player.setSpeed` for character animation speed
 
 ## 0.8.0 - 4/24/25
 

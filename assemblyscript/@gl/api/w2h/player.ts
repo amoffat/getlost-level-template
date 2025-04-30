@@ -7,6 +7,7 @@ export declare function setPivot(x: f32, y: f32): void;
 export declare function setZIndex(z: f32): void;
 export declare function setAction(anim: PlayerAction): void;
 export declare function flip(x: bool, y: bool): void;
+export declare function setSpeed(speed: f32): void;
 export declare function setCollisionBox(
   x: f32,
   y: f32,
@@ -21,4 +22,5 @@ export const _keep_setPivot = setPivot;
 export const _keep_setZIndex = setZIndex;
 export const _keep_setAction = setAction;
 export const _keep_flip = flip;
+export const _keep_setSpeed = setSpeed;
 // export const _keep_setCollisionBox = setCollisionBox;
