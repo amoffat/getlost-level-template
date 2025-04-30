@@ -1,2 +1,3 @@
 *.tiled-session merge=ours
-level/**/licensed/** filter=git-crypt diff=git-crypt
+level/art/** filter=git-crypt diff=git-crypt
+level/sounds/** filter=git-crypt diff=git-crypt

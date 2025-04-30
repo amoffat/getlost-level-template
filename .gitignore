@@ -29,3 +29,5 @@ dist-ssr
 .stignore
 digikam.uuid
 .env
+license.key
+/upgrade.patch

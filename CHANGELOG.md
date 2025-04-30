@@ -10,6 +10,7 @@
 - Level now has visual heat fx during the day, but not at night
 - `host.player.setSpeed` for character animation speed
 - `make_upgrade_patch.sh` helper for backporting framework improvements
+- Improvements to licensed asset encryption
 
 ## 0.8.0 - 4/24/25
 
