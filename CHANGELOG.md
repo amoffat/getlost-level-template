@@ -1,4 +1,4 @@
-## 0.8.1 -
+## 0.9.0 -
 
 - Resetting Tiled level now auto-creates useful layers
 - Add Tiled missing custom types
@@ -11,6 +11,7 @@
 - `host.player.setSpeed` for character animation speed
 - `make_upgrade_patch.sh` helper for backporting framework improvements
 - Improvements to licensed asset encryption
+- Bump to use engine 0.9.0
 
 ## 0.8.0 - 4/24/25
 
