@@ -55,9 +55,9 @@ export class RippleFilter {
 }
 
 export function createUnderwaterFilter(
-  size: f32 = 0.7,
-  speed: f32 = 0.3,
-  strength: f32 = 0.5
+  size: f32 = 0.9,
+  speed: f32 = 0.2,
+  strength: f32 = 0.7
 ): RippleFilter {
   return new RippleFilter({ size, speed, strength });
 }

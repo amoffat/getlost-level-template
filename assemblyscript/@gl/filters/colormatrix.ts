@@ -254,15 +254,10 @@ export class ColorMatrixFilter {
   }
 
   public water(multiply: boolean = false): void {
-    // prettier-ignore
-    const matrix: ColorMatrix = [
-         0.2, 0.1, 0.2, 0, 0,
-         0.1, 0.5, 0.2, 0, 0,
-         0.3, 0.5, 1.0, 0, 0,
-         0, 0, 0, 1, 0,
-    ];
-
-    this._loadMatrix(matrix, multiply);
+    this.tint(0.0, 0.3, 0.8, multiply);
+    this.saturate(0.3, true);
+    this.brightness(1.5, true);
+    this.contrast(-0.5, true);
   }
 
   public hot(multiply: boolean = false): void {

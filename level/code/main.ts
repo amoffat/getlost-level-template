@@ -49,9 +49,7 @@ export function initRoom(): Room {
    * You can set a fixed time for the level like this.
    * Be sure to comment out the setSunTime call in `tickRoom` if you do this.
    */
-  // const time = Date.UTC(2025, 1, 13, 0, 0, 0, 0);
-  // host.time.setSunTime(time);
-  host.time.setSunEvent(SunEvent.SunriseEnd, 0);
+  host.time.setSunEvent(SunEvent.SolarNoon, 0);
 
   music = host.sound.loadSound({
     name: "Musics/17 - Fight.ogg",
