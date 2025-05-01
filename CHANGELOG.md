@@ -1,3 +1,20 @@
+## 0.9.0 - 4/30/25
+
+- Resetting Tiled level now auto-creates useful layers
+- Add Tiled missing custom types
+- Update all deps
+- Added `influence` control to ColorMatrix
+- Added a `Ripple` filter for heat / underwater fx
+- `host.time.getSunEventProgress` function
+- `host.filters.setFilterInfluence` for controlling visual fx
+- Level now has visual heat fx during the day, but not at night
+- `host.player.setSpeed` for character animation speed
+- `make_upgrade_patch.sh` helper for backporting framework improvements
+- Improvements to licensed asset encryption
+- Bump to use engine 0.9.0
+- Bugfix with cloning level repo already initialized with restricted assets
+- Improve level resetting
+
 ## 0.8.0 - 4/24/25
 
 - Move Twine-accessible functions out of the transpiler template and to twine.ts

@@ -52,26 +52,9 @@
       }
     },
     {
-      "label": "Export License Key",
+      "label": "Import Assets Key",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/export_license_key.sh",
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "dedicated",
-        "clear": true
-      }
-    },
-    {
-      "label": "Import License Key",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/import_license_key.sh",
+      "command": "${workspaceFolder}/scripts/import_assets_key.sh",
       "problemMatcher": [],
       "group": {
         "kind": "build",
@@ -86,7 +69,7 @@
       },
       "options": {
         "env": {
-          "LICENSE_KEY": "${input:licenseKey}"
+          "ASSETS_KEY": "${input:assetsKey}"
         }
       }
     }
@@ -99,9 +82,9 @@
       "default": ""
     },
     {
-      "id": "licenseKey",
+      "id": "assetsKey",
       "type": "promptString",
-      "description": "Enter the license key",
+      "description": "Enter the assets key",
       "password": true,
       "default": ""
     }

@@ -39,12 +39,24 @@
             "dynamicWrapping": false,
             "scaleInDock": 1
         },
-        "level.tmj": {
-            "scale": 2,
-            "selectedLayer": 10,
+        "blank.tmj": {
+            "scale": 11,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 101.5,
-                "y": -128.5
+                "x": 2.8636363636363598,
+                "y": 22.318181818181817
+            }
+        },
+        "level.tmj": {
+            "expandedObjectLayers": [
+                8,
+                17
+            ],
+            "scale": 3,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 100.83333333333333,
+                "y": -128.33333333333331
             }
         },
         "tronFreeTiles.tsj": {
@@ -65,9 +77,10 @@
     "project": "level.tiled-project",
     "property.type": "float",
     "recentFiles": [
-        "Omar.tsj",
         "TilesetDesert.tsj",
         "level.tmj",
+        "blank.tmj",
+        "Omar.tsj",
         "Spirit.tsj",
         "Items.tsj"
     ],

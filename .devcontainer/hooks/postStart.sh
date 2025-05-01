@@ -3,10 +3,23 @@ set -euo pipefail
 
 npx pm2 resurrect
 
-if [[ -n "${LICENSE_KEY:-}" ]]; then
-    echo "🔓  Unlocking licensed assets with git-crypt..."
-    git-crypt unlock <("$LICENSE_KEY" | base64 -d)
+THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKSPACE_DIR=$(realpath /workspaces/*)
+KEY_FILE="$WORKSPACE_DIR/assets.key"
+
+if [[ -n "${ASSETS_KEY:-}" ]]; then
+    echo "$ASSETS_KEY" > "$KEY_FILE"
+fi
+
+if [[ -f "$KEY_FILE" ]]; then
+    echo "🔓  Unlocking licensed assets using $KEY_FILE..."
+    if [[ -n "$(git status --porcelain)" ]]; then
+        git stash save -q "pre-unlock"
+        git-crypt unlock <(cat "$KEY_FILE" | base64 -d)
+        git stash pop -q || true
+    else
+        git-crypt unlock <(cat "$KEY_FILE" | base64 -d)
+    fi
 else
-    echo "⚠️  No LICENSE_KEY secret found. Licensed assets remain locked."
-    echo "    Ask a maintainer for access."
+    echo "⚠️  No ASSETS_KEY secret or assets.key ($KEY_FILE) file found. Licensed assets remain locked."
 fi

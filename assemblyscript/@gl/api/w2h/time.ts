@@ -45,8 +45,15 @@ export declare function setSunColor(r: f32, g: f32, b: f32, a: f32): void;
  */
 export declare function getSunEvent(): SunEvent;
 
+/**
+ * Give the progress of the current sun event until it changes. The progress is
+ * a value between 0 and 1, where 0 is the start of the event and 1 is the end.
+ */
+export declare function getSunEventProgress(): f32;
+
 export const _keep_setSunTime = setSunTime;
 export const _keep_advanceSunTime = advanceSunTime;
 export const _keep_setSunEvent = setSunEvent;
 export const _keep_setSunColor = setSunColor;
 export const _keep_getSunEvent = getSunEvent;
+export const _keep_getSunEventProgress = getSunEventProgress;

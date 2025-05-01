@@ -1,10 +1,12 @@
 import * as host from "@gl/api/w2h/host";
 
+import { ColorMatrixFilter } from "@gl/filters/colormatrix";
 import { String } from "@gl/types/i18n";
 import { Room } from "@gl/types/room";
 import { getSunEventName, SunEvent } from "@gl/types/time";
 import { Periodic } from "@gl/utils/periodic";
 import { Player } from "@gl/utils/player";
+import { createHeatFilter, RippleFilter } from "@gl/utils/ripple";
 import { isNight } from "@gl/utils/time";
 import * as dialogue from "./generated/dialogue";
 
@@ -23,6 +25,9 @@ const magicColor = "limegreen";
 let magic: f32 = 1.0;
 let inWater: bool = false;
 const healingPool = new Periodic(200, 1000);
+let heatFilter!: RippleFilter;
+let colorMatrix!: ColorMatrixFilter;
+let heatAmt: f32 = 0.0;
 
 /**
  * This function initializes your level. It's called once when the level is
@@ -33,27 +38,46 @@ export function initRoom(): Room {
   player = Player.default();
 
   const room = new Room();
+
+  heatFilter = createHeatFilter();
+  colorMatrix = new ColorMatrixFilter();
+  colorMatrix.hot();
+
   tsfid = host.filters.addTiltShift(0.06);
 
   /**
    * You can set a fixed time for the level like this.
    * Be sure to comment out the setSunTime call in `tickRoom` if you do this.
    */
-  // const time = Date.UTC(2025, 1, 13, 0, 0, 0, 0);
-  // host.time.setSunTime(time);
-  // host.time.setSunEvent(SunEvent.SolarNoon, 0);
+  host.time.setSunEvent(SunEvent.SolarNoon, 0);
 
   music = host.sound.loadSound({
     name: "Musics/17 - Fight.ogg",
     loop: true,
     autoplay: true,
     volume: 0.5,
+    sprites: [],
   });
 
   host.ui.setRating(0, 0, hearts, 5, "heart", "red");
   host.ui.setProgressBar(1, 0, "magic", magic, magicColor);
+  updateHeatFilter();
 
   return room;
+}
+
+/**
+ * Sets the heat fx (ripple and color grading) based on the time of day.
+ */
+function updateHeatFilter(): void {
+  const curSunEvent = host.time.getSunEvent();
+  if (curSunEvent === SunEvent.GoldenHourEnd) {
+    heatAmt = host.time.getSunEventProgress();
+  } else if (curSunEvent === SunEvent.GoldenHour) {
+    heatAmt = 1.0 - host.time.getSunEventProgress();
+  }
+  heatFilter.influence = heatAmt;
+  colorMatrix.influence = heatAmt;
 }
 
 /**
@@ -256,9 +280,11 @@ export function tickRoom(timestep: f32): void {
   }
 
   // This syncs the time of day with the real world.
-  host.time.setSunTime(Date.now());
+  // host.time.setSunTime(Date.now());
 
   // Or we can advance the time of day manually, increasing the step size to
   // make the days faster.
   // host.time.advanceSunTime(timestep * 1000);
+
+  updateHeatFilter();
 }

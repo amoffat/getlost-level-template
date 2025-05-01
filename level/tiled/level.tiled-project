@@ -51,6 +51,11 @@
             "id": 11,
             "members": [
                 {
+                    "name": "cameraWidth",
+                    "type": "float",
+                    "value": 10
+                },
+                {
                     "name": "defaultWalk",
                     "propertyType": "WalkSound",
                     "type": "string",
@@ -117,6 +122,20 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 13,
+            "members": [
+            ],
+            "name": "NonObstructing",
+            "type": "class",
+            "useAs": [
+                "property",
+                "tile",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 3,
             "members": [
                 {
@@ -162,6 +181,30 @@
             "name": "Sink",
             "type": "class",
             "useAs": [
+                "object",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 14,
+            "members": [
+                {
+                    "name": "sound",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "volume",
+                    "type": "float",
+                    "value": 1
+                }
+            ],
+            "name": "Sound",
+            "type": "class",
+            "useAs": [
+                "property",
                 "object",
                 "project"
             ]
@@ -214,6 +257,30 @@
             "type": "class",
             "useAs": [
                 "tile",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 12,
+            "members": [
+                {
+                    "name": "zoom",
+                    "type": "float",
+                    "value": 1
+                },
+                {
+                    "name": "zoomPadding",
+                    "type": "float",
+                    "value": 16
+                }
+            ],
+            "name": "Zoom",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
                 "project"
             ]
         }

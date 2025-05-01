@@ -1,4 +1,4 @@
-import { LoadAndPlaySoundOpts, SoundOpts } from "../types/sound";
+import { LoadAndPlaySoundOpts, LoadOpts, PlayOpts } from "../types/sound";
 
 /**
  * Loads a sound and returns its ID.
@@ -6,10 +6,10 @@ import { LoadAndPlaySoundOpts, SoundOpts } from "../types/sound";
  * @param opts Sound options.
  * @returns The ID of the loaded sound.
  */
-export declare function loadSound(opts: SoundOpts): u32;
-export declare function playSound(id: u32): void;
-export declare function loadAndPlaySound(opts: LoadAndPlaySoundOpts): u32;
-export declare function setVolume(id: u32, volume: f32): void;
+export declare function loadSound(opts: LoadOpts): i32;
+export declare function playSound(opts: PlayOpts): void;
+export declare function loadAndPlaySound(opts: LoadAndPlaySoundOpts): i32;
+export declare function setVolume(id: i32, volume: f32): void;
 
 export const _keep_loadSound = loadSound;
 export const _keep_playSound = playSound;
