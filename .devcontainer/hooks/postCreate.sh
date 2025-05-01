@@ -17,10 +17,16 @@ npx pm2 save
 if [[ "$CUR_REPO_URL" != *$TEMPLATE_REPO* ]]; then
     # Only initialize git-crypt once
     if [ ! -d ".git/git-crypt" ]; then
-        echo "git-crypt not initialized. Initializing..."
+        echo "Initializing git-crypt..."
         git-crypt init
-        git-crypt export-key - | base64 -w 0 > license.key
-        echo "Initialized git-crypt. Don't forget to export a key and set up your secrets!"
+
+        if git-crypt status -e | grep -q 'encrypted'; then
+            echo "Repo was already encrypted, discarding irrelevant key..."
+            git-crypt lock -f
+        else
+            echo "Exporting generated key..."
+            git-crypt export-key - | base64 -w 0 > assets.key
+        fi
     else
         echo "git-crypt already initialized."
     fi
