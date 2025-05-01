@@ -1,4 +1,4 @@
-## 0.9.0 -
+## 0.9.0 - 4/30/25
 
 - Resetting Tiled level now auto-creates useful layers
 - Add Tiled missing custom types
