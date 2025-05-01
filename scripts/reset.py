@@ -33,12 +33,14 @@ def clear_art():
     if ART_DIR.exists():
         shutil.rmtree(ART_DIR)
     ART_DIR.mkdir()
+    (ART_DIR / "restricted").mkdir()
 
 
 def clear_sounds():
     if SOUNDS_DIR.exists():
         shutil.rmtree(SOUNDS_DIR)
     SOUNDS_DIR.mkdir()
+    (SOUNDS_DIR / "restricted").mkdir()
 
 
 def clear_dialogue():
