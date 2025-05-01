@@ -13,9 +13,13 @@ fi
 
 if [[ -f "$KEY_FILE" ]]; then
     echo "🔓  Unlocking licensed assets using $KEY_FILE..."
-    git stash save -q "pre-unlock"
-    git-crypt unlock <(cat "$KEY_FILE" | base64 -d)
-    git stash pop -q
+    if [[ -n "$(git status --porcelain)" ]]; then
+        git stash save -q "pre-unlock"
+        git-crypt unlock <(cat "$KEY_FILE" | base64 -d)
+        git stash pop -q || true
+    else
+        git-crypt unlock <(cat "$KEY_FILE" | base64 -d)
+    fi
 else
     echo "⚠️  No ASSETS_KEY secret or assets.key ($KEY_FILE) file found. Licensed assets remain locked."
 fi
