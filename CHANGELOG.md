@@ -13,6 +13,7 @@
 - Improvements to licensed asset encryption
 - Bump to use engine 0.9.0
 - Bugfix with cloning level repo already initialized with restricted assets
+- Improve level resetting
 
 ## 0.8.0 - 4/24/25
 
