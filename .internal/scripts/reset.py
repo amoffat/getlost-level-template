@@ -84,7 +84,7 @@ def commit():
             check=True,
         )
         subprocess.run(
-            ["git", "commit", "-m", "#reset"],
+            ["git", "commit", "-m", "+reset"],
             check=True,
         )
     else:
