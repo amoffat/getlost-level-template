@@ -48,12 +48,15 @@
             }
         },
         "level.tmj": {
+            "expandedGroupLayers": [
+                9
+            ],
             "expandedObjectLayers": [
-                8,
-                17
+                17,
+                8
             ],
             "scale": 3,
-            "selectedLayer": 2,
+            "selectedLayer": 5,
             "viewCenter": {
                 "x": 100.83333333333333,
                 "y": -128.33333333333331

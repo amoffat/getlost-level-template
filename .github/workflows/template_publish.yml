@@ -16,11 +16,11 @@ jobs:
       - name: Set version
         id: set-version
         run: |
-          version=$(jq -r .version package.json | sed 's/\+.*//')
+          version=$(jq -r .version .internal/package.json | sed 's/\+.*//')
           echo "version=$version" >> $GITHUB_ENV
 
       - name: Send Discord Notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           VERSION: ${{ env.version }}
-        run: python3 scripts/discord.py
+        run: python3 .internal/scripts/discord.py

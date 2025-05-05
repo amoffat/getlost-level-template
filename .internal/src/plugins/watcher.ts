@@ -1,7 +1,9 @@
+import path from "path";
 import { ViteDevServer } from "vite";
 import { sharedState } from "./shared";
 
-const repoDir = process.cwd();
+const cwd = process.cwd();
+const repoDir = path.resolve(cwd, "..");
 
 // Triggers a game iframe reload when level assets change
 export default function levelWatcher() {

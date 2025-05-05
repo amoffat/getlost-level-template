@@ -2,7 +2,7 @@
 set -euo pipefail
 
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR=$(realpath "$THIS_DIR/..")
+REPO_DIR=$(realpath "$THIS_DIR/../..")
 KEY_FILE="$REPO_DIR/assets.key"
 
 # Check if ASSETS_KEY was provided
@@ -15,7 +15,7 @@ echo "Importing assets key..."
 
 echo "$ASSETS_KEY" > "$KEY_FILE"
 if [[ -n "$(git status --porcelain)" ]]; then
-    git stash save -q "pre-unlock"
+    git stash push -q -m "+pre-unlock"
     git-crypt unlock <(cat "$KEY_FILE" | base64 -d)
     git stash pop -q || true
 else

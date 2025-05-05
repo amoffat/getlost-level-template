@@ -4,17 +4,18 @@ import { Plugin } from "vite";
 
 export default function levelPlugin(): Plugin {
   const cwd = process.cwd();
-  const levelDir = path.join(cwd, "level");
+  const repoDir = path.resolve(cwd, "..");
+  const levelDir = path.join(repoDir, "level");
 
   return {
     name: "vite-plugin-level-middleware",
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
-        if (!req.url || !req.headers.host) {
+        if (!req.url) {
           return next();
         }
 
-        const requestUrl = new URL(req.url, `http://${req.headers.host}`);
+        const requestUrl = new URL(req.url, `http://localhost`);
         const decodedPath = decodeURIComponent(requestUrl.pathname);
 
         // Check that the decodedPath is within the allowed paths

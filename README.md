@@ -10,7 +10,6 @@ Welcome! This is a basic level template for the [Get Lost](https://x.com/GetLost
 - [Full documentation](https://docs.getlost.gg/latest/)
 - [Main level code](./level/code/main.ts)
 - [Credits code](./level/code/card.ts)
-- [Dialogue text](./level/code/strings.ts)
 
 # To use this template
 

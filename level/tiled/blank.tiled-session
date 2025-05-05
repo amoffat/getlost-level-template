@@ -1,0 +1,39 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "level.tmj",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "level.tmj": {
+            "scale": 2,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 130.75,
+                "y": -23.25
+            }
+        },
+    },
+    "frame.defaultDuration": 100,
+    "map.fixedSize": false,
+    "map.lastUsedFormat": "json",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "openFiles": [
+        "level.tmj",
+    ],
+    "project": "level.tiled-project",
+    "property.type": "float",
+    "recentFiles": [
+        "level.tmj",
+    ],
+    "tileset.lastUsedFormat": "json",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    },
+    "tileset.type": 0
+}

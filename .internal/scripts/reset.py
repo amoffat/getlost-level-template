@@ -1,9 +1,11 @@
 import os
 import shutil
+import subprocess
+from contextlib import contextmanager
 from pathlib import Path
 
 THIS_DIR = Path(__file__).resolve().parent
-ROOT_DIR = THIS_DIR.parent
+ROOT_DIR = THIS_DIR.parent.parent
 LEVEL_DIR = ROOT_DIR / "level"
 TILED_DIR = LEVEL_DIR / "tiled"
 ART_DIR = LEVEL_DIR / "art"
@@ -48,15 +50,60 @@ def clear_dialogue():
     pass
 
 
+def has_changes():
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        capture_output=True,
+        text=True,
+    )
+    return bool(result.stdout.strip())
+
+
+@contextmanager
+def stashed():
+    changes = has_changes()
+
+    if has_changes():
+        subprocess.run(
+            ["git", "stash", "push", "-m", "+before-reset"],
+            check=True,
+        )
+
+    yield
+
+    if changes:
+        subprocess.run(
+            ["git", "stash", "pop"],
+        )
+
+
+def commit():
+    if has_changes():
+        subprocess.run(
+            ["git", "add", "-A"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", "+reset"],
+            check=True,
+        )
+    else:
+        print("No changes to commit.")
+
+
 def main():
     confirm_reset = os.getenv("CONFIRM_RESET")
     if confirm_reset != "yes":
         print("Reset cancelled.")
         return
-    clear_tiled()
-    clear_art()
-    clear_sounds()
-    clear_dialogue()
+
+    with stashed():
+        clear_tiled()
+        clear_art()
+        clear_sounds()
+        clear_dialogue()
+
+        commit()
 
 
 if __name__ == "__main__":

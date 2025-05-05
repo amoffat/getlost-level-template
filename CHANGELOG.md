@@ -1,3 +1,10 @@
+## 0.10.0 - 5/5/25
+
+- Reset level now commits changes
+- Fix reset tiled session
+- Put all non-level files into internal folder
+- Allow upgrade task to take a branch name
+
 ## 0.9.0 - 4/30/25
 
 - Resetting Tiled level now auto-creates useful layers
