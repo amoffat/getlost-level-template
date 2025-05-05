@@ -7,8 +7,8 @@ ECOSYSTEM_FILE="$THIS_DIR/../ecosystem.config.cjs"
 CUR_REPO_URL=$(git config --get remote.origin.url || echo "")
 
 echo "Starting PM2 in the background..."
-npx --prefix _devenv/ pm2 start "$ECOSYSTEM_FILE"
-npx --prefix _devenv/ pm2 save
+npx --prefix .internal/ pm2 start "$ECOSYSTEM_FILE"
+npx --prefix .internal/ pm2 save
 
 # https://github.com/devcontainers/features/issues/453
 # rm ~/.docker/config.json

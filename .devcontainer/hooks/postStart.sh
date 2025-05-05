@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-npx --prefix _devenv/ pm2 resurrect
+npx --prefix .internal/ pm2 resurrect
 
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_DIR=$(realpath /workspaces/*)

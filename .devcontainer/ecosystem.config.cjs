@@ -6,7 +6,7 @@ const path = require("path");
 const WORKSPACE_DIR = fs
   .readdirSync("/workspaces")
   .map((dir) => path.resolve("/workspaces", dir))[0];
-const DEVENV_DIR = path.resolve(WORKSPACE_DIR, "_devenv");
+const DEVENV_DIR = path.resolve(WORKSPACE_DIR, ".internal");
 
 const isCodespace = !!process.env.CODESPACE_NAME;
 

@@ -23,4 +23,4 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           VERSION: ${{ env.version }}
-        run: python3 _devenv/scripts/discord.py
+        run: python3 .internal/scripts/discord.py
