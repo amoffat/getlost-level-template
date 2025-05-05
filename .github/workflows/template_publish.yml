@@ -16,7 +16,7 @@ jobs:
       - name: Set version
         id: set-version
         run: |
-          version=$(jq -r .version package.json | sed 's/\+.*//')
+          version=$(jq -r .version .internal/package.json | sed 's/\+.*//')
           echo "version=$version" >> $GITHUB_ENV
 
       - name: Send Discord Notification

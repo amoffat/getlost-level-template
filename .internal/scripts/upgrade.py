@@ -25,8 +25,9 @@ def check_clean_working_tree(target_path: Path) -> None:
 
 def upgrade_repo(target_path: Path) -> None:
     level_dir = target_path / "level"
+    internal_dir = target_path / ".internal"
     temp_clone_dir = target_path / "_template_update"
-    version_file = target_path / "package.json"
+    version_file = internal_dir / "package.json"
     with version_file.open() as f:
         version = json.load(f).get("version", "unknown")
 
@@ -62,7 +63,6 @@ def upgrade_repo(target_path: Path) -> None:
         preserve = [
             level_backup,
             temp_clone_dir,
-            target_path / "node_modules",
             target_path / ".git",
         ]
         return item not in preserve
