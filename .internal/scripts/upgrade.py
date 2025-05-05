@@ -106,7 +106,7 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
 
     if result.stdout.strip():  # If there are changes
         subprocess.run(
-            ["git", "commit", "-m", f"#upgrade to {version}"],
+            ["git", "commit", "-m", f"+upgrade to {version}"],
             cwd=str(target_path),
             check=True,
         )

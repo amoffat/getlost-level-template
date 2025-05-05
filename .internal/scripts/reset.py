@@ -65,7 +65,7 @@ def stashed():
 
     if has_changes():
         subprocess.run(
-            ["git", "stash", "push", "-m", "#before-reset"],
+            ["git", "stash", "push", "-m", "+before-reset"],
             check=True,
         )
 
