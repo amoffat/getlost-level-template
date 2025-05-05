@@ -37,6 +37,11 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
         print(f"Error: Target directory '{target_path}' does not exist.")
         exit(1)
 
+    # Check that target_dir is a git repository
+    if not (target_path / ".git").exists():
+        print(f"Error: '{target_path}' is not a git repository, aborting.")
+        exit(1)
+
     if temp_clone_dir.exists():
         print(
             f"Warning: Temporary clone directory '{temp_clone_dir}' already exists, removing"
