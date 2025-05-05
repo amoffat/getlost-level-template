@@ -15,7 +15,7 @@ echo "Importing assets key..."
 
 echo "$ASSETS_KEY" > "$KEY_FILE"
 if [[ -n "$(git status --porcelain)" ]]; then
-    git stash save -q "pre-unlock"
+    git stash push -q "pre-unlock"
     git-crypt unlock <(cat "$KEY_FILE" | base64 -d)
     git stash pop -q || true
 else

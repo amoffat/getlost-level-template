@@ -1,6 +1,6 @@
 ##
 
-- Reset level commits changes
+- Reset level now commits changes
 - Fix reset tiled session
 
 ## 0.9.0 - 4/30/25

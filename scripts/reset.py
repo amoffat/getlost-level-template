@@ -50,35 +50,35 @@ def clear_dialogue():
     pass
 
 
-@contextmanager
-def stashed():
-    result = subprocess.run(
-        ["git", "stash", "create"],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    stash_id = result.stdout.strip()
-    if not stash_id:
-        yield
-        return
-
-    try:
-        yield
-    finally:
-        subprocess.run(
-            ["git", "stash", "pop", stash_id],
-            check=True,
-        )
-
-
-def commit():
+def has_changes():
     result = subprocess.run(
         ["git", "status", "--porcelain"],
         capture_output=True,
         text=True,
     )
-    if result.stdout.strip():
+    return bool(result.stdout.strip())
+
+
+@contextmanager
+def stashed():
+    changes = has_changes()
+
+    if has_changes():
+        subprocess.run(
+            ["git", "stash", "push", "-m", "#before-reset"],
+            check=True,
+        )
+
+    yield
+
+    if changes:
+        subprocess.run(
+            ["git", "stash", "pop"],
+        )
+
+
+def commit():
+    if has_changes():
         subprocess.run(
             ["git", "add", "-A"],
             check=True,
