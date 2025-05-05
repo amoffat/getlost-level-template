@@ -1,3 +1,8 @@
+##
+
+- Reset level commits changes
+- Fix reset tiled session
+
 ## 0.9.0 - 4/30/25
 
 - Resetting Tiled level now auto-creates useful layers

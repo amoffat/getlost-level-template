@@ -1,5 +1,7 @@
 import os
 import shutil
+import subprocess
+from contextlib import contextmanager
 from pathlib import Path
 
 THIS_DIR = Path(__file__).resolve().parent
@@ -48,15 +50,60 @@ def clear_dialogue():
     pass
 
 
+@contextmanager
+def stashed():
+    result = subprocess.run(
+        ["git", "stash", "create"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    stash_id = result.stdout.strip()
+    if not stash_id:
+        yield
+        return
+
+    try:
+        yield
+    finally:
+        subprocess.run(
+            ["git", "stash", "pop", stash_id],
+            check=True,
+        )
+
+
+def commit():
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        capture_output=True,
+        text=True,
+    )
+    if result.stdout.strip():
+        subprocess.run(
+            ["git", "add", "-A"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", "#reset"],
+            check=True,
+        )
+    else:
+        print("No changes to commit.")
+
+
 def main():
     confirm_reset = os.getenv("CONFIRM_RESET")
     if confirm_reset != "yes":
         print("Reset cancelled.")
         return
-    clear_tiled()
-    clear_art()
-    clear_sounds()
-    clear_dialogue()
+
+    with stashed():
+        clear_tiled()
+        clear_art()
+        clear_sounds()
+        clear_dialogue()
+
+        commit()
 
 
 if __name__ == "__main__":
