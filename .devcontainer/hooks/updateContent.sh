@@ -5,4 +5,4 @@ WORKSPACE_DIR=$(realpath /workspaces/*)
 
 npm install
 npm install --prefix "$HOME/twinejs"
-poetry install -P "$WORKSPACE_DIR/spindler"
+poetry install -P "$WORKSPACE_DIR/_devenv/spindler"

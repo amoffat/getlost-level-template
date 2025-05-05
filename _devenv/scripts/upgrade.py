@@ -4,7 +4,8 @@ import subprocess
 from pathlib import Path
 from typing import NoReturn
 
-ROOT = Path(__file__).resolve().parent.parent
+THIS_DIR = Path(__file__).parent
+REPO_DIR = THIS_DIR.parent.parent
 TEMPLATE_REPO = "https://github.com/amoffat/getlost-level-template.git"
 
 
@@ -114,7 +115,7 @@ def upgrade_repo(target_path: Path) -> None:
 
 
 def main() -> NoReturn:
-    upgrade_repo(ROOT)
+    upgrade_repo(REPO_DIR)
     exit(0)
 
 

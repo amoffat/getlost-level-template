@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 THIS_DIR = Path(__file__).resolve().parent
-ROOT_DIR = THIS_DIR.parent
+ROOT_DIR = THIS_DIR.parent.parent
 LEVEL_DIR = ROOT_DIR / "level"
 TILED_DIR = LEVEL_DIR / "tiled"
 ART_DIR = LEVEL_DIR / "art"

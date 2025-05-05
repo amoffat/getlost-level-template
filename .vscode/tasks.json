@@ -16,7 +16,7 @@
       "label": "Upgrade Level",
       "type": "shell",
       "command": "python3",
-      "args": ["${workspaceFolder}/scripts/upgrade.py"],
+      "args": ["${workspaceFolder}/_devenv/scripts/upgrade.py"],
       "problemMatcher": [],
       "group": {
         "kind": "build",
@@ -33,7 +33,7 @@
       "label": "Reset Level",
       "type": "shell",
       "command": "python3",
-      "args": ["${workspaceFolder}/scripts/reset.py"],
+      "args": ["${workspaceFolder}/_devenv/scripts/reset.py"],
       "problemMatcher": [],
       "group": {
         "kind": "build",
@@ -54,7 +54,7 @@
     {
       "label": "Import Assets Key",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/import_assets_key.sh",
+      "command": "${workspaceFolder}/_devenv/scripts/import_assets_key.sh",
       "problemMatcher": [],
       "group": {
         "kind": "build",

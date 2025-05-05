@@ -2,7 +2,7 @@
 set -euo pipefail
 
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR=$(realpath "$THIS_DIR/..")
+REPO_DIR=$(realpath "$THIS_DIR/../..")
 KEY_FILE="$REPO_DIR/assets.key"
 
 # Check if ASSETS_KEY was provided

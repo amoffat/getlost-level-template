@@ -2,7 +2,7 @@
 set -euo pipefail
 
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR=$(realpath "$THIS_DIR/..")
+REPO_DIR=$(realpath "$THIS_DIR/../..")
 
 # Find the most recent commit with "#upgrade" in the commit message
 UPGRADE_COMMIT=$(git log --grep="#upgrade" --max-count=1 --format="%H")
