@@ -16,7 +16,11 @@
       "label": "Upgrade Level",
       "type": "shell",
       "command": "python3",
-      "args": ["${workspaceFolder}/.internal/scripts/upgrade.py"],
+      "args": [
+        "${workspaceFolder}/.internal/scripts/upgrade.py",
+        "--branch",
+        "${input:branchName}"
+      ],
       "problemMatcher": [],
       "group": {
         "kind": "build",
@@ -87,6 +91,12 @@
       "description": "Enter the assets key",
       "password": true,
       "default": ""
+    },
+    {
+      "id": "branchName",
+      "type": "promptString",
+      "description": "Enter the branch name to upgrade from",
+      "default": "main"
     }
   ]
 }

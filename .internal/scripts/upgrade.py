@@ -1,3 +1,4 @@
+import argparse
 import json
 import shutil
 import subprocess
@@ -23,7 +24,7 @@ def check_clean_working_tree(target_path: Path) -> None:
         exit(1)
 
 
-def upgrade_repo(target_path: Path) -> None:
+def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
     level_dir = target_path / "level"
     internal_dir = target_path / ".internal"
     temp_clone_dir = target_path / "_template_update"
@@ -52,7 +53,7 @@ def upgrade_repo(target_path: Path) -> None:
             "--depth",
             "1",
             "--branch",
-            "main",
+            branch,
             TEMPLATE_REPO,
             str(temp_clone_dir),
         ],
@@ -115,7 +116,16 @@ def upgrade_repo(target_path: Path) -> None:
 
 
 def main() -> NoReturn:
-    upgrade_repo(REPO_DIR)
+    parser = argparse.ArgumentParser(description="Upgrade the level template.")
+    parser.add_argument(
+        "--branch",
+        type=str,
+        default="main",
+        help="The branch name to use for the upgrade (default: 'main').",
+    )
+    args = parser.parse_args()
+
+    upgrade_repo(target_path=REPO_DIR, branch=args.branch)
     exit(0)
 
 
