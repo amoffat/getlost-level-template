@@ -28,6 +28,7 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
     level_dir = target_path / "level"
     internal_dir = target_path / ".internal"
     temp_clone_dir = target_path / "_template_update"
+    level_backup = target_path / "_level_backup"
     version_file = internal_dir / "package.json"
     with version_file.open() as f:
         version = json.load(f).get("version", "unknown")
@@ -36,13 +37,21 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
         print(f"Error: Target directory '{target_path}' does not exist.")
         exit(1)
 
+    if temp_clone_dir.exists():
+        print(
+            f"Warning: Temporary clone directory '{temp_clone_dir}' already exists, removing"
+        )
+        shutil.rmtree(temp_clone_dir)
+
+    if level_backup.exists():
+        print(f"Warning: Backup directory '{level_backup}' already exists, removing")
+        shutil.rmtree(level_backup)
+
     # Check if the working tree and index are clean
     check_clean_working_tree(target_path)
 
     # Move 'level' directory aside
-    level_backup = target_path / "_level_backup"
-    if level_dir.exists():
-        shutil.move(str(level_dir), str(level_backup))
+    shutil.move(str(level_dir), str(level_backup))
 
     # Clone the latest template repo
     print("Cloning template repository...")
@@ -60,14 +69,18 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
         check=True,
     )
 
+    # Return true if the file should be removed from the level repo.
     def should_remove(item: Path) -> bool:
         preserve = [
             level_backup,
             temp_clone_dir,
             target_path / ".git",
+            target_path / "assets.key",
         ]
         return item not in preserve
 
+    # Return true if the file should be copied from the temp cloned template
+    # repo into our level repo.
     def should_restore(item: Path) -> bool:
         ignore = [
             temp_clone_dir / "level",

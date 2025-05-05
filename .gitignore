@@ -31,3 +31,6 @@ digikam.uuid
 .env
 assets.key
 /upgrade.patch
+/_level_backup
+/_template_update
+.vite/
