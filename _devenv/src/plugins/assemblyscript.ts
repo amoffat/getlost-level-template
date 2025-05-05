@@ -42,8 +42,9 @@ function isCompileError(e: unknown): e is CompileError {
   return e !== undefined && (e as CompileError).message !== undefined;
 }
 
-const repoDir = process.cwd();
-const asmLibDir = resolve(repoDir, "assemblyscript");
+const cwd = process.cwd();
+const repoDir = resolve(cwd, "..");
+const asmLibDir = resolve(cwd, "assemblyscript");
 const shimDir = asmLibDir;
 const levelDir = resolve(repoDir, "level");
 const codeDir = resolve(repoDir, "level", "code");
@@ -53,7 +54,7 @@ let cachedWasm: Uint8Array = new Uint8Array(0);
 const execAsync = util.promisify(exec);
 
 const packageJson = JSON.parse(
-  readFileSync(resolve(repoDir, "package.json"), "utf-8")
+  readFileSync(resolve(cwd, "package.json"), "utf-8")
 );
 const tmplVersion = packageJson.version;
 
@@ -133,7 +134,7 @@ export default function compileWasmPlugin() {
     configureServer(server: ViteDevServer) {
       server.middlewares.use(async (req, res, next) => {
         const engineVersion = await fs.readFile(
-          resolve(process.cwd(), "engine_version.txt"),
+          resolve(process.cwd(), "..", "engine_version.txt"),
           "utf-8"
         );
         const url = req.url!;

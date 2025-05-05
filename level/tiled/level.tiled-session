@@ -52,14 +52,14 @@
                 9
             ],
             "expandedObjectLayers": [
-                8,
-                17
+                17,
+                8
             ],
             "scale": 3,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 73.5,
-                "y": -63.66666666666667
+                "x": 100.83333333333333,
+                "y": -128.33333333333331
             }
         },
         "tronFreeTiles.tsj": {
@@ -80,8 +80,8 @@
     "project": "level.tiled-project",
     "property.type": "float",
     "recentFiles": [
-        "level.tmj",
         "TilesetDesert.tsj",
+        "level.tmj",
         "blank.tmj",
         "Omar.tsj",
         "Spirit.tsj",

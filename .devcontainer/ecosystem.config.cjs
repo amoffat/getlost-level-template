@@ -6,6 +6,7 @@ const path = require("path");
 const WORKSPACE_DIR = fs
   .readdirSync("/workspaces")
   .map((dir) => path.resolve("/workspaces", dir))[0];
+const DEVENV_DIR = path.resolve(WORKSPACE_DIR, "_devenv");
 
 const isCodespace = !!process.env.CODESPACE_NAME;
 
@@ -13,6 +14,7 @@ module.exports = {
   apps: [
     {
       name: "preview",
+      cwd: DEVENV_DIR,
       interpreter: "npx",
       script: isCodespace
         ? `vite --port ${VITE_PORT}`
@@ -28,6 +30,7 @@ module.exports = {
     },
     {
       name: "twine",
+      cwd: DEVENV_DIR,
       interpreter: "npx",
       script: isCodespace
         ? `vite --port ${TWINE_PORT}`

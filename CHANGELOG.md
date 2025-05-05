@@ -2,6 +2,7 @@
 
 - Reset level now commits changes
 - Fix reset tiled session
+- Put all non-level files into internal folder
 
 ## 0.9.0 - 4/30/25
 
