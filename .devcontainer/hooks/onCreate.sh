@@ -2,7 +2,8 @@
 set -euo pipefail
 
 WORKSPACE_DIR=$(realpath /workspaces/*)
+INTERNAL_DIR="$WORKSPACE_DIR/.internal"
 
-npm ci --prefix .internal/
+npm ci --prefix "$INTERNAL_DIR"
 npm ci --prefix "$HOME/twinejs"
-poetry install -P "$WORKSPACE_DIR/.internal/spindler"
+poetry install -P "$INTERNAL_DIR/spindler"

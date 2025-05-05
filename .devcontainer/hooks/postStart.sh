@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-npx --prefix .internal/ pm2 resurrect
 
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_DIR=$(realpath /workspaces/*)
+INTERNAL_DIR="$WORKSPACE_DIR/.internal"
 KEY_FILE="$WORKSPACE_DIR/assets.key"
+
+npx --prefix "$INTERNAL_DIR" pm2 resurrect
 
 if [[ -n "${ASSETS_KEY:-}" ]]; then
     echo "$ASSETS_KEY" > "$KEY_FILE"

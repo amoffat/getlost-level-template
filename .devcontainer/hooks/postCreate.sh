@@ -5,10 +5,12 @@ TEMPLATE_REPO="amoffat/getlost-level-template"
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ECOSYSTEM_FILE="$THIS_DIR/../ecosystem.config.cjs"
 CUR_REPO_URL=$(git config --get remote.origin.url || echo "")
+WORKSPACE_DIR=$(realpath /workspaces/*)
+INTERNAL_DIR="$WORKSPACE_DIR/.internal"
 
 echo "Starting PM2 in the background..."
-npx --prefix .internal/ pm2 start "$ECOSYSTEM_FILE"
-npx --prefix .internal/ pm2 save
+npx --prefix "$INTERNAL_DIR" pm2 start "$ECOSYSTEM_FILE"
+npx --prefix "$INTERNAL_DIR" pm2 save
 
 # https://github.com/devcontainers/features/issues/453
 # rm ~/.docker/config.json
