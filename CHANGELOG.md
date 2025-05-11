@@ -1,3 +1,7 @@
+##
+
+- Fix AS syntax highlighting
+
 ## 0.10.0 - 5/5/25
 
 - Reset level now commits changes
