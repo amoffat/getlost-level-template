@@ -18,50 +18,53 @@ export default function levelWatcher() {
       // root. And since we've tucked away our framework into a .internal
       // directory, our level files are outside of the project root.
       const watcher = chokidar
-        .watch("..", { ignored: [/node_modules/, /.git/] })
-        .on("change", (path) => {
-          console.log("Changed:", path);
+        .watch("..", {
+          ignored: [/node_modules/, /.git/, /.mypy_cache/, /__pycache__/],
+        })
+        .on("change", (changed) => {
+          changed = path.resolve(internalDir, changed);
+          console.log("Changed:", changed);
 
           let gameReload = false;
           // If it's in the repo's /level directory, reload the game
-          if (path.startsWith(`${repoDir}/level/`)) {
+          if (changed.startsWith(`${repoDir}/level/`)) {
             gameReload = true;
 
             // Ignore *.tiled-session files
-            if (path.endsWith(".tiled-session")) {
+            if (changed.endsWith(".tiled-session")) {
               gameReload = false;
             }
 
             // Ignore dialogue.ts file, so there isn't a reload loop, because the
             // dynamic AS compiler will produce a new dialogue.ts file, which will
             // trigger a reload.
-            if (path.endsWith("dialogue.ts")) {
+            if (changed.endsWith("dialogue.ts")) {
               gameReload = false;
             }
           }
 
           // If it's in the /assemblyscript directory, reload the game
-          if (path.startsWith(`${internalDir}/assemblyscript/@gl/`)) {
+          if (changed.startsWith(`${internalDir}/assemblyscript/@gl/`)) {
             gameReload = true;
           }
 
           // If it's in the spindler directory, reload the game
-          if (path.startsWith(`${internalDir}/spindler/`)) {
+          if (changed.startsWith(`${internalDir}/spindler/`)) {
             gameReload = true;
           }
 
           // If it's a __pycache__ directory, ignore it
-          if (path.includes("__pycache__")) {
+          if (changed.includes("__pycache__")) {
             gameReload = false;
           }
 
-          if (path.endsWith("engine_version.txt")) {
+          if (changed.endsWith("engine_version.txt")) {
             gameReload = true;
           }
 
           if (gameReload) {
             sharedState.assemblyscriptTainted = true;
-            console.log(`Triggering reload: ${path}`);
+            console.log(`Triggering reload: ${changed}`);
             server.ws.send("gl:level-reload");
           }
         });
