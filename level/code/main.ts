@@ -97,6 +97,15 @@ export function strings(): String[] {
         },
       ],
     },
+    {
+      key: "take-bread",
+      values: [
+        {
+          text: "Steal bread",
+          lang: "en",
+        },
+      ],
+    },
   ];
   const dialogueStrings = dialogue.strings();
   return ourStrings.concat(dialogueStrings);
@@ -170,6 +179,11 @@ export function buttonPressEvent(slug: string, down: bool): void {
     const passage = slug.split("/")[1];
     dialogue.dispatch(passage);
   }
+
+  if (slug === "bread-taken" && down) {
+    host.choices.makeChoice("stole-bread");
+    host.controls.setButtons([]);
+  }
 }
 
 /**
@@ -211,8 +225,11 @@ export function sensorEvent(
   entered: bool
 ): void {
   log(
-    `Sensor event: '${initiator}' ${entered ? "entered" : "left"} '${sensorName}'`
+    `Sensor event: '${initiator}' ${
+      entered ? "entered" : "left"
+    } '${sensorName}'`
   );
+
   if (initiator !== "player") {
     return;
   }
@@ -232,6 +249,17 @@ export function sensorEvent(
     dialogue.stage_Nazar(entered);
   } else if (sensorName === "water") {
     inWater = entered;
+  } else if (sensorName === "bread") {
+    if (entered) {
+      host.controls.setButtons([
+        {
+          label: "take-bread",
+          slug: "bread-taken",
+        },
+      ]);
+    } else {
+      host.controls.setButtons([]);
+    }
   }
 }
 

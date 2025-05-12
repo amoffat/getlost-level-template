@@ -1,4 +1,5 @@
 import * as char from "./char";
+import * as choices from "./choices";
 import * as controls from "./controls";
 import * as debug from "./debug";
 import * as filters from "./filters";
@@ -21,6 +22,7 @@ import * as ui from "./ui";
 
 export {
   char,
+  choices,
   controls,
   debug,
   filters,

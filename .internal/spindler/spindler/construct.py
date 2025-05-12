@@ -1,7 +1,7 @@
 import re
 import subprocess
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
 from typing import Union, cast
@@ -9,7 +9,7 @@ from typing import Union, cast
 import jinja2
 from lark import ParseTree, Token, Tree
 
-from .types.passage import ConstructPassage, TweePassage
+from .types.passage import ConstructPassage, TraverseState, TweePassage
 from .utils.name import hash_name
 
 THIS_DIR = Path(__file__).parent
@@ -247,16 +247,6 @@ def topological_sort(
         visit(passage_id)
 
     return stack[::-1]  # Reverse the stack to get the topological order
-
-
-@dataclass
-class TraverseState:
-    # The entry point passage ID
-    passage_id: str | None = None
-    # Children that this passage links to
-    children: list[str] = field(default_factory=list)
-    # The passage init code
-    init: list[str] = field(default_factory=list)
 
 
 def render(passages: list[TweePassage]) -> str:
@@ -536,8 +526,8 @@ def render(passages: list[TweePassage]) -> str:
             ConstructPassage(
                 name=passage.name,
                 id=passage.id,
+                state=state,
                 title=None,
-                init=state.init,
                 content=content,
             )
         )

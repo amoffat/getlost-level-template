@@ -3,8 +3,9 @@ import path from "path";
 import { ViteDevServer } from "vite";
 import { sharedState } from "./shared";
 
-const internalDir = path.resolve(__dirname, "..", "..");
-const repoDir = path.resolve(internalDir, "..");
+const cwd = process.cwd();
+const repoDir = path.resolve(cwd, "..");
+const internalDir = path.resolve(repoDir, ".internal");
 
 // Triggers a game iframe reload when level assets change
 export default function levelWatcher() {
