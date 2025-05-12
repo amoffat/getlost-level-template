@@ -1,6 +1,7 @@
 ##
 
 - Fix AS syntax highlighting
+- Fix hotreloading level assets
 
 ## 0.10.0 - 5/5/25
 
