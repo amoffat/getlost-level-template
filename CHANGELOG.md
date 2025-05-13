@@ -2,6 +2,7 @@
 
 - Fix AS syntax highlighting
 - Fix hotreloading level assets
+- Support async function calls in Assemblyscript
 
 ## 0.10.0 - 5/5/25
 

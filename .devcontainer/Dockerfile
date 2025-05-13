@@ -12,6 +12,8 @@ RUN apt-get update \
     zlib1g-dev \
     qtdeclarative5-dev \
     qbs \
+    # For binaryen
+    cmake \
     # Python deps
     python3-pip \
     python3-venv \
@@ -30,6 +32,20 @@ RUN cd /tmp/tiled \
     && qbs build config:release \
     && cp -a /tmp/tiled/release/install-root/usr / \
     && rm -rf /tmp/tiled
+
+# Binaryen gets us wasm-opt, which lets us asyncify our WASM code
+RUN git clone \
+    --depth=1 \
+    --branch version_123 \
+    https://github.com/WebAssembly/binaryen.git \
+    /tmp/binaryen \
+    && cd /tmp/binaryen \
+    && git submodule init \
+    && git submodule update \
+    && cmake -DBUILD_TESTS=OFF . && make -j8 \
+    && make install \
+    && rm -rf /tmp/binaryen
+
 
 ENV HOME=/home/node
 COPY fluxbox-menu.txt $HOME/.fluxbox/menu

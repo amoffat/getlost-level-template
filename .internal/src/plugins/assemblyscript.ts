@@ -49,6 +49,7 @@ const shimDir = asmLibDir;
 const levelDir = resolve(repoDir, "level");
 const codeDir = resolve(repoDir, "level", "code");
 const genDir = resolve(codeDir, "generated");
+const transform = resolve(asmLibDir, "transform.js");
 let cachedWasm: Uint8Array = new Uint8Array(0);
 
 const execAsync = util.promisify(exec);
@@ -85,6 +86,8 @@ async function compile(
     "--exportRuntime",
     "--path",
     asmLibDir,
+    "--transform",
+    transform,
   ];
   const artifacts: Partial<BuildArtifacts> = {};
 

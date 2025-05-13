@@ -45,7 +45,7 @@ export function passage_{{p.nice_id or p.id}}(): void {
     const params = new Map<string, string>();
     twine.incrementVisitCount("{{p.id}}");
 
-{% for line in p.init %}
+{% for line in p.state.init %}
     {{line}}
 {%- endfor %}
 
