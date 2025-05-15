@@ -10,6 +10,7 @@ import { createHeatFilter, RippleFilter } from "@gl/utils/ripple";
 import { isNight } from "@gl/utils/time";
 import * as dialogue from "./generated/dialogue";
 
+export { initAsyncStack } from "@gl/utils/asyncify";
 export { card } from "./card";
 export { exits } from "./exits";
 export { choiceMadeEvent } from "./generated/dialogue";

@@ -1,9 +1,11 @@
 import * as asc from "assemblyscript/asc";
 import { Transform } from "assemblyscript/transform";
 import { exec } from "child_process";
+import { randomUUID } from "crypto";
 import { readFileSync } from "fs";
-import fs from "fs/promises";
-import { resolve } from "path";
+import fs, { readFile, unlink, writeFile } from "fs/promises";
+import { tmpdir } from "os";
+import { join, resolve } from "path";
 import binaryen from "types:assemblyscript/lib/binaryen";
 import util from "util";
 import { ViteDevServer } from "vite";
@@ -19,6 +21,8 @@ interface BuildArtifacts {
   dts: string;
   // The javascript shim
   js: string;
+  // The text file
+  text?: string;
 }
 
 // This embeds some get lost metadata into the wasm, for example, the get lost
@@ -34,6 +38,23 @@ class GLMetaAdder extends Transform {
   }
 }
 
+async function asyncify(wasmBuffer: Buffer): Promise<Buffer> {
+  const tempIn = join(tmpdir(), `input-${randomUUID()}.wasm`);
+  const tempOut = join(tmpdir(), `output-${randomUUID()}.wasm`);
+
+  try {
+    await writeFile(tempIn, wasmBuffer);
+
+    // Use execAsync instead of spawn
+    await execAsync(`wasm-opt ${tempIn} -o ${tempOut} --asyncify -n`);
+
+    return await readFile(tempOut);
+  } finally {
+    await unlink(tempIn).catch(() => {});
+    await unlink(tempOut).catch(() => {});
+  }
+}
+
 interface CompileError {
   message: string;
 }
@@ -42,20 +63,19 @@ function isCompileError(e: unknown): e is CompileError {
   return e !== undefined && (e as CompileError).message !== undefined;
 }
 
-const cwd = process.cwd();
-const repoDir = resolve(cwd, "..");
-const asmLibDir = resolve(cwd, "assemblyscript");
+const internalDir = process.cwd();
+const repoDir = resolve(internalDir, "..");
+const asmLibDir = resolve(internalDir, "assemblyscript");
 const shimDir = asmLibDir;
 const levelDir = resolve(repoDir, "level");
 const codeDir = resolve(repoDir, "level", "code");
 const genDir = resolve(codeDir, "generated");
-const transform = resolve(asmLibDir, "transform.js");
 let cachedWasm: Uint8Array = new Uint8Array(0);
 
 const execAsync = util.promisify(exec);
 
 const packageJson = JSON.parse(
-  readFileSync(resolve(cwd, "package.json"), "utf-8")
+  readFileSync(resolve(internalDir, "package.json"), "utf-8")
 );
 const tmplVersion = packageJson.version;
 
@@ -63,7 +83,9 @@ async function compile(
   engineVersion: string,
   sourceFiles: string[]
 ): Promise<BuildArtifacts> {
+  const debug = false;
   const outputFilePath = "main.wasm";
+  const textFilePath = "main.wat";
 
   // Run the spindler command and write its output to dialogue.ts
   const spindlerInput = resolve(levelDir, "story", "Level.twee");
@@ -86,9 +108,11 @@ async function compile(
     "--exportRuntime",
     "--path",
     asmLibDir,
-    "--transform",
-    transform,
   ];
+  if (debug) {
+    commandLineOptions.concat(["--textFile", textFilePath]);
+  }
+
   const artifacts: Partial<BuildArtifacts> = {};
 
   const stderr = asc.createMemoryStream();
@@ -101,24 +125,22 @@ async function compile(
 
     // Here we intercept the writeFile function to capture the artifacts without
     // writing them. We'll write them to disk ourselves later.
-    writeFile: (fileName, contents) => {
+    writeFile: async (fileName, contents) => {
       // The extension of the file
       const extension = fileName.split(".").pop();
-      switch (extension) {
-        case "wasm":
-          // Save the WebAssembly binary
-          artifacts.wasm = contents as Uint8Array;
-          break;
-        case "ts":
-          // Save the TypeScript definition file
-          artifacts.dts = contents as string;
-          break;
-        case "js":
-          // Save the JavaScript shim
-          artifacts.js = contents as string;
-          break;
-        default:
-          throw new Error(`Unknown file extension: ${extension}`);
+      if (extension === "wasm") {
+        artifacts.wasm = await asyncify(contents as Buffer);
+      } else if (extension === "ts") {
+        // Save the TypeScript definition file
+        artifacts.dts = contents as string;
+      } else if (extension === "js") {
+        // Save the JavaScript shim
+        artifacts.js = contents as string;
+      } else if (extension === "wat") {
+        // Save the WebAssembly text file
+        artifacts.text = contents as string;
+      } else {
+        throw new Error(`Unknown file extension: ${extension}`);
       }
     },
   });
@@ -168,6 +190,7 @@ export default function compileWasmPlugin() {
 
             const defsFile = resolve(shimDir, "main.d.ts");
             const jsFile = resolve(shimDir, "main.js");
+            const textFile = resolve(shimDir, "main.wat");
 
             // Check if the current definitions file is different from the new one
             const currentDefs = await fs
@@ -183,6 +206,10 @@ export default function compileWasmPlugin() {
               .catch(() => "");
             if (currentJs !== artifacts.js) {
               await fs.writeFile(jsFile, artifacts.js);
+            }
+
+            if (artifacts.text) {
+              await fs.writeFile(textFile, artifacts.text);
             }
 
             res.setHeader("Content-Type", "application/wasm");
