@@ -46,7 +46,8 @@ async function asyncify(wasmBuffer: Buffer): Promise<Buffer> {
     await writeFile(tempIn, wasmBuffer);
 
     // Use execAsync instead of spawn
-    await execAsync(`wasm-opt ${tempIn} -o ${tempOut} --asyncify -n`);
+    const args = [tempIn, "-o", tempOut, "--asyncify", "-n"];
+    await execAsync(`wasm-opt ${args.join(" ")}`);
 
     return await readFile(tempOut);
   } finally {
