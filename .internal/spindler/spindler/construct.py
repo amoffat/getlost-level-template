@@ -364,6 +364,7 @@ def render(passages: list[TweePassage]) -> str:
             all_strings[text_id] = escape_and_quote(text_expr)
             text = f'// {text_expr}\ntext = "{text_id}";'
             return text
+
         elif node.data == "function_call":
             function_name = cast(Token, node.children[0]).value
 
@@ -385,6 +386,7 @@ def render(passages: list[TweePassage]) -> str:
                     for arg in node.children[1:]
                 )
             return f"{TWINE_FN_NS}.{function_name}({arguments})"
+
         elif node.data == "global_var":
             var_name = cast(Token, node.children[0]).value
             return f"state.{var_name}"
@@ -398,6 +400,15 @@ def render(passages: list[TweePassage]) -> str:
             operator = map_op(cast(Token, node.children[1]).value)
             right = traverse(state=state, node=cast(ParseTree, node.children[2]))
             return f"{left} {operator} {right}"
+
+        elif node.data == "unary_op_expression":
+            operator = map_op(cast(Token, node.children[0]).value)
+            expr = traverse(state=state, node=cast(ParseTree, node.children[1]))
+            return f"{operator} {expr}"
+
+        elif node.data == "wrapped_expression":
+            expr = traverse(state=state, node=cast(ParseTree, node.children[0]))
+            return f"({expr})"
 
         elif node.data == "wrapping_macro":
             macro_name = cast(ParseTree, node.children[0])

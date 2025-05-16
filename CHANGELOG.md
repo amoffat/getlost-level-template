@@ -4,6 +4,7 @@
 - Fix hotreloading level assets
 - Support async function calls in Assemblyscript
 - Async support in Assemblyscript!!!
+- Bugfix with Twine Sugarcube not transpiling parenthesis
 
 ## 0.10.0 - 5/5/25
 
