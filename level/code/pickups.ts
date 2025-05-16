@@ -16,5 +16,11 @@ export function pickups(): Pickup[] {
       text: "A small blue flame flickers angrily. I think it is annoyed.",
       uses: -1,
     },
+    {
+      slug: "fruit",
+      name: "Fruit",
+      text: "Stolen fruit. I really should have paid for this.",
+      uses: -1,
+    },
   ];
 }

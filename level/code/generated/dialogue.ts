@@ -404,6 +404,26 @@ export function strings(): String[] {
     },
 
     {
+      key: "95e31eae",
+      values: [
+        {
+          text: "stole-fruit",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "623930a8",
+      values: [
+        {
+          text: "I saw you take that fruit. I don't do business with thieves. Please leave.",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "eb8848da",
       values: [
         {
@@ -1650,7 +1670,10 @@ export function passage_Nazar(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("e1ffb1d2");
 
-  if (twine.isNight()) {
+  if (twine.queryMarker("stole-fruit")) {
+    // I saw you take that fruit. I don't do business with thieves. Please leave.
+    text = "623930a8";
+  } else if (twine.isNight()) {
     // I'd like to chat, but it's getting late. Come back during the day.
     text = "eb8848da";
   } else {

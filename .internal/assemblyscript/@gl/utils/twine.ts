@@ -26,12 +26,12 @@ export function either<T>(options: T[]): T {
   return options[idx];
 }
 
-export function makeChoice(slug: string): void {
-  host.choices.makeChoice(slug);
+export function recordMarker(slug: string): void {
+  host.markers.record(slug);
 }
 
-export function checkChoice(slug: string): bool {
-  return host.choices.checkChoice(slug);
+export function queryMarker(slug: string): bool {
+  return host.markers.query(slug);
 }
 
 export function visited(id: string): u32 {
