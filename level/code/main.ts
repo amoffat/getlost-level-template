@@ -44,6 +44,9 @@ export function initRoom(): void {
 
   tsfid = host.filters.addTiltShift(0.06);
 
+  heatFilter.influence = heatAmt;
+  colorMatrix.influence = heatAmt;
+
   /**
    * You can set a fixed time for the level like this.
    * Be sure to comment out the setSunTime call in `tickRoom` if you do this.
@@ -68,6 +71,7 @@ export function initRoom(): void {
  */
 function updateHeatFilter(): void {
   const curSunEvent = host.time.getSunEvent();
+  heatAmt = 0;
   if (curSunEvent === SunEvent.GoldenHourEnd) {
     heatAmt = host.time.getSunEventProgress();
   } else if (curSunEvent === SunEvent.GoldenHour) {
@@ -283,8 +287,6 @@ export function timeChangedEvent(event: SunEvent): void {
     host.lights.toggleLight(lights[i], night);
   }
 
-  tooHot = event === SunEvent.SolarNoon;
-
   updateHeatFilter();
 }
 
@@ -323,12 +325,16 @@ export function tickRoom(timestep: f32): void {
 
   updateHeatFilter();
 
-  if (tooHot) {
-    overheat += (timestep / 1000) * 0.01;
+  const timeSeconds: f32 = timestep / 1000;
+  const heatRate: f32 = 0.02;
+  if (heatAmt > 0) {
+    overheat += timeSeconds * heatRate * heatAmt;
+  } else {
+    overheat -= timeSeconds * heatRate;
   }
 
   if (inWater) {
-    overheat -= (timestep / 1000) * 0.1;
+    overheat -= timeSeconds * heatRate * 5;
   }
 
   overheat = Math.max(0, Math.min(overheat, 1)) as f32;
