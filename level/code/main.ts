@@ -22,7 +22,7 @@ let player!: Player;
 let music!: i32;
 let hearts: f32 = 1;
 const overheatColor = "red";
-let tooHot = false;
+let nighttime: bool = false;
 let overheat: f32 = 0.0;
 let inWater: bool = false;
 const healingPool = new Periodic(200, 1000);
@@ -277,14 +277,14 @@ export function sensorEvent(
 export function timeChangedEvent(event: SunEvent): void {
   log(`Time changed: ${getSunEventName(event)}`);
 
-  const night = isNight(event);
-  host.lights.toggleLight("flame", night);
-  host.sensors.toggleSensor("flame", night);
-  host.npc.toggleNPC("flame", night);
+  nighttime = isNight(event);
+  host.lights.toggleLight("flame", nighttime);
+  host.sensors.toggleSensor("flame", nighttime);
+  host.npc.toggleNPC("flame", nighttime);
 
   const lights = ["nazar-light", "house-light-1"];
   for (let i = 0; i < lights.length; i++) {
-    host.lights.toggleLight(lights[i], night);
+    host.lights.toggleLight(lights[i], nighttime);
   }
 
   updateHeatFilter();
