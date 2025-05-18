@@ -1,10 +1,11 @@
-## 0.11.0 - 5/16/25
+## 0.11.0 - 5/18/25
 
 - Fix AS syntax highlighting
 - Fix hotreloading level assets
 - Support async function calls in Assemblyscript!!
 - Bugfix with Twine Sugarcube not transpiling parenthesis
 - Marker api for checking a player's past choices
+- Devinput console for executing functions
 
 ## 0.10.0 - 5/5/25
 
