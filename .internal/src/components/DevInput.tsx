@@ -22,6 +22,7 @@ export default function DevInput() {
   const [history, setHistory] = useState<string[]>([]);
   const [_, setHistoryIndex] = useState<number | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<number>(-1);
   const [output, setOutput] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -35,6 +36,7 @@ export default function DevInput() {
     if (!input.trim()) return setSuggestions([]);
     const allFns = getGLFunctionPaths(window.gl);
     setSuggestions(allFns.filter((fn) => fn.startsWith(input.trim())));
+    setSelectedSuggestion(-1); // Reset selection when suggestions change
   }, [input]);
 
   // Handle input execution
@@ -67,16 +69,30 @@ export default function DevInput() {
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
+      if (suggestions.length > 0 && selectedSuggestion >= 0) {
+        setInput(suggestions[selectedSuggestion]);
+        setSelectedSuggestion(-1);
+        e.preventDefault();
+        return;
+      }
       if (input.trim()) {
         handleExec(input.trim());
       }
     } else if (e.key === "Tab") {
       e.preventDefault();
       if (suggestions.length > 0) {
-        setInput(suggestions[0]);
+        setInput(suggestions[selectedSuggestion >= 0 ? selectedSuggestion : 0]);
+        setSelectedSuggestion(-1);
       }
     } else if (e.key === "ArrowUp") {
-      if (history.length) {
+      if (suggestions.length > 0) {
+        e.preventDefault();
+        setSelectedSuggestion((idx) => {
+          const max = suggestions.length - 1;
+          if (idx <= 0) return max;
+          return idx - 1;
+        });
+      } else if (history.length) {
         setHistoryIndex((idx) => {
           const newIdx =
             idx === null ? history.length - 1 : Math.max(0, idx - 1);
@@ -85,7 +101,14 @@ export default function DevInput() {
         });
       }
     } else if (e.key === "ArrowDown") {
-      if (history.length) {
+      if (suggestions.length > 0) {
+        e.preventDefault();
+        setSelectedSuggestion((idx) => {
+          const max = suggestions.length - 1;
+          if (idx < 0 || idx === max) return 0;
+          return idx + 1;
+        });
+      } else if (history.length) {
         setHistoryIndex((idx) => {
           if (idx === null) return null;
           const newIdx = Math.min(history.length - 1, idx + 1);
@@ -113,8 +136,16 @@ export default function DevInput() {
       </div>
       {suggestions.length > 0 && (
         <div className={styles.suggestions}>
-          {suggestions.slice(0, 5).map((s) => (
-            <div className={styles.suggestionItem} key={s}>
+          {suggestions.slice(0, 5).map((s, i) => (
+            <div
+              className={
+                styles.suggestionItem +
+                (i === selectedSuggestion
+                  ? " " + styles.suggestionSelected
+                  : "")
+              }
+              key={s}
+            >
               {s}
             </div>
           ))}

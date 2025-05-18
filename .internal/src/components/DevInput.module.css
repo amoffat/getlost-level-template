@@ -37,3 +37,12 @@
 .outputSuccess {
   color: #7f7;
 }
+
+.suggestionItem {
+  padding: 0.2em 0.5em;
+  cursor: pointer;
+}
+
+.suggestionSelected {
+  background-color: #343434;
+}
