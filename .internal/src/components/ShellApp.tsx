@@ -47,7 +47,7 @@ export function ShellApp() {
     window.gl = {
       markers: {
         record: (slug: string) => {
-          log.info(`Clearing marker '${slug}'`, { dev: true });
+          log.info(`Recording marker '${slug}'`, { dev: true });
           comms.request({
             type: "record-marker",
             data: { slug },

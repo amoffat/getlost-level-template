@@ -19,5 +19,8 @@ export function exits(): Exit[] {
     {
       name: "well",
     },
+    {
+      name: "death",
+    },
   ];
 }

@@ -19,7 +19,7 @@ export function pickups(): Pickup[] {
     {
       slug: "fruit",
       name: "Fruit",
-      text: "Stolen fruit. I really should have paid for this.",
+      text: "Delicious looking fruit. I think it grows from the oasis trees.",
       uses: -1,
     },
   ];

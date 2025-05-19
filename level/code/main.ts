@@ -13,6 +13,7 @@ export { initAsyncStack } from "@gl/utils/asyncify";
 export { card } from "./card";
 export { exits } from "./exits";
 export { choiceMadeEvent } from "./generated/dialogue";
+export { grantedMarkers, usedMarkers } from "./markers";
 export { pickups } from "./pickups";
 
 const log = host.debug.log;
@@ -20,12 +21,13 @@ const log = host.debug.log;
 let tsfid!: i32;
 let player!: Player;
 let music!: i32;
-let hearts: f32 = 1;
+let hearts: f32 = 3;
 const overheatColor = "red";
 let nighttime: bool = false;
 let overheat: f32 = 0.0;
 let inWater: bool = false;
 const healingPool = new Periodic(200, 1000);
+const heatDamage = new Periodic(5000, 0);
 let heatFilter!: RippleFilter;
 let colorMatrix!: ColorMatrixFilter;
 let heatAmt: f32 = 0.0;
@@ -95,7 +97,7 @@ export function strings(): String[] {
       key: "overheat",
       values: [
         {
-          text: "Overheating",
+          text: "Heat exhaustion",
           lang: "en",
         },
       ],
@@ -338,6 +340,14 @@ export function tickRoom(timestep: f32): void {
   }
 
   overheat = Math.max(0, Math.min(overheat, 1)) as f32;
+  if (overheat >= 1 && heatDamage.tick(timestep)) {
+    hearts--;
+    host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+  }
+
+  if (hearts <= 0) {
+    host.map.exit("death", true);
+  }
 
   host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
 }

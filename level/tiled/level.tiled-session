@@ -13,7 +13,8 @@
             "scaleInDock": 1
         },
         "Food.tsj": {
-            "dynamicWrapping": true
+            "dynamicWrapping": true,
+            "scaleInDock": 1
         },
         "Items.tsj": {
             "dynamicWrapping": true,
@@ -56,13 +57,13 @@
                 9
             ],
             "expandedObjectLayers": [
-                17,
-                8
+                8,
+                17
             ],
             "scale": 3,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 100.83333333333333,
+                "x": 92,
                 "y": -128.33333333333331
             }
         },

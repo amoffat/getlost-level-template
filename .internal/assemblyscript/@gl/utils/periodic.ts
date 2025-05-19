@@ -9,7 +9,8 @@ export class Periodic {
 
   constructor(frequencyMs: f32, initialDelay: f32 = 0) {
     this.frequencyMs = frequencyMs;
-    this.accumulatedMs = -initialDelay;
+    // Start with a negative delay so that the first tick is immediate
+    this.accumulatedMs = -initialDelay + frequencyMs;
   }
 
   tick(deltaMs: f32): bool {
