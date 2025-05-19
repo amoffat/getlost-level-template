@@ -1,3 +1,8 @@
+## 0.11.1 - 5/19/25
+
+- Clean up readme instructions
+- Add level preview
+
 ## 0.11.0 - 5/19/25
 
 - Fix AS syntax highlighting
