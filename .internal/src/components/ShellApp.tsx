@@ -34,7 +34,7 @@ export function ShellApp() {
     const levelUrl = window.location.origin;
     const src = new URL(constants.gameUrl);
     src.searchParams.set("levelBaseUrl", levelUrl);
-    log.info(`Loading game from ${constants.gameUrl}`, { dev: true });
+    log.info(`Loading game from ${constants.gameUrl}`);
     iframe.src = src.toString();
 
     const comms = new Comms(window, iframe.contentWindow!);

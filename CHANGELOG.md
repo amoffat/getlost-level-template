@@ -9,6 +9,8 @@
 - Levels must return markers in advance via `usedMarkers()` and `grantedMarkers()`
 - Change `Periodic` class to fire immediately
 - Use engine version 0.11.0
+- Spindler support for unary ops and parenthesis grouping
+- Dev input console for executing dev functions
 
 ## 0.10.0 - 5/5/25
 
