@@ -1,7 +1,7 @@
 import re
 import subprocess
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
 from typing import Union, cast
@@ -9,7 +9,7 @@ from typing import Union, cast
 import jinja2
 from lark import ParseTree, Token, Tree
 
-from .types.passage import ConstructPassage, TweePassage
+from .types.passage import ConstructPassage, TraverseState, TweePassage
 from .utils.name import hash_name
 
 THIS_DIR = Path(__file__).parent
@@ -249,16 +249,6 @@ def topological_sort(
     return stack[::-1]  # Reverse the stack to get the topological order
 
 
-@dataclass
-class TraverseState:
-    # The entry point passage ID
-    passage_id: str | None = None
-    # Children that this passage links to
-    children: list[str] = field(default_factory=list)
-    # The passage init code
-    init: list[str] = field(default_factory=list)
-
-
 def render(passages: list[TweePassage]) -> str:
     """
     Converts a dictionary of Sugarcube parse trees into Typescript code.
@@ -374,6 +364,7 @@ def render(passages: list[TweePassage]) -> str:
             all_strings[text_id] = escape_and_quote(text_expr)
             text = f'// {text_expr}\ntext = "{text_id}";'
             return text
+
         elif node.data == "function_call":
             function_name = cast(Token, node.children[0]).value
 
@@ -395,6 +386,7 @@ def render(passages: list[TweePassage]) -> str:
                     for arg in node.children[1:]
                 )
             return f"{TWINE_FN_NS}.{function_name}({arguments})"
+
         elif node.data == "global_var":
             var_name = cast(Token, node.children[0]).value
             return f"state.{var_name}"
@@ -408,6 +400,15 @@ def render(passages: list[TweePassage]) -> str:
             operator = map_op(cast(Token, node.children[1]).value)
             right = traverse(state=state, node=cast(ParseTree, node.children[2]))
             return f"{left} {operator} {right}"
+
+        elif node.data == "unary_op_expression":
+            operator = map_op(cast(Token, node.children[0]).value)
+            expr = traverse(state=state, node=cast(ParseTree, node.children[1]))
+            return f"{operator} {expr}"
+
+        elif node.data == "wrapped_expression":
+            expr = traverse(state=state, node=cast(ParseTree, node.children[0]))
+            return f"({expr})"
 
         elif node.data == "wrapping_macro":
             macro_name = cast(ParseTree, node.children[0])
@@ -536,8 +537,8 @@ def render(passages: list[TweePassage]) -> str:
             ConstructPassage(
                 name=passage.name,
                 id=passage.id,
+                state=state,
                 title=None,
-                init=state.init,
                 content=content,
             )
         )

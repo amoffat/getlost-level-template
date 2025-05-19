@@ -34,3 +34,4 @@ assets.key
 /_level_backup
 /_template_update
 .vite/
+*.wat

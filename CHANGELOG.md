@@ -1,3 +1,17 @@
+## 0.11.0 - 5/19/25
+
+- Fix AS syntax highlighting
+- Fix hotreloading level assets
+- Support async function calls in Assemblyscript!!
+- Bugfix with Twine Sugarcube not transpiling parenthesis
+- Marker api for checking a player's past choices
+- Devinput console for executing functions
+- Levels must return markers in advance via `usedMarkers()` and `grantedMarkers()`
+- Change `Periodic` class to fire immediately
+- Use engine version 0.11.0
+- Spindler support for unary ops and parenthesis grouping
+- Dev input console for executing dev functions
+
 ## 0.10.0 - 5/5/25
 
 - Reset level now commits changes

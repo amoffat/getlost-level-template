@@ -26,6 +26,14 @@ export function either<T>(options: T[]): T {
   return options[idx];
 }
 
+export function recordMarker(slug: string): void {
+  host.markers.record(slug);
+}
+
+export function queryMarker(slug: string): bool {
+  return host.markers.query(slug);
+}
+
 export function visited(id: string): u32 {
   if (!visitCount.has(id)) {
     return 0;

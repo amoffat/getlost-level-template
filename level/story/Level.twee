@@ -148,7 +148,9 @@ You are? Interesting...
 
 
 :: Nazar [Nazar] {"position":"2200,2200","size":"100,100"}
-<<if isNight()>>
+<<if queryMarker("stole-fruit")>>
+I saw you take that fruit. I don't do business with thieves. Please leave.
+<<elseif isNight()>>
 I'd like to chat, but it's getting late. Come back during the day.
 <<else>>
 

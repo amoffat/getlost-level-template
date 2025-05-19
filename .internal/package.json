@@ -1,7 +1,7 @@
 {
   "name": "getlost-level-template",
   "private": true,
-  "version": "0.10.0",
+  "version": "0.11.0",
   "type": "module",
   "scripts": {
     "dev": "vite --config vite.config.ts",
@@ -11,13 +11,15 @@
     "formidable": "^3.5.4",
     "pino": "^9.6.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
     "@types/formidable": "^3.4.5",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "@types/uuid": "^10.0.0",
     "@vitejs/plugin-basic-ssl": "^2.0.0",
     "@vitejs/plugin-react": "^4.4.1",
     "assemblyscript": "^0.27.36",
@@ -28,6 +30,7 @@
     "npm-check-updates": "^18.0.1",
     "pm2": "^6.0.5",
     "prettier": "^3.5.3",
+    "sass-embedded": "^1.89.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.31.0",
     "vite": "^6.3.3"

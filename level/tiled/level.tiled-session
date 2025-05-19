@@ -9,6 +9,11 @@
     ],
     "fileStates": {
         "Fish.tsj": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "Food.tsj": {
+            "dynamicWrapping": true,
             "scaleInDock": 1
         },
         "Items.tsj": {
@@ -52,13 +57,13 @@
                 9
             ],
             "expandedObjectLayers": [
-                17,
-                8
+                8,
+                17
             ],
             "scale": 3,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 100.83333333333333,
+                "x": 92,
                 "y": -128.33333333333331
             }
         },
@@ -67,7 +72,7 @@
         }
     },
     "frame.defaultDuration": 100,
-    "last.imagePath": "/workspaces/getlost-level-template/level/art/Actor/Characters/Boy",
+    "last.imagePath": "/workspaces/getlost-level-template/level/art/Items/Food",
     "last.objectTypesPath": "/home/amoffat/work/getlost-level-template/.devcontainer/propertytypes.json",
     "map.fixedSize": false,
     "map.lastUsedFormat": "json",
@@ -92,5 +97,5 @@
         "height": 16,
         "width": 16
     },
-    "tileset.type": 0
+    "tileset.type": 1
 }

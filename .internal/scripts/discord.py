@@ -32,7 +32,7 @@ def send_notification():
     webhook_url = os.environ["DISCORD_WEBHOOK"]
     if not webhook_url:
         raise RuntimeError("No Discord webhook URL found.")
-    
+
     version = os.environ["VERSION"]
     if not version:
         raise RuntimeError("No version found.")
@@ -42,7 +42,7 @@ def send_notification():
         {
             "name": "What's New",
             "value": "\n".join(
-                f"- {item.lstrip('-').strip()}" for item in changes[:10]
+                f"- {item.lstrip('-').strip()}" for item in changes[:100]
             ),
         }
     ]

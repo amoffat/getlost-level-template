@@ -2,7 +2,6 @@ import * as host from "@gl/api/w2h/host";
 
 import { ColorMatrixFilter } from "@gl/filters/colormatrix";
 import { String } from "@gl/types/i18n";
-import { Room } from "@gl/types/room";
 import { getSunEventName, SunEvent } from "@gl/types/time";
 import { Periodic } from "@gl/utils/periodic";
 import { Player } from "@gl/utils/player";
@@ -10,9 +9,11 @@ import { createHeatFilter, RippleFilter } from "@gl/utils/ripple";
 import { isNight } from "@gl/utils/time";
 import * as dialogue from "./generated/dialogue";
 
+export { initAsyncStack } from "@gl/utils/asyncify";
 export { card } from "./card";
 export { exits } from "./exits";
 export { choiceMadeEvent } from "./generated/dialogue";
+export { grantedMarkers, usedMarkers } from "./markers";
 export { pickups } from "./pickups";
 
 const log = host.debug.log;
@@ -20,11 +21,13 @@ const log = host.debug.log;
 let tsfid!: i32;
 let player!: Player;
 let music!: i32;
-let hearts: f32 = 1;
-const magicColor = "limegreen";
-let magic: f32 = 1.0;
+let hearts: f32 = 3;
+const overheatColor = "red";
+let nighttime: bool = false;
+let overheat: f32 = 0.0;
 let inWater: bool = false;
 const healingPool = new Periodic(200, 1000);
+const heatDamage = new Periodic(5000, 0);
 let heatFilter!: RippleFilter;
 let colorMatrix!: ColorMatrixFilter;
 let heatAmt: f32 = 0.0;
@@ -34,16 +37,17 @@ let heatAmt: f32 = 0.0;
  * loaded. Use it to set up your level, like setting the time of day, or adding
  * filters.
  */
-export function initRoom(): Room {
+export function initRoom(): void {
   player = Player.default();
-
-  const room = new Room();
 
   heatFilter = createHeatFilter();
   colorMatrix = new ColorMatrixFilter();
   colorMatrix.hot();
 
   tsfid = host.filters.addTiltShift(0.06);
+
+  heatFilter.influence = heatAmt;
+  colorMatrix.influence = heatAmt;
 
   /**
    * You can set a fixed time for the level like this.
@@ -60,10 +64,8 @@ export function initRoom(): Room {
   });
 
   host.ui.setRating(0, 0, hearts, 5, "heart", "red");
-  host.ui.setProgressBar(1, 0, "magic", magic, magicColor);
+  host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
   updateHeatFilter();
-
-  return room;
 }
 
 /**
@@ -71,10 +73,13 @@ export function initRoom(): Room {
  */
 function updateHeatFilter(): void {
   const curSunEvent = host.time.getSunEvent();
+  heatAmt = 0;
   if (curSunEvent === SunEvent.GoldenHourEnd) {
     heatAmt = host.time.getSunEventProgress();
   } else if (curSunEvent === SunEvent.GoldenHour) {
     heatAmt = 1.0 - host.time.getSunEventProgress();
+  } else if (curSunEvent === SunEvent.SolarNoon) {
+    heatAmt = 1.0;
   }
   heatFilter.influence = heatAmt;
   colorMatrix.influence = heatAmt;
@@ -89,10 +94,19 @@ function updateHeatFilter(): void {
 export function strings(): String[] {
   const ourStrings: String[] = [
     {
-      key: "magic",
+      key: "overheat",
       values: [
         {
-          text: "Magic",
+          text: "Heat exhaustion",
+          lang: "en",
+        },
+      ],
+    },
+    {
+      key: "take-fruit",
+      values: [
+        {
+          text: "Steal",
           lang: "en",
         },
       ],
@@ -153,6 +167,8 @@ export function pickupEvent(slug: string, took: bool): void {
     host.lights.toggleLight("flame", false);
     host.sensors.toggleSensor("flame", false);
     host.npc.toggleNPC("flame", false);
+  } else if (slug === "fruit" && took) {
+    host.markers.record("stole-fruit");
   }
 }
 
@@ -163,12 +179,19 @@ export function pickupEvent(slug: string, took: bool): void {
  * @param down Whether the button was pressed down or released.
  */
 export function buttonPressEvent(slug: string, down: bool): void {
+  log(`Button event: ${slug}, ${down}`);
+
   // If our dialogue was staged via a `dialogue.stage_<id>` call, then the event
   // may be a press of the "interact" button. This checks for that, and if it
   // is, we'll dispatch to the correct passage.
   if (slug.startsWith("passage/") && down) {
     const passage = slug.split("/")[1];
     dialogue.dispatch(passage);
+  }
+
+  if (slug === "fruit-taken" && down) {
+    host.pickup.offerPickup("fruit");
+    host.controls.setButtons([]);
   }
 }
 
@@ -211,8 +234,11 @@ export function sensorEvent(
   entered: bool
 ): void {
   log(
-    `Sensor event: '${initiator}' ${entered ? "entered" : "left"} '${sensorName}'`
+    `Sensor event: '${initiator}' ${
+      entered ? "entered" : "left"
+    } '${sensorName}'`
   );
+
   if (initiator !== "player") {
     return;
   }
@@ -232,6 +258,17 @@ export function sensorEvent(
     dialogue.stage_Nazar(entered);
   } else if (sensorName === "water") {
     inWater = entered;
+  } else if (sensorName === "fruit") {
+    if (entered) {
+      host.controls.setButtons([
+        {
+          label: "take-fruit",
+          slug: "fruit-taken",
+        },
+      ]);
+    } else {
+      host.controls.setButtons([]);
+    }
   }
 }
 
@@ -242,15 +279,17 @@ export function sensorEvent(
 export function timeChangedEvent(event: SunEvent): void {
   log(`Time changed: ${getSunEventName(event)}`);
 
-  const night = isNight(event);
-  host.lights.toggleLight("flame", night);
-  host.sensors.toggleSensor("flame", night);
-  host.npc.toggleNPC("flame", night);
+  nighttime = isNight(event);
+  host.lights.toggleLight("flame", nighttime);
+  host.sensors.toggleSensor("flame", nighttime);
+  host.npc.toggleNPC("flame", nighttime);
 
   const lights = ["nazar-light", "house-light-1"];
   for (let i = 0; i < lights.length; i++) {
-    host.lights.toggleLight(lights[i], night);
+    host.lights.toggleLight(lights[i], nighttime);
   }
+
+  updateHeatFilter();
 }
 
 /**
@@ -280,11 +319,35 @@ export function tickRoom(timestep: f32): void {
   }
 
   // This syncs the time of day with the real world.
-  // host.time.setSunTime(Date.now());
+  host.time.setSunTime(Date.now());
 
   // Or we can advance the time of day manually, increasing the step size to
   // make the days faster.
   // host.time.advanceSunTime(timestep * 1000);
 
   updateHeatFilter();
+
+  const timeSeconds: f32 = timestep / 1000;
+  const heatRate: f32 = 0.02;
+  if (heatAmt > 0) {
+    overheat += timeSeconds * heatRate * heatAmt;
+  } else {
+    overheat -= timeSeconds * heatRate;
+  }
+
+  if (inWater) {
+    overheat -= timeSeconds * heatRate * 5;
+  }
+
+  overheat = Math.max(0, Math.min(overheat, 1)) as f32;
+  if (overheat >= 1 && heatDamage.tick(timestep)) {
+    hearts--;
+    host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+  }
+
+  if (hearts <= 0) {
+    host.map.exit("death", true);
+  }
+
+  host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
 }

@@ -1,11 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import * as constants from "../constants";
+import { Comms } from "../iframe";
 import { log } from "../log";
+import DevInput from "./DevInput";
 import LogPane from "./LogPane";
+
+declare global {
+  interface Window {
+    gl: {
+      markers: {
+        record: (slug: string) => void;
+        clear: (slug: string) => void;
+      };
+    };
+  }
+}
 
 export function ShellApp() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [reloadCount, setReloadCount] = useState(0);
+  const [comms, setComms] = useState<Comms | null>(null);
 
   // useEffect(() => {
   //   const fn = (event: MessageEvent) => {
@@ -22,7 +36,33 @@ export function ShellApp() {
     src.searchParams.set("levelBaseUrl", levelUrl);
     log.info(`Loading game from ${constants.gameUrl}`);
     iframe.src = src.toString();
+
+    const comms = new Comms(window, iframe.contentWindow!);
+    setComms(comms);
   }, [reloadCount]);
+
+  useEffect(() => {
+    if (!comms) return;
+
+    window.gl = {
+      markers: {
+        record: (slug: string) => {
+          log.info(`Recording marker '${slug}'`, { dev: true });
+          comms.request({
+            type: "record-marker",
+            data: { slug },
+          });
+        },
+        clear: (slug: string) => {
+          log.info(`Clearing marker '${slug}'`, { dev: true });
+          comms.request({
+            type: "clear-marker",
+            data: { slug },
+          });
+        },
+      },
+    };
+  }, [comms]);
 
   useEffect(() => {
     if (import.meta.hot) {
@@ -51,6 +91,7 @@ export function ShellApp() {
       <div id="log-messages">
         <LogPane maxMessages={300} />
       </div>
+      <DevInput />
     </>
   );
 }

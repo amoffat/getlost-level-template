@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from lark import ParseTree
 
@@ -34,11 +34,23 @@ class TweePassage:
 
 
 @dataclass
+class TraverseState:
+    # The entry point passage ID
+    passage_id: str | None = None
+    # Children that this passage links to
+    children: list[str] = field(default_factory=list)
+    # The passage init code
+    init: list[str] = field(default_factory=list)
+    # async functions that need to be awaited
+    async_functions: list[str] = field(default_factory=list)
+
+
+@dataclass
 class ConstructPassage:
     name: str
     id: str
-    init: list[str]
     content: str
+    state: TraverseState
     title: str | None = None
     title_id: str | None = None
     is_sign: bool = False

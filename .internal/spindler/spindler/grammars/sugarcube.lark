@@ -1,52 +1,55 @@
 ?start: body
 
-body: (link | macro | text)+
+body: (link | _macro | text)+
 
-?macro: wrapping_macro | callable_macro | if_macro
-?callable_macro: "<<" callable_macros ">>"
-wrapping_macro: "<<" wrap_macros ">>" body "<</" _WORD ">>"
+_macro: wrapping_macro | _callable_macro | if_macro
+_callable_macro: "<<" _callable_macros ">>"
+wrapping_macro: "<<" _wrap_macros ">>" body "<</" _WORD ">>"
 
-?if_macro: "<<" "if" expression ">>" body elseif_macro* else_macro? "<</if>>"
-elseif_macro: "<<" "elseif" expression ">>" body
+if_macro: "<<" "if" _expression ">>" body elseif_macro* else_macro? "<</if>>"
+elseif_macro: "<<" "elseif" _expression ">>" body
 else_macro: "<<" "else" ">>" body
 
-?callable_macros: set_macro | custom_widget | level_call | function_call
-?wrap_macros: widget_macro
+_callable_macros: set_macro | custom_widget | level_call | function_call
+_wrap_macros: widget_macro
 
 custom_widget: WIDGET_NAME
-set_macro: "set" variable "to" expression
+set_macro: "set" _variable "to" _expression
 widget_macro: "widget" ("\"" WIDGET_NAME "\""  | "'" WIDGET_NAME "'") -> widget
 level_call: LEVEL_CALL_NAME "(" _arguments? ")"
 
 LEVEL_CALL_NAME: "level" "." WORD
 WIDGET_NAME:  /[a-zA-Z-]+/
 
-?expression: \
+_expression: wrapped_expression | _raw_expression
+
+wrapped_expression: "(" _raw_expression ")"
+_raw_expression: \
     ESCAPED_STRING 
-    | comparison
+    | binary_comparison
+    | unary_op_expression
     | NUMBER
     | level_call
-    | boolean 
-    | variable 
+    | _boolean 
+    | _variable 
     | function_call
     | object_literal
 
-comparison_operator: "==" | "!=" | "<" | "<=" | ">" | ">="
-?boolean: TRUE | FALSE
-?variable: global_var | local_var
+_boolean: TRUE | FALSE
+_variable: global_var | local_var
 
 global_var : "$" VAR_NAME
 local_var : "_" VAR_NAME
 
 VAR_NAME: WORD ("." WORD)*
 
-function_call: function_name "(" _arguments? ")"
-?function_name: FUNCTION_NAME
+function_call: _function_name "(" _arguments? ")"
+_function_name: FUNCTION_NAME
 
 FUNCTION_NAME: /[a-zA-Z_]+/
 
-_arguments: argument ("," argument)*
-?argument: expression
+_arguments: _argument ("," _argument)*
+_argument: _expression
 
 link: "[[" LINK_TEXT (("->" | "|") LINK_TARGET)? "]]"
 LINK_TEXT: /(?:(?!(\]\]|\|)).)+/
@@ -56,22 +59,17 @@ TEXT: /(?:(?!(\[\[|<<)).)+/
 
 // basic js grammar
 object_literal: _LBRACE [pair ("," pair)* ","?] _RBRACE
-pair: key ":" js_value
-?key: ESCAPED_STRING | WORD
-?js_value: ESCAPED_STRING | NUMBER | object_literal | array | TRUE | FALSE | NULL | UNDEFINED
-array: "[" [js_value ("," js_value)*] "]"
+pair: _key ":" _js_value
+_key: ESCAPED_STRING | WORD
+_js_value: ESCAPED_STRING | NUMBER | object_literal | array | TRUE | FALSE | NULL | UNDEFINED
+array: "[" [_js_value ("," _js_value)*] "]"
 _LBRACE: "{"
 _RBRACE: "}"
 
-?comparison: \
-    binary_comparison
-    | unary_op
-    | comparison AND comparison
-    | comparison OR comparison
+unary_op_expression: _unary_op _expression
+binary_comparison: _expression _binary_op _expression
 
-binary_comparison: expression binary_op expression
-
-?binary_op: \
+_binary_op: \
     STRICT_EQ 
     | STRICT_NEQ 
     | EQUIV 
@@ -83,7 +81,7 @@ binary_comparison: expression binary_op expression
     | AND 
     | OR
 
-unary_op: \
+_unary_op: \
     NOT 
     | DEF 
     | NDEF

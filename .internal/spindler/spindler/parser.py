@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import cast
 
 from lark import Lark, Token
-
 from spindler.types.passage import TweePassage
 
 THIS_DIR = Path(__file__).parent
