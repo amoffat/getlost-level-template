@@ -24,6 +24,9 @@ if [[ "$CUR_REPO_URL" != *$TEMPLATE_REPO* ]]; then
 
         if git-crypt status -e | grep -q 'encrypted'; then
             echo "Repo was already encrypted, discarding irrelevant key..."
+            # This locks the repo (but nothing was added to the index, so
+            # nothing is encrypted with our generated key), and discards the
+            # generated key.
             git-crypt lock -f
         else
             echo "Exporting generated key..."
