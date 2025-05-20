@@ -27,11 +27,9 @@ def check_clean_working_tree(target_path: Path) -> None:
 def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
     level_dir = target_path / "level"
     internal_dir = target_path / ".internal"
+    version_file = internal_dir / "package.json"
     temp_clone_dir = target_path / "_template_update"
     level_backup = target_path / "_level_backup"
-    version_file = internal_dir / "package.json"
-    with version_file.open() as f:
-        version = json.load(f).get("version", "unknown")
 
     if not target_path.exists():
         print(f"Error: Target directory '{target_path}' does not exist.")
@@ -46,11 +44,11 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
         print(
             f"Warning: Temporary clone directory '{temp_clone_dir}' already exists, removing"
         )
-        shutil.rmtree(temp_clone_dir)
+        shutil.rmtree(temp_clone_dir, ignore_errors=True)
 
     if level_backup.exists():
         print(f"Warning: Backup directory '{level_backup}' already exists, removing")
-        shutil.rmtree(level_backup)
+        shutil.rmtree(level_backup, ignore_errors=True)
 
     # Check if the working tree and index are clean
     check_clean_working_tree(target_path)
@@ -97,7 +95,7 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
     for item in target_path.iterdir():
         if should_remove(item):
             if item.is_dir():
-                shutil.rmtree(item)
+                shutil.rmtree(item, ignore_errors=True)
             else:
                 item.unlink()
 
@@ -121,6 +119,9 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
         capture_output=True,
         text=True,
     )
+
+    with version_file.open() as f:
+        version = json.load(f).get("version", "unknown")
 
     if result.stdout.strip():  # If there are changes
         subprocess.run(

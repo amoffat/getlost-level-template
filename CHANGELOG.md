@@ -1,3 +1,8 @@
+## 0.11.2 - 5/20/25
+
+- Bugfix where level upgrade can fail on docker bind mount race
+- Bugfix where level upgrade commits wrong version in message
+
 ## 0.11.1 - 5/19/25
 
 - Clean up readme instructions
