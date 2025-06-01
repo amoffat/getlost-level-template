@@ -4,5 +4,5 @@ const localDev = false;
 
 // This is where the Get Lost engine lives.
 export const gameUrl = localDev
-  ? "http://localhost:5173"
+  ? "http://localhost:5176"
   : "https://game.getlost.gg/";
