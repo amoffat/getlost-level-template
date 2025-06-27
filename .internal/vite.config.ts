@@ -12,22 +12,14 @@ function addHeadersPlugin() {
     name: "vite-plugin-add-headers",
     configureServer(server: ViteDevServer) {
       server.middlewares.use((req, res, next) => {
-        const isAllowed = isAllowedOrigin(req.headers.origin);
-
-        // We shouldn't need to set all of these headers on non-preflight
-        // (OPTIONS) requests, but for some reason, when the browser asks for
-        // the WASM file, it wants these headers set.
-        if (isAllowed) {
-          res.setHeader("Access-Control-Allow-Origin", req.headers.origin!);
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        if (isAllowedOrigin(req.headers.origin)) {
+          res.setHeader("Access-Control-Allow-Private-Network", "true");
         }
+
         res.setHeader("Access-Control-Allow-Methods", "*");
         res.setHeader("Access-Control-Allow-Headers", "*");
-        res.setHeader("Access-Control-Allow-Private-Network", "true");
         res.setHeader("Access-Control-Allow-Credentials", "true");
-
-        res.setHeader("cross-origin-resource-policy", "cross-origin");
-        res.setHeader("cross-origin-opener-policy", "same-origin");
-        res.setHeader("cross-origin-embedder-policy", "require-corp");
 
         if (req.method === "OPTIONS") {
           res.statusCode = 200;
@@ -60,8 +52,5 @@ export default defineConfig(() => {
       levelPlugin(),
       levelWatcher(),
     ],
-    define: {
-      DEVCONTAINER: process.env.DEVCONTAINER,
-    },
   };
 });

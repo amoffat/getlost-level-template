@@ -259,14 +259,50 @@
                 {
                  "height":0,
                  "id":25,
-                 "name":"entry",
+                 "name":"west",
                  "point":true,
                  "rotation":0,
-                 "type":"",
+                 "type":"Entry",
                  "visible":true,
                  "width":0,
-                 "x":14,
-                 "y":-182
+                 "x":-15.3333333333333,
+                 "y":-175
+                }, 
+                {
+                 "height":0,
+                 "id":68,
+                 "name":"south",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Entry",
+                 "visible":true,
+                 "width":0,
+                 "x":-12.3333333333334,
+                 "y":21.6666666666667
+                }, 
+                {
+                 "height":0,
+                 "id":69,
+                 "name":"south",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Entry",
+                 "visible":true,
+                 "width":0,
+                 "x":277.333333333333,
+                 "y":-16
+                }, 
+                {
+                 "height":0,
+                 "id":70,
+                 "name":"well",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Entry",
+                 "visible":true,
+                 "width":0,
+                 "x":197.333333333333,
+                 "y":-192.666666666667
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1308,7 +1344,7 @@
          "y":0
         }],
  "nextlayerid":19,
- "nextobjectid":68,
+ "nextobjectid":71,
  "orientation":"orthogonal",
  "properties":[
         {

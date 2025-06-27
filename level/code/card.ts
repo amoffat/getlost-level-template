@@ -10,7 +10,6 @@ export function card(): Card {
       name: "Template level",
       version: 1,
     },
-    source: "https://github.com/amoffat/getlost-level-template",
     credits: [
       {
         name: "Andrew",

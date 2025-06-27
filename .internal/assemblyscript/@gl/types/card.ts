@@ -3,8 +3,6 @@
 
 export class Card {
   level!: LevelDetails;
-  // github or gitlab url
-  source: string | null = null;
   credits!: Person[];
 }
 

@@ -2,11 +2,14 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Start Vite",
+      "label": "Restart Vite",
       "type": "shell",
-      "command": "npm run dev",
+      "command": "npx pm2 restart preview",
       "isBackground": true,
       "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}/.internal"
+      },
       "group": {
         "kind": "build",
         "isDefault": true

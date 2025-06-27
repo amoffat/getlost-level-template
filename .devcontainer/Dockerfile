@@ -12,6 +12,8 @@ RUN apt-get update \
     zlib1g-dev \
     qtdeclarative5-dev \
     qbs \
+    # For converting audio assets
+    ffmpeg \
     # For binaryen
     cmake \
     # Python deps

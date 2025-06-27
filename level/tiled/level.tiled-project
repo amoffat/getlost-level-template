@@ -1,288 +1,297 @@
 {
-    "automappingRulesFile": "",
-    "commands": [
-    ],
-    "compatibilityVersion": 1100,
-    "extensionsPath": "extensions",
-    "folders": [
-        "."
-    ],
-    "properties": [
-    ],
-    "propertyTypes": [
+  "automappingRulesFile": "",
+  "commands": [],
+  "compatibilityVersion": 1100,
+  "extensionsPath": "extensions",
+  "folders": [
+    "."
+  ],
+  "properties": [],
+  "propertyTypes": [
+    {
+      "color": "#ffa0a0a4",
+      "drawFill": true,
+      "id": 15,
+      "members": [],
+      "name": "Entry",
+      "type": "class",
+      "useAs": [
+        "object",
+        "project"
+      ]
+    },
+    {
+      "color": "#ffa0a0a4",
+      "drawFill": true,
+      "id": 7,
+      "members": [
         {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 7,
-            "members": [
-                {
-                    "name": "color",
-                    "type": "color",
-                    "value": ""
-                },
-                {
-                    "name": "type",
-                    "propertyType": "LightType",
-                    "type": "string",
-                    "value": "constant"
-                }
-            ],
-            "name": "Light",
-            "type": "class",
-            "useAs": [
-                "object",
-                "project"
-            ]
+          "name": "color",
+          "type": "color",
+          "value": ""
         },
         {
-            "id": 6,
-            "name": "LightType",
-            "storageType": "string",
-            "type": "enum",
-            "values": [
-                "constant",
-                "campfire"
-            ],
-            "valuesAsFlags": false
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 11,
-            "members": [
-                {
-                    "name": "cameraWidth",
-                    "type": "float",
-                    "value": 10
-                },
-                {
-                    "name": "defaultWalk",
-                    "propertyType": "WalkSound",
-                    "type": "string",
-                    "value": "default"
-                }
-            ],
-            "name": "Map",
-            "type": "class",
-            "useAs": [
-                "map",
-                "project"
-            ]
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 9,
-            "members": [
-                {
-                    "name": "animation",
-                    "type": "string",
-                    "value": ""
-                }
-            ],
-            "name": "NPC",
-            "type": "class",
-            "useAs": [
-                "object",
-                "project"
-            ]
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 1,
-            "members": [
-                {
-                    "name": "animation",
-                    "type": "string",
-                    "value": ""
-                }
-            ],
-            "name": "NPC Tile",
-            "type": "class",
-            "useAs": [
-                "tile",
-                "project"
-            ]
-        },
-        {
-            "id": 2,
-            "name": "NPC animation",
-            "storageType": "string",
-            "type": "enum",
-            "values": [
-                "Idle",
-                "WalkLeft",
-                "WalkRight",
-                "WalkUp",
-                "WalkDown"
-            ],
-            "valuesAsFlags": true
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 13,
-            "members": [
-            ],
-            "name": "NonObstructing",
-            "type": "class",
-            "useAs": [
-                "property",
-                "tile",
-                "project"
-            ]
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 3,
-            "members": [
-                {
-                    "name": "hidden",
-                    "type": "bool",
-                    "value": false
-                },
-                {
-                    "name": "slug",
-                    "type": "string",
-                    "value": ""
-                }
-            ],
-            "name": "Pickup",
-            "type": "class",
-            "useAs": [
-                "property",
-                "object",
-                "project"
-            ]
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 10,
-            "members": [
-                {
-                    "name": "depth",
-                    "type": "float",
-                    "value": 5
-                },
-                {
-                    "name": "liquid",
-                    "type": "bool",
-                    "value": true
-                },
-                {
-                    "name": "padding",
-                    "type": "float",
-                    "value": 16
-                }
-            ],
-            "name": "Sink",
-            "type": "class",
-            "useAs": [
-                "object",
-                "project"
-            ]
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 14,
-            "members": [
-                {
-                    "name": "sound",
-                    "type": "string",
-                    "value": ""
-                },
-                {
-                    "name": "volume",
-                    "type": "float",
-                    "value": 1
-                }
-            ],
-            "name": "Sound",
-            "type": "class",
-            "useAs": [
-                "property",
-                "object",
-                "project"
-            ]
-        },
-        {
-            "id": 5,
-            "name": "WalkSound",
-            "storageType": "string",
-            "type": "enum",
-            "values": [
-                "default",
-                "ice",
-                "wood",
-                "snow",
-                "gravel",
-                "grass",
-                "puddle",
-                "sand"
-            ],
-            "valuesAsFlags": false
-        },
-        {
-            "color": "#ffaa55ff",
-            "drawFill": true,
-            "id": 4,
-            "members": [
-                {
-                    "name": "customWalkSound",
-                    "type": "string",
-                    "value": ""
-                },
-                {
-                    "name": "friction",
-                    "type": "float",
-                    "value": 0.1
-                },
-                {
-                    "name": "traction",
-                    "type": "float",
-                    "value": 1
-                },
-                {
-                    "name": "walkSound",
-                    "propertyType": "WalkSound",
-                    "type": "string",
-                    "value": "default"
-                }
-            ],
-            "name": "WalkableTile",
-            "type": "class",
-            "useAs": [
-                "tile",
-                "project"
-            ]
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 12,
-            "members": [
-                {
-                    "name": "zoom",
-                    "type": "float",
-                    "value": 1
-                },
-                {
-                    "name": "zoomPadding",
-                    "type": "float",
-                    "value": 16
-                }
-            ],
-            "name": "Zoom",
-            "type": "class",
-            "useAs": [
-                "property",
-                "object",
-                "project"
-            ]
+          "name": "type",
+          "propertyType": "LightType",
+          "type": "string",
+          "value": "constant"
         }
-    ]
+      ],
+      "name": "Light",
+      "type": "class",
+      "useAs": [
+        "object",
+        "project"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "LightType",
+      "storageType": "string",
+      "type": "enum",
+      "values": [
+        "constant",
+        "campfire"
+      ],
+      "valuesAsFlags": false
+    },
+    {
+      "color": "#ffa0a0a4",
+      "drawFill": true,
+      "id": 11,
+      "members": [
+        {
+          "name": "cameraWidth",
+          "type": "float",
+          "value": 10
+        },
+        {
+          "name": "defaultWalk",
+          "propertyType": "WalkSound",
+          "type": "string",
+          "value": "default"
+        }
+      ],
+      "name": "Map",
+      "type": "class",
+      "useAs": [
+        "map",
+        "project"
+      ]
+    },
+    {
+      "color": "#ffa0a0a4",
+      "drawFill": true,
+      "id": 9,
+      "members": [
+        {
+          "name": "animation",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "name": "NPC",
+      "type": "class",
+      "useAs": [
+        "object",
+        "project"
+      ]
+    },
+    {
+      "color": "#ffa0a0a4",
+      "drawFill": true,
+      "id": 1,
+      "members": [
+        {
+          "name": "animation",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "name": "NPC Tile",
+      "type": "class",
+      "useAs": [
+        "tile",
+        "project"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "NPC animation",
+      "storageType": "string",
+      "type": "enum",
+      "values": [
+        "Idle",
+        "WalkLeft",
+        "WalkRight",
+        "WalkUp",
+        "WalkDown"
+      ],
+      "valuesAsFlags": true
+    },
+    {
+      "color": "#ffa0a0a4",
+      "drawFill": true,
+      "id": 13,
+      "members": [],
+      "name": "NonObstructing",
+      "type": "class",
+      "useAs": [
+        "property",
+        "tile",
+        "project"
+      ]
+    },
+    {
+      "color": "#ffa0a0a4",
+      "drawFill": true,
+      "id": 3,
+      "members": [
+        {
+          "name": "hidden",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "name": "slug",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "name": "Pickup",
+      "type": "class",
+      "useAs": [
+        "property",
+        "object",
+        "project"
+      ]
+    },
+    {
+      "color": "#ffa0a0a4",
+      "drawFill": true,
+      "id": 10,
+      "members": [
+        {
+          "name": "depth",
+          "type": "float",
+          "value": 5
+        },
+        {
+          "name": "liquid",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "padding",
+          "type": "float",
+          "value": 16
+        }
+      ],
+      "name": "Sink",
+      "type": "class",
+      "useAs": [
+        "object",
+        "project"
+      ]
+    },
+    {
+      "color": "#ffa0a0a4",
+      "drawFill": true,
+      "id": 14,
+      "members": [
+        {
+          "name": "sound",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "name": "volume",
+          "type": "float",
+          "value": 1
+        }
+      ],
+      "name": "Sound",
+      "type": "class",
+      "useAs": [
+        "property",
+        "object",
+        "project"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "WalkSound",
+      "storageType": "string",
+      "type": "enum",
+      "values": [
+        "default",
+        "ice",
+        "wood",
+        "snow",
+        "gravel",
+        "grass",
+        "puddle",
+        "sand"
+      ],
+      "valuesAsFlags": false
+    },
+    {
+      "color": "#ffaa55ff",
+      "drawFill": true,
+      "id": 4,
+      "members": [
+        {
+          "name": "customWalkSound",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "name": "friction",
+          "type": "float",
+          "value": 0.1
+        },
+        {
+          "name": "traction",
+          "type": "float",
+          "value": 1
+        },
+        {
+          "name": "walkSound",
+          "propertyType": "WalkSound",
+          "type": "string",
+          "value": "default"
+        }
+      ],
+      "name": "WalkableTile",
+      "type": "class",
+      "useAs": [
+        "tile",
+        "project"
+      ]
+    },
+    {
+      "color": "#ffa0a0a4",
+      "drawFill": true,
+      "id": 12,
+      "members": [
+        {
+          "name": "zoom",
+          "type": "float",
+          "value": 1
+        },
+        {
+          "name": "zoomPadding",
+          "type": "float",
+          "value": 16
+        }
+      ],
+      "name": "Zoom",
+      "type": "class",
+      "useAs": [
+        "property",
+        "object",
+        "project"
+      ]
+    }
+  ]
 }

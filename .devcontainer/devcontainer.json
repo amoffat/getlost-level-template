@@ -17,13 +17,11 @@
       "password": "getlost"
     }
   },
+  "runArgs": ["--network=getlost"],
   "secrets": {
     "ASSETS_KEY": {
       "description": "License key for unlocking protected assets"
     }
-  },
-  "remoteEnv": {
-    "DEVCONTAINER": "true"
   },
   "forwardPorts": [5173, 5174, 6080],
   "customizations": {

@@ -1,3 +1,13 @@
+## 0.12.0 - 6/26/25
+
+- Github workflow for publishing level
+- Require `entrances()` and `exits()` functions defined in `gateways.ts`
+- Add `Entry` tiled map object type
+- Remove `source` from required level credits (we derive this from the publish job)
+- `Restart Vite` VSCode convenience task
+- Make default music iOS compatible (ogg -> m4a)
+- Additional entrances on the map
+
 ## 0.11.2 - 5/20/25
 
 - Bugfix where level upgrade can fail on docker bind mount race

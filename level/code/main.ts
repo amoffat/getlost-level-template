@@ -11,7 +11,7 @@ import * as dialogue from "./generated/dialogue";
 
 export { initAsyncStack } from "@gl/utils/asyncify";
 export { card } from "./card";
-export { exits } from "./exits";
+export { entrances, exits } from "./gateways";
 export { choiceMadeEvent } from "./generated/dialogue";
 export { grantedMarkers, usedMarkers } from "./markers";
 export { pickups } from "./pickups";
@@ -56,7 +56,7 @@ export function initRoom(): void {
   host.time.setSunEvent(SunEvent.SolarNoon, 0);
 
   music = host.sound.loadSound({
-    name: "Musics/17 - Fight.ogg",
+    name: "Musics/music.m4a",
     loop: true,
     autoplay: true,
     volume: 0.5,

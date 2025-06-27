@@ -14,12 +14,79 @@ on:
         default: false
         type: boolean
 
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: write # This is required for checking and tagging
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     if: github.event.inputs.license_agreement == 'true' && github.event.inputs.license_disclosures == 'true'
     steps:
+      - name: Setup env
+        run: |
+          if [ "${{ github.ref_name }}" = "${{ github.event.repository.default_branch }}" ]; then
+            echo "ENV=prod" >> $GITHUB_ENV
+            echo "LEVEL_DOMAIN=getlost.gg" >> $GITHUB_ENV
+          else
+            echo "ENV=qa" >> $GITHUB_ENV
+            echo "LEVEL_DOMAIN=qa.getlost.gg" >> $GITHUB_ENV
+          fi
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-crypt
+
+      - name: Get OIDC token
+        id: get_token
+        run: |
+          TOKEN_JSON=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL")
+          echo "JWT=$(echo $TOKEN_JSON | jq -r .value)" >> $GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry==2.1.2
+          poetry config virtualenvs.create false
+
+      - name: Install dependencies
+        run: |
+          poetry install -P .internal/deployer
+          poetry install -P .internal/spindler
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: .internal/package-lock.json
+
+      - name: Install npm dependencies
+        run: |
+          npm ci --prefix .internal
+
+      # - name: Upload vite.log artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: vite.log
+      #     path: .internal/vite.log
+
       - name: Publish
-        run: echo "Level publishing coming soon!"
+        run: |
+          echo "Publishing level..."
+          deployer \
+            --jwt $JWT \
+            --env $ENV \
+            --level ./level \
+            --summary summary.md
+          cat summary.md > $GITHUB_STEP_SUMMARY
