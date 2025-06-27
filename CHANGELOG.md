@@ -1,4 +1,4 @@
-## 0.12.0 - 6/26/25
+## 0.12.1 - 6/26/25
 
 - Github workflow for publishing level
 - Require `entrances()` and `exits()` functions defined in `gateways.ts`
@@ -7,6 +7,7 @@
 - `Restart Vite` VSCode convenience task
 - Make default music iOS compatible (ogg -> m4a)
 - Additional entrances on the map
+- Use engine `0.12.1`
 
 ## 0.11.2 - 5/20/25
 
