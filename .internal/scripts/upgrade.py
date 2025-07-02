@@ -78,7 +78,6 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
             level_backup,
             temp_clone_dir,
             target_path / ".git",
-            target_path / "assets.key",
         ]
         return item not in preserve
 

@@ -5,7 +5,8 @@ set -euo pipefail
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_DIR=$(realpath /workspaces/*)
 INTERNAL_DIR="$WORKSPACE_DIR/.internal"
-KEY_FILE="$WORKSPACE_DIR/assets.key"
+LEVEL_DIR="$WORKSPACE_DIR/level"
+KEY_FILE="$LEVEL_DIR/assets.key"
 
 npx --prefix "$INTERNAL_DIR" pm2 resurrect
 

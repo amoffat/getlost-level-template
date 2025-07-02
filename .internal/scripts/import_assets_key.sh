@@ -1,9 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR=$(realpath "$THIS_DIR/../..")
-KEY_FILE="$REPO_DIR/assets.key"
+WORKSPACE_DIR=$(realpath /workspaces/*)
+INTERNAL_DIR="$WORKSPACE_DIR/.internal"
+LEVEL_DIR="$WORKSPACE_DIR/level"
+KEY_FILE="$LEVEL_DIR/assets.key"
 
 # Check if ASSETS_KEY was provided
 if [ -z "$ASSETS_KEY" ]; then

@@ -7,6 +7,9 @@ ECOSYSTEM_FILE="$THIS_DIR/../ecosystem.config.cjs"
 CUR_REPO_URL=$(git config --get remote.origin.url || echo "")
 WORKSPACE_DIR=$(realpath /workspaces/*)
 INTERNAL_DIR="$WORKSPACE_DIR/.internal"
+LEVEL_DIR="$WORKSPACE_DIR/level"
+KEY_FILE="$LEVEL_DIR/assets.key"
+
 
 echo "Starting PM2 in the background..."
 npx --prefix "$INTERNAL_DIR" pm2 start "$ECOSYSTEM_FILE"
@@ -30,7 +33,7 @@ if [[ "$CUR_REPO_URL" != *$TEMPLATE_REPO* ]]; then
             git-crypt lock -f
         else
             echo "Exporting generated key..."
-            git-crypt export-key - | base64 -w 0 > assets.key
+            git-crypt export-key - | base64 -w 0 > $KEY_FILE
         fi
     else
         echo "git-crypt already initialized."
