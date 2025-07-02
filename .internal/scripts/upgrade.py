@@ -129,6 +129,11 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
             cwd=str(target_path),
             check=True,
         )
+        subprocess.run(
+            ["bash", ".devcontainer/hooks/onCreate.sh"],
+            cwd=str(target_path),
+            check=True,
+        )
         print(f"Upgrade complete! Committed as 'Upgrade to {version}'")
     else:
         print("No changes detected. Skipping commit.")

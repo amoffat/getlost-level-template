@@ -1,3 +1,7 @@
+## 0.13.1 - 7/2/25
+
+- Post template upgrade, run onCreate script
+
 ## 0.13.0 - 7/2/25
 
 - Decrypt restricted assets before publishing
