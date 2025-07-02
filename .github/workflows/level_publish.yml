@@ -48,6 +48,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Decrypt assets
+        run: |
+          if [ -z "${{ secrets.ASSETS_KEY }}" ]; then
+            echo "ASSETS_KEY secret is not set. Please add it to the repository secrets. See https://docs.getlost.gg/latest/reference/asset-management/#deploying-your-level" >&2
+            exit 1
+          fi
+          git-crypt unlock <(echo "${{ secrets.ASSETS_KEY }}" | base64 -d)
+          echo "Assets decrypted."
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:

@@ -1,3 +1,7 @@
+## 0.13.0 -
+
+- Decrypt restricted assets before publishing
+
 ## 0.12.1 - 6/26/25
 
 - Github workflow for publishing level
