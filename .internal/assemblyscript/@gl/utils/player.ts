@@ -11,11 +11,25 @@ export class Player {
 
   static default(): Player {
     const pos = host.map.loadEntryPosition();
+
     const playerController = new PlayerMovement(
       pos.toVec2(), // Initial position
       new Vec2(200, 200), // Impulse
-      new Vec2(100, 100), // Max speed
+      Vec2.fromMagnitude(35), // Max velocity
       50 // mass
+    );
+    const player = new Player(playerController);
+    return player;
+  }
+
+  static slow(): Player {
+    const pos = host.map.loadEntryPosition();
+
+    const playerController = new PlayerMovement(
+      pos.toVec2(), // Initial position
+      new Vec2(200, 200), // Impulse
+      Vec2.fromMagnitude(35), // Max velocity
+      75 // mass
     );
     const player = new Player(playerController);
     return player;

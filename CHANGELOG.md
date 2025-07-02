@@ -1,6 +1,7 @@
 ## 0.13.0 -
 
 - Decrypt restricted assets before publishing
+- Added `slow` default player controller
 
 ## 0.12.1 - 6/26/25
 

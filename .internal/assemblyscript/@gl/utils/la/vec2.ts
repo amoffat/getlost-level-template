@@ -11,6 +11,13 @@ export class Vec2 {
     return new Vec2(value, value);
   }
 
+  static fromMagnitude(mag: f32): Vec2 {
+    // This is simply solving for a in the equation:
+    // c = sqrt(a^2 + a^2)
+    const comp = ((mag * Math.sqrt(2)) / 2) as f32;
+    return new Vec2(comp, comp);
+  }
+
   min(other: Vec2): Vec2 {
     this.x = Math.min(this.x, other.x);
     this.y = Math.min(this.y, other.y);
