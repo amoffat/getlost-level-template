@@ -55,7 +55,7 @@ link: "[[" LINK_TEXT (("->" | "|") LINK_TARGET)? "]]"
 LINK_TEXT: /(?:(?!(\]\]|\|)).)+/
 LINK_TARGET: /(?:(?!\]\]).)+/
 text: TEXT
-TEXT: /(?:(?!(\[\[|<<)).)+/
+TEXT: /(?:(?!(\[\[|<<)).|\n)+/
 
 // basic js grammar
 object_literal: _LBRACE [pair ("," pair)* ","?] _RBRACE

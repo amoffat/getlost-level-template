@@ -131,6 +131,7 @@ export class PlayerMovement {
       this._velocity.x *= 1 - friction;
       this._velocity.y *= 1 - friction;
 
+      // Don't allow infinitely small velocities (which affect walk sound)
       this._velocity.truncate(0.001);
 
       const proposedTrans = this._velocity.scaled(deltaMS / 1000);
@@ -146,5 +147,12 @@ export class PlayerMovement {
 
       this._action = PlayerAction.Idle;
     }
+
+    // Slow down our animation speed based on our speed relative to our max speed.
+    const animSpeed = Math.min(
+      1.0,
+      Math.max(0.4, this._velocity.magnitude / this.maxVelocity.magnitude)
+    ) as f32;
+    host.player.setSpeed(animSpeed);
   }
 }

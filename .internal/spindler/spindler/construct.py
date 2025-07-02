@@ -19,6 +19,7 @@ _TMPL_ENV = jinja2.Environment(
 )
 
 INVENTORY_VAR = "inventory"
+TITLE_VAR = "title"
 TWINE_FN_NS = "twine"
 
 # Tags that should not control the dialogue title
@@ -87,11 +88,30 @@ def map_op(op: str) -> str:
 
 
 def escape_string(s: str) -> str:
-    return s.replace('"', '\\"')
+    return s.replace('"', '\\"').strip().replace("\n", "\\n")
 
 
 def escape_and_quote(s: str) -> str:
     return f'"{escape_string(s)}"'
+
+
+def snake_to_camel_case(snake_str: str) -> str:
+    """
+    Converts a snake_case string to camelCase.
+    """
+    components = snake_str.split("_")
+    return components[0] + "".join(x.title() for x in components[1:])
+
+
+def make_nice_tag(tag: str) -> str | None:
+    """
+    Converts a tag into a nice identifier by replacing spaces with underscores
+    and removing special characters.
+    """
+    tag = tag.strip().replace(" ", "_")
+    tag = re.sub(r"[^a-zA-Z0-9_]", "", tag)
+    tag = snake_to_camel_case(tag)
+    return tag or None
 
 
 def create_state_class(name: str, variable_types: dict[str, Variable]) -> str:
@@ -140,7 +160,7 @@ def find_state_classes(passages: list[TweePassage]) -> dict[str, str]:
         for set_macro in parse_tree.find_data("set_macro"):
             var_node = cast(ParseTree, set_macro.children[0])
             value_node = cast(ParseTree, set_macro.children[1])
-            if var_node.data in {"global_var", "local_var"}:
+            if var_node.data in {"global_var"}:
                 var_name = cast(Token, var_node.children[0]).value
 
                 # Skip the inventory variable, since it's only for Twine
@@ -353,16 +373,22 @@ def render(passages: list[TweePassage]) -> str:
 
             elif var.data == "local_var":
                 var_name = cast(Token, var.children[0]).value
-                return f"state.{var_name} = {value};"
+                if var_name == TITLE_VAR:
+                    passage.tags = [value[1:-1]]  # Remove quotes
+                    return ""
+                else:
+                    return f"state.{var_name} = {value};"
 
             else:
                 raise ValueError(f"Unknown variable type: {var.data}")
 
         elif node.data == "text":
             text_expr = cast(Token, node.children[0]).value
+            if not text_expr.strip():
+                return ""
             text_id = hash_name(text_expr)
             all_strings[text_id] = escape_and_quote(text_expr)
-            text = f'// {text_expr}\ntext = "{text_id}";'
+            text = f'// {all_strings[text_id]}\ntext = "{text_id}";'
             return text
 
         elif node.data == "function_call":
@@ -563,7 +589,9 @@ def render(passages: list[TweePassage]) -> str:
         # in the level code. For example `passage_Guy()` instead of
         # `passage_123456()`.
         if our_tags:
-            passage_id_to_nice_id[passage_id] = our_tags[0]
+            nice_tag = make_nice_tag(our_tags[0])
+            if nice_tag is not None:
+                passage_id_to_nice_id[passage_id] = nice_tag
 
         all_tags = list(chain(parent_tags, our_tags))
         passage_to_tags[passage_id].extend(all_tags)
