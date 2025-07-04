@@ -2,6 +2,7 @@
 
 - Don't run remainder of dialog code if exit occurs
 - Use format-agnostic music
+- Bump engine version 0.15.0
 
 ## 0.13.1 - 7/2/25
 
