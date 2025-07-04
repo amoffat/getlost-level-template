@@ -1,3 +1,7 @@
+## 0.15.1 - 7/4/25
+
+- Bugfixes with upgrade script
+
 ## 0.15.0 - 7/4/25
 
 - Don't run remainder of dialog code if exit occurs

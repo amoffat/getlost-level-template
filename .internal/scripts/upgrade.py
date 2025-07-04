@@ -94,20 +94,25 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
     for item in target_path.iterdir():
         if should_remove(item):
             if item.is_dir():
+                print(f"Removing directory: {item}")
                 shutil.rmtree(item, ignore_errors=True)
             else:
+                print(f"Removing file: {item}")
                 item.unlink()
 
     # Move new contents into place
     for item in temp_clone_dir.iterdir():
         if should_restore(item):
-            shutil.move(str(item), str(target_path / item.name))
+            print(f"Restoring item: {item} to {target_path}")
+            shutil.move(str(item), str(target_path))
 
     # Restore 'level' directory
     if level_backup.exists():
+        print(f"Restoring 'level' directory from backup: {level_backup} to {level_dir}")
         shutil.move(str(level_backup), str(level_dir))
 
     # Cleanup
+    print(f"Cleaning up temporary clone directory: {temp_clone_dir}")
     shutil.rmtree(temp_clone_dir)
 
     # Commit changes
