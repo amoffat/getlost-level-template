@@ -1,3 +1,7 @@
+## 0.15.0 - 7/4/25
+
+- Don't run remainder of dialog code if exit occurs
+
 ## 0.13.1 - 7/2/25
 
 - Post template upgrade, run onCreate script
