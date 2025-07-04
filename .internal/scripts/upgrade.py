@@ -117,30 +117,21 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
 
     # Commit changes
     subprocess.run(["git", "add", "-A"], cwd=str(target_path), check=True)
-    result = subprocess.run(
-        ["git", "status", "--porcelain"],
-        cwd=str(target_path),
-        capture_output=True,
-        text=True,
-    )
 
     with version_file.open() as f:
         version = json.load(f).get("version", "unknown")
 
-    if result.stdout.strip():  # If there are changes
-        subprocess.run(
-            ["git", "commit", "-m", f"+upgrade to {version}"],
-            cwd=str(target_path),
-            check=True,
-        )
-        subprocess.run(
-            ["bash", ".devcontainer/hooks/onCreate.sh"],
-            cwd=str(target_path),
-            check=True,
-        )
-        print(f"Upgrade complete! Committed as 'Upgrade to {version}'")
-    else:
-        print("No changes detected. Skipping commit.")
+    subprocess.run(
+        ["git", "commit", "--allow-empty", "-m", f"+upgrade to {version}"],
+        cwd=str(target_path),
+        check=True,
+    )
+    subprocess.run(
+        ["bash", ".devcontainer/hooks/onCreate.sh"],
+        cwd=str(target_path),
+        check=True,
+    )
+    print(f"Upgrade complete! Committed as 'Upgrade to {version}'")
 
 
 def main() -> NoReturn:
