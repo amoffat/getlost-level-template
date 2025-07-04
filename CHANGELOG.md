@@ -1,6 +1,7 @@
 ## 0.15.0 - 7/4/25
 
 - Don't run remainder of dialog code if exit occurs
+- Use format-agnostic music
 
 ## 0.13.1 - 7/2/25
 
