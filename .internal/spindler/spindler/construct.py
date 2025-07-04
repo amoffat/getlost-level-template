@@ -406,6 +406,17 @@ def render(passages: list[TweePassage]) -> str:
                     resolve_passage(traverse(state=state, node=cast(ParseTree, arg)))
                     for arg in node.children[1:]
                 )
+
+            # Exiting is async, and if we exit, we don't want to do anything
+            # after that, so we return early.
+            elif function_name == "exit":
+                arguments = ", ".join(
+                    traverse(state=state, node=cast(ParseTree, arg))
+                    for arg in node.children[1:]
+                )
+                return (
+                    f"""if ({TWINE_FN_NS}.{function_name}({arguments})) {{return;}}"""
+                )
             else:
                 arguments = ", ".join(
                     traverse(state=state, node=cast(ParseTree, arg))

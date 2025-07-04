@@ -57,8 +57,8 @@ export function incrementVisitCount(id: string): void {
   visitCount.set(id, visitCount.get(id) + 1);
 }
 
-export function exit(name: string, force: bool = false): void {
-  host.map.exit(name, force);
+export function exit(name: string, force: bool = false): bool {
+  return host.map.exit(name, force);
 }
 
 export function hasPickup(tags: Map<string, string>): bool {

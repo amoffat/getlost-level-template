@@ -8,8 +8,10 @@ import { Vector } from "../types/vector";
  *
  * @param name The name of the exit to use.
  * @param force Whether or not to provide the player with a choice to exit.
+ *
+ * @return Returns true if the exit was successful, false otherwise.
  */
-export declare function exit(name: string, force: bool): void;
+export declare function exit(name: string, force: bool): bool;
 
 /**
  * Fetches the merged stack of properties for all tiles at a location. This is

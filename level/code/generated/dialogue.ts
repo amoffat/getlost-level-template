@@ -154,7 +154,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "006d3ad6",
+      key: "dbd6d3ef",
       values: [
         {
           text: "Sir Azure",
@@ -174,7 +174,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "f4886e4d",
+      key: "7e07acef",
       values: [
         {
           text: "You've found it... Please, give it to me...",
@@ -184,7 +184,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "dffd1999",
+      key: "b3169a1e",
       values: [
         {
           text: "You've returned.",
@@ -194,7 +194,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "bbe687cd",
+      key: "ad71ac32",
       values: [
         {
           text: "Greetings.... traveller...",
@@ -224,7 +224,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "2aa61a95",
+      key: "fedef0da",
       values: [
         {
           text: "In the place where I'm from, we wouldn't be having this conversation because there is no you or I.",
@@ -244,7 +244,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "4540b6fa",
+      key: "5f62564b",
       values: [
         {
           text: "Anything else you'd like to know?",
@@ -264,7 +264,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "96f38b61",
+      key: "6590b6fc",
       values: [
         {
           text: "That's not your concern.",
@@ -274,7 +274,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "159272d5",
+      key: "e6136a20",
       values: [
         {
           text: "I haven't seen you before, are you here with the Knight?",
@@ -304,7 +304,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "bc301063",
+      key: "940a7a07",
       values: [
         {
           text: "I.. uh... I volunteered. It's a long story, and I'm very busy right now.",
@@ -324,7 +324,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "1de8ad8f",
+      key: "90187d76",
       values: [
         {
           text: "I left it there. Give it to me.",
@@ -374,7 +374,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "aa053912",
+      key: "2f4491cd",
       values: [
         {
           text: "You talked to the old man...",
@@ -414,7 +414,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "623930a8",
+      key: "9353fe70",
       values: [
         {
           text: "I saw you take that fruit. I don't do business with thieves. Please leave.",
@@ -424,7 +424,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "eb8848da",
+      key: "b0f8f3fd",
       values: [
         {
           text: "I'd like to chat, but it's getting late. Come back during the day.",
@@ -434,7 +434,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "18083266",
+      key: "fb859f81",
       values: [
         {
           text: "Hello again.",
@@ -454,7 +454,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "6bb62fa6",
+      key: "3b40e990",
       values: [
         {
           text: "Welcome, I'm Nazar.",
@@ -514,7 +514,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "2dd162b5",
+      key: "6417188b",
       values: [
         {
           text: "Listen to me carefully. I'm getting that map.",
@@ -554,7 +554,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "b5cbd2a3",
+      key: "c45ad40e",
       values: [
         {
           text: "...zzzzz...zzzzz.....zzzz...",
@@ -564,7 +564,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "80251c82",
+      key: "78050d4a",
       values: [
         {
           text: "Where did you get that map?",
@@ -604,7 +604,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "be9529b7",
+      key: "4a5723b1",
       values: [
         {
           text: "I thought I said go away.",
@@ -614,7 +614,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "ab5df625",
+      key: "f315e8e4",
       values: [
         {
           text: "...",
@@ -674,7 +674,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "0e865942",
+      key: "a6fe1268",
       values: [
         {
           text: "There's a ladder going down, but you cannot see the bottom.",
@@ -714,7 +714,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "e245bb27",
+      key: "e58c0de2",
       values: [
         {
           text: "Well, I know he's not from around here. There was a battle. Then he showed up.",
@@ -744,7 +744,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "a7b6d713",
+      key: "b46405af",
       values: [
         {
           text: "I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.",
@@ -784,7 +784,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "f304833e",
+      key: "e2413390",
       values: [
         {
           text: "A different place. Your language lacks the words for it.",
@@ -804,7 +804,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "8afcb04f",
+      key: "ed5368b3",
       values: [
         {
           text: "He sent me here to guard the town.",
@@ -814,7 +814,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "76f7e319",
+      key: "e417a474",
       values: [
         {
           text: "The Sheikh asked me to. That's all I can tell you.",
@@ -824,7 +824,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "6c3f1cc4",
+      key: "54aadf37",
       values: [
         {
           text: "The Sheikh created this village.",
@@ -844,7 +844,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "b4c1d391",
+      key: "60587427",
       values: [
         {
           text: "I was told this village would be getting a new visitor.",
@@ -874,7 +874,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "d6e3cd9f",
+      key: "2597d023",
       values: [
         {
           text: "A map...",
@@ -904,6 +904,16 @@ export function strings(): String[] {
     },
 
     {
+      key: "0c65f527",
+      values: [
+        {
+          text: "...",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "41876c52",
       values: [
         {
@@ -924,7 +934,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "f5654ac2",
+      key: "b6570cf7",
       values: [
         {
           text: 'It said "Give food and water to this soldier. In return he will guard the village." It had the Sheikh\'s seal. It was unmistakable.',
@@ -974,7 +984,7 @@ export function strings(): String[] {
     },
 
     {
-      key: "15dd9ed6",
+      key: "87cb165b",
       values: [
         {
           text: "A fellow traveller.... I'm here to seek and observe.",
@@ -1098,12 +1108,10 @@ export function passage_12890122(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("12890122");
 
-  // Be well.
+  // "Be well."
   text = "aa225fe0";
 
-  if (text.length > 0) {
-    host.text.display("12890122", title, text, choices, params, animate);
-  }
+  host.text.display("12890122", title, text, choices, params, animate);
 }
 
 // Show interact button for "Climb down"
@@ -1130,11 +1138,11 @@ export function passage_909a9cff(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("909a9cff");
 
-  twine.exit("well", true);
-
-  if (text.length > 0) {
-    host.text.display("909a9cff", title, text, choices, params, animate);
+  if (twine.exit("well", true)) {
+    return;
   }
+
+  host.text.display("909a9cff", title, text, choices, params, animate);
 }
 
 // Show interact button for "Do you have a name?"
@@ -1162,34 +1170,37 @@ export function passage_562cd4ad(): void {
   twine.incrementVisitCount("562cd4ad");
 
   state.knightOpts.yourName = false;
-  // Sir Azure
-  text = "006d3ad6";
+  // "Sir Azure"
+  text = "dbd6d3ef";
   if (state.knightOpts.whyTown) {
     // Why are you guarding this town?
     choices.push("3c0aa10d");
   }
+
   if (state.knightOpts.whoSheikh) {
     // Who is the Sheikh?
     choices.push("885ce2f8");
   }
+
   if (state.knightOpts.howJob) {
     // How did you get this job?
     choices.push("379dcdf1");
   }
+
   if (state.knightOpts.guardWhat) {
     // Guard from what?
     choices.push("99e18287");
   }
+
   if (state.knightOpts.yourName) {
     // Do you have a name?
     choices.push("562cd4ad");
   }
+
   // Bye
   choices.push("12890122");
 
-  if (text.length > 0) {
-    host.text.display("562cd4ad", title, text, choices, params, animate);
-  }
+  host.text.display("562cd4ad", title, text, choices, params, animate);
 }
 
 // Show interact button for "Fire"
@@ -1220,25 +1231,24 @@ export function passage_Fire(): void {
   objlit_1.set("type", "map");
 
   if (twine.hasPickup(objlit_1)) {
-    // You've found it... Please, give it to me...
-    text = "f4886e4d";
+    // "You've found it... Please, give it to me..."
+    text = "7e07acef";
   } else {
     if (twine.visited("c141faa8") > 1) {
-      // You've returned.
-      text = "dffd1999";
+      // "You've returned."
+      text = "b3169a1e";
     } else {
-      // Greetings.... traveller...
-      text = "bbe687cd";
+      // "Greetings.... traveller..."
+      text = "ad71ac32";
       // Who are you?
       choices.push("80495816");
+
       // Ignore the fire
       choices.push("690c49a8");
     }
   }
 
-  if (text.length > 0) {
-    host.text.display("c141faa8", title, text, choices, params, animate);
-  }
+  host.text.display("c141faa8", title, text, choices, params, animate);
 }
 
 // Show interact button for "Give it a shot."
@@ -1265,14 +1275,12 @@ export function passage_15874eac(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("15874eac");
 
-  // In the place where I'm from, we wouldn't be having this conversation because there is no you or I.
-  text = "2aa61a95";
+  // "In the place where I'm from, we wouldn't be having this conversation because there is no you or I."
+  text = "fedef0da";
   // Gotcha...
   choices.push("c8a7d597");
 
-  if (text.length > 0) {
-    host.text.display("15874eac", title, text, choices, params, animate);
-  }
+  host.text.display("15874eac", title, text, choices, params, animate);
 }
 
 // Show interact button for "Gotcha..."
@@ -1299,14 +1307,12 @@ export function passage_c8a7d597(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("c8a7d597");
 
-  // Anything else you'd like to know?
-  text = "4540b6fa";
+  // "Anything else you'd like to know?"
+  text = "5f62564b";
   // You said you were seeking something?
   choices.push("141a8032");
 
-  if (text.length > 0) {
-    host.text.display("c8a7d597", title, text, choices, params, animate);
-  }
+  host.text.display("c8a7d597", title, text, choices, params, animate);
 }
 
 // Show interact button for "Guard from what?"
@@ -1334,34 +1340,37 @@ export function passage_99e18287(): void {
   twine.incrementVisitCount("99e18287");
 
   state.knightOpts.guardWhat = false;
-  // That's not your concern.
-  text = "96f38b61";
+  // "That's not your concern."
+  text = "6590b6fc";
   if (state.knightOpts.whyTown) {
     // Why are you guarding this town?
     choices.push("3c0aa10d");
   }
+
   if (state.knightOpts.whoSheikh) {
     // Who is the Sheikh?
     choices.push("885ce2f8");
   }
+
   if (state.knightOpts.howJob) {
     // How did you get this job?
     choices.push("379dcdf1");
   }
+
   if (state.knightOpts.guardWhat) {
     // Guard from what?
     choices.push("99e18287");
   }
+
   if (state.knightOpts.yourName) {
     // Do you have a name?
     choices.push("562cd4ad");
   }
+
   // Bye
   choices.push("12890122");
 
-  if (text.length > 0) {
-    host.text.display("99e18287", title, text, choices, params, animate);
-  }
+  host.text.display("99e18287", title, text, choices, params, animate);
 }
 
 // Show interact button for "Hi Nazar, I'm $playerName."
@@ -1388,16 +1397,15 @@ export function passage_7d52fd29(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("7d52fd29");
 
-  // I haven't seen you before, are you here with the Knight?
-  text = "159272d5";
+  // "I haven't seen you before, are you here with the Knight?"
+  text = "e6136a20";
   // What Knight?
   choices.push("6451edb5");
+
   // Yes
   choices.push("85a39ab3");
 
-  if (text.length > 0) {
-    host.text.display("7d52fd29", title, text, choices, params, animate);
-  }
+  host.text.display("7d52fd29", title, text, choices, params, animate);
 }
 
 // Show interact button for "How did you get this job?"
@@ -1425,34 +1433,37 @@ export function passage_379dcdf1(): void {
   twine.incrementVisitCount("379dcdf1");
 
   state.knightOpts.howJob = false;
-  // I.. uh... I volunteered. It's a long story, and I'm very busy right now.
-  text = "bc301063";
+  // "I.. uh... I volunteered. It's a long story, and I'm very busy right now."
+  text = "940a7a07";
   if (state.knightOpts.whyTown) {
     // Why are you guarding this town?
     choices.push("3c0aa10d");
   }
+
   if (state.knightOpts.whoSheikh) {
     // Who is the Sheikh?
     choices.push("885ce2f8");
   }
+
   if (state.knightOpts.howJob) {
     // How did you get this job?
     choices.push("379dcdf1");
   }
+
   if (state.knightOpts.guardWhat) {
     // Guard from what?
     choices.push("99e18287");
   }
+
   if (state.knightOpts.yourName) {
     // Do you have a name?
     choices.push("562cd4ad");
   }
+
   // Bye
   choices.push("12890122");
 
-  if (text.length > 0) {
-    host.text.display("379dcdf1", title, text, choices, params, animate);
-  }
+  host.text.display("379dcdf1", title, text, choices, params, animate);
 }
 
 // Show interact button for "How long ago was this?"
@@ -1479,12 +1490,10 @@ export function passage_f6ded42f(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("f6ded42f");
 
-  // Only a week ago.
+  // "Only a week ago."
   text = "dff1fa28";
 
-  if (text.length > 0) {
-    host.text.display("f6ded42f", title, text, choices, params, animate);
-  }
+  host.text.display("f6ded42f", title, text, choices, params, animate);
 }
 
 // Show interact button for "I found it up north."
@@ -1511,20 +1520,20 @@ export function passage_c503743a(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("c503743a");
 
-  // I left it there. Give it to me.
-  text = "1de8ad8f";
+  // "I left it there. Give it to me."
+  text = "90187d76";
   if (twine.visited("ff810fb6")) {
     // I think I'll bring it to that fire on the water.
     choices.push("b2a5f392");
   }
+
   // No.
   choices.push("38178a20");
+
   // Hand him the map
   choices.push("8cf42533");
 
-  if (text.length > 0) {
-    host.text.display("c503743a", title, text, choices, params, animate);
-  }
+  host.text.display("c503743a", title, text, choices, params, animate);
 }
 
 // Show interact button for "I know why you're here."
@@ -1551,35 +1560,38 @@ export function passage_a2b8560b(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("a2b8560b");
 
-  // You talked to the old man...
-  text = "aa053912";
+  // "You talked to the old man..."
+  text = "2f4491cd";
 
   if (state.knightOpts.whyTown) {
     // Why are you guarding this town?
     choices.push("3c0aa10d");
   }
+
   if (state.knightOpts.whoSheikh) {
     // Who is the Sheikh?
     choices.push("885ce2f8");
   }
+
   if (state.knightOpts.howJob) {
     // How did you get this job?
     choices.push("379dcdf1");
   }
+
   if (state.knightOpts.guardWhat) {
     // Guard from what?
     choices.push("99e18287");
   }
+
   if (state.knightOpts.yourName) {
     // Do you have a name?
     choices.push("562cd4ad");
   }
+
   // Bye
   choices.push("12890122");
 
-  if (text.length > 0) {
-    host.text.display("a2b8560b", title, text, choices, params, animate);
-  }
+  host.text.display("a2b8560b", title, text, choices, params, animate);
 }
 
 // Show interact button for "I saw fire on the water."
@@ -1606,12 +1618,10 @@ export function passage_3ca52efa(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("3ca52efa");
 
-  // You've lost your mind. Please go.
+  // "You've lost your mind. Please go."
   text = "0ff99cc5";
 
-  if (text.length > 0) {
-    host.text.display("3ca52efa", title, text, choices, params, animate);
-  }
+  host.text.display("3ca52efa", title, text, choices, params, animate);
 }
 
 // Show interact button for "I'm...new here"
@@ -1638,12 +1648,10 @@ export function passage_559c302f(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("559c302f");
 
-  // You are? Interesting...
+  // "You are? Interesting..."
   text = "be1ca5bd";
 
-  if (text.length > 0) {
-    host.text.display("559c302f", title, text, choices, params, animate);
-  }
+  host.text.display("559c302f", title, text, choices, params, animate);
 }
 
 // Show interact button for "Nazar"
@@ -1671,36 +1679,36 @@ export function passage_Nazar(): void {
   twine.incrementVisitCount("e1ffb1d2");
 
   if (twine.queryMarker("stole-fruit")) {
-    // I saw you take that fruit. I don't do business with thieves. Please leave.
-    text = "623930a8";
+    // "I saw you take that fruit. I don't do business with thieves. Please leave."
+    text = "9353fe70";
   } else if (twine.isNight()) {
-    // I'd like to chat, but it's getting late. Come back during the day.
-    text = "eb8848da";
+    // "I'd like to chat, but it's getting late. Come back during the day."
+    text = "b0f8f3fd";
   } else {
     if (twine.visited("e1ffb1d2") > 1) {
-      // Hello again.
-      text = "18083266";
+      // "Hello again."
+      text = "fb859f81";
       // What's new?
       choices.push("623aab5c");
     } else {
-      // Welcome, I'm Nazar.
-      text = "6bb62fa6";
+      // "Welcome, I'm Nazar."
+      text = "3b40e990";
       // Hi Nazar, I'm $playerName.
       choices.push("7d52fd29");
     }
+
     if (twine.visited("491e88c5")) {
       // What do you know about that knight?
       choices.push("f213214a");
     }
+
     if (twine.visited("c141faa8")) {
       // I saw fire on the water.
       choices.push("3ca52efa");
     }
   }
 
-  if (text.length > 0) {
-    host.text.display("e1ffb1d2", title, text, choices, params, animate);
-  }
+  host.text.display("e1ffb1d2", title, text, choices, params, animate);
 }
 
 // Show interact button for "None of your business"
@@ -1727,16 +1735,15 @@ export function passage_e0a2d72f(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("e0a2d72f");
 
-  // Listen to me carefully. I'm getting that map.
-  text = "2dd162b5";
+  // "Listen to me carefully. I'm getting that map."
+  text = "6417188b";
   // Run away
   choices.push("05e44e9b");
+
   // Ok, calm down, here you go.
   choices.push("448fd9e9");
 
-  if (text.length > 0) {
-    host.text.display("e0a2d72f", title, text, choices, params, animate);
-  }
+  host.text.display("e0a2d72f", title, text, choices, params, animate);
 }
 
 // Show interact button for "Oh you mean the knight?"
@@ -1763,12 +1770,10 @@ export function passage_2ecf7f34(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("2ecf7f34");
 
-  // The person I am seeking carries a map
+  // "The person I am seeking carries a map"
   text = "0d053e12";
 
-  if (text.length > 0) {
-    host.text.display("2ecf7f34", title, text, choices, params, animate);
-  }
+  host.text.display("2ecf7f34", title, text, choices, params, animate);
 }
 
 // Show interact button for "Silent Knight"
@@ -1799,33 +1804,32 @@ export function passage_Knight(): void {
   objlit_2.set("type", "map");
 
   if (twine.isNight()) {
-    // ...zzzzz...zzzzz.....zzzz...
-    text = "b5cbd2a3";
+    // "...zzzzz...zzzzz.....zzzz..."
+    text = "c45ad40e";
   } else {
     if (twine.hasPickup(objlit_2)) {
-      // Where did you get that map?
-      text = "80251c82";
+      // "Where did you get that map?"
+      text = "78050d4a";
       // I found it up north.
       choices.push("c503743a");
+
       // None of your business
       choices.push("e0a2d72f");
     } else if (state.learnedKnightStory) {
       // I know why you're here.
       choices.push("a2b8560b");
     } else if (state.upsetKnight) {
-      // I thought I said go away.
-      text = "be9529b7";
+      // "I thought I said go away."
+      text = "4a5723b1";
     } else {
-      // ...
-      text = "ab5df625";
+      // "..."
+      text = "f315e8e4";
       // Hi
       choices.push("3639efcd");
     }
   }
 
-  if (text.length > 0) {
-    host.text.display("491e88c5", title, text, choices, params, animate);
-  }
+  host.text.display("491e88c5", title, text, choices, params, animate);
 }
 
 // Show interact button for "Well"
@@ -1852,16 +1856,15 @@ export function passage_Well(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("bdc7e965");
 
-  // There's a ladder going down, but you cannot see the bottom.
-  text = "0e865942";
+  // "There's a ladder going down, but you cannot see the bottom."
+  text = "a6fe1268";
   // Climb down
   choices.push("909a9cff");
+
   // Step back
   choices.push("b863269e");
 
-  if (text.length > 0) {
-    host.text.display("bdc7e965", title, text, choices, params, animate);
-  }
+  host.text.display("bdc7e965", title, text, choices, params, animate);
 }
 
 // Show interact button for "What battle?"
@@ -1888,12 +1891,10 @@ export function passage_e45c4215(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("e45c4215");
 
-  // You're really not from around here, are you? My people have been at war since before I was born.
+  // "You're really not from around here, are you? My people have been at war since before I was born."
   text = "e4657ad8";
 
-  if (text.length > 0) {
-    host.text.display("e45c4215", title, text, choices, params, animate);
-  }
+  host.text.display("e45c4215", title, text, choices, params, animate);
 }
 
 // Show interact button for "What do you know about that knight?"
@@ -1920,16 +1921,15 @@ export function passage_f213214a(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("f213214a");
 
-  // Well, I know he's not from around here. There was a battle. Then he showed up.
-  text = "e245bb27";
+  // "Well, I know he's not from around here. There was a battle. Then he showed up."
+  text = "e58c0de2";
   // What do you mean he showed up?
   choices.push("9d4f68e2");
+
   // What battle?
   choices.push("e45c4215");
 
-  if (text.length > 0) {
-    host.text.display("f213214a", title, text, choices, params, animate);
-  }
+  host.text.display("f213214a", title, text, choices, params, animate);
 }
 
 // Show interact button for "What do you mean he showed up?"
@@ -1956,16 +1956,15 @@ export function passage_9d4f68e2(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("9d4f68e2");
 
-  // I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.
-  text = "a7b6d713";
+  // "I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh."
+  text = "b46405af";
   // What did the letter say?
   choices.push("e2092668");
+
   // Who is the Sheikh?
   choices.push("885ce2f8");
 
-  if (text.length > 0) {
-    host.text.display("9d4f68e2", title, text, choices, params, animate);
-  }
+  host.text.display("9d4f68e2", title, text, choices, params, animate);
 }
 
 // Show interact button for "What is he guarding you from?"
@@ -1992,12 +1991,10 @@ export function passage_216c5e8c(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("216c5e8c");
 
-  // You'll have to ask him.
+  // "You'll have to ask him."
   text = "7c1dac67";
 
-  if (text.length > 0) {
-    host.text.display("216c5e8c", title, text, choices, params, animate);
-  }
+  host.text.display("216c5e8c", title, text, choices, params, animate);
 }
 
 // Show interact button for "What's new?"
@@ -2024,12 +2021,10 @@ export function passage_623aab5c(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("623aab5c");
 
-  // Not much.
+  // "Not much."
   text = "88d44f50";
 
-  if (text.length > 0) {
-    host.text.display("623aab5c", title, text, choices, params, animate);
-  }
+  host.text.display("623aab5c", title, text, choices, params, animate);
 }
 
 // Show interact button for "Where are you from?"
@@ -2056,14 +2051,12 @@ export function passage_63265a79(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("63265a79");
 
-  // A different place. Your language lacks the words for it.
-  text = "f304833e";
+  // "A different place. Your language lacks the words for it."
+  text = "e2413390";
   // Give it a shot.
   choices.push("15874eac");
 
-  if (text.length > 0) {
-    host.text.display("63265a79", title, text, choices, params, animate);
-  }
+  host.text.display("63265a79", title, text, choices, params, animate);
 }
 
 // Show interact button for "Who is the Sheikh?"
@@ -2091,34 +2084,37 @@ export function passage_885ce2f8(): void {
   twine.incrementVisitCount("885ce2f8");
 
   state.knightOpts.whoSheikh = false;
-  // He sent me here to guard the town.
-  text = "8afcb04f";
+  // "He sent me here to guard the town."
+  text = "ed5368b3";
   if (state.knightOpts.whyTown) {
     // Why are you guarding this town?
     choices.push("3c0aa10d");
   }
+
   if (state.knightOpts.whoSheikh) {
     // Who is the Sheikh?
     choices.push("885ce2f8");
   }
+
   if (state.knightOpts.howJob) {
     // How did you get this job?
     choices.push("379dcdf1");
   }
+
   if (state.knightOpts.guardWhat) {
     // Guard from what?
     choices.push("99e18287");
   }
+
   if (state.knightOpts.yourName) {
     // Do you have a name?
     choices.push("562cd4ad");
   }
+
   // Bye
   choices.push("12890122");
 
-  if (text.length > 0) {
-    host.text.display("885ce2f8", title, text, choices, params, animate);
-  }
+  host.text.display("885ce2f8", title, text, choices, params, animate);
 }
 
 // Show interact button for "Why are you guarding this town?"
@@ -2146,34 +2142,37 @@ export function passage_3c0aa10d(): void {
   twine.incrementVisitCount("3c0aa10d");
 
   state.knightOpts.whyTown = false;
-  // The Sheikh asked me to. That's all I can tell you.
-  text = "76f7e319";
+  // "The Sheikh asked me to. That's all I can tell you."
+  text = "e417a474";
   if (state.knightOpts.whyTown) {
     // Why are you guarding this town?
     choices.push("3c0aa10d");
   }
+
   if (state.knightOpts.whoSheikh) {
     // Who is the Sheikh?
     choices.push("885ce2f8");
   }
+
   if (state.knightOpts.howJob) {
     // How did you get this job?
     choices.push("379dcdf1");
   }
+
   if (state.knightOpts.guardWhat) {
     // Guard from what?
     choices.push("99e18287");
   }
+
   if (state.knightOpts.yourName) {
     // Do you have a name?
     choices.push("562cd4ad");
   }
+
   // Bye
   choices.push("12890122");
 
-  if (text.length > 0) {
-    host.text.display("3c0aa10d", title, text, choices, params, animate);
-  }
+  host.text.display("3c0aa10d", title, text, choices, params, animate);
 }
 
 // Show interact button for "nazar-who-shiekh"
@@ -2200,14 +2199,12 @@ export function passage_d20fad6e(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("d20fad6e");
 
-  // The Sheikh created this village.
-  text = "6c3f1cc4";
+  // "The Sheikh created this village."
+  text = "54aadf37";
   // So what did the letter say?
   choices.push("c40b2d30");
 
-  if (text.length > 0) {
-    host.text.display("d20fad6e", title, text, choices, params, animate);
-  }
+  host.text.display("d20fad6e", title, text, choices, params, animate);
 }
 
 // Show interact button for "observe-what"
@@ -2234,16 +2231,15 @@ export function passage_90212c36(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("90212c36");
 
-  // I was told this village would be getting a new visitor.
-  text = "b4c1d391";
+  // "I was told this village would be getting a new visitor."
+  text = "60587427";
   // I'm...new here
   choices.push("559c302f");
+
   // Oh you mean the knight?
   choices.push("2ecf7f34");
 
-  if (text.length > 0) {
-    host.text.display("90212c36", title, text, choices, params, animate);
-  }
+  host.text.display("90212c36", title, text, choices, params, animate);
 }
 
 // Show interact button for "seek-what"
@@ -2270,16 +2266,15 @@ export function passage_50c96f21(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("50c96f21");
 
-  // A map...
-  text = "d6e3cd9f";
+  // "A map..."
+  text = "2597d023";
   // What's so special about a map?
   choices.push("255e6fab");
+
   // You said you were observing? What?
   choices.push("3e769b34");
 
-  if (text.length > 0) {
-    host.text.display("50c96f21", title, text, choices, params, animate);
-  }
+  host.text.display("50c96f21", title, text, choices, params, animate);
 }
 
 // Show interact button for "silence"
@@ -2306,16 +2301,15 @@ export function passage_e6c18fdb(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("e6c18fdb");
 
-  // ...
-  text = "ab5df625";
+  // "..."
+  text = "0c65f527";
   // *ahem*... I said 'Hi'
   choices.push("41876c52");
+
   // Bye
   choices.push("12890122");
 
-  if (text.length > 0) {
-    host.text.display("e6c18fdb", title, text, choices, params, animate);
-  }
+  host.text.display("e6c18fdb", title, text, choices, params, animate);
 }
 
 // Show interact button for "special-map"
@@ -2342,12 +2336,10 @@ export function passage_ff810fb6(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("ff810fb6");
 
-  // Find it for me and I'll show you.
+  // "Find it for me and I'll show you."
   text = "092afab4";
 
-  if (text.length > 0) {
-    host.text.display("ff810fb6", title, text, choices, params, animate);
-  }
+  host.text.display("ff810fb6", title, text, choices, params, animate);
 }
 
 // Show interact button for "what-did-letter-say"
@@ -2374,19 +2366,20 @@ export function passage_aff68fcf(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("aff68fcf");
 
-  // It said "Give food and water to this soldier. In return he will guard the village." It had the Sheikh's seal. It was unmistakable.
-  text = "f5654ac2";
+  // "It said \"Give food and water to this soldier. In return he will guard the village.\" It had the Sheikh's seal. It was unmistakable."
+  text = "b6570cf7";
   // How long ago was this?
   choices.push("f6ded42f");
+
   // When does the knight leave?
   choices.push("9b70a051");
+
   // What is he guarding you from?
   choices.push("216c5e8c");
+
   state.learnedKnightStory = true;
 
-  if (text.length > 0) {
-    host.text.display("aff68fcf", title, text, choices, params, animate);
-  }
+  host.text.display("aff68fcf", title, text, choices, params, animate);
 }
 
 // Show interact button for "what-knight"
@@ -2413,12 +2406,10 @@ export function passage_a61db43e(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("a61db43e");
 
-  // There's a knight to the south. He doesn't talk much. Go see for yourself.
+  // "There's a knight to the south. He doesn't talk much. Go see for yourself."
   text = "d95d75d7";
 
-  if (text.length > 0) {
-    host.text.display("a61db43e", title, text, choices, params, animate);
-  }
+  host.text.display("a61db43e", title, text, choices, params, animate);
 }
 
 // Show interact button for "who-fire"
@@ -2445,18 +2436,18 @@ export function passage_3d787171(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("3d787171");
 
-  // A fellow traveller.... I'm here to seek and observe.
-  text = "15dd9ed6";
+  // "A fellow traveller.... I'm here to seek and observe."
+  text = "87cb165b";
   // Where are you from?
   choices.push("63265a79");
+
   // Observe what?
   choices.push("813cdd9a");
+
   // What are you seeking?
   choices.push("b27a0c1e");
 
-  if (text.length > 0) {
-    host.text.display("3d787171", title, text, choices, params, animate);
-  }
+  host.text.display("3d787171", title, text, choices, params, animate);
 }
 
 // Show interact button for "yes-knight"
@@ -2483,12 +2474,10 @@ export function passage_5c07303d(): void {
   const params = new Map<string, string>();
   twine.incrementVisitCount("5c07303d");
 
-  // I see... let me know if you need anything. I'm here to help.
+  // "I see... let me know if you need anything. I'm here to help."
   text = "7ad97537";
 
-  if (text.length > 0) {
-    host.text.display("5c07303d", title, text, choices, params, animate);
-  }
+  host.text.display("5c07303d", title, text, choices, params, animate);
 }
 
 export function dispatch(passageId: string): void {

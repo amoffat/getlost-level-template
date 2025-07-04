@@ -56,7 +56,7 @@ export function initRoom(): void {
   host.time.setSunEvent(SunEvent.SolarNoon, 0);
 
   music = host.sound.loadSound({
-    name: "Musics/music.m4a",
+    name: "Musics/music",
     loop: true,
     autoplay: true,
     volume: 0.5,
