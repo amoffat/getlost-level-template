@@ -1,3 +1,7 @@
+## 0.15.2 - 7/5/25
+
+- Skip asset decrypt if template repo
+
 ## 0.15.1 - 7/4/25
 
 - Bugfixes with upgrade script

@@ -13,11 +13,11 @@ import { Entrance, Exit } from "@gl/types/gateways";
 export function entrances(): Entrance[] {
   return [
     {
-      name: "east",
+      name: "west",
       exits: [],
     },
     {
-      name: "west",
+      name: "east",
       exits: [],
     },
     {
