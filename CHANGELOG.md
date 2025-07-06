@@ -1,3 +1,7 @@
+## 0.15.3 -
+
+- Add social image
+
 ## 0.15.2 - 7/5/25
 
 - Skip asset decrypt if template repo
