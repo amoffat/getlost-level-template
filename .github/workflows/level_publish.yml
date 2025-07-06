@@ -49,6 +49,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Decrypt assets
+        if: github.repository != 'amoffat/getlost-level-template'
         run: |
           if [ -z "${{ secrets.ASSETS_KEY }}" ]; then
             echo "ASSETS_KEY secret is not set. Please add it to the repository secrets. See https://docs.getlost.gg/latest/reference/asset-management/#deploying-your-level" >&2
