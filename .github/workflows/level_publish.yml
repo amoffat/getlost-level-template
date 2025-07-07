@@ -1,6 +1,9 @@
 name: Level Publish
 
 on:
+  push:
+    branches-ignore:
+      - main
   workflow_dispatch:
     inputs:
       license_agreement:
@@ -21,7 +24,9 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    if: github.event.inputs.license_agreement == 'true' && github.event.inputs.license_disclosures == 'true'
+    if: |
+      (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch && github.event.inputs.license_agreement == 'true' && github.event.inputs.license_disclosures == 'true') ||
+      (github.event_name == 'push' && github.ref_name != github.event.repository.default_branch)
     steps:
       - name: Setup env
         run: |

@@ -1,6 +1,7 @@
 ## 0.15.3 -
 
 - Add social image
+- Continuous deployment on non-prod
 
 ## 0.15.2 - 7/5/25
 
