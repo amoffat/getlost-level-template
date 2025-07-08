@@ -53,7 +53,7 @@ export function initRoom(): void {
    * You can set a fixed time for the level like this.
    * Be sure to comment out the setSunTime call in `tickRoom` if you do this.
    */
-  host.time.setSunEvent(SunEvent.SolarNoon, 0);
+  // host.time.setSunEvent(SunEvent.SolarNoon, 0);
 
   music = host.sound.loadSound({
     name: "Musics/music",
