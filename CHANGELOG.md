@@ -4,6 +4,7 @@
 - Continuous deployment on non-prod
 - Less glitchy time of day setting
 - Add missing camera interface
+- Engine bump to 0.16.3
 
 ## 0.15.2 - 7/5/25
 
