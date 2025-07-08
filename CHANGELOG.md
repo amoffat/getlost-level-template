@@ -3,6 +3,7 @@
 - Add social image
 - Continuous deployment on non-prod
 - Less glitchy time of day setting
+- Add missing camera interface
 
 ## 0.15.2 - 7/5/25
 

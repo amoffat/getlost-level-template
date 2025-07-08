@@ -1,3 +1,4 @@
+import * as camera from "./camera";
 import * as char from "./char";
 import * as controls from "./controls";
 import * as debug from "./debug";
@@ -21,6 +22,7 @@ import * as timer from "./timer";
 import * as ui from "./ui";
 
 export {
+  camera,
   char,
   controls,
   debug,
