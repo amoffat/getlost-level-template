@@ -1,10 +1,10 @@
-## 0.15.3 -
+## 0.16.0 - 7/8/25
 
 - Add social image
 - Continuous deployment on non-prod
 - Less glitchy time of day setting
 - Add missing camera interface
-- Engine bump to 0.16.3
+- Engine bump to 1.0.0
 
 ## 0.15.2 - 7/5/25
 
