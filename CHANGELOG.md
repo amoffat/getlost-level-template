@@ -4,7 +4,7 @@
 - Upgrade sound api
 - `host.ui.clearElement()` for clearing custom widgets
 - Replace `west` entry with `main` entry
-- Add `water` entry
+- Add `water` entry and exit
 - Beginning dialogue for Omar (the kid)
 - Use a fixed top velocity magnitude for player sprite animation speed
 

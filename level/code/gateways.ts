@@ -60,5 +60,6 @@ export function exits(): Exit[] {
     { name: "south", preferredEntrance: "" },
     { name: "well", preferredEntrance: "" },
     { name: "death", preferredEntrance: "" },
+    { name: "water", preferredEntrance: "" },
   ];
 }
