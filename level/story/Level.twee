@@ -13,7 +13,9 @@ Level
     "Knight": "green",
     "Fire": "orange",
     "Well": "blue",
-    "Nazar": "red"
+    "Nazar": "red",
+    "Kid": "green",
+    "Omar": "green"
   },
   "zoom": 0.6
 }
@@ -147,6 +149,10 @@ You are? Interesting...
 
 
 
+:: Kid [Omar] {"position":"3950,1925","size":"100,100"}
+It's pretty hot out here huh?
+
+
 :: Nazar [Nazar] {"position":"2200,2200","size":"100,100"}
 <<if queryMarker("stole-fruit")>>
 I saw you take that fruit. I don't do business with thieves. Please leave.
@@ -207,6 +213,7 @@ I thought I said go away.
 [[Talk to Nazar|Nazar]]
 [[Talk to Silent Knight|Silent Knight]]
 [[Talk to Fire|Fire]]
+[[Talk to Kid|Kid]]
 [[Well]]
 
 

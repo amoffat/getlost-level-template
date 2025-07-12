@@ -256,6 +256,8 @@ export function sensorEvent(
     host.map.exit("south", false);
   } else if (sensorName === "nazar") {
     dialogue.stage_Nazar(entered);
+  } else if (sensorName === "omar") {
+    dialogue.stage_Omar(entered);
   } else if (sensorName === "water") {
     inWater = entered;
   } else if (sensorName === "fruit") {

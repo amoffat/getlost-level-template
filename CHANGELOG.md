@@ -5,6 +5,7 @@
 - `host.ui.clearElement()` for clearing custom widgets
 - Replace `west` entry with `main` entry
 - Add `water` entry
+- Beginning dialogue for Omar (the kid)
 
 ## 0.16.0 - 7/8/25
 

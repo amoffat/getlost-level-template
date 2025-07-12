@@ -51,6 +51,7 @@ choiceToPassage.set("3639efcd", "e6c18fdb");
 choiceToPassage.set("7fafd7d4", "e1ffb1d2");
 choiceToPassage.set("dd146f7d", "491e88c5");
 choiceToPassage.set("98bd5b29", "c141faa8");
+choiceToPassage.set("e8b51162", "5ac45c94");
 choiceToPassage.set("e2092668", "aff68fcf");
 choiceToPassage.set("885ce2f8", "d20fad6e");
 choiceToPassage.set("c40b2d30", "aff68fcf");
@@ -404,6 +405,16 @@ export function strings(): String[] {
     },
 
     {
+      key: "66c542e0",
+      values: [
+        {
+          text: "It's pretty hot out here huh?",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "95e31eae",
       values: [
         {
@@ -658,6 +669,16 @@ export function strings(): String[] {
       values: [
         {
           text: "Talk to Fire",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "e8b51162",
+      values: [
+        {
+          text: "Talk to Kid",
           lang: "en",
         },
       ],
@@ -1058,6 +1079,16 @@ export function strings(): String[] {
       values: [
         {
           text: "Nazar",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
+      key: "2dd1283e",
+      values: [
+        {
+          text: "Omar",
           lang: "en",
         },
       ],
@@ -1652,6 +1683,36 @@ export function passage_559c302f(): void {
   text = "be1ca5bd";
 
   host.text.display("559c302f", title, text, choices, params, animate);
+}
+
+// Show interact button for "Kid"
+export function stage_Omar(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: "interact",
+        slug: "passage/5ac45c94",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// "Kid"
+export function passage_Omar(): void {
+  // "Omar"
+  const title = "2dd1283e";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  const params = new Map<string, string>();
+  twine.incrementVisitCount("5ac45c94");
+
+  // "It's pretty hot out here huh?"
+  text = "66c542e0";
+
+  host.text.display("5ac45c94", title, text, choices, params, animate);
 }
 
 // Show interact button for "Nazar"
@@ -2551,6 +2612,11 @@ export function dispatch(passageId: string): void {
   if (passageId === "559c302f") {
     found = true;
     passage_559c302f();
+  }
+
+  if (passageId === "5ac45c94") {
+    found = true;
+    passage_Omar();
   }
 
   if (passageId === "e1ffb1d2") {
