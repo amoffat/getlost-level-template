@@ -1,6 +1,6 @@
 ## 1.0.0 - 7/12/25
 
-- Engine bump to 1.0.0
+- Engine bump to 2.0.0
 - Upgrade sound api
 - `host.ui.clearElement()` for clearing custom widgets
 - Replace `west` entry with `main` entry
