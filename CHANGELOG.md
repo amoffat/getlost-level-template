@@ -3,6 +3,8 @@
 - Engine bump to 1.0.0
 - Upgrade sound api
 - `host.ui.clearElement()` for clearing custom widgets
+- Replace `west` entry with `main` entry
+- Add `water` entry
 
 ## 0.16.0 - 7/8/25
 
