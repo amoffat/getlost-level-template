@@ -7,7 +7,7 @@ import { Card } from "@gl/types/card";
 export function card(): Card {
   return {
     level: {
-      name: "Template level",
+      name: "Blood Feud",
       version: 1,
     },
     credits: [

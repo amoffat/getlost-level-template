@@ -151,7 +151,7 @@ export class PlayerMovement {
     // Slow down our animation speed based on our speed relative to our max speed.
     const animSpeed = Math.min(
       1.0,
-      Math.max(0.4, this._velocity.magnitude / this.maxVelocity.magnitude)
+      Math.max(0.4, this._velocity.magnitude / 35)
     ) as f32;
     host.player.setSpeed(animSpeed);
   }

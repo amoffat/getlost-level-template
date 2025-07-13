@@ -1,3 +1,23 @@
+## 1.0.0 - 7/12/25
+
+- Engine bump to 2.0.0
+- Upgrade sound api
+- `host.ui.clearElement()` for clearing custom widgets
+- Replace `west` entry with `main` entry
+- Add `water` entry and exit
+- Beginning dialogue for Omar (the kid)
+- Use a fixed top velocity magnitude for player sprite animation speed
+- Bugfix with manual publish dispatch job
+- Add `nap` exit
+- Add `timerCompletedEvent` callback
+
+## 0.16.0 - 7/8/25
+
+- Add social image
+- Continuous deployment on non-prod
+- Less glitchy time of day setting
+- Add missing camera interface
+
 ## 0.15.2 - 7/5/25
 
 - Skip asset decrypt if template repo

@@ -31,10 +31,11 @@
          "objectgroup":
             {
              "draworder":"index",
+             "id":2,
              "name":"",
              "objects":[
                     {
-                     "height":3,
+                     "height":5,
                      "id":3,
                      "name":"",
                      "rotation":0,
@@ -42,7 +43,7 @@
                      "visible":true,
                      "width":11,
                      "x":2,
-                     "y":13
+                     "y":11
                     }],
              "opacity":1,
              "type":"objectgroup",
@@ -59,7 +60,7 @@
                 {
                  "name":"groundOffset",
                  "type":"float",
-                 "value":10
+                 "value":8
                 }],
          "type":"NPC Tile"
         }],

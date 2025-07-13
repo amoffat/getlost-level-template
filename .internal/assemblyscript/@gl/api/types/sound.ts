@@ -20,20 +20,6 @@ export class LoadOpts {
 }
 
 export class PlayOpts {
-  /** The ID of the sound to play. */
-  id!: i32;
-  /** The name of the sound to load from your `sounds` folder */
-  spriteId: string = "";
-}
-
-export class LoadAndPlaySoundOpts {
-  asyncId: i32 = -1;
-  /** The name of the sound to load from your `sounds` folder */
-  name!: string;
-  /** Whether the sound should loop. Also good for music. */
-  loop: boolean = false;
-  /** The volume of the sound. */
-  volume: f32 = 1;
-  /** The delay before the sound starts playing. */
-  delayMs: f32 = 0;
+  assetId!: i32;
+  spriteId: i32 = -1;
 }

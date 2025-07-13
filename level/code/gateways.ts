@@ -13,7 +13,7 @@ import { Entrance, Exit } from "@gl/types/gateways";
 export function entrances(): Entrance[] {
   return [
     {
-      name: "west",
+      name: "main",
       exits: [],
     },
     {
@@ -26,6 +26,10 @@ export function entrances(): Entrance[] {
     },
     {
       name: "well",
+      exits: [],
+    },
+    {
+      name: "water",
       exits: [],
     },
   ];
@@ -56,5 +60,7 @@ export function exits(): Exit[] {
     { name: "south", preferredEntrance: "" },
     { name: "well", preferredEntrance: "" },
     { name: "death", preferredEntrance: "" },
+    { name: "water", preferredEntrance: "" },
+    { name: "nap", preferredEntrance: "" },
   ];
 }

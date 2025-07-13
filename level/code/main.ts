@@ -53,7 +53,7 @@ export function initRoom(): void {
    * You can set a fixed time for the level like this.
    * Be sure to comment out the setSunTime call in `tickRoom` if you do this.
    */
-  host.time.setSunEvent(SunEvent.SolarNoon, 0);
+  // host.time.setSunEvent(SunEvent.SolarNoon, 0);
 
   music = host.sound.loadSound({
     name: "Musics/music",
@@ -107,6 +107,15 @@ export function strings(): String[] {
       values: [
         {
           text: "Steal",
+          lang: "en",
+        },
+      ],
+    },
+    {
+      key: "nap",
+      values: [
+        {
+          text: "Take a nap",
           lang: "en",
         },
       ],
@@ -192,6 +201,8 @@ export function buttonPressEvent(slug: string, down: bool): void {
   if (slug === "fruit-taken" && down) {
     host.pickup.offerPickup("fruit");
     host.controls.setButtons([]);
+  } else if (slug === "nap" && down) {
+    host.map.exit("nap", false);
   }
 }
 
@@ -217,7 +228,21 @@ export function tileCollisionEvent(
   // log(`Collision event: ${tsTileId}, ${gid}, ${entered} @ ${column}, ${row}`);
 }
 
+/**
+ * Called when a the dialogue dialog is closed.
+ *
+ * @param passageId The id of the passage that was closed.
+ */
 export function dialogClosedEvent(passageId: string): void {}
+
+/**
+ * Called when a timer is completed.
+ *
+ * @param name The name of the timer that was completed.
+ */
+export function timerCompletedEvent(name: string): void {
+  log(`Timer completed: ${name}`);
+}
 
 /**
  * Called when a sensor event occurs.
@@ -256,8 +281,21 @@ export function sensorEvent(
     host.map.exit("south", false);
   } else if (sensorName === "nazar") {
     dialogue.stage_Nazar(entered);
+  } else if (sensorName === "omar") {
+    dialogue.stage_Omar(entered);
   } else if (sensorName === "water") {
     inWater = entered;
+  } else if (sensorName === "nap") {
+    if (entered) {
+      host.controls.setButtons([
+        {
+          label: "nap",
+          slug: "nap",
+        },
+      ]);
+    } else {
+      host.controls.setButtons([]);
+    }
   } else if (sensorName === "fruit") {
     if (entered) {
       host.controls.setButtons([

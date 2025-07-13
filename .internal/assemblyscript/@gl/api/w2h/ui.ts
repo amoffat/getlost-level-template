@@ -16,7 +16,7 @@ export declare function setNumeric(
 
 // Not implemented yet
 export declare function setTimer(
-  asyncId: i32,
+  name: string,
   col: u32,
   row: u32,
   label: string,
@@ -35,7 +35,10 @@ export declare function setRating(
   color: string
 ): void;
 
+export declare function clearElement(col: u32, row: u32): void;
+
 export const _keep_setProgressBar = setProgressBar;
 export const _keep_setNumeric = setNumeric;
 export const _keep_setTimer = setTimer;
 export const _keep_setRating = setRating;
+export const _keep_clearElement = clearElement;
