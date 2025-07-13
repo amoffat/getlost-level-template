@@ -228,7 +228,21 @@ export function tileCollisionEvent(
   // log(`Collision event: ${tsTileId}, ${gid}, ${entered} @ ${column}, ${row}`);
 }
 
+/**
+ * Called when a the dialogue dialog is closed.
+ *
+ * @param passageId The id of the passage that was closed.
+ */
 export function dialogClosedEvent(passageId: string): void {}
+
+/**
+ * Called when a timer is completed.
+ *
+ * @param name The name of the timer that was completed.
+ */
+export function timerCompletedEvent(name: string): void {
+  log(`Timer completed: ${name}`);
+}
 
 /**
  * Called when a sensor event occurs.

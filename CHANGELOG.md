@@ -9,6 +9,7 @@
 - Use a fixed top velocity magnitude for player sprite animation speed
 - Bugfix with manual publish dispatch job
 - Add `nap` exit
+- Add `timerCompletedEvent` callback
 
 ## 0.16.0 - 7/8/25
 
