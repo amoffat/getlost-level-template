@@ -2,6 +2,7 @@
 
 - Auto-publish template level
 - Make "Interact" button "Talk" instead
+- Upgrade script improvements
 
 ## 1.0.1 - 7/12/25
 

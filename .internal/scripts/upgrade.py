@@ -31,6 +31,20 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
     temp_clone_dir = target_path / "_template_update"
     level_backup = target_path / "_level_backup"
 
+    # Stop all pm2 processes before upgrade
+    print("Stopping all pm2 processes...")
+    subprocess.run(
+        [
+            "npx",
+            "--prefix",
+            str(internal_dir),
+            "pm2",
+            "stop",
+            "all",
+        ],
+        check=True,
+    )
+
     if not target_path.exists():
         print(f"Error: Target directory '{target_path}' does not exist.")
         exit(1)
@@ -91,6 +105,7 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
         return item not in ignore
 
     # Remove old contents (except 'level_backup')
+    print("Removing old contents from target directory...")
     for item in target_path.iterdir():
         if should_remove(item):
             if item.is_dir():
@@ -101,6 +116,7 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
                 item.unlink()
 
     # Move new contents into place
+    print("Restoring new contents from template repository...")
     for item in temp_clone_dir.iterdir():
         if should_restore(item):
             print(f"Restoring item: {item} to {target_path}")
@@ -121,15 +137,23 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
     with version_file.open() as f:
         version = json.load(f).get("version", "unknown")
 
+    print(f"Committing changes with version: {version}")
     subprocess.run(
         ["git", "commit", "--allow-empty", "-m", f"+upgrade to {version}"],
         cwd=str(target_path),
         check=True,
     )
+
+    print(f"Running onCreate.sh devcontainer hook...")
     subprocess.run(
         ["bash", ".devcontainer/hooks/onCreate.sh"],
         cwd=str(target_path),
         check=True,
+    )
+    # Resurrect pm2 processes after upgrade
+    print("Resurrecting pm2 processes...")
+    subprocess.run(
+        ["npx", "--prefix", str(internal_dir), "pm2", "resurrect"], check=True
     )
     print(f"Upgrade complete! Committed as 'Upgrade to {version}'")
 
