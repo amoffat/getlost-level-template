@@ -8,6 +8,7 @@
 - Beginning dialogue for Omar (the kid)
 - Use a fixed top velocity magnitude for player sprite animation speed
 - Bugfix with manual publish dispatch job
+- Add `nap` exit
 
 ## 0.16.0 - 7/8/25
 

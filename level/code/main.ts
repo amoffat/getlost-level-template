@@ -111,6 +111,15 @@ export function strings(): String[] {
         },
       ],
     },
+    {
+      key: "nap",
+      values: [
+        {
+          text: "Take a nap",
+          lang: "en",
+        },
+      ],
+    },
   ];
   const dialogueStrings = dialogue.strings();
   return ourStrings.concat(dialogueStrings);
@@ -192,6 +201,8 @@ export function buttonPressEvent(slug: string, down: bool): void {
   if (slug === "fruit-taken" && down) {
     host.pickup.offerPickup("fruit");
     host.controls.setButtons([]);
+  } else if (slug === "nap" && down) {
+    host.map.exit("nap", false);
   }
 }
 
@@ -260,6 +271,17 @@ export function sensorEvent(
     dialogue.stage_Omar(entered);
   } else if (sensorName === "water") {
     inWater = entered;
+  } else if (sensorName === "nap") {
+    if (entered) {
+      host.controls.setButtons([
+        {
+          label: "nap",
+          slug: "nap",
+        },
+      ]);
+    } else {
+      host.controls.setButtons([]);
+    }
   } else if (sensorName === "fruit") {
     if (entered) {
       host.controls.setButtons([
