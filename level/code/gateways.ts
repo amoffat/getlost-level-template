@@ -29,8 +29,8 @@ export function entrances(): Entrance[] {
       exits: [],
     },
     {
-      name: "water",
-      exits: [],
+      name: "nap",
+      exits: ["994021540/nap"],
     },
   ];
 }

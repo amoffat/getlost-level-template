@@ -307,14 +307,14 @@
                 {
                  "height":0,
                  "id":72,
-                 "name":"water",
+                 "name":"nap",
                  "point":true,
                  "rotation":0,
                  "type":"Entry",
                  "visible":true,
                  "width":0,
-                 "x":216,
-                 "y":-27
+                 "x":242,
+                 "y":-59
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -573,6 +573,7 @@
         {
          "draworder":"topdown",
          "id":16,
+         "locked":true,
          "name":"sensors",
          "objects":[
                 {
