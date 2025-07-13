@@ -1,6 +1,7 @@
 ## 1.1.0 -
 
 - Auto-publish template level
+- Make "Interact" button "Talk" instead
 
 ## 1.0.1 - 7/12/25
 

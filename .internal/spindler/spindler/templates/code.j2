@@ -21,12 +21,12 @@ choiceToPassage.set("{{choice_id}}", "{{pid}}");
 
 
 {% macro passage(p) %}
-// Show interact button for "{{p.name}}"
+// Show talk button for "{{p.name}}"
 export function stage_{{p.nice_id or p.id}}(entered: bool): void {
     if (entered) {
         host.controls.setButtons([
             {
-                label: "interact",
+                label: "talk",
                 slug: "passage/{{p.id}}",
             }
         ]);
@@ -69,7 +69,7 @@ export function passage_{{p.nice_id or p.id}}(): void {
 
 export function strings(): String[] {
     return [
-        {{ stringEntry("interact", '"Interact"') }}
+        {{ stringEntry("talk", '"Talk"') }}
     {% for key, string in all_strings.items() %}
         {{ stringEntry(key, string) }}
     {% endfor %}
