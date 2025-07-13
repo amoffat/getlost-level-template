@@ -144,17 +144,13 @@ def upgrade_repo(*, target_path: Path, branch: str = "main") -> None:
         check=True,
     )
 
-    print(f"Running onCreate.sh devcontainer hook...")
-    subprocess.run(
-        ["bash", ".devcontainer/hooks/onCreate.sh"],
-        cwd=str(target_path),
-        check=True,
-    )
-    # Resurrect pm2 processes after upgrade
-    print("Resurrecting pm2 processes...")
-    subprocess.run(
-        ["npx", "--prefix", str(internal_dir), "pm2", "resurrect"], check=True
-    )
+    for hook in ["onCreate", "postCreate", "postStart"]:
+        print(f"Running {hook} devcontainer hook...")
+        subprocess.run(
+            ["bash", f".devcontainer/hooks/{hook}.sh"],
+            cwd=str(target_path),
+            check=True,
+        )
     print(f"Upgrade complete! Committed as 'Upgrade to {version}'")
 
 
