@@ -1,3 +1,7 @@
+## 1.1.0 -
+
+- Auto-publish template level
+
 ## 1.0.1 - 7/12/25
 
 - Fix nap exit
