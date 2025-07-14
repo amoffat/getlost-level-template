@@ -4,6 +4,7 @@
 - Make "Interact" button "Talk" instead
 - Upgrade script improvements
 - Engine bump to 3.0.0
+- `host.platform` api
 
 ## 1.0.1 - 7/12/25
 
