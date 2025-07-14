@@ -1,8 +1,9 @@
-## 1.1.0 -
+## 2.0.0 -
 
 - Auto-publish template level
 - Make "Interact" button "Talk" instead
 - Upgrade script improvements
+- Engine bump to 3.0.0
 
 ## 1.0.1 - 7/12/25
 
