@@ -1,6 +1,6 @@
 The template version should stay in sync with the engine version
 
-## 3.0.0 -
+## 3.0.0 - 7/15/25
 
 - Auto-publish template level
 - Upgrade script improvements
