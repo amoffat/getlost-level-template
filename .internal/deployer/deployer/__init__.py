@@ -33,7 +33,14 @@ API: str | None = None
 WASM_SERVER_BASE_URL = "https://localhost:5173"
 
 
-def put_level(*, jwt: str, level_id: str, commit: str, assets) -> str:
+def put_level(
+    *,
+    api_auth_jwt: str,
+    github_auth_jwt: str,
+    level_id: str,
+    commit: str,
+    assets,
+) -> str:
     # Step 1: Request presigned upload URL
     path = f"/v1/levels/{level_id}/upload-url"
     api_url = f"{API}{path}"
@@ -41,8 +48,14 @@ def put_level(*, jwt: str, level_id: str, commit: str, assets) -> str:
     resp = requests.post(
         api_url,
         headers={
-            "Authorization": f"Bearer {jwt}",
+            "Authorization": f"Bearer {api_auth_jwt}",
         },
+        data=json.dumps(
+            {
+                "githubToken": github_auth_jwt,
+            }
+        ),
+        verify=False,
     )
     try:
         resp.raise_for_status()
@@ -188,7 +201,12 @@ def main():
     parser.add_argument(
         "--jwt",
         required=True,
-        help="JWT token for authentication",
+        help="JWT token for authentication to GetLost API",
+    )
+    parser.add_argument(
+        "--github-jwt",
+        required=True,
+        help="GitHub token for authentication to Github API",
     )
     parser.add_argument(
         "--level",
@@ -233,7 +251,8 @@ def main():
         assets = open(temp_gz.name, "rb")
 
     job_id = put_level(
-        jwt=args.jwt,
+        api_auth_jwt=args.jwt,
+        github_auth_jwt=args.github_jwt,
         level_id=level_id,
         commit=commit,
         assets=assets,

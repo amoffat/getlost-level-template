@@ -104,6 +104,7 @@ jobs:
           echo "Publishing level..."
           deployer \
             --jwt $JWT \
+            --github-jwt ${{ secrets.GITHUB_TOKEN }} \
             --env $ENV \
             --level ./level \
             --summary summary.md
