@@ -12,7 +12,7 @@ export declare function display(
   title: string,
   msg: string,
   choices: string[],
-  params: Map<string, string>,
+  params: string[],
   animate: bool
 ): void;
 

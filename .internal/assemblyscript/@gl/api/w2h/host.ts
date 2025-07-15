@@ -10,6 +10,7 @@ import * as npc from "./npc";
 import * as particles from "./particles";
 import * as physics from "./physics";
 import * as pickup from "./pickup";
+import * as platform from "./platform";
 import * as player from "./player";
 import * as sensors from "./sensors";
 import * as sound from "./sound";
@@ -34,6 +35,7 @@ export {
   particles,
   physics,
   pickup,
+  platform,
   player,
   sensors,
   sound,
