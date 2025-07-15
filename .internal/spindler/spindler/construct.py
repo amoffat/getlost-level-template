@@ -56,6 +56,10 @@ def make_state_class_name(suffix: str) -> str:
     return f"State_{suffix}"
 
 
+def is_state_object(type_name: str) -> bool:
+    return type_name.startswith("State_") or type_name == "State"
+
+
 def map_op(op: str) -> str:
     """
     Maps SugarCube operators to their corresponding AS operators.
@@ -126,6 +130,26 @@ def create_state_class(name: str, variable_types: dict[str, Variable]) -> str:
     for var_name, variable in variable_types.items():
         state_class += f"this.{var_name} = {variable.value};\n"
     state_class += "}\n"
+    # Add a helper method which returns a Map<string, string> of all
+    # variables in the state, for easy access in the level code.
+    state_class += "get params(): string[] {\n"
+    state_class += "const params = new Array<string>();\n"
+    for var_name, variable in variable_types.items():
+        if is_state_object(variable.type):
+            name_prefix = var_name
+            state_class += (
+                f"for (let i: i32 = 0; i < this.{var_name}.params.length; i+=2) {{\n"
+            )
+            state_class += f"const name = this.{var_name}.params[i];\n"
+            state_class += f"const value = this.{var_name}.params[i + 1];\n"
+            state_class += f'params.push("{name_prefix}." + name);\n'
+            state_class += "params.push(value);\n"
+            state_class += "}\n"
+        else:
+            state_class += f'params.push("{var_name}");\n'
+            state_class += f"params.push(this.{var_name}.toString());\n"
+    state_class += "return params;\n"
+    state_class += "}\n"
     state_class += "}"
     return state_class
 
@@ -133,8 +157,13 @@ def create_state_class(name: str, variable_types: dict[str, Variable]) -> str:
 def infer_basic_type(value_node: Union[ParseTree, Token]) -> tuple[str, str]:
     if isinstance(value_node, Token):
         if value_node.type == "NUMBER":
-            # FIXME not everything is a float...
-            return ("f32", value_node.value)
+            num_value = value_node.value
+            if "." in num_value or "e" in num_value.lower():
+                # If it has a decimal point or is in scientific notation, treat as float
+                return ("f32", value_node.value)
+            else:
+                # Otherwise, treat as integer
+                return ("i32", value_node.value)
         elif value_node.type == "STRING":
             return ("string", escape_and_quote(value_node.value))
         elif value_node.type == "ESCAPED_STRING":

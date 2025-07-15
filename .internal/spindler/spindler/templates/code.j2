@@ -42,7 +42,6 @@ export function passage_{{p.nice_id or p.id}}(): void {
     const animate = {{"false" if p.is_sign else "true"}};
     let text = "";
     const choices: string[] = [];
-    const params = new Map<string, string>();
     twine.incrementVisitCount("{{p.id}}");
 
 {% for line in p.state.init %}
@@ -51,7 +50,7 @@ export function passage_{{p.nice_id or p.id}}(): void {
 
 {{p.content}}
 
-    host.text.display("{{p.id}}", title, text, choices, params, animate);
+    host.text.display("{{p.id}}", title, text, choices, state.params, animate);
 }
 {% endmacro %}
 

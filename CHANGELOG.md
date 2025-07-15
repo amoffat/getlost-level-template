@@ -1,10 +1,13 @@
-## 2.0.0 -
+The template version should stay in sync with the engine version
+
+## 3.0.0 -
 
 - Auto-publish template level
 - Make "Interact" button "Talk" instead
 - Upgrade script improvements
 - Engine bump to 3.0.0
 - `host.platform` api
+- Bugfix with dialogue text param interpolation
 
 ## 1.0.1 - 7/12/25
 

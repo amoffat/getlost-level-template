@@ -19,6 +19,20 @@ class State_knightOpts {
     this.guardWhat = true;
     this.yourName = true;
   }
+  get params(): string[] {
+    const params = new Array<string>();
+    params.push("whyTown");
+    params.push(this.whyTown.toString());
+    params.push("whoSheikh");
+    params.push(this.whoSheikh.toString());
+    params.push("howJob");
+    params.push(this.howJob.toString());
+    params.push("guardWhat");
+    params.push(this.guardWhat.toString());
+    params.push("yourName");
+    params.push(this.yourName.toString());
+    return params;
+  }
 }
 
 class State {
@@ -31,6 +45,22 @@ class State {
     this.playerName = "James";
     this.learnedKnightStory = false;
     this.knightOpts = new State_knightOpts();
+  }
+  get params(): string[] {
+    const params = new Array<string>();
+    params.push("upsetKnight");
+    params.push(this.upsetKnight.toString());
+    params.push("playerName");
+    params.push(this.playerName.toString());
+    params.push("learnedKnightStory");
+    params.push(this.learnedKnightStory.toString());
+    for (let i: i32 = 0; i < this.knightOpts.params.length; i += 2) {
+      const name = this.knightOpts.params[i];
+      const value = this.knightOpts.params[i + 1];
+      params.push("knightOpts." + name);
+      params.push(value);
+    }
+    return params;
   }
 }
 
@@ -1136,13 +1166,12 @@ export function passage_12890122(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("12890122");
 
   // "Be well."
   text = "aa225fe0";
 
-  host.text.display("12890122", title, text, choices, params, animate);
+  host.text.display("12890122", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Climb down"
@@ -1166,14 +1195,13 @@ export function passage_909a9cff(): void {
   const animate = false;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("909a9cff");
 
   if (twine.exit("well", true)) {
     return;
   }
 
-  host.text.display("909a9cff", title, text, choices, params, animate);
+  host.text.display("909a9cff", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Do you have a name?"
@@ -1197,7 +1225,6 @@ export function passage_562cd4ad(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("562cd4ad");
 
   state.knightOpts.yourName = false;
@@ -1231,7 +1258,7 @@ export function passage_562cd4ad(): void {
   // Bye
   choices.push("12890122");
 
-  host.text.display("562cd4ad", title, text, choices, params, animate);
+  host.text.display("562cd4ad", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Fire"
@@ -1255,7 +1282,6 @@ export function passage_Fire(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("c141faa8");
 
   const objlit_1 = new Map<string, string>();
@@ -1279,7 +1305,7 @@ export function passage_Fire(): void {
     }
   }
 
-  host.text.display("c141faa8", title, text, choices, params, animate);
+  host.text.display("c141faa8", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Give it a shot."
@@ -1303,7 +1329,6 @@ export function passage_15874eac(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("15874eac");
 
   // "In the place where I'm from, we wouldn't be having this conversation because there is no you or I."
@@ -1311,7 +1336,7 @@ export function passage_15874eac(): void {
   // Gotcha...
   choices.push("c8a7d597");
 
-  host.text.display("15874eac", title, text, choices, params, animate);
+  host.text.display("15874eac", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Gotcha..."
@@ -1335,7 +1360,6 @@ export function passage_c8a7d597(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("c8a7d597");
 
   // "Anything else you'd like to know?"
@@ -1343,7 +1367,7 @@ export function passage_c8a7d597(): void {
   // You said you were seeking something?
   choices.push("141a8032");
 
-  host.text.display("c8a7d597", title, text, choices, params, animate);
+  host.text.display("c8a7d597", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Guard from what?"
@@ -1367,7 +1391,6 @@ export function passage_99e18287(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("99e18287");
 
   state.knightOpts.guardWhat = false;
@@ -1401,7 +1424,7 @@ export function passage_99e18287(): void {
   // Bye
   choices.push("12890122");
 
-  host.text.display("99e18287", title, text, choices, params, animate);
+  host.text.display("99e18287", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Hi Nazar, I'm $playerName."
@@ -1425,7 +1448,6 @@ export function passage_7d52fd29(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("7d52fd29");
 
   // "I haven't seen you before, are you here with the Knight?"
@@ -1436,7 +1458,7 @@ export function passage_7d52fd29(): void {
   // Yes
   choices.push("85a39ab3");
 
-  host.text.display("7d52fd29", title, text, choices, params, animate);
+  host.text.display("7d52fd29", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "How did you get this job?"
@@ -1460,7 +1482,6 @@ export function passage_379dcdf1(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("379dcdf1");
 
   state.knightOpts.howJob = false;
@@ -1494,7 +1515,7 @@ export function passage_379dcdf1(): void {
   // Bye
   choices.push("12890122");
 
-  host.text.display("379dcdf1", title, text, choices, params, animate);
+  host.text.display("379dcdf1", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "How long ago was this?"
@@ -1518,13 +1539,12 @@ export function passage_f6ded42f(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("f6ded42f");
 
   // "Only a week ago."
   text = "dff1fa28";
 
-  host.text.display("f6ded42f", title, text, choices, params, animate);
+  host.text.display("f6ded42f", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "I found it up north."
@@ -1548,7 +1568,6 @@ export function passage_c503743a(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("c503743a");
 
   // "I left it there. Give it to me."
@@ -1564,7 +1583,7 @@ export function passage_c503743a(): void {
   // Hand him the map
   choices.push("8cf42533");
 
-  host.text.display("c503743a", title, text, choices, params, animate);
+  host.text.display("c503743a", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "I know why you're here."
@@ -1588,7 +1607,6 @@ export function passage_a2b8560b(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("a2b8560b");
 
   // "You talked to the old man..."
@@ -1622,7 +1640,7 @@ export function passage_a2b8560b(): void {
   // Bye
   choices.push("12890122");
 
-  host.text.display("a2b8560b", title, text, choices, params, animate);
+  host.text.display("a2b8560b", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "I saw fire on the water."
@@ -1646,13 +1664,12 @@ export function passage_3ca52efa(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("3ca52efa");
 
   // "You've lost your mind. Please go."
   text = "0ff99cc5";
 
-  host.text.display("3ca52efa", title, text, choices, params, animate);
+  host.text.display("3ca52efa", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "I'm...new here"
@@ -1676,13 +1693,12 @@ export function passage_559c302f(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("559c302f");
 
   // "You are? Interesting..."
   text = "be1ca5bd";
 
-  host.text.display("559c302f", title, text, choices, params, animate);
+  host.text.display("559c302f", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Kid"
@@ -1706,13 +1722,12 @@ export function passage_Omar(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("5ac45c94");
 
   // "It's pretty hot out here huh?"
   text = "66c542e0";
 
-  host.text.display("5ac45c94", title, text, choices, params, animate);
+  host.text.display("5ac45c94", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Nazar"
@@ -1736,7 +1751,6 @@ export function passage_Nazar(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("e1ffb1d2");
 
   if (twine.queryMarker("stole-fruit")) {
@@ -1769,7 +1783,7 @@ export function passage_Nazar(): void {
     }
   }
 
-  host.text.display("e1ffb1d2", title, text, choices, params, animate);
+  host.text.display("e1ffb1d2", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "None of your business"
@@ -1793,7 +1807,6 @@ export function passage_e0a2d72f(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("e0a2d72f");
 
   // "Listen to me carefully. I'm getting that map."
@@ -1804,7 +1817,7 @@ export function passage_e0a2d72f(): void {
   // Ok, calm down, here you go.
   choices.push("448fd9e9");
 
-  host.text.display("e0a2d72f", title, text, choices, params, animate);
+  host.text.display("e0a2d72f", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Oh you mean the knight?"
@@ -1828,13 +1841,12 @@ export function passage_2ecf7f34(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("2ecf7f34");
 
   // "The person I am seeking carries a map"
   text = "0d053e12";
 
-  host.text.display("2ecf7f34", title, text, choices, params, animate);
+  host.text.display("2ecf7f34", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Silent Knight"
@@ -1858,7 +1870,6 @@ export function passage_Knight(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("491e88c5");
 
   const objlit_2 = new Map<string, string>();
@@ -1890,7 +1901,7 @@ export function passage_Knight(): void {
     }
   }
 
-  host.text.display("491e88c5", title, text, choices, params, animate);
+  host.text.display("491e88c5", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Well"
@@ -1914,7 +1925,6 @@ export function passage_Well(): void {
   const animate = false;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("bdc7e965");
 
   // "There's a ladder going down, but you cannot see the bottom."
@@ -1925,7 +1935,7 @@ export function passage_Well(): void {
   // Step back
   choices.push("b863269e");
 
-  host.text.display("bdc7e965", title, text, choices, params, animate);
+  host.text.display("bdc7e965", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "What battle?"
@@ -1949,13 +1959,12 @@ export function passage_e45c4215(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("e45c4215");
 
   // "You're really not from around here, are you? My people have been at war since before I was born."
   text = "e4657ad8";
 
-  host.text.display("e45c4215", title, text, choices, params, animate);
+  host.text.display("e45c4215", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "What do you know about that knight?"
@@ -1979,7 +1988,6 @@ export function passage_f213214a(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("f213214a");
 
   // "Well, I know he's not from around here. There was a battle. Then he showed up."
@@ -1990,7 +1998,7 @@ export function passage_f213214a(): void {
   // What battle?
   choices.push("e45c4215");
 
-  host.text.display("f213214a", title, text, choices, params, animate);
+  host.text.display("f213214a", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "What do you mean he showed up?"
@@ -2014,7 +2022,6 @@ export function passage_9d4f68e2(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("9d4f68e2");
 
   // "I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh."
@@ -2025,7 +2032,7 @@ export function passage_9d4f68e2(): void {
   // Who is the Sheikh?
   choices.push("885ce2f8");
 
-  host.text.display("9d4f68e2", title, text, choices, params, animate);
+  host.text.display("9d4f68e2", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "What is he guarding you from?"
@@ -2049,13 +2056,12 @@ export function passage_216c5e8c(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("216c5e8c");
 
   // "You'll have to ask him."
   text = "7c1dac67";
 
-  host.text.display("216c5e8c", title, text, choices, params, animate);
+  host.text.display("216c5e8c", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "What's new?"
@@ -2079,13 +2085,12 @@ export function passage_623aab5c(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("623aab5c");
 
   // "Not much."
   text = "88d44f50";
 
-  host.text.display("623aab5c", title, text, choices, params, animate);
+  host.text.display("623aab5c", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Where are you from?"
@@ -2109,7 +2114,6 @@ export function passage_63265a79(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("63265a79");
 
   // "A different place. Your language lacks the words for it."
@@ -2117,7 +2121,7 @@ export function passage_63265a79(): void {
   // Give it a shot.
   choices.push("15874eac");
 
-  host.text.display("63265a79", title, text, choices, params, animate);
+  host.text.display("63265a79", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Who is the Sheikh?"
@@ -2141,7 +2145,6 @@ export function passage_885ce2f8(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("885ce2f8");
 
   state.knightOpts.whoSheikh = false;
@@ -2175,7 +2178,7 @@ export function passage_885ce2f8(): void {
   // Bye
   choices.push("12890122");
 
-  host.text.display("885ce2f8", title, text, choices, params, animate);
+  host.text.display("885ce2f8", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "Why are you guarding this town?"
@@ -2199,7 +2202,6 @@ export function passage_3c0aa10d(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("3c0aa10d");
 
   state.knightOpts.whyTown = false;
@@ -2233,7 +2235,7 @@ export function passage_3c0aa10d(): void {
   // Bye
   choices.push("12890122");
 
-  host.text.display("3c0aa10d", title, text, choices, params, animate);
+  host.text.display("3c0aa10d", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "nazar-who-shiekh"
@@ -2257,7 +2259,6 @@ export function passage_d20fad6e(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("d20fad6e");
 
   // "The Sheikh created this village."
@@ -2265,7 +2266,7 @@ export function passage_d20fad6e(): void {
   // So what did the letter say?
   choices.push("c40b2d30");
 
-  host.text.display("d20fad6e", title, text, choices, params, animate);
+  host.text.display("d20fad6e", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "observe-what"
@@ -2289,7 +2290,6 @@ export function passage_90212c36(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("90212c36");
 
   // "I was told this village would be getting a new visitor."
@@ -2300,7 +2300,7 @@ export function passage_90212c36(): void {
   // Oh you mean the knight?
   choices.push("2ecf7f34");
 
-  host.text.display("90212c36", title, text, choices, params, animate);
+  host.text.display("90212c36", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "seek-what"
@@ -2324,7 +2324,6 @@ export function passage_50c96f21(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("50c96f21");
 
   // "A map..."
@@ -2335,7 +2334,7 @@ export function passage_50c96f21(): void {
   // You said you were observing? What?
   choices.push("3e769b34");
 
-  host.text.display("50c96f21", title, text, choices, params, animate);
+  host.text.display("50c96f21", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "silence"
@@ -2359,7 +2358,6 @@ export function passage_e6c18fdb(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("e6c18fdb");
 
   // "..."
@@ -2370,7 +2368,7 @@ export function passage_e6c18fdb(): void {
   // Bye
   choices.push("12890122");
 
-  host.text.display("e6c18fdb", title, text, choices, params, animate);
+  host.text.display("e6c18fdb", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "special-map"
@@ -2394,13 +2392,12 @@ export function passage_ff810fb6(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("ff810fb6");
 
   // "Find it for me and I'll show you."
   text = "092afab4";
 
-  host.text.display("ff810fb6", title, text, choices, params, animate);
+  host.text.display("ff810fb6", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "what-did-letter-say"
@@ -2424,7 +2421,6 @@ export function passage_aff68fcf(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("aff68fcf");
 
   // "It said \"Give food and water to this soldier. In return he will guard the village.\" It had the Sheikh's seal. It was unmistakable."
@@ -2440,7 +2436,7 @@ export function passage_aff68fcf(): void {
 
   state.learnedKnightStory = true;
 
-  host.text.display("aff68fcf", title, text, choices, params, animate);
+  host.text.display("aff68fcf", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "what-knight"
@@ -2464,13 +2460,12 @@ export function passage_a61db43e(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("a61db43e");
 
   // "There's a knight to the south. He doesn't talk much. Go see for yourself."
   text = "d95d75d7";
 
-  host.text.display("a61db43e", title, text, choices, params, animate);
+  host.text.display("a61db43e", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "who-fire"
@@ -2494,7 +2489,6 @@ export function passage_3d787171(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("3d787171");
 
   // "A fellow traveller.... I'm here to seek and observe."
@@ -2508,7 +2502,7 @@ export function passage_3d787171(): void {
   // What are you seeking?
   choices.push("b27a0c1e");
 
-  host.text.display("3d787171", title, text, choices, params, animate);
+  host.text.display("3d787171", title, text, choices, state.params, animate);
 }
 
 // Show talk button for "yes-knight"
@@ -2532,13 +2526,12 @@ export function passage_5c07303d(): void {
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  const params = new Map<string, string>();
   twine.incrementVisitCount("5c07303d");
 
   // "I see... let me know if you need anything. I'm here to help."
   text = "7ad97537";
 
-  host.text.display("5c07303d", title, text, choices, params, animate);
+  host.text.display("5c07303d", title, text, choices, state.params, animate);
 }
 
 export function dispatch(passageId: string): void {
