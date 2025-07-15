@@ -103,7 +103,7 @@ jobs:
         run: |
           echo "Publishing level..."
           deployer \
-            --jwt $JWT \
+            --jwt ${{ secrets.GITHUB_TOKEN }} \
             --github-jwt ${{ secrets.GITHUB_TOKEN }} \
             --env $ENV \
             --level ./level \
