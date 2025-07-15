@@ -36,7 +36,7 @@ WASM_SERVER_BASE_URL = "https://localhost:5173"
 def put_level(
     *,
     api_auth_jwt: str,
-    github_auth_jwt: str,
+    github_auth_token: str,
     level_id: str,
     commit: str,
     assets,
@@ -51,7 +51,7 @@ def put_level(
             "Authorization": f"Bearer {api_auth_jwt}",
         },
         json={
-            "githubToken": github_auth_jwt,
+            "githubToken": github_auth_token,
         },
         verify=False,
     )
@@ -201,8 +201,10 @@ def main():
         required=True,
         help="JWT token for authentication to GetLost API",
     )
+
+    # It's not a jwt
     parser.add_argument(
-        "--github-jwt",
+        "--github-token",
         required=True,
         help="GitHub token for authentication to Github API",
     )
@@ -250,7 +252,7 @@ def main():
 
     job_id = put_level(
         api_auth_jwt=args.jwt,
-        github_auth_jwt=args.github_jwt,
+        github_auth_token=args.github_token,
         level_id=level_id,
         commit=commit,
         assets=assets,
