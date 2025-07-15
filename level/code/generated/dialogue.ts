@@ -95,10 +95,10 @@ choiceToPassage.set("b27a0c1e", "50c96f21");
 export function strings(): String[] {
   return [
     {
-      key: "talk",
+      key: "interact",
       values: [
         {
-          text: "Talk",
+          text: "Interact",
           lang: "en",
         },
       ],
@@ -1145,12 +1145,12 @@ export function choiceMadeEvent(passageId: string, choiceId: string): void {
   dispatch(choiceId);
 }
 
-// Show talk button for "Bye"
+// Show interact button for "Bye"
 export function stage_12890122(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/12890122",
       },
     ]);
@@ -1174,12 +1174,12 @@ export function passage_12890122(): void {
   host.text.display("12890122", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Climb down"
+// Show interact button for "Climb down"
 export function stage_909a9cff(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/909a9cff",
       },
     ]);
@@ -1204,12 +1204,12 @@ export function passage_909a9cff(): void {
   host.text.display("909a9cff", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Do you have a name?"
+// Show interact button for "Do you have a name?"
 export function stage_562cd4ad(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/562cd4ad",
       },
     ]);
@@ -1261,12 +1261,12 @@ export function passage_562cd4ad(): void {
   host.text.display("562cd4ad", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Fire"
+// Show interact button for "Fire"
 export function stage_Fire(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/c141faa8",
       },
     ]);
@@ -1308,12 +1308,12 @@ export function passage_Fire(): void {
   host.text.display("c141faa8", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Give it a shot."
+// Show interact button for "Give it a shot."
 export function stage_15874eac(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/15874eac",
       },
     ]);
@@ -1339,12 +1339,12 @@ export function passage_15874eac(): void {
   host.text.display("15874eac", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Gotcha..."
+// Show interact button for "Gotcha..."
 export function stage_c8a7d597(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/c8a7d597",
       },
     ]);
@@ -1370,12 +1370,12 @@ export function passage_c8a7d597(): void {
   host.text.display("c8a7d597", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Guard from what?"
+// Show interact button for "Guard from what?"
 export function stage_99e18287(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/99e18287",
       },
     ]);
@@ -1427,12 +1427,12 @@ export function passage_99e18287(): void {
   host.text.display("99e18287", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Hi Nazar, I'm $playerName."
+// Show interact button for "Hi Nazar, I'm $playerName."
 export function stage_7d52fd29(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/7d52fd29",
       },
     ]);
@@ -1461,12 +1461,12 @@ export function passage_7d52fd29(): void {
   host.text.display("7d52fd29", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "How did you get this job?"
+// Show interact button for "How did you get this job?"
 export function stage_379dcdf1(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/379dcdf1",
       },
     ]);
@@ -1518,12 +1518,12 @@ export function passage_379dcdf1(): void {
   host.text.display("379dcdf1", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "How long ago was this?"
+// Show interact button for "How long ago was this?"
 export function stage_f6ded42f(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/f6ded42f",
       },
     ]);
@@ -1547,12 +1547,12 @@ export function passage_f6ded42f(): void {
   host.text.display("f6ded42f", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "I found it up north."
+// Show interact button for "I found it up north."
 export function stage_c503743a(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/c503743a",
       },
     ]);
@@ -1586,12 +1586,12 @@ export function passage_c503743a(): void {
   host.text.display("c503743a", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "I know why you're here."
+// Show interact button for "I know why you're here."
 export function stage_a2b8560b(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/a2b8560b",
       },
     ]);
@@ -1643,12 +1643,12 @@ export function passage_a2b8560b(): void {
   host.text.display("a2b8560b", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "I saw fire on the water."
+// Show interact button for "I saw fire on the water."
 export function stage_3ca52efa(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/3ca52efa",
       },
     ]);
@@ -1672,12 +1672,12 @@ export function passage_3ca52efa(): void {
   host.text.display("3ca52efa", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "I'm...new here"
+// Show interact button for "I'm...new here"
 export function stage_559c302f(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/559c302f",
       },
     ]);
@@ -1701,12 +1701,12 @@ export function passage_559c302f(): void {
   host.text.display("559c302f", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Kid"
+// Show interact button for "Kid"
 export function stage_Omar(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/5ac45c94",
       },
     ]);
@@ -1730,12 +1730,12 @@ export function passage_Omar(): void {
   host.text.display("5ac45c94", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Nazar"
+// Show interact button for "Nazar"
 export function stage_Nazar(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/e1ffb1d2",
       },
     ]);
@@ -1786,12 +1786,12 @@ export function passage_Nazar(): void {
   host.text.display("e1ffb1d2", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "None of your business"
+// Show interact button for "None of your business"
 export function stage_e0a2d72f(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/e0a2d72f",
       },
     ]);
@@ -1820,12 +1820,12 @@ export function passage_e0a2d72f(): void {
   host.text.display("e0a2d72f", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Oh you mean the knight?"
+// Show interact button for "Oh you mean the knight?"
 export function stage_2ecf7f34(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/2ecf7f34",
       },
     ]);
@@ -1849,12 +1849,12 @@ export function passage_2ecf7f34(): void {
   host.text.display("2ecf7f34", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Silent Knight"
+// Show interact button for "Silent Knight"
 export function stage_Knight(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/491e88c5",
       },
     ]);
@@ -1904,12 +1904,12 @@ export function passage_Knight(): void {
   host.text.display("491e88c5", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Well"
+// Show interact button for "Well"
 export function stage_Well(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/bdc7e965",
       },
     ]);
@@ -1938,12 +1938,12 @@ export function passage_Well(): void {
   host.text.display("bdc7e965", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "What battle?"
+// Show interact button for "What battle?"
 export function stage_e45c4215(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/e45c4215",
       },
     ]);
@@ -1967,12 +1967,12 @@ export function passage_e45c4215(): void {
   host.text.display("e45c4215", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "What do you know about that knight?"
+// Show interact button for "What do you know about that knight?"
 export function stage_f213214a(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/f213214a",
       },
     ]);
@@ -2001,12 +2001,12 @@ export function passage_f213214a(): void {
   host.text.display("f213214a", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "What do you mean he showed up?"
+// Show interact button for "What do you mean he showed up?"
 export function stage_9d4f68e2(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/9d4f68e2",
       },
     ]);
@@ -2035,12 +2035,12 @@ export function passage_9d4f68e2(): void {
   host.text.display("9d4f68e2", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "What is he guarding you from?"
+// Show interact button for "What is he guarding you from?"
 export function stage_216c5e8c(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/216c5e8c",
       },
     ]);
@@ -2064,12 +2064,12 @@ export function passage_216c5e8c(): void {
   host.text.display("216c5e8c", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "What's new?"
+// Show interact button for "What's new?"
 export function stage_623aab5c(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/623aab5c",
       },
     ]);
@@ -2093,12 +2093,12 @@ export function passage_623aab5c(): void {
   host.text.display("623aab5c", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Where are you from?"
+// Show interact button for "Where are you from?"
 export function stage_63265a79(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/63265a79",
       },
     ]);
@@ -2124,12 +2124,12 @@ export function passage_63265a79(): void {
   host.text.display("63265a79", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Who is the Sheikh?"
+// Show interact button for "Who is the Sheikh?"
 export function stage_885ce2f8(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/885ce2f8",
       },
     ]);
@@ -2181,12 +2181,12 @@ export function passage_885ce2f8(): void {
   host.text.display("885ce2f8", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "Why are you guarding this town?"
+// Show interact button for "Why are you guarding this town?"
 export function stage_3c0aa10d(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/3c0aa10d",
       },
     ]);
@@ -2238,12 +2238,12 @@ export function passage_3c0aa10d(): void {
   host.text.display("3c0aa10d", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "nazar-who-shiekh"
+// Show interact button for "nazar-who-shiekh"
 export function stage_d20fad6e(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/d20fad6e",
       },
     ]);
@@ -2269,12 +2269,12 @@ export function passage_d20fad6e(): void {
   host.text.display("d20fad6e", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "observe-what"
+// Show interact button for "observe-what"
 export function stage_90212c36(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/90212c36",
       },
     ]);
@@ -2303,12 +2303,12 @@ export function passage_90212c36(): void {
   host.text.display("90212c36", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "seek-what"
+// Show interact button for "seek-what"
 export function stage_50c96f21(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/50c96f21",
       },
     ]);
@@ -2337,12 +2337,12 @@ export function passage_50c96f21(): void {
   host.text.display("50c96f21", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "silence"
+// Show interact button for "silence"
 export function stage_e6c18fdb(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/e6c18fdb",
       },
     ]);
@@ -2371,12 +2371,12 @@ export function passage_e6c18fdb(): void {
   host.text.display("e6c18fdb", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "special-map"
+// Show interact button for "special-map"
 export function stage_ff810fb6(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/ff810fb6",
       },
     ]);
@@ -2400,12 +2400,12 @@ export function passage_ff810fb6(): void {
   host.text.display("ff810fb6", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "what-did-letter-say"
+// Show interact button for "what-did-letter-say"
 export function stage_aff68fcf(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/aff68fcf",
       },
     ]);
@@ -2439,12 +2439,12 @@ export function passage_aff68fcf(): void {
   host.text.display("aff68fcf", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "what-knight"
+// Show interact button for "what-knight"
 export function stage_a61db43e(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/a61db43e",
       },
     ]);
@@ -2468,12 +2468,12 @@ export function passage_a61db43e(): void {
   host.text.display("a61db43e", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "who-fire"
+// Show interact button for "who-fire"
 export function stage_3d787171(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/3d787171",
       },
     ]);
@@ -2505,12 +2505,12 @@ export function passage_3d787171(): void {
   host.text.display("3d787171", title, text, choices, state.params, animate);
 }
 
-// Show talk button for "yes-knight"
+// Show interact button for "yes-knight"
 export function stage_5c07303d(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
-        label: "talk",
+        label: "interact",
         slug: "passage/5c07303d",
       },
     ]);
