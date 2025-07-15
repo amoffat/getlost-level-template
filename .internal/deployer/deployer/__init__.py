@@ -50,11 +50,9 @@ def put_level(
         headers={
             "Authorization": f"Bearer {api_auth_jwt}",
         },
-        data=json.dumps(
-            {
-                "githubToken": github_auth_jwt,
-            }
-        ),
+        json={
+            "githubToken": github_auth_jwt,
+        },
         verify=False,
     )
     try:
