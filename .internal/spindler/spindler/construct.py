@@ -135,6 +135,9 @@ def create_state_class(name: str, variable_types: dict[str, Variable]) -> str:
     state_class += "get params(): string[] {\n"
     state_class += "const params = new Array<string>();\n"
     for var_name, variable in variable_types.items():
+        # If the variable is a state object, we need to flatten that object's
+        # parameters into the params array, and prefix them with the variable
+        # name.
         if is_state_object(variable.type):
             name_prefix = var_name
             state_class += (
