@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 from typing import cast
 
@@ -40,6 +41,7 @@ def parse(text) -> list[TweePassage]:
         name = cast(
             Token, next(passage_tree.find_data("passage_name")).children[0]
         ).value
+
         body_tree = list(passage_tree.find_data("passage_body"))
         body = None
         if body_tree:
@@ -59,14 +61,13 @@ def parse(text) -> list[TweePassage]:
                 print(f"Error parsing passage '{name}': {body}")
                 raise
 
-        passages.append(
-            TweePassage(
-                name=name,
-                tree=tree,
-                tags=tags,
-                is_start=name == start_node,
-            )
+        passage = TweePassage(
+            name=name,
+            tree=tree,
+            tags=tags,
+            is_start=name == start_node,
         )
+        passages.append(passage)
 
     for passage in passages:
         if passage.name == "StoryData":

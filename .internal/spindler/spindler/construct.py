@@ -10,7 +10,8 @@ import jinja2
 from lark import ParseTree, Token, Tree
 
 from .types.passage import ConstructPassage, TraverseState, TweePassage
-from .utils.name import hash_name
+from .utils.name import hash_name, i18nextify
+from .utils.strings import escape_and_quote, snake_to_camel_case
 
 THIS_DIR = Path(__file__).parent
 _TMPL_ENV = jinja2.Environment(
@@ -31,6 +32,13 @@ class Variable:
     name: str
     type: str
     value: str
+
+
+class I18nDict(dict):
+    def __setitem__(self, key, value):
+        if isinstance(value, str):
+            value = i18nextify(value)
+        super().__setitem__(key, value)
 
 
 def format(code: str) -> str:
@@ -89,22 +97,6 @@ def map_op(op: str) -> str:
         "!": "!",
     }
     return operator_map.get(op, op)
-
-
-def escape_string(s: str) -> str:
-    return s.replace('"', '\\"').strip().replace("\n", "\\n")
-
-
-def escape_and_quote(s: str) -> str:
-    return f'"{escape_string(s)}"'
-
-
-def snake_to_camel_case(snake_str: str) -> str:
-    """
-    Converts a snake_case string to camelCase.
-    """
-    components = snake_str.split("_")
-    return components[0] + "".join(x.title() for x in components[1:])
 
 
 def make_nice_tag(tag: str) -> str | None:
@@ -314,7 +306,7 @@ def render(passages: list[TweePassage]) -> str:
         name_num += 1
         return f"{prefix}_{name_num}"
 
-    all_strings: dict[str, str] = {}
+    all_strings: dict[str, str] = I18nDict()
     string_id_to_passage_id: dict[str, str] = {}
 
     def traverse(
