@@ -5,22 +5,16 @@ import { Pickup } from "@gl/types/pickup";
 export function pickups(): Pickup[] {
   return [
     {
-      slug: "map",
-      name: "Dusty map",
-      text: "A map of an unfamiliar place. There's a clear X marking something important.",
-      uses: -1,
+      key: "map",
+      tags: ["map"],
     },
     {
-      slug: "flame",
-      name: "Blue flame",
-      text: "A small blue flame flickers angrily. I think it is annoyed.",
-      uses: -1,
+      key: "flame",
+      tags: ["fire", "magic"],
     },
     {
-      slug: "fruit",
-      name: "Fruit",
-      text: "Delicious looking fruit. I think it grows from the oasis trees.",
-      uses: -1,
+      key: "fruit",
+      tags: ["food", "fruit"],
     },
   ];
 }
