@@ -199,6 +199,7 @@ Where did you get that map?
 [[I found it up north.]]
 [[None of your business]]
   <<elseif $learnedKnightStory>>
+...
 [[I know why you're here.]]
   <<elseif $upsetKnight>>
 I thought I said go away.
@@ -230,8 +231,7 @@ I thought I said go away.
   }
 }>>
 <<set $upsetKnight to false>>
-<<set $playerName to "James">>
-<<set $learnedKnightStory to false>>
+<<set $learnedKnightStory to true>>
 
 
 :: Well [Well sign] {"position":"4325,1300","size":"100,100"}

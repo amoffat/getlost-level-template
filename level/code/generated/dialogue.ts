@@ -37,21 +37,17 @@ class State_knightOpts {
 
 class State {
   upsetKnight: bool;
-  playerName: string;
   learnedKnightStory: bool;
   knightOpts: State_knightOpts;
   constructor() {
     this.upsetKnight = false;
-    this.playerName = "James";
-    this.learnedKnightStory = false;
+    this.learnedKnightStory = true;
     this.knightOpts = new State_knightOpts();
   }
   get params(): string[] {
     const params = new Array<string>();
     params.push("upsetKnight");
     params.push(this.upsetKnight.toString());
-    params.push("playerName");
-    params.push(this.playerName.toString());
     params.push("learnedKnightStory");
     params.push(this.learnedKnightStory.toString());
     for (let i: i32 = 0; i < this.knightOpts.params.length; i += 2) {
@@ -508,7 +504,7 @@ export function strings(): String[] {
       key: "7d52fd29",
       values: [
         {
-          text: "Hi Nazar, I'm $playerName.",
+          text: "Hi Nazar, I'm {{playerName}}.",
           lang: "en",
         },
       ],
@@ -635,6 +631,16 @@ export function strings(): String[] {
     },
 
     {
+      key: "f315e8e4",
+      values: [
+        {
+          text: "...",
+          lang: "en",
+        },
+      ],
+    },
+
+    {
       key: "a2b8560b",
       values: [
         {
@@ -649,16 +655,6 @@ export function strings(): String[] {
       values: [
         {
           text: "I thought I said go away.",
-          lang: "en",
-        },
-      ],
-    },
-
-    {
-      key: "f315e8e4",
-      values: [
-        {
-          text: "...",
           lang: "en",
         },
       ],
@@ -1888,6 +1884,8 @@ export function passage_Knight(): void {
       // None of your business
       choices.push("e0a2d72f");
     } else if (state.learnedKnightStory) {
+      // "..."
+      text = "f315e8e4";
       // I know why you're here.
       choices.push("a2b8560b");
     } else if (state.upsetKnight) {
