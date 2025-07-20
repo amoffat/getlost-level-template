@@ -8,4 +8,4 @@ npm ci --prefix "$INTERNAL_DIR"
 npm ci --prefix "$HOME/twinejs"
 poetry install -P "$INTERNAL_DIR/spindler"
 poetry install -P "$INTERNAL_DIR/deployer"
-poetry install -P "$INTERNAL_DIR/translator"
+pip install git+https://github.com/amoffat/translator@main

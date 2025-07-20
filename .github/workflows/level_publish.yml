@@ -81,7 +81,7 @@ jobs:
         run: |
           poetry install -P .internal/deployer
           poetry install -P .internal/spindler
-          poetry install -P .internal/translator
+          pip install git+https://github.com/amoffat/translator@main
 
       - name: Install Node.js
         uses: actions/setup-node@v4
