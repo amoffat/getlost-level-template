@@ -31,6 +31,7 @@ async function main() {
   const asmLibDir = resolve(internalDir, "assemblyscript");
   const levelDir = resolve(repoDir, "level");
   const codeDir = resolve(repoDir, "level", "code");
+  const transDir = resolve(levelDir, "i18n", "main");
   const genDir = resolve(codeDir, "generated");
   const metadata = JSON.parse(argv.metadata);
 
@@ -53,6 +54,7 @@ async function main() {
     sourceFiles: [levelFile],
     release,
     asmLibDir,
+    transDir,
     levelDir,
     genDir,
   });

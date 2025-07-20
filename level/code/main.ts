@@ -1,7 +1,6 @@
 import * as host from "@gl/api/w2h/host";
 
 import { ColorMatrixFilter } from "@gl/filters/colormatrix";
-import { String } from "@gl/types/i18n";
 import { getSunEventName, SunEvent } from "@gl/types/time";
 import { Periodic } from "@gl/utils/periodic";
 import { Player } from "@gl/utils/player";
@@ -83,100 +82,6 @@ function updateHeatFilter(): void {
   }
   heatFilter.influence = heatAmt;
   colorMatrix.influence = heatAmt;
-}
-
-/**
- * Called on level initialization to expose what strings we use in our level.
- * This is used for localization.
- *
- * @returns The strings that our level uses.
- */
-export function strings(): String[] {
-  const ourStrings: String[] = [
-    {
-      key: "overheat",
-      values: [
-        {
-          text: "Heat exhaustion",
-          lang: "en",
-        },
-      ],
-    },
-    {
-      key: "take-fruit",
-      values: [
-        {
-          text: "Steal",
-          lang: "en",
-        },
-      ],
-    },
-    {
-      key: "nap",
-      values: [
-        {
-          text: "Take a nap",
-          lang: "en",
-        },
-      ],
-    },
-    {
-      key: "pickup-map-name",
-      values: [
-        {
-          text: "Dusty map",
-          lang: "en",
-        },
-      ],
-    },
-    {
-      key: "pickup-map-text",
-      values: [
-        {
-          text: "A map of an unfamiliar place. There's a clear X marking something important.",
-          lang: "en",
-        },
-      ],
-    },
-    {
-      key: "pickup-flame-name",
-      values: [
-        {
-          text: "Blue flame",
-          lang: "en",
-        },
-      ],
-    },
-    {
-      key: "pickup-flame-text",
-      values: [
-        {
-          text: "A small blue flame flickers angrily. I think it is annoyed.",
-          lang: "en",
-        },
-      ],
-    },
-    {
-      key: "pickup-fruit-name",
-      values: [
-        {
-          text: "Oasis fruit",
-          lang: "en",
-        },
-      ],
-    },
-    {
-      key: "pickup-fruit-text",
-      values: [
-        {
-          text: "Delicious looking fruit. I think it grows from the oasis trees.",
-          lang: "en",
-        },
-      ],
-    },
-  ];
-  const dialogueStrings = dialogue.strings();
-  return ourStrings.concat(dialogueStrings);
 }
 
 /**

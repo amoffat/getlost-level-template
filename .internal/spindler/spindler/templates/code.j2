@@ -5,6 +5,7 @@ import * as level from "../main";
 
 const log = host.debug.log;
 const logError = host.debug.logError;
+const interactButton = "{{interact_button}}";
 
 {% for cls in state_classes %}
 {{cls}}
@@ -26,7 +27,7 @@ export function stage_{{p.nice_id or p.id}}(entered: bool): void {
     if (entered) {
         host.controls.setButtons([
             {
-                label: "interact",
+                label: interactButton,
                 slug: "passage/{{p.id}}",
             }
         ]);
@@ -53,27 +54,6 @@ export function passage_{{p.nice_id or p.id}}(): void {
     host.text.display("{{p.id}}", title, text, choices, state.params, animate);
 }
 {% endmacro %}
-
-{% macro stringEntry(key, string) %}
-    {
-        key: "{{key}}",
-        values: [
-            {
-                "text": {{string}},
-                "lang": "en"
-            }
-        ]
-    },
-{% endmacro %}
-
-export function strings(): String[] {
-    return [
-        {{ stringEntry("interact", '"Interact"') }}
-    {% for key, string in all_strings.items() %}
-        {{ stringEntry(key, string) }}
-    {% endfor %}
-    ];
-}
 
 /**
  * Called when the player interacts with a choice dialog.

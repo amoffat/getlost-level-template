@@ -2,7 +2,7 @@ import * as asc from "assemblyscript/asc";
 import { Transform } from "assemblyscript/transform";
 import { exec } from "child_process";
 import { randomUUID } from "crypto";
-import fs, { readFile, unlink, writeFile } from "fs/promises";
+import { readFile, unlink, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { join, resolve } from "path";
 import binaryen from "types:assemblyscript/lib/binaryen";
@@ -66,6 +66,7 @@ export async function compileWasm({
   asmLibDir,
   levelDir,
   genDir,
+  transDir,
   metadata,
 }: {
   sourceFiles: string[];
@@ -73,6 +74,7 @@ export async function compileWasm({
   asmLibDir: string;
   levelDir: string;
   genDir: string;
+  transDir: string;
   metadata?: Record<string, string>;
 }): Promise<BuildArtifacts> {
   const debug = false;
@@ -81,10 +83,19 @@ export async function compileWasm({
 
   // Run the spindler command and write its output to dialogue.ts
   const spindlerInput = resolve(levelDir, "story", "Level.twee");
-  const spindlerOutput = resolve(genDir, "dialogue.ts");
+  const codeOutput = resolve(genDir, "dialogue.ts");
+  const stringsOutput = resolve(transDir, "dialogue.json");
   try {
-    const { stdout } = await execAsync(`spindler ${spindlerInput}`);
-    await fs.writeFile(spindlerOutput, stdout);
+    const spindlerArgs = [
+      spindlerInput,
+      "--output-code",
+      codeOutput,
+      "--output-strings",
+      stringsOutput,
+    ];
+    await execAsync(
+      `spindler ${spindlerArgs.map((arg) => `"${arg}"`).join(" ")}`
+    );
   } catch (error) {
     throw new Error(`Dialogue generation failed: ${error}`);
   }

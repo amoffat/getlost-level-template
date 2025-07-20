@@ -81,6 +81,7 @@ jobs:
         run: |
           poetry install -P .internal/deployer
           poetry install -P .internal/spindler
+          poetry install -P .internal/translator
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -102,7 +103,7 @@ jobs:
       - name: Publish
         run: |
           echo "Publishing level..."
-          deployer \
+          deploy \
             --jwt $JWT \
             --github-token ${{ secrets.GITHUB_TOKEN }} \
             --env $ENV \
