@@ -1,8 +1,8 @@
 {
-  "map-name": "Bản đồ bụi bặm",
-  "map-text": "Một bản đồ của một địa điểm không quen thuộc. Có một chữ X rõ ràng đánh dấu một cái gì đó quan trọng.",
-  "flame-name": "Ngọn lửa xanh",
-  "flame-text": "Một ngọn lửa xanh nhỏ nhấp nháy một cách tức giận. Tôi nghĩ nó đang khó chịu.",
-  "fruit-name": "Trái cây Oasis",
-  "fruit-text": "Một loại trái cây mọc trong sa mạc. Nó trông rất ngon."
+  "flame.name": "Lửa xanh",
+  "flame.text": "Một ngọn lửa nhỏ màu xanh dương lóe lên giận dữ. Tôi nghĩ nó đang tức giận.",
+  "fruit.name": "Trái cây Oasis",
+  "fruit.text": "Một loại trái cây mọc ở sa mạc. Nó trông rất ngon miệng.",
+  "map.name": "Bản đồ bụi bặm",
+  "map.text": "Bản đồ của một địa điểm lạ. Có một dấu X rõ ràng đánh dấu một điều gì đó quan trọng."
 }

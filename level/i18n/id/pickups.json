@@ -1,8 +1,8 @@
 {
-  "map-name": "Peta berdebu",
-  "map-text": "Sebuah peta dari tempat yang tidak dikenal. Ada tanda X yang jelas menandai sesuatu yang penting.",
-  "flame-name": "Api biru",
-  "flame-text": "Api biru kecil berkedip dengan marah. Saya pikir api itu kesal.",
-  "fruit-name": "Buah oasis",
-  "fruit-text": "Buah yang tumbuh di gurun. Itu terlihat lezat."
+  "flame.name": "Api Biru",
+  "flame.text": "Sebuah nyala kecil berwarna biru berkedip dengan marah. Saya pikir itu kesal.",
+  "fruit.name": "Buah oasis",
+  "fruit.text": "Sebuah buah yang tumbuh di gurun. Rasanya lezat.",
+  "map.name": "Peta berdebu",
+  "map.text": "Peta dari tempat yang asing. Ada tanda X yang jelas menandai sesuatu yang penting."
 }

@@ -23,7 +23,9 @@
         "--trans-dir",
         "${workspaceFolder}/level/i18n",
         "--model",
-        "gpt-4o"
+        "gpt-4.1-nano",
+        "--dotenv",
+        "${workspaceFolder}/level/.env"
       ],
       "options": {
         "cwd": "${workspaceFolder}/level"

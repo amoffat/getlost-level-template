@@ -1,8 +1,8 @@
 {
-  "map-name": "Mapa polvoriento",
-  "map-text": "Un mapa de un lugar desconocido. Hay una X clara que marca algo importante.",
-  "flame-name": "Llama azul",
-  "flame-text": "Una pequeña llama azul parpadea con enojo. Creo que está molesta.",
-  "fruit-name": "Fruta Oasis",
-  "fruit-text": "Una fruta que crece en el desierto. Parece deliciosa."
+  "flame.name": "Llama azul",
+  "flame.text": "Una pequeña llama azul parpadea con enojo. Creo que está molesta.",
+  "fruit.name": "Fruta del oasis",
+  "fruit.text": "Una fruta que crece en el desierto. Se ve deliciosa.",
+  "map.name": "Mapa polvoriento",
+  "map.text": "Un mapa de un lugar desconocido. Hay una marca de clavos X que señala algo importante."
 }

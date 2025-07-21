@@ -1,8 +1,8 @@
 {
-  "map-name": "Zakurzona mapa",
-  "map-text": "Mapa nieznanego miejsca. Jest wyraźne X oznaczające coś istotnego.",
-  "flame-name": "Niebieski płomień",
-  "flame-text": "Mały niebieski płomień migocze gniewnie. Myślę, że jest zirytowany.",
-  "fruit-name": "Owoc oaza",
-  "fruit-text": "Owoc, który rośnie na pustyni. Wygląda pysznie."
+  "flame.name": "Niebieski płomień",
+  "flame.text": "Mali niebieski płomień migocze gniewnie. Myślę, że jest poirytowany.",
+  "fruit.name": "Owoc z oazy",
+  "fruit.text": "Owoc, który rośnie na pustyni. Wygląda smakowicie.",
+  "map.name": "Zakurzona mapa",
+  "map.text": "Mapa nieznanego miejsca. Wyraźnie zaznaczono X oznaczające coś ważnego."
 }

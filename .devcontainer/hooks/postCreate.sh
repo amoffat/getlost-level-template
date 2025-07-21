@@ -11,6 +11,13 @@ LEVEL_DIR="$WORKSPACE_DIR/level"
 KEY_FILE="$LEVEL_DIR/assets.key"
 
 
+npm ci --prefix "$INTERNAL_DIR"
+npm ci --prefix "$HOME/twinejs"
+poetry install -P "$INTERNAL_DIR/spindler"
+poetry install -P "$INTERNAL_DIR/deployer"
+pip install git+https://github.com/amoffat/translator@main
+
+
 echo "Starting PM2 in the background..."
 npx --prefix "$INTERNAL_DIR" pm2 start "$ECOSYSTEM_FILE"
 npx --prefix "$INTERNAL_DIR" pm2 save

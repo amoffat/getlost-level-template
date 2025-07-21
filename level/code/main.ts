@@ -259,7 +259,7 @@ export function sensorEvent(
     if (entered) {
       host.controls.setButtons([
         {
-          label: "take-fruit",
+          label: "takeFruit",
           slug: "fruit-taken",
         },
       ]);
