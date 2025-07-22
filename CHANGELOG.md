@@ -1,9 +1,10 @@
 The template version should stay in sync with the engine version
 
-## 4.0.0 -
+## 4.0.0 - 7/22/25
 
 - Script `deployer` renamed to `deploy`
 - i18n auto-translator
+- Engine version 4.0.0
 
 ## 3.0.0 - 7/15/25
 
