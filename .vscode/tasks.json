@@ -21,7 +21,7 @@
       "command": "translate",
       "args": [
         "--trans-dir",
-        "${workspaceFolder}/level/i18n",
+        "${workspaceFolder}/level/locales",
         "--model",
         "gpt-4o",
         "--dotenv",
