@@ -1,5 +1,6 @@
 import argparse
 import json
+import pathlib
 import sys
 
 from .construct import render
@@ -34,10 +35,16 @@ def main():
     parser = argparse.ArgumentParser(description="Process a Twee file.")
     parser.add_argument("input_file", help="Path to the input Twee file")
     parser.add_argument(
-        "--output-code", required=True, help="Path to the output code file"
+        "--output-code",
+        type=pathlib.Path,
+        required=True,
+        help="Path to the output code file",
     )
     parser.add_argument(
-        "--output-strings", required=True, help="Path to the output strings file"
+        "--output-strings",
+        type=pathlib.Path,
+        required=True,
+        help="Path to the output strings file",
     )
     args = parser.parse_args()
 
@@ -58,11 +65,29 @@ def main():
     with open(args.output_code, "w") as code_file:
         code_file.write(result.code)
 
+    preserved_context = {}
+    if args.output_strings.exists():
+        with open(args.output_strings, "r") as f:
+            try:
+                existing = json.load(f)
+            except Exception:
+                existing = {}
+        for k, v in existing.items():
+            if k.endswith("_"):
+                base_key = k[:-1]
+                if base_key in result.strings:
+                    preserved_context[k] = v
+
+    # Merge preserved context keys into result.strings
+    merged_strings = dict(result.strings)
+    merged_strings.update(preserved_context)
+
     with open(args.output_strings, "w") as strings_file:
         json.dump(
-            result.strings,
+            merged_strings,
             strings_file,
             ensure_ascii=False,
+            sort_keys=True,
             indent=2,
         )
 
