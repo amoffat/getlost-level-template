@@ -1,8 +1,8 @@
 {
   "flame.name": "Flamme bleue",
-  "flame.text": "Une petite flamme bleue vacille avec colère. Je pense qu'elle est énervée.",
-  "fruit.name": "Fruit de l'oasis",
-  "fruit.text": "Un fruit qui pousse dans le désert. Ça a l'air délicieux.",
+  "flame.text": "Une petite flamme bleue vacille avec colère. Je pense qu'elle est agacée.",
+  "fruit.name": "Fruit d'oasis",
+  "fruit.text": "Un fruit qui pousse dans le désert. Il a l'air délicieux.",
   "map.name": "Carte poussiéreuse",
-  "map.text": "Une carte d'un endroit inconnu. Il y a un X clair marquant quelque chose d'important."
+  "map.text": "Une carte d'un endroit inconnu. Il y a un X bien visible marquant quelque chose d'important."
 }
