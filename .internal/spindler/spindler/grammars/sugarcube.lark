@@ -34,6 +34,7 @@ _raw_expression: \
     | _variable 
     | function_call
     | object_literal
+    | array
 
 _boolean: TRUE | FALSE
 _variable: global_var | local_var

@@ -16,6 +16,34 @@
       }
     },
     {
+      "label": "Translate level",
+      "type": "shell",
+      "command": "translate",
+      "args": [
+        "--trans-dir",
+        "${workspaceFolder}/level/locales",
+        "--model",
+        "gpt-4o",
+        "--dotenv",
+        "${workspaceFolder}/level/.env"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/level"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      }
+    },
+    {
       "label": "Upgrade Level",
       "type": "shell",
       "command": "python3",

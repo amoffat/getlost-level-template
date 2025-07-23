@@ -37,7 +37,7 @@ Sir Azure
 
 
 :: Fire [Fire] {"position":"2950,1325","size":"100,100"}
-<<if hasPickup({type: "map"})>>
+<<if hasPickup(["map"])>>
 You've found it... Please, give it to me...
 <<else>>
 <<if visited() gt 1>>
@@ -194,11 +194,12 @@ The person I am seeking carries a map
 <<if isNight()>>
 ...zzzzz...zzzzz.....zzzz...
 <<else>>
-  <<if hasPickup({type: "map"})>>
+  <<if hasPickup(["map"])>>
 Where did you get that map?
 [[I found it up north.]]
 [[None of your business]]
   <<elseif $learnedKnightStory>>
+...
 [[I know why you're here.]]
   <<elseif $upsetKnight>>
 I thought I said go away.
@@ -222,15 +223,7 @@ I thought I said go away.
 
 
 :: StoryInit {"position":"925,75","size":"100,100"}
-<<set $inventory to {
-  map: {
-    tags: {
-      map: false
-    }
-  }
-}>>
 <<set $upsetKnight to false>>
-<<set $playerName to "James">>
 <<set $learnedKnightStory to false>>
 
 

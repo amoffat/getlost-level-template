@@ -1,0 +1,11 @@
+{
+  "map.name_": "The name of a map found in the desert.",
+  "map.name": "Dusty map",
+  "map.text": "A map of an unfamiliar place. There's a clear X marking something important.",
+  "flame.name_": "The name of a fire npc character.",
+  "flame.name": "Blue flame",
+  "flame.text": "A small blue flame flickers angrily. I think it is annoyed.",
+  "fruit.name_": "The name of a fruit found in the oasis.",
+  "fruit.name": "Oasis fruit",
+  "fruit.text": "A fruit that grows in the desert. It looks delicious."
+}

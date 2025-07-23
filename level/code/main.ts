@@ -1,7 +1,6 @@
 import * as host from "@gl/api/w2h/host";
 
 import { ColorMatrixFilter } from "@gl/filters/colormatrix";
-import { String } from "@gl/types/i18n";
 import { getSunEventName, SunEvent } from "@gl/types/time";
 import { Periodic } from "@gl/utils/periodic";
 import { Player } from "@gl/utils/player";
@@ -83,46 +82,6 @@ function updateHeatFilter(): void {
   }
   heatFilter.influence = heatAmt;
   colorMatrix.influence = heatAmt;
-}
-
-/**
- * Called on level initialization to expose what strings we use in our level.
- * This is used for localization.
- *
- * @returns The strings that our level uses.
- */
-export function strings(): String[] {
-  const ourStrings: String[] = [
-    {
-      key: "overheat",
-      values: [
-        {
-          text: "Heat exhaustion",
-          lang: "en",
-        },
-      ],
-    },
-    {
-      key: "take-fruit",
-      values: [
-        {
-          text: "Steal",
-          lang: "en",
-        },
-      ],
-    },
-    {
-      key: "nap",
-      values: [
-        {
-          text: "Take a nap",
-          lang: "en",
-        },
-      ],
-    },
-  ];
-  const dialogueStrings = dialogue.strings();
-  return ourStrings.concat(dialogueStrings);
 }
 
 /**
@@ -300,7 +259,7 @@ export function sensorEvent(
     if (entered) {
       host.controls.setButtons([
         {
-          label: "take-fruit",
+          label: "takeFruit",
           slug: "fruit-taken",
         },
       ]);

@@ -21,6 +21,9 @@
   "secrets": {
     "ASSETS_KEY": {
       "description": "License key for unlocking protected assets"
+    },
+    "OPENAI_API_KEY": {
+      "description": "OpenAI API key for LLM access"
     }
   },
   "forwardPorts": [5173, 5174, 6080],

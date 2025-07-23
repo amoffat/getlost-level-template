@@ -11,6 +11,7 @@ const asmLibDir = resolve(internalDir, "assemblyscript");
 const shimDir = asmLibDir;
 const levelDir = resolve(repoDir, "level");
 const codeDir = resolve(repoDir, "level", "code");
+const transDir = resolve(levelDir, "locales", "main");
 const genDir = resolve(codeDir, "generated");
 let cachedWasm: Uint8Array = new Uint8Array(0);
 
@@ -72,6 +73,7 @@ export default function compileWasmPlugin() {
               release,
               asmLibDir,
               levelDir,
+              transDir,
               genDir,
             });
 

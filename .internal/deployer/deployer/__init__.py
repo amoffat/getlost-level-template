@@ -122,7 +122,7 @@ def collect_wasm(*, tar: tarfile.TarFile, metadata: Any):
     temp_dir.cleanup()
 
 
-def collect_art(level_dir: Path, tar: tarfile.TarFile):
+def collect_assets(level_dir: Path, tar: tarfile.TarFile):
     """Add all files in LEVEL_DIR to the provided tarfile handle using pathlib.Path."""
     for file_path in level_dir.rglob("*"):
         if file_path.is_file():
@@ -210,6 +210,7 @@ def main():
     )
     parser.add_argument(
         "--level",
+        type=lambda p: Path(p).resolve(),
         required=True,
         help="Directory containing the level files to be uploaded",
     )
@@ -246,7 +247,7 @@ def main():
                     "commit": commit,
                 },
             )
-            collect_art(Path(args.level).resolve(), tar)
+            collect_assets(args.level, tar)
 
         assets = open(temp_gz.name, "rb")
 

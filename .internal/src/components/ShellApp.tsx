@@ -33,6 +33,13 @@ export function ShellApp() {
     const iframe = iframeRef.current!;
     const levelUrl = window.location.origin;
     const src = new URL(constants.gameUrl);
+
+    // Copy all search params from parent frame to iframe src
+    const parentParams = new URL(window.location.href).searchParams;
+    for (const [key, value] of parentParams.entries()) {
+      src.searchParams.set(key, value);
+    }
+
     src.searchParams.set("levelBaseUrl", levelUrl);
     log.info(`Loading game from ${constants.gameUrl}`);
     iframe.src = src.toString();

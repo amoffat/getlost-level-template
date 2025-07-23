@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-deployer = "deployer:main"
+deploy = "deployer:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
