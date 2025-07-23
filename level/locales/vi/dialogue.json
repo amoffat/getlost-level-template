@@ -43,7 +43,7 @@
   "76f7e319": "Sheikh đã yêu cầu tôi làm vậy. Đó là tất cả những gì tôi có thể nói với bạn.",
   "7ad97537": "Tôi hiểu rồi... hãy cho tôi biết nếu bạn cần bất cứ điều gì. Tôi ở đây để giúp đỡ.",
   "7c1dac67": "Bạn sẽ phải hỏi anh ấy.",
-  "7d52fd29": "Chào Nazar, tôi là {{playerName}}.",
+  "7d52fd29": "Chào Nazar, tôi là {{vars.playerName}}.",
   "80251c82": "Bạn lấy bản đồ đó từ đâu?",
   "885ce2f8": "Sheikh là ai?",
   "88d44f50": "Không có gì nhiều.",

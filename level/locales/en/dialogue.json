@@ -43,7 +43,7 @@
   "76f7e319": "The Sheikh asked me to. That's all I can tell you.",
   "7ad97537": "I see... let me know if you need anything. I'm here to help.",
   "7c1dac67": "You'll have to ask him.",
-  "7d52fd29": "Hi Nazar, I'm {{playerName}}.",
+  "7d52fd29": "Hi Nazar, I'm {{vars.playerName}}.",
   "80251c82": "Where did you get that map?",
   "885ce2f8": "Who is the Sheikh?",
   "88d44f50": "Not much.",

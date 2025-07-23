@@ -43,7 +43,7 @@
   "76f7e319": "El jeque me lo pidió. Eso es todo lo que puedo decirte.",
   "7ad97537": "Entiendo... déjame saber si necesitas algo. Estoy aquí para ayudar.",
   "7c1dac67": "Tendrás que preguntarle a él.",
-  "7d52fd29": "Hola Nazar, soy {{playerName}}.",
+  "7d52fd29": "Hola Nazar, soy {{vars.playerName}}.",
   "80251c82": "¿De dónde sacaste ese mapa?",
   "885ce2f8": "¿Quién es el jeque?",
   "88d44f50": "No mucho.",

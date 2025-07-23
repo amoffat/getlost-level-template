@@ -43,7 +43,7 @@
   "76f7e319": "Der Scheich hat mich darum gebeten. Mehr kann ich Ihnen nicht sagen.",
   "7ad97537": "Ich verstehe... lass mich wissen, wenn du etwas brauchst. Ich bin hier, um zu helfen.",
   "7c1dac67": "Du musst ihn fragen.",
-  "7d52fd29": "Hallo Nazar, ich bin {{playerName}}.",
+  "7d52fd29": "Hallo Nazar, ich bin {{vars.playerName}}.",
   "80251c82": "Wo hast du diese Karte her?",
   "885ce2f8": "Wer ist der Scheich?",
   "88d44f50": "Nicht viel.",

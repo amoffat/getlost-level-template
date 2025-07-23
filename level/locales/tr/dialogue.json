@@ -43,7 +43,7 @@
   "76f7e319": "Şeyh bana bunu yapmamı söyledi. Size söyleyebileceğim tek şey bu.",
   "7ad97537": "Anlıyorum... Bir şeye ihtiyacın olursa haber ver. Yardım etmek için buradayım.",
   "7c1dac67": "Ona sormalısın.",
-  "7d52fd29": "Merhaba Nazar, ben {{playerName}}.",
+  "7d52fd29": "Merhaba Nazar, ben {{vars.playerName}}.",
   "80251c82": "O haritayı nereden aldın?",
   "885ce2f8": "Şeyh kimdir?",
   "88d44f50": "Pek bir şey yok.",

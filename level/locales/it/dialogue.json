@@ -43,7 +43,7 @@
   "76f7e319": "Me l'ha chiesto lo Sceicco. È tutto quello che posso dirti.",
   "7ad97537": "Capisco... fammi sapere se hai bisogno di qualcosa. Sono qui per aiutare.",
   "7c1dac67": "Dovrai chiedere a lui.",
-  "7d52fd29": "Ciao Nazar, sono {{playerName}}.",
+  "7d52fd29": "Ciao Nazar, sono {{vars.playerName}}.",
   "80251c82": "Dove hai preso quella mappa?",
   "885ce2f8": "Chi è lo Sceicco?",
   "88d44f50": "Non molto.",
