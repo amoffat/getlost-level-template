@@ -82,6 +82,7 @@ def main():
     merged_strings = dict(result.strings)
     merged_strings.update(preserved_context)
 
+    args.output_strings.parent.mkdir(parents=True, exist_ok=True)
     with open(args.output_strings, "w") as strings_file:
         json.dump(
             merged_strings,
