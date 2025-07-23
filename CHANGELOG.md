@@ -2,10 +2,10 @@ The template version should stay in sync with the engine version
 
 ## 4.0.0 - 7/22/25
 
-- Script `deployer` renamed to `deploy`
 - i18n auto-translator
 - Engine version 4.0.0
 - Bugfix with dialogue bleed
+- Script `deployer` renamed to `deploy`
 
 ## 3.0.0 - 7/15/25
 
