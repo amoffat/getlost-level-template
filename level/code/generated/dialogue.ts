@@ -66,28 +66,28 @@ export const state = new State();
 // If we're using an alias on our link, then we need to map from our shown
 // choice id to our alias choice id.
 const choiceToPassage = new Map<string, string>();
-choiceToPassage.set("80495816", "3d787171");
-choiceToPassage.set("141a8032", "50c96f21");
-choiceToPassage.set("6451edb5", "a61db43e");
-choiceToPassage.set("85a39ab3", "5c07303d");
-choiceToPassage.set("38178a20", "2a9618c1");
-choiceToPassage.set("8cf42533", "4306feba");
-choiceToPassage.set("05e44e9b", "2a9618c1");
-choiceToPassage.set("448fd9e9", "4306feba");
-choiceToPassage.set("3639efcd", "e6c18fdb");
-choiceToPassage.set("7fafd7d4", "e1ffb1d2");
-choiceToPassage.set("dd146f7d", "491e88c5");
-choiceToPassage.set("98bd5b29", "c141faa8");
-choiceToPassage.set("e8b51162", "5ac45c94");
-choiceToPassage.set("e2092668", "aff68fcf");
-choiceToPassage.set("885ce2f8", "d20fad6e");
-choiceToPassage.set("c40b2d30", "aff68fcf");
-choiceToPassage.set("255e6fab", "ff810fb6");
-choiceToPassage.set("3e769b34", "90212c36");
-choiceToPassage.set("41876c52", "e6c18fdb");
-choiceToPassage.set("12890122", "9b7360e5");
-choiceToPassage.set("813cdd9a", "90212c36");
-choiceToPassage.set("b27a0c1e", "50c96f21");
+choiceToPassage.set("9251bf45", "3d787171");
+choiceToPassage.set("58ba785b", "50c96f21");
+choiceToPassage.set("698118b9", "a61db43e");
+choiceToPassage.set("ed68fc3d", "5c07303d");
+choiceToPassage.set("31ab4d0f", "2a9618c1");
+choiceToPassage.set("3bc95ed3", "4306feba");
+choiceToPassage.set("d188824d", "2a9618c1");
+choiceToPassage.set("8bcf2e27", "4306feba");
+choiceToPassage.set("1d925355", "e6c18fdb");
+choiceToPassage.set("a97314c9", "e1ffb1d2");
+choiceToPassage.set("24f43b0d", "491e88c5");
+choiceToPassage.set("1fab6079", "c141faa8");
+choiceToPassage.set("a07e8baa", "5ac45c94");
+choiceToPassage.set("acf8dced", "aff68fcf");
+choiceToPassage.set("ba1494d0", "d20fad6e");
+choiceToPassage.set("42fcb639", "aff68fcf");
+choiceToPassage.set("650209c4", "ff810fb6");
+choiceToPassage.set("708ba768", "90212c36");
+choiceToPassage.set("12283998", "e6c18fdb");
+choiceToPassage.set("97c6c94d", "9b7360e5");
+choiceToPassage.set("c0aa9943", "90212c36");
+choiceToPassage.set("45e8a7dd", "50c96f21");
 
 /**
  * Called when the player interacts with a choice dialog.
@@ -261,7 +261,7 @@ export function passage_Fire(): void {
       // "Greetings.... traveller..."
       text = "bbe687cd";
       // Who are you?
-      choices.push("80495816");
+      choices.push("9251bf45");
 
       // Ignore the fire
       choices.push("690c49a8");
@@ -328,7 +328,7 @@ export function passage_c8a7d597(): void {
   // "Anything else you'd like to know?"
   text = "4540b6fa";
   // You said you were seeking something?
-  choices.push("141a8032");
+  choices.push("58ba785b");
 
   host.text.display("c8a7d597", title, text, choices, state.params, animate);
 }
@@ -416,10 +416,10 @@ export function passage_7d52fd29(): void {
   // "I haven't seen you before, are you here with the Knight?"
   text = "159272d5";
   // What Knight?
-  choices.push("6451edb5");
+  choices.push("698118b9");
 
   // Yes
-  choices.push("85a39ab3");
+  choices.push("ed68fc3d");
 
   host.text.display("7d52fd29", title, text, choices, state.params, animate);
 }
@@ -541,10 +541,10 @@ export function passage_c503743a(): void {
   }
 
   // No.
-  choices.push("38178a20");
+  choices.push("31ab4d0f");
 
   // Hand him the map
-  choices.push("8cf42533");
+  choices.push("3bc95ed3");
 
   host.text.display("c503743a", title, text, choices, state.params, animate);
 }
@@ -775,10 +775,10 @@ export function passage_e0a2d72f(): void {
   // "Listen to me carefully. I'm getting that map."
   text = "2dd162b5";
   // Run away
-  choices.push("05e44e9b");
+  choices.push("d188824d");
 
   // Ok, calm down, here you go.
-  choices.push("448fd9e9");
+  choices.push("8bcf2e27");
 
   host.text.display("e0a2d72f", title, text, choices, state.params, animate);
 }
@@ -862,7 +862,7 @@ export function passage_Knight(): void {
       // "..."
       text = "ab5df625";
       // Hi
-      choices.push("3639efcd");
+      choices.push("1d925355");
     }
   }
 
@@ -992,10 +992,10 @@ export function passage_9d4f68e2(): void {
   // "I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh."
   text = "a7b6d713";
   // What did the letter say?
-  choices.push("e2092668");
+  choices.push("acf8dced");
 
   // Who is the Sheikh?
-  choices.push("885ce2f8");
+  choices.push("ba1494d0");
 
   host.text.display("9d4f68e2", title, text, choices, state.params, animate);
 }
@@ -1229,7 +1229,7 @@ export function passage_d20fad6e(): void {
   // "The Sheikh created this village."
   text = "6c3f1cc4";
   // So what did the letter say?
-  choices.push("c40b2d30");
+  choices.push("42fcb639");
 
   host.text.display("d20fad6e", title, text, choices, state.params, animate);
 }
@@ -1294,10 +1294,10 @@ export function passage_50c96f21(): void {
   // "A map..."
   text = "d6e3cd9f";
   // What's so special about a map?
-  choices.push("255e6fab");
+  choices.push("650209c4");
 
   // You said you were observing? What?
-  choices.push("3e769b34");
+  choices.push("708ba768");
 
   host.text.display("50c96f21", title, text, choices, state.params, animate);
 }
@@ -1328,10 +1328,10 @@ export function passage_e6c18fdb(): void {
   // "..."
   text = "ab5df625";
   // *ahem*... I said 'Hi'
-  choices.push("41876c52");
+  choices.push("12283998");
 
   // Bye
-  choices.push("12890122");
+  choices.push("97c6c94d");
 
   host.text.display("e6c18fdb", title, text, choices, state.params, animate);
 }
@@ -1462,10 +1462,10 @@ export function passage_3d787171(): void {
   choices.push("63265a79");
 
   // Observe what?
-  choices.push("813cdd9a");
+  choices.push("c0aa9943");
 
   // What are you seeking?
-  choices.push("b27a0c1e");
+  choices.push("45e8a7dd");
 
   host.text.display("3d787171", title, text, choices, state.params, animate);
 }

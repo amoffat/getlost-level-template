@@ -330,7 +330,6 @@ def render(passages: list[TweePassage]) -> RenderResult:
                 return s
             elif node.type == "LINK_TEXT":
                 s = node.value
-                all_strings[hash_name(s)] = s
                 return s
             elif node.type == "TEXT":
                 s = node.value.strip()
@@ -346,17 +345,20 @@ def render(passages: list[TweePassage]) -> RenderResult:
             )
         elif node.data == "link":
             text = traverse(state=state, node=node.children[0])
-            string_id = hash_name(text)
-            all_strings[string_id] = text
-
             # Do we have a target slug? Then we need to record it as the child
             # of this passage.
             if len(node.children) > 1:
                 target_name = cast(Token, node.children[1]).value
                 target_id = hash_name(target_name)
+
+                string_id = hash_name(text + "|" + target_name)
+                all_strings[string_id] = text
+
                 string_id_to_passage_id[string_id] = target_id
             else:
+                string_id = hash_name(text)
                 target_id = string_id
+                all_strings[string_id] = text
 
             state.children.append(target_id)
             choices = f'// {text}\nchoices.push("{string_id}");'
