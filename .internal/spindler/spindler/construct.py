@@ -490,6 +490,13 @@ def render(passages: list[TweePassage]) -> RenderResult:
             )
             return f"{function_name}({arguments})"
 
+        elif node.data == "array":
+            elements = ", ".join(
+                traverse(state=state, node=cast(ParseTree, child))
+                for child in node.children
+            )
+            return f"[{elements}]"
+
         elif node.data == "object_literal":
 
             obj_lit = {}

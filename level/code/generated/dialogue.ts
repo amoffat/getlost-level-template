@@ -42,7 +42,7 @@ class State {
   knightOpts: State_knightOpts;
   constructor() {
     this.upsetKnight = false;
-    this.learnedKnightStory = true;
+    this.learnedKnightStory = false;
     this.knightOpts = new State_knightOpts();
   }
   get params(): string[] {
@@ -247,10 +247,7 @@ export function passage_Fire(): void {
   const choices: string[] = [];
   twine.incrementVisitCount("c141faa8");
 
-  const objlit_1 = new Map<string, string>();
-  objlit_1.set("type", "map");
-
-  if (twine.hasPickup(objlit_1)) {
+  if (twine.hasPickup(["map"])) {
     // "You've found it... Please, give it to me..."
     text = "f4886e4d";
   } else {
@@ -835,14 +832,11 @@ export function passage_Knight(): void {
   const choices: string[] = [];
   twine.incrementVisitCount("491e88c5");
 
-  const objlit_2 = new Map<string, string>();
-  objlit_2.set("type", "map");
-
   if (twine.isNight()) {
     // "...zzzzz...zzzzz.....zzzz..."
     text = "b5cbd2a3";
   } else {
-    if (twine.hasPickup(objlit_2)) {
+    if (twine.hasPickup(["map"])) {
       // "Where did you get that map?"
       text = "80251c82";
       // I found it up north.

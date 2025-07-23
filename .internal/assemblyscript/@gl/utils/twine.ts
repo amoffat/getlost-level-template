@@ -61,14 +61,7 @@ export function exit(name: string, force: bool = false): bool {
   return host.map.exit(name, force);
 }
 
-export function hasPickup(tags: Map<string, string>): bool {
-  const keys = tags.keys();
-  const tagArr = new Array<string>(keys.length);
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
-    const value = tags.get(key);
-    tagArr[i] = value;
-  }
-  const pickups = host.pickup.get(tagArr);
+export function hasPickup(tags: string[]): bool {
+  const pickups = host.pickup.get(tags);
   return pickups.length > 0;
 }
