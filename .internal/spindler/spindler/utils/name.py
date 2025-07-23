@@ -8,7 +8,7 @@ def i18nextify(name: str) -> str:
     Replaces $variableName (SugarCube var) with {{variableName}} (i18next).
     """
     # Replace $variableName (SugarCube var) with {{variableName}} (i18next)
-    name = re.sub(r"\$(\w+)", r"{{\1}}", name)
+    name = re.sub(r"\$(\w+)", r"{{vars.\1}}", name)
     return name
 
 
