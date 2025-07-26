@@ -420,7 +420,7 @@ def render(passages: list[TweePassage]) -> RenderResult:
         elif node.data == "function_call":
             function_name = cast(Token, node.children[0]).value
 
-            if function_name == "visited":
+            if function_name in {"visited", "hasVisited"}:
                 if len(node.children) == 1:
                     # Special case: hard code self passage as the argument
                     return f'{TWINE_FN_NS}.{function_name}("{state.passage_id}")'

@@ -43,7 +43,7 @@ export function visited(id: string): u32 {
 }
 
 export function hasVisited(id: string): bool {
-  return visitCount.has(id);
+  return visited(id) > 1;
 }
 
 export function lastVisited(passage: string): u32 {
