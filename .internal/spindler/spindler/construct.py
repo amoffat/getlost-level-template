@@ -490,6 +490,10 @@ def render(passages: list[TweePassage]) -> RenderResult:
             )
             return f"{function_name}({arguments})"
 
+        elif node.data == "level_eval":
+            name = cast(Token, node.children[0]).value
+            return name
+
         elif node.data == "array":
             elements = ", ".join(
                 traverse(state=state, node=cast(ParseTree, child))

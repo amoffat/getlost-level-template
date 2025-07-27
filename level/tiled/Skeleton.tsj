@@ -1,0 +1,49 @@
+{
+  "columns": 4,
+  "image": "../art/Actor/Characters/Skeleton/SpriteSheet.png",
+  "imageheight": 112,
+  "imagewidth": 64,
+  "margin": 0,
+  "name": "Skeleton",
+  "spacing": 0,
+  "tilecount": 28,
+  "tiledversion": "1.11.2",
+  "tileheight": 16,
+  "tiles": [
+    {
+      "animation": [
+        {
+          "duration": 100,
+          "tileid": 0
+        }
+      ],
+      "id": 0,
+      "objectgroup": {
+        "draworder": "index",
+        "name": "",
+        "objects": [
+          {
+            "height": 3,
+            "id": 1,
+            "name": "",
+            "rotation": 0,
+            "type": "",
+            "visible": true,
+            "width": 15,
+            "x": 1,
+            "y": 13
+          }
+        ],
+        "opacity": 1,
+        "type": "objectgroup",
+        "visible": true,
+        "x": 0,
+        "y": 0
+      },
+      "type": "NPC Tile"
+    }
+  ],
+  "tilewidth": 16,
+  "type": "tileset",
+  "version": "1.10"
+}

@@ -1,4 +1,5 @@
 import { SunEvent } from "../types/time";
+import { mod } from "./math";
 
 /**
  * Check if the given SunTime value represents a daytime period.
@@ -74,4 +75,8 @@ export function isEvening(time: SunEvent): boolean {
     time === SunEvent.Sunset ||
     time === SunEvent.Dusk
   );
+}
+
+export function prevSunEvent(time: SunEvent): SunEvent {
+  return mod((time as i32) - 1, 14) as SunEvent;
 }

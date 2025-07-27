@@ -48,3 +48,9 @@ body {
   overflow: auto;
   padding: 1em;
 }
+
+#log-messages pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: monospace;
+}

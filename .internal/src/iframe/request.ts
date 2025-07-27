@@ -15,7 +15,7 @@ export interface RecordMarkerMessage {
 export interface ClearMarkerMessage {
   type: "clear-marker";
   data: {
-    slug: string;
+    slug: string | null;
   };
 }
 

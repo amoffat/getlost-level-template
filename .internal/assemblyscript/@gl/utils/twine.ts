@@ -30,8 +30,8 @@ export function recordMarker(slug: string): void {
   host.markers.record(slug);
 }
 
-export function queryMarker(slug: string): bool {
-  return host.markers.query(slug);
+export function queryMarker(name: string): bool {
+  return host.markers.query(name, true);
 }
 
 export function visited(id: string): u32 {
@@ -61,7 +61,6 @@ export function exit(name: string, force: bool = false): bool {
   return host.map.exit(name, force);
 }
 
-export function hasPickup(tags: string[]): bool {
-  const pickups = host.pickup.get(tags);
-  return pickups.length > 0;
+export function hasPickup(tag: string): bool {
+  return host.pickup.query(tag);
 }

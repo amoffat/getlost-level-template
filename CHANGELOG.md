@@ -1,5 +1,18 @@
 The template version should stay in sync with the engine version
 
+##
+
+- Bugfix with Twine's `hasVisited()`
+- `host.sound.crossfade()`
+- Day and night music
+- `@gl/utils/time.prevSunEvent()`
+- Twine support for level-scoped vars
+- Wrap log messages
+- Sphinx entrance/exit
+- Map maze
+- `initRoom()` -> `init()`
+- `grantedMarkers()` -> `markers()`
+
 ## 4.0.0 - 7/22/25
 
 - i18n auto-translator

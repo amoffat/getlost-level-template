@@ -36,11 +36,16 @@ Sir Azure
 <<knight-choices>>
 
 
+:: Draw water {"position":"4700,1525","size":"100,100"}
+The water is ice cold and cools you off.
+<<level.reduceOverheatBy(0.5)>>
+
+
 :: Fire [Fire] {"position":"2950,1325","size":"100,100"}
-<<if hasPickup(["map"])>>
-You've found it... Please, give it to me...
+<<if hasPickup("map")>>
+You've found the map... Please, give it to me...
 <<else>>
-<<if visited() gt 1>>
+<<if hasVisited()>>
 You've returned.
 <<else>>
 Greetings.... traveller...
@@ -71,6 +76,20 @@ That's not your concern.
 <<knight-choices>>
 
 
+:: Help me, I'm about to pass out... {"position":"3900,2100","size":"100,100"}
+<<if $kidHasWater>>
+	<<if hasVisited()>>
+This is the last of my water. There's an oasis to the east. That can cool you off too.
+	<<set $kidHasWater to false>>
+	<<else>>
+Here, this water should cool you down. I don't have much.
+	<</if>>
+    <<level.reduceOverheatBy(0.5)>>
+<<else>>
+Sorry! Go to the oasis, quick!
+<</if>>
+
+
 :: Hi Nazar, I'm $playerName. {"position":"2350,2450","size":"100,100"}
 I haven't seen you before, are you here with the Knight?
 
@@ -87,6 +106,11 @@ I.. uh... I volunteered. It's a long story, and I'm very busy right now.
 
 :: How long ago was this? {"position":"2275,3250","size":"100,100"}
 Only a week ago.
+
+
+:: I didn't take anything {"position":"3100,2775","size":"100,100"}
+Oh, so you're a liar as well as a thief?
+<<recordMarker("lied-about-stealing")>>
 
 
 :: I found it up north. {"position":"675,1600","size":"100,100"}
@@ -133,7 +157,7 @@ You talked to the old man...
 <<knight-choices>>
 
 
-:: I saw fire on the water. {"position":"2650,2425","size":"100,100"}
+:: I saw fire on the water. {"position":"2675,2525","size":"100,100"}
 You've lost your mind. Please go.
 
 
@@ -150,12 +174,23 @@ You are? Interesting...
 
 
 :: Kid [Omar] {"position":"3950,1925","size":"100,100"}
-It's pretty hot out here huh?
+<<if isDay()>>
+It's pretty hot out here huh? I have some water if you get thirsty.
+
+<<if level.overheat >= 0.5>>
+[[Help me, I'm about to pass out...]]
+[[Thanks, but I'm ok.]]
+<</if>>
+<<else>>
+It's much cooler at night.
+<</if>>
 
 
 :: Nazar [Nazar] {"position":"2200,2200","size":"100,100"}
 <<if queryMarker("stole-fruit")>>
 I saw you take that fruit. I don't do business with thieves. Please leave.
+[[I didn't take anything]]
+[[Sorry, I was hungry]]
 <<elseif isNight()>>
 I'd like to chat, but it's getting late. Come back during the day.
 <<else>>
@@ -194,7 +229,7 @@ The person I am seeking carries a map
 <<if isNight()>>
 ...zzzzz...zzzzz.....zzzz...
 <<else>>
-  <<if hasPickup(["map"])>>
+  <<if hasPickup("map")>>
 Where did you get that map?
 [[I found it up north.]]
 [[None of your business]]
@@ -208,6 +243,10 @@ I thought I said go away.
 [[Hi|silence]]
   <</if>>
 <</if>>
+
+
+:: Sorry, I was hungry {"position":"3300,2750","size":"100,100"}
+
 
 
 :: Start {"position":"1675,100","size":"100,100"}
@@ -225,6 +264,11 @@ I thought I said go away.
 :: StoryInit {"position":"925,75","size":"100,100"}
 <<set $upsetKnight to false>>
 <<set $learnedKnightStory to false>>
+<<set $kidHasWater to true>>
+
+
+:: Thanks, but I'm ok. {"position":"4100,2075","size":"100,100"}
+
 
 
 :: Well [Well sign] {"position":"4325,1300","size":"100,100"}
@@ -232,6 +276,7 @@ There's a ladder going down, but you cannot see the bottom.
 
 [[Climb down]]
 [[Step back]]
+[[Draw water]]
 
 
 :: What battle? {"position":"1975,2675","size":"100,100"}

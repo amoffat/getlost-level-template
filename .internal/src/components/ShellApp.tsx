@@ -64,7 +64,7 @@ export function ShellApp() {
           log.info(`Clearing marker '${slug}'`, { dev: true });
           comms.request({
             type: "clear-marker",
-            data: { slug },
+            data: { slug: slug ?? null },
           });
         },
       },

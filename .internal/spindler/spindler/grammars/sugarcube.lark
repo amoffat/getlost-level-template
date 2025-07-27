@@ -16,9 +16,10 @@ _wrap_macros: widget_macro
 custom_widget: WIDGET_NAME
 set_macro: "set" _variable "to" _expression
 widget_macro: "widget" ("\"" WIDGET_NAME "\""  | "'" WIDGET_NAME "'") -> widget
-level_call: LEVEL_CALL_NAME "(" _arguments? ")"
+level_call: LEVEL_NAME "(" _arguments? ")"
+level_eval: LEVEL_NAME
 
-LEVEL_CALL_NAME: "level" "." WORD
+LEVEL_NAME: "level" "." WORD
 WIDGET_NAME:  /[a-zA-Z-]+/
 
 _expression: wrapped_expression | _raw_expression
@@ -30,6 +31,7 @@ _raw_expression: \
     | unary_op_expression
     | NUMBER
     | level_call
+    | level_eval
     | _boolean 
     | _variable 
     | function_call

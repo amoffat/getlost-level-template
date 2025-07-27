@@ -325,7 +325,6 @@ export function tickRoom(timestep: f32): void {
   updateHeatFilter();
 
   const timeSeconds: f32 = timestep / 1000;
-  const heatRate: f32 = 0.02;
   if (heatAmt > 0) {
     overheat += timeSeconds * heatRate * heatAmt;
   } else {

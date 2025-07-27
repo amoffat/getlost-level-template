@@ -32,6 +32,10 @@ export function entrances(): Entrance[] {
       name: "nap",
       exits: ["994021540/nap"],
     },
+    {
+      name: "sphinx",
+      exits: [],
+    },
   ];
 }
 
@@ -62,5 +66,6 @@ export function exits(): Exit[] {
     { name: "death", preferredEntrance: "" },
     { name: "water", preferredEntrance: "" },
     { name: "nap", preferredEntrance: "" },
+    { name: "sphinx", preferredEntrance: "" },
   ];
 }
