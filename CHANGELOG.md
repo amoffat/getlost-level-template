@@ -13,6 +13,7 @@ The template version should stay in sync with the engine version
 - `initRoom()` -> `init()`
 - `grantedMarkers()` -> `markers()`
 - Engine version 5.0.0
+- Twinejs shouldn't save to localstorage at all
 
 ## 4.0.0 - 7/22/25
 

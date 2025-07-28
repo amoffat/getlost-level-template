@@ -60,6 +60,39 @@ index a87c1d2e..7541ccaf 100644
  	return (
  		<div className="story-edit-route">
  			<DocumentTitle title={story.name} />
+diff --git a/src/store/persistence/local-storage/stories/save.ts b/src/store/persistence/local-storage/stories/save.ts
+index 232f59fa..3a02c142 100644
+--- a/src/store/persistence/local-storage/stories/save.ts
++++ b/src/store/persistence/local-storage/stories/save.ts
+@@ -3,8 +3,8 @@
+ // result, saving requires that you start and end a transaction manually. This
+ // minimizes the number of writes to local storage.
+ 
+-import {Passage, Story} from '../../../stories/stories.types';
+-import {addUnique, remove} from '../comma-list';
++import { Passage, Story } from '../../../stories/stories.types';
++import { addUnique, remove } from '../comma-list';
+ 
+ export interface StorageTransaction {
+ 	passageIds: string;
+@@ -35,6 +35,8 @@ export function doUpdateTransaction(updater: StorageUpdater) {
+  * Saves a story to local storage. This does *not* affect any child passages.
+  **/
+ export function saveStory(transaction: StorageTransaction, story: Story) {
++	return;
++	
+ 	if (!story.id) {
+ 		throw new Error('Story has no ID');
+ 	}
+@@ -67,6 +69,8 @@ export function deleteStory(transaction: StorageTransaction, story: Story) {
+  * Saves a passage to local storage.
+  */
+ export function savePassage(transaction: StorageTransaction, passage: Passage) {
++	return;
++	
+ 	if (!passage.id) {
+ 		throw new Error('Passage has no ID');
+ 	}
 diff --git a/src/store/prefs/defaults.ts b/src/store/prefs/defaults.ts
 index 2715ef0c..c922fc14 100644
 --- a/src/store/prefs/defaults.ts
@@ -76,16 +109,23 @@ index 2715ef0c..c922fc14 100644
  	storyFormatListFilter: 'current',
  	storyListSort: 'name',
 diff --git a/vite.config.mts b/vite.config.mts
-index caa48fb2..7ed3cd25 100644
+index caa48fb2..27156083 100644
 --- a/vite.config.mts
 +++ b/vite.config.mts
-@@ -1,5 +1,6 @@
+@@ -1,9 +1,10 @@
  import react from '@vitejs/plugin-react-swc';
  import browserslistToEsbuild from 'browserslist-to-esbuild';
+-import {defineConfig} from 'vite';
 +import fs from 'fs';
- import {defineConfig} from 'vite';
++import { defineConfig } from 'vite';
  import checker from 'vite-plugin-checker';
- import {nodePolyfills} from 'vite-plugin-node-polyfills';
+-import {nodePolyfills} from 'vite-plugin-node-polyfills';
+-import {VitePWA} from 'vite-plugin-pwa';
++import { nodePolyfills } from 'vite-plugin-node-polyfills';
++import { VitePWA } from 'vite-plugin-pwa';
+ import packageJson from './package.json';
+ 
+ export default defineConfig({
 @@ -52,7 +53,49 @@ export default defineConfig({
  			workbox: {
  				globPatterns: ['**/*.{js,css,html,svg,woff,woff2}']
