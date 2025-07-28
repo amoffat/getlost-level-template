@@ -41,8 +41,8 @@ _raw_expression: \
 _boolean: TRUE | FALSE
 _variable: global_var | local_var
 
-global_var : "$" VAR_NAME
-local_var : "_" VAR_NAME
+global_var: "$" VAR_NAME
+local_var: "_" VAR_NAME
 
 VAR_NAME: WORD ("." WORD)*
 

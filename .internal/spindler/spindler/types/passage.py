@@ -41,8 +41,6 @@ class TraverseState:
     children: list[str] = field(default_factory=list)
     # The passage init code
     init: list[str] = field(default_factory=list)
-    # async functions that need to be awaited
-    async_functions: list[str] = field(default_factory=list)
 
 
 @dataclass

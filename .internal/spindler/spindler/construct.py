@@ -332,9 +332,7 @@ def render(passages: list[TweePassage]) -> RenderResult:
                 s = node.value
                 return s
             elif node.type == "TEXT":
-                s = node.value.strip()
-                all_strings[hash_name(s)] = s
-                return s
+                raise RuntimeError("Should never get here.")
 
             return node.value
 
