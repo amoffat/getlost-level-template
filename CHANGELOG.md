@@ -12,6 +12,7 @@ The template version should stay in sync with the engine version
 - Map maze
 - `initRoom()` -> `init()`
 - `grantedMarkers()` -> `markers()`
+- Engine version 5.0.0
 
 ## 4.0.0 - 7/22/25
 
