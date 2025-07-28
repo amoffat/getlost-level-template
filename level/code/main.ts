@@ -1,32 +1,35 @@
 import * as host from "@gl/api/w2h/host";
 
+import { CrossFadeSpec } from "@gl/api/types/sound";
 import { ColorMatrixFilter } from "@gl/filters/colormatrix";
 import { getSunEventName, SunEvent } from "@gl/types/time";
 import { Periodic } from "@gl/utils/periodic";
 import { Player } from "@gl/utils/player";
 import { createHeatFilter, RippleFilter } from "@gl/utils/ripple";
-import { isNight } from "@gl/utils/time";
+import { isDay, isNight, prevSunEvent } from "@gl/utils/time";
 import * as dialogue from "./generated/dialogue";
 
 export { initAsyncStack } from "@gl/utils/asyncify";
 export { card } from "./card";
 export { entrances, exits } from "./gateways";
 export { choiceMadeEvent } from "./generated/dialogue";
-export { grantedMarkers, usedMarkers } from "./markers";
+export { markers } from "./markers";
 export { pickups } from "./pickups";
 
 const log = host.debug.log;
 
 let tsfid!: i32;
 let player!: Player;
-let music!: i32;
-let hearts: f32 = 3;
+let dayMusic!: i32;
+let nightMusic!: i32;
+let hearts: f32 = 5;
 const overheatColor = "red";
 let nighttime: bool = false;
-let overheat: f32 = 0.0;
+export let overheat: f32 = 0.0;
+let heatRate: f32 = 0.02;
 let inWater: bool = false;
 const healingPool = new Periodic(200, 1000);
-const heatDamage = new Periodic(5000, 0);
+const heatDamage = new Periodic(1000, 0);
 let heatFilter!: RippleFilter;
 let colorMatrix!: ColorMatrixFilter;
 let heatAmt: f32 = 0.0;
@@ -36,7 +39,7 @@ let heatAmt: f32 = 0.0;
  * loaded. Use it to set up your level, like setting the time of day, or adding
  * filters.
  */
-export function initRoom(): void {
+export function init(): void {
   player = Player.default();
 
   heatFilter = createHeatFilter();
@@ -54,17 +57,37 @@ export function initRoom(): void {
    */
   // host.time.setSunEvent(SunEvent.SolarNoon, 0);
 
-  music = host.sound.loadSound({
-    name: "Musics/music",
+  host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+  host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
+  updateHeatFilter();
+
+  const hasMap = host.pickup.query("map");
+  host.pickup.toggle("map", !hasMap);
+
+  const stoleFruit = host.markers.query("stole-fruit", false);
+  host.sensors.toggleSensor("fruit", !stoleFruit);
+
+  dayMusic = host.sound.loadSound({
+    name: "Musics/music-day",
     loop: true,
-    autoplay: true,
+    autoplay: false,
     volume: 0.5,
     sprites: [],
   });
 
-  host.ui.setRating(0, 0, hearts, 5, "heart", "red");
-  host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
-  updateHeatFilter();
+  nightMusic = host.sound.loadSound({
+    name: "Musics/music-night",
+    loop: true,
+    autoplay: false,
+    volume: 0.5,
+    sprites: [],
+  });
+
+  const ev = host.time.getSunEvent();
+  host.sound.playSound({
+    assetId: isNight(ev) ? nightMusic : dayMusic,
+    spriteId: -1,
+  });
 }
 
 /**
@@ -238,6 +261,8 @@ export function sensorEvent(
     host.map.exit("west", false);
   } else if (sensorName === "exit-south" && entered) {
     host.map.exit("south", false);
+  } else if (sensorName === "exit-sphinx" && entered) {
+    host.map.exit("sphinx", false);
   } else if (sensorName === "nazar") {
     dialogue.stage_Nazar(entered);
   } else if (sensorName === "omar") {
@@ -266,6 +291,8 @@ export function sensorEvent(
     } else {
       host.controls.setButtons([]);
     }
+  } else if (sensorName === "heat-adjust") {
+    heatRate = entered ? 0.06 : 0.02;
   }
 }
 
@@ -274,8 +301,12 @@ export function sensorEvent(
  * SunriseEnd
  */
 export function timeChangedEvent(event: SunEvent): void {
-  log(`Time changed: ${getSunEventName(event)}`);
+  const lastEvent = prevSunEvent(event);
+  log(
+    `Time changed: ${getSunEventName(lastEvent)} -> ${getSunEventName(event)} `
+  );
 
+  const wasDay = isDay(lastEvent);
   nighttime = isNight(event);
   host.lights.toggleLight("flame", nighttime);
   host.sensors.toggleSensor("flame", nighttime);
@@ -287,6 +318,22 @@ export function timeChangedEvent(event: SunEvent): void {
   }
 
   updateHeatFilter();
+
+  if (event === SunEvent.SunsetStart) {
+    const spec = new CrossFadeSpec();
+    spec.assetAId = dayMusic;
+    spec.assetBId = nightMusic;
+    spec.volumeAStart = 0.5;
+    spec.volumeBEnd = 0.5;
+    host.sound.crossfade(spec);
+  } else if (event === SunEvent.Dawn) {
+    const spec = new CrossFadeSpec();
+    spec.assetAId = nightMusic;
+    spec.assetBId = dayMusic;
+    spec.volumeAStart = 0.5;
+    spec.volumeBEnd = 0.5;
+    host.sound.crossfade(spec);
+  }
 }
 
 /**
@@ -296,7 +343,9 @@ export function timeChangedEvent(event: SunEvent): void {
  *
  * @param timestep The time since the last tick in milliseconds.
  */
-export function pauseTick(timestep: f32): void {}
+export function pauseTick(timestep: f32): void {
+  host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
+}
 
 /**
  * Called every frame. Use this to update your level in real-time. Timestep is
@@ -320,7 +369,7 @@ export function tickRoom(timestep: f32): void {
 
   // Or we can advance the time of day manually, increasing the step size to
   // make the days faster.
-  // host.time.advanceSunTime(timestep * 1000);
+  // host.time.advanceSunTime(timestep * 2000);
 
   updateHeatFilter();
 
@@ -346,4 +395,8 @@ export function tickRoom(timestep: f32): void {
   }
 
   host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
+}
+
+export function reduceOverheatBy(amt: f32): void {
+  overheat = Math.max(0, overheat - amt) as f32;
 }

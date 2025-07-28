@@ -23,3 +23,11 @@ export class PlayOpts {
   assetId!: i32;
   spriteId: i32 = -1;
 }
+
+export class CrossFadeSpec {
+  assetAId!: i32;
+  assetBId!: i32;
+  duration: i32 = 5000; // ms
+  volumeAStart: f32 = 1;
+  volumeBEnd: f32 = 0;
+}

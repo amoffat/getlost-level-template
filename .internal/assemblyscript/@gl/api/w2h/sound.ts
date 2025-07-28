@@ -1,4 +1,4 @@
-import { LoadOpts, PlayOpts } from "../types/sound";
+import { CrossFadeSpec, LoadOpts, PlayOpts } from "../types/sound";
 
 /**
  * Loads a sound and returns its ID.
@@ -14,11 +14,7 @@ export declare function setVolume(
   soundId: i32,
   volume: f32
 ): void;
-export declare function crossfade(
-  assetAId: i32,
-  assetBId: i32,
-  duration: i32
-): void;
+export declare function crossfade(opts: CrossFadeSpec): void;
 
 export const _keep_loadSound = loadSound;
 export const _keep_playSound = playSound;
