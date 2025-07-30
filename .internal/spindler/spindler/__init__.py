@@ -68,29 +68,27 @@ def main():
     preserved_context = {}
     if args.output_strings.exists():
         with open(args.output_strings, "r") as f:
-            try:
-                existing = json.load(f)
-            except Exception:
-                existing = {}
-        for k, v in existing.items():
-            if k.endswith("_"):
-                base_key = k[:-1]
-                if base_key in result.strings:
-                    preserved_context[k] = v
-
-    # Merge preserved context keys into result.strings
-    merged_strings = dict(result.strings)
-    merged_strings.update(preserved_context)
+            for line in f:
+                try:
+                    entry = json.loads(line)
+                    key = entry.get("k")
+                    context = entry.get("ctx")
+                    if key is not None and context is not None:
+                        preserved_context[key] = context
+                except Exception:
+                    continue
 
     args.output_strings.parent.mkdir(parents=True, exist_ok=True)
     with open(args.output_strings, "w") as strings_file:
-        json.dump(
-            merged_strings,
-            strings_file,
-            ensure_ascii=False,
-            sort_keys=True,
-            indent=2,
-        )
+        for k in sorted(result.strings.keys()):
+            val = result.strings[k]
+            ctx = preserved_context.get(k, None)
+            entry = {
+                "ctx": ctx,
+                "k": k,
+                "v": val,
+            }
+            strings_file.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

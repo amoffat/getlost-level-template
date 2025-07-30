@@ -84,7 +84,7 @@ export async function compileWasm({
   // Run the spindler command and write its output to dialogue.ts
   const spindlerInput = resolve(levelDir, "story", "Level.twee");
   const codeOutput = resolve(genDir, "dialogue.ts");
-  const stringsOutput = resolve(transDir, "dialogue.json");
+  const stringsOutput = resolve(transDir, "dialogue.jsonl");
   try {
     const spindlerArgs = [
       spindlerInput,

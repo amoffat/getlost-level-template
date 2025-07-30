@@ -1,4 +1,5 @@
 import * as host from "@gl/api/w2h/host";
+import { String } from "@gl/types/i18n";
 import * as twine from "@gl/utils/twine";
 import * as level from "../main";
 
@@ -292,9 +293,6 @@ export function passage_Fire(): void {
       text = "bbe687cd";
       // Who are you?
       choices.push("9251bf45");
-
-      // Ignore the fire
-      choices.push("690c49a8");
     }
   }
 
@@ -799,6 +797,11 @@ export function passage_Omar(): void {
       // Thanks, but I'm ok.
       choices.push("1c802db9");
     }
+
+    if (twine.queryMarker("/died-*/ or /.*overheat/")) {
+      // "Did you try to get the map?"
+      text = "d01fbf94";
+    }
   } else {
     // "It's much cooler at night."
     text = "1a423065";
@@ -842,11 +845,9 @@ export function passage_Nazar(): void {
     // "I'd like to chat, but it's getting late. Come back during the day."
     text = "eb8848da";
   } else {
-    if (twine.visited("e1ffb1d2") > 1) {
+    if (twine.hasVisited("e1ffb1d2")) {
       // "Hello again."
       text = "18083266";
-      // What's new?
-      choices.push("623aab5c");
     } else {
       // "Welcome, I'm Nazar."
       text = "6bb62fa6";
@@ -985,6 +986,35 @@ export function passage_Knight(): void {
   host.text.display("491e88c5", title, text, choices, state.params, animate);
 }
 
+// Show interact button for "Sorry, I was hungry"
+export function stage_a544db48(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: interactButton,
+        slug: "passage/a544db48",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// "Sorry, I was hungry"
+export function passage_a544db48(): void {
+  // "Nazar"
+  const title = "e1ffb1d2";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  twine.incrementVisitCount("a544db48");
+
+  // "Hmph."
+  text = "10dea114";
+
+  host.text.display("a544db48", title, text, choices, state.params, animate);
+}
+
 // Show interact button for "Well"
 export function stage_Well(entered: bool): void {
   if (entered) {
@@ -1016,8 +1046,10 @@ export function passage_Well(): void {
   // Step back
   choices.push("b863269e");
 
-  // Draw water
-  choices.push("857ccfa7");
+  if (level.overheat >= 0.1) {
+    // Draw water
+    choices.push("857ccfa7");
+  }
 
   host.text.display("bdc7e965", title, text, choices, state.params, animate);
 }
@@ -1146,35 +1178,6 @@ export function passage_216c5e8c(): void {
   text = "7c1dac67";
 
   host.text.display("216c5e8c", title, text, choices, state.params, animate);
-}
-
-// Show interact button for "What's new?"
-export function stage_623aab5c(entered: bool): void {
-  if (entered) {
-    host.controls.setButtons([
-      {
-        label: interactButton,
-        slug: "passage/623aab5c",
-      },
-    ]);
-  } else {
-    host.controls.setButtons([]);
-  }
-}
-
-// "What's new?"
-export function passage_623aab5c(): void {
-  // "Nazar"
-  const title = "e1ffb1d2";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  twine.incrementVisitCount("623aab5c");
-
-  // "Not much."
-  text = "88d44f50";
-
-  host.text.display("623aab5c", title, text, choices, state.params, animate);
 }
 
 // Show interact button for "Where are you from?"
@@ -1731,6 +1734,11 @@ export function dispatch(passageId: string): void {
     passage_Knight();
   }
 
+  if (passageId === "a544db48") {
+    found = true;
+    passage_a544db48();
+  }
+
   if (passageId === "bdc7e965") {
     found = true;
     passage_Well();
@@ -1754,11 +1762,6 @@ export function dispatch(passageId: string): void {
   if (passageId === "216c5e8c") {
     found = true;
     passage_216c5e8c();
-  }
-
-  if (passageId === "623aab5c") {
-    found = true;
-    passage_623aab5c();
   }
 
   if (passageId === "63265a79") {

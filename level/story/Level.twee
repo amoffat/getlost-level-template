@@ -51,7 +51,6 @@ You've returned.
 Greetings.... traveller...
 
 [[Who are you?|who-fire]]
-[[Ignore the fire]]
 <</if>>
 <</if>>
 
@@ -169,10 +168,6 @@ You've lost your mind. Please go.
 You are? Interesting...
 
 
-:: Ignore the fire {"position":"3250,1525","size":"100,100"}
-
-
-
 :: Kid [Omar] {"position":"3950,1925","size":"100,100"}
 <<if isDay()>>
 It's pretty hot out here huh? I have some water if you get thirsty.
@@ -181,6 +176,11 @@ It's pretty hot out here huh? I have some water if you get thirsty.
 [[Help me, I'm about to pass out...]]
 [[Thanks, but I'm ok.]]
 <</if>>
+
+<<if queryMarker("/died-*/ or /.*overheat/")>>
+Did you try to get the map?
+<</if>>
+
 <<else>>
 It's much cooler at night.
 <</if>>
@@ -195,9 +195,8 @@ I saw you take that fruit. I don't do business with thieves. Please leave.
 I'd like to chat, but it's getting late. Come back during the day.
 <<else>>
 
-<<if visited() > 1 >>
+<<if hasVisited()>>
 Hello again.
-[[What's new?]]
 <<else>>
 Welcome, I'm Nazar.
 [[Hi Nazar, I'm $playerName.]]
@@ -246,7 +245,7 @@ I thought I said go away.
 
 
 :: Sorry, I was hungry {"position":"3300,2750","size":"100,100"}
-
+Hmph.
 
 
 :: Start {"position":"1675,100","size":"100,100"}
@@ -276,7 +275,9 @@ There's a ladder going down, but you cannot see the bottom.
 
 [[Climb down]]
 [[Step back]]
+<<if level.overheat >= 0.1>>
 [[Draw water]]
+<</if>>
 
 
 :: What battle? {"position":"1975,2675","size":"100,100"}
@@ -299,10 +300,6 @@ I mean he arrived on foot, without a weapon and covered in blood. We thought he 
 
 :: What is he guarding you from? {"position":"2500,3250","size":"100,100"}
 You'll have to ask him.
-
-
-:: What's new? {"position":"1825,2425","size":"100,100"}
-Not much.
 
 
 :: When does the knight leave? {"position":"2075,3250","size":"100,100"}
