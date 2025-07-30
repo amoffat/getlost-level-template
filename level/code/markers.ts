@@ -14,5 +14,9 @@ export function markers(): Marker[] {
       description:
         "The player lied about stealing fruit from an unguarded market.",
     },
+    {
+      slug: "died-overheated",
+      description: "The player died from overheating.",
+    },
   ];
 }

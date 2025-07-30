@@ -81,6 +81,7 @@ The template version should stay in sync with the engine version
 - Bugfix multiline dialogue
 - Allow setting dialogue passage title by setting $title var
 - Use engine version 0.13.0
+- Map maze
 
 ## 0.12.1 - 6/26/25
 

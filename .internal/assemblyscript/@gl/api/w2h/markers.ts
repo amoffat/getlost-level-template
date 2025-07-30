@@ -2,8 +2,9 @@
  * Report a marker. This will show a toast to the player.
  *
  * @param slug The slug of the marker.
+ * @param notify Whether to notify the player with a toast.
  */
-export declare function record(slug: string): void;
+export declare function record(slug: string, notify: boolean): void;
 
 /**
  * Check if the player has a marker. If true, this will show a toast to the

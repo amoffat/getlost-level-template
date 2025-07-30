@@ -12,6 +12,9 @@
             "dynamicWrapping": false,
             "scaleInDock": 1
         },
+        "FlagWhite16x16.tsj": {
+            "dynamicWrapping": false
+        },
         "Food.tsj": {
             "dynamicWrapping": true,
             "scaleInDock": 1
@@ -63,14 +66,14 @@
                 9
             ],
             "expandedObjectLayers": [
-                8,
-                17
+                17,
+                8
             ],
             "scale": 3,
             "selectedLayer": 16,
             "viewCenter": {
-                "x": 135.16666666666666,
-                "y": 131.5
+                "x": 87.66666666666666,
+                "y": -128.33333333333331
             }
         },
         "tronFreeTiles.tsj": {
@@ -78,7 +81,7 @@
         }
     },
     "frame.defaultDuration": 100,
-    "last.imagePath": "/workspaces/getlost-level-template/level/art/Actor/Characters/Skeleton",
+    "last.imagePath": "/workspaces/getlost-level-template/level/art/Backgrounds/Animated/Flag",
     "last.objectTypesPath": "/home/amoffat/work/getlost-level-template/.devcontainer/propertytypes.json",
     "map.fixedSize": false,
     "map.lastUsedFormat": "json",
@@ -91,9 +94,9 @@
     "project": "level.tiled-project",
     "property.type": "float",
     "recentFiles": [
-        "Skeleton.tsj",
         "TilesetDesert.tsj",
         "level.tmj",
+        "Skeleton.tsj",
         "blank.tmj",
         "Omar.tsj",
         "Spirit.tsj",

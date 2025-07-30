@@ -1,4 +1,5 @@
 import * as host from "@gl/api/w2h/host";
+import { loadMusic } from "@gl/utils/sound";
 
 import { CrossFadeSpec } from "@gl/api/types/sound";
 import { ColorMatrixFilter } from "@gl/filters/colormatrix";
@@ -21,7 +22,12 @@ const log = host.debug.log;
 let tsfid!: i32;
 let player!: Player;
 let dayMusic!: i32;
+const dayMusicVolume: f32 = 0.5;
 let nightMusic!: i32;
+const nightMusicVolume: f32 = 0.5;
+let mazeMusic!: i32;
+const mazeMusicVolume: f32 = 0.8;
+let inMaze: bool = false;
 let hearts: f32 = 5;
 const overheatColor = "red";
 let nighttime: bool = false;
@@ -67,21 +73,9 @@ export function init(): void {
   const stoleFruit = host.markers.query("stole-fruit", false);
   host.sensors.toggleSensor("fruit", !stoleFruit);
 
-  dayMusic = host.sound.loadSound({
-    name: "Musics/music-day",
-    loop: true,
-    autoplay: false,
-    volume: 0.5,
-    sprites: [],
-  });
-
-  nightMusic = host.sound.loadSound({
-    name: "Musics/music-night",
-    loop: true,
-    autoplay: false,
-    volume: 0.5,
-    sprites: [],
-  });
+  dayMusic = loadMusic("Musics/music-day", dayMusicVolume);
+  nightMusic = loadMusic("Musics/music-night", nightMusicVolume);
+  mazeMusic = loadMusic("Musics/maze", mazeMusicVolume);
 
   const ev = host.time.getSunEvent();
   host.sound.playSound({
@@ -159,7 +153,7 @@ export function pickupEvent(slug: string, took: bool): void {
     host.sensors.toggleSensor("flame", false);
     host.npc.toggleNPC("flame", false);
   } else if (slug === "fruit" && took) {
-    host.markers.record("stole-fruit");
+    host.markers.record("stole-fruit", true);
   }
 }
 
@@ -293,6 +287,23 @@ export function sensorEvent(
     }
   } else if (sensorName === "heat-adjust") {
     heatRate = entered ? 0.06 : 0.02;
+    inMaze = entered;
+
+    if (entered) {
+      const spec = new CrossFadeSpec();
+      spec.assetAId = nighttime ? nightMusic : dayMusic;
+      spec.assetBId = mazeMusic;
+      spec.volumeAStart = nighttime ? nightMusicVolume : dayMusicVolume;
+      spec.volumeBEnd = mazeMusicVolume;
+      host.sound.crossfade(spec);
+    } else {
+      const spec = new CrossFadeSpec();
+      spec.assetAId = mazeMusic;
+      spec.assetBId = nighttime ? nightMusic : dayMusic;
+      spec.volumeAStart = mazeMusicVolume;
+      spec.volumeBEnd = nighttime ? nightMusicVolume : dayMusicVolume;
+      host.sound.crossfade(spec);
+    }
   }
 }
 
@@ -323,15 +334,15 @@ export function timeChangedEvent(event: SunEvent): void {
     const spec = new CrossFadeSpec();
     spec.assetAId = dayMusic;
     spec.assetBId = nightMusic;
-    spec.volumeAStart = 0.5;
-    spec.volumeBEnd = 0.5;
+    spec.volumeAStart = dayMusicVolume;
+    spec.volumeBEnd = nightMusicVolume;
     host.sound.crossfade(spec);
   } else if (event === SunEvent.Dawn) {
     const spec = new CrossFadeSpec();
     spec.assetAId = nightMusic;
     spec.assetBId = dayMusic;
-    spec.volumeAStart = 0.5;
-    spec.volumeBEnd = 0.5;
+    spec.volumeAStart = nightMusicVolume;
+    spec.volumeBEnd = dayMusicVolume;
     host.sound.crossfade(spec);
   }
 }
@@ -353,7 +364,7 @@ export function pauseTick(timestep: f32): void {
  *
  * @param timestep The time since the last tick in milliseconds.
  */
-export function tickRoom(timestep: f32): void {
+export function tick(timestep: f32): void {
   player.tick(timestep);
   host.player.setAction(player.action);
   host.player.setPos(player.pos.x, player.pos.y);
@@ -391,6 +402,7 @@ export function tickRoom(timestep: f32): void {
   }
 
   if (hearts <= 0) {
+    host.markers.record("died-overheated", false);
     host.map.exit("death", true);
   }
 

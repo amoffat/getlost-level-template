@@ -27,7 +27,7 @@ export function either<T>(options: T[]): T {
 }
 
 export function recordMarker(slug: string): void {
-  host.markers.record(slug);
+  host.markers.record(slug, true);
 }
 
 export function queryMarker(name: string): bool {
