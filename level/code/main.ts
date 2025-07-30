@@ -288,21 +288,28 @@ export function sensorEvent(
   } else if (sensorName === "heat-adjust") {
     heatRate = entered ? 0.06 : 0.02;
     inMaze = entered;
+    const isDay = !nighttime;
 
     if (entered) {
-      const spec = new CrossFadeSpec();
-      spec.assetAId = nighttime ? nightMusic : dayMusic;
-      spec.assetBId = mazeMusic;
-      spec.volumeAStart = nighttime ? nightMusicVolume : dayMusicVolume;
-      spec.volumeBEnd = mazeMusicVolume;
-      host.sound.crossfade(spec);
+      if (isDay) {
+        dialogue.passage_DesertEntrance();
+
+        const spec = new CrossFadeSpec();
+        spec.assetAId = dayMusic;
+        spec.assetBId = mazeMusic;
+        spec.volumeAStart = dayMusicVolume;
+        spec.volumeBEnd = mazeMusicVolume;
+        host.sound.crossfade(spec);
+      }
     } else {
-      const spec = new CrossFadeSpec();
-      spec.assetAId = mazeMusic;
-      spec.assetBId = nighttime ? nightMusic : dayMusic;
-      spec.volumeAStart = mazeMusicVolume;
-      spec.volumeBEnd = nighttime ? nightMusicVolume : dayMusicVolume;
-      host.sound.crossfade(spec);
+      if (isDay) {
+        const spec = new CrossFadeSpec();
+        spec.assetAId = mazeMusic;
+        spec.assetBId = dayMusic;
+        spec.volumeAStart = mazeMusicVolume;
+        spec.volumeBEnd = dayMusicVolume;
+        host.sound.crossfade(spec);
+      }
     }
   }
 }
