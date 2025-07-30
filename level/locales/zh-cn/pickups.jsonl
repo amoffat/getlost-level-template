@@ -1,0 +1,6 @@
+{"k": "flame.name", "v": "蓝色火焰", "original": "Blue flame", "ctx": "The name of a fire npc character.", "lock": false}
+{"k": "flame.text", "v": "一小簇蓝色的火焰愤怒地闪烁着。我觉得它很恼火。", "original": "A small blue flame flickers angrily. I think it is annoyed.", "ctx": "A description of a fire npc character.", "lock": false}
+{"k": "fruit.name", "v": "绿洲水果", "original": "Oasis fruit", "ctx": "The name of a fruit found in the oasis.", "lock": false}
+{"k": "fruit.text", "v": "一种在沙漠中生长的水果，看起来很美味。", "original": "A fruit that grows in the desert. It looks delicious.", "ctx": "A description of a fruit found in the oasis.", "lock": false}
+{"k": "map.name", "v": "尘土飞扬的地图", "original": "Dusty map", "ctx": "The name of a map found in the desert.", "lock": false}
+{"k": "map.text", "v": "一张陌生地点的地图。有一个明显的X标记着某个重要的地方。", "original": "A map of an unfamiliar place. There's a clear X marking something important.", "ctx": "A description of a map found in the desert.", "lock": false}

@@ -1,0 +1,6 @@
+{"k": "flame.name", "v": "Blaues Flammen", "original": "Blue flame", "ctx": "The name of a fire npc character.", "lock": false}
+{"k": "flame.text", "v": "Eine kleine blaue Flamme flackert wütend. Ich glaube, sie ist verärgert.", "original": "A small blue flame flickers angrily. I think it is annoyed.", "ctx": "A description of a fire npc character.", "lock": false}
+{"k": "fruit.name", "v": "Oasenfrucht", "original": "Oasis fruit", "ctx": "The name of a fruit found in the oasis.", "lock": false}
+{"k": "fruit.text", "v": "Eine Frucht, die in der Wüste wächst. Sie sieht köstlich aus.", "original": "A fruit that grows in the desert. It looks delicious.", "ctx": "A description of a fruit found in the oasis.", "lock": false}
+{"k": "map.name", "v": "Staubige Karte", "original": "Dusty map", "ctx": "The name of a map found in the desert.", "lock": false}
+{"k": "map.text", "v": "Eine Karte eines unbekannten Ortes. Es gibt ein deutlich sichtbares X, das auf etwas Wichtiges hinweist.", "original": "A map of an unfamiliar place. There's a clear X marking something important.", "ctx": "A description of a map found in the desert.", "lock": false}

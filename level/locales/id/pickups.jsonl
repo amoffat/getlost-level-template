@@ -1,0 +1,6 @@
+{"k": "flame.name", "v": "Api Biru", "original": "Blue flame", "ctx": "The name of a fire npc character.", "lock": false}
+{"k": "flame.text", "v": "Sebuah nyala kecil berwarna biru berkedip marah-marah. Saya pikir itu sedang kesal.", "original": "A small blue flame flickers angrily. I think it is annoyed.", "ctx": "A description of a fire npc character.", "lock": false}
+{"k": "fruit.name", "v": "Buah oase", "original": "Oasis fruit", "ctx": "The name of a fruit found in the oasis.", "lock": false}
+{"k": "fruit.text", "v": "Sebuah buah yang tumbuh di padang pasir. Tampilannya tampak lezat.", "original": "A fruit that grows in the desert. It looks delicious.", "ctx": "A description of a fruit found in the oasis.", "lock": false}
+{"k": "map.name", "v": "Peta berdebu", "original": "Dusty map", "ctx": "The name of a map found in the desert.", "lock": false}
+{"k": "map.text", "v": "Ada peta dari tempat yang tidak dikenal. Ada tanda X yang jelas menandai sesuatu yang penting.", "original": "A map of an unfamiliar place. There's a clear X marking something important.", "ctx": "A description of a map found in the desert.", "lock": false}

@@ -1,0 +1,6 @@
+{"k": "flame.name", "v": "Mavi alev", "original": "Blue flame", "ctx": "The name of a fire npc character.", "lock": false}
+{"k": "flame.text", "v": "Bir küçük mavi alev öfkeyle titriyor. Sanırım kızmış.", "original": "A small blue flame flickers angrily. I think it is annoyed.", "ctx": "A description of a fire npc character.", "lock": false}
+{"k": "fruit.name", "v": "Vaha meyvesi", "original": "Oasis fruit", "ctx": "The name of a fruit found in the oasis.", "lock": false}
+{"k": "fruit.text", "v": "Çölün içerisinde yetişen bir meyve. Lezzetli görünüyor.", "original": "A fruit that grows in the desert. It looks delicious.", "ctx": "A description of a fruit found in the oasis.", "lock": false}
+{"k": "map.name", "v": "Tozlu harita", "original": "Dusty map", "ctx": "The name of a map found in the desert.", "lock": false}
+{"k": "map.text", "v": "Tanıdık olmayan bir yerin haritası. Belirgin bir şekilde önemli bir şeyi işaretleyen bir X var.", "original": "A map of an unfamiliar place. There's a clear X marking something important.", "ctx": "A description of a map found in the desert.", "lock": false}

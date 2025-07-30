@@ -1,0 +1,6 @@
+{"ctx": "The name of a map found in the desert.", "k": "map.name", "v": "Dusty map"}
+{"ctx": "A description of a map found in the desert.", "k": "map.text", "v": "A map of an unfamiliar place. There's a clear X marking something important."}
+{"ctx": "The name of a fire npc character.", "k": "flame.name", "v": "Blue flame"}
+{"ctx": "A description of a fire npc character.", "k": "flame.text", "v": "A small blue flame flickers angrily. I think it is annoyed."}
+{"ctx": "The name of a fruit found in the oasis.", "k": "fruit.name", "v": "Oasis fruit"}
+{"ctx": "A description of a fruit found in the oasis.", "k": "fruit.text", "v": "A fruit that grows in the desert. It looks delicious."}

@@ -1,0 +1,108 @@
+{"k": "006d3ad6", "v": "天蓝骑士", "original": "Sir Azure", "ctx": "The name of a knight.", "lock": false}
+{"k": "092afab4", "v": "帮我找一下，我会告诉你。", "original": "Find it for me and I'll show you.", "ctx": null, "lock": false}
+{"k": "0d053e12", "v": "我在寻找的人拿着一张地图", "original": "The person I am seeking carries a map", "ctx": null, "lock": false}
+{"k": "0e865942", "v": "下面有一架梯子通向下方，但你无法看到底部。", "original": "There's a ladder going down, but you cannot see the bottom.", "ctx": null, "lock": false}
+{"k": "0ff99cc5", "v": "你疯了吗。请走吧。", "original": "You've lost your mind. Please go.", "ctx": null, "lock": false}
+{"k": "10dea114", "v": "哼。", "original": "Hmph.", "ctx": null, "lock": false}
+{"k": "12283998", "v": "*咳咳*…我说‘你好’", "original": "*ahem*... I said 'Hi'", "ctx": "A character is trying to get attention by clearing their throat and repeating their greeting.", "lock": false}
+{"k": "12890122", "v": "再见", "original": "Bye", "ctx": "Saying goodbye.", "lock": false}
+{"k": "15874eac", "v": "试试看吧。", "original": "Give it a shot.", "ctx": "A casual suggestion to try something.", "lock": false}
+{"k": "159272d5", "v": "我以前没见过你，你是和骑士一起来的吗？", "original": "I haven't seen you before, are you here with the Knight?", "ctx": null, "lock": false}
+{"k": "15dd9ed6", "v": "同行的旅人……我在这里寻找并观察。", "original": "A fellow traveller.... I'm here to seek and observe.", "ctx": null, "lock": false}
+{"k": "18083266", "v": "再见了。", "original": "Hello again.", "ctx": null, "lock": false}
+{"k": "1a423065", "v": "晚上更凉快。", "original": "It's much cooler at night.", "ctx": null, "lock": false}
+{"k": "1c802db9", "v": "谢谢，但我没事。", "original": "Thanks, but I'm ok.", "ctx": null, "lock": false}
+{"k": "1d925355", "v": "你好", "original": "Hi", "ctx": "A casual greeting.", "lock": false}
+{"k": "1de8ad8f", "v": "我把它放在那里了。把它还给我。", "original": "I left it there. Give it to me.", "ctx": "The character left an item somewhere and is asking for it back.", "lock": false}
+{"k": "1fab6079", "v": "和 Fire 交流", "original": "Talk to Fire", "ctx": null, "lock": false}
+{"k": "216c5e8c", "v": "他在护你免受什么伤害？", "original": "What is he guarding you from?", "ctx": null, "lock": false}
+{"k": "24ba5f34", "v": "我什么都没有拿", "original": "I didn't take anything", "ctx": null, "lock": false}
+{"k": "24f43b0d", "v": "和 Silent Knight 聊聊", "original": "Talk to Silent Knight", "ctx": null, "lock": false}
+{"k": "2aa61a95", "v": "在我来自的地方，我们不会有这样的对话，因为那里没有你也没有我。", "original": "In the place where I'm from, we wouldn't be having this conversation because there is no you or I.", "ctx": null, "lock": false}
+{"k": "2dd1283e", "v": "奥马尔", "original": "Omar", "ctx": "The name of a character in the game.", "lock": false}
+{"k": "2dd162b5", "v": "听我说得仔细点。我会得到那张地图。", "original": "Listen to me carefully. I'm getting that map.", "ctx": "An aggressive assertion that the character is determined to get the map.", "lock": false}
+{"k": "2ecf7f34", "v": "哦，你是说那个骑士吗？", "original": "Oh you mean the knight?", "ctx": null, "lock": false}
+{"k": "31ab4d0f", "v": "否。", "original": "No.", "ctx": null, "lock": false}
+{"k": "379dcdf1", "v": "你是怎么找到这份工作的？", "original": "How did you get this job?", "ctx": null, "lock": false}
+{"k": "3bc95ed3", "v": "把地图递给他", "original": "Hand him the map", "ctx": null, "lock": false}
+{"k": "3c0aa10d", "v": "你为什么要守护这个城镇？", "original": "Why are you guarding this town?", "ctx": null, "lock": false}
+{"k": "3ca52efa", "v": "我看到水火交融。", "original": "I saw fire on the water.", "ctx": null, "lock": false}
+{"k": "40345826", "v": "水非常冰冷，让你凉快下来。", "original": "The water is ice cold and cools you off.", "ctx": null, "lock": false}
+{"k": "42fcb639", "v": "那么信里写了些什么？", "original": "So what did the letter say?", "ctx": null, "lock": false}
+{"k": "4540b6fa", "v": "还想知道其他的吗？", "original": "Anything else you'd like to know?", "ctx": null, "lock": false}
+{"k": "45e8a7dd", "v": "你在寻找什么？", "original": "What are you seeking?", "ctx": null, "lock": false}
+{"k": "559c302f", "v": "我……刚来这里", "original": "I'm...new here", "ctx": null, "lock": false}
+{"k": "562cd4ad", "v": "你有名字吗？", "original": "Do you have a name?", "ctx": null, "lock": false}
+{"k": "58ba785b", "v": "你说你在寻找某样东西？", "original": "You said you were seeking something?", "ctx": null, "lock": false}
+{"k": "59f8038c", "v": "你找到了地图……拜托，把它给我……", "original": "You've found the map... Please, give it to me...", "ctx": null, "lock": false}
+{"k": "623930a8", "v": "I看到你拿了那个水果。我不与小偷做生意。请离开。<translated/>", "original": "I saw you take that fruit. I don't do business with thieves. Please leave.", "ctx": null, "lock": false}
+{"k": "63265a79", "v": "你来自哪里？", "original": "Where are you from?", "ctx": null, "lock": false}
+{"k": "63edc718", "v": "这是我最后一点水了。东边有一个绿洲，也可以帮你降降温。", "original": "This is the last of my water. There's an oasis to the east. That can cool you off too.", "ctx": null, "lock": false}
+{"k": "650209c4", "v": "地图有什么特别之处？", "original": "What's so special about a map?", "ctx": null, "lock": false}
+{"k": "698118b9", "v": "什么骑士？", "original": "What Knight?", "ctx": null, "lock": false}
+{"k": "6bb62fa6", "v": "欢迎，我是Nazar。", "original": "Welcome, I'm Nazar.", "ctx": null, "lock": false}
+{"k": "6c3f1cc4", "v": "酋长建立了这个村庄。", "original": "The Sheikh created this village.", "ctx": null, "lock": false}
+{"k": "708ba768", "v": "你说你在观察？什么？", "original": "You said you were observing? What?", "ctx": null, "lock": false}
+{"k": "7376aa01", "v": "对不起！快去绿洲！", "original": "Sorry! Go to the oasis, quick!", "ctx": null, "lock": false}
+{"k": "76f7e319", "v": "酋长让我这么做的。这就是我能告诉你的全部了。", "original": "The Sheikh asked me to. That's all I can tell you.", "ctx": null, "lock": false}
+{"k": "7ad97537", "v": "我明白了……如果你需要任何帮助，告诉我。我在这里帮你😊。", "original": "I see... let me know if you need anything. I'm here to help.", "ctx": null, "lock": false}
+{"k": "7c1dac67", "v": "你得问问他。", "original": "You'll have to ask him.", "ctx": null, "lock": false}
+{"k": "7d52fd29", "v": "嗨，Nazar，我是{{vars.playerName}}。", "original": "Hi Nazar, I'm {{vars.playerName}}.", "ctx": null, "lock": false}
+{"k": "80251c82", "v": "你从哪里得到那张地图？", "original": "Where did you get that map?", "ctx": null, "lock": false}
+{"k": "857ccfa7", "v": "提水", "original": "Draw water", "ctx": null, "lock": false}
+{"k": "885ce2f8", "v": "什么是教长？", "original": "Who is the Sheikh?", "ctx": null, "lock": false}
+{"k": "8afcb04f", "v": "他让我来这里守卫城镇。", "original": "He sent me here to guard the town.", "ctx": null, "lock": false}
+{"k": "8bcf2e27", "v": "好，冷静一下，给你。", "original": "Ok, calm down, here you go.", "ctx": "A response to a character who is agitated, indicating that the speaker is calming them down and giving them what they want.", "lock": false}
+{"k": "8d33b34a", "v": "帮帮我，我快要晕过去了…", "original": "Help me, I'm about to pass out...", "ctx": null, "lock": false}
+{"k": "90377201", "v": "这里挺热的吧？我有一些水，如果你渴了可以喝。", "original": "It's pretty hot out here huh? I have some water if you get thirsty.", "ctx": null, "lock": false}
+{"k": "909a9cff", "v": "下来", "original": "Climb down", "ctx": null, "lock": false}
+{"k": "9251bf45", "v": "你是谁？", "original": "Who are you?", "ctx": null, "lock": false}
+{"k": "96f38b61", "v": "那不是你的事。", "original": "That's not your concern.", "ctx": null, "lock": false}
+{"k": "97c6c94d", "v": "再见", "original": "Bye", "ctx": null, "lock": false}
+{"k": "99e18287", "v": "防什么？", "original": "Guard from what?", "ctx": null, "lock": false}
+{"k": "9b70a051", "v": "骑士什么时候离开？", "original": "When does the knight leave?", "ctx": null, "lock": false}
+{"k": "9d4f68e2", "v": "你是什么意思他出现了？", "original": "What do you mean he showed up?", "ctx": null, "lock": false}
+{"k": "a07e8baa", "v": "和孩子说话", "original": "Talk to Kid", "ctx": null, "lock": false}
+{"k": "a15f40ff", "v": "这里，这水应该能让你凉快一些。我没有很多。", "original": "Here, this water should cool you down. I don't have much.", "ctx": null, "lock": false}
+{"k": "a2b8560b", "v": "我知道你为何而来。", "original": "I know why you're here.", "ctx": null, "lock": false}
+{"k": "a544db48", "v": "对不起，我饿了", "original": "Sorry, I was hungry", "ctx": null, "lock": false}
+{"k": "a7b6d713", "v": "我的意思是他步行到达，没有携带武器，身上满是血迹。我们以为他离开战场去袭击我们的村庄，但其实他带着一封来自酋长的信。", "original": "I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.", "ctx": null, "lock": false}
+{"k": "a97314c9", "v": "和Nazar谈谈", "original": "Talk to Nazar", "ctx": null, "lock": false}
+{"k": "aa053912", "v": "你跟那位老人谈话了……", "original": "You talked to the old man...", "ctx": null, "lock": false}
+{"k": "aa225fe0", "v": "祝你安康。", "original": "Be well.", "ctx": "A farewell wishing the other character well.", "lock": false}
+{"k": "ab5df625", "v": "哇，这也太令人震惊了！我完全说不出话来！", "original": "...", "ctx": "Text representing that someone is speechless.", "lock": false}
+{"k": "acf8dced", "v": "信中说了什么？", "original": "What did the letter say?", "ctx": null, "lock": false}
+{"k": "b2a5f392", "v": "我想我会把它带到那水上的火焰那里。", "original": "I think I'll bring it to that fire on the water.", "ctx": null, "lock": false}
+{"k": "b4c1d391", "v": "有人告诉我这个村庄即将迎来一位新访客。", "original": "I was told this village would be getting a new visitor.", "ctx": null, "lock": false}
+{"k": "b5cbd2a3", "v": "…zzzzz…zzzzz…..zzzz…", "original": "...zzzzz...zzzzz.....zzzz...", "ctx": "Sleeping noises for an NPC.", "lock": false}
+{"k": "b863269e", "v": "后退", "original": "Step back", "ctx": null, "lock": false}
+{"k": "ba1494d0", "v": "谁是谢赫？", "original": "Who is the Sheikh?", "ctx": null, "lock": false}
+{"k": "bbe687cd", "v": "问候.....旅行者...", "original": "Greetings.... traveller...", "ctx": null, "lock": false}
+{"k": "bc301063", "v": "嗯...我志愿者了。这是个很长的故事，现在我非常忙。 😊", "original": "I.. uh... I volunteered. It's a long story, and I'm very busy right now.", "ctx": null, "lock": false}
+{"k": "bdc7e965", "v": "井", "original": "Well", "ctx": "A well of water.", "lock": false}
+{"k": "be1ca5bd", "v": "你是吗？很有趣……", "original": "You are? Interesting...", "ctx": null, "lock": false}
+{"k": "be9529b7", "v": "我不是说让你离开吗。", "original": "I thought I said go away.", "ctx": null, "lock": false}
+{"k": "c0aa9943", "v": "观察什么？", "original": "Observe what?", "ctx": null, "lock": false}
+{"k": "c141faa8", "v": "火", "original": "Fire", "ctx": "The name of a fire NPC character.", "lock": false}
+{"k": "c503743a", "v": "我在北边找到了它。", "original": "I found it up north.", "ctx": null, "lock": false}
+{"k": "c59b89a3", "v": "哦，所以你既是骗子又是小偷？", "original": "Oh, so you're a liar as well as a thief?", "ctx": null, "lock": false}
+{"k": "c8a7d597", "v": "明白了……", "original": "Gotcha...", "ctx": null, "lock": false}
+{"k": "d01fbf94", "v": "你试过获取地图了吗？", "original": "Did you try to get the map?", "ctx": null, "lock": false}
+{"k": "d188824d", "v": "逃跑", "original": "Run away", "ctx": "An option to flee from a situation.", "lock": false}
+{"k": "d6e3cd9f", "v": "A地图...", "original": "A map...", "ctx": null, "lock": false}
+{"k": "d95d75d7", "v": "南方有一位骑士。他不怎么说话。自己去看看吧。", "original": "There's a knight to the south. He doesn't talk much. Go see for yourself.", "ctx": null, "lock": false}
+{"k": "dff1fa28", "v": "只是一周前。", "original": "Only a week ago.", "ctx": null, "lock": false}
+{"k": "dffd1999", "v": "你已经回来了。", "original": "You've returned.", "ctx": null, "lock": false}
+{"k": "e0a2d72f", "v": "不关你的事", "original": "None of your business", "ctx": null, "lock": false}
+{"k": "e1ffb1d2", "v": "Nazar", "original": "Nazar", "ctx": null, "lock": false}
+{"k": "e245bb27", "v": "好吧，我知道他不是这里的人。曾经有一场战斗，然后他出现了。<to_translate>\n</to_translate>", "original": "Well, I know he's not from around here. There was a battle. Then he showed up.", "ctx": null, "lock": false}
+{"k": "e45c4215", "v": "哪场战斗？", "original": "What battle?", "ctx": null, "lock": false}
+{"k": "e4657ad8", "v": "你真的不是本地人，是吗？在我出生之前，我的族人就已经在战斗了。", "original": "You're really not from around here, are you? My people have been at war since before I was born.", "ctx": null, "lock": false}
+{"k": "eb8848da", "v": "我想聊天，但时间太晚了。白天再来吧。", "original": "I'd like to chat, but it's getting late. Come back during the day.", "ctx": null, "lock": false}
+{"k": "ed68fc3d", "v": "是的", "original": "Yes", "ctx": null, "lock": false}
+{"k": "f213214a", "v": "你对那个骑士了解多少？", "original": "What do you know about that knight?", "ctx": null, "lock": false}
+{"k": "f24b5246", "v": "骑士", "original": "Knight", "ctx": "The name of a knight NPC character.", "lock": false}
+{"k": "f304833e", "v": "另一个地方。你的语言没有对应的词汇。🏞️", "original": "A different place. Your language lacks the words for it.", "ctx": "A description of a place that is not easily described.", "lock": false}
+{"k": "f5654ac2", "v": "它说“给这个士兵食物和水。作为回报，他会守护这个村庄。” 它有酋长的印章。这是毫无疑问的。", "original": "It said \"Give food and water to this soldier. In return he will guard the village.\" It had the Sheikh's seal. It was unmistakable.", "ctx": null, "lock": false}
+{"k": "f6ded42f", "v": "这是多少小时前的事？", "original": "How long ago was this?", "ctx": null, "lock": false}
+{"k": "interact", "v": "互动", "original": "Interact", "ctx": null, "lock": false}

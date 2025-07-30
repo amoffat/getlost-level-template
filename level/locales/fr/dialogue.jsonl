@@ -1,0 +1,108 @@
+{"k": "006d3ad6", "v": "Sir Azure", "original": "Sir Azure", "ctx": "The name of a knight.", "lock": false}
+{"k": "092afab4", "v": "trouve-le pour moi et je te montrerai.", "original": "Find it for me and I'll show you.", "ctx": null, "lock": false}
+{"k": "0d053e12", "v": "La personne que je cherche porte une carte", "original": "The person I am seeking carries a map", "ctx": null, "lock": false}
+{"k": "0e865942", "v": "Il y a une échelle qui descend, mais vous ne pouvez pas voir le fond.", "original": "There's a ladder going down, but you cannot see the bottom.", "ctx": null, "lock": false}
+{"k": "0ff99cc5", "v": "Tu as perdu la tête. S'il te plaît, pars.", "original": "You've lost your mind. Please go.", "ctx": null, "lock": false}
+{"k": "10dea114", "v": "Hmph.", "original": "Hmph.", "ctx": null, "lock": false}
+{"k": "12283998", "v": "*cui-cui*... J'ai dit 'Salut'", "original": "*ahem*... I said 'Hi'", "ctx": "A character is trying to get attention by clearing their throat and repeating their greeting.", "lock": false}
+{"k": "12890122", "v": "Bye", "original": "Bye", "ctx": "Saying goodbye.", "lock": false}
+{"k": "15874eac", "v": "Essaie ta chance.", "original": "Give it a shot.", "ctx": "A casual suggestion to try something.", "lock": false}
+{"k": "159272d5", "v": "Je ne vous ai pas vu(e) auparavant, êtes-vous ici avec le Chevalier ?", "original": "I haven't seen you before, are you here with the Knight?", "ctx": null, "lock": false}
+{"k": "15dd9ed6", "v": "Un compagnon de voyage... Je suis ici pour observer et apprendre.", "original": "A fellow traveller.... I'm here to seek and observe.", "ctx": null, "lock": false}
+{"k": "18083266", "v": "Encore une fois, bonjour.", "original": "Hello again.", "ctx": null, "lock": false}
+{"k": "1a423065", "v": "Il fait beaucoup plus frais la nuit.", "original": "It's much cooler at night.", "ctx": null, "lock": false}
+{"k": "1c802db9", "v": "Merci, mais ça va.", "original": "Thanks, but I'm ok.", "ctx": null, "lock": false}
+{"k": "1d925355", "v": "Salut", "original": "Hi", "ctx": "A casual greeting.", "lock": false}
+{"k": "1de8ad8f", "v": "Je l'ai laissé là-bas. Donne-le-moi.", "original": "I left it there. Give it to me.", "ctx": "The character left an item somewhere and is asking for it back.", "lock": false}
+{"k": "1fab6079", "v": "Parle au Feu", "original": "Talk to Fire", "ctx": null, "lock": false}
+{"k": "216c5e8c", "v": "De quoi te protège-t-il ?", "original": "What is he guarding you from?", "ctx": null, "lock": false}
+{"k": "24ba5f34", "v": "Je n'ai rien pris", "original": "I didn't take anything", "ctx": null, "lock": false}
+{"k": "24f43b0d", "v": "Parlez à Silent Knight", "original": "Talk to Silent Knight", "ctx": null, "lock": false}
+{"k": "2aa61a95", "v": "Dans l'endroit d'où je viens, nous ne parlerions pas de cela parce qu'il n'y a ni toi ni moi.", "original": "In the place where I'm from, we wouldn't be having this conversation because there is no you or I.", "ctx": null, "lock": false}
+{"k": "2dd1283e", "v": "Omar", "original": "Omar", "ctx": "The name of a character in the game.", "lock": false}
+{"k": "2dd162b5", "v": "Écoute-moi attentivement. Je vais récupérer cette carte.", "original": "Listen to me carefully. I'm getting that map.", "ctx": "An aggressive assertion that the character is determined to get the map.", "lock": false}
+{"k": "2ecf7f34", "v": "Oh, tu veux dire le chevalier ?", "original": "Oh you mean the knight?", "ctx": null, "lock": false}
+{"k": "31ab4d0f", "v": "No.", "original": "No.", "ctx": null, "lock": false}
+{"k": "379dcdf1", "v": "Comment as-tu obtenu ce travail ?", "original": "How did you get this job?", "ctx": null, "lock": false}
+{"k": "3bc95ed3", "v": "Donne-lui la carte", "original": "Hand him the map", "ctx": null, "lock": false}
+{"k": "3c0aa10d", "v": "Pourquoi gardes-tu cette ville ?", "original": "Why are you guarding this town?", "ctx": null, "lock": false}
+{"k": "3ca52efa", "v": "J'ai vu du feu sur l'eau.", "original": "I saw fire on the water.", "ctx": null, "lock": false}
+{"k": "40345826", "v": "L'eau est glacée et vous rafraîchit.", "original": "The water is ice cold and cools you off.", "ctx": null, "lock": false}
+{"k": "42fcb639", "v": "Alors, qu'est-ce que la lettre disait ?", "original": "So what did the letter say?", "ctx": null, "lock": false}
+{"k": "4540b6fa", "v": "Quelque chose d'autre que vous souhaitez savoir ?", "original": "Anything else you'd like to know?", "ctx": null, "lock": false}
+{"k": "45e8a7dd", "v": "Que cherchez-vous ?", "original": "What are you seeking?", "ctx": null, "lock": false}
+{"k": "559c302f", "v": "Je... suis nouveau/nouvelle ici", "original": "I'm...new here", "ctx": null, "lock": false}
+{"k": "562cd4ad", "v": "As-tu un nom ?", "original": "Do you have a name?", "ctx": null, "lock": false}
+{"k": "58ba785b", "v": "Tu dis que tu cherchais quelque chose ?", "original": "You said you were seeking something?", "ctx": null, "lock": false}
+{"k": "59f8038c", "v": "Tu as trouvé la carte... S'il te plaît, donne-la-moi...", "original": "You've found the map... Please, give it to me...", "ctx": null, "lock": false}
+{"k": "623930a8", "v": "I saw you take that fruit. I don't do business with thieves. Please leave.", "original": "I saw you take that fruit. I don't do business with thieves. Please leave.", "ctx": null, "lock": false}
+{"k": "63265a79", "v": "D'où viens-tu ?", "original": "Where are you from?", "ctx": null, "lock": false}
+{"k": "63edc718", "v": "Ceci est la dernière de mon eau. Il y a une oasis à l'est. Ça peut aussi vous rafraîchir.", "original": "This is the last of my water. There's an oasis to the east. That can cool you off too.", "ctx": null, "lock": false}
+{"k": "650209c4", "v": "Qu'est-ce qui rend une carte si spéciale ?", "original": "What's so special about a map?", "ctx": null, "lock": false}
+{"k": "698118b9", "v": "Quel chevalier ?", "original": "What Knight?", "ctx": null, "lock": false}
+{"k": "6bb62fa6", "v": "Bienvenue, je suis Nazar.", "original": "Welcome, I'm Nazar.", "ctx": null, "lock": false}
+{"k": "6c3f1cc4", "v": "Le cheikh a créé ce village.", "original": "The Sheikh created this village.", "ctx": null, "lock": false}
+{"k": "708ba768", "v": "Tu dis que tu observais ? Quoi ?", "original": "You said you were observing? What?", "ctx": null, "lock": false}
+{"k": "7376aa01", "v": "Désolé ! Va à l'oasis, vite !", "original": "Sorry! Go to the oasis, quick!", "ctx": null, "lock": false}
+{"k": "76f7e319", "v": "Le Sheikh m'a demandé de le faire. C'est tout ce que je peux vous dire.", "original": "The Sheikh asked me to. That's all I can tell you.", "ctx": null, "lock": false}
+{"k": "7ad97537", "v": "I see... faites-le moi savoir si vous avez besoin de quelque chose. Je suis là pour aider.", "original": "I see... let me know if you need anything. I'm here to help.", "ctx": null, "lock": false}
+{"k": "7c1dac67", "v": "Vous devrez lui demander.", "original": "You'll have to ask him.", "ctx": null, "lock": false}
+{"k": "7d52fd29", "v": "Salut Nazar, je suis {{vars.playerName}}.", "original": "Hi Nazar, I'm {{vars.playerName}}.", "ctx": null, "lock": false}
+{"k": "80251c82", "v": "Où as-tu trouvé cette carte ?", "original": "Where did you get that map?", "ctx": null, "lock": false}
+{"k": "857ccfa7", "v": "Extraire de l'eau", "original": "Draw water", "ctx": null, "lock": false}
+{"k": "885ce2f8", "v": "Qui est le Sheikh ?", "original": "Who is the Sheikh?", "ctx": null, "lock": false}
+{"k": "8afcb04f", "v": "Il m'a envoyé ici pour garder la ville.", "original": "He sent me here to guard the town.", "ctx": null, "lock": false}
+{"k": "8bcf2e27", "v": "Ok, calme-toi, voilà.", "original": "Ok, calm down, here you go.", "ctx": "A response to a character who is agitated, indicating that the speaker is calming them down and giving them what they want.", "lock": false}
+{"k": "8d33b34a", "v": "Au secours, je vais m’évanouir...", "original": "Help me, I'm about to pass out...", "ctx": null, "lock": false}
+{"k": "90377201", "v": "Il fait plutôt chaud ici, hein ? J'ai de l'eau si tu as soif.", "original": "It's pretty hot out here huh? I have some water if you get thirsty.", "ctx": null, "lock": false}
+{"k": "909a9cff", "v": "Descendre", "original": "Climb down", "ctx": null, "lock": false}
+{"k": "9251bf45", "v": "Qui es-tu ?", "original": "Who are you?", "ctx": null, "lock": false}
+{"k": "96f38b61", "v": "Ce n'est pas votre affaire.", "original": "That's not your concern.", "ctx": null, "lock": false}
+{"k": "97c6c94d", "v": "Bye", "original": "Bye", "ctx": null, "lock": false}
+{"k": "99e18287", "v": "Protéger contre quoi ?", "original": "Guard from what?", "ctx": null, "lock": false}
+{"k": "9b70a051", "v": "Quand le chevalier part-il ?", "original": "When does the knight leave?", "ctx": null, "lock": false}
+{"k": "9d4f68e2", "v": "Quoi, tu veux dire qu'il s'est montré ?", "original": "What do you mean he showed up?", "ctx": null, "lock": false}
+{"k": "a07e8baa", "v": "Parler à Kid", "original": "Talk to Kid", "ctx": null, "lock": false}
+{"k": "a15f40ff", "v": "Voici, cette eau devrait te rafraîchir. Je n'en ai pas beaucoup.", "original": "Here, this water should cool you down. I don't have much.", "ctx": null, "lock": false}
+{"k": "a2b8560b", "v": "Je sais pourquoi tu es ici.", "original": "I know why you're here.", "ctx": null, "lock": false}
+{"k": "a544db48", "v": "Désolé, j'avais faim", "original": "Sorry, I was hungry", "ctx": null, "lock": false}
+{"k": "a7b6d713", "v": "Je veux dire qu'il est arrivé à pied, sans arme et couvert de sang. Nous avons pensé qu'il avait quitté la bataille pour piller notre village. Mais il avait une lettre du Sheikh.", "original": "I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.", "ctx": null, "lock": false}
+{"k": "a97314c9", "v": "Parle à Nazar", "original": "Talk to Nazar", "ctx": null, "lock": false}
+{"k": "aa053912", "v": "Vous avez parlé au vieil homme...", "original": "You talked to the old man...", "ctx": null, "lock": false}
+{"k": "aa225fe0", "v": "Prends soin de toi.", "original": "Be well.", "ctx": "A farewell wishing the other character well.", "lock": false}
+{"k": "ab5df625", "v": "Je suis sans voix... 😶", "original": "...", "ctx": "Text representing that someone is speechless.", "lock": false}
+{"k": "acf8dced", "v": "Que disait la lettre ?", "original": "What did the letter say?", "ctx": null, "lock": false}
+{"k": "b2a5f392", "v": "Je pense que je vais l'apporter à ce feu sur l'eau.", "original": "I think I'll bring it to that fire on the water.", "ctx": null, "lock": false}
+{"k": "b4c1d391", "v": "On m'a dit que ce village accueillerait un nouveau visiteur.", "original": "I was told this village would be getting a new visitor.", "ctx": null, "lock": false}
+{"k": "b5cbd2a3", "v": "...zzzzz...zzzzz.....zzzz...", "original": "...zzzzz...zzzzz.....zzzz...", "ctx": "Sleeping noises for an NPC.", "lock": false}
+{"k": "b863269e", "v": "Reculez", "original": "Step back", "ctx": null, "lock": false}
+{"k": "ba1494d0", "v": "Qui est le Sheikh ?", "original": "Who is the Sheikh?", "ctx": null, "lock": false}
+{"k": "bbe687cd", "v": "Salutations.... voyageur...", "original": "Greetings.... traveller...", "ctx": null, "lock": false}
+{"k": "bc301063", "v": ".. euh... je me suis porté volontaire. C'est une longue histoire, et je suis très occupé en ce moment.", "original": "I.. uh... I volunteered. It's a long story, and I'm very busy right now.", "ctx": null, "lock": false}
+{"k": "bdc7e965", "v": "Bien", "original": "Well", "ctx": "A well of water.", "lock": false}
+{"k": "be1ca5bd", "v": "Tu l'es ? Intéressant...", "original": "You are? Interesting...", "ctx": null, "lock": false}
+{"k": "be9529b7", "v": "I pensais avoir dit de partir.", "original": "I thought I said go away.", "ctx": null, "lock": false}
+{"k": "c0aa9943", "v": "Observer quoi ?", "original": "Observe what?", "ctx": null, "lock": false}
+{"k": "c141faa8", "v": "Feu", "original": "Fire", "ctx": "The name of a fire NPC character.", "lock": false}
+{"k": "c503743a", "v": "I found it up north.", "original": "I found it up north.", "ctx": null, "lock": false}
+{"k": "c59b89a3", "v": "Oh, alors tu es aussi un menteur qu'un voleur ?", "original": "Oh, so you're a liar as well as a thief?", "ctx": null, "lock": false}
+{"k": "c8a7d597", "v": "Compris...", "original": "Gotcha...", "ctx": null, "lock": false}
+{"k": "d01fbf94", "v": "Avez-vous essayé d'obtenir la carte ?", "original": "Did you try to get the map?", "ctx": null, "lock": false}
+{"k": "d188824d", "v": "Fuir", "original": "Run away", "ctx": "An option to flee from a situation.", "lock": false}
+{"k": "d6e3cd9f", "v": "A map...", "original": "A map...", "ctx": null, "lock": false}
+{"k": "d95d75d7", "v": "Il y a un chevalier au sud. Il ne parle pas beaucoup. Va voir par toi-même.", "original": "There's a knight to the south. He doesn't talk much. Go see for yourself.", "ctx": null, "lock": false}
+{"k": "dff1fa28", "v": "Il y a seulement une semaine.", "original": "Only a week ago.", "ctx": null, "lock": false}
+{"k": "dffd1999", "v": "Tu es revenu.", "original": "You've returned.", "ctx": null, "lock": false}
+{"k": "e0a2d72f", "v": "Ce qui ne te regarde pas", "original": "None of your business", "ctx": null, "lock": false}
+{"k": "e1ffb1d2", "v": "Nazar", "original": "Nazar", "ctx": null, "lock": false}
+{"k": "e245bb27", "v": "Eh bien, je sais qu'il n'est pas d'ici. Il y a eu une bataille. Puis il est apparu.", "original": "Well, I know he's not from around here. There was a battle. Then he showed up.", "ctx": null, "lock": false}
+{"k": "e45c4215", "v": "Quelle bataille ?", "original": "What battle?", "ctx": null, "lock": false}
+{"k": "e4657ad8", "v": "Tu n'es vraiment pas d'ici, n'est-ce pas ? Mon peuple est en guerre depuis avant ma naissance.", "original": "You're really not from around here, are you? My people have been at war since before I was born.", "ctx": null, "lock": false}
+{"k": "eb8848da", "v": "J'aimerais discuter, mais ça commence à se faire tard. Reviens pendant la journée.", "original": "I'd like to chat, but it's getting late. Come back during the day.", "ctx": null, "lock": false}
+{"k": "ed68fc3d", "v": "Oui", "original": "Yes", "ctx": null, "lock": false}
+{"k": "f213214a", "v": "Que savez-vous de ce chevalier ?", "original": "What do you know about that knight?", "ctx": null, "lock": false}
+{"k": "f24b5246", "v": "Knight", "original": "Knight", "ctx": "The name of a knight NPC character.", "lock": false}
+{"k": "f304833e", "v": "Un endroit différent. Votre langue ne possède pas les mots pour ça.", "original": "A different place. Your language lacks the words for it.", "ctx": "A description of a place that is not easily described.", "lock": false}
+{"k": "f5654ac2", "v": "Il disait « Donne à manger et de l'eau à ce soldat. En échange, il gardera le village. » Il portait le sceau du Sheikh. C'était indubitable.", "original": "It said \"Give food and water to this soldier. In return he will guard the village.\" It had the Sheikh's seal. It was unmistakable.", "ctx": null, "lock": false}
+{"k": "f6ded42f", "v": "Il y a combien de temps ?", "original": "How long ago was this?", "ctx": null, "lock": false}
+{"k": "interact", "v": "Interagir", "original": "Interact", "ctx": null, "lock": false}

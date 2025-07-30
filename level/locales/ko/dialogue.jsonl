@@ -1,0 +1,108 @@
+{"k": "006d3ad6", "v": "Sir Azure", "original": "Sir Azure", "ctx": "The name of a knight.", "lock": false}
+{"k": "092afab4", "v": "찾아줄게, 그리고 보여줄게.", "original": "Find it for me and I'll show you.", "ctx": null, "lock": false}
+{"k": "0d053e12", "v": "내가 찾고 있는 사람은 지도<Person/>를 들고 있다", "original": "The person I am seeking carries a map", "ctx": null, "lock": false}
+{"k": "0e865942", "v": "아래로 내려가는 사다리가 있지만, 바닥이 보이지 않습니다.", "original": "There's a ladder going down, but you cannot see the bottom.", "ctx": null, "lock": false}
+{"k": "0ff99cc5", "v": "제정신이 아니군요. 가세요.", "original": "You've lost your mind. Please go.", "ctx": null, "lock": false}
+{"k": "10dea114", "v": "흥!", "original": "Hmph.", "ctx": null, "lock": false}
+{"k": "12283998", "v": "*음...* 내가 ‘안녕’이라고 했잖아", "original": "*ahem*... I said 'Hi'", "ctx": "A character is trying to get attention by clearing their throat and repeating their greeting.", "lock": false}
+{"k": "12890122", "v": "안녕", "original": "Bye", "ctx": "Saying goodbye.", "lock": false}
+{"k": "15874eac", "v": "한 번 시도해보세요. 😊", "original": "Give it a shot.", "ctx": "A casual suggestion to try something.", "lock": false}
+{"k": "159272d5", "v": "나는 전에 본 적이 없는데, 기사와 함께 온 거야?", "original": "I haven't seen you before, are you here with the Knight?", "ctx": null, "lock": false}
+{"k": "15dd9ed6", "v": "동행자.... 나는 여기서 탐색하고 관찰하기 위해 왔어요.", "original": "A fellow traveller.... I'm here to seek and observe.", "ctx": null, "lock": false}
+{"k": "18083266", "v": "다시 안녕하세요.", "original": "Hello again.", "ctx": null, "lock": false}
+{"k": "1a423065", "v": "밤이 훨씬 더 시원하다.", "original": "It's much cooler at night.", "ctx": null, "lock": false}
+{"k": "1c802db9", "v": "감사하지만 괜찮아요.", "original": "Thanks, but I'm ok.", "ctx": null, "lock": false}
+{"k": "1d925355", "v": "안녕", "original": "Hi", "ctx": "A casual greeting.", "lock": false}
+{"k": "1de8ad8f", "v": "거기에 두고 왔어요. 보여 주세요.", "original": "I left it there. Give it to me.", "ctx": "The character left an item somewhere and is asking for it back.", "lock": false}
+{"k": "1fab6079", "v": "Fire와 대화하기", "original": "Talk to Fire", "ctx": null, "lock": false}
+{"k": "216c5e8c", "v": "그가 너를 무엇으로부터 지키고 있어?", "original": "What is he guarding you from?", "ctx": null, "lock": false}
+{"k": "24ba5f34", "v": "나는 아무것도 가져가지 않았어요", "original": "I didn't take anything", "ctx": null, "lock": false}
+{"k": "24f43b0d", "v": "Silent Knight와 이야기하기", "original": "Talk to Silent Knight", "ctx": null, "lock": false}
+{"k": "2aa61a95", "v": "내 고향에서는 우리 둘이 이 대화를 나누지 않을 거예요, 왜냐하면 그곳에는 당신도 나도 없기 때문이에요.", "original": "In the place where I'm from, we wouldn't be having this conversation because there is no you or I.", "ctx": null, "lock": false}
+{"k": "2dd1283e", "v": "오마르", "original": "Omar", "ctx": "The name of a character in the game.", "lock": false}
+{"k": "2dd162b5", "v": "내 말을 잘 들어. 그 지도 가져갈 거야.", "original": "Listen to me carefully. I'm getting that map.", "ctx": "An aggressive assertion that the character is determined to get the map.", "lock": false}
+{"k": "2ecf7f34", "v": "아, 기사님 말씀하시는 거죠?", "original": "Oh you mean the knight?", "ctx": null, "lock": false}
+{"k": "31ab4d0f", "v": "No.", "original": "No.", "ctx": null, "lock": false}
+{"k": "379dcdf1", "v": "이 직업은 어떻게 얻으셨나요?", "original": "How did you get this job?", "ctx": null, "lock": false}
+{"k": "3bc95ed3", "v": "그에게 지도를 건네 주세요", "original": "Hand him the map", "ctx": null, "lock": false}
+{"k": "3c0aa10d", "v": "왜 이 마을을 지키고 있나요?", "original": "Why are you guarding this town?", "ctx": null, "lock": false}
+{"k": "3ca52efa", "v": "나는 물 위에서 불을 봤어.", "original": "I saw fire on the water.", "ctx": null, "lock": false}
+{"k": "40345826", "v": "물은 얼음처럼 차갑고, 당신을 시원하게 만들어줍니다.", "original": "The water is ice cold and cools you off.", "ctx": null, "lock": false}
+{"k": "42fcb639", "v": "그렇다면 편지에 뭐라고 적혀 있었어?", "original": "So what did the letter say?", "ctx": null, "lock": false}
+{"k": "4540b6fa", "v": "혹시 더 궁금한 점이 있으신가요?", "original": "Anything else you'd like to know?", "ctx": null, "lock": false}
+{"k": "45e8a7dd", "v": "무엇을 찾고 있나요?", "original": "What are you seeking?", "ctx": null, "lock": false}
+{"k": "559c302f", "v": "나는...여기 처음이에요", "original": "I'm...new here", "ctx": null, "lock": false}
+{"k": "562cd4ad", "v": "이름이 있나요?", "original": "Do you have a name?", "ctx": null, "lock": false}
+{"k": "58ba785b", "v": "당신이 무언가를 찾고 있다고 말했어요?", "original": "You said you were seeking something?", "ctx": null, "lock": false}
+{"k": "59f8038c", "v": "맵을 찾았어요... 제게 주세요...", "original": "You've found the map... Please, give it to me...", "ctx": null, "lock": false}
+{"k": "623930a8", "v": "I saw you take that fruit. I don't do business with thieves. Please leave.", "original": "I saw you take that fruit. I don't do business with thieves. Please leave.", "ctx": null, "lock": false}
+{"k": "63265a79", "v": "어디에서 오셨어요?", "original": "Where are you from?", "ctx": null, "lock": false}
+{"k": "63edc718", "v": "이것이 내 마지막 물입니다. 동쪽에 오아시스가 있습니다. 그곳도 당신을 식히는 데 좋아요.", "original": "This is the last of my water. There's an oasis to the east. That can cool you off too.", "ctx": null, "lock": false}
+{"k": "650209c4", "v": "지도는 얼마나 특별한 걸까?", "original": "What's so special about a map?", "ctx": null, "lock": false}
+{"k": "698118b9", "v": "무슨 기사인가요?", "original": "What Knight?", "ctx": null, "lock": false}
+{"k": "6bb62fa6", "v": "환영합니다, 저는 나자르입니다.", "original": "Welcome, I'm Nazar.", "ctx": null, "lock": false}
+{"k": "6c3f1cc4", "v": "이 쉐이크는 이 마을을 창조했습니다.", "original": "The Sheikh created this village.", "ctx": null, "lock": false}
+{"k": "708ba768", "v": "말씀하셨던 관찰이세요? 뭐요?", "original": "You said you were observing? What?", "ctx": null, "lock": false}
+{"k": "7376aa01", "v": "미안! 오아시스로 빨리 가!", "original": "Sorry! Go to the oasis, quick!", "ctx": null, "lock": false}
+{"k": "76f7e319", "v": "그 샤이크가 내게 하라고 했어. 그게 내가 너한테 말할 수 있는 전부야.", "original": "The Sheikh asked me to. That's all I can tell you.", "ctx": null, "lock": false}
+{"k": "7ad97537", "v": "I see... 필요하시면 알려주세요. 도와드릴게요.", "original": "I see... let me know if you need anything. I'm here to help.", "ctx": null, "lock": false}
+{"k": "7c1dac67", "v": "그에게 물어봐야 할 거예요.", "original": "You'll have to ask him.", "ctx": null, "lock": false}
+{"k": "7d52fd29", "v": "안녕 Nazar, 나는 {{vars.playerName}}입니다.", "original": "Hi Nazar, I'm {{vars.playerName}}.", "ctx": null, "lock": false}
+{"k": "80251c82", "v": "그 지도 어디서 구했어?", "original": "Where did you get that map?", "ctx": null, "lock": false}
+{"k": "857ccfa7", "v": "물을 길러라", "original": "Draw water", "ctx": null, "lock": false}
+{"k": "885ce2f8", "v": "그는 누구입니까?", "original": "Who is the Sheikh?", "ctx": null, "lock": false}
+{"k": "8afcb04f", "v": "그는 나를 여기 보내 자신을 방어하라고 했다.", "original": "He sent me here to guard the town.", "ctx": null, "lock": false}
+{"k": "8bcf2e27", "v": "알겠어요, 진정하세요. 여기 있어요.", "original": "Ok, calm down, here you go.", "ctx": "A response to a character who is agitated, indicating that the speaker is calming them down and giving them what they want.", "lock": false}
+{"k": "8d33b34a", "v": "도와주세요, 얼마 후면 기절할 것 같아요...", "original": "Help me, I'm about to pass out...", "ctx": null, "lock": false}
+{"k": "90377201", "v": "여기 엄청 덥지? 목말라 하면 물 좀 마셔도 좋아.", "original": "It's pretty hot out here huh? I have some water if you get thirsty.", "ctx": null, "lock": false}
+{"k": "909a9cff", "v": "내려가기", "original": "Climb down", "ctx": null, "lock": false}
+{"k": "9251bf45", "v": "당신은 누구입니까?", "original": "Who are you?", "ctx": null, "lock": false}
+{"k": "96f38b61", "v": "그건 너의 일이 아니야.", "original": "That's not your concern.", "ctx": null, "lock": false}
+{"k": "97c6c94d", "v": "안녕", "original": "Bye", "ctx": null, "lock": false}
+{"k": "99e18287", "v": "무엇으로부터 보호하라는 거죠?", "original": "Guard from what?", "ctx": null, "lock": false}
+{"k": "9b70a051", "v": "기사님은 언제 떠나요?", "original": "When does the knight leave?", "ctx": null, "lock": false}
+{"k": "9d4f68e2", "v": "그가 나타났다는게 무슨 의미야?", "original": "What do you mean he showed up?", "ctx": null, "lock": false}
+{"k": "a07e8baa", "v": "아이에게 이야기하세요", "original": "Talk to Kid", "ctx": null, "lock": false}
+{"k": "a15f40ff", "v": "여기 이 물이 당신을 식히는데 도움이 될 거예요. 저는 그다지 가지고 있지 않아요.", "original": "Here, this water should cool you down. I don't have much.", "ctx": null, "lock": false}
+{"k": "a2b8560b", "v": "왜 네가 여기 왔는지 알아.", "original": "I know why you're here.", "ctx": null, "lock": false}
+{"k": "a544db48", "v": "미안해요, 배고팠어요", "original": "Sorry, I was hungry", "ctx": null, "lock": false}
+{"k": "a7b6d713", "v": "내 말은, 그가 무장하지 않은 채 피를 뒤집어쓰고 걸어서 왔다는 거야. 우리는 그가 우리 마을을 약탈하기 위해 전장을 떠난 줄 알았어. 그런데 그에게 셰이크의 편지가 있었어.", "original": "I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.", "ctx": null, "lock": false}
+{"k": "a97314c9", "v": "나사르와 이야기하세요", "original": "Talk to Nazar", "ctx": null, "lock": false}
+{"k": "aa053912", "v": "당신은 노인과 이야기했어요...", "original": "You talked to the old man...", "ctx": null, "lock": false}
+{"k": "aa225fe0", "v": "잘 지내세요.", "original": "Be well.", "ctx": "A farewell wishing the other character well.", "lock": false}
+{"k": "ab5df625", "v": "어머나, 말이 안 나오네... 😶", "original": "...", "ctx": "Text representing that someone is speechless.", "lock": false}
+{"k": "acf8dced", "v": "그 편지에 뭐라고 적혀 있었나요?", "original": "What did the letter say?", "ctx": null, "lock": false}
+{"k": "b2a5f392", "v": "나는 그것을 물 위의 그 불에 가져갈 것 같아.", "original": "I think I'll bring it to that fire on the water.", "ctx": null, "lock": false}
+{"k": "b4c1d391", "v": "이 마을에 새 방문객이 올 것이라는 말을 들었어요.", "original": "I was told this village would be getting a new visitor.", "ctx": null, "lock": false}
+{"k": "b5cbd2a3", "v": "...zzzzz...zzzzz.....zzzz...", "original": "...zzzzz...zzzzz.....zzzz...", "ctx": "Sleeping noises for an NPC.", "lock": false}
+{"k": "b863269e", "v": "뒤로 물러서기", "original": "Step back", "ctx": null, "lock": false}
+{"k": "ba1494d0", "v": "그는 누구입니까?", "original": "Who is the Sheikh?", "ctx": null, "lock": false}
+{"k": "bbe687cd", "v": "안녕하세요.... 여행자님...", "original": "Greetings.... traveller...", "ctx": null, "lock": false}
+{"k": "bc301063", "v": "I.. 음… 자원봉사를 했어요. 긴 이야기이고 지금은 매우 바빠요.", "original": "I.. uh... I volunteered. It's a long story, and I'm very busy right now.", "ctx": null, "lock": false}
+{"k": "bdc7e965", "v": "우물", "original": "Well", "ctx": "A well of water.", "lock": false}
+{"k": "be1ca5bd", "v": "너냐? 흥미롭군...", "original": "You are? Interesting...", "ctx": null, "lock": false}
+{"k": "be9529b7", "v": "내가 가라고 했던 거 아닌가.", "original": "I thought I said go away.", "ctx": null, "lock": false}
+{"k": "c0aa9943", "v": "무엇을 관찰하라는 걸까?", "original": "Observe what?", "ctx": null, "lock": false}
+{"k": "c141faa8", "v": "불", "original": "Fire", "ctx": "The name of a fire NPC character.", "lock": false}
+{"k": "c503743a", "v": "나는 그것을 북쪽에서 찾았어.", "original": "I found it up north.", "ctx": null, "lock": false}
+{"k": "c59b89a3", "v": "아, 그래서 너도 도둑이자 거짓말쟁이야?", "original": "Oh, so you're a liar as well as a thief?", "ctx": null, "lock": false}
+{"k": "c8a7d597", "v": "알겠어요...", "original": "Gotcha...", "ctx": null, "lock": false}
+{"k": "d01fbf94", "v": "지도 받아보셨나요?", "original": "Did you try to get the map?", "ctx": null, "lock": false}
+{"k": "d188824d", "v": "도망가기", "original": "Run away", "ctx": "An option to flee from a situation.", "lock": false}
+{"k": "d6e3cd9f", "v": "지도를...", "original": "A map...", "ctx": null, "lock": false}
+{"k": "d95d75d7", "v": "남쪽에 기사 한 명이 있어요. 그는 그리 말을 많이 하지 않아요. 직접 가서 확인해 보세요.", "original": "There's a knight to the south. He doesn't talk much. Go see for yourself.", "ctx": null, "lock": false}
+{"k": "dff1fa28", "v": "단지 일주일 전입니다.", "original": "Only a week ago.", "ctx": null, "lock": false}
+{"k": "dffd1999", "v": "돌아오셨군요.", "original": "You've returned.", "ctx": null, "lock": false}
+{"k": "e0a2d72f", "v": "관심 없어요", "original": "None of your business", "ctx": null, "lock": false}
+{"k": "e1ffb1d2", "v": "Nazar", "original": "Nazar", "ctx": null, "lock": false}
+{"k": "e245bb27", "v": "글쎄, 그가 여기서 온 사람이 아니라는 건 알아. 전투가 있었어. 그리고 그가 나타났지.", "original": "Well, I know he's not from around here. There was a battle. Then he showed up.", "ctx": null, "lock": false}
+{"k": "e45c4215", "v": "무슨 전투?", "original": "What battle?", "ctx": null, "lock": false}
+{"k": "e4657ad8", "v": "너 정말 여기 사람 아니지? 내 혈통은 내가 태어나기 전부터 계속 전쟁 중이었어.", "original": "You're really not from around here, are you? My people have been at war since before I was born.", "ctx": null, "lock": false}
+{"k": "eb8848da", "v": "지금 이야기하고 싶은데, 벌써 늦었어요. 낮에 다시 와 주세요.", "original": "I'd like to chat, but it's getting late. Come back during the day.", "ctx": null, "lock": false}
+{"k": "ed68fc3d", "v": "네", "original": "Yes", "ctx": null, "lock": false}
+{"k": "f213214a", "v": "그 기사에 대해 당신은 무엇을 알고 있나요?", "original": "What do you know about that knight?", "ctx": null, "lock": false}
+{"k": "f24b5246", "v": "Knight", "original": "Knight", "ctx": "The name of a knight NPC character.", "lock": false}
+{"k": "f304833e", "v": "다른 장소. 당신의 언어에는 그것을 위한 단어가 부족하다.", "original": "A different place. Your language lacks the words for it.", "ctx": "A description of a place that is not easily described.", "lock": false}
+{"k": "f5654ac2", "v": "그것은 \"이 병사에게 먹이와 물을 줘라. 그 대가로 그는 마을을 지킬 것이다.\"라고 말했다. 그것은 셰이크의 도장이 찍혀 있었다. 분명했다.", "original": "It said \"Give food and water to this soldier. In return he will guard the village.\" It had the Sheikh's seal. It was unmistakable.", "ctx": null, "lock": false}
+{"k": "f6ded42f", "v": "이것은 얼마나 오래 전에 일어난 일인가요?", "original": "How long ago was this?", "ctx": null, "lock": false}
+{"k": "interact", "v": "상호작용", "original": "Interact", "ctx": null, "lock": false}

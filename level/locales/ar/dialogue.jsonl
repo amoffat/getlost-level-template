@@ -1,0 +1,108 @@
+{"k": "006d3ad6", "v": "السير أزور", "original": "Sir Azure", "ctx": "The name of a knight.", "lock": false}
+{"k": "092afab4", "v": "اعثر عليه لي وسأريك.", "original": "Find it for me and I'll show you.", "ctx": null, "lock": false}
+{"k": "0d053e12", "v": "الشخص الذي أبحث عنه يحمل خريطة", "original": "The person I am seeking carries a map", "ctx": null, "lock": false}
+{"k": "0e865942", "v": "هناك سلم ينزل، لكنك لا تستطيع رؤية القاع.", "original": "There's a ladder going down, but you cannot see the bottom.", "ctx": null, "lock": false}
+{"k": "0ff99cc5", "v": "لقد فقدت عقلَك. رجاءً اذهب.", "original": "You've lost your mind. Please go.", "ctx": null, "lock": false}
+{"k": "10dea114", "v": "همم.", "original": "Hmph.", "ctx": null, "lock": false}
+{"k": "12283998", "v": "*عُه*... قلت 'مرحباً'", "original": "*ahem*... I said 'Hi'", "ctx": "A character is trying to get attention by clearing their throat and repeating their greeting.", "lock": false}
+{"k": "12890122", "v": "وداعًا", "original": "Bye", "ctx": "Saying goodbye.", "lock": false}
+{"k": "15874eac", "v": "جرب حظك.", "original": "Give it a shot.", "ctx": "A casual suggestion to try something.", "lock": false}
+{"k": "159272d5", "v": "لم أرك من قبل، هل أنت هنا مع الفارس؟", "original": "I haven't seen you before, are you here with the Knight?", "ctx": null, "lock": false}
+{"k": "15dd9ed6", "v": "رفيق السفر... أنا هنا لأبحث وأراقب.", "original": "A fellow traveller.... I'm here to seek and observe.", "ctx": null, "lock": false}
+{"k": "18083266", "v": "Hello again.", "original": "Hello again.", "ctx": null, "lock": false}
+{"k": "1a423065", "v": "الليل يكون أكثر برودة بكثير.", "original": "It's much cooler at night.", "ctx": null, "lock": false}
+{"k": "1c802db9", "v": "شكرًا، لكنني بخير.", "original": "Thanks, but I'm ok.", "ctx": null, "lock": false}
+{"k": "1d925355", "v": "مرحبًا", "original": "Hi", "ctx": "A casual greeting.", "lock": false}
+{"k": "1de8ad8f", "v": "تركته هناك. أعطه لي.", "original": "I left it there. Give it to me.", "ctx": "The character left an item somewhere and is asking for it back.", "lock": false}
+{"k": "1fab6079", "v": "تحدث إلى النار", "original": "Talk to Fire", "ctx": null, "lock": false}
+{"k": "216c5e8c", "v": "ماذا يحرسك منك؟", "original": "What is he guarding you from?", "ctx": null, "lock": false}
+{"k": "24ba5f34", "v": "لم آخذ شيئًا", "original": "I didn't take anything", "ctx": null, "lock": false}
+{"k": "24f43b0d", "v": "تواصل مع الفارس الصامت", "original": "Talk to Silent Knight", "ctx": null, "lock": false}
+{"k": "2aa61a95", "v": "في المكان الذي أنتمي إليه، لن نكون نتحدث عن هذا لأن لا أنت ولا أنا موجودان هناك.", "original": "In the place where I'm from, we wouldn't be having this conversation because there is no you or I.", "ctx": null, "lock": false}
+{"k": "2dd1283e", "v": "عمر", "original": "Omar", "ctx": "The name of a character in the game.", "lock": false}
+{"k": "2dd162b5", "v": "اصغ إليّ جيدًا. أنا سأحصل على هذه الخريطة.", "original": "Listen to me carefully. I'm getting that map.", "ctx": "An aggressive assertion that the character is determined to get the map.", "lock": false}
+{"k": "2ecf7f34", "v": "أيقصد الفارس؟", "original": "Oh you mean the knight?", "ctx": null, "lock": false}
+{"k": "31ab4d0f", "v": "No.", "original": "No.", "ctx": null, "lock": false}
+{"k": "379dcdf1", "v": "كيف حصلت على هذه الوظيفة؟", "original": "How did you get this job?", "ctx": null, "lock": false}
+{"k": "3bc95ed3", "v": "أعطه الخريطة", "original": "Hand him the map", "ctx": null, "lock": false}
+{"k": "3c0aa10d", "v": "لماذا تحرس المدينة هذه؟", "original": "Why are you guarding this town?", "ctx": null, "lock": false}
+{"k": "3ca52efa", "v": "رأيت ناراً على الماء.", "original": "I saw fire on the water.", "ctx": null, "lock": false}
+{"k": "40345826", "v": "الماء بارد جدًا ويبردك.", "original": "The water is ice cold and cools you off.", "ctx": null, "lock": false}
+{"k": "42fcb639", "v": "ماذا قالLetter إذن؟", "original": "So what did the letter say?", "ctx": null, "lock": false}
+{"k": "4540b6fa", "v": "هل هناك شيء آخر تود معرفته؟", "original": "Anything else you'd like to know?", "ctx": null, "lock": false}
+{"k": "45e8a7dd", "v": "ماذا تبحث عنه؟", "original": "What are you seeking?", "ctx": null, "lock": false}
+{"k": "559c302f", "v": "أنا... جديد هنا", "original": "I'm...new here", "ctx": null, "lock": false}
+{"k": "562cd4ad", "v": "هل لديك اسم؟", "original": "Do you have a name?", "ctx": null, "lock": false}
+{"k": "58ba785b", "v": "هل قلت أنك كنت تبحث عن شيء؟", "original": "You said you were seeking something?", "ctx": null, "lock": false}
+{"k": "59f8038c", "v": "لقد وجدت الخارطة... من فضلك، أعطني إياها...", "original": "You've found the map... Please, give it to me...", "ctx": null, "lock": false}
+{"k": "623930a8", "v": "رأيتك تأخذ تلك الفاكهة. أنا لا أتعامل مع اللصوص. من فضلك، ارحل.", "original": "I saw you take that fruit. I don't do business with thieves. Please leave.", "ctx": null, "lock": false}
+{"k": "63265a79", "v": "من أين أنت؟", "original": "Where are you from?", "ctx": null, "lock": false}
+{"k": "63edc718", "v": "هذه آخر قطرة من مائي. هناك واحة إلى الشرق. يمكن أن تبردك أيضًا 😊.", "original": "This is the last of my water. There's an oasis to the east. That can cool you off too.", "ctx": null, "lock": false}
+{"k": "650209c4", "v": "ما الذي يجعل الخريطة مميزة جدًا؟", "original": "What's so special about a map?", "ctx": null, "lock": false}
+{"k": "698118b9", "v": "أي فارس؟", "original": "What Knight?", "ctx": null, "lock": false}
+{"k": "6bb62fa6", "v": "مرحبًا، أنا نزار.", "original": "Welcome, I'm Nazar.", "ctx": null, "lock": false}
+{"k": "6c3f1cc4", "v": "أنشأ الشيخ هذه القرية.", "original": "The Sheikh created this village.", "ctx": null, "lock": false}
+{"k": "708ba768", "v": "قلت أنك كنت تراقب؟ ماذا؟", "original": "You said you were observing? What?", "ctx": null, "lock": false}
+{"k": "7376aa01", "v": "آسف! اذهب إلى الواحة بسرعة! 🚀", "original": "Sorry! Go to the oasis, quick!", "ctx": null, "lock": false}
+{"k": "76f7e319", "v": "طلب مني الشيخ ذلك. هذا كل ما أستطيع أن أخبرك به.", "original": "The Sheikh asked me to. That's all I can tell you.", "ctx": null, "lock": false}
+{"k": "7ad97537", "v": "أنا أراك... أخبرني إذا احتجت إلى شيء. أنا هنا للمساعدة.", "original": "I see... let me know if you need anything. I'm here to help.", "ctx": null, "lock": false}
+{"k": "7c1dac67", "v": "عليك أن تسأله.", "original": "You'll have to ask him.", "ctx": null, "lock": false}
+{"k": "7d52fd29", "v": "مرحبًا نزار، أنا {{vars.playerName}}.", "original": "Hi Nazar, I'm {{vars.playerName}}.", "ctx": null, "lock": false}
+{"k": "80251c82", "v": "من أين حصلت على هذه الخريطة؟", "original": "Where did you get that map?", "ctx": null, "lock": false}
+{"k": "857ccfa7", "v": "اسحب الماء", "original": "Draw water", "ctx": null, "lock": false}
+{"k": "885ce2f8", "v": "من هو الشيخ؟", "original": "Who is the Sheikh?", "ctx": null, "lock": false}
+{"k": "8afcb04f", "v": "أرسلني هنا لأحرس المدينة.", "original": "He sent me here to guard the town.", "ctx": null, "lock": false}
+{"k": "8bcf2e27", "v": "حسنًا، اهدأ، هُنا لديك.", "original": "Ok, calm down, here you go.", "ctx": "A response to a character who is agitated, indicating that the speaker is calming them down and giving them what they want.", "lock": false}
+{"k": "8d33b34a", "v": "ساعدني، أنا على وشك الإغماء...", "original": "Help me, I'm about to pass out...", "ctx": null, "lock": false}
+{"k": "90377201", "v": "إنه حار جدًا هنا، أليس كذلك؟ لدي بعض الماء إذا شعرت بالعطش.", "original": "It's pretty hot out here huh? I have some water if you get thirsty.", "ctx": null, "lock": false}
+{"k": "909a9cff", "v": "انزل", "original": "Climb down", "ctx": null, "lock": false}
+{"k": "9251bf45", "v": "من أنت؟", "original": "Who are you?", "ctx": null, "lock": false}
+{"k": "96f38b61", "v": "ليس من شأنك.", "original": "That's not your concern.", "ctx": null, "lock": false}
+{"k": "97c6c94d", "v": "وداعاً", "original": "Bye", "ctx": null, "lock": false}
+{"k": "99e18287", "v": "من يحرس من؟", "original": "Guard from what?", "ctx": null, "lock": false}
+{"k": "9b70a051", "v": "متى يغادر الفارس؟", "original": "When does the knight leave?", "ctx": null, "lock": false}
+{"k": "9d4f68e2", "v": "ماذا تعني أنه ظهر؟", "original": "What do you mean he showed up?", "ctx": null, "lock": false}
+{"k": "a07e8baa", "v": "تحدث مع الطفل", "original": "Talk to Kid", "ctx": null, "lock": false}
+{"k": "a15f40ff", "v": "هنا، يجب أن يبردك هذا الماء. ليس لدي الكثير منه.", "original": "Here, this water should cool you down. I don't have much.", "ctx": null, "lock": false}
+{"k": "a2b8560b", "v": "أنا أعلم لماذا أنت هنا.", "original": "I know why you're here.", "ctx": null, "lock": false}
+{"k": "a544db48", "v": "عذرًا، كنت جائعًا", "original": "Sorry, I was hungry", "ctx": null, "lock": false}
+{"k": "a7b6d713", "v": "أعني أنه وصل على قدميه، بدون سلاح وملطخ بالدماء. ظننا أنه غادر المعركة لنهب قريتنا. لكنه كان يحمل رسالة من الشيخ.", "original": "I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.", "ctx": null, "lock": false}
+{"k": "a97314c9", "v": "تواصل مع نزار", "original": "Talk to Nazar", "ctx": null, "lock": false}
+{"k": "aa053912", "v": "حدثت مع الرجل العجوز...", "original": "You talked to the old man...", "ctx": null, "lock": false}
+{"k": "aa225fe0", "v": "كون بخير.", "original": "Be well.", "ctx": "A farewell wishing the other character well.", "lock": false}
+{"k": "ab5df625", "v": "لقد جمدت في مكانك، لا تستطيع أن تتحرك أو تقول شيئًا...", "original": "...", "ctx": "Text representing that someone is speechless.", "lock": false}
+{"k": "acf8dced", "v": "ماذا قال الخطاب؟", "original": "What did the letter say?", "ctx": null, "lock": false}
+{"k": "b2a5f392", "v": "أعتقد أنني سأذهب إلى ذلك النار على الماء.", "original": "I think I'll bring it to that fire on the water.", "ctx": null, "lock": false}
+{"k": "b4c1d391", "v": "I was told this village would be getting a new visitor.", "original": "I was told this village would be getting a new visitor.", "ctx": null, "lock": false}
+{"k": "b5cbd2a3", "v": "...zzzzz...zzzzz.....zzzz...", "original": "...zzzzz...zzzzz.....zzzz...", "ctx": "Sleeping noises for an NPC.", "lock": false}
+{"k": "b863269e", "v": "تراجع", "original": "Step back", "ctx": null, "lock": false}
+{"k": "ba1494d0", "v": "من هو الشيخ؟", "original": "Who is the Sheikh?", "ctx": null, "lock": false}
+{"k": "bbe687cd", "v": "تحية... أيها المسافر...", "original": "Greetings.... traveller...", "ctx": null, "lock": false}
+{"k": "bc301063", "v": "I.. اه... تطوعت. إنها قصة طويلة، وأنا مشغول جدًا الآن.", "original": "I.. uh... I volunteered. It's a long story, and I'm very busy right now.", "ctx": null, "lock": false}
+{"k": "bdc7e965", "v": "بئر", "original": "Well", "ctx": "A well of water.", "lock": false}
+{"k": "be1ca5bd", "v": "هل أنت؟ مثير للاهتمام...", "original": "You are? Interesting...", "ctx": null, "lock": false}
+{"k": "be9529b7", "v": "I thought I said go away.", "original": "I thought I said go away.", "ctx": null, "lock": false}
+{"k": "c0aa9943", "v": "ملاحظة ماذا؟", "original": "Observe what?", "ctx": null, "lock": false}
+{"k": "c141faa8", "v": "نار", "original": "Fire", "ctx": "The name of a fire NPC character.", "lock": false}
+{"k": "c503743a", "v": "وجدته في الشمال.", "original": "I found it up north.", "ctx": null, "lock": false}
+{"k": "c59b89a3", "v": "أوه، إذن أنت كاذب بالإضافة إلى كونك لصًا؟", "original": "Oh, so you're a liar as well as a thief?", "ctx": null, "lock": false}
+{"k": "c8a7d597", "v": "فهمت...", "original": "Gotcha...", "ctx": null, "lock": false}
+{"k": "d01fbf94", "v": "هل حاولت الحصول على الخريطة؟", "original": "Did you try to get the map?", "ctx": null, "lock": false}
+{"k": "d188824d", "v": "اهرب", "original": "Run away", "ctx": "An option to flee from a situation.", "lock": false}
+{"k": "d6e3cd9f", "v": "خريطة...", "original": "A map...", "ctx": null, "lock": false}
+{"k": "d95d75d7", "v": "هناك فارس إلى الجنوب. هو لا يتحدث كثيرًا. اذهب وتحقق بنفسك.", "original": "There's a knight to the south. He doesn't talk much. Go see for yourself.", "ctx": null, "lock": false}
+{"k": "dff1fa28", "v": "قبل أسبوع فقط.", "original": "Only a week ago.", "ctx": null, "lock": false}
+{"k": "dffd1999", "v": "لقد عدت.", "original": "You've returned.", "ctx": null, "lock": false}
+{"k": "e0a2d72f", "v": "ليس من شأنك", "original": "None of your business", "ctx": null, "lock": false}
+{"k": "e1ffb1d2", "v": "Nazar", "original": "Nazar", "ctx": null, "lock": false}
+{"k": "e245bb27", "v": "حسنًا، أعلم أنه ليس من هنا. كانت هناك معركة. ثم ظهر.", "original": "Well, I know he's not from around here. There was a battle. Then he showed up.", "ctx": null, "lock": false}
+{"k": "e45c4215", "v": "أي معركة؟", "original": "What battle?", "ctx": null, "lock": false}
+{"k": "e4657ad8", "v": "أنت حقًا لست من هنا، أليس كذلك؟ شعبنا في حالة حرب منذ قبل أن أولد.", "original": "You're really not from around here, are you? My people have been at war since before I was born.", "ctx": null, "lock": false}
+{"k": "eb8848da", "v": "أود الدردشة، لكن الوقت يتأخر. عد خلال النهار.", "original": "I'd like to chat, but it's getting late. Come back during the day.", "ctx": null, "lock": false}
+{"k": "ed68fc3d", "v": "نعم", "original": "Yes", "ctx": null, "lock": false}
+{"k": "f213214a", "v": "ماذا تعرف عن ذلك الفارس؟", "original": "What do you know about that knight?", "ctx": null, "lock": false}
+{"k": "f24b5246", "v": "Knight", "original": "Knight", "ctx": "The name of a knight NPC character.", "lock": false}
+{"k": "f304833e", "v": "مكان مختلف. لغتك تفتقر للكلمات لوصفه.", "original": "A different place. Your language lacks the words for it.", "ctx": "A description of a place that is not easily described.", "lock": false}
+{"k": "f5654ac2", "v": "قال \"أعطِ هذا الجندي طعامًا وشرابًا. مقابل ذلك سيحمي القرية.\" كان ختم الشيخ. كان ذلك واضحًا لا غبار عليه.", "original": "It said \"Give food and water to this soldier. In return he will guard the village.\" It had the Sheikh's seal. It was unmistakable.", "ctx": null, "lock": false}
+{"k": "f6ded42f", "v": "منذ كم كان ذلك؟", "original": "How long ago was this?", "ctx": null, "lock": false}
+{"k": "interact", "v": "تفاعل", "original": "Interact", "ctx": null, "lock": false}
