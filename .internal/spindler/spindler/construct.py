@@ -526,26 +526,19 @@ def render(passages: list[TweePassage]) -> RenderResult:
     # Create a mapping from passage names to their hashed names
     passage_id_to_passage: dict[str, TweePassage] = {}
     passage_name_to_id: dict[str, str] = {}
-    start_passage: TweePassage | None = None
     init_passage: TweePassage | None = None
     for passage in passages:
-        if passage.is_start:
-            start_passage = passage
-        elif passage.is_init:
+        if passage.is_init:
             init_passage = passage
 
         passage_id_to_passage[passage.id] = passage
         passage_name_to_id[passage.name] = passage.id
-
-    assert start_passage is not None, "No start passage found"
 
     # Now that we have our passage ids mapped to passages, we need to map
     # strings that point to slug-based passage ids to the real passage.
     for string_id, target_id in string_id_to_passage_id.items():
         passage = passage_id_to_passage[string_id]
         passage_id_to_passage[target_id] = passage
-
-    passage_to_children: dict[str, set[str]] = defaultdict(set)
 
     # Create our macro registry. We'll replace all invocations of the macro with
     # the macro body
@@ -561,17 +554,12 @@ def render(passages: list[TweePassage]) -> RenderResult:
                 body = traverse(state=state, node=cast(ParseTree, node.children[1]))
                 widget_registry[widget_name] = (body, state)
 
-    # Generate our individual passage functions
+    # Generate our individual passage functions and link passages to their
+    # children.
+    passage_to_children: dict[str, set[str]] = defaultdict(set)
+    passage_to_parents: dict[str, set[str]] = defaultdict(set)
     passage_functions: list[ConstructPassage] = []
     for passage in passages:
-
-        # If we're the root node passage, we only need to traverse the tree to
-        # populate links, but otherwise we don't treat it like a normal passage.
-        if passage.is_start and passage.tree:
-            state = TraverseState()
-            traverse(state=state, node=passage.tree)
-            passage_to_children[passage.id].update(state.children)
-            continue
 
         if passage.is_init:
             continue
@@ -584,6 +572,8 @@ def render(passages: list[TweePassage]) -> RenderResult:
 
         # Merge our mapping of passage IDs to their children
         passage_to_children[passage.id].update(state.children)
+        for child_id in state.children:
+            passage_to_parents[child_id].add(passage.id)
 
         # Using regex, find and replace all <<macro {macro_name}>> with the
         # macro content from macro_registry
@@ -592,6 +582,8 @@ def render(passages: list[TweePassage]) -> RenderResult:
             if to_replace in content:
                 content = content.replace(to_replace, expanded_widget)
                 passage_to_children[passage.id].update(widget_state.children)
+                for child_id in widget_state.children:
+                    passage_to_parents[child_id].add(passage.id)
 
         # Now that we know all of our passage ids, let's do some replacements.
         # This is for functions like `visited("Passage Name")` where the Twine
@@ -614,6 +606,11 @@ def render(passages: list[TweePassage]) -> RenderResult:
                 content=content,
             )
         )
+
+    source_passages = []
+    for passage in passages:
+        if passage.id not in passage_to_parents:
+            source_passages.append(passage)
 
     # Walk our passage links to propagate the tag names
     passage_to_tags: dict[str, list[str]] = defaultdict(list)
@@ -649,7 +646,8 @@ def render(passages: list[TweePassage]) -> RenderResult:
             if child_id:
                 propagate_tags(child_id, all_tags)
 
-    propagate_tags(start_passage.id)
+    for passage in source_passages:
+        propagate_tags(passage.id)
 
     # Now backfill our titles
     for cons_passage in passage_functions:

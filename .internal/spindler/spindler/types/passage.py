@@ -12,7 +12,6 @@ class TweePassage:
     name: str
     tree: ParseTree | None
     tags: list[str]
-    is_start: bool = False
 
     def __post_init__(self):
         self._id = None
@@ -25,8 +24,6 @@ class TweePassage:
     def id(self):
         if self.is_init:
             return ">init"
-        elif self.is_start:
-            return ">start"
 
         if self._id is None:
             self._id = hash_name(self.name)
