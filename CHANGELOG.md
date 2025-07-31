@@ -15,6 +15,7 @@ The template version should stay in sync with the engine version
 - Engine version 5.0.0
 - Twinejs shouldn't save to localstorage at all
 - No longer require a dummy start passage
+- Bugfix twine passage tags
 
 ## 4.0.0 - 7/22/25
 

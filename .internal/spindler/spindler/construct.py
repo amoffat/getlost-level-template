@@ -398,7 +398,7 @@ def render(passages: list[TweePassage]) -> RenderResult:
             elif var.data == "local_var":
                 var_name = cast(Token, var.children[0]).value
                 if var_name == TITLE_VAR:
-                    passage.tags = [value[1:-1]]  # Remove quotes
+                    passage.tags.insert(0, value[1:-1])  # Remove quotes
                     return ""
                 else:
                     return f"state.{var_name} = {value};"
