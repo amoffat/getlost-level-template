@@ -18,5 +18,9 @@ export function markers(): Marker[] {
       slug: "died-overheated",
       description: "The player died from overheating.",
     },
+    {
+      slug: "privacy-invasion",
+      description: "The player doesn't respect the privacy of others.",
+    },
   ];
 }

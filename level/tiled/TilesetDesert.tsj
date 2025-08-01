@@ -6,9 +6,36 @@
  "name":"TilesetDesert",
  "spacing":0,
  "tilecount":240,
- "tiledversion":"1.11.1-99-gec89c545",
+ "tiledversion":"1.11.2",
  "tileheight":16,
  "tiles":[
+        {
+         "id":77,
+         "objectgroup":
+            {
+             "draworder":"index",
+             "id":2,
+             "name":"",
+             "objects":[
+                    {
+                     "height":3,
+                     "id":1,
+                     "name":"",
+                     "rotation":0,
+                     "type":"",
+                     "visible":true,
+                     "width":16,
+                     "x":0,
+                     "y":13
+                    }],
+             "opacity":1,
+             "type":"objectgroup",
+             "visible":true,
+             "x":0,
+             "y":0
+            },
+         "type":"NonObstructing"
+        }, 
         {
          "id":189,
          "objectgroup":
@@ -40,7 +67,6 @@
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {

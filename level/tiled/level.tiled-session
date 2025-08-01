@@ -81,7 +81,7 @@
         }
     },
     "frame.defaultDuration": 100,
-    "last.imagePath": "/workspaces/getlost-level-template/level/art/Backgrounds/Animated/Flag",
+    "last.imagePath": "/workspaces/getlost-level-template/level/art/Backgrounds/Tilesets",
     "last.objectTypesPath": "/home/amoffat/work/getlost-level-template/.devcontainer/propertytypes.json",
     "map.fixedSize": false,
     "map.lastUsedFormat": "json",

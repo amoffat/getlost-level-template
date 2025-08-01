@@ -16,12 +16,31 @@ Level
     "Kid": "green",
     "Omar": "green"
   },
-  "zoom": 0.3
+  "zoom": 0.6
 }
+
+
+:: *psst*...why are you here? {"position":"1475,575","size":"100,100"}
+..zzz...zz... guard the map... zzzz....
+[[Where is the map?]]
 
 
 :: Bye {"position":"1600,1225","size":"100,100"}
 Be well.
+
+
+:: Can I get some water please? {"position":"3475,1250","size":"100,100"}
+<<if $kidHasWater>>
+	<<if hasVisited()>>
+This is the last of my water. There's an oasis to the east. That can cool you off too.
+	<<set $kidHasWater to false>>
+	<<else>>
+Here, this water should cool you down. I don't have much.
+	<</if>>
+    <<level.reduceOverheatBy(0.5)>>
+<<else>>
+Sorry! Go to the oasis, quick!
+<</if>>
 
 
 :: Climb down {"position":"3625,650","size":"100,100"}
@@ -42,7 +61,8 @@ The water is ice cold and cools you off.
 
 :: Fire [Fire] {"position":"2475,350","size":"100,100"}
 <<if hasPickup("map")>>
-You've found the map... Please, give it to me...
+You've found the map... Please, take me with you...
+[[Take  you with me?]]
 <<else>>
 <<if hasVisited()>>
 You've returned to me...
@@ -63,23 +83,9 @@ That's not your concern.
 <<knight-choices>>
 
 
-:: Heat {"position":"1150,1775","size":"100,100"}
-<<set _title to "Desert entrance">>
-The heat is blistering. I should be careful not to overheat.
-
-
-:: Help me, I'm about to pass out... {"position":"3325,1225","size":"100,100"}
-<<if $kidHasWater>>
-	<<if hasVisited()>>
-This is the last of my water. There's an oasis to the east. That can cool you off too.
-	<<set $kidHasWater to false>>
-	<<else>>
-Here, this water should cool you down. I don't have much.
-	<</if>>
-    <<level.reduceOverheatBy(0.5)>>
-<<else>>
-Sorry! Go to the oasis, quick!
-<</if>>
+:: Heat [sign] {"position":"1150,1775","size":"100,100"}
+<<set _title to "Death Spiral Desert">>
+CAUTION: Extreme daytime temperatures. Enter at your own risk.
 
 
 :: Hi Nazar, I'm $playerName. {"position":"2525,1725","size":"100,100"}
@@ -87,6 +93,12 @@ I haven't seen you before, are you here with the Knight?
 
 [[What Knight?|what-knight]]
 [[Yes|yes-knight]]
+
+
+:: Home invasion {"position":"650,1650","size":"100,100"}
+<<set _title to "Amina">>
+Hey, get out of here! This is my house!
+<<recordMarker("privacy-invasion")>>
 
 
 :: How am I in danger? {"position":"550,1000","size":"100,100"}
@@ -104,7 +116,7 @@ I.. uh... I volunteered. It's a long story, and I'm very busy right now.
 Only a week ago.
 
 
-:: I didn't take anything {"position":"3275,2050","size":"100,100"}
+:: I didn't take anything. {"position":"3200,1975","size":"100,100"}
 Oh, so you're a liar as well as a thief?
 <<recordMarker("lied-about-stealing")>>
 
@@ -152,12 +164,20 @@ You talked to the old man...
 <<knight-choices>>
 
 
+:: I said 'Hi' {"position":"375,675","size":"100,100"}
+Unless you're here to bring me an ice cold beverage, you can buzz off.
+
+
 :: I saw a blue fire on the water. {"position":"2000,1750","size":"100,100"}
 You've lost your mind. Please go.
 
 
 :: I think I'll bring it to that fire on the water. {"position":"800,1000","size":"100,100"}
 
+
+
+:: I was hungry. {"position":"3400,1975","size":"100,100"}
+Hmph.
 
 
 :: I'll keep an eye out for them. {"position":"2825,1000","size":"100,100"}
@@ -168,16 +188,18 @@ You've lost your mind. Please go.
 <<if isDay()>>
 
 	<<if queryMarker("died-overheated")>>
-	Did you try to get the map? You shouldn't go out there during the day.
-	<<else>>
-	It's pretty hot out here huh? I have some water if you start to overheat.
+		Did you try to get the map? You shouldn't go out there during the day.
+	<<elseif $kidHasWater>>
+		It's pretty hot out here huh? I have some water if you start to overheat.
+    	<<if level.overheat >= 0.2>>
+			[[Can I get some water please?]]
+        	[[Thanks, but I'm ok.]]
+		<</if>>
+    <<else>>
+    
 	<</if>>
 
-	<<if level.overheat >= 0.5>>
-		[[Help me, I'm about to pass out...]]
-		[[Thanks, but I'm ok.]]
-	<</if>>
-
+	
 <<else>>
 	<<if hasPickup("map")>>
 		It's much cooler at night, yeah?
@@ -190,8 +212,8 @@ You've lost your mind. Please go.
 :: Nazar [Nazar] {"position":"2375,1475","size":"100,100"}
 <<if queryMarker("stole-fruit")>>
 I saw you take that fruit. I don't do business with thieves. Please leave.
-[[I didn't take anything]]
-[[Sorry, I was hungry]]
+[[I didn't take anything.]]
+[[I was hungry.]]
 <<elseif isNight()>>
 I'd like to chat, but it's getting late. Come back during the day.
 <<else>>
@@ -223,27 +245,29 @@ Listen to me carefully. You need to give me that map.
 
 :: Silent Knight [Knight] {"position":"750,525","size":"100,100"}
 <<if isNight()>>
-...zzzzz...zzzzz.....zzzz...
-[[Why are you here?]]
+	...zzzzz...zzzzz.....zzzz...
+	[[*psst*...why are you here?]]
 <<else>>
   <<if hasPickup("map")>>
-Hey, come here! Where did you get that map???
-[[I found it in the desert.]]
-[[None of your business]]
-  <<elseif $learnedKnightStory>>
-...
-[[I know why you're here.]]
-  <<elseif $upsetKnight>>
-I thought I said go away.
-  <<else>>
-...
-[[Hi|silence]]
-  <</if>>
+		Hey, come here! Where did you get that map???
+		[[I found it in the desert.]]
+		[[None of your business]]
+	<<elseif $learnedKnightStory>>
+		...
+		[[I know why you're here.]]
+	<<elseif $upsetKnight>>
+		I thought I said go away.
+	<<else>>
+		...
+		[[Hi|silence]]
+	<</if>>
 <</if>>
 
 
-:: Sorry, I was hungry {"position":"3475,2025","size":"100,100"}
-Hmph.
+:: Skull Door [sign] {"position":"1500,1750","size":"100,100"}
+<<set _title to "Skelly's Lair">>
+Celebration is by invitation only.
+Attendants: please present ID badge.
 
 
 :: Step back {"position":"3900,650","size":"100,100"}
@@ -256,7 +280,11 @@ Hmph.
 <<set $kidHasWater to true>>
 
 
-:: Thanks, but I'm ok. {"position":"3525,1200","size":"100,100"}
+:: Take  you with me? {"position":"2700,525","size":"100,100"}
+I can travel with you
+
+
+:: Thanks, but I'm ok. {"position":"3250,1175","size":"100,100"}
 
 
 
@@ -300,6 +328,10 @@ You'll have to ask him.
 
 
 
+:: Where is the map? {"position":"1450,800","size":"100,100"}
+..zzz........
+
+
 :: Who is the Sheikh? {"position":"1175,1225","size":"100,100"}
 <<set $knightOpts.whoSheikh to false>>
 
@@ -316,11 +348,7 @@ The Sheikh asked me to. That's all I can tell you.
 <<knight-choices>>
 
 
-:: Why are you here? {"position":"1525,725","size":"100,100"}
-..zzz...mbmlm... guard the map... zzzz....
-
-
-:: bye-silence {"position":"275,625","size":"100,100"}
+:: bye-silence {"position":"200,675","size":"100,100"}
 
 
 
@@ -355,7 +383,7 @@ A map...
 :: silence {"position":"425,475","size":"100,100"}
 ...
 
-[[*ahem*... I said 'Hi'|silence]]
+[[I said 'Hi']]
 [[Bye|bye-silence]]
 
 
@@ -373,7 +401,7 @@ It said "Give food and water to this soldier. In return he will guard the villag
 <<set $learnedKnightStory to true>>
 
 
-:: what-knight {"position":"2675,1975","size":"100,100"}
+:: what-knight {"position":"2575,1975","size":"100,100"}
 There's a knight to the south. He doesn't talk much. Go see for yourself.
 
 
@@ -384,5 +412,5 @@ A fellow wanderer.... I'm here to seek and observe.
 [[What are you seeking?|seek-what]]
 
 
-:: yes-knight {"position":"2875,1975","size":"100,100"}
+:: yes-knight {"position":"2775,1950","size":"100,100"}
 I see... let me know if you need anything. I'm here to help.

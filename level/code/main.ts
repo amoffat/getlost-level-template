@@ -245,6 +245,8 @@ export function sensorEvent(
   }
   if (sensorName === "flame") {
     dialogue.stage_Fire(entered);
+  } else if (sensorName === "home-invasion" && entered) {
+    dialogue.passage_Amina();
   } else if (sensorName === "knight") {
     dialogue.stage_Knight(entered);
   } else if (sensorName === "well") {
@@ -292,8 +294,6 @@ export function sensorEvent(
 
     if (entered) {
       if (isDay) {
-        dialogue.passage_DesertEntrance();
-
         const spec = new CrossFadeSpec();
         spec.assetAId = dayMusic;
         spec.assetBId = mazeMusic;
@@ -311,6 +311,12 @@ export function sensorEvent(
         host.sound.crossfade(spec);
       }
     }
+  } else if (sensorName === "desert-sign") {
+    dialogue.stage_DeathSpiralDesert(entered);
+  } else if (sensorName === "skull-door") {
+    // host.tiles.toggle("skull-door", !entered);
+  } else if (sensorName === "skull-door-sign") {
+    dialogue.stage_SkellysLair(entered);
   }
 }
 

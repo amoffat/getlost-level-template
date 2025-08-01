@@ -3,28 +3,33 @@
 {"ctx": null, "k": "0e865942", "v": "There's a ladder going down, but you cannot see the bottom."}
 {"ctx": null, "k": "0ff99cc5", "v": "You've lost your mind. Please go."}
 {"ctx": null, "k": "10dea114", "v": "Hmph."}
-{"ctx": "A character is trying to get attention by clearing their throat and repeating their greeting.", "k": "12283998", "v": "*ahem*... I said 'Hi'"}
 {"ctx": "Saying goodbye.", "k": "12890122", "v": "Bye"}
 {"ctx": null, "k": "15380c5d", "v": "Listen to me carefully. You are in grave danger."}
 {"ctx": null, "k": "159272d5", "v": "I haven't seen you before, are you here with the Knight?"}
 {"ctx": null, "k": "18083266", "v": "Hello again."}
 {"ctx": null, "k": "1c802db9", "v": "Thanks, but I'm ok."}
+{"ctx": null, "k": "1ce6844d", "v": "Can I get some water please?"}
+{"ctx": null, "k": "1d4b7ffa", "v": "Celebration is by invitation only.\nAttendants: please present ID badge."}
 {"ctx": "A casual greeting.", "k": "1d925355", "v": "Hi"}
-{"ctx": null, "k": "1e933678", "v": "The heat is blistering. I should be careful not to overheat."}
+{"ctx": null, "k": "1e5553aa", "v": "Skelly's Lair"}
 {"ctx": null, "k": "216c5e8c", "v": "What is he guarding you from?"}
 {"ctx": null, "k": "24ba5f34", "v": "I didn't take anything"}
 {"ctx": "The name of a character in the game.", "k": "2dd1283e", "v": "Omar"}
 {"ctx": null, "k": "2ff1fead", "v": "It's much cooler at night, yeah? I bet you could get that map now."}
 {"ctx": null, "k": "379dcdf1", "v": "How did you get this job?"}
 {"ctx": null, "k": "3b74846b", "v": "It's much cooler at night, yeah?"}
+{"ctx": null, "k": "3c06e3e9", "v": "Take  you with me?"}
 {"ctx": null, "k": "3c0aa10d", "v": "Why are you guarding this town?"}
+{"ctx": null, "k": "3c2aef87", "v": "..zzz........"}
 {"ctx": null, "k": "3f243df9", "v": "It's pretty hot out here huh? I have some water if you start to overheat."}
 {"ctx": null, "k": "40345826", "v": "The water is ice cold and cools you off."}
 {"ctx": null, "k": "42fcb639", "v": "So what did the letter say?"}
+{"ctx": null, "k": "446cc2e5", "v": "I can travel with you"}
 {"ctx": null, "k": "44d8d469", "v": "What is it that you're looking for again?"}
 {"ctx": null, "k": "45e8a7dd", "v": "What are you seeking?"}
+{"ctx": null, "k": "537d4b4a", "v": "CAUTION: Extreme daytime temperatures. Enter at your own risk."}
 {"ctx": null, "k": "562cd4ad", "v": "Do you have a name?"}
-{"ctx": null, "k": "59f8038c", "v": "You've found the map... Please, give it to me..."}
+{"ctx": null, "k": "6094e0ff", "v": "..zzz...zz... guard the map... zzzz...."}
 {"ctx": null, "k": "61a55b48", "v": "I'll keep an eye out for them."}
 {"ctx": null, "k": "623930a8", "v": "I saw you take that fruit. I don't do business with thieves. Please leave."}
 {"ctx": null, "k": "63edc718", "v": "This is the last of my water. There's an oasis to the east. That can cool you off too."}
@@ -32,32 +37,32 @@
 {"ctx": null, "k": "698118b9", "v": "What Knight?"}
 {"ctx": null, "k": "6bb62fa6", "v": "Welcome, I'm Nazar."}
 {"ctx": null, "k": "6c3f1cc4", "v": "The Sheikh created this village."}
+{"ctx": null, "k": "6d5fab16", "v": "Unless you're here to bring me an ice cold beverage, you can buzz off."}
 {"ctx": null, "k": "6fc1c591", "v": "Hey, come here! Where did you get that map???"}
 {"ctx": null, "k": "708ba768", "v": "You said you were observing? What?"}
-{"ctx": null, "k": "709ccd02", "v": "..zzz...mbmlm... guard the map... zzzz...."}
 {"ctx": null, "k": "70fc677a", "v": "Did you try to get the map? You shouldn't go out there during the day."}
-{"ctx": null, "k": "71480774", "v": "Why are you here?"}
 {"ctx": null, "k": "7376aa01", "v": "Sorry! Go to the oasis, quick!"}
 {"ctx": null, "k": "76f7e319", "v": "The Sheikh asked me to. That's all I can tell you."}
 {"ctx": null, "k": "7ad97537", "v": "I see... let me know if you need anything. I'm here to help."}
 {"ctx": null, "k": "7c1dac67", "v": "You'll have to ask him."}
 {"ctx": null, "k": "7d52fd29", "v": "Hi Nazar, I'm {{vars.playerName}}."}
+{"ctx": null, "k": "7efe9a72", "v": "Amina"}
 {"ctx": null, "k": "857ccfa7", "v": "Draw water"}
 {"ctx": null, "k": "885ce2f8", "v": "Who is the Sheikh?"}
 {"ctx": null, "k": "8afcb04f", "v": "He sent me here to guard the town."}
 {"ctx": "A response to a character who is agitated, indicating that the speaker is calming them down and giving them what they want.", "k": "8bcf2e27", "v": "Ok, calm down, here you go."}
 {"ctx": null, "k": "8cd873af", "v": "For someone who goes by the name of {{vars.playerName}}."}
-{"ctx": null, "k": "8d33b34a", "v": "Help me, I'm about to pass out..."}
 {"ctx": null, "k": "909a9cff", "v": "Climb down"}
 {"ctx": null, "k": "9251bf45", "v": "Who are you?"}
 {"ctx": null, "k": "96f38b61", "v": "That's not your concern."}
 {"ctx": null, "k": "97c6c94d", "v": "Bye"}
-{"ctx": null, "k": "997cb3c9", "v": "Desert entrance"}
 {"ctx": null, "k": "99e18287", "v": "Guard from what?"}
 {"ctx": null, "k": "9b70a051", "v": "When does the knight leave?"}
 {"ctx": null, "k": "9d4f68e2", "v": "What do you mean he showed up?"}
 {"ctx": null, "k": "a15f40ff", "v": "Here, this water should cool you down. I don't have much."}
 {"ctx": null, "k": "a2b8560b", "v": "I know why you're here."}
+{"ctx": null, "k": "a37124ea", "v": "I said 'Hi'"}
+{"ctx": null, "k": "a4c9f0e6", "v": "Where is the map?"}
 {"ctx": null, "k": "a544db48", "v": "Sorry, I was hungry"}
 {"ctx": null, "k": "a7b6d713", "v": "I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh."}
 {"ctx": null, "k": "aa053912", "v": "You talked to the old man..."}
@@ -82,10 +87,13 @@
 {"ctx": null, "k": "d4ffad4e", "v": "A fellow wanderer.... I'm here to seek and observe."}
 {"ctx": null, "k": "d6e3cd9f", "v": "A map..."}
 {"ctx": null, "k": "d95d75d7", "v": "There's a knight to the south. He doesn't talk much. Go see for yourself."}
+{"ctx": null, "k": "dba49dce", "v": "Hey, get out of here! This is my house!"}
 {"ctx": null, "k": "dff1fa28", "v": "Only a week ago."}
+{"ctx": null, "k": "e060e278", "v": "*psst*...why are you here?"}
 {"ctx": null, "k": "e0a2d72f", "v": "None of your business"}
 {"ctx": null, "k": "e1ffb1d2", "v": "Nazar"}
 {"ctx": null, "k": "e245bb27", "v": "Well, I know he's not from around here. There was a battle. Then he showed up."}
+{"ctx": null, "k": "e4462448", "v": "You've found the map... Please, take me with you..."}
 {"ctx": null, "k": "e45c4215", "v": "What battle?"}
 {"ctx": null, "k": "e4657ad8", "v": "You're really not from around here, are you? My people have been at war since before I was born."}
 {"ctx": null, "k": "eb8848da", "v": "I'd like to chat, but it's getting late. Come back during the day."}
@@ -96,5 +104,6 @@
 {"ctx": null, "k": "f5654ac2", "v": "It said \"Give food and water to this soldier. In return he will guard the village.\" It had the Sheikh's seal. It was unmistakable."}
 {"ctx": null, "k": "f6ded42f", "v": "How long ago was this?"}
 {"ctx": null, "k": "f8b71c7d", "v": "How am I in danger?"}
+{"ctx": null, "k": "fa245957", "v": "Death Spiral Desert"}
 {"ctx": null, "k": "fe36d6fe", "v": "I found it in the desert."}
 {"ctx": null, "k": "interact", "v": "Interact"}

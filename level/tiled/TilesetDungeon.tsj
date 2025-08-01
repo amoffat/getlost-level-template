@@ -1,0 +1,14 @@
+{ "columns":12,
+ "image":"..\/art\/Backgrounds\/Tilesets\/TilesetDungeon.png",
+ "imageheight":64,
+ "imagewidth":192,
+ "margin":0,
+ "name":"TilesetDungeon",
+ "spacing":0,
+ "tilecount":48,
+ "tiledversion":"1.11.2",
+ "tileheight":16,
+ "tilewidth":16,
+ "type":"tileset",
+ "version":"1.10"
+}

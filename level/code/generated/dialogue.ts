@@ -40,14 +40,14 @@ class State {
   upsetKnight: bool;
   learnedKnightStory: bool;
   kidHasWater: bool;
-  knightOpts: State_knightOpts;
   title: string;
+  knightOpts: State_knightOpts;
   constructor() {
     this.upsetKnight = false;
     this.learnedKnightStory = false;
     this.kidHasWater = true;
+    this.title = "Skelly's Lair";
     this.knightOpts = new State_knightOpts();
-    this.title = "Desert entrance";
   }
   get params(): string[] {
     const params = new Array<string>();
@@ -57,14 +57,14 @@ class State {
     params.push(this.learnedKnightStory.toString());
     params.push("kidHasWater");
     params.push(this.kidHasWater.toString());
+    params.push("title");
+    params.push(this.title.toString());
     for (let i: i32 = 0; i < this.knightOpts.params.length; i += 2) {
       const name = this.knightOpts.params[i];
       const value = this.knightOpts.params[i + 1];
       params.push("knightOpts." + name);
       params.push(value);
     }
-    params.push("title");
-    params.push(this.title.toString());
     return params;
   }
 }
@@ -86,7 +86,6 @@ choiceToPassage.set("ba1494d0", "d20fad6e");
 choiceToPassage.set("42fcb639", "aff68fcf");
 choiceToPassage.set("650209c4", "ff810fb6");
 choiceToPassage.set("708ba768", "90212c36");
-choiceToPassage.set("12283998", "e6c18fdb");
 choiceToPassage.set("97c6c94d", "9b7360e5");
 choiceToPassage.set("c0aa9943", "90212c36");
 choiceToPassage.set("45e8a7dd", "50c96f21");
@@ -108,6 +107,37 @@ export function choiceMadeEvent(passageId: string, choiceId: string): void {
     choiceId = choiceToPassage.get(choiceId);
   }
   dispatch(choiceId);
+}
+
+// Show interact button for "*psst*...why are you here?"
+export function stage_e060e278(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: interactButton,
+        slug: "passage/e060e278",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// "*psst*...why are you here?"
+export function passage_e060e278(): void {
+  // "Knight"
+  const title = "f24b5246";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  twine.incrementVisitCount("e060e278");
+
+  // "..zzz...zz... guard the map... zzzz...."
+  text = "6094e0ff";
+  // Where is the map?
+  choices.push("a4c9f0e6");
+
+  host.text.display("e060e278", title, text, choices, state.params, animate);
 }
 
 // Show interact button for "Bye"
@@ -137,6 +167,48 @@ export function passage_12890122(): void {
   text = "aa225fe0";
 
   host.text.display("12890122", title, text, choices, state.params, animate);
+}
+
+// Show interact button for "Can I get some water please?"
+export function stage_1ce6844d(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: interactButton,
+        slug: "passage/1ce6844d",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// "Can I get some water please?"
+export function passage_1ce6844d(): void {
+  // "Omar"
+  const title = "2dd1283e";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  twine.incrementVisitCount("1ce6844d");
+
+  if (state.kidHasWater) {
+    if (twine.hasVisited("1ce6844d")) {
+      // "This is the last of my water. There's an oasis to the east. That can cool you off too."
+      text = "63edc718";
+      state.kidHasWater = false;
+    } else {
+      // "Here, this water should cool you down. I don't have much."
+      text = "a15f40ff";
+    }
+
+    level.reduceOverheatBy(0.5);
+  } else {
+    // "Sorry! Go to the oasis, quick!"
+    text = "7376aa01";
+  }
+
+  host.text.display("1ce6844d", title, text, choices, state.params, animate);
 }
 
 // Show interact button for "Climb down"
@@ -280,8 +352,10 @@ export function passage_Fire(): void {
   twine.incrementVisitCount("c141faa8");
 
   if (twine.hasPickup("map")) {
-    // "You've found the map... Please, give it to me..."
-    text = "59f8038c";
+    // "You've found the map... Please, take me with you..."
+    text = "e4462448";
+    // Take  you with me?
+    choices.push("3c06e3e9");
   } else {
     if (twine.hasVisited("c141faa8")) {
       // "You've returned to me..."
@@ -357,7 +431,7 @@ export function passage_99e18287(): void {
 }
 
 // Show interact button for "Heat"
-export function stage_DesertEntrance(entered: bool): void {
+export function stage_DeathSpiralDesert(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
@@ -371,60 +445,18 @@ export function stage_DesertEntrance(entered: bool): void {
 }
 
 // "Heat"
-export function passage_DesertEntrance(): void {
-  // "Desert entrance"
-  const title = "997cb3c9";
-  const animate = true;
+export function passage_DeathSpiralDesert(): void {
+  // "Death Spiral Desert"
+  const title = "fa245957";
+  const animate = false;
   let text = "";
   const choices: string[] = [];
   twine.incrementVisitCount("ee255635");
 
-  // "The heat is blistering. I should be careful not to overheat."
-  text = "1e933678";
+  // "CAUTION: Extreme daytime temperatures. Enter at your own risk."
+  text = "537d4b4a";
 
   host.text.display("ee255635", title, text, choices, state.params, animate);
-}
-
-// Show interact button for "Help me, I'm about to pass out..."
-export function stage_8d33b34a(entered: bool): void {
-  if (entered) {
-    host.controls.setButtons([
-      {
-        label: interactButton,
-        slug: "passage/8d33b34a",
-      },
-    ]);
-  } else {
-    host.controls.setButtons([]);
-  }
-}
-
-// "Help me, I'm about to pass out..."
-export function passage_8d33b34a(): void {
-  // "Omar"
-  const title = "2dd1283e";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  twine.incrementVisitCount("8d33b34a");
-
-  if (state.kidHasWater) {
-    if (twine.hasVisited("8d33b34a")) {
-      // "This is the last of my water. There's an oasis to the east. That can cool you off too."
-      text = "63edc718";
-      state.kidHasWater = false;
-    } else {
-      // "Here, this water should cool you down. I don't have much."
-      text = "a15f40ff";
-    }
-
-    level.reduceOverheatBy(0.5);
-  } else {
-    // "Sorry! Go to the oasis, quick!"
-    text = "7376aa01";
-  }
-
-  host.text.display("8d33b34a", title, text, choices, state.params, animate);
 }
 
 // Show interact button for "Hi Nazar, I'm $playerName."
@@ -459,6 +491,36 @@ export function passage_7d52fd29(): void {
   choices.push("ed68fc3d");
 
   host.text.display("7d52fd29", title, text, choices, state.params, animate);
+}
+
+// Show interact button for "Home invasion"
+export function stage_Amina(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: interactButton,
+        slug: "passage/d3e682fd",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// "Home invasion"
+export function passage_Amina(): void {
+  // "Amina"
+  const title = "7efe9a72";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  twine.incrementVisitCount("d3e682fd");
+
+  // "Hey, get out of here! This is my house!"
+  text = "dba49dce";
+  twine.recordMarker("privacy-invasion");
+
+  host.text.display("d3e682fd", title, text, choices, state.params, animate);
 }
 
 // Show interact button for "How did you get this job?"
@@ -670,6 +732,35 @@ export function passage_a2b8560b(): void {
   host.text.display("a2b8560b", title, text, choices, state.params, animate);
 }
 
+// Show interact button for "I said 'Hi'"
+export function stage_a37124ea(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: interactButton,
+        slug: "passage/a37124ea",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// "I said 'Hi'"
+export function passage_a37124ea(): void {
+  // "Knight"
+  const title = "f24b5246";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  twine.incrementVisitCount("a37124ea");
+
+  // "Unless you're here to bring me an ice cold beverage, you can buzz off."
+  text = "6d5fab16";
+
+  host.text.display("a37124ea", title, text, choices, state.params, animate);
+}
+
 // Show interact button for "I saw a blue fire on the water."
 export function stage_f510d9c0(entered: bool): void {
   if (entered) {
@@ -726,17 +817,17 @@ export function passage_Omar(): void {
     if (twine.queryMarker("died-overheated")) {
       // "Did you try to get the map? You shouldn't go out there during the day."
       text = "70fc677a";
-    } else {
+    } else if (state.kidHasWater) {
       // "It's pretty hot out here huh? I have some water if you start to overheat."
       text = "3f243df9";
-    }
+      if (level.overheat >= 0.2) {
+        // Can I get some water please?
+        choices.push("1ce6844d");
 
-    if (level.overheat >= 0.5) {
-      // Help me, I'm about to pass out...
-      choices.push("8d33b34a");
-
-      // Thanks, but I'm ok.
-      choices.push("1c802db9");
+        // Thanks, but I'm ok.
+        choices.push("1c802db9");
+      }
+    } else {
     }
   } else {
     if (twine.hasPickup("map")) {
@@ -870,8 +961,8 @@ export function passage_Knight(): void {
   if (twine.isNight()) {
     // "...zzzzz...zzzzz.....zzzz..."
     text = "b5cbd2a3";
-    // Why are you here?
-    choices.push("71480774");
+    // *psst*...why are you here?
+    choices.push("e060e278");
   } else {
     if (twine.hasPickup("map")) {
       // "Hey, come here! Where did you get that map???"
@@ -898,6 +989,35 @@ export function passage_Knight(): void {
   }
 
   host.text.display("491e88c5", title, text, choices, state.params, animate);
+}
+
+// Show interact button for "Skull Door"
+export function stage_SkellysLair(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: interactButton,
+        slug: "passage/c237deff",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// "Skull Door"
+export function passage_SkellysLair(): void {
+  // "Skelly's Lair"
+  const title = "1e5553aa";
+  const animate = false;
+  let text = "";
+  const choices: string[] = [];
+  twine.incrementVisitCount("c237deff");
+
+  // "Celebration is by invitation only.\nAttendants: please present ID badge."
+  text = "1d4b7ffa";
+
+  host.text.display("c237deff", title, text, choices, state.params, animate);
 }
 
 // Show interact button for "Sorry, I was hungry"
@@ -927,6 +1047,35 @@ export function passage_a544db48(): void {
   text = "10dea114";
 
   host.text.display("a544db48", title, text, choices, state.params, animate);
+}
+
+// Show interact button for "Take  you with me?"
+export function stage_3c06e3e9(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: interactButton,
+        slug: "passage/3c06e3e9",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// "Take  you with me?"
+export function passage_3c06e3e9(): void {
+  // "Fire"
+  const title = "c141faa8";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  twine.incrementVisitCount("3c06e3e9");
+
+  // "I can travel with you"
+  text = "446cc2e5";
+
+  host.text.display("3c06e3e9", title, text, choices, state.params, animate);
 }
 
 // Show interact button for "Well"
@@ -1094,6 +1243,35 @@ export function passage_216c5e8c(): void {
   host.text.display("216c5e8c", title, text, choices, state.params, animate);
 }
 
+// Show interact button for "Where is the map?"
+export function stage_a4c9f0e6(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: interactButton,
+        slug: "passage/a4c9f0e6",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// "Where is the map?"
+export function passage_a4c9f0e6(): void {
+  // "Knight"
+  const title = "f24b5246";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  twine.incrementVisitCount("a4c9f0e6");
+
+  // "..zzz........"
+  text = "3c2aef87";
+
+  host.text.display("a4c9f0e6", title, text, choices, state.params, animate);
+}
+
 // Show interact button for "Who is the Sheikh?"
 export function stage_885ce2f8(entered: bool): void {
   if (entered) {
@@ -1206,35 +1384,6 @@ export function passage_3c0aa10d(): void {
   choices.push("12890122");
 
   host.text.display("3c0aa10d", title, text, choices, state.params, animate);
-}
-
-// Show interact button for "Why are you here?"
-export function stage_71480774(entered: bool): void {
-  if (entered) {
-    host.controls.setButtons([
-      {
-        label: interactButton,
-        slug: "passage/71480774",
-      },
-    ]);
-  } else {
-    host.controls.setButtons([]);
-  }
-}
-
-// "Why are you here?"
-export function passage_71480774(): void {
-  // "Knight"
-  const title = "f24b5246";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  twine.incrementVisitCount("71480774");
-
-  // "..zzz...mbmlm... guard the map... zzzz...."
-  text = "709ccd02";
-
-  host.text.display("71480774", title, text, choices, state.params, animate);
 }
 
 // Show interact button for "nazar-who-shiekh"
@@ -1361,8 +1510,8 @@ export function passage_e6c18fdb(): void {
 
   // "..."
   text = "ab5df625";
-  // *ahem*... I said 'Hi'
-  choices.push("12283998");
+  // I said 'Hi'
+  choices.push("a37124ea");
 
   // Bye
   choices.push("97c6c94d");
@@ -1533,9 +1682,19 @@ export function passage_5c07303d(): void {
 export function dispatch(passageId: string): void {
   let found = false;
 
+  if (passageId === "e060e278") {
+    found = true;
+    passage_e060e278();
+  }
+
   if (passageId === "12890122") {
     found = true;
     passage_12890122();
+  }
+
+  if (passageId === "1ce6844d") {
+    found = true;
+    passage_1ce6844d();
   }
 
   if (passageId === "909a9cff") {
@@ -1565,17 +1724,17 @@ export function dispatch(passageId: string): void {
 
   if (passageId === "ee255635") {
     found = true;
-    passage_DesertEntrance();
-  }
-
-  if (passageId === "8d33b34a") {
-    found = true;
-    passage_8d33b34a();
+    passage_DeathSpiralDesert();
   }
 
   if (passageId === "7d52fd29") {
     found = true;
     passage_7d52fd29();
+  }
+
+  if (passageId === "d3e682fd") {
+    found = true;
+    passage_Amina();
   }
 
   if (passageId === "379dcdf1") {
@@ -1603,6 +1762,11 @@ export function dispatch(passageId: string): void {
     passage_a2b8560b();
   }
 
+  if (passageId === "a37124ea") {
+    found = true;
+    passage_a37124ea();
+  }
+
   if (passageId === "f510d9c0") {
     found = true;
     passage_f510d9c0();
@@ -1628,9 +1792,19 @@ export function dispatch(passageId: string): void {
     passage_Knight();
   }
 
+  if (passageId === "c237deff") {
+    found = true;
+    passage_SkellysLair();
+  }
+
   if (passageId === "a544db48") {
     found = true;
     passage_a544db48();
+  }
+
+  if (passageId === "3c06e3e9") {
+    found = true;
+    passage_3c06e3e9();
   }
 
   if (passageId === "bdc7e965") {
@@ -1658,6 +1832,11 @@ export function dispatch(passageId: string): void {
     passage_216c5e8c();
   }
 
+  if (passageId === "a4c9f0e6") {
+    found = true;
+    passage_a4c9f0e6();
+  }
+
   if (passageId === "885ce2f8") {
     found = true;
     passage_885ce2f8();
@@ -1666,11 +1845,6 @@ export function dispatch(passageId: string): void {
   if (passageId === "3c0aa10d") {
     found = true;
     passage_3c0aa10d();
-  }
-
-  if (passageId === "71480774") {
-    found = true;
-    passage_71480774();
   }
 
   if (passageId === "d20fad6e") {
