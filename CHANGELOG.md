@@ -17,6 +17,7 @@ The template version should stay in sync with the engine version
 - No longer require a dummy start passage
 - Bugfix twine passage tags
 - `host.tiles.toggle()` for toggling sprites
+- Log warnings in dev console
 
 ## 4.0.0 - 7/22/25
 

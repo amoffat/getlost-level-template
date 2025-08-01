@@ -41,7 +41,7 @@ function formatLogEvent(logEvent: LogEvent) {
 function parseMessage(event: LogEvent): LogMessage | undefined {
   let color;
   let found = false;
-  if (event.level.label === "error") {
+  if (["error", "warn"].includes(event.level.label)) {
     found = true;
   } else {
     for (const msg of event.messages) {
