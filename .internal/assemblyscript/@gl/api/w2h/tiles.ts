@@ -34,7 +34,14 @@ export declare function getTiles(
   layerNames: string[]
 ): u32[];
 
+/**
+ * @param name The name of the object tile to toggle
+ * @param enabled Whether the tile should be enabled or disabled
+ */
+export declare function toggle(name: string, enabled: bool): void;
+
 export const _keep_setTint = setTint;
 export const _keep_change = change;
 export const _keep_playAnimation = playAnimation;
 export const _keep_getTiles = getTiles;
+export const _keep_toggle = toggle;
