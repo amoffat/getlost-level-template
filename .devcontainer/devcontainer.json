@@ -43,7 +43,8 @@
         // "ms-azuretools.vscode-docker",
         "ms-python.mypy-type-checker",
         "ms-python.isort",
-        "ms-python.flake8"
+        "ms-python.flake8",
+        "tintinweb.graphviz-interactive-preview"
       ]
     }
   },

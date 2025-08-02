@@ -18,6 +18,7 @@ The template version should stay in sync with the engine version
 - Bugfix twine passage tags
 - `host.tiles.toggle()` for toggling sprites
 - Log warnings in dev console
+- `host.player.setSkin()` for player skins
 
 ## 4.0.0 - 7/22/25
 
