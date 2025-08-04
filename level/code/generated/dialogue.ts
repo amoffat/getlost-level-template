@@ -81,9 +81,6 @@ choiceToPassage.set("ed68fc3d", "5c07303d");
 choiceToPassage.set("d188824d", "2a9618c1");
 choiceToPassage.set("8bcf2e27", "4306feba");
 choiceToPassage.set("1d925355", "e6c18fdb");
-choiceToPassage.set("acf8dced", "aff68fcf");
-choiceToPassage.set("ba1494d0", "d20fad6e");
-choiceToPassage.set("42fcb639", "aff68fcf");
 choiceToPassage.set("650209c4", "ff810fb6");
 choiceToPassage.set("708ba768", "90212c36");
 choiceToPassage.set("97c6c94d", "9b7360e5");
@@ -580,13 +577,13 @@ export function passage_379dcdf1(): void {
   host.text.display("379dcdf1", title, text, choices, state.params, animate);
 }
 
-// Show interact button for "How long ago was this?"
-export function stage_f6ded42f(entered: bool): void {
+// Show interact button for "I didn't take anything."
+export function stage_eb8d0d59(entered: bool): void {
   if (entered) {
     host.controls.setButtons([
       {
         label: interactButton,
-        slug: "passage/f6ded42f",
+        slug: "passage/eb8d0d59",
       },
     ]);
   } else {
@@ -594,49 +591,20 @@ export function stage_f6ded42f(entered: bool): void {
   }
 }
 
-// "How long ago was this?"
-export function passage_f6ded42f(): void {
+// "I didn't take anything."
+export function passage_eb8d0d59(): void {
   // "Nazar"
   const title = "e1ffb1d2";
   const animate = true;
   let text = "";
   const choices: string[] = [];
-  twine.incrementVisitCount("f6ded42f");
-
-  // "Only a week ago."
-  text = "dff1fa28";
-
-  host.text.display("f6ded42f", title, text, choices, state.params, animate);
-}
-
-// Show interact button for "I didn't take anything"
-export function stage_24ba5f34(entered: bool): void {
-  if (entered) {
-    host.controls.setButtons([
-      {
-        label: interactButton,
-        slug: "passage/24ba5f34",
-      },
-    ]);
-  } else {
-    host.controls.setButtons([]);
-  }
-}
-
-// "I didn't take anything"
-export function passage_24ba5f34(): void {
-  // "Nazar"
-  const title = "e1ffb1d2";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  twine.incrementVisitCount("24ba5f34");
+  twine.incrementVisitCount("eb8d0d59");
 
   // "Oh, so you're a liar as well as a thief?"
   text = "c59b89a3";
   twine.recordMarker("lied-about-stealing");
 
-  host.text.display("24ba5f34", title, text, choices, state.params, animate);
+  host.text.display("eb8d0d59", title, text, choices, state.params, animate);
 }
 
 // Show interact button for "I found it in the desert."
@@ -790,6 +758,35 @@ export function passage_f510d9c0(): void {
   host.text.display("f510d9c0", title, text, choices, state.params, animate);
 }
 
+// Show interact button for "I was hungry."
+export function stage_d62c3967(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: interactButton,
+        slug: "passage/d62c3967",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// "I was hungry."
+export function passage_d62c3967(): void {
+  // "Nazar"
+  const title = "e1ffb1d2";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  twine.incrementVisitCount("d62c3967");
+
+  // "Hmph."
+  text = "10dea114";
+
+  host.text.display("d62c3967", title, text, choices, state.params, animate);
+}
+
 // Show interact button for "Kid"
 export function stage_Omar(entered: bool): void {
   if (entered) {
@@ -868,11 +865,11 @@ export function passage_Nazar(): void {
   if (twine.queryMarker("stole-fruit")) {
     // "I saw you take that fruit. I don't do business with thieves. Please leave."
     text = "623930a8";
-    // I didn't take anything
-    choices.push("24ba5f34");
+    // I didn't take anything.
+    choices.push("eb8d0d59");
 
-    // Sorry, I was hungry
-    choices.push("a544db48");
+    // I was hungry.
+    choices.push("d62c3967");
   } else if (twine.isNight()) {
     // "I'd like to chat, but it's getting late. Come back during the day."
     text = "eb8848da";
@@ -1020,35 +1017,6 @@ export function passage_SkellysLair(): void {
   host.text.display("c237deff", title, text, choices, state.params, animate);
 }
 
-// Show interact button for "Sorry, I was hungry"
-export function stage_a544db48(entered: bool): void {
-  if (entered) {
-    host.controls.setButtons([
-      {
-        label: interactButton,
-        slug: "passage/a544db48",
-      },
-    ]);
-  } else {
-    host.controls.setButtons([]);
-  }
-}
-
-// "Sorry, I was hungry"
-export function passage_a544db48(): void {
-  // "Nazar"
-  const title = "e1ffb1d2";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  twine.incrementVisitCount("a544db48");
-
-  // "Hmph."
-  text = "10dea114";
-
-  host.text.display("a544db48", title, text, choices, state.params, animate);
-}
-
 // Show interact button for "Take  you with me?"
 export function stage_3c06e3e9(entered: bool): void {
   if (entered) {
@@ -1117,35 +1085,6 @@ export function passage_Well(): void {
   host.text.display("bdc7e965", title, text, choices, state.params, animate);
 }
 
-// Show interact button for "What battle?"
-export function stage_e45c4215(entered: bool): void {
-  if (entered) {
-    host.controls.setButtons([
-      {
-        label: interactButton,
-        slug: "passage/e45c4215",
-      },
-    ]);
-  } else {
-    host.controls.setButtons([]);
-  }
-}
-
-// "What battle?"
-export function passage_e45c4215(): void {
-  // "Nazar"
-  const title = "e1ffb1d2";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  twine.incrementVisitCount("e45c4215");
-
-  // "You're really not from around here, are you? My people have been at war since before I was born."
-  text = "e4657ad8";
-
-  host.text.display("e45c4215", title, text, choices, state.params, animate);
-}
-
 // Show interact button for "What do you know about that knight?"
 export function stage_f213214a(entered: bool): void {
   if (entered) {
@@ -1169,78 +1108,10 @@ export function passage_f213214a(): void {
   const choices: string[] = [];
   twine.incrementVisitCount("f213214a");
 
-  // "Well, I know he's not from around here. There was a battle. Then he showed up."
-  text = "e245bb27";
-  // What do you mean he showed up?
-  choices.push("9d4f68e2");
-
-  // What battle?
-  choices.push("e45c4215");
+  // "I wish he'd leave. He's scaring off business."
+  text = "acfb24bc";
 
   host.text.display("f213214a", title, text, choices, state.params, animate);
-}
-
-// Show interact button for "What do you mean he showed up?"
-export function stage_9d4f68e2(entered: bool): void {
-  if (entered) {
-    host.controls.setButtons([
-      {
-        label: interactButton,
-        slug: "passage/9d4f68e2",
-      },
-    ]);
-  } else {
-    host.controls.setButtons([]);
-  }
-}
-
-// "What do you mean he showed up?"
-export function passage_9d4f68e2(): void {
-  // "Nazar"
-  const title = "e1ffb1d2";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  twine.incrementVisitCount("9d4f68e2");
-
-  // "I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh."
-  text = "a7b6d713";
-  // What did the letter say?
-  choices.push("acf8dced");
-
-  // Who is the Sheikh?
-  choices.push("ba1494d0");
-
-  host.text.display("9d4f68e2", title, text, choices, state.params, animate);
-}
-
-// Show interact button for "What is he guarding you from?"
-export function stage_216c5e8c(entered: bool): void {
-  if (entered) {
-    host.controls.setButtons([
-      {
-        label: interactButton,
-        slug: "passage/216c5e8c",
-      },
-    ]);
-  } else {
-    host.controls.setButtons([]);
-  }
-}
-
-// "What is he guarding you from?"
-export function passage_216c5e8c(): void {
-  // "Nazar"
-  const title = "e1ffb1d2";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  twine.incrementVisitCount("216c5e8c");
-
-  // "You'll have to ask him."
-  text = "7c1dac67";
-
-  host.text.display("216c5e8c", title, text, choices, state.params, animate);
 }
 
 // Show interact button for "Where is the map?"
@@ -1386,37 +1257,6 @@ export function passage_3c0aa10d(): void {
   host.text.display("3c0aa10d", title, text, choices, state.params, animate);
 }
 
-// Show interact button for "nazar-who-shiekh"
-export function stage_d20fad6e(entered: bool): void {
-  if (entered) {
-    host.controls.setButtons([
-      {
-        label: interactButton,
-        slug: "passage/d20fad6e",
-      },
-    ]);
-  } else {
-    host.controls.setButtons([]);
-  }
-}
-
-// "nazar-who-shiekh"
-export function passage_d20fad6e(): void {
-  // "Nazar"
-  const title = "e1ffb1d2";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  twine.incrementVisitCount("d20fad6e");
-
-  // "The Sheikh created this village."
-  text = "6c3f1cc4";
-  // So what did the letter say?
-  choices.push("42fcb639");
-
-  host.text.display("d20fad6e", title, text, choices, state.params, animate);
-}
-
 // Show interact button for "observe-what"
 export function stage_90212c36(entered: bool): void {
   if (entered) {
@@ -1546,45 +1386,6 @@ export function passage_ff810fb6(): void {
   text = "092afab4";
 
   host.text.display("ff810fb6", title, text, choices, state.params, animate);
-}
-
-// Show interact button for "what-did-letter-say"
-export function stage_aff68fcf(entered: bool): void {
-  if (entered) {
-    host.controls.setButtons([
-      {
-        label: interactButton,
-        slug: "passage/aff68fcf",
-      },
-    ]);
-  } else {
-    host.controls.setButtons([]);
-  }
-}
-
-// "what-did-letter-say"
-export function passage_aff68fcf(): void {
-  // "Nazar"
-  const title = "e1ffb1d2";
-  const animate = true;
-  let text = "";
-  const choices: string[] = [];
-  twine.incrementVisitCount("aff68fcf");
-
-  // "It said \"Give food and water to this soldier. In return he will guard the village.\" It had the Sheikh's seal. It was unmistakable."
-  text = "f5654ac2";
-  // How long ago was this?
-  choices.push("f6ded42f");
-
-  // When does the knight leave?
-  choices.push("9b70a051");
-
-  // What is he guarding you from?
-  choices.push("216c5e8c");
-
-  state.learnedKnightStory = true;
-
-  host.text.display("aff68fcf", title, text, choices, state.params, animate);
 }
 
 // Show interact button for "what-knight"
@@ -1742,14 +1543,9 @@ export function dispatch(passageId: string): void {
     passage_379dcdf1();
   }
 
-  if (passageId === "f6ded42f") {
+  if (passageId === "eb8d0d59") {
     found = true;
-    passage_f6ded42f();
-  }
-
-  if (passageId === "24ba5f34") {
-    found = true;
-    passage_24ba5f34();
+    passage_eb8d0d59();
   }
 
   if (passageId === "fe36d6fe") {
@@ -1770,6 +1566,11 @@ export function dispatch(passageId: string): void {
   if (passageId === "f510d9c0") {
     found = true;
     passage_f510d9c0();
+  }
+
+  if (passageId === "d62c3967") {
+    found = true;
+    passage_d62c3967();
   }
 
   if (passageId === "5ac45c94") {
@@ -1797,11 +1598,6 @@ export function dispatch(passageId: string): void {
     passage_SkellysLair();
   }
 
-  if (passageId === "a544db48") {
-    found = true;
-    passage_a544db48();
-  }
-
   if (passageId === "3c06e3e9") {
     found = true;
     passage_3c06e3e9();
@@ -1812,24 +1608,9 @@ export function dispatch(passageId: string): void {
     passage_Well();
   }
 
-  if (passageId === "e45c4215") {
-    found = true;
-    passage_e45c4215();
-  }
-
   if (passageId === "f213214a") {
     found = true;
     passage_f213214a();
-  }
-
-  if (passageId === "9d4f68e2") {
-    found = true;
-    passage_9d4f68e2();
-  }
-
-  if (passageId === "216c5e8c") {
-    found = true;
-    passage_216c5e8c();
   }
 
   if (passageId === "a4c9f0e6") {
@@ -1845,11 +1626,6 @@ export function dispatch(passageId: string): void {
   if (passageId === "3c0aa10d") {
     found = true;
     passage_3c0aa10d();
-  }
-
-  if (passageId === "d20fad6e") {
-    found = true;
-    passage_d20fad6e();
   }
 
   if (passageId === "90212c36") {
@@ -1870,11 +1646,6 @@ export function dispatch(passageId: string): void {
   if (passageId === "ff810fb6") {
     found = true;
     passage_ff810fb6();
-  }
-
-  if (passageId === "aff68fcf") {
-    found = true;
-    passage_aff68fcf();
   }
 
   if (passageId === "a61db43e") {

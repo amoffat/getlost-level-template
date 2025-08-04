@@ -1,0 +1,14 @@
+{ "columns":15,
+ "image":"..\/art\/Backgrounds\/Tilesets\/Pipes.png",
+ "imageheight":48,
+ "imagewidth":240,
+ "margin":0,
+ "name":"Pipes",
+ "spacing":0,
+ "tilecount":45,
+ "tiledversion":"1.11.2",
+ "tileheight":16,
+ "tilewidth":16,
+ "type":"tileset",
+ "version":"1.10"
+}

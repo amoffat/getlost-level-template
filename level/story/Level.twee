@@ -112,10 +112,6 @@ I.. uh... I volunteered. It's a long story, and I'm very busy right now.
 <<knight-choices>>
 
 
-:: How long ago was this? {"position":"2450,2525","size":"100,100"}
-Only a week ago.
-
-
 :: I didn't take anything. {"position":"3200,1975","size":"100,100"}
 Oh, so you're a liar as well as a thief?
 <<recordMarker("lied-about-stealing")>>
@@ -302,29 +298,8 @@ There's a ladder going down, but you cannot see the bottom.
 <</if>>
 
 
-:: What battle? {"position":"2150,1950","size":"100,100"}
-You're really not from around here, are you? My people have been at war since before I was born.
-
-
-:: What do you know about that knight? {"position":"2275,1700","size":"100,100"}
-Well, I know he's not from around here. There was a battle. Then he showed up.
-
-[[What do you mean he showed up?]]
-[[What battle?]]
-
-
-:: What do you mean he showed up? {"position":"2350,2175","size":"100,100"}
-I mean he arrived on foot, without a weapon and covered in blood. We thought he left the battle to raid our village. But he had a letter from the Sheikh.
-
-[[What did the letter say?|what-did-letter-say]]
-[[Who is the Sheikh?|nazar-who-shiekh]]
-
-
-:: What is he guarding you from? {"position":"2675,2525","size":"100,100"}
-You'll have to ask him.
-
-
-:: When does the knight leave? {"position":"2250,2525","size":"100,100"}
+:: What do you know about that knight? {"position":"2275,1800","size":"100,100"}
+I wish he'd leave. He's scaring off business.
 
 
 
@@ -356,12 +331,6 @@ The Sheikh asked me to. That's all I can tell you.
 
 
 
-:: nazar-who-shiekh {"position":"2625,2275","size":"100,100"}
-The Sheikh created this village.
-
-[[So what did the letter say?|what-did-letter-say]]
-
-
 :: no-map {"position":"400,1150","size":"100,100"}
 
 
@@ -391,17 +360,7 @@ A map...
 Find it for me and I'll show you.
 
 
-:: what-did-letter-say {"position":"2400,2350","size":"100,100"}
-It said "Give food and water to this soldier. In return he will guard the village." It had the Sheikh's seal. It was unmistakable.
-
-[[How long ago was this?]]
-[[When does the knight leave?]]
-[[What is he guarding you from?]]
-
-<<set $learnedKnightStory to true>>
-
-
-:: what-knight {"position":"2575,1975","size":"100,100"}
+:: what-knight {"position":"2525,2025","size":"100,100"}
 There's a knight to the south. He doesn't talk much. Go see for yourself.
 
 
