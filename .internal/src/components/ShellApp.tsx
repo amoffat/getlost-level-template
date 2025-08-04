@@ -92,6 +92,7 @@ export function ShellApp() {
           tabIndex={-1}
           ref={iframeRef}
           id="dev-frame"
+          allow="cross-origin-isolated"
           allowFullScreen
         ></iframe>
       </div>

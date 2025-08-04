@@ -21,6 +21,10 @@ function addHeadersPlugin() {
         res.setHeader("Access-Control-Allow-Headers", "*");
         res.setHeader("Access-Control-Allow-Credentials", "true");
 
+        res.setHeader("cross-origin-resource-policy", "cross-origin");
+        res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+        res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+
         if (req.method === "OPTIONS") {
           res.statusCode = 200;
           res.end();
