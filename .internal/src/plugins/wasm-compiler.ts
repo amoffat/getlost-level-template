@@ -108,10 +108,10 @@ export async function compileWasm({
     "release",
     "--bindings",
     "raw",
-    "--importMemory",
     "--exportRuntime",
     "--path",
     asmLibDir,
+    "--importMemory",
   ];
   if (debug) {
     commandLineOptions.concat(["--textFile", textFilePath]);
