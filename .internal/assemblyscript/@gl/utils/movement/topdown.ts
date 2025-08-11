@@ -1,5 +1,7 @@
+import { Vector } from "../../api/types/vector";
 import * as host from "../../api/w2h/host";
 import { Vec2 } from "../la/vec2";
+import { deriveTargetIndex, TrackResult } from "../paths";
 
 export enum Direction {
   North,
@@ -16,6 +18,9 @@ export enum PlayerAction {
   WalkDown,
 }
 
+const stuckTRate: f32 = 2; // T units per second
+const stuckTimeout: f32 = 1000; // ms
+
 /*
  * Handles player movement in a top-down 2D environment.
  */
@@ -23,18 +28,25 @@ export class PlayerMovement {
   private _pos: Vec2;
   private _velocity: Vec2;
   public direction: Vec2;
-  private impulse: Vec2;
+  private moveForce: Vec2;
   public mass: f32;
   public maxVelocity: Vec2;
   private _action: PlayerAction = PlayerAction.Idle;
+  public name: string;
+
+  private _targetPos: Vec2 = new Vec2(0, 0);
+  private _targetPath: Vec2[] = [];
+  private _stuckTimer: f32 = 0;
+  private _lastTrackResult: TrackResult = { index: -1, distance: 0, t: 0 };
 
   constructor(initialPos: Vec2, impulse: Vec2, maxVelocity: Vec2, mass: f32) {
     this._pos = initialPos;
     this._velocity = new Vec2(0.0, 0.0);
     this.direction = new Vec2(0.0, 0.0);
-    this.impulse = impulse;
+    this.moveForce = impulse;
     this.maxVelocity = maxVelocity;
     this.mass = mass;
+    this.name = "player";
   }
 
   // Get the player's current position. This is used in our game loop tick.
@@ -62,9 +74,58 @@ export class PlayerMovement {
     return this._action != PlayerAction.Idle;
   }
 
+  setTargetPos(targetPos: Vector): void {
+    this.clearTarget();
+    this._targetPos = Vec2.fromVector(targetPos);
+    this._targetPath = host.char
+      .findPath(this.name, this._pos.toVector(), targetPos)
+      .map<Vec2>((v) => Vec2.fromVector(v));
+  }
+
+  clearTarget(): void {
+    this._targetPath = [];
+    this._targetPos = new Vec2(0, 0);
+    this._lastTrackResult = { index: -1, distance: 0, t: 0 };
+    this._stuckTimer = 0;
+    host.char.clearPath(this.name);
+  }
+
   // Update method to handle position updates per frame
   tick(deltaMS: f32): void {
-    const props = host.char.getMoveProps("player");
+    const props = host.char.getMoveProps(this.name);
+
+    if (this._targetPath.length > 0) {
+      const trackResult = deriveTargetIndex(this._pos, this._targetPath);
+      const goalDist = this._pos.distanceTo(this._targetPos);
+
+      const oldTrackResult = this._lastTrackResult;
+      this._lastTrackResult = trackResult;
+      const maybeStuck =
+        this._lastTrackResult.index == oldTrackResult.index &&
+        Mathf.abs(oldTrackResult.t - trackResult.t) <
+          (stuckTRate * deltaMS) / 1000;
+
+      if (maybeStuck) {
+        if (this._stuckTimer > stuckTimeout) {
+          this.setTargetPos(this._targetPos.toVector());
+          return;
+        } else {
+          this._stuckTimer += deltaMS;
+        }
+      } else {
+        this._stuckTimer = 0;
+      }
+
+      if (goalDist < 1) {
+        this.clearTarget();
+      } else if (trackResult.distance > 32) {
+        this.setTargetPos(this._targetPos.toVector());
+      } else {
+        const targetNode = this._targetPath[trackResult.index];
+        const adjust = targetNode.subbed(this._pos).capScalar(0.1);
+        this.direction.add(adjust).normalize();
+      }
+    }
 
     // If we're in deep water, we want to decrease the friction and decrease the
     // traction, proportionally to the amount we're sunk. This lets us glide
@@ -81,17 +142,16 @@ export class PlayerMovement {
       traction = props.traction;
     }
 
-    // Low traction means our impulse is less effective
-    const adjImpulse = this.impulse.scaled(traction);
-
     const movementVector = this.direction; //.mul(this.impulse);
 
     if (movementVector.x != 0 || movementVector.y != 0) {
+      // Low traction means our impulse is less effective
+      const adjForce = this.moveForce.scaled(traction).scaled(deltaMS / 1000);
       const direction: Vec2 = movementVector;
 
       // Apply impulse to velocity based on mass
-      this._velocity.x += (direction.x * adjImpulse.x) / this.mass;
-      this._velocity.y += (direction.y * adjImpulse.y) / this.mass;
+      this._velocity.x += (direction.x * adjForce.x) / this.mass;
+      this._velocity.y += (direction.y * adjForce.y) / this.mass;
 
       // Don't go faster than max velocity
       this._velocity.cap(this.maxVelocity);

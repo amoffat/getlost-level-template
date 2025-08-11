@@ -13,8 +13,8 @@ export class Player {
     const pos = host.map.loadEntryPosition();
 
     const playerController = new PlayerMovement(
-      pos.toVec2(), // Initial position
-      new Vec2(200, 200), // Impulse
+      Vec2.fromVector(pos), // Initial position
+      Vec2.fromVal(10000), // Movement force
       Vec2.fromMagnitude(35), // Max velocity
       50 // mass
     );
@@ -26,8 +26,8 @@ export class Player {
     const pos = host.map.loadEntryPosition();
 
     const playerController = new PlayerMovement(
-      pos.toVec2(), // Initial position
-      new Vec2(200, 200), // Impulse
+      Vec2.fromVector(pos), // Initial position
+      Vec2.fromVal(10000), // Movement force
       Vec2.fromMagnitude(35), // Max velocity
       75 // mass
     );

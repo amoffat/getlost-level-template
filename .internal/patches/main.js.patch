@@ -1,0 +1,13 @@
+diff --git a/src/assembly/main.js b/src/assembly/main.js
+index 1fa5e0a..a8da50a 100644
+--- a/src/assembly/main.js
++++ b/src/assembly/main.js
+@@ -734,7 +734,7 @@ export async function instantiate(module, imports = {}) {
+     }
+   }
+   function __notnull() {
+-    throw TypeError("value must not be null");
++    // throw TypeError("value must not be null");
+   }
+   let __dataview = new DataView(memory.buffer);
+   function __setU32(pointer, value) {

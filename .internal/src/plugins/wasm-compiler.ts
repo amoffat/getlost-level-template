@@ -2,6 +2,7 @@ import * as asc from "assemblyscript/asc";
 import { Transform } from "assemblyscript/transform";
 import { exec } from "child_process";
 import { randomUUID } from "crypto";
+import { applyPatch } from "diff";
 import { readFile, unlink, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { join, resolve } from "path";
@@ -67,6 +68,7 @@ export async function compileWasm({
   levelDir,
   genDir,
   transDir,
+  patchDir,
   metadata,
 }: {
   sourceFiles: string[];
@@ -75,6 +77,7 @@ export async function compileWasm({
   levelDir: string;
   genDir: string;
   transDir: string;
+  patchDir: string;
   metadata?: Record<string, string>;
 }): Promise<BuildArtifacts> {
   const debug = false;
@@ -137,7 +140,13 @@ export async function compileWasm({
       } else if (extension === "ts") {
         artifacts.dts = contents as string;
       } else if (extension === "js") {
-        artifacts.js = contents as string;
+        const patchPath = resolve(patchDir, "main.js.patch");
+        const patch = await readFile(patchPath, "utf8");
+        const patched = applyPatch(contents as string, patch);
+        if (!patched) {
+          throw new Error("Failed to apply patch to main.js");
+        }
+        artifacts.js = patched;
       } else if (extension === "wat") {
         artifacts.text = contents as string;
       } else {

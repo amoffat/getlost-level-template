@@ -1,3 +1,5 @@
+import { Vector } from "../../api/types/vector";
+
 export class Vec2 {
   x: f32;
   y: f32;
@@ -11,10 +13,18 @@ export class Vec2 {
     return new Vec2(value, value);
   }
 
+  static fromVector(vector: Vector): Vec2 {
+    return new Vec2(vector.x, vector.y);
+  }
+
+  toVector(): Vector {
+    return { x: this.x, y: this.y };
+  }
+
   static fromMagnitude(mag: f32): Vec2 {
     // This is simply solving for a in the equation:
     // c = sqrt(a^2 + a^2)
-    const comp = ((mag * Math.sqrt(2)) / 2) as f32;
+    const comp = (mag * Mathf.sqrt(2)) / 2;
     return new Vec2(comp, comp);
   }
 
@@ -153,7 +163,7 @@ export class Vec2 {
   }
 
   get magnitude(): f32 {
-    return Math.sqrt(this.x * this.x + this.y * this.y) as f32;
+    return Mathf.sqrt(this.x * this.x + this.y * this.y);
   }
 
   scale(scalar: f32): Vec2 {
@@ -195,5 +205,9 @@ export class Vec2 {
       this.y = 0;
     }
     return this;
+  }
+
+  distanceTo(other: Vec2): f32 {
+    return Mathf.hypot(this.x - other.x, this.y - other.y);
   }
 }

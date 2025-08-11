@@ -32,6 +32,7 @@ async function main() {
   const levelDir = resolve(repoDir, "level");
   const codeDir = resolve(repoDir, "level", "code");
   const transDir = resolve(levelDir, "locales", "main");
+  const patchDir = resolve(internalDir, "patches");
   const genDir = resolve(codeDir, "generated");
   const metadata = JSON.parse(argv.metadata);
 
@@ -57,6 +58,7 @@ async function main() {
     transDir,
     levelDir,
     genDir,
+    patchDir,
   });
 
   writeFileSync(resolve(outputDir, "main.d.ts"), artifacts.dts);

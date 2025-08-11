@@ -13,6 +13,7 @@ const levelDir = resolve(repoDir, "level");
 const codeDir = resolve(repoDir, "level", "code");
 const transDir = resolve(levelDir, "locales", "main");
 const genDir = resolve(codeDir, "generated");
+const patchDir = resolve(internalDir, "patches");
 let cachedWasm: Uint8Array = new Uint8Array(0);
 
 const packageJson = JSON.parse(
@@ -65,6 +66,8 @@ export default function compileWasmPlugin() {
               metadata: {
                 engineVersion,
                 tmplVersion,
+                // We can put anything here, since it's only for local
+                // development.
                 levelId: "936872190",
                 repo: "amoffat/getlost-level-template",
                 commit: "main",
@@ -75,6 +78,7 @@ export default function compileWasmPlugin() {
               levelDir,
               transDir,
               genDir,
+              patchDir,
             });
 
             const defsFile = resolve(shimDir, "main.d.ts");
