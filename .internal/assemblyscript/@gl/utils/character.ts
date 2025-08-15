@@ -1,7 +1,7 @@
-import { Vector } from "../../api/types/vector";
-import * as host from "../../api/w2h/host";
-import { Vec2 } from "../la/vec2";
-import { deriveTargetIndex, TrackResult } from "../paths";
+import { Vector } from "../api/types/vector";
+import * as host from "../api/w2h/host";
+import { Vec2 } from "./la/vec2";
+import { deriveTargetIndex, TrackResult } from "./paths";
 
 export enum Direction {
   North,
@@ -10,7 +10,7 @@ export enum Direction {
   West,
 }
 
-export enum PlayerAction {
+export enum CharAction {
   Idle,
   WalkRight,
   WalkLeft,
@@ -20,36 +20,40 @@ export enum PlayerAction {
 
 const stuckTRate: f32 = 2; // T units per second
 const stuckTimeout: f32 = 1000; // ms
+@lazy
+const allChars: Character[] = [];
 
-/*
- * Handles player movement in a top-down 2D environment.
- */
-export class PlayerMovement {
-  private _pos: Vec2;
-  private _velocity: Vec2;
-  public direction: Vec2;
-  private moveForce: Vec2;
-  public mass: f32;
-  public maxVelocity: Vec2;
-  private _action: PlayerAction = PlayerAction.Idle;
+export class Character {
+  private _pos: Vec2 = new Vec2(0, 0);
+  private _velocity: Vec2 = new Vec2(0, 0);
+  public direction: Vec2 = new Vec2(0, 0);
+  public moveForce: Vec2 = Vec2.fromVal(10000);
+  public mass: f32 = 50;
+  public maxVelocity: Vec2 = Vec2.fromMagnitude(35);
+  private _action: CharAction = CharAction.Idle;
   public name: string;
+  private _isPlayer: bool = false;
 
   private _targetPos: Vec2 = new Vec2(0, 0);
   private _targetPath: Vec2[] = [];
   private _stuckTimer: f32 = 0;
   private _lastTrackResult: TrackResult = { index: -1, distance: 0, t: 0 };
 
-  constructor(initialPos: Vec2, impulse: Vec2, maxVelocity: Vec2, mass: f32) {
-    this._pos = initialPos;
-    this._velocity = new Vec2(0.0, 0.0);
-    this.direction = new Vec2(0.0, 0.0);
-    this.moveForce = impulse;
-    this.maxVelocity = maxVelocity;
-    this.mass = mass;
-    this.name = "player";
+  constructor(name: string) {
+    this.name = name;
+    const initialPos = host.char.getPos(this.name);
+    this._pos = Vec2.fromVector(initialPos);
+    this._isPlayer = this.name == "player";
+    allChars.push(this);
   }
 
-  // Get the player's current position. This is used in our game loop tick.
+  static tickAll(deltaMS: f32): void {
+    for (let i = 0; i < allChars.length; i++) {
+      allChars[i].tick(deltaMS);
+    }
+  }
+
+  // Get the character's current position. This is used in our game loop tick.
   get pos(): Vec2 {
     return this._pos;
   }
@@ -66,12 +70,16 @@ export class PlayerMovement {
     this._velocity = v.clone();
   }
 
-  get action(): PlayerAction {
+  get action(): CharAction {
     return this._action;
   }
 
   get isMoving(): bool {
-    return this._action != PlayerAction.Idle;
+    return this._action != CharAction.Idle;
+  }
+
+  set collisions(enabled: bool) {
+    host.char.makeCollidable(this.name, enabled);
   }
 
   setTargetPos(targetPos: Vector): void {
@@ -80,6 +88,7 @@ export class PlayerMovement {
     this._targetPath = host.char
       .findPath(this.name, this._pos.toVector(), targetPos)
       .map<Vec2>((v) => Vec2.fromVector(v));
+    this.collisions = false;
   }
 
   clearTarget(): void {
@@ -87,12 +96,18 @@ export class PlayerMovement {
     this._targetPos = new Vec2(0, 0);
     this._lastTrackResult = { index: -1, distance: 0, t: 0 };
     this._stuckTimer = 0;
+    this._velocity = new Vec2(0, 0);
+    this.direction = new Vec2(0, 0);
     host.char.clearPath(this.name);
+    this.collisions = true;
   }
 
   // Update method to handle position updates per frame
   tick(deltaMS: f32): void {
     const props = host.char.getMoveProps(this.name);
+    if (!this._isPlayer) {
+      this.direction = new Vec2(0, 0);
+    }
 
     if (this._targetPath.length > 0) {
       const trackResult = deriveTargetIndex(this._pos, this._targetPath);
@@ -142,8 +157,7 @@ export class PlayerMovement {
       traction = props.traction;
     }
 
-    const movementVector = this.direction; //.mul(this.impulse);
-
+    const movementVector = this.direction;
     if (movementVector.x != 0 || movementVector.y != 0) {
       // Low traction means our impulse is less effective
       const adjForce = this.moveForce.scaled(traction).scaled(deltaMS / 1000);
@@ -164,7 +178,8 @@ export class PlayerMovement {
       const proposedTrans = this._velocity.scaled(deltaMS / 1000);
 
       // Check for collisions and adjust proposed translation
-      const correctedTrans = host.physics.checkCollision(
+      const correctedTrans = host.char.checkCollision(
+        this.name,
         this._pos.x,
         this._pos.y,
         proposedTrans.x,
@@ -175,17 +190,15 @@ export class PlayerMovement {
       this._pos.x += correctedTrans[0];
       this._pos.y += correctedTrans[1];
 
-      // Our character is primarily a left-right kind of guy, so we'll base the
-      // action on the x velocity.
-      this._action =
-        this._velocity.x < 0 ? PlayerAction.WalkLeft : PlayerAction.WalkRight;
-      // if (abs(this._velocity.x) > abs(this._velocity.y)) {
-      //   this._action =
-      //     this._velocity.x < 0 ? PlayerAction.WalkLeft : PlayerAction.WalkRight;
-      // } else {
-      //   this._action =
-      //     this._velocity.y < 0 ? PlayerAction.WalkUp : PlayerAction.WalkDown;
-      // }
+      // Choose the walk action based on the direction of movement, considering
+      // that this is a 2.5D game, so up and down are not as pronounced.
+      if (abs(this._velocity.x) > abs(this._velocity.y * 0.5)) {
+        this._action =
+          this._velocity.x < 0 ? CharAction.WalkLeft : CharAction.WalkRight;
+      } else {
+        this._action =
+          this._velocity.y < 0 ? CharAction.WalkUp : CharAction.WalkDown;
+      }
     } else {
       // Only apply friction when idle to slow down gradually
       this._velocity.x *= 1 - friction;
@@ -195,7 +208,8 @@ export class PlayerMovement {
       this._velocity.truncate(0.001);
 
       const proposedTrans = this._velocity.scaled(deltaMS / 1000);
-      const correctedTrans = host.physics.checkCollision(
+      const correctedTrans = host.char.checkCollision(
+        this.name,
         this._pos.x,
         this._pos.y,
         proposedTrans.x,
@@ -205,7 +219,7 @@ export class PlayerMovement {
       this._pos.x += correctedTrans[0];
       this._pos.y += correctedTrans[1];
 
-      this._action = PlayerAction.Idle;
+      this._action = CharAction.Idle;
     }
 
     // Slow down our animation speed based on our speed relative to our max speed.
@@ -213,6 +227,8 @@ export class PlayerMovement {
       1.0,
       Math.max(0.4, this._velocity.magnitude / 35)
     ) as f32;
-    host.player.setSpeed(animSpeed);
+    host.char.setSpeed(this.name, animSpeed);
+    host.char.setPos(this.name, this._pos.x, this._pos.y);
+    host.char.setAction(this.name, this._action);
   }
 }

@@ -19,6 +19,8 @@ The template version should stay in sync with the engine version
 - `host.tiles.toggle()` for toggling sprites
 - Log warnings in dev console
 - `host.player.setSkin()` for player skins
+- `host.char.findPath()` for pathfinding
+- Generalize `Player` into `Character` base class
 
 ## 4.0.0 - 7/22/25
 

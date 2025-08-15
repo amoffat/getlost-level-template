@@ -46,7 +46,7 @@ let heatAmt: f32 = 0.0;
  * filters.
  */
 export function init(): void {
-  player = Player.default();
+  player = new Player();
 
   heatFilter = createHeatFilter();
   colorMatrix = new ColorMatrixFilter();
@@ -151,7 +151,7 @@ export function pickupEvent(slug: string, took: bool): void {
   if (slug === "flame" && took) {
     host.lights.toggleLight("flame", false);
     host.sensors.toggleSensor("flame", false);
-    host.npc.toggleNPC("flame", false);
+    host.char.toggle("flame", false);
   } else if (slug === "fruit" && took) {
     host.markers.record("stole-fruit", true);
   }
@@ -335,7 +335,7 @@ export function timeChangedEvent(event: SunEvent): void {
   nighttime = isNight(event);
   host.lights.toggleLight("flame", nighttime);
   host.sensors.toggleSensor("flame", nighttime);
-  host.npc.toggleNPC("flame", nighttime);
+  host.char.toggle("flame", nighttime);
 
   const lights = ["nazar-light", "house-light-1"];
   for (let i = 0; i < lights.length; i++) {
@@ -380,8 +380,6 @@ export function pauseTick(timestep: f32): void {
  */
 export function tick(timestep: f32): void {
   player.tick(timestep);
-  host.player.setAction(player.action);
-  host.player.setPos(player.pos.x, player.pos.y);
   host.filters.setTiltShiftY(tsfid, player.pos.y - 10);
 
   if (inWater && hearts < 5 && healingPool.tick(timestep)) {

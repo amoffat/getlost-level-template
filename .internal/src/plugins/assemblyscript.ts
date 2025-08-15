@@ -61,7 +61,6 @@ export default function compileWasmPlugin() {
           });
 
           try {
-            const levelFile = resolve(codeDir, "main.ts");
             const artifacts = await compileWasm({
               metadata: {
                 engineVersion,
@@ -72,7 +71,13 @@ export default function compileWasmPlugin() {
                 repo: "amoffat/getlost-level-template",
                 commit: "main",
               },
-              sourceFiles: [levelFile],
+              sourceFiles: [
+                // This helps make the host bindings more deterministic. If we
+                // only rely on the imports through `main.ts`, I've seen strange
+                // memory errors, even when nothing has changed.
+                resolve(internalDir, "assemblyscript/@gl/api/w2h/host.ts"),
+                resolve(codeDir, "main.ts"),
+              ],
               release,
               asmLibDir,
               levelDir,

@@ -44,7 +44,6 @@ async function main() {
     resolve(repoDir, "engine_version.txt"),
     "utf-8"
   );
-  const levelFile = resolve(codeDir, "main.ts");
 
   const artifacts = await compileWasm({
     metadata: {
@@ -52,7 +51,13 @@ async function main() {
       tmplVersion,
       ...metadata,
     },
-    sourceFiles: [levelFile],
+    sourceFiles: [
+      // This helps make the host bindings more deterministic. If we only rely
+      // on the imports through `main.ts`, I've seen strange memory errors, even
+      // when nothing has changed.
+      resolve(internalDir, "assemblyscript/@gl/api/w2h/host.ts"),
+      resolve(codeDir, "main.ts"),
+    ],
     release,
     asmLibDir,
     transDir,

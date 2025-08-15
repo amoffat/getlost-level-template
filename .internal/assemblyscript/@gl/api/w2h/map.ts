@@ -23,11 +23,6 @@ export declare function exit(name: string, force: bool): bool;
 export declare function getTileProps(posX: f32, posY: f32): TileProperties;
 
 /**
- * Loads the entry position of the player in the current map.
- */
-export declare function loadEntryPosition(): Vector;
-
-/**
  * Fetches the size of the map.
  */
 export declare function mapSize(): MapSize;
@@ -39,6 +34,5 @@ export declare function canvasSize(): Vector;
 
 export const _keep_exit = exit;
 export const _keep_getTileProps = getTileProps;
-export const _keep_loadEntryPosition = loadEntryPosition;
 export const _keep_mapSize = mapSize;
 export const _keep_canvasSize = canvasSize;

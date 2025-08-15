@@ -6,9 +6,7 @@ import * as filters from "./filters";
 import * as lights from "./lights";
 import * as map from "./map";
 import * as markers from "./markers";
-import * as npc from "./npc";
 import * as particles from "./particles";
-import * as physics from "./physics";
 import * as pickup from "./pickup";
 import * as platform from "./platform";
 import * as player from "./player";
@@ -31,9 +29,7 @@ export {
   lights,
   map,
   markers,
-  npc,
   particles,
-  physics,
   pickup,
   platform,
   player,

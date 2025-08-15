@@ -184,6 +184,4 @@ export function pauseTick(timestep: f32): void {}
  */
 export function tick(timestep: f32): void {
   player.tick(timestep);
-  host.player.setAction(player.action);
-  host.player.setPos(player.pos.x, player.pos.y);
 }
