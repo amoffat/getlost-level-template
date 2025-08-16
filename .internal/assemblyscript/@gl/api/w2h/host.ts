@@ -6,6 +6,7 @@ import * as filters from "./filters";
 import * as lights from "./lights";
 import * as map from "./map";
 import * as markers from "./markers";
+import * as navigation from "./navigation";
 import * as particles from "./particles";
 import * as pickup from "./pickup";
 import * as platform from "./platform";
@@ -29,6 +30,7 @@ export {
   lights,
   map,
   markers,
+  navigation,
   particles,
   pickup,
   platform,

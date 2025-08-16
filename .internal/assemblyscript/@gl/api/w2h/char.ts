@@ -37,6 +37,7 @@ export declare function checkCollision(
   translationY: f32
 ): f32[];
 export declare function makeCollidable(name: string, enabled: bool): void;
+export declare function getAll(): string[];
 
 export const _keep_checkCollision = checkCollision;
 export const _keep_toggleNPC = toggle;
@@ -53,3 +54,4 @@ export const _keep_setAction = setAction;
 export const _keep_setSpeed = setSpeed;
 
 export const _keep_makeCollidable = makeCollidable;
+export const _keep_getAll = getAll;
