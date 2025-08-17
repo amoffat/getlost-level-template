@@ -11,12 +11,6 @@ import { Vector } from "../types/vector";
  * means the player.
  */
 export declare function getMoveProps(charName: string): CharProps;
-export declare function findPath(
-  key: string,
-  startPos: Vector,
-  endPos: Vector
-): Vector[];
-export declare function clearPath(key: string): void;
 export declare function getPos(charName: string): Vector;
 export declare function setPos(charName: string, x: f32, y: f32): void;
 export declare function setSpeed(charName: string, speed: f32): void;
@@ -44,8 +38,6 @@ export const _keep_toggleNPC = toggle;
 export const _keep_setAnimation = setAnimation;
 
 export const _keep_getMoveProps = getMoveProps;
-export const _keep_findPath = findPath;
-export const _keep_clearPath = clearPath;
 export const _keep_getPos = getPos;
 export const _keep_setPos = setPos;
 export const _keep_setPivot = setPivot;

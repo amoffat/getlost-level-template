@@ -9,6 +9,10 @@ export class Vec2 {
     this.y = y;
   }
 
+  static randomNorm(): Vec2 {
+    return new Vec2(Mathf.random() * 2 - 1, Mathf.random() * 2 - 1).normalize();
+  }
+
   static fromVal(value: f32): Vec2 {
     return new Vec2(value, value);
   }

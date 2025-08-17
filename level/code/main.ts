@@ -4,10 +4,14 @@ import { loadMusic } from "@gl/utils/sound";
 import { CrossFadeSpec } from "@gl/api/types/sound";
 import { ColorMatrixFilter } from "@gl/filters/colormatrix";
 import { getSunEventName, SunEvent } from "@gl/types/time";
+import { Character } from "@gl/utils/character";
+import { Vec2 } from "@gl/utils/la/vec2";
+import { PatrolPlan, RandomPlan } from "@gl/utils/navigation";
 import { Periodic } from "@gl/utils/periodic";
 import { Player } from "@gl/utils/player";
 import { createHeatFilter, RippleFilter } from "@gl/utils/ripple";
 import { isDay, isNight, prevSunEvent } from "@gl/utils/time";
+import { Waypoint } from "@gl/utils/waypoint";
 import * as dialogue from "./generated/dialogue";
 
 export { initAsyncStack } from "@gl/utils/asyncify";
@@ -47,6 +51,36 @@ let heatAmt: f32 = 0.0;
  */
 export function init(): void {
   player = new Player();
+  Character.initAll();
+
+  const nazar = Character.get("nazar");
+  nazar.speed = 0.4;
+  nazar.setTargetPos(new Vec2(56, -200));
+
+  const knight = Character.get("knight");
+  knight.speed = 0.6;
+  const knightPatrol = new PatrolPlan([
+    Waypoint.fromName("city-square"),
+    Waypoint.fromName("exit-west"),
+    Waypoint.fromName("well"),
+    Waypoint.fromName("oasis"),
+    Waypoint.fromName("south-guard-post"),
+  ]);
+  knight.setNav(knightPatrol);
+
+  const kidPlan = new RandomPlan(
+    [
+      Waypoint.fromName("omar-house"),
+      Waypoint.fromName("city-square"),
+      Waypoint.fromName("well"),
+      Waypoint.fromName("fruit-stand"),
+      Waypoint.fromName("oasis"),
+      Waypoint.fromName("maze-entrance"),
+    ],
+    16
+  );
+  const kid = Character.get("omar");
+  kid.setNav(kidPlan);
 
   heatFilter = createHeatFilter();
   colorMatrix = new ColorMatrixFilter();
@@ -379,7 +413,7 @@ export function pauseTick(timestep: f32): void {
  * @param timestep The time since the last tick in milliseconds.
  */
 export function tick(timestep: f32): void {
-  player.tick(timestep);
+  Character.tickAll(timestep);
   host.filters.setTiltShiftY(tsfid, player.pos.y - 10);
 
   if (inWater && hearts < 5 && healingPool.tick(timestep)) {

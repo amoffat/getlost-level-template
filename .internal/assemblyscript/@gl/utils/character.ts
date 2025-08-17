@@ -102,20 +102,22 @@ export class Character {
 
   setNav(navPlan: NavPlan): void {
     this._navPlan = navPlan;
-    this.setTargetPos(navPlan.nextWaypoint);
+    const wp = navPlan.getNextWaypoint(this.pos);
+    this.setTargetPos(wp.pos);
   }
 
   onReachTarget(): void {
     this.clearTarget();
-    if (this._navPlan.hasNextWaypoint) {
-      this.setTargetPos(this._navPlan.nextWaypoint);
+    if (this._navPlan.hasNextWaypoint(this.pos)) {
+      const wp = this._navPlan.getNextWaypoint(this.pos);
+      this.setTargetPos(wp.pos);
     }
   }
 
   setTargetPos(targetPos: Vec2): void {
     this.clearTarget();
     this._targetPos = targetPos;
-    this._targetPath = host.char
+    this._targetPath = host.navigation
       .findPath(this.name, this._pos.toVector(), targetPos.toVector())
       .map<Vec2>((v) => Vec2.fromVector(v));
     this.collisions = false;
@@ -129,7 +131,7 @@ export class Character {
     this._velocity = new Vec2(0, 0);
     this.direction = new Vec2(0, 0);
     this.collisions = true;
-    host.char.clearPath(this.name); // clears the debug line
+    host.navigation.clearPath(this.name); // clears the debug line
   }
 
   getAction(velocity: Vec2): CharAction {
