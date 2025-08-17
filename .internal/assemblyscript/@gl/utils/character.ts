@@ -153,7 +153,8 @@ export class Character {
 
     if (this._targetPath.length > 0) {
       const trackResult = deriveTargetIndex(this._pos, this._targetPath);
-      const goalDist = this._pos.distanceTo(this._targetPos);
+      const adjustedGoal = this._targetPath[this._targetPath.length - 1];
+      const goalDist = this._pos.distanceTo(adjustedGoal);
 
       const oldTrackResult = this._lastTrackResult;
       this._lastTrackResult = trackResult;
