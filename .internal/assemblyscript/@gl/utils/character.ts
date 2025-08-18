@@ -1,4 +1,5 @@
 import * as host from "../api/w2h/host";
+import * as easing from "./easing";
 import { Vec2 } from "./la/vec2";
 import { NavPlan, StationaryPlan } from "./navigation";
 import { deriveTargetIndex, TrackResult } from "./paths";
@@ -22,8 +23,8 @@ export enum CharAction {
 
 @lazy
 const all: Map<string, Character> = new Map();
-const stuckTRate: f32 = 2; // T units per second
-const stuckTimeout: f32 = 1000; // ms
+const stuckTRate: f32 = 1; // T units per second
+const stuckTimeout: f32 = 2000; // ms
 const baseMoveForce: f32 = 10000;
 
 enum NavState {
@@ -48,8 +49,10 @@ export class Character {
 
   private _navPlan: NavPlan;
 
+  private _sourcePos: Vec2 = new Vec2(0, 0);
   private _targetPos: Vec2 = new Vec2(0, 0);
   private _targetPath: Vec2[] = [];
+  private _targetPathLen: f32 = 0; // total length of the target path
   private _stuckTimer: f32 = 0;
   private _lastTrackResult: TrackResult = { index: -1, distance: 0, t: 0 };
   private _waypointPause: Periodic = new Periodic(0);
@@ -59,6 +62,7 @@ export class Character {
     const initialPos = host.char.getPos(name);
     this._navPlan = new StationaryPlan(initialPos);
     this._pos = Vec2.fromVector(initialPos);
+    this._sourcePos = this._pos;
     this._isPlayer = this.name == "player";
     all.set(name, this);
     this.speed = this._isPlayer ? 1.0 : 0.8;
@@ -134,12 +138,41 @@ export class Character {
 
   setTargetPos(targetPos: Vec2): void {
     this.clearTarget();
+    this._sourcePos = this._pos;
     this._targetPos = targetPos;
     this._targetPath = host.navigation
       .findPath(this.name, this._pos.toVector(), targetPos.toVector())
       .map<Vec2>((v) => Vec2.fromVector(v));
+    this._targetPathLen = this._pathProgress();
+
     this.collisions = false;
     this._state = NavState.moving;
+  }
+
+  /**
+   * Calculates a path length of our navigation path. Used to calculate the full
+   * length (no args) or a partial length (up to some index).
+   *
+   * @param end The end index to calculate up towards. Assumed the total length
+   * of the path minus 1
+   * @param t How far along the last segment we are.
+   * @returns The progress along the path.
+   */
+  private _pathProgress(end: i32 = -1, t: f32 = -1): f32 {
+    let len: f32 = 0;
+    const endIdx = end < 0 ? this._targetPath.length - 1 : end;
+    for (let i = 0; i < endIdx; i++) {
+      const lastIteration = i === endIdx - 1;
+      const a = this._targetPath[i];
+      const b = this._targetPath[i + 1];
+      if (lastIteration && t >= 0) {
+        const segLen = b.subbed(a).magnitude * t;
+        len += segLen;
+      } else {
+        len += a.distanceTo(b);
+      }
+    }
+    return len;
   }
 
   clearTarget(): void {
@@ -178,6 +211,8 @@ export class Character {
       this.direction = new Vec2(0, 0);
     }
 
+    let easingSpeed = <f32>1.0;
+
     if (this._targetPath.length > 0) {
       const trackResult = deriveTargetIndex(this._pos, this._targetPath);
       const adjustedGoal = this._targetPath[this._targetPath.length - 1];
@@ -191,6 +226,7 @@ export class Character {
           (stuckTRate * deltaMS) / 1000;
 
       if (maybeStuck) {
+        // FIXME
         if (this._stuckTimer > stuckTimeout) {
           this.setTargetPos(this._targetPos);
           return;
@@ -201,14 +237,28 @@ export class Character {
         this._stuckTimer = 0;
       }
 
+      // If we've reached our goal
       if (goalDist < 1) {
         this.onReachTarget();
-      } else if (trackResult.distance > 32) {
+      }
+      // If we're too far away from our path, recalc our path
+      else if (trackResult.distance > 32) {
         this.setTargetPos(this._targetPos);
-      } else {
+      }
+      // Happy path
+      else {
         const targetNode = this._targetPath[trackResult.index];
-        const adjust = targetNode.subbed(this._pos).capScalar(0.1);
+        const adjust = targetNode.subbed(this._pos).capScalar(1);
         this.direction.add(adjust).normalize();
+
+        const progress: f32 = this._pathProgress(
+          trackResult.index,
+          trackResult.t
+        );
+        easingSpeed = Mathf.max(
+          easing.rampHoldRamp(this._targetPathLen, progress, 5, 15),
+          0.3
+        );
       }
     }
 
@@ -227,18 +277,16 @@ export class Character {
       traction = props.traction;
     }
 
-    const movementVector = this.direction;
-    if (movementVector.x != 0 || movementVector.y != 0) {
+    if (this.direction.x != 0 || this.direction.y != 0) {
       // Low traction means our impulse is less effective
       const adjForce = this._moveForce
-        .scaled(this.speed * this._navSpeed)
+        .scaled(this.speed * this._navSpeed * easingSpeed)
         .scaled(traction)
         .scaled(deltaMS / 1000);
-      const direction: Vec2 = movementVector;
 
       // Apply impulse to velocity based on mass
-      this._velocity.x += (direction.x * adjForce.x) / this.mass;
-      this._velocity.y += (direction.y * adjForce.y) / this.mass;
+      this._velocity.x += (this.direction.x * adjForce.x) / this.mass;
+      this._velocity.y += (this.direction.y * adjForce.y) / this.mass;
 
       // Don't go faster than max velocity
       this._velocity.cap(this.maxVelocity);
