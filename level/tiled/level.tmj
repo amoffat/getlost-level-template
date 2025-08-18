@@ -203,12 +203,12 @@
                  "x":16,
                  "y":0
                 }],
-         "height":64,
+         "height":48,
          "id":1,
          "name":"ground",
          "opacity":1,
          "startx":-16,
-         "starty":-48,
+         "starty":-32,
          "type":"tilelayer",
          "visible":true,
          "width":48,
@@ -384,8 +384,8 @@
                  "type":"Entry",
                  "visible":true,
                  "width":0,
-                 "x":68,
-                 "y":-174
+                 "x":71.6666666666667,
+                 "y":-110.166666666667
                 }, 
                 {
                  "height":0,
@@ -410,6 +410,83 @@
                  "width":0,
                  "x":48,
                  "y":163
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":17,
+         "name":"npcs",
+         "objects":[
+                {
+                 "gid":821,
+                 "height":16,
+                 "id":47,
+                 "name":"knight",
+                 "properties":[
+                        {
+                         "name":"animation",
+                         "type":"string",
+                         "value":"Idle"
+                        }],
+                 "rotation":0,
+                 "type":"NPC",
+                 "visible":true,
+                 "width":16,
+                 "x":71,
+                 "y":-74
+                }, 
+                {
+                 "gid":849,
+                 "height":16,
+                 "id":48,
+                 "name":"nazar",
+                 "rotation":0,
+                 "type":"NPC",
+                 "visible":true,
+                 "width":16,
+                 "x":89.75,
+                 "y":-194.5
+                }, 
+                {
+                 "gid":885,
+                 "height":16,
+                 "id":63,
+                 "name":"omar",
+                 "properties":[
+                        {
+                         "name":"animation",
+                         "type":"string",
+                         "value":"Idle"
+                        }],
+                 "rotation":0,
+                 "type":"NPC",
+                 "visible":true,
+                 "width":16,
+                 "x":6,
+                 "y":-104
+                }, 
+                {
+                 "gid":929,
+                 "height":16,
+                 "id":88,
+                 "name":"Skelly",
+                 "properties":[
+                        {
+                         "name":"animation",
+                         "type":"string",
+                         "value":"Idle"
+                        }],
+                 "rotation":0,
+                 "type":"NPC",
+                 "visible":true,
+                 "width":16,
+                 "x":40,
+                 "y":122
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -535,15 +612,15 @@
                  "x":0,
                  "y":-16
                 }],
-         "height":32,
+         "height":16,
          "id":6,
          "name":"well",
          "opacity":1,
          "startx":0,
-         "starty":-32,
+         "starty":-16,
          "type":"tilelayer",
          "visible":true,
-         "width":32,
+         "width":16,
          "x":0,
          "y":0
         }, 
@@ -761,12 +838,12 @@
                  "x":0,
                  "y":0
                 }],
-         "height":48,
+         "height":16,
          "id":20,
          "name":"sphinx",
          "opacity":1,
          "startx":0,
-         "starty":-32,
+         "starty":0,
          "type":"tilelayer",
          "visible":true,
          "width":16,
@@ -983,6 +1060,7 @@
                 }],
          "height":32,
          "id":27,
+         "locked":true,
          "name":"pipes",
          "opacity":1,
          "startx":0,
@@ -1028,7 +1106,8 @@
          "width":16,
          "x":0,
          "y":0
-        }, 
+        },
+    
         {
          "draworder":"topdown",
          "id":19,
@@ -1135,8 +1214,7 @@
          "visible":true,
          "x":0,
          "y":0
-        },
-    
+        }, 
         {
          "draworder":"topdown",
          "id":16,
@@ -1794,80 +1872,123 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
         {
+         "color":"#55ff7f",
          "draworder":"topdown",
-         "id":17,
-         "name":"npcs",
+         "id":31,
+         "name":"waypoints",
          "objects":[
                 {
-                 "gid":821,
-                 "height":16,
-                 "id":47,
-                 "name":"knight",
-                 "properties":[
-                        {
-                         "name":"animation",
-                         "type":"string",
-                         "value":"Idle"
-                        }],
+                 "height":0,
+                 "id":168,
+                 "name":"city-square",
+                 "point":true,
                  "rotation":0,
-                 "type":"NPC",
+                 "type":"Waypoint",
                  "visible":true,
-                 "width":16,
-                 "x":71,
-                 "y":-74
+                 "width":0,
+                 "x":79.5,
+                 "y":-176.5
                 }, 
                 {
-                 "gid":849,
-                 "height":16,
-                 "id":48,
-                 "name":"nazar",
+                 "height":0,
+                 "id":169,
+                 "name":"exit-west",
+                 "point":true,
                  "rotation":0,
-                 "type":"NPC",
+                 "type":"Waypoint",
                  "visible":true,
-                 "width":16,
-                 "x":89.75,
-                 "y":-194.5
+                 "width":0,
+                 "x":-9.5,
+                 "y":-174
                 }, 
                 {
-                 "gid":885,
-                 "height":16,
-                 "id":63,
-                 "name":"omar",
-                 "properties":[
-                        {
-                         "name":"animation",
-                         "type":"string",
-                         "value":"Idle"
-                        }],
+                 "height":0,
+                 "id":170,
+                 "name":"well",
+                 "point":true,
                  "rotation":0,
-                 "type":"NPC",
+                 "type":"Waypoint",
                  "visible":true,
-                 "width":16,
-                 "x":6,
-                 "y":-104
+                 "width":0,
+                 "x":207,
+                 "y":-199
                 }, 
                 {
-                 "gid":929,
-                 "height":16,
-                 "id":88,
-                 "name":"Skelly",
-                 "properties":[
-                        {
-                         "name":"animation",
-                         "type":"string",
-                         "value":"Idle"
-                        }],
+                 "height":0,
+                 "id":171,
+                 "name":"oasis",
+                 "point":true,
                  "rotation":0,
-                 "type":"NPC",
+                 "type":"Waypoint",
                  "visible":true,
-                 "width":16,
-                 "x":40,
-                 "y":122
+                 "width":0,
+                 "x":196,
+                 "y":-52
+                }, 
+                {
+                 "height":0,
+                 "id":172,
+                 "name":"south-guard-post",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Waypoint",
+                 "visible":true,
+                 "width":0,
+                 "x":79.5,
+                 "y":-78.5
+                }, 
+                {
+                 "height":0,
+                 "id":177,
+                 "name":"maze-entrance",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Waypoint",
+                 "visible":true,
+                 "width":0,
+                 "x":144.5,
+                 "y":4.5
+                }, 
+                {
+                 "height":0,
+                 "id":178,
+                 "name":"omar-house",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Waypoint",
+                 "visible":true,
+                 "width":0,
+                 "x":31,
+                 "y":-103.5
+                }, 
+                {
+                 "height":0,
+                 "id":179,
+                 "name":"map",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Waypoint",
+                 "visible":true,
+                 "width":0,
+                 "x":204,
+                 "y":68
+                }, 
+                {
+                 "height":0,
+                 "id":180,
+                 "name":"fruit-stand",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Waypoint",
+                 "visible":true,
+                 "width":0,
+                 "x":195,
+                 "y":-137
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2024,8 +2145,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":30,
- "nextobjectid":168,
+ "nextlayerid":33,
+ "nextobjectid":181,
  "orientation":"orthogonal",
  "properties":[
         {

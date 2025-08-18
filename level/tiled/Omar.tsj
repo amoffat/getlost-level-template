@@ -12,14 +12,25 @@
         {
          "animation":[
                 {
-                 "duration":100,
+                 "duration":150,
                  "tileid":0
+                }, 
+                {
+                 "duration":150,
+                 "tileid":4
+                }, 
+                {
+                 "duration":150,
+                 "tileid":8
+                }, 
+                {
+                 "duration":150,
+                 "tileid":12
                 }],
          "id":0,
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {
@@ -43,8 +54,98 @@
                 {
                  "name":"animation",
                  "type":"string",
-                 "value":"Idle"
+                 "value":"WalkDown"
                 }],
+         "type":"NPC Tile"
+        }, 
+        {
+         "animation":[
+                {
+                 "duration":150,
+                 "tileid":1
+                }, 
+                {
+                 "duration":150,
+                 "tileid":5
+                }, 
+                {
+                 "duration":150,
+                 "tileid":9
+                }, 
+                {
+                 "duration":150,
+                 "tileid":13
+                }],
+         "id":1,
+         "properties":[
+                {
+                 "name":"animation",
+                 "type":"string",
+                 "value":"WalkUp"
+                }],
+         "type":"NPC Tile"
+        }, 
+        {
+         "animation":[
+                {
+                 "duration":150,
+                 "tileid":2
+                }, 
+                {
+                 "duration":150,
+                 "tileid":6
+                }, 
+                {
+                 "duration":150,
+                 "tileid":10
+                }, 
+                {
+                 "duration":150,
+                 "tileid":14
+                }],
+         "id":2,
+         "properties":[
+                {
+                 "name":"animation",
+                 "type":"string",
+                 "value":"WalkLeft"
+                }],
+         "type":"NPC Tile"
+        }, 
+        {
+         "animation":[
+                {
+                 "duration":150,
+                 "tileid":3
+                }, 
+                {
+                 "duration":150,
+                 "tileid":7
+                }, 
+                {
+                 "duration":150,
+                 "tileid":11
+                }, 
+                {
+                 "duration":150,
+                 "tileid":15
+                }],
+         "id":3,
+         "properties":[
+                {
+                 "name":"animation",
+                 "type":"string",
+                 "value":"WalkRight"
+                }],
+         "type":"NPC Tile"
+        }, 
+        {
+         "animation":[
+                {
+                 "duration":150,
+                 "tileid":8
+                }],
+         "id":8,
          "type":"NPC Tile"
         }],
  "tilewidth":16,
