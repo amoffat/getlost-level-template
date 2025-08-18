@@ -2,6 +2,8 @@ import * as host from "../api/w2h/host";
 import { Vec2 } from "./la/vec2";
 import { NavPlan, StationaryPlan } from "./navigation";
 import { deriveTargetIndex, TrackResult } from "./paths";
+import { Periodic } from "./periodic";
+import { Waypoint } from "./waypoint";
 
 export enum Direction {
   North,
@@ -24,11 +26,19 @@ const stuckTRate: f32 = 2; // T units per second
 const stuckTimeout: f32 = 1000; // ms
 const baseMoveForce: f32 = 10000;
 
+enum NavState {
+  stopped,
+  moving,
+  waiting,
+}
+
 export class Character {
   private _pos: Vec2 = new Vec2(0, 0);
   private _velocity: Vec2 = new Vec2(0, 0);
   public direction: Vec2 = new Vec2(0, 0);
   public speed: f32 = 1.0;
+  private _navSpeed: f32 = 1.0;
+  private _state: NavState = NavState.stopped;
   private _moveForce: Vec2 = Vec2.fromVal(baseMoveForce);
   public mass: f32 = 50;
   public maxVelocity: Vec2 = Vec2.fromMagnitude(35);
@@ -42,6 +52,7 @@ export class Character {
   private _targetPath: Vec2[] = [];
   private _stuckTimer: f32 = 0;
   private _lastTrackResult: TrackResult = { index: -1, distance: 0, t: 0 };
+  private _waypointPause: Periodic = new Periodic(0);
 
   constructor(name: string) {
     this.name = name;
@@ -103,14 +114,21 @@ export class Character {
   setNav(navPlan: NavPlan): void {
     this._navPlan = navPlan;
     const wp = navPlan.getNextWaypoint(this.pos);
+    this._setNavWaypoint(wp);
+  }
+
+  private _setNavWaypoint(wp: Waypoint): void {
     this.setTargetPos(wp.pos);
+    this._navSpeed = wp.speed;
+    this._waypointPause = new Periodic(wp.pause, wp.pause);
   }
 
   onReachTarget(): void {
     this.clearTarget();
     if (this._navPlan.hasNextWaypoint(this.pos)) {
-      const wp = this._navPlan.getNextWaypoint(this.pos);
-      this.setTargetPos(wp.pos);
+      this._state = NavState.waiting;
+    } else {
+      this._state = NavState.stopped;
     }
   }
 
@@ -121,9 +139,11 @@ export class Character {
       .findPath(this.name, this._pos.toVector(), targetPos.toVector())
       .map<Vec2>((v) => Vec2.fromVector(v));
     this.collisions = false;
+    this._state = NavState.moving;
   }
 
   clearTarget(): void {
+    this._state = NavState.stopped;
     this._targetPath = [];
     this._targetPos = new Vec2(0, 0);
     this._lastTrackResult = { index: -1, distance: 0, t: 0 };
@@ -146,6 +166,13 @@ export class Character {
 
   // Update method to handle position updates per frame
   tick(deltaMS: f32): void {
+    if (this._state === NavState.waiting) {
+      if (this._waypointPause.tick(deltaMS)) {
+        const wp = this._navPlan.getNextWaypoint(this.pos);
+        this._setNavWaypoint(wp);
+      }
+    }
+
     const props = host.char.getMoveProps(this.name);
     if (!this._isPlayer) {
       this.direction = new Vec2(0, 0);
@@ -204,7 +231,7 @@ export class Character {
     if (movementVector.x != 0 || movementVector.y != 0) {
       // Low traction means our impulse is less effective
       const adjForce = this._moveForce
-        .scaled(this.speed)
+        .scaled(this.speed * this._navSpeed)
         .scaled(traction)
         .scaled(deltaMS / 1000);
       const direction: Vec2 = movementVector;

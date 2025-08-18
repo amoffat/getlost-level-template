@@ -6,21 +6,28 @@ import { Vec2 } from "./la/vec2";
 export class Waypoint {
   public pos: Vec2;
   public speed: f32;
-  public pause: f32;
+  public pause: f32; // ms
 
-  constructor(pos: Vector, speed: f32 = 1.0, pause: f32 = 0) {
+  constructor(pos: Vector, pause: f32 = 1000, speed: f32 = 1.0) {
     this.pos = Vec2.fromVector(pos);
     this.speed = speed;
     this.pause = pause;
   }
 
-  public static fromName(name: string): Waypoint {
-    const wp = host.navigation.getWaypoint(name);
-    return new Waypoint(wp.pos, wp.speed, wp.pause);
+  public static fromName(
+    name: string,
+    pause: f32 = 1000,
+    speed: f32 = 1.0
+  ): Waypoint {
+    const awp = host.navigation.getWaypoint(name);
+    const wp = Waypoint.fromApi(awp);
+    wp.speed = speed;
+    wp.pause = pause;
+    return wp;
   }
 
   public static fromApi(wp: ApiWaypoint): Waypoint {
-    return new Waypoint(Vec2.fromVector(wp.pos), wp.speed, wp.pause);
+    return new Waypoint(wp.pos);
   }
 
   public get isNull(): bool {
@@ -29,4 +36,4 @@ export class Waypoint {
 }
 
 @lazy
-export const nullWaypoint = new Waypoint({ x: 0, y: 0 }, -1);
+export const nullWaypoint = new Waypoint({ x: 0, y: 0 }, 0, -1);

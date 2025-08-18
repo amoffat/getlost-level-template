@@ -60,11 +60,11 @@ export function init(): void {
   const knight = Character.get("knight");
   knight.speed = 0.6;
   const knightPatrol = new PatrolPlan([
-    Waypoint.fromName("city-square"),
-    Waypoint.fromName("exit-west"),
-    Waypoint.fromName("well"),
-    Waypoint.fromName("oasis"),
-    Waypoint.fromName("south-guard-post"),
+    Waypoint.fromName("city-square", 1000),
+    Waypoint.fromName("exit-west", 1000),
+    Waypoint.fromName("well", 1000),
+    Waypoint.fromName("oasis", 1000),
+    Waypoint.fromName("south-guard-post", 1000),
   ]);
   knight.setNav(knightPatrol);
 
@@ -77,7 +77,7 @@ export function init(): void {
       Waypoint.fromName("oasis"),
       Waypoint.fromName("maze-entrance"),
     ],
-    16
+    32
   );
   const kid = Character.get("omar");
   kid.setNav(kidPlan);

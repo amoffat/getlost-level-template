@@ -17,7 +17,10 @@ export class Periodic {
     this.accumulatedMs += deltaMs;
 
     if (this.accumulatedMs >= this.frequencyMs) {
-      this.accumulatedMs -= this.frequencyMs; // Reset but keep remainder
+      // If a very large delta pushed accumulatedMs far past frequencyMs, reduce
+      // it to the remainder after removing whole frequency periods. This keeps
+      // a small residual instead of a large leftover.
+      this.accumulatedMs = this.accumulatedMs % this.frequencyMs;
       return true;
     }
 
