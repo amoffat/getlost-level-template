@@ -138,15 +138,19 @@ export class Character {
 
   setTargetPos(targetPos: Vec2): void {
     this.clearTarget();
-    this._sourcePos = this._pos;
-    this._targetPos = targetPos;
+
     this._targetPath = host.navigation
-      .findPath(this.name, this._pos.toVector(), targetPos.toVector())
+      .findPath(this.name, this._pos.toVector(), targetPos.toVector(), false)
       .map<Vec2>((v) => Vec2.fromVector(v));
     this._targetPathLen = this._pathProgress();
 
-    this.collisions = false;
-    this._state = NavState.moving;
+    if (this._targetPath.length > 0) {
+      this._sourcePos = this._pos;
+      this._targetPos = targetPos;
+
+      this.collisions = false;
+      this._state = NavState.moving;
+    }
   }
 
   /**

@@ -70,12 +70,12 @@ export function init(): void {
 
   const kidPlan = new RandomPlan(
     [
-      Waypoint.fromName("omar-house"),
-      Waypoint.fromName("city-square"),
-      Waypoint.fromName("well"),
-      Waypoint.fromName("fruit-stand"),
       Waypoint.fromName("oasis"),
       Waypoint.fromName("maze-entrance"),
+      Waypoint.fromName("fruit-stand"),
+      Waypoint.fromName("well"),
+      Waypoint.fromName("city-square"),
+      Waypoint.fromName("omar-house"),
     ],
     32
   );

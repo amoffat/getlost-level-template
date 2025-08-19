@@ -77,18 +77,17 @@ export class RandomPlan extends PatrolPlan {
   }
 
   private randomWaypoint(curPos: Vec2): Waypoint {
-    for (let i = 0; i < 10; i++) {
-      const rnd = Vec2.randomNorm().scale(this._maxDistance);
-      const path = host.navigation.findPath(
-        "",
-        curPos.toVector(),
-        curPos.added(rnd).toVector()
-      );
-      if (path.length > 0) {
-        const wpPos = path[path.length - 1];
-        const wp = new Waypoint(wpPos);
-        return wp;
-      }
+    const rnd = Vec2.randomNorm().scale(this._maxDistance);
+    const path = host.navigation.findPath(
+      "",
+      curPos.toVector(),
+      curPos.added(rnd).toVector(),
+      true
+    );
+    if (path.length > 0) {
+      const wpPos = path[path.length - 1];
+      const wp = new Waypoint(wpPos);
+      return wp;
     }
     return nullWaypoint;
   }
