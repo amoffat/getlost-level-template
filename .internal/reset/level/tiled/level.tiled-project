@@ -276,6 +276,19 @@
       ]
     },
     {
+      "color": "#ff00ff7f",
+      "drawFill": true,
+      "id": 16,
+      "members": [],
+      "name": "Waypoint",
+      "type": "class",
+      "useAs": [
+        "property",
+        "object",
+        "project"
+      ]
+    },
+    {
       "color": "#ffa0a0a4",
       "drawFill": true,
       "id": 12,
