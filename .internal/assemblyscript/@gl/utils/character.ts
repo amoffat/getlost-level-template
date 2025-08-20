@@ -59,6 +59,8 @@ export class Character {
   public startWalkMomentum: f32 = 5;
   public endWalkMomentum: f32 = 15;
 
+  private _moveSoundAssetId: i32 = -1;
+
   constructor(name: string) {
     this.name = name;
     const initialPos = host.char.getPos(name);
@@ -130,9 +132,9 @@ export class Character {
   onReachTarget(): void {
     this.clearTarget();
     if (this._navPlan.hasNextWaypoint(this.pos)) {
-      this._state = NavState.waiting;
+      this.state = NavState.waiting;
     } else {
-      this._state = NavState.stopped;
+      this.state = NavState.stopped;
     }
   }
 
@@ -156,8 +158,24 @@ export class Character {
       this._targetPos = targetPos;
 
       this.collisions = false;
-      this._state = NavState.moving;
+      this.state = NavState.moving;
     }
+  }
+
+  private set state(state: NavState) {
+    if (state === NavState.moving) {
+      if (this._moveSoundAssetId > 0) {
+        host.sound.playSound({
+          assetId: this._moveSoundAssetId,
+          spriteId: -1, // No specific sprite
+        });
+      }
+    } else {
+      if (this._moveSoundAssetId > 0) {
+        host.sound.stopSound(this._moveSoundAssetId, -1);
+      }
+    }
+    this._state = state;
   }
 
   /**
@@ -278,6 +296,11 @@ export class Character {
       }
     }
 
+    // The reasoning here is that a NPC will only move to valid positions via
+    // pathfinding, so no collision detection is needed. Collision detection is
+    // disabled anyways while they're moving.
+    const needsCollisionCheck = this._isPlayer;
+
     // If we're in deep water, we want to decrease the friction and decrease the
     // traction, proportionally to the amount we're sunk. This lets us glide
     // more, like we're swimming.
@@ -315,17 +338,22 @@ export class Character {
       const proposedTrans = this._velocity.scaled(deltaMS / 1000);
 
       // Check for collisions and adjust proposed translation
-      const correctedTrans = host.char.checkCollision(
-        this.name,
-        this._pos.x,
-        this._pos.y,
-        proposedTrans.x,
-        proposedTrans.y
-      );
-
-      // Update position
-      this._pos.x += correctedTrans[0];
-      this._pos.y += correctedTrans[1];
+      if (needsCollisionCheck) {
+        const correctedTrans = host.char.checkCollision(
+          this.name,
+          this._pos.x,
+          this._pos.y,
+          proposedTrans.x,
+          proposedTrans.y
+        );
+        // Update position
+        this._pos.x += correctedTrans[0];
+        this._pos.y += correctedTrans[1];
+      } else {
+        // Update position
+        this._pos.x += proposedTrans.x;
+        this._pos.y += proposedTrans.y;
+      }
 
       this._action = this.getAction(this._velocity);
     } else {
@@ -337,16 +365,24 @@ export class Character {
       this._velocity.truncate(0.001);
 
       const proposedTrans = this._velocity.scaled(deltaMS / 1000);
-      const correctedTrans = host.char.checkCollision(
-        this.name,
-        this._pos.x,
-        this._pos.y,
-        proposedTrans.x,
-        proposedTrans.y
-      );
 
-      this._pos.x += correctedTrans[0];
-      this._pos.y += correctedTrans[1];
+      // Check for collisions and adjust proposed translation
+      if (needsCollisionCheck) {
+        const correctedTrans = host.char.checkCollision(
+          this.name,
+          this._pos.x,
+          this._pos.y,
+          proposedTrans.x,
+          proposedTrans.y
+        );
+        // Update position
+        this._pos.x += correctedTrans[0];
+        this._pos.y += correctedTrans[1];
+      } else {
+        // Update position
+        this._pos.x += proposedTrans.x;
+        this._pos.y += proposedTrans.y;
+      }
 
       this._action = CharAction.Idle;
     }

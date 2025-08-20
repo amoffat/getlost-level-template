@@ -322,7 +322,7 @@ export function sensorEvent(
   } else if (sensorName === "exit-sphinx" && entered) {
     host.map.exit("sphinx", false);
   } else if (sensorName === "nazar") {
-    host.player.setSkin("bandit");
+    // host.player.setSkin("bandit");
     dialogue.stage_Nazar(entered);
   } else if (sensorName === "omar") {
     dialogue.stage_Omar(entered);
