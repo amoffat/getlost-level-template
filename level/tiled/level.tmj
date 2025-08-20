@@ -487,6 +487,30 @@
                  "width":16,
                  "x":40,
                  "y":122
+                }, 
+                {
+                 "gid":2149,
+                 "height":16,
+                 "id":184,
+                 "name":"dog",
+                 "rotation":0,
+                 "type":"NPC",
+                 "visible":true,
+                 "width":16,
+                 "x":18.75,
+                 "y":-90
+                }, 
+                {
+                 "gid":2152,
+                 "height":16,
+                 "id":190,
+                 "name":"chicken",
+                 "rotation":0,
+                 "type":"NPC",
+                 "visible":true,
+                 "width":16,
+                 "x":61,
+                 "y":-168
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2073,6 +2097,54 @@
                  "width":0,
                  "x":195,
                  "y":-137
+                }, 
+                {
+                 "height":0,
+                 "id":185,
+                 "name":"gate",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Waypoint",
+                 "visible":true,
+                 "width":0,
+                 "x":103,
+                 "y":-267
+                }, 
+                {
+                 "height":0,
+                 "id":187,
+                 "name":"amina-house",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Waypoint",
+                 "visible":true,
+                 "width":0,
+                 "x":120,
+                 "y":-123
+                }, 
+                {
+                 "height":0,
+                 "id":188,
+                 "name":"nazar-house",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Waypoint",
+                 "visible":true,
+                 "width":0,
+                 "x":103,
+                 "y":-202
+                }, 
+                {
+                 "height":0,
+                 "id":189,
+                 "name":"empty-house",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Waypoint",
+                 "visible":true,
+                 "width":0,
+                 "x":24,
+                 "y":-189
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2230,7 +2302,7 @@
          "y":0
         }],
  "nextlayerid":35,
- "nextobjectid":184,
+ "nextobjectid":191,
  "orientation":"orthogonal",
  "properties":[
         {
@@ -2294,6 +2366,14 @@
         {
          "firstgid":2104,
          "source":"Pipes.tsj"
+        }, 
+        {
+         "firstgid":2149,
+         "source":"Dog.tsj"
+        }, 
+        {
+         "firstgid":2152,
+         "source":"ChickenWhite.tsj"
         }],
  "tilewidth":16,
  "type":"map",

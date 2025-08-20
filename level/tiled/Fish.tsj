@@ -1,40 +1,13 @@
-{ "columns":1,
- "image":"..\/art\/Items\/Food\/Fish.png",
+{ "columns":2,
+ "image":"..\/art\/Actor\/Animals\/Fish\/SpriteSheetRed.png",
  "imageheight":16,
- "imagewidth":16,
+ "imagewidth":32,
  "margin":0,
  "name":"Fish",
  "spacing":0,
- "tilecount":1,
- "tiledversion":"1.11.1-99-gec89c545",
+ "tilecount":2,
+ "tiledversion":"1.11.2",
  "tileheight":16,
- "tiles":[
-        {
-         "id":0,
-         "objectgroup":
-            {
-             "draworder":"index",
-             "id":2,
-             "name":"",
-             "objects":[
-                    {
-                     "height":2,
-                     "id":1,
-                     "name":"",
-                     "rotation":0,
-                     "type":"",
-                     "visible":true,
-                     "width":9,
-                     "x":3,
-                     "y":13
-                    }],
-             "opacity":1,
-             "type":"objectgroup",
-             "visible":true,
-             "x":0,
-             "y":0
-            }
-        }],
  "tilewidth":16,
  "type":"tileset",
  "version":"1.10"
