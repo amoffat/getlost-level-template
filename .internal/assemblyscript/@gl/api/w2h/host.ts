@@ -1,9 +1,9 @@
 import * as camera from "./camera";
 import * as char from "./char";
 import * as controls from "./controls";
-import * as debug from "./debug";
 import * as filters from "./filters";
 import * as lights from "./lights";
+import * as log from "./log";
 import * as map from "./map";
 import * as markers from "./markers";
 import * as navigation from "./navigation";
@@ -25,9 +25,9 @@ export {
   camera,
   char,
   controls,
-  debug,
   filters,
   lights,
+  log,
   map,
   markers,
   navigation,

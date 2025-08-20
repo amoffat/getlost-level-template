@@ -8,15 +8,18 @@
         "."
     ],
     "fileStates": {
-        "Animals.tsj": {
-            "dynamicWrapping": true,
-            "scaleInDock": 1,
-            "scaleInEditor": 3
+        "ChickenBrown.tsj": {
+            "scaleInDock": 1
+        },
+        "ChickenWhite.tsj": {
+            "scaleInDock": 1
+        },
+        "Dog.tsj": {
+            "scaleInDock": 1
         },
         "Fish.tsj": {
             "dynamicWrapping": false,
-            "scaleInDock": 1,
-            "scaleInEditor": 3
+            "scaleInDock": 1
         },
         "FlagWhite16x16.tsj": {
             "dynamicWrapping": false,
@@ -39,7 +42,6 @@
             "scaleInDock": 1
         },
         "Omar.tsj": {
-            "dynamicWrapping": false,
             "scaleInDock": 1,
             "scaleInEditor": 3
         },
@@ -114,8 +116,6 @@
     "project": "level.tiled-project",
     "property.type": "float",
     "recentFiles": [
-        "Fish.tsj",
-        "Animals.tsj",
         "TilesetDesert.tsj",
         "level.tmj",
         "Skeleton.tsj",

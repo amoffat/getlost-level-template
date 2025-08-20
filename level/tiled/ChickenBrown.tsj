@@ -1,0 +1,43 @@
+{ "columns":2,
+ "image":"..\/art\/Actor\/Animals\/Chicken\/SpriteSheetBrown.png",
+ "imageheight":16,
+ "imagewidth":32,
+ "margin":0,
+ "name":"ChickenBrown",
+ "spacing":0,
+ "tilecount":2,
+ "tiledversion":"1.11.2",
+ "tileheight":16,
+ "tiles":[
+        {
+         "animation":[
+                {
+                 "duration":150,
+                 "tileid":0
+                }],
+         "id":0,
+         "type":"NPC Tile"
+        }, 
+        {
+         "animation":[
+                {
+                 "duration":150,
+                 "tileid":1
+                }, 
+                {
+                 "duration":150,
+                 "tileid":0
+                }],
+         "id":1,
+         "properties":[
+                {
+                 "name":"animation",
+                 "type":"string",
+                 "value":"WalkLeft,WalkRight,WalkUp,WalkDown"
+                }],
+         "type":"NPC Tile"
+        }],
+ "tilewidth":16,
+ "type":"tileset",
+ "version":"1.10"
+}

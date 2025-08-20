@@ -504,13 +504,25 @@
                  "gid":2152,
                  "height":16,
                  "id":190,
-                 "name":"chicken",
+                 "name":"chicken1",
                  "rotation":0,
                  "type":"NPC",
                  "visible":true,
                  "width":16,
-                 "x":61,
-                 "y":-168
+                 "x":37,
+                 "y":-175
+                }, 
+                {
+                 "gid":2154,
+                 "height":16,
+                 "id":191,
+                 "name":"chicken2",
+                 "rotation":0,
+                 "type":"NPC",
+                 "visible":true,
+                 "width":16,
+                 "x":149,
+                 "y":-176
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2302,7 +2314,7 @@
          "y":0
         }],
  "nextlayerid":35,
- "nextobjectid":191,
+ "nextobjectid":192,
  "orientation":"orthogonal",
  "properties":[
         {
@@ -2374,6 +2386,10 @@
         {
          "firstgid":2152,
          "source":"ChickenWhite.tsj"
+        }, 
+        {
+         "firstgid":2154,
+         "source":"ChickenBrown.tsj"
         }],
  "tilewidth":16,
  "type":"map",

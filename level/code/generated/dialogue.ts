@@ -1,10 +1,9 @@
 import * as host from "@gl/api/w2h/host";
+import { log } from "@gl/api/w2h/host";
 import { String } from "@gl/types/i18n";
 import * as twine from "@gl/utils/twine";
 import * as level from "../main";
 
-const log = host.debug.log;
-const logError = host.debug.logError;
 const interactButton = "interact";
 
 class State_knightOpts {
@@ -95,11 +94,11 @@ choiceToPassage.set("45e8a7dd", "50c96f21");
  */
 export function choiceMadeEvent(passageId: string, choiceId: string): void {
   if (choiceId === "") {
-    log(`Passage ${passageId} closed.`);
+    log.info(`Passage ${passageId} closed.`);
     level.dialogClosedEvent(passageId);
     return;
   }
-  log(`Choice made for ${passageId}: ${choiceId}`);
+  log.info(`Choice made for ${passageId}: ${choiceId}`);
   if (choiceToPassage.has(choiceId)) {
     choiceId = choiceToPassage.get(choiceId);
   }
@@ -1664,6 +1663,6 @@ export function dispatch(passageId: string): void {
   }
 
   if (!found) {
-    log(`No passage found for ${passageId}, does it have content?`);
+    log.info(`No passage found for ${passageId}, does it have content?`);
   }
 }

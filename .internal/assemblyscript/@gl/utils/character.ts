@@ -56,6 +56,8 @@ export class Character {
   private _stuckTimer: f32 = 0;
   private _lastTrackResult: TrackResult = { index: -1, distance: 0, t: 0 };
   private _waypointPause: Periodic = new Periodic(0);
+  public startWalkMomentum: f32 = 5;
+  public endWalkMomentum: f32 = 15;
 
   constructor(name: string) {
     this.name = name;
@@ -265,7 +267,12 @@ export class Character {
           trackResult.t
         );
         easingSpeed = Mathf.max(
-          easing.rampHoldRamp(this._targetPathLen, progress, 5, 15),
+          easing.rampHoldRamp(
+            this._targetPathLen,
+            progress,
+            this.startWalkMomentum,
+            this.endWalkMomentum
+          ),
           0.3
         );
       }

@@ -2,7 +2,7 @@ import { Vector } from "../api/types/vector";
 import * as host from "../api/w2h/host";
 import { Character } from "./character";
 import { Vec2 } from "./la/vec2";
-import { inCircle, inRing, int } from "./rand";
+import { float, inCircle, inRing, int } from "./rand";
 import { nullWaypoint, Waypoint } from "./waypoint";
 
 const tryToFindValid: i32 = 10;
@@ -44,7 +44,32 @@ export class StationaryPlan extends NavPlan {
   }
 }
 
-export class RandomPlan extends NavPlan {
+export class RandomWalk extends NavPlan {
+  private _maxDistance: f32;
+
+  constructor(maxDistance: f32) {
+    super();
+    this._maxDistance = maxDistance;
+  }
+
+  public getNextWaypoint(curPos: Vec2): Waypoint {
+    let wp = nullWaypoint;
+
+    for (let i = 0; i < tryToFindValid; i++) {
+      const rndPos = inCircle(this._maxDistance);
+      const candPos = curPos.added(rndPos);
+      if (this._checkValid(curPos, candPos, true)) {
+        wp = new Waypoint(candPos.toVector());
+        wp.pause = float(100, 2000);
+        break;
+      }
+    }
+    wp.nearestIsOk = true;
+    return wp;
+  }
+}
+
+export class RandomInCirclePlan extends NavPlan {
   private _around: Waypoint;
   private _maxDistance: f32;
 

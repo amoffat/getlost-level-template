@@ -1,4 +1,5 @@
 import * as host from "@gl/api/w2h/host";
+import { log } from "@gl/api/w2h/host";
 import { loadMusic } from "@gl/utils/sound";
 
 import { CrossFadeSpec } from "@gl/api/types/sound";
@@ -10,7 +11,7 @@ import {
   PatrolPlan,
   PatrolRandom,
   PatrolRandomDetours,
-  RandomPlan,
+  RandomWalk,
 } from "@gl/utils/navigation";
 import { Periodic } from "@gl/utils/periodic";
 import { Player } from "@gl/utils/player";
@@ -25,8 +26,6 @@ export { entrances, exits } from "./gateways";
 export { choiceMadeEvent } from "./generated/dialogue";
 export { markers } from "./markers";
 export { pickups } from "./pickups";
-
-const log = host.debug.log;
 
 let tsfid!: i32;
 let player!: Player;
@@ -58,10 +57,15 @@ export function init(): void {
   player = new Player();
   Character.initAll();
 
-  const chicken = Character.get("chicken");
-  chicken.setNavPlan(
-    new RandomPlan(Waypoint.fromName("city-square", 3000), 5 * 16)
-  );
+  const chicken1 = Character.get("chicken1");
+  chicken1.startWalkMomentum = 0;
+  chicken1.endWalkMomentum = 0;
+  chicken1.setNavPlan(new RandomWalk(32));
+
+  const chicken2 = Character.get("chicken2");
+  chicken2.startWalkMomentum = 0;
+  chicken2.endWalkMomentum = 0;
+  chicken2.setNavPlan(new RandomWalk(32));
 
   const nazar = Character.get("nazar");
   nazar.speed = 0.3;
@@ -119,7 +123,7 @@ export function init(): void {
    * You can set a fixed time for the level like this.
    * Be sure to comment out the setSunTime call in `tickRoom` if you do this.
    */
-  // host.time.setSunEvent(SunEvent.SolarNoon, 0);
+  host.time.setSunEvent(SunEvent.SunriseEnd, 0);
 
   host.ui.setRating(0, 0, hearts, 5, "heart", "red");
   host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
@@ -179,7 +183,7 @@ export function movePlayer(x: f32, y: f32): void {
  * @param id The id of the timer created by `host.timer.start`.
  */
 export function timerEvent(id: u32): void {
-  log(`Timer event: ${id}`);
+  log.info(`Timer event: ${id}`);
 }
 
 /**
@@ -205,7 +209,7 @@ export function asyncEvent(id: i32): void {}
  * @param took Whether the player took the pickup or not.
  */
 export function pickupEvent(slug: string, took: bool): void {
-  log(`Pickup event: ${slug}, ${took}`);
+  log.info(`Pickup event: ${slug}, ${took}`);
   if (slug === "flame" && took) {
     host.lights.toggleLight("flame", false);
     host.sensors.toggleSensor("flame", false);
@@ -222,7 +226,7 @@ export function pickupEvent(slug: string, took: bool): void {
  * @param down Whether the button was pressed down or released.
  */
 export function buttonPressEvent(slug: string, down: bool): void {
-  log(`Button event: ${slug}, ${down}`);
+  log.info(`Button event: ${slug}, ${down}`);
 
   // If our dialogue was staged via a `dialogue.stage_<id>` call, then the event
   // may be a press of the "interact" button. This checks for that, and if it
@@ -275,7 +279,7 @@ export function dialogClosedEvent(passageId: string): void {}
  * @param name The name of the timer that was completed.
  */
 export function timerCompletedEvent(name: string): void {
-  log(`Timer completed: ${name}`);
+  log.info(`Timer completed: ${name}`);
 }
 
 /**
@@ -292,7 +296,7 @@ export function sensorEvent(
   sensorName: string,
   entered: bool
 ): void {
-  log(
+  log.info(
     `Sensor event: '${initiator}' ${
       entered ? "entered" : "left"
     } '${sensorName}'`
@@ -385,7 +389,7 @@ export function sensorEvent(
  */
 export function timeChangedEvent(event: SunEvent): void {
   const lastEvent = prevSunEvent(event);
-  log(
+  log.info(
     `Time changed: ${getSunEventName(lastEvent)} -> ${getSunEventName(event)} `
   );
 
@@ -446,7 +450,7 @@ export function tick(timestep: f32): void {
   }
 
   // This syncs the time of day with the real world.
-  host.time.setSunTime(Date.now());
+  // host.time.setSunTime(Date.now());
 
   // Or we can advance the time of day manually, increasing the step size to
   // make the days faster.
