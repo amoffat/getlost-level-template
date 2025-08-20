@@ -107,24 +107,22 @@ export class Character {
     return this._action;
   }
 
-  get isMoving(): bool {
-    return this._action != CharAction.Idle;
-  }
-
   set collisions(enabled: bool) {
     host.char.makeCollidable(this.name, enabled);
   }
 
-  setNav(navPlan: NavPlan): void {
+  setNavPlan(navPlan: NavPlan): void {
     this._navPlan = navPlan;
     const wp = navPlan.getNextWaypoint(this.pos);
     this._setNavWaypoint(wp);
   }
 
   private _setNavWaypoint(wp: Waypoint): void {
-    this.setTargetPos(wp.pos);
-    this._navSpeed = wp.speed;
-    this._waypointPause = new Periodic(wp.pause, wp.pause);
+    if (!wp.isNull) {
+      this.setTargetPos(wp.pos, wp.nearestIsOk);
+      this._navSpeed = wp.speed;
+      this._waypointPause = new Periodic(wp.pause, wp.pause);
+    }
   }
 
   onReachTarget(): void {
@@ -136,14 +134,21 @@ export class Character {
     }
   }
 
-  setTargetPos(targetPos: Vec2): void {
+  setTargetPos(targetPos: Vec2, nearestIsOk: bool = true): void {
     this.clearTarget();
 
     this._targetPath = host.navigation
-      .findPath(this.name, this._pos.toVector(), targetPos.toVector(), false)
+      .findPath(
+        this.name,
+        this._pos.toVector(),
+        targetPos.toVector(),
+        nearestIsOk
+      )
       .map<Vec2>((v) => Vec2.fromVector(v));
     this._targetPathLen = this._pathProgress();
 
+    // Even if `nearestIsOk` is true, it's still possible not to find a path, if
+    // your start and end are two separate "islands" of nodes.
     if (this._targetPath.length > 0) {
       this._sourcePos = this._pos;
       this._targetPos = targetPos;

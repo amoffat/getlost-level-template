@@ -5,8 +5,9 @@ import { Vec2 } from "./la/vec2";
 
 export class Waypoint {
   public pos: Vec2;
-  public speed: f32;
-  public pause: f32; // ms
+  public speed: f32 = 1.0;
+  public pause: f32 = 1000; // ms
+  public nearestIsOk: bool = false;
 
   constructor(pos: Vector, pause: f32 = 1000, speed: f32 = 1.0) {
     this.pos = Vec2.fromVector(pos);

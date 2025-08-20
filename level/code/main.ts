@@ -5,8 +5,13 @@ import { CrossFadeSpec } from "@gl/api/types/sound";
 import { ColorMatrixFilter } from "@gl/filters/colormatrix";
 import { getSunEventName, SunEvent } from "@gl/types/time";
 import { Character } from "@gl/utils/character";
-import { Vec2 } from "@gl/utils/la/vec2";
-import { PatrolPlan, RandomPlan } from "@gl/utils/navigation";
+import {
+  FollowPlan,
+  PatrolPlan,
+  PatrolRandom,
+  PatrolRandomDetours,
+  RandomPlan,
+} from "@gl/utils/navigation";
 import { Periodic } from "@gl/utils/periodic";
 import { Player } from "@gl/utils/player";
 import { createHeatFilter, RippleFilter } from "@gl/utils/ripple";
@@ -53,22 +58,37 @@ export function init(): void {
   player = new Player();
   Character.initAll();
 
+  const chicken = Character.get("chicken");
+  chicken.setNavPlan(
+    new RandomPlan(Waypoint.fromName("city-square", 3000), 5 * 16)
+  );
+
   const nazar = Character.get("nazar");
-  nazar.speed = 0.4;
-  nazar.setTargetPos(new Vec2(56, -200));
+  nazar.speed = 0.3;
+  nazar.setNavPlan(
+    new PatrolRandom([
+      Waypoint.fromName("well", 3000),
+      Waypoint.fromName("nazar-house", 3000),
+      Waypoint.fromName("empty-house", 3000),
+      Waypoint.fromName("city-square", 3000),
+      Waypoint.fromName("gate", 3000),
+      Waypoint.fromName("amina-house", 3000),
+      Waypoint.fromName("omar-house", 3000),
+    ])
+  );
 
   const knight = Character.get("knight");
   knight.speed = 0.6;
   const knightPatrol = new PatrolPlan([
-    Waypoint.fromName("city-square", 1000),
-    Waypoint.fromName("exit-west", 1000),
-    Waypoint.fromName("well", 1000),
-    Waypoint.fromName("oasis", 1000),
-    Waypoint.fromName("south-guard-post", 1000),
+    Waypoint.fromName("city-square", 2000),
+    Waypoint.fromName("exit-west", 2000),
+    Waypoint.fromName("well", 2000),
+    Waypoint.fromName("oasis", 2000),
+    Waypoint.fromName("south-guard-post", 2000),
   ]);
-  knight.setNav(knightPatrol);
+  knight.setNavPlan(knightPatrol);
 
-  const kidPlan = new RandomPlan(
+  const kidPlan = new PatrolRandomDetours(
     [
       Waypoint.fromName("oasis"),
       Waypoint.fromName("maze-entrance"),
@@ -80,7 +100,11 @@ export function init(): void {
     32
   );
   const kid = Character.get("omar");
-  kid.setNav(kidPlan);
+  kid.setNavPlan(kidPlan);
+
+  const dog = Character.get("dog");
+  dog.speed = 1.5;
+  dog.setNavPlan(new FollowPlan(kid, 10, 20, 200));
 
   heatFilter = createHeatFilter();
   colorMatrix = new ColorMatrixFilter();
