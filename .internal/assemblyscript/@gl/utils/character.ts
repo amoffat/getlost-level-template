@@ -59,8 +59,6 @@ export class Character {
   public startWalkMomentum: f32 = 5;
   public endWalkMomentum: f32 = 15;
 
-  private _moveSoundAssetId: i32 = -1;
-
   constructor(name: string) {
     this.name = name;
     const initialPos = host.char.getPos(name);
@@ -162,19 +160,15 @@ export class Character {
     }
   }
 
+  public setMoveSound(
+    sound: string,
+    volume: f32 = 1.0,
+    onlyWhileMoving: bool = false
+  ): void {
+    host.char.setMoveSound(this.name, sound, volume, onlyWhileMoving);
+  }
+
   private set state(state: NavState) {
-    if (state === NavState.moving) {
-      if (this._moveSoundAssetId > 0) {
-        host.sound.playSound({
-          assetId: this._moveSoundAssetId,
-          spriteId: -1, // No specific sprite
-        });
-      }
-    } else {
-      if (this._moveSoundAssetId > 0) {
-        host.sound.stopSound(this._moveSoundAssetId, -1);
-      }
-    }
     this._state = state;
   }
 

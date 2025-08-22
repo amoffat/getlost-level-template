@@ -30,7 +30,7 @@ export { pickups } from "./pickups";
 let tsfid!: i32;
 let player!: Player;
 let dayMusic!: i32;
-const dayMusicVolume: f32 = 0.5;
+const dayMusicVolume: f32 = 0.3;
 let nightMusic!: i32;
 const nightMusicVolume: f32 = 0.5;
 let mazeMusic!: i32;
@@ -58,11 +58,13 @@ export function init(): void {
   Character.initAll();
 
   const chicken1 = Character.get("chicken1");
+  chicken1.setMoveSound("chicken");
   chicken1.startWalkMomentum = 0;
   chicken1.endWalkMomentum = 0;
   chicken1.setNavPlan(new RandomWalk(32));
 
   const chicken2 = Character.get("chicken2");
+  chicken2.setMoveSound("chicken");
   chicken2.startWalkMomentum = 0;
   chicken2.endWalkMomentum = 0;
   chicken2.setNavPlan(new RandomWalk(32));
@@ -82,12 +84,13 @@ export function init(): void {
   );
 
   const knight = Character.get("knight");
+  knight.setMoveSound("armor", 1.3, true);
   knight.speed = 0.6;
   const knightPatrol = new PatrolPlan([
     Waypoint.fromName("city-square", 2000),
     Waypoint.fromName("exit-west", 2000),
     Waypoint.fromName("well", 2000),
-    Waypoint.fromName("oasis", 2000),
+    Waypoint.fromName("city-square", 2000),
     Waypoint.fromName("south-guard-post", 2000),
   ]);
   knight.setNavPlan(knightPatrol);
@@ -107,6 +110,7 @@ export function init(): void {
   kid.setNavPlan(kidPlan);
 
   const dog = Character.get("dog");
+  dog.setMoveSound("bark", 1.5);
   dog.speed = 1.5;
   dog.setNavPlan(new FollowPlan(kid, 10, 20, 200));
 

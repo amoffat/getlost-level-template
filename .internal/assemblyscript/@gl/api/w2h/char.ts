@@ -30,6 +30,12 @@ export declare function checkCollision(
   translationX: f32,
   translationY: f32
 ): f32[];
+export declare function setMoveSound(
+  name: string,
+  sound: string,
+  volume: f32,
+  onlyWhileMoving: bool
+): void;
 export declare function makeCollidable(name: string, enabled: bool): void;
 export declare function getAll(): string[];
 
