@@ -23,7 +23,7 @@ export enum CharAction {
 
 @lazy
 const all: Map<string, Character> = new Map();
-const stuckTRate: f32 = 1; // T units per second
+const stuckTRate: f32 = 0.1; // T units per second
 const stuckTimeout: f32 = 2000; // ms
 const baseMoveForce: f32 = 10000;
 
@@ -46,6 +46,7 @@ export class Character {
   private _action: CharAction = CharAction.Idle;
   public name: string;
   private _isPlayer: bool = false;
+  private _visible: bool = true;
 
   private _navPlan: NavPlan;
 
@@ -172,6 +173,12 @@ export class Character {
     this._state = state;
   }
 
+  public set visibility(enabled: bool) {
+    host.char.toggle(this.name, enabled);
+    this._visible = enabled;
+    host.navigation.clearPath(this.name);
+  }
+
   /**
    * Calculates a path length of our navigation path. Used to calculate the full
    * length (no args) or a partial length (up to some index).
@@ -222,6 +229,8 @@ export class Character {
 
   // Update method to handle position updates per frame
   tick(deltaMS: f32): void {
+    if (!this._visible) return;
+
     if (this._state === NavState.waiting) {
       if (this._waypointPause.tick(deltaMS)) {
         const wp = this._navPlan.getNextWaypoint(this.pos);
