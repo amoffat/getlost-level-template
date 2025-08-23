@@ -19,10 +19,18 @@ export interface ClearMarkerMessage {
   };
 }
 
-export type ShellRequest = RecordMarkerMessage | ClearMarkerMessage;
+export interface ClearPathGraphMessage {
+  type: "clear-path-graph";
+}
+
+export type ShellRequest =
+  | RecordMarkerMessage
+  | ClearMarkerMessage
+  | ClearPathGraphMessage;
 
 export interface Envelope<T> {
   id: string;
+  forLevel?: string;
   type: RequestType | "response";
   contents: T;
 }

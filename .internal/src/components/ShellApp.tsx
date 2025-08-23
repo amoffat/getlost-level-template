@@ -12,6 +12,9 @@ declare global {
         record: (slug: string) => void;
         clear: (slug: string) => void;
       };
+      nav: {
+        clearCache: () => void;
+      };
     };
   }
 }
@@ -65,6 +68,14 @@ export function ShellApp() {
           comms.request({
             type: "clear-marker",
             data: { slug: slug ?? null },
+          });
+        },
+      },
+      nav: {
+        clearCache: () => {
+          log.info(`Clearing navigation cache`, { dev: true });
+          comms.request({
+            type: "clear-path-graph",
           });
         },
       },
