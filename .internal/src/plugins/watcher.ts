@@ -42,6 +42,10 @@ export default function levelWatcher() {
             if (changed.endsWith("dialogue.ts")) {
               gameReload = false;
             }
+
+            if (changed.includes("/locales/")) {
+              gameReload = false;
+            }
           }
 
           // If it's in the /assemblyscript directory, reload the game
