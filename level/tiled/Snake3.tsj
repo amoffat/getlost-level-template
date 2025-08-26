@@ -1,12 +1,12 @@
 {
   "columns": 4,
-  "image": "../art/Actor/Characters/Boy/SpriteSheet.png",
-  "imageheight": 112,
+  "image": "../art/Actor/Monsters/Snake3/Snake3.png",
+  "imageheight": 64,
   "imagewidth": 64,
   "margin": 0,
-  "name": "Omar",
+  "name": "Snake3",
   "spacing": 0,
-  "tilecount": 28,
+  "tilecount": 16,
   "tiledversion": "1.11.2",
   "tileheight": 16,
   "tiles": [
@@ -32,6 +32,7 @@
       "id": 0,
       "objectgroup": {
         "draworder": "index",
+        "id": 2,
         "name": "",
         "objects": [
           {
@@ -41,9 +42,9 @@
             "rotation": 0,
             "type": "",
             "visible": true,
-            "width": 14,
-            "x": 1,
-            "y": 13
+            "width": 8,
+            "x": 3,
+            "y": 12
           }
         ],
         "opacity": 1,
@@ -56,7 +57,12 @@
         {
           "name": "animation",
           "type": "string",
-          "value": "WalkDown"
+          "value": "Idle,WalkDown"
+        },
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -1
         }
       ],
       "type": "NPC Tile"
@@ -93,9 +99,9 @@
             "rotation": 0,
             "type": "",
             "visible": true,
-            "width": 14,
-            "x": 1,
-            "y": 13
+            "width": 8,
+            "x": 6,
+            "y": 10
           }
         ],
         "opacity": 1,
@@ -109,6 +115,11 @@
           "name": "animation",
           "type": "string",
           "value": "WalkUp"
+        },
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -2
         }
       ],
       "type": "NPC Tile"
@@ -133,34 +144,16 @@
         }
       ],
       "id": 2,
-      "objectgroup": {
-        "draworder": "index",
-        "id": 2,
-        "name": "",
-        "objects": [
-          {
-            "height": 3,
-            "id": 1,
-            "name": "",
-            "rotation": 0,
-            "type": "",
-            "visible": true,
-            "width": 8,
-            "x": 4,
-            "y": 13
-          }
-        ],
-        "opacity": 1,
-        "type": "objectgroup",
-        "visible": true,
-        "x": 0,
-        "y": 0
-      },
       "properties": [
         {
           "name": "animation",
           "type": "string",
           "value": "WalkLeft"
+        },
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -1
         }
       ],
       "type": "NPC Tile"
@@ -185,69 +178,150 @@
         }
       ],
       "id": 3,
-      "objectgroup": {
-        "draworder": "index",
-        "id": 2,
-        "name": "",
-        "objects": [
-          {
-            "height": 3,
-            "id": 1,
-            "name": "",
-            "rotation": 0,
-            "type": "",
-            "visible": true,
-            "width": 8,
-            "x": 4,
-            "y": 13
-          }
-        ],
-        "opacity": 1,
-        "type": "objectgroup",
-        "visible": true,
-        "x": 0,
-        "y": 0
-      },
       "properties": [
         {
           "name": "animation",
           "type": "string",
           "value": "WalkRight"
+        },
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -1
         }
       ],
       "type": "NPC Tile"
     },
     {
-      "animation": [
+      "id": 4,
+      "properties": [
         {
-          "duration": 150,
-          "tileid": 8
+          "name": "groundOffset",
+          "type": "float",
+          "value": -1
         }
       ],
+      "type": "NPC Tile"
+    },
+    {
+      "id": 5,
+      "properties": [
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -2
+        }
+      ],
+      "type": "NPC Tile"
+    },
+    {
+      "id": 6,
+      "properties": [
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -1
+        }
+      ],
+      "type": "NPC Tile"
+    },
+    {
+      "id": 7,
+      "properties": [
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -1
+        }
+      ],
+      "type": "NPC Tile"
+    },
+    {
       "id": 8,
-      "objectgroup": {
-        "draworder": "index",
-        "id": 2,
-        "name": "",
-        "objects": [
-          {
-            "height": 3,
-            "id": 1,
-            "name": "",
-            "rotation": 0,
-            "type": "",
-            "visible": true,
-            "width": 14,
-            "x": 1,
-            "y": 13
-          }
-        ],
-        "opacity": 1,
-        "type": "objectgroup",
-        "visible": true,
-        "x": 0,
-        "y": 0
-      },
+      "properties": [
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -1
+        }
+      ],
+      "type": "NPC Tile"
+    },
+    {
+      "id": 9,
+      "properties": [
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -2
+        }
+      ],
+      "type": "NPC Tile"
+    },
+    {
+      "id": 10,
+      "properties": [
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -1
+        }
+      ],
+      "type": "NPC Tile"
+    },
+    {
+      "id": 11,
+      "properties": [
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -1
+        }
+      ],
+      "type": "NPC Tile"
+    },
+    {
+      "id": 12,
+      "properties": [
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -1
+        }
+      ],
+      "type": "NPC Tile"
+    },
+    {
+      "id": 13,
+      "properties": [
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -2
+        }
+      ],
+      "type": "NPC Tile"
+    },
+    {
+      "id": 14,
+      "properties": [
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -1
+        }
+      ],
+      "type": "NPC Tile"
+    },
+    {
+      "id": 15,
+      "properties": [
+        {
+          "name": "groundOffset",
+          "type": "float",
+          "value": -1
+        }
+      ],
       "type": "NPC Tile"
     }
   ],

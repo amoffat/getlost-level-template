@@ -3,17 +3,20 @@ import { log } from "@gl/api/w2h/host";
 import { loadMusic } from "@gl/utils/sound";
 
 import { CrossFadeSpec } from "@gl/api/types/sound";
+import { Vector } from "@gl/api/types/vector";
 import { ColorMatrixFilter } from "@gl/filters/colormatrix";
 import { getSunEventName, SunEvent } from "@gl/types/time";
 import { Character } from "@gl/utils/character";
+import { Delay } from "@gl/utils/delay";
+import { Vec2 } from "@gl/utils/la/vec2";
 import {
+  AttackPlan,
   FollowPlan,
   PatrolPlan,
   PatrolRandom,
   PatrolRandomDetours,
   RandomWalk,
 } from "@gl/utils/navigation";
-import { Periodic } from "@gl/utils/periodic";
 import { Player } from "@gl/utils/player";
 import { createHeatFilter, RippleFilter } from "@gl/utils/ripple";
 import { isDay, isNight, prevSunEvent } from "@gl/utils/time";
@@ -42,11 +45,19 @@ let nighttime: bool = false;
 export let overheat: f32 = 0.0;
 let heatRate: f32 = 0.02;
 let inWater: bool = false;
-const healingPool = new Periodic(200, 1000);
-const heatDamage = new Periodic(1000, 0);
+const healingPool = new Delay(200, 1000, true);
+const heatDamage = new Delay(1000, 0, true);
+let snakeDamage: bool = false;
+const snakeDamagePeriod = new Delay(1000, 1000, true);
+let snakeDamageDir!: Vec2;
 let heatFilter!: RippleFilter;
 let colorMatrix!: ColorMatrixFilter;
 let heatAmt: f32 = 0.0;
+
+class LevelState {
+  embarassedAmina: bool = false;
+  collectedFlags: bool = false;
+}
 
 /**
  * This function initializes your level. It's called once when the level is
@@ -61,13 +72,13 @@ export function init(): void {
   chicken1.setMoveSound("chicken");
   chicken1.startWalkMomentum = 0;
   chicken1.endWalkMomentum = 0;
-  chicken1.setNavPlan(new RandomWalk(32));
+  chicken1.setNavPlan(new RandomWalk(32, 100, 2000));
 
   const chicken2 = Character.get("chicken2");
   chicken2.setMoveSound("chicken");
   chicken2.startWalkMomentum = 0;
   chicken2.endWalkMomentum = 0;
-  chicken2.setNavPlan(new RandomWalk(32));
+  chicken2.setNavPlan(new RandomWalk(32, 100, 2000));
 
   const nazar = Character.get("nazar");
   nazar.speed = 0.3;
@@ -114,6 +125,15 @@ export function init(): void {
   dog.speed = 1.5;
   dog.setNavPlan(new FollowPlan(kid, 10, 20, 200));
 
+  for (let i = 1; i <= 5; i++) {
+    const snake = Character.get(`snake${i}`);
+    // snake.setMoveSound("snake");
+    snake.speed = 2.0;
+    snake.startWalkMomentum = 0;
+    snake.endWalkMomentum = 0;
+    snake.setNavPlan(new AttackPlan(player, 32, 64));
+  }
+
   heatFilter = createHeatFilter();
   colorMatrix = new ColorMatrixFilter();
   colorMatrix.hot();
@@ -139,7 +159,7 @@ export function init(): void {
   const stoleFruit = host.markers.query("stole-fruit", false);
   host.sensors.toggleSensor("fruit", !stoleFruit);
 
-  dayMusic = loadMusic("Musics/music-day", dayMusicVolume);
+  dayMusic = loadMusic("Musics/farm1", dayMusicVolume);
   nightMusic = loadMusic("Musics/music-night", nightMusicVolume);
   mazeMusic = loadMusic("Musics/maze", mazeMusicVolume);
 
@@ -270,6 +290,17 @@ export function tileCollisionEvent(
   // log(`Collision event: ${tsTileId}, ${gid}, ${entered} @ ${column}, ${row}`);
 }
 
+export function spriteCollisionEvent(
+  initiator: string,
+  collider: string,
+  direction: Vector,
+  entered: bool
+): void {
+  if (initiator !== "player") {
+    return;
+  }
+}
+
 /**
  * Called when a the dialogue dialog is closed.
  *
@@ -298,24 +329,20 @@ export function timerCompletedEvent(name: string): void {
 export function sensorEvent(
   initiator: string,
   sensorName: string,
+  direction: Vector,
   entered: bool
 ): void {
+  if (initiator !== "player") {
+    return;
+  }
+
   log.info(
     `Sensor event: '${initiator}' ${
       entered ? "entered" : "left"
     } '${sensorName}'`
   );
 
-  if (initiator !== "player") {
-    return;
-  }
-  if (sensorName === "flame") {
-    dialogue.stage_Fire(entered);
-  } else if (sensorName === "home-invasion" && entered) {
-    dialogue.passage_Amina();
-  } else if (sensorName === "knight") {
-    dialogue.stage_Knight(entered);
-  } else if (sensorName === "well") {
+  if (sensorName === "well") {
     dialogue.stage_Well(entered);
   } else if (sensorName === "exit-east" && entered) {
     host.map.exit("east", false);
@@ -323,13 +350,6 @@ export function sensorEvent(
     host.map.exit("west", false);
   } else if (sensorName === "exit-south" && entered) {
     host.map.exit("south", false);
-  } else if (sensorName === "exit-sphinx" && entered) {
-    host.map.exit("sphinx", false);
-  } else if (sensorName === "nazar") {
-    // host.player.setSkin("bandit");
-    dialogue.stage_Nazar(entered);
-  } else if (sensorName === "omar") {
-    dialogue.stage_Omar(entered);
   } else if (sensorName === "water") {
     inWater = entered;
   } else if (sensorName === "nap") {
@@ -382,8 +402,22 @@ export function sensorEvent(
     dialogue.stage_DeathSpiralDesert(entered);
   } else if (sensorName === "skull-door") {
     // host.tiles.toggle("skull-door", !entered);
-  } else if (sensorName === "skull-door-sign") {
-    dialogue.stage_SkellysLair(entered);
+  } else if (sensorName === "home-invasion" && entered) {
+    dialogue.passage_Amina();
+  } else if (sensorName === "knight/touch") {
+    dialogue.stage_Knight(entered);
+  } else if (sensorName === "nazar/touch") {
+    dialogue.stage_Nazar(entered);
+  } else if (sensorName === "omar/touch") {
+    dialogue.stage_Omar(entered);
+  } else if (sensorName.startsWith("snake")) {
+    snakeDamage = entered;
+    if (entered) {
+      snakeDamageDir = Vec2.fromVector(direction).normalize();
+      player.hurt(snakeDamageDir);
+      hearts--;
+      host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+    }
   }
 }
 
@@ -445,12 +479,12 @@ export function pauseTick(timestep: f32): void {
  * @param timestep The time since the last tick in milliseconds.
  */
 export function tick(timestep: f32): void {
+  const startHearts = hearts;
   Character.tickAll(timestep);
   host.filters.setTiltShiftY(tsfid, player.pos.y - 10);
 
   if (inWater && hearts < 5 && healingPool.tick(timestep)) {
     hearts++;
-    host.ui.setRating(0, 0, hearts, 5, "heart", "red");
   }
 
   // This syncs the time of day with the real world.
@@ -476,7 +510,14 @@ export function tick(timestep: f32): void {
   overheat = Math.max(0, Math.min(overheat, 1)) as f32;
   if (overheat >= 1 && heatDamage.tick(timestep)) {
     hearts--;
-    host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+  }
+
+  if (snakeDamage) {
+    if (snakeDamagePeriod.tick(timestep)) {
+      player.hurt(snakeDamageDir);
+      hearts--;
+      log.info("snake damage persist");
+    }
   }
 
   if (hearts <= 0) {
@@ -485,6 +526,9 @@ export function tick(timestep: f32): void {
   }
 
   host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
+  if (hearts !== startHearts) {
+    host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+  }
 }
 
 export function reduceOverheatBy(amt: f32): void {

@@ -16,6 +16,7 @@ digraph BloodFeud {
     "water-to-nazar" -> "jailed";
     "water-to-omar" -> "jailed";
     "water-to-amina" -> "jailed";
+    "water-to-dog" -> "jailed";
     "jailed" -> "meet-haddad";
     "meet-tarek-chef" -> "acquire-carrot";
     "meet-tarek-chef" -> "tarek-ingredients";
@@ -35,6 +36,7 @@ digraph BloodFeud {
     "collect-water" -> "water-to-omar";
     "collect-water" -> "water-to-amina";
     "collect-water" -> "water-to-nazar";
+    "collect-water" -> "water-to-dog";
     "jailbreak" -> "get-armor-skin";
     "ask-omar-help" -> "open-well";
     "nighttime" -> "open-well";
@@ -44,8 +46,10 @@ digraph BloodFeud {
     "jailbreak" -> "knight-repair-well";
     "knight-repair-well" -> "steal-hammer";
     "acquire-crowbar" -> "open-well";
+    "acquire-crowbar" -> "ask-omar-help";
     "jailed" -> "nazar-visit";
     "nazar-visit" -> "jailbreak";
+    "convince-dog" -> "nav-spiral-desert";
     "get-hidden-water" -> "nav-spiral-desert";
     "jailbreak" -> "nav-spiral-desert";
     "knight-repair-well" -> "nav-spiral-desert";

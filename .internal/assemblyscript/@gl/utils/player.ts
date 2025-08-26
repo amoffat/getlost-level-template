@@ -6,7 +6,7 @@ export class Player extends Character {
     super("player");
   }
 
-  getAction(velocity: Vec2): CharAction {
+  protected getMoveAction(velocity: Vec2): CharAction {
     return velocity.x < 0 ? CharAction.WalkLeft : CharAction.WalkRight;
   }
 }

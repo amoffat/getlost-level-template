@@ -1,9 +1,9 @@
 import * as host from "../api/w2h/host";
+import { Delay } from "./delay";
 import * as easing from "./easing";
 import { Vec2 } from "./la/vec2";
 import { NavPlan, StationaryPlan } from "./navigation";
 import { deriveTargetIndex, TrackResult } from "./paths";
-import { Periodic } from "./periodic";
 import { Waypoint } from "./waypoint";
 
 export enum Direction {
@@ -19,6 +19,8 @@ export enum CharAction {
   WalkLeft,
   WalkUp,
   WalkDown,
+  HurtLeft,
+  HurtRight,
 }
 
 @lazy
@@ -56,9 +58,12 @@ export class Character {
   private _targetPathLen: f32 = 0; // total length of the target path
   private _stuckTimer: f32 = 0;
   private _lastTrackResult: TrackResult = { index: -1, distance: 0, t: 0 };
-  private _waypointPause: Periodic = new Periodic(0);
+  private _waypointPause: Delay = new Delay(0);
   public startWalkMomentum: f32 = 5;
   public endWalkMomentum: f32 = 15;
+
+  // When an action is set, it can persist, overriding walk action changes.
+  private _persistAction: Delay = new Delay(0);
 
   constructor(name: string) {
     this.name = name;
@@ -90,24 +95,37 @@ export class Character {
   }
 
   // Get the character's current position. This is used in our game loop tick.
-  get pos(): Vec2 {
+  public get pos(): Vec2 {
     return this._pos;
   }
 
-  set pos(newPos: Vec2) {
+  public set pos(newPos: Vec2) {
     this._pos = newPos.clone();
   }
 
-  get velocity(): Vec2 {
+  public get velocity(): Vec2 {
     return this._velocity;
   }
 
-  set velocity(v: Vec2) {
+  public set velocity(v: Vec2) {
     this._velocity = v.clone();
   }
 
-  get action(): CharAction {
+  public addImpulse(impulse: Vec2): void {
+    this._velocity.add(impulse);
+  }
+
+  public get action(): CharAction {
     return this._action;
+  }
+
+  public setAction(newAction: CharAction, time: f32 = -1): void {
+    if (this._action === newAction) return;
+    if (!this._persistAction.done) return;
+
+    this._action = newAction;
+    this._persistAction = new Delay(time);
+    host.char.setAction(this.name, this._action);
   }
 
   set collisions(enabled: bool) {
@@ -124,8 +142,8 @@ export class Character {
     if (!wp.isNull) {
       this.setTargetPos(wp.pos, wp.nearestIsOk);
       this._navSpeed = wp.speed;
-      this._waypointPause = new Periodic(wp.pause, wp.pause);
     }
+    this._waypointPause = new Delay(wp.pause, wp.pause);
   }
 
   onReachTarget(): void {
@@ -217,7 +235,7 @@ export class Character {
     host.navigation.clearPath(this.name); // clears the debug line
   }
 
-  getAction(velocity: Vec2): CharAction {
+  protected getMoveAction(velocity: Vec2): CharAction {
     // Choose the walk action based on the direction of movement, considering
     // that this is a 2.5D game, so up and down are not as pronounced.
     if (abs(velocity.x) > abs(velocity.y * 0.5)) {
@@ -230,9 +248,16 @@ export class Character {
   // Update method to handle position updates per frame
   tick(deltaMS: f32): void {
     if (!this._visible) return;
+    this._persistAction.tick(deltaMS);
 
     if (this._state === NavState.waiting) {
       if (this._waypointPause.tick(deltaMS)) {
+        const wp = this._navPlan.getNextWaypoint(this.pos);
+        this._setNavWaypoint(wp);
+      }
+    } else {
+      const needsNewWaypoint = this._navPlan.tick(deltaMS, this.pos);
+      if (needsNewWaypoint) {
         const wp = this._navPlan.getNextWaypoint(this.pos);
         this._setNavWaypoint(wp);
       }
@@ -319,6 +344,7 @@ export class Character {
       traction = props.traction;
     }
 
+    let moveAction: CharAction = this._action;
     if (this.direction.x != 0 || this.direction.y != 0) {
       // Low traction means our impulse is less effective
       const adjForce = this._moveForce
@@ -358,7 +384,7 @@ export class Character {
         this._pos.y += proposedTrans.y;
       }
 
-      this._action = this.getAction(this._velocity);
+      moveAction = this.getMoveAction(this._velocity);
     } else {
       // Only apply friction when idle to slow down gradually
       this._velocity.x *= 1 - friction;
@@ -387,7 +413,7 @@ export class Character {
         this._pos.y += proposedTrans.y;
       }
 
-      this._action = CharAction.Idle;
+      moveAction = CharAction.Idle;
     }
 
     // Slow down our animation speed based on our speed relative to our max speed.
@@ -397,6 +423,6 @@ export class Character {
     ) as f32;
     host.char.setSpeed(this.name, animSpeed);
     host.char.setPos(this.name, this._pos.x, this._pos.y);
-    host.char.setAction(this.name, this._action);
+    this.setAction(moveAction);
   }
 }

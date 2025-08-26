@@ -15,6 +15,12 @@ export class Waypoint {
     this.pause = pause;
   }
 
+  public static null(): Waypoint {
+    const wp = new Waypoint({ x: 0, y: 0 });
+    wp.speed = -1;
+    return wp;
+  }
+
   public static fromName(
     name: string,
     pause: f32 = 1000,
@@ -35,6 +41,3 @@ export class Waypoint {
     return this.speed < 0;
   }
 }
-
-@lazy
-export const nullWaypoint = new Waypoint({ x: 0, y: 0 }, 0, -1);
