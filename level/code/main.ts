@@ -48,7 +48,6 @@ let inWater: bool = false;
 const healingPool = new Delay(200, 1000, true);
 const heatDamage = new Delay(1000, 0, true);
 let snakeDamage: bool = false;
-const snakeDamagePeriod = new Delay(1000, 1000, true);
 let snakeDamageDir!: Vec2;
 let heatFilter!: RippleFilter;
 let colorMatrix!: ColorMatrixFilter;
@@ -414,9 +413,10 @@ export function sensorEvent(
     snakeDamage = entered;
     if (entered) {
       snakeDamageDir = Vec2.fromVector(direction).normalize();
-      player.hurt(snakeDamageDir);
-      hearts--;
-      host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+      if (player.hurt(snakeDamageDir)) {
+        hearts--;
+        host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+      }
     }
   }
 }
@@ -513,10 +513,8 @@ export function tick(timestep: f32): void {
   }
 
   if (snakeDamage) {
-    if (snakeDamagePeriod.tick(timestep)) {
-      player.hurt(snakeDamageDir);
+    if (player.hurt(snakeDamageDir)) {
       hearts--;
-      log.info("snake damage persist");
     }
   }
 

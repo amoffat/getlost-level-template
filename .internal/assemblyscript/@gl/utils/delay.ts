@@ -20,14 +20,18 @@ export class Delay {
     }
   }
 
+  public reset(): void {
+    this._accumulatedMs = 0;
+    this._done = this._timeMs <= 0;
+  }
+
   public get done(): bool {
     return this._done;
   }
 
   public set timeMs(value: f32) {
     this._timeMs = value;
-    this._accumulatedMs = 0;
-    this._done = value <= 0;
+    this.reset();
   }
 
   public get timeMs(): f32 {
