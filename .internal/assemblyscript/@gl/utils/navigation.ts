@@ -2,8 +2,9 @@ import { Vector } from "../api/types/vector";
 import * as host from "../api/w2h/host";
 import { Character } from "./character";
 import { Delay } from "./delay";
+import { easeOutCircle } from "./easing";
 import { Vec2 } from "./la/vec2";
-import { float, inCircle, inRing, int } from "./rand";
+import { chance, float, inCircle, inRing, int } from "./rand";
 import { Waypoint } from "./waypoint";
 
 const tryToFindValid: i32 = 10;
@@ -254,6 +255,8 @@ export class AttackPlan extends NavPlan {
     return false;
   }
 
+  // The distance to the target, normalized by the attack distance, so that 0 is
+  // right next to the target and 1 is at the attack distance.
   private _normDistance(pos: Vec2): f32 {
     return this._target.pos.distanceTo(pos) / this._attackDistance;
   }
@@ -265,18 +268,23 @@ export class AttackPlan extends NavPlan {
 
   public getNextWaypoint(curPos: Vec2): Waypoint {
     if (this._targetIsNear(curPos)) {
-      const wp = new Waypoint(this._target.pos.toVector());
-      wp.pause = this._normDistance(curPos) * 1000 + 100;
-      wp.nearestIsOk = true;
-      return wp;
-    } else {
-      return this._defaultWaypoint(curPos);
+      const nd = this._normDistance(curPos);
+      // Gives the player a chance to escape, if we're right on top of them,
+      // there's a high chance that we'll choose a default waypoint instead.
+      if (chance(easeOutCircle(nd))) {
+        const wp = new Waypoint(this._target.pos.toVector());
+        wp.pause = nd * 1000 + 100;
+        wp.nearestIsOk = true;
+        return wp;
+      }
     }
+    return this._defaultWaypoint(curPos);
   }
 
   public tick(deltaMS: f32, curPos: Vec2): bool {
     if (this._cooldown.tick(deltaMS)) {
       if (this._targetIsNear(curPos)) {
+        // As we get closer to the target, less cooldown
         const checkTime = this._normDistance(curPos) * 1900 + 200;
         this._cooldown.timeMs = checkTime;
         return true;
