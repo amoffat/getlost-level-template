@@ -7,7 +7,7 @@ interface LogMessage {
   color?: string;
   className: string;
   ts: number;
-  key: string;
+  key?: string;
 }
 
 interface DevMessage {
@@ -59,12 +59,11 @@ function parseMessage(event: LogEvent): LogMessage | undefined {
     return;
   }
 
-  const msg = {
+  const msg: LogMessage = {
     msg: formatLogEvent(event),
     color,
     className: event.level.label.toLowerCase(),
     ts: event.ts,
-    key: `${event.ts}-${Math.random()}`,
   };
   return msg;
 }
@@ -129,6 +128,9 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
   // Public API used by emitters: push to buffer and schedule a single rAF flush
   const addMessage = useCallback(
     (msg: LogMessage) => {
+      if (!msg.key) {
+        msg.key = `${msg.ts}-${Math.random()}`;
+      }
       pendingRef.current.push(msg);
       scheduleFlush();
     },
