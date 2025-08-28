@@ -96,6 +96,11 @@
                     "name": "animation",
                     "type": "string",
                     "value": ""
+                },
+                {
+                    "name": "dampenWalkCollisions",
+                    "type": "float",
+                    "value": 0.4
                 }
             ],
             "name": "NPC",
@@ -114,6 +119,11 @@
                     "name": "animation",
                     "type": "string",
                     "value": "Idle"
+                },
+                {
+                    "name": "dampenWalkCollisions",
+                    "type": "float",
+                    "value": 0.4
                 },
                 {
                     "name": "groundOffset",

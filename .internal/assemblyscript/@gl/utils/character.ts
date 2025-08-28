@@ -44,7 +44,7 @@ export class Character {
   private _state: NavState = NavState.stopped;
   private _moveForce: Vec2 = Vec2.fromVal(baseMoveForce);
   public mass: f32 = 50;
-  public maxVelocity: Vec2 = Vec2.fromMagnitude(35);
+  public maxVelocity: Vec2 = Vec2.fromMagnitude(100);
   private _action: CharAction = CharAction.Idle;
   public name: string;
   private _isPlayer: bool = false;

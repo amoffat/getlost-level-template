@@ -21,6 +21,10 @@ export class Vec2 {
     return new Vec2(vector.x, vector.y);
   }
 
+  static zero(): Vec2 {
+    return new Vec2(0, 0);
+  }
+
   toVector(): Vector {
     return { x: this.x, y: this.y };
   }

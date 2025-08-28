@@ -282,6 +282,41 @@
          "y":0
         }, 
         {
+         "draworder":"topdown",
+         "id":37,
+         "name":"ground decals",
+         "objects":[
+                {
+                 "gid":330,
+                 "height":16,
+                 "id":199,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":303,
+                 "y":295
+                }, 
+                {
+                 "gid":329,
+                 "height":16,
+                 "id":200,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":278,
+                 "y":286
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
          "chunks":[
                 {
                  "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -403,8 +438,8 @@
                  "type":"Entry",
                  "visible":true,
                  "width":0,
-                 "x":309,
-                 "y":293
+                 "x":170,
+                 "y":298
                 }, 
                 {
                  "height":0,
@@ -539,8 +574,8 @@
                  "type":"NPC",
                  "visible":true,
                  "width":16,
-                 "x":242,
-                 "y":284
+                 "x":250,
+                 "y":310
                 }, 
                 {
                  "gid":2155,
@@ -585,8 +620,8 @@
                  "type":"NPC",
                  "visible":true,
                  "width":16,
-                 "x":212,
-                 "y":174
+                 "x":316,
+                 "y":293
                 }, 
                 {
                  "gid":2155,
@@ -1270,8 +1305,8 @@
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":264.5,
-                 "y":100.5
+                 "x":244,
+                 "y":307
                 }, 
                 {
                  "gid":238,
@@ -1282,8 +1317,8 @@
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":264.5,
-                 "y":82
+                 "x":227,
+                 "y":310
                 }, 
                 {
                  "gid":239,
@@ -1356,6 +1391,30 @@
                  "width":0,
                  "x":55,
                  "y":-118
+                }, 
+                {
+                 "gid":240,
+                 "height":16,
+                 "id":197,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":322,
+                 "y":298
+                }, 
+                {
+                 "gid":239,
+                 "height":16,
+                 "id":198,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":165,
+                 "y":322
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1513,7 +1572,8 @@
          "visible":false,
          "x":0,
          "y":0
-        }, 
+        },
+    
         {
          "draworder":"topdown",
          "id":18,
@@ -1635,11 +1695,10 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
-        },
-    
+        }, 
         {
          "draworder":"topdown",
          "id":14,
@@ -2287,8 +2346,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":37,
- "nextobjectid":197,
+ "nextlayerid":38,
+ "nextobjectid":201,
  "orientation":"orthogonal",
  "properties":[
         {

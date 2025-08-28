@@ -37,9 +37,10 @@ const dayMusicVolume: f32 = 0.3;
 let nightMusic!: i32;
 const nightMusicVolume: f32 = 0.5;
 let mazeMusic!: i32;
-const mazeMusicVolume: f32 = 0.8;
+const mazeMusicVolume: f32 = 0.4;
 let inMaze: bool = false;
-let hearts: f32 = 5;
+let hearts: f32 = 10;
+let maxHearts: f32 = 10;
 const overheatColor = "red";
 let nighttime: bool = false;
 export let overheat: f32 = 0.0;
@@ -47,8 +48,8 @@ let heatRate: f32 = 0.02;
 let inWater: bool = false;
 const healingPool = new Delay(200, 1000, true);
 const heatDamage = new Delay(1000, 0, true);
-let snakeDamage: bool = false;
-let snakeDamageDir!: Vec2;
+let takingDamage: bool = false;
+let damagingChar: string = "";
 let heatFilter!: RippleFilter;
 let colorMatrix!: ColorMatrixFilter;
 let heatAmt: f32 = 0.0;
@@ -148,7 +149,7 @@ export function init(): void {
    */
   host.time.setSunEvent(SunEvent.SunriseEnd, 0);
 
-  host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+  host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
   host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
   updateHeatFilter();
 
@@ -160,7 +161,7 @@ export function init(): void {
 
   dayMusic = loadMusic("Musics/farm1", dayMusicVolume);
   nightMusic = loadMusic("Musics/music-night", nightMusicVolume);
-  mazeMusic = loadMusic("Musics/maze", mazeMusicVolume);
+  mazeMusic = loadMusic("Musics/digital-descent", mazeMusicVolume);
 
   const ev = host.time.getSunEvent();
   host.sound.playSound({
@@ -184,6 +185,13 @@ function updateHeatFilter(): void {
   }
   heatFilter.influence = heatAmt;
   colorMatrix.influence = heatAmt;
+}
+
+function getDamageDir(name: string): Vec2 {
+  const char = Character.get(name);
+  if (!char) return Vec2.zero();
+  const dir = char.pos.subbed(player.pos).normalize();
+  return dir;
 }
 
 /**
@@ -403,19 +411,20 @@ export function sensorEvent(
     // host.tiles.toggle("skull-door", !entered);
   } else if (sensorName === "home-invasion" && entered) {
     dialogue.passage_Amina();
-  } else if (sensorName === "knight/touch") {
+  } else if (sensorName === "knight/talk") {
     dialogue.stage_Knight(entered);
-  } else if (sensorName === "nazar/touch") {
+  } else if (sensorName === "nazar/talk") {
     dialogue.stage_Nazar(entered);
-  } else if (sensorName === "omar/touch") {
+  } else if (sensorName === "omar/talk") {
     dialogue.stage_Omar(entered);
-  } else if (sensorName.startsWith("snake")) {
-    snakeDamage = entered;
+  } else if (sensorName.startsWith("snake") && sensorName.endsWith("/hit")) {
+    takingDamage = entered;
     if (entered) {
-      snakeDamageDir = Vec2.fromVector(direction).normalize();
-      if (player.hurt(snakeDamageDir)) {
+      damagingChar = sensorName.split("/")[0];
+      const dir = getDamageDir(damagingChar);
+      if (player.hurt(dir)) {
         hearts--;
-        host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+        host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
       }
     }
   }
@@ -483,7 +492,7 @@ export function tick(timestep: f32): void {
   Character.tickAll(timestep);
   host.filters.setTiltShiftY(tsfid, player.pos.y - 10);
 
-  if (inWater && hearts < 5 && healingPool.tick(timestep)) {
+  if (inWater && hearts < maxHearts && healingPool.tick(timestep)) {
     hearts++;
   }
 
@@ -512,8 +521,9 @@ export function tick(timestep: f32): void {
     hearts--;
   }
 
-  if (snakeDamage) {
-    if (player.hurt(snakeDamageDir)) {
+  if (takingDamage) {
+    const dir = getDamageDir(damagingChar);
+    if (player.hurt(dir)) {
       hearts--;
     }
   }
@@ -525,7 +535,7 @@ export function tick(timestep: f32): void {
 
   host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
   if (hearts !== startHearts) {
-    host.ui.setRating(0, 0, hearts, 5, "heart", "red");
+    host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
   }
 }
 
