@@ -1,6 +1,6 @@
-import basicSsl from "@vitejs/plugin-basic-ssl";
 import react from "@vitejs/plugin-react";
 import { defineConfig, ViteDevServer } from "vite";
+import apiPlugin from "./src/plugins/api";
 import compileWasmPlugin from "./src/plugins/assemblyscript";
 import levelPlugin from "./src/plugins/level";
 import { isAllowedOrigin } from "./src/plugins/utils";
@@ -44,17 +44,18 @@ export default defineConfig(() => {
       // set as https in the devcontainer.json, Codespaces will set the protocol
       // as http and won't let you change it. So on codespaces, we don't use
       // https, which is fine because the Dev Tunnel itself is https.
-      process.env.CODESPACES
-        ? null
-        : basicSsl({
-            name: "test",
-            domains: ["localhost"],
-          }),
+      // process.env.CODESPACES
+      //   ? null
+      //   : basicSsl({
+      //       name: "test",
+      //       domains: ["localhost"],
+      //     }),
       addHeadersPlugin(),
       react(),
       compileWasmPlugin(),
       levelPlugin(),
       levelWatcher(),
+      apiPlugin(),
     ],
   };
 });

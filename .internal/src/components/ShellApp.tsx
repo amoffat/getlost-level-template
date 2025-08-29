@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as constants from "../constants";
 import { Comms } from "../iframe";
+import { SavePathGraphRequest } from "../iframe/request";
 import { log } from "../log";
 import DevInput from "./DevInput";
 import LogPane from "./LogPane";
@@ -24,13 +25,20 @@ export function ShellApp() {
   const [reloadCount, setReloadCount] = useState(0);
   const [comms, setComms] = useState<Comms | null>(null);
 
-  // useEffect(() => {
-  //   const fn = (event: MessageEvent) => {
-  //     //
-  //   };
-  //   window.addEventListener("message", fn);
-  //   return () => window.removeEventListener("message", fn);
-  // }, []);
+  useEffect(() => {
+    if (!comms) return;
+
+    comms.addMessageListener<SavePathGraphRequest>({
+      type: "save-path-graph",
+      callback: async ({ graph }) => {
+        await fetch("/api/save-path-graph", {
+          method: "POST",
+          headers: { "Content-Type": "application/octet-stream" },
+          body: graph,
+        });
+      },
+    });
+  }, [comms]);
 
   useEffect(() => {
     const iframe = iframeRef.current!;
@@ -47,7 +55,11 @@ export function ShellApp() {
     log.info(`Loading game from ${constants.gameUrl}`);
     iframe.src = src.toString();
 
-    const comms = new Comms(window, iframe.contentWindow!);
+    const comms = new Comms({
+      window,
+      otherWindow: iframe.contentWindow!,
+      role: "parent",
+    });
     setComms(comms);
   }, [reloadCount]);
 
@@ -57,14 +69,14 @@ export function ShellApp() {
     window.gl = {
       markers: {
         record: (slug: string) => {
-          log.info(`Recording marker '${slug}'`, { dev: true });
+          log.info({ dev: true }, `Recording marker '${slug}'`);
           comms.request({
             type: "record-marker",
             data: { slug },
           });
         },
         clear: (slug: string) => {
-          log.info(`Clearing marker '${slug}'`, { dev: true });
+          log.info({ dev: true }, `Clearing marker '${slug}'`);
           comms.request({
             type: "clear-marker",
             data: { slug: slug ?? null },
@@ -73,7 +85,7 @@ export function ShellApp() {
       },
       nav: {
         clearCache: () => {
-          log.info(`Clearing navigation cache`, { dev: true });
+          log.info({ dev: true }, `Clearing navigation cache`);
           comms.request({
             type: "clear-path-graph",
           });
@@ -85,7 +97,7 @@ export function ShellApp() {
   useEffect(() => {
     if (import.meta.hot) {
       const fn = () => {
-        log.info("Reloading level", { dev: true, color: "green" });
+        log.info({ dev: true, color: "green" }, "Reloading level");
         setReloadCount((count) => count + 1);
       };
       import.meta.hot.on("gl:level-reload", fn);

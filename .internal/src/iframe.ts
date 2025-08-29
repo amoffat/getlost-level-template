@@ -2,17 +2,24 @@ import pino from "pino";
 import { v4 as uuidv4 } from "uuid";
 import {
   isResponse,
+  type AnyRequest,
   type RequestEnvelope,
   type ResponseEnvelope,
-  type ShellRequest,
+  type ResponseFor,
 } from "./iframe/request";
 import { log } from "./log";
+import { isAsync } from "./utils/async";
 
-type EventHandler<T extends ShellRequest = ShellRequest> = (
-  envelope: RequestEnvelope<T>
-) => void;
+type EventHandlerFunction<Req extends AnyRequest = AnyRequest> = (
+  data: Req extends { data: infer D } ? D : never,
+  respond: (data: ResponseFor<Req>) => void,
+  envelope: Pick<RequestEnvelope<Req>, "id" | "forLevel">
+) => any;
 
-type PromiseOrNull<T> = T extends null ? null : Promise<T>;
+interface EventHandler<T extends AnyRequest = AnyRequest> {
+  callback: EventHandlerFunction<T>;
+  once: boolean;
+}
 
 // This class is used to communicate between the parent window and the child
 export class Comms {
@@ -20,15 +27,29 @@ export class Comms {
   private _otherWindow: Window;
   private _resolvers: Map<string, (data: any) => void> = new Map();
   private _handlers: Map<string, Map<string, EventHandler<any>>> = new Map();
+  public level: string | undefined;
   log: pino.Logger;
 
-  constructor(window: Window, otherWindow: Window) {
+  constructor({
+    window,
+    otherWindow,
+    role,
+    levelId,
+  }: {
+    window: Window;
+    otherWindow: Window;
+    role: "parent" | "child";
+    levelId?: string;
+  }) {
     this._window = window;
     this._otherWindow = otherWindow;
+    this.level = levelId;
     this.log = log.child({
       name: "comms",
-      role: window.parent === window ? "parent" : "child",
+      role,
+      levelId: levelId ?? "unknown",
     });
+    this.log.info("Comms initialized");
 
     this._window.addEventListener(
       "message",
@@ -57,64 +78,101 @@ export class Comms {
           // );
 
           // Dispatch
+          const respond = (data: ResponseFor<any>) => {
+            this.respond(envelope.id, data);
+          };
           const handlers = this._handlers.get(envelope.type);
+          const smallEnvelope = {
+            id: envelope.id,
+            forLevel: envelope.forLevel,
+          };
           if (handlers) {
-            handlers.forEach((h) => h(envelope));
+            for (const [id, h] of handlers) {
+              h.callback.call(this, envelope.contents, respond, smallEnvelope);
+              if (h.once) {
+                handlers.delete(id);
+              }
+            }
           }
         }
       }
     );
   }
 
-  addMessageListener<T extends ShellRequest = ShellRequest>(
-    messageType: T["type"],
-    callback: EventHandler<T>
-  ): () => void {
+  addMessageListener<T extends AnyRequest = AnyRequest>({
+    type,
+    callback,
+    once = false,
+  }: {
+    type: T["type"];
+    callback: EventHandlerFunction<T>;
+    once?: boolean;
+  }): () => void {
     const id = uuidv4();
 
-    let handlers = this._handlers.get(messageType);
-    if (handlers) {
-      handlers.set(id, callback);
+    // Add some error handling to the callback, so errors don't get swallowed.
+    let wrapped: EventHandlerFunction<T>;
+    if (isAsync(callback)) {
+      wrapped = async (data, respond, envelope) => {
+        callback(data, respond, envelope).catch((err: any) => {
+          this.log.error({ err }, "Async event handler threw");
+        });
+      };
     } else {
-      handlers = new Map([[id, callback]]);
-      this._handlers.set(messageType, handlers);
+      wrapped = (data, respond, envelope) => {
+        try {
+          callback(data, respond, envelope);
+        } catch (err) {
+          this.log.error({ err }, "Sync event handler threw");
+        }
+      };
+    }
+
+    let handlers = this._handlers.get(type);
+    if (handlers) {
+      handlers.set(id, { callback: wrapped, once });
+    } else {
+      handlers = new Map([[id, { callback: wrapped, once }]]);
+      this._handlers.set(type, handlers);
     }
 
     return () => {
-      handlers.delete(id);
+      if (handlers) {
+        handlers.delete(id);
+      }
     };
   }
 
   // Make a request to the other window, optionally returning a promise for a
   // response.
-  request<T = null, R extends ShellRequest = ShellRequest>(
-    req: R,
+  request<Req extends AnyRequest, Resp = Promise<ResponseFor<Req>>>(
+    req: Omit<Req, "response">,
     hasResponse: boolean = false
-  ): PromiseOrNull<T> {
+  ): Resp {
     // this.log.info(`Requesting: ${req.type}`);
     const id = uuidv4();
-    const msg: RequestEnvelope<R> = {
+    const msg: RequestEnvelope<Req> = {
       id,
+      forLevel: this.level,
       type: req.type,
-      contents: { ...req },
+      contents: req.data,
     };
     if (hasResponse) {
-      const p = this._waitForResponse<T>(id);
-      // We don't need to set the target origin because we're using a CSP
+      const p = this._waitForResponse<Resp>(id);
       this._otherWindow.postMessage(msg, "*");
-      return p as PromiseOrNull<T>;
+      return p as Resp;
     } else {
-      // We don't need to set the target origin because we're using a CSP
       this._otherWindow.postMessage(msg, "*");
-      return null as PromiseOrNull<T>;
+      return null as Resp;
     }
   }
 
   // Respond to a request from the other
-  respond<T>(forId: string, data: T) {
+  private respond<T>(forId: string, data: T) {
     const id = uuidv4();
     const msg: ResponseEnvelope = {
       id,
+      forLevel: this.level,
       forId,
       type: "response",
       contents: data,

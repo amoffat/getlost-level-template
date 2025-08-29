@@ -1,10 +1,3 @@
-export type RequestType = ShellRequest["type"];
-
-export interface IFrameResponse {
-  id: string;
-  data?: unknown;
-}
-
 export interface RecordMarkerMessage {
   type: "record-marker";
   data: {
@@ -21,31 +14,48 @@ export interface ClearMarkerMessage {
 
 export interface ClearPathGraphMessage {
   type: "clear-path-graph";
+  data?: null;
 }
 
-export type ShellRequest =
+export interface SavePathGraphRequest {
+  type: "save-path-graph";
+  data: {
+    graph: Uint8Array<ArrayBuffer>;
+  };
+}
+
+export type AnyRequest =
   | RecordMarkerMessage
   | ClearMarkerMessage
+  | SavePathGraphRequest
   | ClearPathGraphMessage;
 
-export interface Envelope<T> {
+export type RequestType = AnyRequest["type"];
+export type ResponseFor<R extends AnyRequest> = R extends {
+  response: infer Resp;
+}
+  ? Resp
+  : null;
+
+export interface Envelope<Contents, Type> {
+  // Unique identifier for the request or response
   id: string;
-  forLevel?: string;
-  type: RequestType | "response";
-  contents: T;
+  // The level which sent the request or response. This is used for filtering
+  // out messages that are not relevant to the current level.
+  forLevel: string | undefined;
+  type: Type;
+  contents: Contents;
 }
 
-export type RequestEnvelope<T extends ShellRequest = ShellRequest> =
-  Envelope<T>;
+export type RequestEnvelope<Contents extends Omit<AnyRequest, "response">> =
+  Envelope<Contents["data"], Contents["type"]>;
 
-export interface ResponseEnvelope extends Envelope<unknown> {
+export interface ResponseEnvelope extends Envelope<unknown, "response"> {
   id: string;
   forId: string;
-  type: "response";
-  contents: unknown;
 }
 
-export function isResponse<T extends ShellRequest>(
+export function isResponse<T extends AnyRequest>(
   envelope: RequestEnvelope<T> | ResponseEnvelope
 ): envelope is ResponseEnvelope {
   return envelope.type === "response";
