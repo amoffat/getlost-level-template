@@ -40,4 +40,11 @@ export class Waypoint {
   public get isNull(): bool {
     return this.speed < 0;
   }
+
+  public toString(): string {
+    if (this.isNull) {
+      return `Waypoint(null)`;
+    }
+    return `Waypoint(${this.pos.toString()}, ${this.speed}, ${this.pause}, ${this.nearestIsOk})`;
+  }
 }

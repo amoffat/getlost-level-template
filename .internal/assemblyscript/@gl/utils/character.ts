@@ -58,7 +58,7 @@ export class Character {
   private _targetPathLen: f32 = 0; // total length of the target path
   private _stuckTimer: f32 = 0;
   private _lastTrackResult: TrackResult = { index: -1, distance: 0, t: 0 };
-  private _waypointPause: Delay = new Delay(0);
+  private _waypointPause: Delay = new Delay(1000, 0, true);
   public startWalkMomentum: f32 = 5;
   public endWalkMomentum: f32 = 15;
 
@@ -134,6 +134,7 @@ export class Character {
 
   setNavPlan(navPlan: NavPlan): void {
     this._navPlan = navPlan;
+    this.state = NavState.waiting;
     const wp = navPlan.getNextWaypoint(this.pos);
     this._setNavWaypoint(wp);
   }
@@ -143,7 +144,7 @@ export class Character {
       this.setTargetPos(wp.pos, wp.nearestIsOk);
       this._navSpeed = wp.speed;
     }
-    this._waypointPause = new Delay(wp.pause, wp.pause);
+    this._waypointPause = new Delay(wp.pause, wp.pause, true);
   }
 
   onReachTarget(): void {
@@ -163,7 +164,8 @@ export class Character {
         this.name,
         this._pos.toVector(),
         targetPos.toVector(),
-        nearestIsOk
+        nearestIsOk,
+        Infinity,
       )
       .map<Vec2>((v) => Vec2.fromVector(v));
     this._targetPathLen = this._pathProgress();

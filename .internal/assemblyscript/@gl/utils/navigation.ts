@@ -10,6 +10,8 @@ import { Waypoint } from "./waypoint";
 const tryToFindValid: i32 = 10;
 
 export abstract class NavPlan {
+  public name: string = ""; // For debug logging
+
   public abstract getNextWaypoint(curPos: Vec2): Waypoint;
   public hasNextWaypoint(_curPos: Vec2): bool {
     return true;
@@ -23,24 +25,17 @@ export abstract class NavPlan {
     start: Vec2,
     end: Vec2,
     nearestIsOk: bool,
-    lengthBound: f32 = -1
+    lengthBound: f32 = Infinity
   ): bool {
     const path = host.navigation.findPath(
       "",
       start.toVector(),
       end.toVector(),
-      nearestIsOk
+      nearestIsOk,
+      lengthBound
     );
     const hasPath = path.length > 0;
-    if (hasPath && lengthBound > 0) {
-      const pathLen = this._pathLength(
-        path.map<Vec2>((p) => Vec2.fromVector(p))
-      );
-      const shortEnough = pathLen <= lengthBound;
-      return hasPath && shortEnough;
-    } else {
-      return hasPath;
-    }
+    return hasPath;
   }
 
   protected _pathLength(path: Vec2[]): f32 {

@@ -131,7 +131,9 @@ export function init(): void {
     snake.speed = 2.0;
     snake.startWalkMomentum = 0;
     snake.endWalkMomentum = 0;
-    snake.setNavPlan(new AttackPlan(player, 32, 64));
+    const navPlan = new AttackPlan(player, 32, 70);
+    navPlan.name = snake.name;
+    snake.setNavPlan(navPlan);
   }
 
   heatFilter = createHeatFilter();

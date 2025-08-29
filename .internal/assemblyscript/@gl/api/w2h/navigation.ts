@@ -6,7 +6,8 @@ export declare function findPath(
   key: string,
   startPos: Vector,
   endPos: Vector,
-  nearestIsOk: bool
+  nearestIsOk: bool,
+  max: f32
 ): Vector[];
 export declare function clearPath(key: string): void;
 
