@@ -28,10 +28,6 @@ GAME_URLS = {
 }
 API: str | None = None
 
-# This is where we will fetch the WASM binary from. We rely on our
-# assemblyscript vite plugin to do the compilation and serve the WASM file.
-WASM_SERVER_BASE_URL = "https://localhost:5173"
-
 
 def put_level(
     *,

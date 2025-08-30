@@ -13,9 +13,20 @@ KEY_FILE="$LEVEL_DIR/assets.key"
 
 npm ci --prefix "$INTERNAL_DIR"
 npm ci --prefix "$HOME/twinejs"
-poetry install -P "$INTERNAL_DIR/spindler"
-poetry install -P "$INTERNAL_DIR/deployer"
-pip install git+https://github.com/amoffat/translator@main
+
+uv self update
+
+# This installs our dependencies into venv, so that our ide can resolve the deps
+# when we're editing code. This isn't necessary for running the tool scripts.
+uv venv --allow-existing /home/node/venv
+source /home/node/venv/bin/activate
+uv pip install -e "$INTERNAL_DIR/spindler"
+uv pip install -e "$INTERNAL_DIR/deployer"
+
+# This is all that's really needed for running the tools.
+uv tool install -e "$INTERNAL_DIR/spindler"
+uv tool install -e "$INTERNAL_DIR/deployer"
+uv tool install git+https://github.com/amoffat/translator@main
 
 
 echo "Starting PM2 in the background..."

@@ -15,6 +15,12 @@
     // "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/desktop-lite:1": {
       "password": "getlost"
+    },
+    "ghcr.io/devcontainers/features/common-utils": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "installOhMyZshConfig": true,
+      "configureZshAsDefaultShell": true
     }
   },
   "runArgs": ["--network=getlost"],
@@ -31,7 +37,12 @@
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
-        "python.defaultInterpreterPath": "/home/node/venv/bin/python"
+        "python.defaultInterpreterPath": "/home/node/venv/bin/python",
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/usr/bin/zsh"
+          }
+        }
       },
       "extensions": [
         "esbenp.prettier-vscode",
@@ -51,8 +62,7 @@
   "remoteUser": "node",
   "portsAttributes": {
     "5173": {
-      "label": "Level Preview",
-      "protocol": "https"
+      "label": "Level Preview"
     },
     "5174": {
       "label": "Twine - Dialogue"

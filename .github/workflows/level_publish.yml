@@ -71,17 +71,14 @@ jobs:
         with:
           python-version: 3.11
 
-      - name: Install poetry
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry==2.1.2
-          poetry config virtualenvs.create false
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install dependencies
         run: |
-          poetry install -P .internal/deployer
-          poetry install -P .internal/spindler
-          pip install git+https://github.com/amoffat/translator@main
+          uv tool install -e "$INTERNAL_DIR/deployer"
+          uv tool install -e "$INTERNAL_DIR/spindler"
+          uv tool install git+https://github.com/amoffat/translator@main
 
       - name: Install Node.js
         uses: actions/setup-node@v4

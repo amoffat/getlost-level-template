@@ -6,5 +6,13 @@ INTERNAL_DIR="$WORKSPACE_DIR/.internal"
 
 npm install --prefix "$INTERNAL_DIR"
 npm install --prefix "$HOME/twinejs"
-poetry install -P "$INTERNAL_DIR/spindler"
-poetry install -P "$INTERNAL_DIR/deployer"
+
+uv self update
+uv venv --allow-existing /home/node/venv
+source /home/node/venv/bin/activate
+uv pip install -e "$INTERNAL_DIR/spindler"
+uv pip install -e "$INTERNAL_DIR/deployer"
+
+uv tool install -e "$INTERNAL_DIR/deployer"
+uv tool install -e "$INTERNAL_DIR/spindler"
+uv tool install git+https://github.com/amoffat/translator@main

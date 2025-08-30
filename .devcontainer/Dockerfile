@@ -16,9 +16,6 @@ RUN apt-get update \
     ffmpeg \
     # For binaryen
     cmake \
-    # Python deps
-    python3-pip \
-    python3-venv \
     # cleanup
     && rm -rf /var/lib/apt/lists/*
 
@@ -50,19 +47,9 @@ RUN git clone \
 
 
 ENV HOME=/home/node
-COPY fluxbox-menu.txt $HOME/.fluxbox/menu
-COPY fluxbox-startup.sh $HOME/.fluxbox/startup
-COPY fluxbox-apps.txt $HOME/.fluxbox/apps
-
 USER node
-ENV VIRTUAL_ENV=$HOME/venv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-RUN python3 -m venv $VIRTUAL_ENV
-
-RUN pip3 install poetry==2.1.2 \
-    && poetry --version \
-    && poetry config virtualenvs.create false
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install twinejs and apply our autosaving patch
 RUN git clone \
@@ -73,3 +60,10 @@ RUN git clone \
 COPY patches/autosave.patch /home/node/twinejs/
 RUN cd $HOME/twinejs \
     && git apply autosave.patch
+
+COPY fluxbox-menu.txt $HOME/.fluxbox/menu
+COPY fluxbox-startup.sh $HOME/.fluxbox/startup
+COPY fluxbox-apps.txt $HOME/.fluxbox/apps
+
+# Doesn't work because the devcontainer.json feature overrides this
+COPY zshrc $HOME/.zshrc

@@ -1,0 +1,1 @@
+plugins=(git vi-mode dotenv)
