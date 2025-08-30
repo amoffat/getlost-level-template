@@ -15,8 +15,6 @@ from urllib3.exceptions import InsecureRequestWarning
 # suppress InsecureRequestWarning from requests
 urllib3.disable_warnings(InsecureRequestWarning)
 
-THIS_DIR = Path(__file__).resolve().parent
-INTERNAL_DIR = THIS_DIR.parent.parent
 API_URLS = {
     "local": "http://getlost-api:3000",
     "qa": "https://api.qa.getlost.gg",
@@ -82,14 +80,20 @@ def put_level(
     return f"{level_id}-{commit}"
 
 
-def collect_wasm(*, tar: tarfile.TarFile, metadata: Any):
+def collect_wasm(
+    *,
+    level_dir: Path,
+    tar: tarfile.TarFile,
+    metadata: Any,
+):
     """Compile WASM using the TypeScript CLI and add main.wasm to the provided
     tarfile handle."""
     import tempfile
 
     temp_dir = tempfile.TemporaryDirectory()
     out_dir = Path(temp_dir.name)
-    script_dir = (INTERNAL_DIR / "scripts").resolve()
+    internal_dir = level_dir.parent / ".internal"
+    script_dir = (internal_dir / "scripts").resolve()
     compile_script = script_dir / "compile-wasm.ts"
     # Use npx tsx to run the script, passing the output directory
     result = subprocess.run(
@@ -237,6 +241,7 @@ def main():
         with tarfile.open(temp_gz.name, "w:gz") as tar:
             collect_wasm(
                 tar=tar,
+                level_dir=args.level,
                 metadata={
                     "levelId": level_id,
                     "repo": repo,
