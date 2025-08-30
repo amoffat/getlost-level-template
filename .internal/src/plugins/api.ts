@@ -1,5 +1,5 @@
 import * as fflate from "fflate";
-import { writeFileSync } from "fs";
+import { unlinkSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import type { Plugin } from "vite";
 
@@ -19,7 +19,7 @@ export default function expressApi(): Plugin {
       app.use(express.json({ limit: "5mb" }));
 
       app.post(
-        "/save-path-graph",
+        "/pathgraph",
         express.raw({ type: "application/octet-stream", limit: "10mb" }),
         (req, res) => {
           const u8 = new Uint8Array(req.body);
@@ -28,6 +28,16 @@ export default function expressApi(): Plugin {
           res.sendStatus(204);
         }
       );
+
+      app.delete("/pathgraph", (_req, res) => {
+        try {
+          unlinkSync(graphFile);
+          res.sendStatus(204);
+        } catch (error) {
+          console.error("Error deleting path graph:", error);
+          res.sendStatus(500);
+        }
+      });
 
       // Mount under /api
       server.middlewares.use("/api", app);

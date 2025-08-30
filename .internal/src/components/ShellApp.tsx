@@ -31,7 +31,7 @@ export function ShellApp() {
     comms.addMessageListener<SavePathGraphRequest>({
       type: "save-path-graph",
       callback: async ({ graph }) => {
-        await fetch("/api/save-path-graph", {
+        await fetch("/api/pathgraph", {
           method: "POST",
           headers: { "Content-Type": "application/octet-stream" },
           body: graph,
@@ -84,11 +84,12 @@ export function ShellApp() {
         },
       },
       nav: {
-        clearCache: () => {
+        clearCache: async () => {
           log.info({ dev: true }, `Clearing navigation cache`);
-          comms.request({
-            type: "clear-path-graph",
+          await fetch("/api/pathgraph", {
+            method: "DELETE",
           });
+          window.location.reload();
         },
       },
     };

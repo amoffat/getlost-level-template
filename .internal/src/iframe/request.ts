@@ -12,11 +12,6 @@ export interface ClearMarkerMessage {
   };
 }
 
-export interface ClearPathGraphMessage {
-  type: "clear-path-graph";
-  data?: null;
-}
-
 export interface SavePathGraphRequest {
   type: "save-path-graph";
   data: {
@@ -27,8 +22,7 @@ export interface SavePathGraphRequest {
 export type AnyRequest =
   | RecordMarkerMessage
   | ClearMarkerMessage
-  | SavePathGraphRequest
-  | ClearPathGraphMessage;
+  | SavePathGraphRequest;
 
 export type RequestType = AnyRequest["type"];
 export type ResponseFor<R extends AnyRequest> = R extends {
