@@ -161,9 +161,9 @@ export function init(): void {
   const stoleFruit = host.markers.query("stole-fruit", false);
   host.sensors.toggleSensor("fruit", !stoleFruit);
 
-  dayMusic = loadMusic("Musics/farm1", dayMusicVolume);
+  dayMusic = loadMusic("Musics/restricted/farm1", dayMusicVolume);
   nightMusic = loadMusic("Musics/music-night", nightMusicVolume);
-  mazeMusic = loadMusic("Musics/digital-descent", mazeMusicVolume);
+  mazeMusic = loadMusic("Musics/restricted/digital-descent", mazeMusicVolume);
 
   const ev = host.time.getSunEvent();
   host.sound.playSound({
