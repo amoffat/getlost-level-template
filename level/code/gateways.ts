@@ -32,10 +32,6 @@ export function entrances(): Entrance[] {
       name: "nap",
       exits: ["994021540/nap"],
     },
-    {
-      name: "sphinx",
-      exits: [],
-    },
   ];
 }
 
