@@ -16,6 +16,29 @@
                  "tileid":0
                 }],
          "id":0,
+         "objectgroup":
+            {
+             "draworder":"index",
+             "id":2,
+             "name":"",
+             "objects":[
+                    {
+                     "height":3,
+                     "id":1,
+                     "name":"",
+                     "rotation":0,
+                     "type":"",
+                     "visible":true,
+                     "width":8,
+                     "x":4,
+                     "y":13
+                    }],
+             "opacity":1,
+             "type":"objectgroup",
+             "visible":true,
+             "x":0,
+             "y":0
+            },
          "type":"NPC Tile"
         }, 
         {
@@ -29,6 +52,29 @@
                  "tileid":0
                 }],
          "id":1,
+         "objectgroup":
+            {
+             "draworder":"index",
+             "id":2,
+             "name":"",
+             "objects":[
+                    {
+                     "height":3,
+                     "id":1,
+                     "name":"",
+                     "rotation":0,
+                     "type":"",
+                     "visible":true,
+                     "width":8,
+                     "x":4,
+                     "y":13
+                    }],
+             "opacity":1,
+             "type":"objectgroup",
+             "visible":true,
+             "x":0,
+             "y":0
+            },
          "properties":[
                 {
                  "name":"animation",
