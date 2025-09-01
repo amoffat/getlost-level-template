@@ -274,11 +274,20 @@ export class Character {
 
     let easingSpeed = <f32>1.0;
 
-    const frictionHalflife: f32 = Mathf.max(
-      0.0,
-      Mathf.min(1.0, props.friction)
-    );
-    const traction: f32 = Mathf.max(0.0, Mathf.min(1.0, props.traction));
+    let frictionHalflife: f32 = Mathf.max(0.0, props.friction);
+    let traction: f32 = Mathf.max(0.0, Mathf.min(1.0, props.traction));
+
+    if (props.sink.amt > 0) {
+      // If we're in shallow water, we want to increase friction and leave the
+      // traction alone. This lets us slow down more, like we're wading.
+      if (props.sink.amt < 0.4) {
+        frictionHalflife *= 0.5 * (1.0 - props.sink.amt);
+      } else {
+        frictionHalflife += 1 * props.sink.amt;
+        traction = traction * Mathf.max((1.0 - props.sink.amt) * 0.2, 0.03);
+      }
+    }
+
     const frictionFactor: f32 = Mathf.pow(0.5, dtSec / frictionHalflife);
 
     if (this._targetPath.length > 0) {
