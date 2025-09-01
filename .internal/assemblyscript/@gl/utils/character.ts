@@ -165,7 +165,7 @@ export class Character {
         this._pos.toVector(),
         targetPos.toVector(),
         nearestIsOk,
-        Infinity,
+        Infinity
       )
       .map<Vec2>((v) => Vec2.fromVector(v));
     this._targetPathLen = this._pathProgress();
@@ -250,6 +250,8 @@ export class Character {
   // Update method to handle position updates per frame
   tick(deltaMS: f32): void {
     if (!this._visible) return;
+
+    const dtSec: f32 = deltaMS / 1000;
     this._persistAction.tick(deltaMS);
 
     if (this._state === NavState.waiting) {
@@ -282,7 +284,7 @@ export class Character {
       const maybeStuck =
         this._lastTrackResult.index == oldTrackResult.index &&
         Mathf.abs(oldTrackResult.t - trackResult.t) <
-          (stuckTRate * deltaMS) / 1000;
+          stuckTRate * dtSec;
 
       if (maybeStuck) {
         // FIXME
@@ -335,9 +337,9 @@ export class Character {
     // traction, proportionally to the amount we're sunk. This lets us glide
     // more, like we're swimming.
     let friction = (props.friction *
-      Math.max(1.0 - props.sink.amt / 0.7, 0.2)) as f32;
+      Math.max(1.0 - props.sink.amt / (42 * dtSec), 0.2)) as f32;
     let traction = (props.traction *
-      Math.max(1.0 - props.sink.amt / 0.55, 0.03)) as f32;
+      Math.max(1.0 - props.sink.amt / (33 * dtSec), 0.03)) as f32;
 
     // If we're in shallow water, we want to increase friction and leave the
     // traction alone. This lets us slow down more, like we're wading.
@@ -352,7 +354,7 @@ export class Character {
       const adjForce = this._moveForce
         .scaled(this.speed * this._navSpeed * easingSpeed)
         .scaled(traction)
-        .scaled(deltaMS / 1000);
+        .scaled(dtSec);
 
       // Apply impulse to velocity based on mass
       this._velocity.x += (this.direction.x * adjForce.x) / this.mass;
@@ -366,7 +368,7 @@ export class Character {
       this._velocity.y *= 1 - friction;
 
       // Where would we ideally end up if no collisions?
-      const proposedTrans = this._velocity.scaled(deltaMS / 1000);
+      const proposedTrans = this._velocity.scaled(dtSec);
 
       // Check for collisions and adjust proposed translation
       if (needsCollisionCheck) {
@@ -395,7 +397,7 @@ export class Character {
       // Don't allow infinitely small velocities (which affect walk sound)
       this._velocity.truncate(0.001);
 
-      const proposedTrans = this._velocity.scaled(deltaMS / 1000);
+      const proposedTrans = this._velocity.scaled(dtSec);
 
       // Check for collisions and adjust proposed translation
       if (needsCollisionCheck) {
