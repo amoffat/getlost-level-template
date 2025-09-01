@@ -274,6 +274,13 @@ export class Character {
 
     let easingSpeed = <f32>1.0;
 
+    const frictionHalflife: f32 = Mathf.max(
+      0.0,
+      Mathf.min(1.0, props.friction)
+    );
+    const traction: f32 = Mathf.max(0.0, Mathf.min(1.0, props.traction));
+    const frictionFactor: f32 = Mathf.pow(0.5, dtSec / frictionHalflife);
+
     if (this._targetPath.length > 0) {
       const trackResult = deriveTargetIndex(this._pos, this._targetPath);
       const adjustedGoal = this._targetPath[this._targetPath.length - 1];
@@ -283,8 +290,7 @@ export class Character {
       this._lastTrackResult = trackResult;
       const maybeStuck =
         this._lastTrackResult.index == oldTrackResult.index &&
-        Mathf.abs(oldTrackResult.t - trackResult.t) <
-          stuckTRate * dtSec;
+        Mathf.abs(oldTrackResult.t - trackResult.t) < stuckTRate * dtSec;
 
       if (maybeStuck) {
         // FIXME
@@ -333,25 +339,11 @@ export class Character {
     // disabled anyways while they're moving.
     const needsCollisionCheck = this._isPlayer;
 
-    // If we're in deep water, we want to decrease the friction and decrease the
-    // traction, proportionally to the amount we're sunk. This lets us glide
-    // more, like we're swimming.
-    let friction = (props.friction *
-      Math.max(1.0 - props.sink.amt / (42 * dtSec), 0.2)) as f32;
-    let traction = (props.traction *
-      Math.max(1.0 - props.sink.amt / (33 * dtSec), 0.03)) as f32;
-
-    // If we're in shallow water, we want to increase friction and leave the
-    // traction alone. This lets us slow down more, like we're wading.
-    if (props.sink.amt < 0.4) {
-      friction = props.friction + (0.3 * props.sink.amt) / 0.3;
-      traction = props.traction;
-    }
-
     let moveAction: CharAction = this._action;
     if (this.direction.x != 0 || this.direction.y != 0) {
       // Low traction means our impulse is less effective
       const adjForce = this._moveForce
+        // Character's innate speed * waypoint speed * waypoint easing
         .scaled(this.speed * this._navSpeed * easingSpeed)
         .scaled(traction)
         .scaled(dtSec);
@@ -363,9 +355,9 @@ export class Character {
       // Don't go faster than max velocity
       this._velocity.cap(this.maxVelocity);
 
-      // Apply friction to velocity
-      this._velocity.x *= 1 - friction;
-      this._velocity.y *= 1 - friction;
+      // Apply friction
+      this._velocity.x *= frictionFactor;
+      this._velocity.y *= frictionFactor;
 
       // Where would we ideally end up if no collisions?
       const proposedTrans = this._velocity.scaled(dtSec);
@@ -391,8 +383,8 @@ export class Character {
       moveAction = this.getMoveAction(this._velocity);
     } else {
       // Only apply friction when idle to slow down gradually
-      this._velocity.x *= 1 - friction;
-      this._velocity.y *= 1 - friction;
+      this._velocity.x *= frictionFactor;
+      this._velocity.y *= frictionFactor;
 
       // Don't allow infinitely small velocities (which affect walk sound)
       this._velocity.truncate(0.001);
@@ -421,10 +413,10 @@ export class Character {
     }
 
     // Slow down our animation speed based on our speed relative to our max speed.
-    const animSpeed = Math.min(
+    const animSpeed = Mathf.min(
       1.0,
-      Math.max(0.4, this._velocity.magnitude / 35)
-    ) as f32;
+      Mathf.max(0.4, this._velocity.magnitude / 35)
+    );
     host.char.setSpeed(this.name, animSpeed);
     host.char.setPos(this.name, this._pos.x, this._pos.y);
     this.setAction(moveAction);
