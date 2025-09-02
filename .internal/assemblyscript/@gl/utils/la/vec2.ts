@@ -25,8 +25,16 @@ export class Vec2 {
     return new Vec2(0, 0);
   }
 
+  static null(): Vec2 {
+    return new Vec2(NaN, NaN);
+  }
+
   toVector(): Vector {
     return { x: this.x, y: this.y };
+  }
+
+  public get isNull(): bool {
+    return isNaN(this.x) && isNaN(this.y);
   }
 
   static fromMagnitude(mag: f32): Vec2 {

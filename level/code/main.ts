@@ -539,6 +539,9 @@ export function tick(timestep: f32): void {
   if (hearts !== startHearts) {
     host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
   }
+
+  const chicken = Character.get("knight");
+  player.setGuideTarget(chicken);
 }
 
 export function reduceOverheatBy(amt: f32): void {
