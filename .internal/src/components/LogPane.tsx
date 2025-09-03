@@ -1,5 +1,6 @@
 import { LogEvent } from "pino";
-import { useCallback, useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import styles from "../styles/LogPane.module.css";
 
 interface LogMessage {
@@ -7,7 +8,8 @@ interface LogMessage {
   color?: string;
   className: string;
   ts: number;
-  key?: string;
+  key?: number;
+  style?: CSSProperties;
 }
 
 interface DevMessage {
@@ -22,22 +24,50 @@ function isDevMessage(msg: unknown): msg is DevMessage {
 function formatLogEvent(logEvent: LogEvent) {
   const timestamp = logEvent.ts / 1000;
   const level = logEvent.level.label.toUpperCase();
+  // Compact, allocation-friendly stringify that avoids cycles and pretty-printing
+  const seen = new WeakSet<object>();
+  const safeStringify = (val: unknown): string => {
+    try {
+      if (typeof val === "string") return val;
+      if (val && typeof val === "object") {
+        return JSON.stringify(val as any, (_key, value) => {
+          if (typeof value === "object" && value !== null) {
+            if (seen.has(value)) return "[Circular]";
+            seen.add(value);
+          }
+          return value;
+        }) as string;
+      }
+      return String(val);
+    } catch {
+      // Fallback to toString on errors
+      try {
+        return String(val);
+      } catch {
+        return "";
+      }
+    }
+  };
 
-  // Flatten messages array
-  const messages = logEvent.messages
-    .filter((msg) => !isDevMessage(msg))
-    .map((msg) =>
-      typeof msg === "object" ? JSON.stringify(msg, null, 2) : msg
-    )
-    .join(" ");
+  // Build message string with minimal intermediate arrays/strings
+  let msgStr = "";
+  for (let i = 0; i < logEvent.messages.length; i++) {
+    const part = logEvent.messages[i];
+    if (isDevMessage(part)) continue;
+    if (msgStr) msgStr += " ";
+    msgStr += safeStringify(part);
+  }
 
-  // Flatten bindings array
-  const bindings =
-    logEvent.bindings.length > 0
-      ? ` ${logEvent.bindings.map((b) => JSON.stringify(b)).join(", ")}`
-      : "";
+  if (logEvent.bindings.length > 0) {
+    msgStr += " ";
+    for (let i = 0; i < logEvent.bindings.length; i++) {
+      if (i > 0) msgStr += ", ";
+      // Bindings are typically small/simple objects
+      msgStr += safeStringify(logEvent.bindings[i]);
+    }
+  }
 
-  return `[${timestamp.toFixed(2)}] ${level}: ${messages}${bindings}`;
+  return `[${timestamp.toFixed(2)}] ${level}: ${msgStr}`;
 }
 
 function parseMessage(event: LogEvent): LogMessage | undefined {
@@ -65,6 +95,10 @@ function parseMessage(event: LogEvent): LogMessage | undefined {
     className: event.level.label.toLowerCase(),
     ts: event.ts,
   };
+  if (color) {
+    // Precompute style object to avoid new allocations on each render
+    msg.style = { color };
+  }
   return msg;
 }
 
@@ -77,6 +111,7 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
   const pendingRef = useRef<LogMessage[]>([]); // batch buffer
   const rafIdRef = useRef<number | null>(null); // rAF scheduler
   const maxRef = useRef<number>(maxMessages);
+  const keyCounterRef = useRef<number>(1);
 
   const flush = useCallback(() => {
     rafIdRef.current = null;
@@ -91,18 +126,27 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
     pendingRef.current = [];
 
     if (pending.length > 0) {
-      // Newest should appear first. We collected in arrival order, so reverse.
-      const newestFirst = pending.slice().reverse();
+      // Build the new list with at most one allocation
+      const existing = logsRef.current;
+      const resultSize = Math.min(max, pending.length + existing.length);
+      const result = new Array<LogMessage>(resultSize);
 
-      // Determine how many from the existing list we can retain
-      const remaining = Math.max(0, max - newestFirst.length);
-      const tail = remaining > 0 ? logsRef.current.slice(0, remaining) : [];
+      // Insert pending in reverse (newest first)
+      let idx = 0;
+      for (let i = pending.length - 1; i >= 0 && idx < max; i--) {
+        result[idx++] = pending[i];
+      }
 
-      // Build the new list once per frame
-      logsRef.current = newestFirst.concat(tail);
+      // Append as much of existing as fits
+      const tailLen = Math.min(max - idx, existing.length);
+      for (let j = 0; j < tailLen; j++) {
+        result[idx + j] = existing[j];
+      }
+
+      logsRef.current = result;
     } else if (logsRef.current.length > max) {
-      // No new items, just trim if needed
-      logsRef.current = logsRef.current.slice(0, max);
+      // No new items, just trim in place to avoid new array
+      logsRef.current.length = max;
     }
 
     // Publish a new array reference to trigger re-render
@@ -128,8 +172,8 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
   // Public API used by emitters: push to buffer and schedule a single rAF flush
   const addMessage = useCallback(
     (msg: LogMessage) => {
-      if (!msg.key) {
-        msg.key = `${msg.ts}-${Math.random()}`;
+      if (msg.key == null) {
+        msg.key = keyCounterRef.current++;
       }
       pendingRef.current.push(msg);
       scheduleFlush();
@@ -181,20 +225,20 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
     }
   }, [addMessage]);
 
-  const mapMessage = useCallback((msg: LogMessage) => {
-    return (
-      <pre
-        className={styles[msg.className]}
-        key={msg.key}
-        style={{ color: msg.color }}
-      >
-        {msg.msg}
-      </pre>
-    );
-  }, []);
-  const messages = logs.map(mapMessage);
+  // Memoized line component to avoid rerendering unchanged lines
+  const LogLine = memo(({ m }: { m: LogMessage }) => (
+    <pre className={styles[m.className]} style={m.style}>
+      {m.msg}
+    </pre>
+  ));
 
-  return <div className={styles.container}>{messages}</div>;
+  return (
+    <div className={styles.container}>
+      {logs.map((m) => (
+        <LogLine key={m.key} m={m} />
+      ))}
+    </div>
+  );
 };
 
 export default LogPane;
