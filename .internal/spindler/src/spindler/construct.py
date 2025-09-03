@@ -12,7 +12,7 @@ from lark import ParseTree, Token, Tree
 from .types.passage import ConstructPassage, TraverseState, TweePassage
 from .types.render import RenderResult
 from .utils.name import hash_name, i18nextify
-from .utils.strings import escape_and_quote, snake_to_camel_case
+from .utils.strings import escape_and_quote
 
 THIS_DIR = Path(__file__).parent
 _TMPL_ENV = jinja2.Environment(
@@ -98,17 +98,6 @@ def map_op(op: str) -> str:
         "!": "!",
     }
     return operator_map.get(op, op)
-
-
-def make_nice_tag(tag: str) -> str | None:
-    """
-    Converts a tag into a nice identifier by replacing spaces with underscores
-    and removing special characters.
-    """
-    tag = tag.strip().replace(" ", "_")
-    tag = re.sub(r"[^a-zA-Z0-9_]", "", tag)
-    tag = snake_to_camel_case(tag)
-    return tag or None
 
 
 def create_state_class(name: str, variable_types: dict[str, Variable]) -> str:
@@ -616,7 +605,6 @@ def render(passages: list[TweePassage]) -> RenderResult:
     passage_to_tags: dict[str, list[str]] = defaultdict(list)
 
     tag_node_visited = set()
-    passage_id_to_nice_id: dict[str, str] = {}
 
     def propagate_tags(passage_id: str, parent_tags: list[str] = []):
 
@@ -625,17 +613,6 @@ def render(passages: list[TweePassage]) -> RenderResult:
         children = passage_to_children.get(passage_id, set())
 
         our_tags = passage.tags
-
-        # While we're propagating the tags, let's make a note of the tags that
-        # belong to the passage (are not inherited). We'll use the first tag as
-        # the passage id, which makes it more convenient and stable to reference
-        # in the level code. For example `passage_Guy()` instead of
-        # `passage_123456()`.
-        if our_tags:
-            nice_tag = make_nice_tag(our_tags[0])
-            if nice_tag is not None:
-                passage_id_to_nice_id[passage_id] = nice_tag
-
         all_tags = list(chain(parent_tags, our_tags))
         passage_to_tags[passage_id].extend(all_tags)
 
@@ -687,11 +664,6 @@ def render(passages: list[TweePassage]) -> RenderResult:
     for name, class_def in state_classes.items():
         state_class_defs.append(class_def)
     state_class_defs.append(state_class)
-
-    # Backfill the nice ids, which are based on tag names
-    for cons_passage in passage_functions:
-        if cons_passage.id in passage_id_to_nice_id:
-            cons_passage.nice_id = passage_id_to_nice_id[cons_passage.id]
 
     interact_button = "interact"
     all_strings[interact_button] = "Interact"

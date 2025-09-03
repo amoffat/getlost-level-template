@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from lark import ParseTree
 
-from ..utils.name import hash_name
+from ..utils.name import hash_name, make_nice_name
 
 STORY_INIT = "StoryInit"
 
@@ -49,4 +49,9 @@ class ConstructPassage:
     title: str | None = None
     title_id: str | None = None
     is_sign: bool = False
-    nice_id: str | None = None
+
+    # This makes it more convenient and stable to reference in the level code.
+    # For example `passage_Guy()` instead of `passage_123456()`.
+    @property
+    def nice_id(self):
+        return make_nice_name(self.name)
