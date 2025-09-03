@@ -6,7 +6,7 @@ import { Vec2 } from "./la/vec2";
 export class Player extends Character {
   private _hurtCooldown: Delay = new Delay(1000);
   private _invincible: boolean = false;
-  private _guardTarget: Vec2 = Vec2.null();
+  private _guideTarget: Vec2 = Vec2.null();
 
   constructor() {
     super("player");
@@ -34,7 +34,8 @@ export class Player extends Character {
   }
 
   public setGuideTarget(char: Character): void {
-    this._guardTarget = char.pos;
-    host.player.setGuideTarget(char.pos.x, char.pos.y);
+    const pos = char.pos.subbed(new Vec2(0, 10));
+    this._guideTarget = pos;
+    host.player.setGuideTarget(pos.x, pos.y);
   }
 }
