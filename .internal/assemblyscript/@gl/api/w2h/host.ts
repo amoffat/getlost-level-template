@@ -8,6 +8,7 @@ import * as map from "./map";
 import * as markers from "./markers";
 import * as navigation from "./navigation";
 import * as particles from "./particles";
+import * as physics from "./physics";
 import * as pickup from "./pickup";
 import * as platform from "./platform";
 import * as player from "./player";
@@ -32,6 +33,7 @@ export {
   markers,
   navigation,
   particles,
+  physics,
   pickup,
   platform,
   player,
