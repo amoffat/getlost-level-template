@@ -24,25 +24,30 @@ interface EventHandler<T extends AnyRequest = AnyRequest> {
 // This class is used to communicate between the parent window and the child
 export class Comms {
   private _window: Window;
-  private _otherWindow: Window;
+  private _subWindows: Window[];
   private _resolvers: Map<string, (data: any) => void> = new Map();
   private _handlers: Map<string, Map<string, EventHandler<any>>> = new Map();
+  private _teardowns: Array<VoidFunction> = [];
   public level: string | undefined;
   log: pino.Logger;
 
+  // Microtask batching for fire-and-forget requests
+  private _sendQueue: Array<RequestEnvelope<any> | ResponseEnvelope> = [];
+  private _flushScheduled = false;
+
   constructor({
     window,
-    otherWindow,
+    subWindows,
     role,
     levelId,
   }: {
     window: Window;
-    otherWindow: Window;
+    subWindows: Window[];
     role: "parent" | "child";
     levelId?: string;
   }) {
     this._window = window;
-    this._otherWindow = otherWindow;
+    this._subWindows = subWindows;
     this.level = levelId;
     this.log = log.child({
       name: "comms",
@@ -51,52 +56,79 @@ export class Comms {
     });
     this.log.info("Comms initialized");
 
-    this._window.addEventListener(
-      "message",
+    const msgHandler = (event: MessageEvent<any>) => {
       // We don't need to check the message origin because we're using a CSP
-      (event: MessageEvent<RequestEnvelope<any>>) => {
-        const envelope = event.data;
+      const payload = event.data;
+      const messages: Array<RequestEnvelope<any> | ResponseEnvelope> =
+        Array.isArray(payload) ? payload : [payload];
 
+      for (const envelope of messages) {
         if (isResponse(envelope)) {
-          // this.log.info(
-          //   { id: envelope.id, forId: envelope.forId },
-          //   "Received response"
-          // );
           const { forId, contents: data } = envelope;
           const resolver = this._resolvers.get(forId);
           if (resolver) {
             resolver(data);
             this._resolvers.delete(forId);
           }
-        } else {
-          // this.log.info(
-          //   {
-          //     id: envelope.id,
-          //     type: envelope.type,
-          //   },
-          //   "Received request"
-          // );
+          continue;
+        }
 
-          // Dispatch
-          const respond = (data: ResponseFor<any>) => {
-            this.respond(envelope.id, data);
-          };
-          const handlers = this._handlers.get(envelope.type);
-          const smallEnvelope = {
-            id: envelope.id,
-            forLevel: envelope.forLevel,
-          };
-          if (handlers) {
-            for (const [id, h] of handlers) {
-              h.callback.call(this, envelope.contents, respond, smallEnvelope);
-              if (h.once) {
-                handlers.delete(id);
-              }
+        const respond = (data: ResponseFor<any>) => {
+          this.respond(envelope.id, data);
+        };
+        const handlers = this._handlers.get(envelope.type);
+        const smallEnvelope = {
+          id: envelope.id,
+          forLevel: envelope.forLevel,
+        };
+        if (handlers) {
+          for (const [id, h] of handlers) {
+            h.callback.call(this, envelope.contents, respond, smallEnvelope);
+            if (h.once) {
+              handlers.delete(id);
             }
           }
         }
       }
-    );
+    };
+
+    this._window.addEventListener("message", msgHandler);
+    this._teardowns.push(() => {
+      this._window.removeEventListener("message", msgHandler);
+    });
+  }
+
+  public destroy(): void {
+    for (const teardown of this._teardowns) {
+      teardown();
+    }
+  }
+
+  private _broadcastBatch(
+    msgs: Array<RequestEnvelope<any> | ResponseEnvelope>
+  ): void {
+    for (const sub of this._subWindows) {
+      sub.postMessage(msgs, "*");
+    }
+  }
+
+  private _scheduleFlush(): void {
+    if (this._flushScheduled) return;
+    this._flushScheduled = true;
+    queueMicrotask(() => {
+      try {
+        this._flushQueue();
+      } finally {
+        this._flushScheduled = false;
+      }
+    });
+  }
+
+  private _flushQueue(): void {
+    if (this._sendQueue.length === 0) return;
+    const batch = this._sendQueue;
+    this._sendQueue = [];
+    this._broadcastBatch(batch);
   }
 
   addMessageListener<T extends AnyRequest = AnyRequest>({
@@ -159,10 +191,13 @@ export class Comms {
     };
     if (hasResponse) {
       const p = this._waitForResponse<Resp>(id);
-      this._otherWindow.postMessage(msg, "*");
+      // Send immediately as a singleton batch to align with array-based protocol
+      this._broadcastBatch([msg]);
       return p as Resp;
     } else {
-      this._otherWindow.postMessage(msg, "*");
+      // Batch fire-and-forget requests in a microtask
+      this._sendQueue.push(msg);
+      this._scheduleFlush();
       return null as Resp;
     }
   }
@@ -178,7 +213,8 @@ export class Comms {
       contents: data,
     };
     // We don't need to set the target origin because we're using a CSP
-    this._otherWindow.postMessage(msg, "*");
+    // Send as a singleton batch to match array-based protocol
+    this._broadcastBatch([msg]);
   }
 
   // Set up a promise of a response for a request that was made

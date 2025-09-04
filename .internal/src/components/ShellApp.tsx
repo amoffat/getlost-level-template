@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as constants from "../constants";
+import { useCommsContext } from "../context/comms";
 import { Comms } from "../iframe";
 import { SavePathGraphRequest } from "../iframe/request";
 import { log } from "../log";
@@ -23,7 +24,7 @@ declare global {
 export function ShellApp() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [reloadCount, setReloadCount] = useState(0);
-  const [comms, setComms] = useState<Comms | null>(null);
+  const { comms, setComms } = useCommsContext();
 
   useEffect(() => {
     if (!comms) return;
@@ -57,11 +58,11 @@ export function ShellApp() {
 
     const comms = new Comms({
       window,
-      otherWindow: iframe.contentWindow!,
+      subWindows: [iframe.contentWindow!],
       role: "parent",
     });
     setComms(comms);
-  }, [reloadCount]);
+  }, [reloadCount, setComms]);
 
   useEffect(() => {
     if (!comms) return;
