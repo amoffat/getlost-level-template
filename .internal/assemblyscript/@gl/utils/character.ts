@@ -84,6 +84,9 @@ export class Character {
   }
 
   static get(name: string): Character {
+    if (!all.has(name)) {
+      host.log.error(`No character named ${name}`);
+    }
     return all.get(name);
   }
 
@@ -132,11 +135,14 @@ export class Character {
     host.char.makeCollidable(this.name, enabled);
   }
 
-  setNavPlan(navPlan: NavPlan): void {
+  setNavPlan(navPlan: NavPlan, navImmediately: bool = true): void {
     this._navPlan = navPlan;
-    this.state = NavState.waiting;
-    const wp = navPlan.getNextWaypoint(this.pos);
-    this._setNavWaypoint(wp);
+    
+    if (navImmediately) {
+      this.state = NavState.waiting;
+      const wp = navPlan.getNextWaypoint(this.pos);
+      this._setNavWaypoint(wp);
+    }
   }
 
   private _setNavWaypoint(wp: Waypoint): void {
@@ -265,7 +271,8 @@ export class Character {
         this._setNavWaypoint(wp);
       }
     } else {
-      // This lets us interrupt our current nav plan
+      // This lets us interrupt our current nav plan. Useful if our plan is to
+      // attack if the player is near, and we're moving randomly otherwise.
       const needsNewWaypoint = this._navPlan.tick(deltaMS, this.pos);
       if (needsNewWaypoint) {
         const wp = this._navPlan.getNextWaypoint(this.pos);

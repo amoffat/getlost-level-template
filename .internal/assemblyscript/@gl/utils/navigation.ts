@@ -75,6 +75,11 @@ export class StationaryPlan extends NavPlan {
     this._position = Vec2.fromVector(position);
   }
 
+  static fromWaypoint(name: string): StationaryPlan {
+    const wp = host.navigation.getWaypoint(name);
+    return new StationaryPlan(wp.pos);
+  }
+
   public getNextWaypoint(_curPos: Vec2): Waypoint {
     return new Waypoint(this._position.toVector());
   }
@@ -222,21 +227,23 @@ export class FollowPlan extends NavPlan {
   }
 }
 
-export class AttackPlan extends NavPlan {
+/**
+ * Attacks when the target is near, otherwise uses a default waypoint. Good for
+ * animals.
+ */
+abstract class AggressiveBasePlan extends NavPlan {
   private _target: Character;
   private _attackDistance: f32;
-  private _randMoveDistance: f32;
-
   private _cooldown: Delay = new Delay(2000);
+  private _attacking: bool = false;
 
-  constructor(target: Character, randMoveDistance: f32, attackDistance: f32) {
+  constructor(target: Character, attackDistance: f32) {
     super();
     this._target = target;
     this._attackDistance = attackDistance;
-    this._randMoveDistance = randMoveDistance;
   }
 
-  private _targetIsNear(pos: Vec2): bool {
+  protected _targetIsNear(pos: Vec2): bool {
     // Performance optimization
     const withinRad = this._normDistance(pos) < 1.0;
     if (withinRad) {
@@ -252,32 +259,35 @@ export class AttackPlan extends NavPlan {
 
   // The distance to the target, normalized by the attack distance, so that 0 is
   // right next to the target and 1 is at the attack distance.
-  private _normDistance(pos: Vec2): f32 {
+  protected _normDistance(pos: Vec2): f32 {
     return this._target.pos.distanceTo(pos) / this._attackDistance;
   }
 
-  protected _defaultWaypoint(curPos: Vec2): Waypoint {
-    const wp = this._randomInCircle(curPos, this._randMoveDistance);
-    return wp;
+  protected abstract _defaultWaypoint(curPos: Vec2): Waypoint;
+
+  protected _shouldAttack(_curPos: Vec2): bool {
+    return true;
   }
 
   public getNextWaypoint(curPos: Vec2): Waypoint {
-    if (this._targetIsNear(curPos)) {
+    if (
+      this._targetIsNear(curPos) &&
+      this._shouldAttack(curPos) &&
+      !this._attacking
+    ) {
       const nd = this._normDistance(curPos);
-      // Gives the player a chance to escape, if we're right on top of them,
-      // there's a high chance that we'll choose a default waypoint instead.
-      if (chance(easeOutCircle(nd))) {
-        const wp = new Waypoint(this._target.pos.toVector());
-        wp.pause = nd * 1000 + 100;
-        wp.nearestIsOk = true;
-        return wp;
-      }
+      const wp = new Waypoint(this._target.pos.toVector());
+      wp.pause = nd * 1000 + 100;
+      wp.nearestIsOk = true;
+      this._attacking = true;
+      return wp;
     }
+    this._attacking = false;
     return this._defaultWaypoint(curPos);
   }
 
   public tick(deltaMS: f32, curPos: Vec2): bool {
-    if (this._cooldown.tick(deltaMS)) {
+    if (!this._attacking && this._cooldown.tick(deltaMS)) {
       if (this._targetIsNear(curPos)) {
         // As we get closer to the target, less cooldown
         const checkTime = this._normDistance(curPos) * 1900 + 200;
@@ -289,9 +299,36 @@ export class AttackPlan extends NavPlan {
   }
 }
 
-export class RandomThenAttackPlan extends AttackPlan {
+export class RandomThenAttackPlan extends AggressiveBasePlan {
+  private _randMoveDistance: f32;
+
+  constructor(target: Character, attackDistance: f32, randMoveDistance: f32) {
+    super(target, attackDistance);
+    this._randMoveDistance = randMoveDistance;
+  }
+  // Gives the player a chance to escape, if we're right on top of them,
+  // there's a high chance that we'll choose a default waypoint instead.
+  protected _shouldAttack(curPos: Vec2): bool {
+    const nd = this._normDistance(curPos);
+    return chance(easeOutCircle(nd));
+  }
+
   protected _defaultWaypoint(curPos: Vec2): Waypoint {
-    const wp = new Waypoint(curPos);
+    const wp = this._randomInCircle(curPos, this._randMoveDistance);
+    return wp;
+  }
+}
+
+export class DefaultThenAttackPlan extends AggressiveBasePlan {
+  private _default: NavPlan;
+
+  constructor(defaultPlan: NavPlan, target: Character, attackDistance: f32) {
+    super(target, attackDistance);
+    this._default = defaultPlan;
+  }
+
+  protected _defaultWaypoint(curPos: Vec2): Waypoint {
+    const wp = this._default.getNextWaypoint(curPos);
     wp.nearestIsOk = true;
     return wp;
   }

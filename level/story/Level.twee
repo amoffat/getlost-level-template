@@ -10,17 +10,26 @@ Level
   "start": "Nazar Intro",
   "tag-colors": {
     "Nazar": "red",
-    "Omar": "green"
+    "Omar": "green",
+    "Tarek": "orange",
+    "Guard": "purple"
   },
   "zoom": 0.6
 }
 
 
-:: Excuse me? What do you mean? {"position":"950,475","size":"100,100"}
-You're new here, yes? If you haven't noticed, we don't have water to spare.
+:: Don't you have water at your house? {"position":"1350,425","size":"100,100"}
+No! Ever since the well was re-routed, the only water we have is the oasis. And it's nasty!
 
-[[Why not?]]
-[[How can I help?]]
+[[What's wrong with that water?]]
+
+
+:: Guard Intro [Guard] {"position":"2000,175","size":"100,100"}
+<<if hasVisited()>>
+You don't listen too well, do you?
+<<else>>
+This is the Sheikh's residence. Step away or I will remove you.
+<</if>>
 
 
 :: How can I help? {"position":"1075,700","size":"100,100"}
@@ -30,12 +39,39 @@ Unless you're a lot stronger than you look and you can pry a grate off of the we
 :: Nazar Intro [Nazar] {"position":"950,175","size":"100,100"}
 Just what we need, another cup to fill. 
 
-[[Excuse me? What do you mean?]]
+[[Sorry? What does that mean?]]
 
 
 :: Omar Intro [Omar] {"position":"1350,200","size":"100,100"}
-Hi there! I'm Omar and this is my dog Nabil.
+Hi there! I'm Omar and this is my dog Nabil. I can't really chat, I have to get him down to the water before he overheats.
+
+[[Don't you have water at your house?]]
+
+
+:: Sorry? What does that mean? {"position":"925,450","size":"100,100"}
+You're new here, yes? If you haven't noticed, we don't have water to spare.
+
+[[Why not?]]
+[[How can I help?]]
+
+
+:: Tarek Intro [Tarek] {"position":"1700,150","size":"100,100"}
+Welcome to Tarek's Table. I'm sorry but we are not seating anyone at this moment.
+
+[[Why not?|why-no-seat]]
+
+
+:: Well [Well] {"position":"1975,550","size":"100,100"}
+This well is covered with a sturdy metal grate. A connected pipe is pumping the fresh water out.
+
+
+:: What's wrong with that water? {"position":"1450,650","size":"100,100"}
+This guy called the Sheikh dumps his old water into it. We have to boil it so its safe to drink.
 
 
 :: Why not? {"position":"750,700","size":"100,100"}
+The Sheikh has decided that all of our fresh water now belongs to him. Does that clear it up for you?
 
+
+:: why-no-seat {"position":"1725,400","size":"100,100"}
+The Sheikh cannot stand to wait when he wants his food. I must be ready to receive his order, so I'm sorry, but I cannot accomodate you right now.

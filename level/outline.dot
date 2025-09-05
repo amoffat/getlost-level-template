@@ -49,7 +49,8 @@ digraph BloodFeud {
     "acquire-crowbar" -> "ask-omar-help";
     "jailed" -> "nazar-visit";
     "nazar-visit" -> "jailbreak";
-    "convince-dog" -> "nav-spiral-desert";
+    "get-bacon" -> "recruit-dog";
+    "recruit-dog" -> "nav-spiral-desert";
     "get-hidden-water" -> "nav-spiral-desert";
     "jailbreak" -> "nav-spiral-desert";
     "knight-repair-well" -> "nav-spiral-desert";

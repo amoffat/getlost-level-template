@@ -10,12 +10,15 @@ import { Character } from "@gl/utils/character";
 import { Delay } from "@gl/utils/delay";
 import { Vec2 } from "@gl/utils/la/vec2";
 import {
-  AttackPlan,
+  DefaultThenAttackPlan,
   FollowPlan,
+  NavPlan,
   PatrolPlan,
   PatrolRandom,
   PatrolRandomDetours,
+  RandomThenAttackPlan,
   RandomWalk,
+  StationaryPlan,
 } from "@gl/utils/navigation";
 import { Player } from "@gl/utils/player";
 import { createHeatFilter, RippleFilter } from "@gl/utils/ripple";
@@ -39,20 +42,25 @@ const nightMusicVolume: f32 = 0.5;
 let mazeMusic!: i32;
 const mazeMusicVolume: f32 = 0.4;
 let inMaze: bool = false;
-let hearts: f32 = 10;
-let maxHearts: f32 = 10;
+let hearts: f32 = 5;
+let maxHearts: f32 = 5;
 const overheatColor = "red";
 let nighttime: bool = false;
 export let overheat: f32 = 0.0;
-let heatRate: f32 = 0.02;
+let heatRate: f32 = 0.005;
 let inWater: bool = false;
 const healingPool = new Delay(200, 1000, true);
-const heatDamage = new Delay(1000, 0, true);
+const heatDamage = new Delay(3000, 0, true);
+const guardAttack = new Delay(2000, 1000, true);
+let guardShouldAttack: bool = false;
+let guardIsAttacking: bool = false;
 let takingDamage: bool = false;
 let damagingChar: string = "";
 let heatFilter!: RippleFilter;
 let colorMatrix!: ColorMatrixFilter;
 let heatAmt: f32 = 0.0;
+let defaultGuardPlan!: NavPlan;
+let mainGuard!: Character;
 
 class LevelState {
   embarassedAmina: bool = false;
@@ -68,6 +76,8 @@ export function init(): void {
   player = new Player();
   Character.initAll();
 
+  mainGuard = Character.get("main-guard");
+
   const chicken1 = Character.get("chicken1");
   chicken1.setMoveSound("chicken");
   chicken1.startWalkMomentum = 0;
@@ -80,13 +90,15 @@ export function init(): void {
   chicken2.endWalkMomentum = 0;
   chicken2.setNavPlan(new RandomWalk(32, 100, 2000));
 
+  defaultGuardPlan = StationaryPlan.fromWaypoint("guard-post");
+
   const nazar = Character.get("nazar");
   nazar.speed = 0.3;
   nazar.setNavPlan(
     new PatrolRandom([
       Waypoint.fromName("well", 3000),
       Waypoint.fromName("nazar-house", 3000),
-      Waypoint.fromName("empty-house", 3000),
+      Waypoint.fromName("tarek-house", 3000),
       Waypoint.fromName("city-square", 3000),
       Waypoint.fromName("gate", 3000),
       Waypoint.fromName("amina-house", 3000),
@@ -131,7 +143,7 @@ export function init(): void {
     snake.speed = 2.0;
     snake.startWalkMomentum = 0;
     snake.endWalkMomentum = 0;
-    const navPlan = new AttackPlan(player, 32, 70);
+    const navPlan = new RandomThenAttackPlan(player, 32, 70);
     navPlan.name = snake.name;
     snake.setNavPlan(navPlan);
   }
@@ -149,7 +161,7 @@ export function init(): void {
    * You can set a fixed time for the level like this.
    * Be sure to comment out the setSunTime call in `tickRoom` if you do this.
    */
-  host.time.setSunEvent(SunEvent.SunriseEnd, 0);
+  // host.time.setSunEvent(SunEvent.SunriseEnd, 0);
 
   host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
   host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
@@ -419,6 +431,29 @@ export function sensorEvent(
     dialogue.stage_NazarIntro(entered);
   } else if (sensorName === "omar/talk") {
     dialogue.stage_OmarIntro(entered);
+  } else if (sensorName === "tarek/talk") {
+    dialogue.stage_TarekIntro(entered);
+  } else if (sensorName === "guard-gate") {
+    if (entered) {
+      dialogue.passage_GuardIntro();
+    }
+    if (entered) {
+      guardShouldAttack = true;
+      const navPlan = new DefaultThenAttackPlan(defaultGuardPlan, player, 32);
+      mainGuard.setNavPlan(navPlan, false);
+    } else {
+      guardShouldAttack = false;
+      mainGuard.setNavPlan(defaultGuardPlan);
+    }
+  } else if (sensorName === "well" && entered) {
+    dialogue.stage_Well(entered);
+  } else if (sensorName === "main-guard/hit" && guardIsAttacking) {
+    const dir = getDamageDir("main-guard");
+    if (player.hurt(dir)) {
+      hearts--;
+      host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
+    }
+    guardIsAttacking = false;
   }
 }
 
@@ -528,6 +563,10 @@ export function tick(timestep: f32): void {
   host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
   if (hearts !== startHearts) {
     host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
+  }
+
+  if (guardShouldAttack && guardAttack.tick(timestep) && !guardIsAttacking) {
+    guardIsAttacking = true;
   }
 }
 

@@ -30,6 +30,7 @@
             "scaleInDock": 1
         },
         "Gladiator.tsj": {
+            "dynamicWrapping": false,
             "scaleInDock": 1
         },
         "GoldKnight.tsj": {
@@ -52,7 +53,8 @@
             "scaleInEditor": 3
         },
         "Pipes.tsj": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 4
         },
         "Skeleton.tsj": {
             "dynamicWrapping": false,
@@ -103,11 +105,11 @@
                 17,
                 8
             ],
-            "scale": 3,
-            "selectedLayer": 16,
+            "scale": 2,
+            "selectedLayer": 25,
             "viewCenter": {
-                "x": 83.66666666666666,
-                "y": -0.3333333333333286
+                "x": 184.25,
+                "y": -111.75
             }
         },
         "tronFreeTiles.tsj": {
@@ -123,11 +125,13 @@
     "map.tileWidth": 16,
     "openFiles": [
         "level.tmj",
-        "TilesetDesert.tsj"
+        "TilesetDesert.tsj",
+        "Pipes.tsj"
     ],
     "project": "level.tiled-project",
     "property.type": "float",
     "recentFiles": [
+        "Pipes.tsj",
         "TilesetDesert.tsj",
         "level.tmj",
         "Skeleton.tsj",
