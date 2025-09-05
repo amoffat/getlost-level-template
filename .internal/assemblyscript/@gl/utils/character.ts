@@ -141,10 +141,13 @@ export class Character {
 
   private _setNavWaypoint(wp: Waypoint): void {
     if (!wp.isNull) {
-      this.setTargetPos(wp.pos, wp.nearestIsOk);
+      const hasPath = this.setTargetPos(wp.pos, wp.nearestIsOk);
       this._navSpeed = wp.speed;
+      if (!hasPath) {
+        host.log.error(`Failed to find path to waypoint ${wp}`);
+      }
+      this._waypointPause = new Delay(wp.pause, wp.pause, true);
     }
-    this._waypointPause = new Delay(wp.pause, wp.pause, true);
   }
 
   onReachTarget(): void {
@@ -156,7 +159,7 @@ export class Character {
     }
   }
 
-  setTargetPos(targetPos: Vec2, nearestIsOk: bool = true): void {
+  setTargetPos(targetPos: Vec2, nearestIsOk: bool = true): bool {
     this.clearTarget();
 
     this._targetPath = host.navigation
@@ -179,6 +182,8 @@ export class Character {
       this.collisions = false;
       this.state = NavState.moving;
     }
+
+    return this._targetPath.length > 0;
   }
 
   public setMoveSound(
@@ -226,7 +231,7 @@ export class Character {
   }
 
   clearTarget(): void {
-    this._state = NavState.stopped;
+    this.state = NavState.waiting;
     this._targetPath = [];
     this._targetPos = new Vec2(0, 0);
     this._lastTrackResult = { index: -1, distance: 0, t: 0 };

@@ -56,4 +56,8 @@ export class Delay {
 
     return false;
   }
+
+  public toString(): string {
+    return `Delay(${this._timeMs}ms, accumulated: ${this._accumulatedMs}ms, done: ${this._done}, repeat: ${this._repeat})`;
+  }
 }
