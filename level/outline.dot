@@ -28,11 +28,11 @@ digraph BloodFeud {
     "give-carrot-donkey" -> "donkey-help";
     "donkey-help" -> "jailbreak";
     "meet-haddad" -> "jailbreak";
-    "acquire-fortune-cookie" -> "give-fortune-cookie";
-    "give-fortune-cookie" -> "jailbreak";
-    "meet-haddad" -> "give-fortune-cookie";
+    "acquire-letter" -> "give-letter";
+    "give-letter" -> "jailbreak";
+    "meet-haddad" -> "give-letter";
     "give-amina-curtain" -> "get-shop-key";
-    "give-amina-curtain" -> "acquire-fortune-cookie";
+    "give-amina-curtain" -> "acquire-letter";
     "collect-water" -> "water-to-omar";
     "collect-water" -> "water-to-amina";
     "collect-water" -> "water-to-nazar";

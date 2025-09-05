@@ -1,0 +1,24 @@
+{ "columns":4,
+ "image":"..\/art\/Actor\/Characters\/FighterWhite\/SpriteSheet.png",
+ "imageheight":112,
+ "imagewidth":64,
+ "margin":0,
+ "name":"Tarek",
+ "spacing":0,
+ "tilecount":28,
+ "tiledversion":"1.11.2",
+ "tileheight":16,
+ "tiles":[
+        {
+         "animation":[
+                {
+                 "duration":150,
+                 "tileid":8
+                }],
+         "id":8,
+         "type":"NPC Tile"
+        }],
+ "tilewidth":16,
+ "type":"tileset",
+ "version":"1.10"
+}

@@ -4,372 +4,38 @@ Level
 
 :: StoryData
 {
-  "ifid": "E432B450-3C64-4169-BB74-CEE16381AEA1",
+  "ifid": "9BB4985C-448B-44F7-98A7-B98D1C265972",
   "format": "SugarCube",
   "format-version": "2.37.3",
+  "start": "Nazar Intro",
   "tag-colors": {
-    "Frank": "red",
-    "Knight": "green",
-    "Fire": "orange",
-    "Well": "blue",
     "Nazar": "red",
-    "Kid": "green",
     "Omar": "green"
   },
   "zoom": 0.6
 }
 
 
-:: *psst*...why are you here? {"position":"1475,575","size":"100,100"}
-..zzz...zz... guard the map... zzzz....
-[[Where is the map?]]
+:: Excuse me? What do you mean? {"position":"950,475","size":"100,100"}
+You're new here, yes? If you haven't noticed, we don't have water to spare.
 
+[[Why not?]]
+[[How can I help?]]
 
-:: Bye {"position":"1600,1225","size":"100,100"}
-Be well.
 
+:: How can I help? {"position":"1075,700","size":"100,100"}
+Unless you're a lot stronger than you look and you can pry a grate off of the well with your hands, I don't think you can do much.
 
-:: Can I get some water please? {"position":"3475,1250","size":"100,100"}
-<<if $kidHasWater>>
-	<<if hasVisited()>>
-This is the last of my water. There's an oasis to the east. That can cool you off too.
-	<<set $kidHasWater to false>>
-	<<else>>
-Here, this water should cool you down. I don't have much.
-	<</if>>
-    <<level.reduceOverheatBy(0.5)>>
-<<else>>
-Sorry! Go to the oasis, quick!
-<</if>>
 
+:: Nazar Intro [Nazar] {"position":"950,175","size":"100,100"}
+Just what we need, another cup to fill. 
 
-:: Climb down {"position":"3625,650","size":"100,100"}
-<<exit("well", true)>>
+[[Excuse me? What do you mean?]]
 
 
-:: Do you have a name? {"position":"1450,1225","size":"100,100"}
-<<set $knightOpts.yourName to false>>
-Sir Azure
+:: Omar Intro [Omar] {"position":"1350,200","size":"100,100"}
+Hi there! I'm Omar and this is my dog Nabil.
 
-<<knight-choices>>
 
+:: Why not? {"position":"750,700","size":"100,100"}
 
-:: Draw water {"position":"4125,650","size":"100,100"}
-The water is ice cold and cools you off.
-<<level.reduceOverheatBy(0.5)>>
-
-
-:: Fire [Fire] {"position":"2475,350","size":"100,100"}
-<<if hasPickup("map")>>
-You've found the map... Please, take me with you...
-[[Take  you with me?]]
-<<else>>
-<<if hasVisited()>>
-You've returned to me...
-[[What is it that you're looking for again?|seek-what]]
-<<else>>
-Greetings.... traveller...
-
-[[Who are you?|who-fire]]
-<</if>>
-<</if>>
-
-
-:: Guard from what? {"position":"875,1225","size":"100,100"}
-<<set $knightOpts.guardWhat to false>>
-
-That's not your concern.
-
-<<knight-choices>>
-
-
-:: Heat [sign] {"position":"1150,1775","size":"100,100"}
-<<set _title to "Death Spiral Desert">>
-CAUTION: Extreme daytime temperatures. Enter at your own risk.
-
-
-:: Hi Nazar, I'm $playerName. {"position":"2525,1725","size":"100,100"}
-I haven't seen you before, are you here with the Knight?
-
-[[What Knight?|what-knight]]
-[[Yes|yes-knight]]
-
-
-:: Home invasion {"position":"650,1650","size":"100,100"}
-<<set _title to "Amina">>
-Hey, get out of here! This is my house!
-<<recordMarker("privacy-invasion")>>
-
-
-:: How am I in danger? {"position":"550,1000","size":"100,100"}
-
-
-
-:: How did you get this job? {"position":"1325,1225","size":"100,100"}
-<<set $knightOpts.howJob to false>>
-I.. uh... I volunteered. It's a long story, and I'm very busy right now.
-
-<<knight-choices>>
-
-
-:: I didn't take anything. {"position":"3200,1975","size":"100,100"}
-Oh, so you're a liar as well as a thief?
-<<recordMarker("lied-about-stealing")>>
-
-
-:: I found it in the desert. {"position":"625,825","size":"100,100"}
-Listen to me carefully. You are in grave danger.
-
-<<if visited("special-map")>>
-[[I think I'll bring it to that fire on the water.]]
-<</if>>
-
-[[How am I in danger?]]
-
-
-:: I know why you're here. {"position":"1150,750","size":"100,100"}
-You talked to the old man...
-
-<<set $knightOpts to {
-	whyTown: true,
-    whoSheikh: true,
-    howJob: true,
-    guardWhat: true,
-    yourName: true,
-}>>
-
-<<widget "knight-choices">>
-  <<if $knightOpts.whyTown>>
-[[Why are you guarding this town?]]
-  <</if>>
-  <<if $knightOpts.whoSheikh>>
-[[Who is the Sheikh?]]
-  <</if>>
-  <<if $knightOpts.howJob>>
-[[How did you get this job?]]
-  <</if>>
-  <<if $knightOpts.guardWhat>>
-[[Guard from what?]]
-  <</if>>
-  <<if $knightOpts.yourName>>
-[[Do you have a name?]]
-	<</if>>
-    [[Bye]]
-<</widget>>
-
-<<knight-choices>>
-
-
-:: I said 'Hi' {"position":"375,675","size":"100,100"}
-Unless you're here to bring me an ice cold beverage, you can buzz off.
-
-
-:: I saw a blue fire on the water. {"position":"2000,1750","size":"100,100"}
-You've lost your mind. Please go.
-
-
-:: I think I'll bring it to that fire on the water. {"position":"800,1000","size":"100,100"}
-
-
-
-:: I was hungry. {"position":"3400,1975","size":"100,100"}
-Hmph.
-
-
-:: I'll keep an eye out for them. {"position":"2825,1000","size":"100,100"}
-
-
-
-:: Kid [Omar] {"position":"3375,1050","size":"100,100"}
-<<if isDay()>>
-
-	<<if queryMarker("died-overheated")>>
-		Did you try to get the map? You shouldn't go out there during the day.
-	<<elseif $kidHasWater>>
-		It's pretty hot out here huh? I have some water if you start to overheat.
-    	<<if level.overheat >= 0.2>>
-			[[Can I get some water please?]]
-        	[[Thanks, but I'm ok.]]
-		<</if>>
-    <<else>>
-    
-	<</if>>
-
-	
-<<else>>
-	<<if hasPickup("map")>>
-		It's much cooler at night, yeah?
-    <<else>>
-    	It's much cooler at night, yeah? I bet you could get that map now.
-    <</if>>
-<</if>>
-
-
-:: Nazar [Nazar] {"position":"2375,1475","size":"100,100"}
-<<if queryMarker("stole-fruit")>>
-I saw you take that fruit. I don't do business with thieves. Please leave.
-[[I didn't take anything.]]
-[[I was hungry.]]
-<<elseif isNight()>>
-I'd like to chat, but it's getting late. Come back during the day.
-<<else>>
-
-<<if hasVisited()>>
-Hello again.
-<<else>>
-Welcome, I'm Nazar.
-[[Hi Nazar, I'm $playerName.]]
-<</if>>
-
-<<if visited("Silent Knight")>>
-[[What do you know about that knight?]]
-<</if>>
-
-<<if visited("Fire")>>
-[[I saw a blue fire on the water.]]
-<</if>>
-
-<</if>>
-
-
-:: None of your business {"position":"400,825","size":"100,100"}
-Listen to me carefully. You need to give me that map.
-
-[[Run away|no-map]]
-[[Ok, calm down, here you go.|give-map-knight]]
-
-
-:: Silent Knight [Knight] {"position":"750,525","size":"100,100"}
-<<if isNight()>>
-	...zzzzz...zzzzz.....zzzz...
-	[[*psst*...why are you here?]]
-<<else>>
-  <<if hasPickup("map")>>
-		Hey, come here! Where did you get that map???
-		[[I found it in the desert.]]
-		[[None of your business]]
-	<<elseif $learnedKnightStory>>
-		...
-		[[I know why you're here.]]
-	<<elseif $upsetKnight>>
-		I thought I said go away.
-	<<else>>
-		...
-		[[Hi|silence]]
-	<</if>>
-<</if>>
-
-
-:: Skull Door [sign] {"position":"1500,1750","size":"100,100"}
-<<set _title to "Skelly's Lair">>
-Celebration is by invitation only.
-Attendants: please present ID badge.
-
-
-:: Step back {"position":"3900,650","size":"100,100"}
-
-
-
-:: StoryInit {"position":"925,75","size":"100,100"}
-<<set $upsetKnight to false>>
-<<set $learnedKnightStory to false>>
-<<set $kidHasWater to true>>
-
-
-:: Take  you with me? {"position":"2700,525","size":"100,100"}
-I can travel with you
-
-
-:: Thanks, but I'm ok. {"position":"3250,1175","size":"100,100"}
-
-
-
-:: That's me. {"position":"2625,1050","size":"100,100"}
-
-
-
-:: Well [Well sign] {"position":"3750,425","size":"100,100"}
-There's a ladder going down, but you cannot see the bottom.
-
-[[Climb down]]
-[[Step back]]
-<<if level.overheat >= 0.1>>
-[[Draw water]]
-<</if>>
-
-
-:: What do you know about that knight? {"position":"2275,1800","size":"100,100"}
-I wish he'd leave. He's scaring off business.
-
-
-
-:: Where is the map? {"position":"1450,800","size":"100,100"}
-..zzz........
-
-
-:: Who is the Sheikh? {"position":"1175,1225","size":"100,100"}
-<<set $knightOpts.whoSheikh to false>>
-
-He sent me here to guard the town.
-
-<<knight-choices>>
-
-
-:: Why are you guarding this town? {"position":"1025,1225","size":"100,100"}
-<<set $knightOpts.whyTown to false>>
-
-The Sheikh asked me to. That's all I can tell you.
-
-<<knight-choices>>
-
-
-:: bye-silence {"position":"200,675","size":"100,100"}
-
-
-
-:: give-map-knight {"position":"200,1150","size":"100,100"}
-
-
-
-:: no-map {"position":"400,1150","size":"100,100"}
-
-
-
-:: observe-what {"position":"2650,700","size":"100,100"}
-For someone who goes by the name of $playerName.
-
-[[That's me.]]
-[[I'll keep an eye out for them.]]
-
-
-:: seek-what {"position":"2350,825","size":"100,100"}
-A map...
-
-[[What's so special about a map?|special-map]]
-[[You said you were observing? What?|observe-what]]
-
-
-:: silence {"position":"425,475","size":"100,100"}
-...
-
-[[I said 'Hi']]
-[[Bye|bye-silence]]
-
-
-:: special-map {"position":"2225,1100","size":"100,100"}
-Find it for me and I'll show you.
-
-
-:: what-knight {"position":"2525,2025","size":"100,100"}
-There's a knight to the south. He doesn't talk much. Go see for yourself.
-
-
-:: who-fire {"position":"2200,525","size":"100,100"}
-A fellow wanderer.... I'm here to seek and observe.
-
-[[Observe what?|observe-what]]
-[[What are you seeking?|seek-what]]
-
-
-:: yes-knight {"position":"2775,1950","size":"100,100"}
-I see... let me know if you need anything. I'm here to help.

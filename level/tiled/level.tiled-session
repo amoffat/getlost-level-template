@@ -29,6 +29,12 @@
             "dynamicWrapping": true,
             "scaleInDock": 1
         },
+        "Gladiator.tsj": {
+            "scaleInDock": 1
+        },
+        "GoldKnight.tsj": {
+            "scaleInDock": 1
+        },
         "Items.tsj": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
@@ -59,6 +65,9 @@
         "Spirit.tsj": {
             "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "Tarek.tsj": {
+            "scaleInDock": 1
         },
         "TilesetDesert.tsj": {
             "dynamicWrapping": false,
@@ -106,7 +115,7 @@
         }
     },
     "frame.defaultDuration": 150,
-    "last.imagePath": "/workspaces/getlost-level-template/level/art/Actor/Monsters/Snake3",
+    "last.imagePath": "/workspaces/getlost-level-template/level/art/Actor/Characters/FighterWhite",
     "last.objectTypesPath": "/home/amoffat/work/getlost-level-template/.devcontainer/propertytypes.json",
     "map.fixedSize": false,
     "map.lastUsedFormat": "json",

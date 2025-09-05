@@ -265,6 +265,7 @@ export class Character {
         this._setNavWaypoint(wp);
       }
     } else {
+      // This lets us interrupt our current nav plan
       const needsNewWaypoint = this._navPlan.tick(deltaMS, this.pos);
       if (needsNewWaypoint) {
         const wp = this._navPlan.getNextWaypoint(this.pos);

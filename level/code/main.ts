@@ -351,9 +351,7 @@ export function sensorEvent(
     } '${sensorName}'`
   );
 
-  if (sensorName === "well") {
-    dialogue.stage_Well(entered);
-  } else if (sensorName === "exit-east" && entered) {
+  if (sensorName === "exit-east" && entered) {
     host.map.exit("east", false);
   } else if (sensorName === "exit-west" && entered) {
     host.map.exit("west", false);
@@ -407,18 +405,6 @@ export function sensorEvent(
         host.sound.crossfade(spec);
       }
     }
-  } else if (sensorName === "desert-sign") {
-    dialogue.stage_DeathSpiralDesert(entered);
-  } else if (sensorName === "skull-door") {
-    // host.tiles.toggle("skull-door", !entered);
-  } else if (sensorName === "home-invasion" && entered) {
-    dialogue.passage_Amina();
-  } else if (sensorName === "knight/talk") {
-    dialogue.stage_Knight(entered);
-  } else if (sensorName === "nazar/talk") {
-    dialogue.stage_Nazar(entered);
-  } else if (sensorName === "omar/talk") {
-    dialogue.stage_Omar(entered);
   } else if (sensorName.startsWith("snake") && sensorName.endsWith("/hit")) {
     takingDamage = entered;
     if (entered) {
@@ -429,6 +415,10 @@ export function sensorEvent(
         host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
       }
     }
+  } else if (sensorName === "nazar/talk") {
+    dialogue.stage_NazarIntro(entered);
+  } else if (sensorName === "omar/talk") {
+    dialogue.stage_OmarIntro(entered);
   }
 }
 
@@ -539,9 +529,6 @@ export function tick(timestep: f32): void {
   if (hearts !== startHearts) {
     host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
   }
-
-  const chicken = Character.get("knight");
-  player.setGuideTarget(chicken);
 }
 
 export function reduceOverheatBy(amt: f32): void {
