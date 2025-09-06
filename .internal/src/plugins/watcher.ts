@@ -67,6 +67,10 @@ export default function levelWatcher() {
             gameReload = true;
           }
 
+          if (changed.includes("syncthing")) {
+            gameReload = false;
+          }
+
           if (gameReload) {
             sharedState.assemblyscriptTainted = true;
             console.log(`Triggering reload: ${changed}`);
