@@ -95,14 +95,48 @@ export function passage_GuardIntro(): void {
   twine.incrementVisitCount("a41d9da6");
 
   if (twine.hasVisited("a41d9da6")) {
-    // "You don't listen well, do you?"
-    text = "0a0de9e5";
+    // "You don't listen too well, do you?"
+    text = "1ea73246";
   } else {
     // "This is the Sheikh's residence. Step away or I will remove you."
     text = "88fbd7e2";
   }
 
   host.text.display("a41d9da6", title, text, choices, state.params, animate);
+}
+
+// Show interact button for "Haddad Intro"
+export function stage_HaddadIntro(entered: bool): void {
+  if (entered) {
+    host.controls.setButtons([
+      {
+        label: interactButton,
+        slug: "passage/6df43040",
+      },
+    ]);
+  } else {
+    host.controls.setButtons([]);
+  }
+}
+
+// "Haddad Intro"
+export function passage_HaddadIntro(): void {
+  // "Haddad"
+  const title = "64e61670";
+  const animate = true;
+  let text = "";
+  const choices: string[] = [];
+  twine.incrementVisitCount("6df43040");
+
+  // "Hello friend... are you an enemy of the state as well? What did you do to end up here?"
+  text = "01c500a3";
+  // I gave thirsty people water.
+  choices.push("d48b501a");
+
+  // Let's talk about getting out.
+  choices.push("01e794ca");
+
+  host.text.display("6df43040", title, text, choices, state.params, animate);
 }
 
 // Show interact button for "How can I help?"
@@ -388,6 +422,11 @@ export function dispatch(passageId: string): void {
   if (passageId === "a41d9da6") {
     found = true;
     passage_GuardIntro();
+  }
+
+  if (passageId === "6df43040") {
+    found = true;
+    passage_HaddadIntro();
   }
 
   if (passageId === "4d35ea21") {

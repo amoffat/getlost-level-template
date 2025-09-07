@@ -118,6 +118,16 @@ export function init(): void {
   ]);
   knight.setNavPlan(knightPatrol);
 
+  const jailer = Character.get("jailer");
+  jailer.setMoveSound("armor", 1.3, true);
+  jailer.speed = 0.6;
+  const jailerPatrol = new PatrolPlan([
+    Waypoint.fromName("jail-patrol-1", 2000),
+    Waypoint.fromName("jail-patrol-2", 2000),
+    Waypoint.fromName("jail-patrol-3", 2000),
+  ]);
+  jailer.setNavPlan(jailerPatrol);
+
   const kidPlan = new PatrolRandomDetours(
     [
       Waypoint.fromName("oasis"),
@@ -433,6 +443,8 @@ export function sensorEvent(
     dialogue.stage_OmarIntro(entered);
   } else if (sensorName === "tarek/talk") {
     dialogue.stage_TarekIntro(entered);
+  } else if (sensorName === "haddad/talk") {
+    dialogue.stage_HaddadIntro(entered);
   } else if (sensorName === "guard-gate") {
     if (entered) {
       dialogue.passage_GuardIntro();
@@ -476,6 +488,12 @@ export function timeChangedEvent(event: SunEvent): void {
   const lights = ["nazar-light", "house-light-1"];
   for (let i = 0; i < lights.length; i++) {
     host.lights.toggleLight(lights[i], nighttime);
+  }
+
+  if (nighttime) {
+    host.ui.clearElement(1, 0);
+  } else {
+    host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
   }
 
   updateHeatFilter();

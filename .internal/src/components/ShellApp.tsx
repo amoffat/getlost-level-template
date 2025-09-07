@@ -1,10 +1,11 @@
+import { AppShell, Tabs, Text } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
 import * as constants from "../constants";
 import { useCommsContext } from "../context/comms";
 import { Comms } from "../iframe";
 import { SavePathGraphRequest } from "../iframe/request";
 import { log } from "../log";
-import DevInput from "./DevInput";
+import DialogueTab from "./Dialogue";
 import LogPane from "./LogPane";
 
 declare global {
@@ -90,7 +91,7 @@ export function ShellApp() {
           await fetch("/api/pathgraph", {
             method: "DELETE",
           });
-          window.location.reload();
+          setReloadCount((c) => c + 1);
         },
       },
     };
@@ -100,7 +101,7 @@ export function ShellApp() {
     if (import.meta.hot) {
       const fn = () => {
         log.info({ dev: true, color: "green" }, "Reloading level");
-        setReloadCount((count) => count + 1);
+        setReloadCount((c) => c + 1);
       };
       import.meta.hot.on("gl:level-reload", fn);
 
@@ -111,20 +112,41 @@ export function ShellApp() {
   }, []);
 
   return (
-    <>
-      <div id="frame-container">
-        <iframe
-          tabIndex={-1}
-          ref={iframeRef}
-          id="dev-frame"
-          allow="cross-origin-isolated"
-          allowFullScreen
-        ></iframe>
-      </div>
-      <div id="log-messages">
-        <LogPane maxMessages={300} />
-      </div>
-      <DevInput />
-    </>
+    <AppShell footer={{ height: 300, collapsed: false }} withBorder={false}>
+      <AppShell.Main>
+        <Tabs defaultValue="preview">
+          <Tabs.List>
+            <Tabs.Tab value="preview">Level Preview</Tabs.Tab>
+            <Tabs.Tab value="map-editor">Map Editor</Tabs.Tab>
+            <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="preview">
+            <div id="frame-container">
+              <iframe
+                tabIndex={-1}
+                ref={iframeRef}
+                id="dev-frame"
+                allow="cross-origin-isolated"
+                allowFullScreen
+              ></iframe>
+            </div>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="map-editor">
+            <Text>TODO</Text>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="dialogue-editor">
+            <DialogueTab />
+          </Tabs.Panel>
+        </Tabs>
+      </AppShell.Main>
+      <AppShell.Footer>
+        <div id="log-messages">
+          <LogPane maxMessages={300} />
+        </div>
+      </AppShell.Footer>
+    </AppShell>
   );
 }

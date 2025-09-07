@@ -30,10 +30,12 @@
             "scaleInDock": 1
         },
         "Gladiator.tsj": {
-            "dynamicWrapping": false,
             "scaleInDock": 1
         },
         "GoldKnight.tsj": {
+            "scaleInDock": 1
+        },
+        "Haddad.tsj": {
             "scaleInDock": 1
         },
         "Items.tsj": {
@@ -53,8 +55,7 @@
             "scaleInEditor": 3
         },
         "Pipes.tsj": {
-            "scaleInDock": 1,
-            "scaleInEditor": 4
+            "scaleInDock": 1
         },
         "Skeleton.tsj": {
             "dynamicWrapping": false,
@@ -89,6 +90,12 @@
         "TilesetReliefDetail.tsj": {
             "scaleInDock": 1
         },
+        "Torch_01.tsj": {
+            "scaleInDock": 1
+        },
+        "Torch_02.tsj": {
+            "scaleInDock": 1
+        },
         "blank.tmj": {
             "scale": 11,
             "selectedLayer": 5,
@@ -102,22 +109,22 @@
                 9
             ],
             "expandedObjectLayers": [
-                17,
-                8
+                8,
+                17
             ],
-            "scale": 2,
-            "selectedLayer": 25,
+            "scale": 3,
+            "selectedLayer": 16,
             "viewCenter": {
-                "x": 184.25,
-                "y": -111.75
+                "x": 83.66666666666666,
+                "y": -128.33333333333331
             }
         },
         "tronFreeTiles.tsj": {
             "scaleInDock": 1.5
         }
     },
-    "frame.defaultDuration": 150,
-    "last.imagePath": "/workspaces/getlost-level-template/level/art/Actor/Characters/FighterWhite",
+    "frame.defaultDuration": 100,
+    "last.imagePath": "/workspaces/getlost-level-template/level/art/restricted",
     "last.objectTypesPath": "/home/amoffat/work/getlost-level-template/.devcontainer/propertytypes.json",
     "map.fixedSize": false,
     "map.lastUsedFormat": "json",
@@ -125,13 +132,11 @@
     "map.tileWidth": 16,
     "openFiles": [
         "level.tmj",
-        "TilesetDesert.tsj",
-        "Pipes.tsj"
+        "TilesetDesert.tsj"
     ],
     "project": "level.tiled-project",
-    "property.type": "float",
+    "property.type": "bool",
     "recentFiles": [
-        "Pipes.tsj",
         "TilesetDesert.tsj",
         "level.tmj",
         "Skeleton.tsj",
@@ -142,7 +147,7 @@
     ],
     "tileset.lastUsedFormat": "json",
     "tileset.tileSize": {
-        "height": 16,
+        "height": 32,
         "width": 16
     },
     "tileset.type": 0

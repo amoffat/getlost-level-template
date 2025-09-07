@@ -32,8 +32,23 @@ This is the Sheikh's residence. Step away or I will remove you.
 <</if>>
 
 
+:: Haddad Intro [Haddad] {"position":"2250,225","size":"100,100"}
+Hello friend... are you an enemy of the state as well? What did you do to end up here?
+
+[[I gave thirsty people water.]]
+[[Let's talk about getting out.]]
+
+
 :: How can I help? {"position":"1075,700","size":"100,100"}
 Unless you're a lot stronger than you look and you can pry a grate off of the well with your hands, I don't think you can do much.
+
+
+:: I gave thirsty people water. {"position":"2225,400","size":"100,100"}
+
+
+
+:: Let's talk about getting out. {"position":"2375,400","size":"100,100"}
+
 
 
 :: Nazar Intro [Nazar] {"position":"950,175","size":"100,100"}
