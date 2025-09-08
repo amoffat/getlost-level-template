@@ -139,7 +139,7 @@ export default function DialogueTab() {
           </Panel>
         </ReactFlow>
       </div>
-      <Stack p="xs" style={{ flex: 1 }}>
+      <Stack style={{ flex: 1 }}>
         <TextInput
           label="Dialogue title"
           description="A summary or title for this dialogue node."

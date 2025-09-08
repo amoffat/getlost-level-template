@@ -22,14 +22,15 @@ declare global {
 }
 
 type TabName = "preview" | "map-editor" | "dialogue-editor";
+const defaultTab: TabName = "map-editor";
 
 export function ShellApp() {
   // Track active tab and which tabs have been mounted at least once
-  const [activeTab, setActiveTab] = useState<TabName>("preview");
+  const [activeTab, setActiveTab] = useState<TabName>(defaultTab);
   const [mountedTabs, setMountedTabs] = useState<
     Partial<Record<TabName, boolean>>
   >({
-    preview: true,
+    [defaultTab]: true,
   });
 
   const handleTabChange = (value: TabName | null) => {
@@ -92,9 +93,9 @@ export function ShellApp() {
           onChange={(tab) => handleTabChange(tab as TabName)}
         >
           <Tabs.List>
-            <Tabs.Tab value="preview">Level Preview</Tabs.Tab>
             <Tabs.Tab value="map-editor">Map Editor</Tabs.Tab>
             <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
+            <Tabs.Tab value="preview">Level Preview</Tabs.Tab>
           </Tabs.List>
 
           {mountedTabs["preview"] && (

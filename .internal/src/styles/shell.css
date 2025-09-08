@@ -15,7 +15,6 @@ body {
   font-family: "Roboto Condensed", serif;
   font-weight: 400;
   font-style: normal;
-  font-size: var(--mantine-font-size-xs);
 }
 
 #root {
