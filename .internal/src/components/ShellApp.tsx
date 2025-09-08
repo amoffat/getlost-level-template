@@ -6,6 +6,7 @@ import DialogueTab from "./Dialogue";
 import LogPane from "./LogPane";
 import MapEditorTab from "./MapEditor";
 import PreviewTab from "./Preview";
+import TilesetEditorTab from "./TilesetEditor";
 
 declare global {
   interface Window {
@@ -21,7 +22,7 @@ declare global {
   }
 }
 
-type TabName = "preview" | "map-editor" | "dialogue-editor";
+type TabName = "preview" | "map-editor" | "tileset-editor" | "dialogue-editor";
 const defaultTab: TabName = "map-editor";
 
 export function ShellApp() {
@@ -93,7 +94,8 @@ export function ShellApp() {
           onChange={(tab) => handleTabChange(tab as TabName)}
         >
           <Tabs.List>
-            <Tabs.Tab value="map-editor">Map Editor</Tabs.Tab>
+            <Tabs.Tab value="map-editor">Map</Tabs.Tab>
+            <Tabs.Tab value="tileset-editor">Tilesets</Tabs.Tab>
             <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
             <Tabs.Tab value="preview">Level Preview</Tabs.Tab>
           </Tabs.List>
@@ -107,6 +109,12 @@ export function ShellApp() {
           {mountedTabs["map-editor"] && (
             <Tabs.Panel value="map-editor">
               <MapEditorTab />
+            </Tabs.Panel>
+          )}
+
+          {mountedTabs["tileset-editor"] && (
+            <Tabs.Panel value="tileset-editor">
+              <TilesetEditorTab />
             </Tabs.Panel>
           )}
 

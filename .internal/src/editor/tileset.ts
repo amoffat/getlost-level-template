@@ -1,11 +1,11 @@
 import { Application, Assets, Container, Sprite } from "pixi.js";
 
-export async function initPixi() {
+export async function init() {
   // Create a new application
   const app = new Application();
 
   // Initialize the application
-  await app.init({ background: "#1099bb" });
+  await app.init({ background: "#000000" });
 
   // Create and add a container to the stage
   const container = new Container();
