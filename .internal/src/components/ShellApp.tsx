@@ -1,12 +1,11 @@
-import { AppShell, Tabs, Text } from "@mantine/core";
-import { useEffect, useRef, useState } from "react";
-import * as constants from "../constants";
-import { useCommsContext } from "../context/comms";
-import { Comms } from "../iframe";
-import { SavePathGraphRequest } from "../iframe/request";
+import { AppShell, Tabs } from "@mantine/core";
+import { ReactFlowProvider } from "@xyflow/react";
+import { useEffect, useState } from "react";
 import { log } from "../log";
 import DialogueTab from "./Dialogue";
 import LogPane from "./LogPane";
+import MapEditorTab from "./MapEditor";
+import PreviewTab from "./Preview";
 
 declare global {
   interface Window {
@@ -22,86 +21,60 @@ declare global {
   }
 }
 
+type TabName = "preview" | "map-editor" | "dialogue-editor";
+
 export function ShellApp() {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [reloadCount, setReloadCount] = useState(0);
-  const { comms, setComms } = useCommsContext();
+  // Track active tab and which tabs have been mounted at least once
+  const [activeTab, setActiveTab] = useState<TabName>("preview");
+  const [mountedTabs, setMountedTabs] = useState<
+    Partial<Record<TabName, boolean>>
+  >({
+    preview: true,
+  });
 
-  useEffect(() => {
-    if (!comms) return;
+  const handleTabChange = (value: TabName | null) => {
+    if (!value) return;
+    setActiveTab(value);
+    setMountedTabs((prev) => (prev[value] ? prev : { ...prev, [value]: true }));
+  };
+  // useEffect(() => {
+  //   if (!comms) return;
 
-    comms.addMessageListener<SavePathGraphRequest>({
-      type: "save-path-graph",
-      callback: async ({ graph }) => {
-        await fetch("/api/pathgraph", {
-          method: "POST",
-          headers: { "Content-Type": "application/octet-stream" },
-          body: graph,
-        });
-      },
-    });
-  }, [comms]);
-
-  useEffect(() => {
-    const iframe = iframeRef.current!;
-    const levelUrl = window.location.origin;
-    const src = new URL(constants.gameUrl);
-
-    // Copy all search params from parent frame to iframe src
-    const parentParams = new URL(window.location.href).searchParams;
-    for (const [key, value] of parentParams.entries()) {
-      src.searchParams.set(key, value);
-    }
-
-    src.searchParams.set("levelBaseUrl", levelUrl);
-    log.info(`Loading game from ${constants.gameUrl}`);
-    iframe.src = src.toString();
-
-    const comms = new Comms({
-      window,
-      subWindows: [iframe.contentWindow!],
-      role: "parent",
-    });
-    setComms(comms);
-  }, [reloadCount, setComms]);
-
-  useEffect(() => {
-    if (!comms) return;
-
-    window.gl = {
-      markers: {
-        record: (slug: string) => {
-          log.info({ dev: true }, `Recording marker '${slug}'`);
-          comms.request({
-            type: "record-marker",
-            data: { slug },
-          });
-        },
-        clear: (slug: string) => {
-          log.info({ dev: true }, `Clearing marker '${slug}'`);
-          comms.request({
-            type: "clear-marker",
-            data: { slug: slug ?? null },
-          });
-        },
-      },
-      nav: {
-        clearCache: async () => {
-          log.info({ dev: true }, `Clearing navigation cache`);
-          await fetch("/api/pathgraph", {
-            method: "DELETE",
-          });
-          setReloadCount((c) => c + 1);
-        },
-      },
-    };
-  }, [comms]);
+  //   window.gl = {
+  //     markers: {
+  //       record: (slug: string) => {
+  //         log.info({ dev: true }, `Recording marker '${slug}'`);
+  //         comms.request({
+  //           type: "record-marker",
+  //           data: { slug },
+  //         });
+  //       },
+  //       clear: (slug: string) => {
+  //         log.info({ dev: true }, `Clearing marker '${slug}'`);
+  //         comms.request({
+  //           type: "clear-marker",
+  //           data: { slug: slug ?? null },
+  //         });
+  //       },
+  //     },
+  //     nav: {
+  //       clearCache: async () => {
+  //         log.info({ dev: true }, `Clearing navigation cache`);
+  //         await fetch("/api/pathgraph", {
+  //           method: "DELETE",
+  //         });
+  //         setReloadCount((c) => c + 1);
+  //       },
+  //     },
+  //   };
+  // }, [comms]);
 
   useEffect(() => {
     if (import.meta.hot) {
       const fn = () => {
         log.info({ dev: true, color: "green" }, "Reloading level");
-        setReloadCount((c) => c + 1);
+        // FIXME lift state
+        // setReloadCount((c) => c + 1);
       };
       import.meta.hot.on("gl:level-reload", fn);
 
@@ -112,34 +85,37 @@ export function ShellApp() {
   }, []);
 
   return (
-    <AppShell footer={{ height: 300, collapsed: false }} withBorder={false}>
+    <AppShell footer={{ height: 300, collapsed: true }} withBorder={false}>
       <AppShell.Main>
-        <Tabs defaultValue="preview">
+        <Tabs
+          value={activeTab}
+          onChange={(tab) => handleTabChange(tab as TabName)}
+        >
           <Tabs.List>
             <Tabs.Tab value="preview">Level Preview</Tabs.Tab>
             <Tabs.Tab value="map-editor">Map Editor</Tabs.Tab>
             <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
           </Tabs.List>
 
-          <Tabs.Panel value="preview">
-            <div id="frame-container">
-              <iframe
-                tabIndex={-1}
-                ref={iframeRef}
-                id="dev-frame"
-                allow="cross-origin-isolated"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </Tabs.Panel>
+          {mountedTabs["preview"] && (
+            <Tabs.Panel value="preview">
+              <PreviewTab />
+            </Tabs.Panel>
+          )}
 
-          <Tabs.Panel value="map-editor">
-            <Text>TODO</Text>
-          </Tabs.Panel>
+          {mountedTabs["map-editor"] && (
+            <Tabs.Panel value="map-editor">
+              <MapEditorTab />
+            </Tabs.Panel>
+          )}
 
-          <Tabs.Panel value="dialogue-editor">
-            <DialogueTab />
-          </Tabs.Panel>
+          {mountedTabs["dialogue-editor"] && (
+            <Tabs.Panel value="dialogue-editor">
+              <ReactFlowProvider>
+                <DialogueTab />
+              </ReactFlowProvider>
+            </Tabs.Panel>
+          )}
         </Tabs>
       </AppShell.Main>
       <AppShell.Footer>

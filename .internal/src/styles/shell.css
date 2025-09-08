@@ -24,14 +24,13 @@ body {
 }
 
 #frame-container {
-  min-height: 0;
-  min-width: 0;
-  width: 100%;
+  width: 100dvw;
+  height: 100dvh;
 }
 
 #dev-frame {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 100%;
   border: none;
 }
 
