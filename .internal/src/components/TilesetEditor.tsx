@@ -1,21 +1,31 @@
-import { Fieldset, Flex, Group, Stack, Switch, Text } from "@mantine/core";
+import {
+  Fieldset,
+  Flex,
+  Group,
+  Stack,
+  Switch,
+  TagsInput,
+  Text,
+} from "@mantine/core";
 import { Dropzone, FileWithPath, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 import { Application } from "pixi.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { init, loadTileset } from "../editor/tileset";
+import { init, loadTileset } from "../editor/tileset/init";
+import { useAppDispatch, useAppSelector } from "../hooks/redux";
+import { setGridSize, setGridVisible } from "../slices/tilesetEditor";
 import GridsizeSlider from "./GridsizeSlider";
 
 export default function TilesetEditorTab() {
   const cRef = useRef<HTMLDivElement>(null);
   const [app, setApp] = useState<Application>();
-
+  const dispatch = useAppDispatch();
+  const tilesetEditorState = useAppSelector((state) => state.tilesetEditor);
   const gridSizes = useMemo(() => [4, 8, 16, 32], []);
 
   useEffect(() => {
     const fn = async () => {
-      const app = await init();
-      app.resizeTo = cRef.current!;
+      const app = await init(cRef.current!);
       setApp(app);
     };
     fn();
@@ -47,11 +57,12 @@ export default function TilesetEditorTab() {
     []
   );
 
-  const changeGridSize = useCallback(async (size: number) => {
-    // TODO: apply grid size to tileset editor once API is available
-    // e.g., await setGridSize(size)
-    void size; // avoid unused var until integration
-  }, []);
+  const changeGridSize = useCallback(
+    async (size: number) => {
+      dispatch(setGridSize(size));
+    },
+    [dispatch]
+  );
 
   return (
     <Flex>
@@ -103,16 +114,21 @@ export default function TilesetEditorTab() {
       </Stack>
       <div ref={cRef} style={{ flex: 5, height: "100dvh" }} />
       <Stack miw={200} style={{ flex: 1 }}>
-        <Fieldset legend="Grid">
-          <GridsizeSlider labels={gridSizes} onChangeEnd={changeGridSize} />
+        <Fieldset legend="Grid settings">
+          <GridsizeSlider labels={gridSizes} onChange={changeGridSize} />
           <Switch
             mt="xl"
             label="Visible"
-            checked={true}
+            checked={tilesetEditorState.grid.visible}
             onChange={(event) => {
-              // Handle switch change
+              dispatch(setGridVisible(event.currentTarget.checked));
             }}
           />
+        </Fieldset>
+        <Fieldset legend="Tags">
+          <Stack p={0}>
+            <TagsInput placeholder="Enter tag" splitChars={[",", " ", "|"]} />
+          </Stack>
         </Fieldset>
       </Stack>
     </Flex>

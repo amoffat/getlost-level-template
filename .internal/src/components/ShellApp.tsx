@@ -23,7 +23,7 @@ declare global {
 }
 
 type TabName = "preview" | "map-editor" | "tileset-editor" | "dialogue-editor";
-const defaultTab: TabName = "map-editor";
+const defaultTab: TabName = "tileset-editor";
 
 export function ShellApp() {
   // Track active tab and which tabs have been mounted at least once

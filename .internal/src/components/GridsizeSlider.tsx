@@ -3,12 +3,12 @@ import { useCallback, useMemo } from "react";
 
 export type GridsizeSliderProps = {
   labels: number[];
-  onChangeEnd: (size: number) => void;
+  onChange: (size: number) => void;
 };
 
 export default function GridsizeSlider({
   labels,
-  onChangeEnd,
+  onChange,
 }: GridsizeSliderProps) {
   const denom = useMemo(() => Math.max(1, labels.length - 1), [labels]);
   const step = useMemo(() => 100 / denom, [denom]);
@@ -52,18 +52,18 @@ export default function GridsizeSlider({
     [denom, labels.length]
   );
 
-  const handleChangeEnd = useCallback(
+  const handleChange = useCallback(
     (value: number) => {
       const index = sliderValueToIndex(value);
       const size = labels[index] ?? labels[0];
-      onChangeEnd(size);
+      onChange(size);
     },
-    [labels, onChangeEnd, sliderValueToIndex]
+    [labels, onChange, sliderValueToIndex]
   );
 
   return (
     <Slider
-      onChangeEnd={handleChangeEnd}
+      onChange={handleChange}
       defaultValue={gridIndexToSliderValue(defaultIndex)}
       step={step}
       label={null}

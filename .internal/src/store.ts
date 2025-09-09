@@ -1,9 +1,11 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import dialogueReducer from "./slices/dialogue";
+import tilesetEditorReducer from "./slices/tilesetEditor";
 
 export const rootReducer = combineReducers({
   dialogue: dialogueReducer,
+  tilesetEditor: tilesetEditorReducer,
 });
 
 export const store = configureStore({

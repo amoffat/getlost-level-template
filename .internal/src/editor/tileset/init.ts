@@ -1,56 +1,39 @@
-import * as PIXI from "pixi.js";
-import {
-  Application,
-  Container,
-  Graphics,
-  Sprite,
-  Texture,
-  TilingSprite,
-  type FederatedPointerEvent,
-  type FederatedWheelEvent,
-} from "pixi.js";
+import * as P from "pixi.js";
+import { subscribeToSelector } from "../../utils/redux";
+import * as constants from "./constants";
 
-let app: Application;
-let tilesetContainer: Container;
-let gridContainer: Container;
-let backgroundContainer: Container;
-let checkerboard: TilingSprite | undefined;
-let currentSprite: Sprite | undefined;
-let currentSpriteBaseWidth = 1;
-let currentSpriteBaseHeight = 1;
-
-export const state = {
-  gridSize: 16,
-};
-
-// Zoom limits for tilesetContainer
-const MIN_ZOOM = 0.125;
-const MAX_ZOOM = 16;
+let app: P.Application;
+let canvas: HTMLCanvasElement;
+let tilesetContainer: P.Container;
+let gridContainer: P.Container;
+let backgroundContainer: P.Container;
+let grid: P.Graphics;
+let currentTileset: P.Sprite;
 
 // Panning state
 let isPanning = false;
 let panStartGlobal = { x: 0, y: 0 };
 let panStartContainer = { x: 0, y: 0 };
 
-export async function init() {
+export async function init(parent: HTMLElement) {
   // Create a new application
-  app = new Application();
+  app = new P.Application();
 
   // Initialize the application
-  await app.init({ backgroundAlpha: 0 });
+  await app.init({ backgroundAlpha: 0, resizeTo: parent });
 
   // Tweak canvas interaction to avoid browser scroll/selection during drag
-  const canvas = app.canvas;
+  canvas = app.canvas;
   canvas.style.touchAction = "none";
   canvas.style.userSelect = "none";
   canvas.style.cursor = "default";
 
   // Background container with checkerboard pattern (conventional transparent-bg look)
-  backgroundContainer = new Container();
+  backgroundContainer = new P.Container();
   app.stage.addChild(backgroundContainer);
 
   // Foreground container for the tileset sprite
-  tilesetContainer = new Container();
+  tilesetContainer = new P.Container();
   app.stage.addChild(tilesetContainer);
 
   // Route events directly to the stage to avoid per-move hit testing of children
@@ -61,39 +44,16 @@ export async function init() {
   app.stage.hitArea = app.screen;
 
   // Overlay container for grid lines (kept separate so clearing tileset doesn't remove grid)
-  gridContainer = new Container();
+  gridContainer = new P.Container();
   app.stage.addChild(gridContainer);
 
   // Build checkerboard background
-  createOrUpdateCheckerboard();
+  const checkerboard = makeBackground();
+  backgroundContainer.addChild(checkerboard);
 
   // Keep layout responsive to available size
   app.ticker.add(() => {
     // Resize checkerboard to fill the stage
-    if (checkerboard) {
-      if (
-        checkerboard.width !== app.screen.width ||
-        checkerboard.height !== app.screen.height
-      ) {
-        checkerboard.width = app.screen.width;
-        checkerboard.height = app.screen.height;
-      }
-    }
-
-    // Contain-scale the current sprite using quantized scales (integer up, 1/n down)
-    if (
-      currentSprite &&
-      currentSpriteBaseWidth > 0 &&
-      currentSpriteBaseHeight > 0
-    ) {
-      const scaleW = app.screen.width / currentSpriteBaseWidth;
-      const scaleH = app.screen.height / currentSpriteBaseHeight;
-      const targetScale = Math.min(scaleW, scaleH);
-      const quantized = quantizeScale(targetScale);
-      if (Math.abs(currentSprite.scale.x - quantized) > 0.001) {
-        currentSprite.scale.set(quantized);
-      }
-    }
   });
 
   // Enable mouse wheel zooming on the tileset container
@@ -109,37 +69,26 @@ export async function loadTileset(source: File) {
   // Clear any previous content
   tilesetContainer.removeChildren();
   tilesetContainer.setSize(0);
+  tilesetContainer.position.set(0);
 
   const bitmap = await createImageBitmap(source);
-  const texture = Texture.from(bitmap);
+  const texture = P.Texture.from(bitmap);
   texture.source.scaleMode = "nearest";
 
-  const sprite = new Sprite(texture);
+  const sprite = new P.Sprite(texture);
   sprite.x = 0;
   sprite.y = 0;
   sprite.roundPixels = true;
 
-  // Fit the sprite inside the parent (contain) without clipping
-  const texW = sprite.texture.width || 1;
-  const texH = sprite.texture.height || 1;
-  currentSpriteBaseWidth = texW;
-  currentSpriteBaseHeight = texH;
-  const scaleW = app.screen.width / texW;
-  const scaleH = app.screen.height / texH;
-  const target = Math.min(scaleW, scaleH);
-  const quantized = quantizeScale(target);
-  sprite.scale.set(quantized);
+  currentTileset = sprite;
 
   tilesetContainer.addChild(sprite);
-  drawGrid(tilesetContainer, 16 * quantized);
-
-  // Track current sprite for responsive resizes
-  currentSprite = sprite;
+  grid = drawGrid(16);
 
   return sprite;
 }
 
-function createOrUpdateCheckerboard() {
+function makeBackground(): P.Container {
   const size = 16; // size of each square
   const canvas = document.createElement("canvas");
   canvas.width = size * 2;
@@ -157,34 +106,16 @@ function createOrUpdateCheckerboard() {
   ctx.fillRect(0, 0, size, size);
   ctx.fillRect(size, size, size, size);
 
-  const tex = Texture.from(canvas);
+  const tex = P.Texture.from(canvas);
 
-  if (!checkerboard) {
-    checkerboard = new TilingSprite({
-      texture: tex,
-      width: app.screen.width,
-      height: app.screen.height,
-    });
-    backgroundContainer.addChild(checkerboard);
-    backgroundContainer.filters = [new PIXI.BlurFilter({ strength: 3 })];
-  } else {
-    checkerboard.texture = tex;
-    checkerboard.width = app.screen.width;
-    checkerboard.height = app.screen.height;
-  }
-  // Keep the stage's hit area in sync with screen size for pointer events
-  app.stage.hitArea = app.screen;
-}
-
-// Choose integer scales when scaling up, and reciprocal integer fractions when scaling down
-function quantizeScale(target: number): number {
-  if (!isFinite(target) || target <= 0) return 1;
-  if (target >= 1) {
-    const n = Math.floor(target);
-    return n >= 1 ? n : 1;
-  }
-  const denom = Math.ceil(1 / target);
-  return 1 / Math.max(1, denom);
+  const checkerboard = new P.TilingSprite({
+    texture: tex,
+    width: app.screen.width,
+    height: app.screen.height,
+  });
+  backgroundContainer.addChild(checkerboard);
+  backgroundContainer.filters = [new P.BlurFilter({ strength: 3 })];
+  return checkerboard;
 }
 
 function clamp(n: number, min: number, max: number) {
@@ -193,7 +124,7 @@ function clamp(n: number, min: number, max: number) {
 
 function setupWheelZoom() {
   // Use Pixi's federated wheel events on the stage
-  app.stage.on("wheel", (e: FederatedWheelEvent) => {
+  app.stage.on("wheel", (e: P.FederatedWheelEvent) => {
     // Prevent page scroll to make zoom feel native
     e.preventDefault();
 
@@ -208,7 +139,11 @@ function setupWheelZoom() {
 
     // Apply clamped uniform scaling
     const current = tilesetContainer.scale.x || 1;
-    const next = clamp(current * zoomFactor, MIN_ZOOM, MAX_ZOOM);
+    const next = clamp(
+      current * zoomFactor,
+      constants.MIN_ZOOM,
+      constants.MAX_ZOOM
+    );
     tilesetContainer.scale.set(next);
 
     // Compute where that same local point is AFTER scaling in global coords
@@ -220,10 +155,18 @@ function setupWheelZoom() {
   });
 }
 
-function setupPanControls() {
-  const canvas = app.canvas as HTMLCanvasElement | undefined;
+function setupKeyControls() {
+  canvas.addEventListener("keydown", (e) => {
+    if (e.key === "g") {
+      //
+    }
+  });
+}
 
-  app.stage.on("pointerdown", (e: FederatedPointerEvent) => {
+function setupPanControls() {
+  const canvas = app.canvas;
+
+  app.stage.on("pointerdown", (e: P.FederatedPointerEvent) => {
     // Only start panning on primary button (left click)
     if (e.button !== 0) return;
     e.preventDefault();
@@ -233,10 +176,10 @@ function setupPanControls() {
       x: tilesetContainer.position.x,
       y: tilesetContainer.position.y,
     };
-    if (canvas) canvas.style.cursor = "grabbing";
+    canvas.style.cursor = "grabbing";
   });
 
-  app.stage.on("pointermove", (e: FederatedPointerEvent) => {
+  app.stage.on("pointermove", (e: P.FederatedPointerEvent) => {
     if (!isPanning) return;
     e.preventDefault();
     const dx = e.global.x - panStartGlobal.x;
@@ -247,7 +190,7 @@ function setupPanControls() {
     );
   });
 
-  const endPan = (e: FederatedPointerEvent) => {
+  const endPan = (e: P.FederatedPointerEvent) => {
     if (!isPanning) return;
     e.preventDefault();
     isPanning = false;
@@ -259,11 +202,13 @@ function setupPanControls() {
   app.stage.on("pointercancel", endPan);
 }
 
-function drawGrid(container: Container, gridSize: number) {
-  const g = new Graphics();
+function drawGrid(gridSize: number): P.Graphics {
+  const container = tilesetContainer;
+
+  const g = new P.Graphics();
   // Capture dimensions before adding the graphics to avoid affecting container bounds
-  const w = Math.ceil(container.width);
-  const h = Math.ceil(container.height);
+  const w = Math.ceil(currentTileset.width);
+  const h = Math.ceil(currentTileset.height);
 
   // Vertical grid lines
   for (let x = 0; x < w; x += gridSize) {
@@ -282,7 +227,7 @@ function drawGrid(container: Container, gridSize: number) {
   // Ensure the bottom boundary line is drawn
   g.moveTo(0, h);
   g.lineTo(w, h);
-  const gridStroke: PIXI.StrokeInput = {
+  const gridStroke: P.StrokeInput = {
     color: 0x000000,
     width: 1,
     alpha: 0.3,
@@ -290,4 +235,21 @@ function drawGrid(container: Container, gridSize: number) {
   };
   g.stroke(gridStroke);
   container.addChild(g);
+
+  return g;
 }
+
+subscribeToSelector(
+  (state) => state.tilesetEditor.grid.visible,
+  (visible) => {
+    grid.visible = visible;
+  }
+);
+
+subscribeToSelector(
+  (state) => state.tilesetEditor.grid.size,
+  (size) => {
+    grid.removeFromParent();
+    grid = drawGrid(size);
+  }
+);
