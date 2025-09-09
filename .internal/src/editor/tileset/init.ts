@@ -1,4 +1,6 @@
 import * as P from "pixi.js";
+import { setMode } from "../../slices/tilesetEditor";
+import { store } from "../../store";
 import { subscribeToSelector } from "../../utils/redux";
 import * as constants from "./constants";
 
@@ -61,6 +63,8 @@ export async function init(parent: HTMLElement) {
 
   // Enable click-drag panning
   setupPanControls();
+
+  setupKeyControls();
 
   return app;
 }
@@ -126,7 +130,7 @@ function setupWheelZoom() {
   // Use Pixi's federated wheel events on the stage
   app.stage.on("wheel", (e: P.FederatedWheelEvent) => {
     // Prevent page scroll to make zoom feel native
-    e.preventDefault();
+    // e.preventDefault();
 
     // Determine zoom direction and amount using convenience deltaY
     const zoomFactor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
@@ -156,27 +160,33 @@ function setupWheelZoom() {
 }
 
 function setupKeyControls() {
-  canvas.addEventListener("keydown", (e) => {
+  window.addEventListener("keydown", (e) => {
+    if (e.repeat) return;
+
+    console.log("Key down:", e.key);
     if (e.key === "g") {
-      //
+      store.dispatch(setMode("group"));
+    }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    if (e.key === "g") {
+      store.dispatch(setMode(null));
     }
   });
 }
 
 function setupPanControls() {
-  const canvas = app.canvas;
-
   app.stage.on("pointerdown", (e: P.FederatedPointerEvent) => {
     // Only start panning on primary button (left click)
     if (e.button !== 0) return;
     e.preventDefault();
-    isPanning = true;
     panStartGlobal = { x: e.global.x, y: e.global.y };
     panStartContainer = {
       x: tilesetContainer.position.x,
       y: tilesetContainer.position.y,
     };
-    canvas.style.cursor = "grabbing";
+    store.dispatch(setMode("pan"));
   });
 
   app.stage.on("pointermove", (e: P.FederatedPointerEvent) => {
@@ -193,8 +203,7 @@ function setupPanControls() {
   const endPan = (e: P.FederatedPointerEvent) => {
     if (!isPanning) return;
     e.preventDefault();
-    isPanning = false;
-    if (canvas) canvas.style.cursor = "default";
+    store.dispatch(setMode(null));
   };
 
   app.stage.on("pointerup", endPan);
@@ -251,5 +260,22 @@ subscribeToSelector(
   (size) => {
     grid.removeFromParent();
     grid = drawGrid(size);
+  }
+);
+
+subscribeToSelector(
+  (state) => state.tilesetEditor.mode,
+  (mode) => {
+    if (mode === "group") {
+      console.log("Group mode activated");
+      canvas.style.cursor = "crosshair";
+    } else if (mode === "pan") {
+      isPanning = true;
+      canvas.style.cursor = "grabbing";
+    } else if (mode === null) {
+      console.log("Exited mode");
+      isPanning = false;
+      canvas.style.cursor = "default";
+    }
   }
 );

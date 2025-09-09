@@ -127,7 +127,12 @@ export default function TilesetEditorTab() {
         </Fieldset>
         <Fieldset legend="Tags">
           <Stack p={0}>
-            <TagsInput placeholder="Enter tag" splitChars={[",", " ", "|"]} />
+            <TagsInput
+              placeholder="Enter tag"
+              splitChars={[",", " ", "|"]}
+              limit={5}
+              data={[]}
+            />
           </Stack>
         </Fieldset>
       </Stack>
