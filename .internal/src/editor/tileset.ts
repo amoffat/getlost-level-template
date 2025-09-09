@@ -1,6 +1,8 @@
+import * as PIXI from "pixi.js";
 import {
   Application,
   Container,
+  Graphics,
   Sprite,
   Texture,
   TilingSprite,
@@ -51,8 +53,6 @@ export async function init() {
   tilesetContainer = new Container();
   app.stage.addChild(tilesetContainer);
 
-  // Ensure we receive federated events
-  app.stage.interactive = true;
   // Route events directly to the stage to avoid per-move hit testing of children
   // (reduces pointermove overhead) and disable child event handling
   app.stage.eventMode = "static";
@@ -108,6 +108,7 @@ export async function init() {
 export async function loadTileset(source: File) {
   // Clear any previous content
   tilesetContainer.removeChildren();
+  tilesetContainer.setSize(0);
 
   const bitmap = await createImageBitmap(source);
   const texture = Texture.from(bitmap);
@@ -130,6 +131,7 @@ export async function loadTileset(source: File) {
   sprite.scale.set(quantized);
 
   tilesetContainer.addChild(sprite);
+  drawGrid(tilesetContainer, 16 * quantized);
 
   // Track current sprite for responsive resizes
   currentSprite = sprite;
@@ -164,6 +166,7 @@ function createOrUpdateCheckerboard() {
       height: app.screen.height,
     });
     backgroundContainer.addChild(checkerboard);
+    backgroundContainer.filters = [new PIXI.BlurFilter({ strength: 3 })];
   } else {
     checkerboard.texture = tex;
     checkerboard.width = app.screen.width;
@@ -254,4 +257,37 @@ function setupPanControls() {
   app.stage.on("pointerup", endPan);
   app.stage.on("pointerupoutside", endPan);
   app.stage.on("pointercancel", endPan);
+}
+
+function drawGrid(container: Container, gridSize: number) {
+  const g = new Graphics();
+  // Capture dimensions before adding the graphics to avoid affecting container bounds
+  const w = Math.ceil(container.width);
+  const h = Math.ceil(container.height);
+
+  // Vertical grid lines
+  for (let x = 0; x < w; x += gridSize) {
+    g.moveTo(x, 0);
+    g.lineTo(x, h);
+  }
+  // Ensure the rightmost boundary line is drawn
+  g.moveTo(w, 0);
+  g.lineTo(w, h);
+
+  // Horizontal grid lines
+  for (let y = 0; y < h; y += gridSize) {
+    g.moveTo(0, y);
+    g.lineTo(w, y);
+  }
+  // Ensure the bottom boundary line is drawn
+  g.moveTo(0, h);
+  g.lineTo(w, h);
+  const gridStroke: PIXI.StrokeInput = {
+    color: 0x000000,
+    width: 1,
+    alpha: 0.3,
+    pixelLine: true,
+  };
+  g.stroke(gridStroke);
+  container.addChild(g);
 }

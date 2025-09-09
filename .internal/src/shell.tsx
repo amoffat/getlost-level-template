@@ -11,7 +11,7 @@ const theme: MantineThemeOverride = {
     // Container: { defaultProps: { p: "xs" } },
     // Paper: { defaultProps: { p: "xs" } },
     // Button: { defaultProps: { p: "xs" } },
-    // Stack: { defaultProps: { p: "xs" } },
+    Stack: { defaultProps: { p: "xs" } },
     // Flex: { defaultProps: { gap: "xs" } },
     Dropzone: { defaultProps: { radius: 0 } },
     Tabs: { defaultProps: { radius: 0 } },

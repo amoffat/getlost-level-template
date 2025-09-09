@@ -1,4 +1,4 @@
-import { Flex, Group, Stack, Text } from "@mantine/core";
+import { Fieldset, Flex, Group, Stack, Switch, Text } from "@mantine/core";
 import { Dropzone, FileWithPath, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 import { Application } from "pixi.js";
@@ -103,7 +103,17 @@ export default function TilesetEditorTab() {
       </Stack>
       <div ref={cRef} style={{ flex: 5, height: "100dvh" }} />
       <Stack miw={200} style={{ flex: 1 }}>
-        <GridsizeSlider labels={gridSizes} onChangeEnd={changeGridSize} />
+        <Fieldset legend="Grid">
+          <GridsizeSlider labels={gridSizes} onChangeEnd={changeGridSize} />
+          <Switch
+            mt="xl"
+            label="Visible"
+            checked={true}
+            onChange={(event) => {
+              // Handle switch change
+            }}
+          />
+        </Fieldset>
       </Stack>
     </Flex>
   );
