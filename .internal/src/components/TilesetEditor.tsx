@@ -2,17 +2,20 @@ import { Flex, Group, Stack, Text } from "@mantine/core";
 import { Dropzone, FileWithPath, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 import { Application } from "pixi.js";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { init } from "../editor/tileset";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { init, loadTileset } from "../editor/tileset";
+import GridsizeSlider from "./GridsizeSlider";
 
 export default function TilesetEditorTab() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const cRef = useRef<HTMLDivElement>(null);
   const [app, setApp] = useState<Application>();
+
+  const gridSizes = useMemo(() => [4, 8, 16, 32], []);
 
   useEffect(() => {
     const fn = async () => {
       const app = await init();
-      app.resizeTo = containerRef.current!;
+      app.resizeTo = cRef.current!;
       setApp(app);
     };
     fn();
@@ -21,28 +24,38 @@ export default function TilesetEditorTab() {
   useEffect(() => {
     if (!app) return;
 
-    if (containerRef.current && containerRef.current.childNodes.length === 0) {
-      containerRef.current.appendChild(app.canvas);
+    const c = cRef.current;
+    if (c && c.childNodes.length === 0) {
+      c.appendChild(app.canvas);
     }
-
-    return () => {};
   }, [app]);
 
-  const uploadImage = useCallback(async (files: FileWithPath[]) => {
-    if (!files.length) return;
-
-    const form = new FormData();
-    for (const f of files) form.append("file", f, f.name);
+  const uploadImage = useCallback(
+    // const form = new FormData();
+    // for (const f of files) form.append("file", f, f.name);
 
     // await fetch("/api/image-upload", {
     //   method: "POST",
     //   body: form,
     // });
+
+    async (files: FileWithPath[]) => {
+      if (!files.length) return;
+      const file = files[0];
+      await loadTileset(file);
+    },
+    []
+  );
+
+  const changeGridSize = useCallback(async (size: number) => {
+    // TODO: apply grid size to tileset editor once API is available
+    // e.g., await setGridSize(size)
+    void size; // avoid unused var until integration
   }, []);
 
   return (
     <Flex>
-      <Stack style={{ flex: 1 }}>
+      <Stack miw={200} style={{ flex: 1 }}>
         <Dropzone
           onDrop={uploadImage}
           maxSize={5 * 1024 ** 2}
@@ -88,8 +101,10 @@ export default function TilesetEditorTab() {
           </Group>
         </Dropzone>
       </Stack>
-      <div ref={containerRef} style={{ flex: 5, height: "100dvh" }} />
-      <Stack style={{ flex: 1 }}></Stack>
+      <div ref={cRef} style={{ flex: 5, height: "100dvh" }} />
+      <Stack miw={200} style={{ flex: 1 }}>
+        <GridsizeSlider labels={gridSizes} onChangeEnd={changeGridSize} />
+      </Stack>
     </Flex>
   );
 }
