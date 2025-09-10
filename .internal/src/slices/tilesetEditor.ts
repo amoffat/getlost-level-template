@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { GroupCoords } from "../types/tilegroup";
+import { closeEnough } from "../utils/math";
 
 type Mode = null | "pan" | "group";
 
@@ -47,7 +48,14 @@ const slice = createSlice({
           newGroups.push(existing);
         }
       }
-      newGroups.push(group);
+      const width = group.br.x - group.ul.x;
+      const height = group.br.y - group.ul.y;
+      const gridSize = state.grid.size;
+      const isSingleTile =
+        closeEnough(width, gridSize) && closeEnough(height, gridSize);
+      if (!isSingleTile) {
+        newGroups.push(group);
+      }
       state.groups = newGroups;
     },
     clearGroups(state) {

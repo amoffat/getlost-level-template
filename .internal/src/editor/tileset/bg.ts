@@ -27,6 +27,6 @@ export function makeBackground(): P.Container {
     height: g.app.screen.height,
   });
   g.backgroundContainer.addChild(checkerboard);
-  g.backgroundContainer.filters = [new P.BlurFilter({ strength: 3 })];
+  g.backgroundContainer.filters = [new P.BlurFilter({ strength: 4 })];
   return checkerboard;
 }
