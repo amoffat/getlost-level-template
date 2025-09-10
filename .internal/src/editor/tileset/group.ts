@@ -67,7 +67,7 @@ export function setupGrouper() {
 
   const gfx = new P.Graphics();
   gfx.visible = false;
-  gfx.rect(0, 0, 16, 16).fill("0xff000055");
+  gfx.rect(0, 0, 16, 16).fill({ color: "0x00ff00", alpha: 0.3 });
   g.groupSelContainer.addChild(gfx);
   g.groupSelContainer.parent!.addChild(groupsContainer);
 
@@ -84,41 +84,42 @@ export function setupGrouper() {
       c.position.set(left, top);
       c.width = width;
       c.height = height;
+    } else {
+      gfx.visible = false;
     }
   });
 }
 
-subscribeToSelector(
-  (state) => state.tilesetEditor.groups,
-  (groups) => {
-    groupsContainer.removeChildren();
-    const g = new P.Graphics();
-    const mask = new P.Graphics();
-    groupsContainer.addChild(mask);
-    groupsContainer.setMask({
-      mask,
+function drawGroups(groups: GroupCoords[]) {
+  groupsContainer.removeChildren();
+  const g = new P.Graphics();
+  const mask = new P.Graphics();
+  groupsContainer.addChild(mask);
+  groupsContainer.setMask({
+    mask,
+  });
+  for (const group of groups) {
+    g.rect(
+      group.ul.x,
+      group.ul.y,
+      group.br.x - group.ul.x,
+      group.br.y - group.ul.y
+    ).stroke({
+      color: 0x00ff00,
+      width: 2,
+      alpha: 1,
     });
-    for (const group of groups) {
-      g.rect(
+
+    mask
+      .rect(
         group.ul.x,
         group.ul.y,
         group.br.x - group.ul.x,
         group.br.y - group.ul.y
-      ).stroke({
-        color: 0x000000,
-        width: 2,
-        alpha: 1,
-      });
-
-      mask
-        .rect(
-          group.ul.x,
-          group.ul.y,
-          group.br.x - group.ul.x,
-          group.br.y - group.ul.y
-        )
-        .fill({ color: 0x000000, alpha: 1 });
-    }
-    groupsContainer.addChild(g);
+      )
+      .fill({ color: 0x000000, alpha: 1 });
   }
-);
+  groupsContainer.addChild(g);
+}
+
+subscribeToSelector((state) => state.tilesetEditor.groups, drawGroups);

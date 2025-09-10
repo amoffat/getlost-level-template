@@ -33,7 +33,22 @@ const slice = createSlice({
       state.mode = action.payload;
     },
     addGroup(state, action: PayloadAction<GroupCoords>) {
-      state.groups.push(action.payload);
+      const group = action.payload;
+      const newGroups: GroupCoords[] = [];
+
+      for (const existing of state.groups) {
+        const isOverlapping = !(
+          group.br.x <= existing.ul.x ||
+          group.ul.x >= existing.br.x ||
+          group.br.y <= existing.ul.y ||
+          group.ul.y >= existing.br.y
+        );
+        if (!isOverlapping) {
+          newGroups.push(existing);
+        }
+      }
+      newGroups.push(group);
+      state.groups = newGroups;
     },
     clearGroups(state) {
       state.groups = [];
