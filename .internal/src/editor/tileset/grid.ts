@@ -1,13 +1,18 @@
 import * as P from "pixi.js";
+import { subscribeToSelector } from "../../utils/redux";
 import { globals as g } from "./globals";
 
-export function drawGrid(gridSize: number): P.Graphics {
-  const container = g.tilesetContainer;
+let container: P.Container | null = null;
+let mask: P.Graphics | null = null;
+
+export function drawGrid(gridSize: number): P.Container {
+  container = new P.Container();
 
   const gfx = new P.Graphics();
+
   // Capture dimensions before adding the graphics to avoid affecting container bounds
-  const w = Math.ceil(g.currentTileset.width);
-  const h = Math.ceil(g.currentTileset.height);
+  const w = Math.ceil(g.currentTileset!.width);
+  const h = Math.ceil(g.currentTileset!.height);
 
   // Vertical grid lines
   for (let x = 0; x < w; x += gridSize) {
@@ -33,7 +38,35 @@ export function drawGrid(gridSize: number): P.Graphics {
     pixelLine: true,
   };
   gfx.stroke(gridStroke);
-  container.addChild(gfx);
 
-  return gfx;
+  container.addChild(gfx);
+  g.tilesetContainer.addChild(container);
+
+  return container;
 }
+
+subscribeToSelector(
+  (state) => state.tilesetEditor.groups,
+  (groups) => {
+    mask = new P.Graphics();
+    mask?.removeFromParent();
+    container?.addChild(mask);
+
+    mask.fill({ color: 0x000000, alpha: 0 });
+    for (const group of groups) {
+      mask
+        .rect(
+          group.ul.x,
+          group.ul.y,
+          group.br.x - group.ul.x,
+          group.br.y - group.ul.y
+        )
+        .fill({ color: 0x000000, alpha: 1 });
+    }
+
+    container?.setMask({
+      mask,
+      inverse: true,
+    });
+  }
+);

@@ -1,12 +1,15 @@
 import * as P from "pixi.js";
+import { actions } from "../../slices/tilesetEditor";
+import { store } from "../../store";
 import { globals as g } from "./globals";
 import { drawGrid } from "./grid";
 
 export async function loadTileset(source: File) {
   // Clear any previous content
-  g.tilesetContainer.removeChildren();
-  g.tilesetContainer.setSize(0);
+  g.currentTileset?.removeFromParent();
+  g.grid?.removeFromParent();
   g.tilesetContainer.position.set(0);
+  g.groupSelContainer.setSize(0);
 
   const bitmap = await createImageBitmap(source);
   const texture = P.Texture.from(bitmap);
@@ -21,6 +24,7 @@ export async function loadTileset(source: File) {
 
   g.tilesetContainer.addChild(sprite);
   g.grid = drawGrid(16);
+  store.dispatch(actions.clearGroups());
 
   return sprite;
 }

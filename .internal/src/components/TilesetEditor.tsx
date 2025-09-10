@@ -13,7 +13,7 @@ import { Application } from "pixi.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { init, loadTileset } from "../editor/tileset/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
-import { setGridSize, setGridVisible } from "../slices/tilesetEditor";
+import { actions } from "../slices/tilesetEditor";
 import GridsizeSlider from "./GridsizeSlider";
 
 export default function TilesetEditorTab() {
@@ -59,7 +59,7 @@ export default function TilesetEditorTab() {
 
   const changeGridSize = useCallback(
     async (size: number) => {
-      dispatch(setGridSize(size));
+      dispatch(actions.setGridSize(size));
     },
     [dispatch]
   );
@@ -121,7 +121,7 @@ export default function TilesetEditorTab() {
             label="Visible"
             checked={tilesetEditorState.grid.visible}
             onChange={(event) => {
-              dispatch(setGridVisible(event.currentTarget.checked));
+              dispatch(actions.setGridVisible(event.currentTarget.checked));
             }}
           />
         </Fieldset>

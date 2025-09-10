@@ -1,10 +1,9 @@
 import * as P from "pixi.js";
-import { setMode } from "../../slices/tilesetEditor";
-import { store } from "../../store";
 import { subscribeToSelector } from "../../utils/redux";
 import { makeBackground } from "./bg";
 import { globals as g } from "./globals";
 import { drawGrid } from "./grid";
+import { setupGrouper } from "./group";
 import { setupPanControls } from "./pan";
 import { setupWheelZoom } from "./zoom";
 export { loadTileset } from "./loader";
@@ -28,54 +27,36 @@ export async function init(parent: HTMLElement) {
 
   // Foreground container for the tileset sprite
   g.tilesetContainer = new P.Container();
+  g.tilesetContainer.interactive = true;
   g.app.stage.addChild(g.tilesetContainer);
+
+  g.groupSelContainer = new P.Container();
+  g.groupSelContainer.zIndex = 100;
+  g.tilesetContainer.addChild(g.groupSelContainer);
 
   // Route events directly to the stage to avoid per-move hit testing of children
   // (reduces pointermove overhead) and disable child event handling
-  g.app.stage.eventMode = "static";
+  g.app.stage.interactive = true;
   // Make sure the stage captures pointer events across the whole viewport
   // and update its hitArea to the current screen when needed
   g.app.stage.hitArea = g.app.screen;
 
   // Overlay container for grid lines (kept separate so clearing tileset doesn't remove grid)
   g.gridContainer = new P.Container();
-  g.app.stage.addChild(g.gridContainer);
 
   // Build checkerboard background
   const checkerboard = makeBackground();
   g.backgroundContainer.addChild(checkerboard);
 
-  // Keep layout responsive to available size
   g.app.ticker.add(() => {
-    // Resize checkerboard to fill the stage
+    //
   });
 
-  // Enable mouse wheel zooming on the tileset container
   setupWheelZoom();
-
-  // Enable click-drag panning
   setupPanControls();
-
-  setupKeyControls();
+  setupGrouper();
 
   return g.app;
-}
-
-function setupKeyControls() {
-  window.addEventListener("keydown", (e) => {
-    if (e.repeat) return;
-
-    console.log("Key down:", e.key);
-    if (e.key === "g") {
-      store.dispatch(setMode("group"));
-    }
-  });
-
-  window.addEventListener("keyup", (e) => {
-    if (e.key === "g") {
-      store.dispatch(setMode(null));
-    }
-  });
 }
 
 subscribeToSelector(

@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { GroupCoords } from "../types/tilegroup";
 
 type Mode = null | "pan" | "group";
 
@@ -8,6 +9,7 @@ interface TilesetEditorState {
     visible: boolean;
   };
   mode: Mode;
+  groups: GroupCoords[];
 }
 
 const slice = createSlice({
@@ -18,6 +20,7 @@ const slice = createSlice({
       visible: true,
     },
     mode: null,
+    groups: [],
   } as TilesetEditorState,
   reducers: {
     setGridVisible(state, action: PayloadAction<boolean>) {
@@ -29,8 +32,14 @@ const slice = createSlice({
     setMode(state, action: PayloadAction<Mode>) {
       state.mode = action.payload;
     },
+    addGroup(state, action: PayloadAction<GroupCoords>) {
+      state.groups.push(action.payload);
+    },
+    clearGroups(state) {
+      state.groups = [];
+    },
   },
 });
 
-export const { setGridVisible, setGridSize, setMode } = slice.actions;
+export const actions = slice.actions;
 export default slice.reducer;

@@ -1,5 +1,5 @@
 import * as P from "pixi.js";
-import { setMode } from "../../slices/tilesetEditor";
+import { actions } from "../../slices/tilesetEditor";
 import { store } from "../../store";
 import { globals as g } from "./globals";
 
@@ -21,7 +21,7 @@ export function setupPanControls() {
       x: g.tilesetContainer.position.x,
       y: g.tilesetContainer.position.y,
     };
-    store.dispatch(setMode("pan"));
+    store.dispatch(actions.setMode("pan"));
   });
 
   g.app.stage.on("pointermove", (e: P.FederatedPointerEvent) => {
@@ -38,7 +38,7 @@ export function setupPanControls() {
   const endPan = (e: P.FederatedPointerEvent) => {
     if (!isPanning()) return;
     e.preventDefault();
-    store.dispatch(setMode(null));
+    store.dispatch(actions.setMode(null));
   };
 
   g.app.stage.on("pointerup", endPan);

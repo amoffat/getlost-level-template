@@ -1,0 +1,124 @@
+import * as P from "pixi.js";
+import { actions } from "../../slices/tilesetEditor";
+import { store } from "../../store";
+import { GroupCoords } from "../../types/tilegroup";
+import { subscribeToSelector } from "../../utils/redux";
+import { globals as g } from "./globals";
+
+let groupStart = { x: 0, y: 0 };
+let groupEnd = { x: 0, y: 0 };
+const groupsContainer = new P.Container();
+groupsContainer.zIndex = 100;
+// groupsContainer.blendMode = "screen";
+
+function getGridSize(): number {
+  return store.getState().tilesetEditor.grid.size;
+}
+
+function snapDown(n: number, size: number): number {
+  return Math.floor(n / size) * size;
+}
+
+function snapUp(n: number, size: number): number {
+  return Math.ceil(n / size) * size;
+}
+
+function isGrouping(): boolean {
+  return store.getState().tilesetEditor.mode === "group";
+}
+
+export function setupGrouper() {
+  window.addEventListener("keydown", (e) => {
+    if (e.repeat) return;
+    if (e.key === "g") {
+      store.dispatch(actions.setMode("group"));
+    }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    if (e.key === "g") {
+      if (isGrouping()) {
+        store.dispatch(actions.setMode(null));
+
+        const c = g.groupSelContainer;
+        const coords: GroupCoords = {
+          ul: { x: c.x, y: c.y },
+          br: { x: c.x + c.width, y: c.y + c.height },
+        };
+        store.dispatch(actions.addGroup(coords));
+      }
+    }
+  });
+
+  g.tilesetContainer.on("pointermove", (e: P.FederatedPointerEvent) => {
+    const size = getGridSize();
+    const pos = g.tilesetContainer.toLocal(e.global);
+
+    if (isGrouping()) {
+      // Copy values to avoid keeping a mutable reference to PIXI's global point
+      groupEnd = { x: snapUp(pos.x, size), y: snapUp(pos.y, size) };
+    } else {
+      const x = snapDown(pos.x, size);
+      const y = snapDown(pos.y, size);
+      groupStart = { x, y };
+      groupEnd = { x, y };
+    }
+  });
+
+  const gfx = new P.Graphics();
+  gfx.visible = false;
+  gfx.rect(0, 0, 16, 16).fill("0xff000055");
+  g.groupSelContainer.addChild(gfx);
+  g.groupSelContainer.parent!.addChild(groupsContainer);
+
+  g.app.ticker.add(() => {
+    if (isGrouping()) {
+      gfx.visible = true;
+      const c = g.groupSelContainer;
+      // Normalize rectangle so that width/height are always positive
+      const left = Math.min(groupStart.x, groupEnd.x);
+      const top = Math.min(groupStart.y, groupEnd.y);
+      const width = Math.abs(groupEnd.x - groupStart.x);
+      const height = Math.abs(groupEnd.y - groupStart.y);
+
+      c.position.set(left, top);
+      c.width = width;
+      c.height = height;
+    }
+  });
+}
+
+subscribeToSelector(
+  (state) => state.tilesetEditor.groups,
+  (groups) => {
+    groupsContainer.removeChildren();
+    const g = new P.Graphics();
+    const mask = new P.Graphics();
+    groupsContainer.addChild(mask);
+    groupsContainer.setMask({
+      mask,
+    });
+    for (const group of groups) {
+      g.rect(
+        group.ul.x,
+        group.ul.y,
+        group.br.x - group.ul.x,
+        group.br.y - group.ul.y
+      ).stroke({
+        color: 0x000000,
+        width: 2,
+        alpha: 1,
+      });
+
+      mask
+        .rect(
+          group.ul.x,
+          group.ul.y,
+          group.br.x - group.ul.x,
+          group.br.y - group.ul.y
+        )
+        .fill({ color: 0x000000, alpha: 1 });
+    }
+    groupsContainer.addChild(g);
+  }
+);
