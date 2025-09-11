@@ -79,8 +79,8 @@ export default function TilesetEditorTab() {
   }, [state.groups, state.tileset]);
 
   return (
-    <Flex>
-      <Stack miw={200} style={{ flex: 1 }}>
+    <Flex style={{ height: "100dvh", minHeight: 0 }}>
+      <Stack miw={200} style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
         <Dropzone
           onDrop={uploadImage}
           maxSize={5 * 1024 ** 2}
@@ -126,7 +126,7 @@ export default function TilesetEditorTab() {
           </Group>
         </Dropzone>
 
-        <ScrollArea style={{ flex: 1 }}>
+        <ScrollArea style={{ flex: 1, minHeight: 0 }}>
           <Stack>{objects}</Stack>
         </ScrollArea>
       </Stack>
