@@ -1,0 +1,7 @@
+.crop {
+  /* Common styles for a cropped tile preview */
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  background-repeat: no-repeat;
+}

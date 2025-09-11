@@ -18,6 +18,7 @@
     "@reduxjs/toolkit": "^2.9.0",
     "@tabler/icons-react": "^3.34.1",
     "@xyflow/react": "^12.8.4",
+    "classnames": "^2.5.1",
     "diff": "^8.0.2",
     "express": "^5.1.0",
     "fflate": "^0.8.2",
@@ -28,6 +29,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-redux": "^9.2.0",
+    "sorted-btree": "^1.8.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

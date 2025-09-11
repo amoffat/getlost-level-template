@@ -1,8 +1,10 @@
 import * as P from "pixi.js";
 import { globals as g } from "./globals";
 
-export function makeBackground(): P.Container {
-  const size = 16; // size of each square
+export function makeBackground(
+  container: P.Container,
+  size: number = 16
+): P.Container {
   const canvas = document.createElement("canvas");
   canvas.width = size * 2;
   canvas.height = size * 2;
@@ -26,7 +28,7 @@ export function makeBackground(): P.Container {
     width: g.app.screen.width,
     height: g.app.screen.height,
   });
-  g.backgroundContainer.addChild(checkerboard);
-  g.backgroundContainer.filters = [new P.BlurFilter({ strength: 4 })];
+  container.addChild(checkerboard);
+  container.filters = [new P.BlurFilter({ strength: 4 })];
   return checkerboard;
 }

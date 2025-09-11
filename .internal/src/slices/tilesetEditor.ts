@@ -9,6 +9,7 @@ interface TilesetEditorState {
     size: number;
     visible: boolean;
   };
+  tileset: string | null;
   mode: Mode;
   groups: GroupCoords[];
 }
@@ -20,6 +21,7 @@ const slice = createSlice({
       size: 16,
       visible: true,
     },
+    tileset: null,
     mode: null,
     groups: [],
   } as TilesetEditorState,
@@ -60,6 +62,9 @@ const slice = createSlice({
     },
     clearGroups(state) {
       state.groups = [];
+    },
+    setTileset: (state, action: PayloadAction<string | null>) => {
+      state.tileset = action.payload;
     },
   },
 });

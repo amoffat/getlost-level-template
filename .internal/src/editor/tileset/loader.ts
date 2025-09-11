@@ -26,5 +26,8 @@ export async function loadTileset(source: File) {
   g.grid = drawGrid(16);
   store.dispatch(actions.clearGroups());
 
+  const objectURL = URL.createObjectURL(source);
+  store.dispatch(actions.setTileset(objectURL));
+
   return sprite;
 }

@@ -90,7 +90,7 @@ export function setupGrouper() {
   });
 }
 
-function drawGroups(groups: GroupCoords[]) {
+async function drawGroups(groups: GroupCoords[]) {
   groupsContainer.removeChildren();
   const g = new P.Graphics();
   const mask = new P.Graphics();
@@ -99,24 +99,20 @@ function drawGroups(groups: GroupCoords[]) {
     mask,
   });
   for (const group of groups) {
-    g.rect(
+    const rect = new P.Rectangle(
       group.ul.x,
       group.ul.y,
       group.br.x - group.ul.x,
       group.br.y - group.ul.y
-    ).stroke({
+    );
+    g.rect(rect.x, rect.y, rect.width, rect.height).stroke({
       color: 0x00ff00,
       width: 2,
       alpha: 1,
     });
 
     mask
-      .rect(
-        group.ul.x,
-        group.ul.y,
-        group.br.x - group.ul.x,
-        group.br.y - group.ul.y
-      )
+      .rect(rect.x, rect.y, rect.width, rect.height)
       .fill({ color: 0x000000, alpha: 1 });
   }
   groupsContainer.addChild(g);

@@ -8,7 +8,7 @@ import { setupPanControls } from "./pan";
 import { setupWheelZoom } from "./zoom";
 export { loadTileset } from "./loader";
 
-export async function init(parent: HTMLElement) {
+export async function init(parent: HTMLElement): Promise<P.Application> {
   // Create a new application
   g.app = new P.Application();
 
@@ -45,8 +45,7 @@ export async function init(parent: HTMLElement) {
   g.gridContainer = new P.Container();
 
   // Build checkerboard background
-  const checkerboard = makeBackground();
-  g.backgroundContainer.addChild(checkerboard);
+  makeBackground(g.backgroundContainer);
 
   g.app.ticker.add(() => {
     //
