@@ -1,4 +1,5 @@
 import * as P from "pixi.js";
+import { activeTilesetGroups } from "../../selectors/tileset";
 import { store } from "../../store";
 import { TileGroup } from "../../types/tilegroup";
 import { subscribeToSelector } from "../../utils/redux";
@@ -44,7 +45,7 @@ export function drawGrid(gridSize: number): P.Container {
   container.addChild(gfx);
   g.tilesetContainer.addChild(container);
 
-  const groups = store.getState().tilesetEditor.groups;
+  const groups = activeTilesetGroups(store.getState());
   drawGridMask(groups);
 
   return container;
@@ -74,4 +75,4 @@ function drawGridMask(groups: TileGroup[]) {
   });
 }
 
-subscribeToSelector((state) => state.tilesetEditor.groups, drawGridMask);
+subscribeToSelector(activeTilesetGroups, drawGridMask);

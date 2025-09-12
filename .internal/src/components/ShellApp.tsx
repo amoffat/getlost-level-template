@@ -8,8 +8,8 @@ import DialogueTab from "./Dialogue";
 import LogPane from "./LogPane";
 import MapEditorTab from "./MapEditor";
 import PreviewTab from "./Preview";
-import TilesetCrop from "./TilesetCrop";
 import TilesetEditorTab from "./TilesetEditor";
+import TilesetGroup from "./TilesetGroup";
 
 declare global {
   interface Window {
@@ -37,6 +37,7 @@ export function ShellApp() {
     [defaultTab]: true,
   });
   const ts = useAppSelector((state: RootState) => state.tilesetEditor);
+  const ms = useAppSelector((state: RootState) => state.mapEditor);
 
   const handleTabChange = (value: TabName | null) => {
     if (!value) return;
@@ -91,17 +92,17 @@ export function ShellApp() {
   }, []);
 
   const objects: JSX.Element[] = useMemo(() => {
-    if (!ts.tileset) return [];
-
     const objs: JSX.Element[] = [];
-    const num = ts.groups.length;
+    const num = ms.palette.length;
     for (let i = num - 1; i >= 0; i--) {
-      const group = ts.groups[i];
-      objs.push(<TilesetCrop key={i} src={ts.tileset} coords={group.pos} />);
+      const group = ms.palette[i];
+      objs.push(
+        <TilesetGroup key={i} src={group.objectUrl} coords={group.pos} />
+      );
     }
 
     return objs;
-  }, [ts.groups, ts.tileset]);
+  }, [ms.palette]);
 
   return (
     <AppShell footer={{ height: "30%", collapsed: false }} withBorder={true}>

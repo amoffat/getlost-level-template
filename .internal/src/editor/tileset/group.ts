@@ -1,5 +1,7 @@
 import * as P from "pixi.js";
-import { actions } from "../../slices/tilesetEditor";
+import { activeTilesetGroups } from "../../selectors/tileset";
+import { actions as mapActions } from "../../slices/mapEditor";
+import { actions as tsActions } from "../../slices/tilesetEditor";
 import { store } from "../../store";
 import { TileGroup } from "../../types/tilegroup";
 import { closeEnough } from "../../utils/math";
@@ -32,14 +34,17 @@ export function setupGrouper() {
   window.addEventListener("keydown", (e) => {
     if (e.repeat) return;
     if (e.key === "g") {
-      store.dispatch(actions.setMode("group"));
+      store.dispatch(tsActions.setMode("group"));
     }
   });
 
   window.addEventListener("keyup", (e) => {
     if (e.key === "g") {
       if (isGrouping()) {
-        store.dispatch(actions.setMode(null));
+        store.dispatch(tsActions.setMode(null));
+
+        const tsState = store.getState().tilesetEditor;
+        const gridSize = tsState.grid.size;
 
         const c = g.groupSelContainer;
         const group: TileGroup = {
@@ -47,15 +52,15 @@ export function setupGrouper() {
             ul: { x: c.x, y: c.y },
             br: { x: c.x + c.width, y: c.y + c.height },
           },
+          objectUrl: tsState.tileset!,
           singleTile: false,
+          gridSize,
         };
 
-        const state = store.getState().tilesetEditor;
-        const gridSize = state.grid.size;
         group.singleTile =
           closeEnough(c.width, gridSize) && closeEnough(c.height, gridSize);
 
-        store.dispatch(actions.addGroup(group));
+        store.dispatch(mapActions.addPaletteObject(group));
       }
     }
   });
@@ -128,4 +133,4 @@ async function drawGroups(groups: TileGroup[]) {
   groupsContainer.addChild(g);
 }
 
-subscribeToSelector((state) => state.tilesetEditor.groups, drawGroups);
+subscribeToSelector(activeTilesetGroups, drawGroups);

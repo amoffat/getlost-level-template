@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ActiveLayer, LayerData } from "../types/layer";
-import { TileObject } from "../types/object";
+import { ActiveLayer } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
 
 type Mode = null | "pan" | "place";
@@ -11,15 +10,11 @@ interface MapEditorState {
     visible: boolean;
   };
   mode: Mode;
-  place?: {
-    id: string;
-  };
   layers: {
     active: ActiveLayer;
     dimInactive: boolean;
-    layerData: Record<ActiveLayer, LayerData>;
   };
-  objPalette: TileObject[];
+  palette: TileGroup[];
 }
 
 const slice = createSlice({
@@ -33,8 +28,8 @@ const slice = createSlice({
     layers: {
       active: "ground",
       dimInactive: true,
-      layerData: {},
     },
+    palette: [],
   } as MapEditorState,
   reducers: {
     setActiveLayer(state, action: { payload: ActiveLayer }) {
@@ -43,21 +38,45 @@ const slice = createSlice({
     setDimInactiveLayer(state, action: { payload: boolean }) {
       state.layers.dimInactive = action.payload;
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase<string, PayloadAction<TileGroup>>(
-        "tilesetEditor/addGroup",
-        (state, { payload }) => {
-          //   console.log(payload);
-          //   const to = new TileObject();
-          //   state.mode = null;
-          //   state.place = undefined;
+    addSinglePaletteTile(state, action: PayloadAction<TileGroup>) {
+      const group = action.payload;
+      state.palette.push(group);
+    },
+
+    addPaletteObject(state, action: PayloadAction<TileGroup>) {
+      const group = action.payload;
+
+      // Remove any existing groups that overlap with the new one
+      const newPalette: TileGroup[] = [];
+      for (const existing of state.palette) {
+        if (existing.objectUrl !== group.objectUrl) {
+          newPalette.push(existing);
+          continue;
         }
-      )
-      .addDefaultCase(() => {});
+
+        const isOverlapping = !(
+          group.pos.br.x <= existing.pos.ul.x ||
+          group.pos.ul.x >= existing.pos.br.x ||
+          group.pos.br.y <= existing.pos.ul.y ||
+          group.pos.ul.y >= existing.pos.br.y
+        );
+        if (!isOverlapping) {
+          newPalette.push(existing);
+        }
+      }
+
+      if (!group.singleTile) {
+        newPalette.push(group);
+      }
+      state.palette = newPalette;
+    },
+  },
+  selectors: {
+    selectTilesetGroups: (state, tileset: string | null) =>
+      state.palette.filter((g) => g.objectUrl === tileset),
   },
 });
 
+export const selectors = slice.selectors;
 export const actions = slice.actions;
 export default slice.reducer;

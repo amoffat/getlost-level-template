@@ -12,11 +12,9 @@ interface Tile {
   pos: Vector3;
 }
 
-export class LayerData {
-  tiles: BTree<Vector3, Tile>;
-
+export class LayerTileData extends BTree<Vector3, Tile> {
   constructor() {
-    this.tiles = new BTree(undefined, (a, b) => {
+    super(undefined, (a, b) => {
       if (a.y !== b.y) return a.y - b.y;
       if (a.x !== b.x) return a.x - b.x;
       if (a.z !== b.z) return a.z - b.z;

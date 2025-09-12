@@ -1,5 +1,6 @@
 import * as P from "pixi.js";
-import { actions } from "../../slices/tilesetEditor";
+import { actions as mapActions } from "../../slices/mapEditor";
+import { actions as tsActions } from "../../slices/tilesetEditor";
 import { store } from "../../store";
 import { Rect } from "../../types/rect";
 import { globals as g } from "./globals";
@@ -54,10 +55,9 @@ export async function loadTileset(source: File) {
   g.tilesetContainer.addChild(sprite);
   const gridSize = store.getState().tilesetEditor.grid.size;
   g.grid = drawGrid(gridSize);
-  store.dispatch(actions.clearGroups());
 
-  const objectURL = URL.createObjectURL(source);
-  store.dispatch(actions.setTileset(objectURL));
+  const objectUrl = URL.createObjectURL(source);
+  store.dispatch(tsActions.setTileset(objectUrl));
 
   // Add all single-tile groups by default
   const cols = Math.floor(sprite.width / gridSize);
@@ -73,8 +73,10 @@ export async function loadTileset(source: File) {
       // Skip empty tiles (all pixels fully transparent)
       if (isRectTransparent(imageData, coords)) continue;
       store.dispatch(
-        actions.addSingleTileGroup({
+        mapActions.addSinglePaletteTile({
           pos: coords,
+          objectUrl,
+          gridSize,
           singleTile: true,
         })
       );
