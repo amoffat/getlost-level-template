@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Tileset } from "../types/tileset";
 
 type Mode = null | "pan" | "group";
 
@@ -7,7 +8,7 @@ interface TilesetEditorState {
     size: number;
     visible: boolean;
   };
-  tileset: string | null;
+  tileset: Tileset | null;
   mode: Mode;
 }
 
@@ -31,7 +32,7 @@ const slice = createSlice({
     setMode(state, action: PayloadAction<Mode>) {
       state.mode = action.payload;
     },
-    setTileset: (state, action: PayloadAction<string | null>) => {
+    setTileset: (state, action: PayloadAction<Tileset>) => {
       state.tileset = action.payload;
     },
   },

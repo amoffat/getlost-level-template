@@ -10,11 +10,13 @@ interface MapEditorState {
     visible: boolean;
   };
   mode: Mode;
+  place: TileGroup | null;
   layers: {
     active: ActiveLayer;
     dimInactive: boolean;
   };
-  palette: TileGroup[];
+  paletteIds: string[];
+  palette: Record<string, TileGroup>;
 }
 
 const slice = createSlice({
@@ -24,12 +26,14 @@ const slice = createSlice({
       size: 16,
       visible: true,
     },
+    place: null,
     mode: null,
     layers: {
       active: "ground",
       dimInactive: true,
     },
-    palette: [],
+    paletteIds: [],
+    palette: {},
   } as MapEditorState,
   reducers: {
     setActiveLayer(state, action: { payload: ActiveLayer }) {
@@ -40,17 +44,25 @@ const slice = createSlice({
     },
     addSinglePaletteTile(state, action: PayloadAction<TileGroup>) {
       const group = action.payload;
-      state.palette.push(group);
+      if (group.id in state.palette) return;
+      state.paletteIds.push(group.id);
+      state.palette[group.id] = group;
     },
 
     addPaletteObject(state, action: PayloadAction<TileGroup>) {
       const group = action.payload;
+      if (group.id in state.palette) return;
 
       // Remove any existing groups that overlap with the new one
-      const newPalette: TileGroup[] = [];
-      for (const existing of state.palette) {
+      const newPaletteIds: string[] = [];
+      const newPalette: Record<string, TileGroup> = {};
+
+      for (const objId of state.paletteIds) {
+        const existing = state.palette[objId];
+
         if (existing.objectUrl !== group.objectUrl) {
-          newPalette.push(existing);
+          newPalette[objId] = existing;
+          newPaletteIds.push(objId);
           continue;
         }
 
@@ -61,19 +73,29 @@ const slice = createSlice({
           group.pos.ul.y >= existing.pos.br.y
         );
         if (!isOverlapping) {
-          newPalette.push(existing);
+          newPalette[objId] = existing;
+          newPaletteIds.push(objId);
         }
       }
 
       if (!group.singleTile) {
-        newPalette.push(group);
+        newPalette[group.id] = group;
+        newPaletteIds.push(group.id);
       }
+
+      state.paletteIds = newPaletteIds;
       state.palette = newPalette;
     },
+    setPlace(state, action: PayloadAction<TileGroup | null>) {
+      state.place = action.payload;
+    },
   },
+
   selectors: {
     selectTilesetGroups: (state, tileset: string | null) =>
-      state.palette.filter((g) => g.objectUrl === tileset),
+      state.paletteIds.filter(
+        (objId) => state.palette[objId].objectUrl === tileset
+      ),
   },
 });
 

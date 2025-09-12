@@ -4,6 +4,7 @@ import { Rect } from "../types/rect";
 import styles from "./styles/TilesetGroup.module.css";
 
 export interface TilesetCropProps extends React.HTMLAttributes<HTMLDivElement> {
+  id: string;
   src: string;
   coords: Rect;
   className?: string;
@@ -15,6 +16,7 @@ export interface TilesetCropProps extends React.HTMLAttributes<HTMLDivElement> {
 const TilesetGroup = React.forwardRef<HTMLDivElement, TilesetCropProps>(
   function TilesetGroup(
     {
+      id,
       src,
       coords: group,
       className,
@@ -35,6 +37,7 @@ const TilesetGroup = React.forwardRef<HTMLDivElement, TilesetCropProps>(
         style={{ width: width * scale, height: height * scale }}
       >
         <div
+          data-objid={id}
           className={classNames(styles.crop, className)}
           style={{
             width,

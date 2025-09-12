@@ -1,8 +1,10 @@
 import { AppShell, ScrollArea, Tabs } from "@mantine/core";
 import { ReactFlowProvider } from "@xyflow/react";
 import { JSX, useEffect, useMemo, useState } from "react";
+import { useDispatch } from "react-redux";
 import { useAppSelector } from "../hooks/redux";
 import { log } from "../log";
+import { actions } from "../slices/mapEditor";
 import { RootState } from "../store";
 import DialogueTab from "./Dialogue";
 import LogPane from "./LogPane";
@@ -38,6 +40,7 @@ export function ShellApp() {
   });
   const ts = useAppSelector((state: RootState) => state.tilesetEditor);
   const ms = useAppSelector((state: RootState) => state.mapEditor);
+  const dispatch = useDispatch();
 
   const handleTabChange = (value: TabName | null) => {
     if (!value) return;
@@ -93,13 +96,15 @@ export function ShellApp() {
 
   const objects: JSX.Element[] = useMemo(() => {
     const objs: JSX.Element[] = [];
-    const num = ms.palette.length;
+    const num = ms.paletteIds.length;
     for (let i = num - 1; i >= 0; i--) {
-      const group = ms.palette[i];
+      const objId = ms.paletteIds[i];
+      const group = ms.palette[objId];
       objs.push(
         <TilesetGroup
           scale={1}
           key={i}
+          id={group.id}
           src={group.objectUrl}
           coords={group.pos}
         />
@@ -107,7 +112,16 @@ export function ShellApp() {
     }
 
     return objs;
-  }, [ms.palette]);
+  }, [ms.paletteIds, ms.palette]);
+
+  const selectObject = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName !== "DIV") return;
+    const objId = target.dataset.objid;
+    if (!objId) return;
+    const obj = ms.palette[objId];
+    dispatch(actions.setPlace(obj));
+  };
 
   return (
     <AppShell footer={{ height: "30%", collapsed: false }} withBorder={true}>
@@ -166,7 +180,7 @@ export function ShellApp() {
           </Tabs.Panel>
           <Tabs.Panel value="palette" style={{ flex: 1, overflow: "hidden" }}>
             <ScrollArea h="100%" type="auto" p="md">
-              {objects}
+              <div onClick={selectObject}>{objects}</div>
             </ScrollArea>
           </Tabs.Panel>
         </Tabs>

@@ -6,6 +6,7 @@ import { store } from "../../store";
 import { TileGroup } from "../../types/tilegroup";
 import { closeEnough } from "../../utils/math";
 import { subscribeToSelector } from "../../utils/redux";
+import { genGroupId } from "../../utils/tileset";
 import { globals as g } from "./globals";
 
 let groupStart = { x: 0, y: 0 };
@@ -38,21 +39,26 @@ export function setupGrouper() {
     }
   });
 
-  window.addEventListener("keyup", (e) => {
+  window.addEventListener("keyup", async (e) => {
     if (e.key === "g") {
       if (isGrouping()) {
         store.dispatch(tsActions.setMode(null));
 
         const tsState = store.getState().tilesetEditor;
+        const ts = tsState.tileset!;
         const gridSize = tsState.grid.size;
 
         const c = g.groupSelContainer;
+
+        const coords = {
+          ul: { x: c.x, y: c.y },
+          br: { x: c.x + c.width, y: c.y + c.height },
+        };
+        const id = await genGroupId({ coords, tsId: ts.id });
         const group: TileGroup = {
-          pos: {
-            ul: { x: c.x, y: c.y },
-            br: { x: c.x + c.width, y: c.y + c.height },
-          },
-          objectUrl: tsState.tileset!,
+          id,
+          pos: coords,
+          objectUrl: ts.objectUrl,
           singleTile: false,
           gridSize,
         };

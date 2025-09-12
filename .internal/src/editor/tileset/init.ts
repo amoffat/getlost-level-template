@@ -14,6 +14,7 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
 
   // Initialize the application
   await g.app.init({ backgroundAlpha: 0, resizeTo: parent });
+  const stage = g.app.stage;
 
   // Tweak canvas interaction to avoid browser scroll/selection during drag
   const canvas = g.app.canvas;
@@ -23,12 +24,12 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
 
   // Background container with checkerboard pattern (conventional transparent-bg look)
   g.backgroundContainer = new P.Container();
-  g.app.stage.addChild(g.backgroundContainer);
+  stage.addChild(g.backgroundContainer);
 
   // Foreground container for the tileset sprite
   g.tilesetContainer = new P.Container();
   g.tilesetContainer.interactive = true;
-  g.app.stage.addChild(g.tilesetContainer);
+  stage.addChild(g.tilesetContainer);
 
   g.groupSelContainer = new P.Container();
   g.groupSelContainer.zIndex = 100;
@@ -36,10 +37,10 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
 
   // Route events directly to the stage to avoid per-move hit testing of children
   // (reduces pointermove overhead) and disable child event handling
-  g.app.stage.interactive = true;
+  stage.interactive = true;
   // Make sure the stage captures pointer events across the whole viewport
   // and update its hitArea to the current screen when needed
-  g.app.stage.hitArea = g.app.screen;
+  stage.hitArea = g.app.screen;
 
   // Overlay container for grid lines (kept separate so clearing tileset doesn't remove grid)
   g.gridContainer = new P.Container();

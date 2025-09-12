@@ -3,6 +3,8 @@ import { actions as mapActions } from "../../slices/mapEditor";
 import { actions as tsActions } from "../../slices/tilesetEditor";
 import { store } from "../../store";
 import { Rect } from "../../types/rect";
+import { schedulerYield } from "../../utils/async";
+import { genGroupId, genTilesetId } from "../../utils/tileset";
 import { globals as g } from "./globals";
 import { drawGrid } from "./grid";
 
@@ -57,7 +59,8 @@ export async function loadTileset(source: File) {
   g.grid = drawGrid(gridSize);
 
   const objectUrl = URL.createObjectURL(source);
-  store.dispatch(tsActions.setTileset(objectUrl));
+  const tsId = await genTilesetId(source);
+  store.dispatch(tsActions.setTileset({ objectUrl, id: tsId }));
 
   // Add all single-tile groups by default
   const cols = Math.floor(sprite.width / gridSize);
@@ -72,8 +75,13 @@ export async function loadTileset(source: File) {
       };
       // Skip empty tiles (all pixels fully transparent)
       if (isRectTransparent(imageData, coords)) continue;
+
+      const id = await genGroupId({ coords, tsId });
+      await schedulerYield();
+
       store.dispatch(
         mapActions.addSinglePaletteTile({
+          id,
           pos: coords,
           objectUrl,
           gridSize,
@@ -82,6 +90,4 @@ export async function loadTileset(source: File) {
       );
     }
   }
-
-  return sprite;
 }
