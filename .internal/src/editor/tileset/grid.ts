@@ -1,6 +1,6 @@
 import * as P from "pixi.js";
 import { store } from "../../store";
-import { GroupCoords } from "../../types/tilegroup";
+import { TileGroup } from "../../types/tilegroup";
 import { subscribeToSelector } from "../../utils/redux";
 import { globals as g } from "./globals";
 
@@ -50,20 +50,20 @@ export function drawGrid(gridSize: number): P.Container {
   return container;
 }
 
-function drawGridMask(groups: GroupCoords[]) {
+function drawGridMask(groups: TileGroup[]) {
   mask?.removeFromParent();
 
   mask = new P.Graphics();
   container?.addChild(mask);
 
   mask.fill({ color: 0x000000, alpha: 0 });
-  for (const group of groups) {
+  for (const group of groups.filter((g) => !g.singleTile)) {
     mask
       .rect(
-        group.ul.x,
-        group.ul.y,
-        group.br.x - group.ul.x,
-        group.br.y - group.ul.y
+        group.pos.ul.x,
+        group.pos.ul.y,
+        group.pos.br.x - group.pos.ul.x,
+        group.pos.br.y - group.pos.ul.y
       )
       .fill({ color: 0x000000, alpha: 1 });
   }

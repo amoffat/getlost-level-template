@@ -1,5 +1,7 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ActiveLayer, LayerData } from "../types/layer";
+import { TileObject } from "../types/object";
+import { TileGroup } from "../types/tilegroup";
 
 type Mode = null | "pan" | "place";
 
@@ -17,6 +19,7 @@ interface MapEditorState {
     dimInactive: boolean;
     layerData: Record<ActiveLayer, LayerData>;
   };
+  objPalette: TileObject[];
 }
 
 const slice = createSlice({
@@ -40,6 +43,19 @@ const slice = createSlice({
     setDimInactiveLayer(state, action: { payload: boolean }) {
       state.layers.dimInactive = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase<string, PayloadAction<TileGroup>>(
+        "tilesetEditor/addGroup",
+        (state, { payload }) => {
+          //   console.log(payload);
+          //   const to = new TileObject();
+          //   state.mode = null;
+          //   state.place = undefined;
+        }
+      )
+      .addDefaultCase(() => {});
   },
 });
 

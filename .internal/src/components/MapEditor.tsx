@@ -61,14 +61,10 @@ export default function MapEditorTab() {
   return (
     <Flex>
       <Stack miw={200} style={{ flex: 1 }}>
-        <Tabs defaultValue={"objects"}>
+        <Tabs defaultValue={"tilesets"}>
           <Tabs.List>
-            <Tabs.Tab value="objects">Objects</Tabs.Tab>
             <Tabs.Tab value="tilesets">Tilesets</Tabs.Tab>
           </Tabs.List>
-          <Tabs.Panel value="objects">
-            <Text>hello</Text>
-          </Tabs.Panel>
           <Tabs.Panel value="tilesets">
             <Text>hello</Text>
           </Tabs.Panel>

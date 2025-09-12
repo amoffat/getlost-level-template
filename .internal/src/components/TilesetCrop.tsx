@@ -1,80 +1,39 @@
 import classNames from "classnames";
-import React, { useEffect, useState } from "react";
-import type { GroupCoords } from "../types/tilegroup";
+import React from "react";
+import { Rect } from "../types/rect";
 import styles from "./styles/TilesetCrop.module.css";
 
 export interface TilesetCropProps {
   src: string;
-  group: GroupCoords;
+  coords: Rect;
   className?: string;
   style?: React.CSSProperties;
   title?: string;
+  onClick?: () => void;
 }
 
 export default function TilesetCrop({
   src,
-  group,
+  coords: group,
   className,
   style,
+  onClick,
 }: TilesetCropProps) {
-  const cropW = Math.max(0, group.br.x - group.ul.x);
-  const cropH = Math.max(0, group.br.y - group.ul.y);
-
-  const [naturalSize, setNaturalSize] = useState<{ w: number; h: number }>();
-
-  useEffect(() => {
-    if (!src) return;
-    let cancelled = false;
-    const img = new Image();
-    img.decoding = "async";
-    img.src = src;
-    if (img.complete) {
-      if (!cancelled)
-        setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
-    } else {
-      img.onload = () => {
-        if (!cancelled)
-          setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
-      };
-      img.onerror = () => {
-        if (!cancelled) setNaturalSize(undefined);
-      };
-    }
-    return () => {
-      cancelled = true;
-    };
-  }, [src]);
+  const width = Math.max(0, group.br.x - group.ul.x);
+  const height = Math.max(0, group.br.y - group.ul.y);
+  const bgPos = `-${group.ul.x}px -${group.ul.y}px`;
 
   return (
     <div
       className={classNames(styles.crop, className)}
+      onClick={onClick}
       style={{
-        // Fill parent width; keep crop aspect ratio
-        width: "100%",
-        aspectRatio: cropW && cropH ? `${cropW} / ${cropH}` : undefined,
-        position: "relative",
-        overflow: "hidden",
+        width,
+        height,
+        backgroundImage: `url(${src})`,
+        backgroundPosition: bgPos,
         ...(style ?? {}),
       }}
-    >
-      {naturalSize && cropW > 0 && cropH > 0 && (
-        <img
-          src={src}
-          alt=""
-          draggable={false}
-          style={{
-            position: "absolute",
-            // Scale the full image relative to the crop width
-            width: `${(naturalSize.w / cropW) * 100}%`,
-            height: "auto",
-            left: `-${(group.ul.x / cropW) * 100}%`,
-            top: `-${(group.ul.y / cropH) * 100}%`,
-            imageRendering: "pixelated",
-            userSelect: "none",
-            pointerEvents: "none",
-          }}
-        />
-      )}
-    </div>
+    />
   );
 }

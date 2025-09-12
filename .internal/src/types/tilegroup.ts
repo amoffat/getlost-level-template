@@ -1,6 +1,6 @@
-import { Vector } from "../vec";
+import type { Rect } from "./rect";
 
-export interface GroupCoords {
-  ul: Vector;
-  br: Vector;
+export interface TileGroup {
+  pos: Rect;
+  singleTile: boolean;
 }

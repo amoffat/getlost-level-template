@@ -1,7 +1,8 @@
 import * as P from "pixi.js";
 import { actions } from "../../slices/tilesetEditor";
 import { store } from "../../store";
-import { GroupCoords } from "../../types/tilegroup";
+import { TileGroup } from "../../types/tilegroup";
+import { closeEnough } from "../../utils/math";
 import { subscribeToSelector } from "../../utils/redux";
 import { globals as g } from "./globals";
 
@@ -41,11 +42,20 @@ export function setupGrouper() {
         store.dispatch(actions.setMode(null));
 
         const c = g.groupSelContainer;
-        const coords: GroupCoords = {
-          ul: { x: c.x, y: c.y },
-          br: { x: c.x + c.width, y: c.y + c.height },
+        const group: TileGroup = {
+          pos: {
+            ul: { x: c.x, y: c.y },
+            br: { x: c.x + c.width, y: c.y + c.height },
+          },
+          singleTile: false,
         };
-        store.dispatch(actions.addGroup(coords));
+
+        const state = store.getState().tilesetEditor;
+        const gridSize = state.grid.size;
+        group.singleTile =
+          closeEnough(c.width, gridSize) && closeEnough(c.height, gridSize);
+
+        store.dispatch(actions.addGroup(group));
       }
     }
   });
@@ -90,7 +100,7 @@ export function setupGrouper() {
   });
 }
 
-async function drawGroups(groups: GroupCoords[]) {
+async function drawGroups(groups: TileGroup[]) {
   groupsContainer.removeChildren();
   const g = new P.Graphics();
   const mask = new P.Graphics();
@@ -98,12 +108,12 @@ async function drawGroups(groups: GroupCoords[]) {
   groupsContainer.setMask({
     mask,
   });
-  for (const group of groups) {
+  for (const group of groups.filter((g) => !g.singleTile)) {
     const rect = new P.Rectangle(
-      group.ul.x,
-      group.ul.y,
-      group.br.x - group.ul.x,
-      group.br.y - group.ul.y
+      group.pos.ul.x,
+      group.pos.ul.y,
+      group.pos.br.x - group.pos.ul.x,
+      group.pos.br.y - group.pos.ul.y
     );
     g.rect(rect.x, rect.y, rect.width, rect.height).stroke({
       color: 0x00ff00,

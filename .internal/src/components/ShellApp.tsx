@@ -1,11 +1,14 @@
 import { AppShell, Tabs } from "@mantine/core";
 import { ReactFlowProvider } from "@xyflow/react";
-import { useEffect, useState } from "react";
+import { JSX, useEffect, useMemo, useState } from "react";
+import { useAppSelector } from "../hooks/redux";
 import { log } from "../log";
+import { RootState } from "../store";
 import DialogueTab from "./Dialogue";
 import LogPane from "./LogPane";
 import MapEditorTab from "./MapEditor";
 import PreviewTab from "./Preview";
+import TilesetCrop from "./TilesetCrop";
 import TilesetEditorTab from "./TilesetEditor";
 
 declare global {
@@ -33,6 +36,7 @@ export function ShellApp() {
   >({
     [defaultTab]: true,
   });
+  const ts = useAppSelector((state: RootState) => state.tilesetEditor);
 
   const handleTabChange = (value: TabName | null) => {
     if (!value) return;
@@ -86,8 +90,21 @@ export function ShellApp() {
     }
   }, []);
 
+  const objects: JSX.Element[] = useMemo(() => {
+    if (!ts.tileset) return [];
+
+    const objs: JSX.Element[] = [];
+    const num = ts.groups.length;
+    for (let i = num - 1; i >= 0; i--) {
+      const group = ts.groups[i];
+      objs.push(<TilesetCrop key={i} src={ts.tileset} coords={group.pos} />);
+    }
+
+    return objs;
+  }, [ts.groups, ts.tileset]);
+
   return (
-    <AppShell footer={{ height: 300, collapsed: true }} withBorder={false}>
+    <AppShell footer={{ height: "30%", collapsed: false }} withBorder={true}>
       <AppShell.Main>
         <Tabs
           value={activeTab}
@@ -128,9 +145,18 @@ export function ShellApp() {
         </Tabs>
       </AppShell.Main>
       <AppShell.Footer>
-        <div id="log-messages">
-          <LogPane maxMessages={300} />
-        </div>
+        <Tabs defaultValue={"palette"}>
+          <Tabs.List>
+            <Tabs.Tab value="log">Log</Tabs.Tab>
+            <Tabs.Tab value="palette">Palette</Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panel value="log">
+            <div id="log-messages">
+              <LogPane maxMessages={300} />
+            </div>
+          </Tabs.Panel>
+          <Tabs.Panel value="palette">{objects}</Tabs.Panel>
+        </Tabs>
       </AppShell.Footer>
     </AppShell>
   );

@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { GroupCoords } from "../types/tilegroup";
-import { closeEnough } from "../utils/math";
+import { TileGroup } from "../types/tilegroup";
 
 type Mode = null | "pan" | "group";
 
@@ -11,7 +10,7 @@ interface TilesetEditorState {
   };
   tileset: string | null;
   mode: Mode;
-  groups: GroupCoords[];
+  groups: TileGroup[];
 }
 
 const slice = createSlice({
@@ -35,30 +34,30 @@ const slice = createSlice({
     setMode(state, action: PayloadAction<Mode>) {
       state.mode = action.payload;
     },
-    addGroup(state, action: PayloadAction<GroupCoords>) {
+    addGroup(state, action: PayloadAction<TileGroup>) {
       const group = action.payload;
-      const newGroups: GroupCoords[] = [];
+      const newGroups: TileGroup[] = [];
 
       for (const existing of state.groups) {
         const isOverlapping = !(
-          group.br.x <= existing.ul.x ||
-          group.ul.x >= existing.br.x ||
-          group.br.y <= existing.ul.y ||
-          group.ul.y >= existing.br.y
+          group.pos.br.x <= existing.pos.ul.x ||
+          group.pos.ul.x >= existing.pos.br.x ||
+          group.pos.br.y <= existing.pos.ul.y ||
+          group.pos.ul.y >= existing.pos.br.y
         );
         if (!isOverlapping) {
           newGroups.push(existing);
         }
       }
-      const width = group.br.x - group.ul.x;
-      const height = group.br.y - group.ul.y;
-      const gridSize = state.grid.size;
-      const isSingleTile =
-        closeEnough(width, gridSize) && closeEnough(height, gridSize);
-      if (!isSingleTile) {
+
+      if (!group.singleTile) {
         newGroups.push(group);
       }
       state.groups = newGroups;
+    },
+    addSingleTileGroup(state, action: PayloadAction<TileGroup>) {
+      const group = action.payload;
+      state.groups.push(group);
     },
     clearGroups(state) {
       state.groups = [];
