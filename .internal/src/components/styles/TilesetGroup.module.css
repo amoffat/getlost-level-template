@@ -1,7 +1,16 @@
+.wrapper {
+  /* Provides the scaled layout box while inner content scales via transform */
+  position: relative;
+  display: inline-block;
+}
+
 .crop {
   /* Common styles for a cropped tile preview */
   position: relative;
   overflow: hidden;
   display: inline-block;
   background-repeat: no-repeat;
+  /* Keep pixels crisp when scaled */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges; /* fallback */
 }

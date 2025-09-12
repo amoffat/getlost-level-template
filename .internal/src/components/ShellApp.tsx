@@ -1,4 +1,4 @@
-import { AppShell, Tabs } from "@mantine/core";
+import { AppShell, ScrollArea, Tabs } from "@mantine/core";
 import { ReactFlowProvider } from "@xyflow/react";
 import { JSX, useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "../hooks/redux";
@@ -97,7 +97,12 @@ export function ShellApp() {
     for (let i = num - 1; i >= 0; i--) {
       const group = ms.palette[i];
       objs.push(
-        <TilesetGroup key={i} src={group.objectUrl} coords={group.pos} />
+        <TilesetGroup
+          scale={1}
+          key={i}
+          src={group.objectUrl}
+          coords={group.pos}
+        />
       );
     }
 
@@ -146,7 +151,10 @@ export function ShellApp() {
         </Tabs>
       </AppShell.Main>
       <AppShell.Footer>
-        <Tabs defaultValue={"palette"}>
+        <Tabs
+          defaultValue={"palette"}
+          style={{ height: "100%", display: "flex", flexDirection: "column" }}
+        >
           <Tabs.List>
             <Tabs.Tab value="log">Log</Tabs.Tab>
             <Tabs.Tab value="palette">Palette</Tabs.Tab>
@@ -156,7 +164,11 @@ export function ShellApp() {
               <LogPane maxMessages={300} />
             </div>
           </Tabs.Panel>
-          <Tabs.Panel value="palette">{objects}</Tabs.Panel>
+          <Tabs.Panel value="palette" style={{ flex: 1, overflow: "hidden" }}>
+            <ScrollArea h="100%" type="auto" p="md">
+              {objects}
+            </ScrollArea>
+          </Tabs.Panel>
         </Tabs>
       </AppShell.Footer>
     </AppShell>
