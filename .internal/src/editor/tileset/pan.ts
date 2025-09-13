@@ -3,16 +3,21 @@ import { actions } from "../../slices/tilesetEditor";
 import { store } from "../../store";
 import { globals as g } from "./globals";
 
-// Panning state
-let panStartGlobal = { x: 0, y: 0 };
-let panStartContainer = { x: 0, y: 0 };
+export function setupPanControls({
+  stage,
+  onPanningStart,
+  onPanningEnd,
+}: {
+  stage: P.Container;
+  onPanningStart?: VoidFunction;
+  onPanningEnd?: VoidFunction;
+}) {
+  // Panning state
+  let panStartGlobal = { x: 0, y: 0 };
+  let panStartContainer = { x: 0, y: 0 };
+  let panning = false;
 
-function isPanning(): boolean {
-  return store.getState().tilesetEditor.mode === "pan";
-}
-
-export function setupPanControls() {
-  g.app.stage.on("pointerdown", (e: P.FederatedPointerEvent) => {
+  stage.on("pointerdown", (e: P.FederatedPointerEvent) => {
     // Only start panning on primary button (left click)
     if (e.button !== 0) return;
     e.preventDefault();
@@ -21,11 +26,13 @@ export function setupPanControls() {
       x: g.tilesetContainer.position.x,
       y: g.tilesetContainer.position.y,
     };
+    panning = true;
+    onPanningStart?.();
     store.dispatch(actions.setMode("pan"));
   });
 
-  g.app.stage.on("pointermove", (e: P.FederatedPointerEvent) => {
-    if (!isPanning()) return;
+  stage.on("pointermove", (e: P.FederatedPointerEvent) => {
+    if (!panning) return;
     e.preventDefault();
     const dx = e.global.x - panStartGlobal.x;
     const dy = e.global.y - panStartGlobal.y;
@@ -36,12 +43,14 @@ export function setupPanControls() {
   });
 
   const endPan = (e: P.FederatedPointerEvent) => {
-    if (!isPanning()) return;
+    if (!panning) return;
     e.preventDefault();
+    panning = false;
+    onPanningEnd?.();
     store.dispatch(actions.setMode(null));
   };
 
-  g.app.stage.on("pointerup", endPan);
-  g.app.stage.on("pointerupoutside", endPan);
-  g.app.stage.on("pointercancel", endPan);
+  stage.on("pointerup", endPan);
+  stage.on("pointerupoutside", endPan);
+  stage.on("pointercancel", endPan);
 }

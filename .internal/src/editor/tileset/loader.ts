@@ -3,6 +3,7 @@ import { actions as mapActions } from "../../slices/mapEditor";
 import { actions as tsActions } from "../../slices/tilesetEditor";
 import { store } from "../../store";
 import { Rect } from "../../types/rect";
+import { TileGroup } from "../../types/tilegroup";
 import { schedulerYield } from "../../utils/async";
 import { genGroupId, genTilesetId } from "../../utils/tileset";
 import { globals as g } from "./globals";
@@ -67,6 +68,9 @@ export async function loadTileset(source: File) {
   const rows = Math.floor(sprite.height / gridSize);
   // Build a single ImageData snapshot so we can quickly test transparency per tile
   const imageData = getImageDataFromBitmap(bitmap);
+
+  store.dispatch(mapActions.loadingPalette(true));
+  let chunk: TileGroup[] = [];
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       const coords: Rect = {
@@ -77,18 +81,24 @@ export async function loadTileset(source: File) {
       if (isRectTransparent(imageData, coords)) continue;
 
       const id = await genGroupId({ coords, tsId });
-      await schedulerYield();
-
-      store.dispatch(
-        mapActions.addSinglePaletteTile({
-          id,
-          pos: coords,
-          tilesetId: tsId,
-          objectUrl,
-          gridSize,
-          singleTile: true,
-        })
-      );
+      chunk.push({
+        id,
+        pos: coords,
+        tilesetId: tsId,
+        objectUrl,
+        gridSize,
+        singleTile: true,
+      });
+      if (chunk.length > 10) {
+        store.dispatch(mapActions.bulkAddSinglePaletteTiles(chunk));
+        await schedulerYield();
+        chunk = [];
+      }
     }
   }
+
+  if (chunk.length > 0) {
+    store.dispatch(mapActions.bulkAddSinglePaletteTiles(chunk));
+  }
+  store.dispatch(mapActions.loadingPalette(false));
 }

@@ -1,4 +1,4 @@
-import { AppShell, ScrollArea, Tabs } from "@mantine/core";
+import { AppShell, LoadingOverlay, ScrollArea, Tabs } from "@mantine/core";
 import { ReactFlowProvider } from "@xyflow/react";
 import { JSX, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -179,6 +179,11 @@ export function ShellApp() {
             </div>
           </Tabs.Panel>
           <Tabs.Panel value="palette" style={{ flex: 1, overflow: "hidden" }}>
+            <LoadingOverlay
+              visible={ms.loadingPalette}
+              zIndex={1000}
+              overlayProps={{ blur: 2 }}
+            />
             <ScrollArea h="100%" type="auto" p="md">
               <div onClick={selectObject}>{objects}</div>
             </ScrollArea>

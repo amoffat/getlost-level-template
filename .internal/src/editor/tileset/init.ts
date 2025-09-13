@@ -1,4 +1,6 @@
 import * as P from "pixi.js";
+import { actions } from "../../slices/tilesetEditor";
+import { store } from "../../store";
 import { subscribeToSelector } from "../../utils/redux";
 import { setupWheelZoom } from "../common/zoom";
 import { makeBackground } from "./bg";
@@ -53,7 +55,15 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   });
 
   setupWheelZoom({ stage, container: g.tilesetContainer });
-  setupPanControls();
+  setupPanControls({
+    stage,
+    onPanningStart: () => {
+      store.dispatch(actions.setMode("pan"));
+    },
+    onPanningEnd: () => {
+      store.dispatch(actions.setMode(null));
+    },
+  });
   setupGrouper();
 
   return g.app;
