@@ -3,7 +3,6 @@ import {
   Flex,
   Group,
   Image,
-  LoadingOverlay,
   ScrollArea,
   Stack,
   Switch,
@@ -19,8 +18,10 @@ import { init, loadTileset } from "../editor/tileset/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions as mapActions } from "../slices/mapEditor";
 import { actions, selectors } from "../slices/tilesetEditor";
+import { TileGroup } from "../types/tilegroup";
 import GridsizeSlider from "./GridsizeSlider";
 import HelpHoverCard from "./HelpHoverCard";
+import ObjectPalette from "./ObjectPalette";
 import TilesetGroup from "./TilesetGroup";
 
 export default function TilesetEditorTab() {
@@ -98,12 +99,7 @@ export default function TilesetEditorTab() {
     return objs;
   }, [ms.paletteIds, ms.palette]);
 
-  const selectObject = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.tagName !== "DIV") return;
-    const objId = target.dataset.objid;
-    if (!objId) return;
-    const obj = ms.palette[objId];
+  const selectObject = (obj: TileGroup) => {
     dispatch(mapActions.setPlace(obj));
   };
 
@@ -196,21 +192,7 @@ export default function TilesetEditorTab() {
                 display: "flex",
               }}
             >
-              <ScrollArea
-                p="xs"
-                type="hover"
-                offsetScrollbars="y"
-                style={{ flex: 1 }}
-              >
-                <LoadingOverlay
-                  visible={ms.loadingPalette}
-                  zIndex={1000}
-                  overlayProps={{ blur: 2 }}
-                />
-                <div onClick={selectObject} style={{ paddingBottom: 50 }}>
-                  {objects}
-                </div>
-              </ScrollArea>
+              <ObjectPalette onSelectObject={selectObject} />
             </Tabs.Panel>
           </Tabs>
         </Stack>

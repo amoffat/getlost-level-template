@@ -1,6 +1,7 @@
 import {
   Fieldset,
   Flex,
+  Group,
   Radio,
   Stack,
   Switch,
@@ -18,6 +19,9 @@ import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
 import { RootState } from "../store";
 import { ActiveLayer } from "../types/layer";
+import { TileGroup } from "../types/tilegroup";
+import HelpHoverCard from "./HelpHoverCard";
+import ObjectPalette from "./ObjectPalette";
 
 export default function MapEditorTab() {
   const cRef = useRef<HTMLDivElement>(null);
@@ -58,9 +62,13 @@ export default function MapEditorTab() {
     [dispatch]
   );
 
+  const selectObject = (obj: TileGroup) => {
+    dispatch(actions.setPlace(obj));
+  };
+
   return (
-    <Flex>
-      <Stack miw={200} style={{ flex: 1 }}>
+    <Flex h="100dvh" style={{ flex: 1 }}>
+      <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
         <Tabs defaultValue={"tilesets"}>
           <Tabs.List>
             <Tabs.Tab value="tilesets">Tilesets</Tabs.Tab>
@@ -71,7 +79,45 @@ export default function MapEditorTab() {
         </Tabs>
       </Stack>
 
-      <div ref={cRef} style={{ flex: 5, height: "100dvh" }} />
+      <Flex direction="column" style={{ flex: 5, minHeight: 0 }}>
+        <div ref={cRef} style={{ flex: 3, height: "100dvh" }} />
+
+        <Stack style={{ flex: 2, minHeight: 0 }} p={0}>
+          <Tabs
+            defaultValue={"palette"}
+            style={{
+              height: "100%",
+              minHeight: 0,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Tabs.List>
+              <Tabs.Tab value="palette">
+                <Group gap="xs">
+                  Palette
+                  <HelpHoverCard>
+                    <Text size="sm">
+                      Place an object from the palette onto the map.
+                    </Text>
+                  </HelpHoverCard>
+                </Group>
+              </Tabs.Tab>
+            </Tabs.List>
+            <Tabs.Panel
+              value="palette"
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflow: "hidden",
+                display: "flex",
+              }}
+            >
+              <ObjectPalette onSelectObject={selectObject} />
+            </Tabs.Panel>
+          </Tabs>
+        </Stack>
+      </Flex>
 
       <Stack miw={200} style={{ flex: 1 }}>
         <Fieldset legend="Active tile layer">
