@@ -59,8 +59,9 @@ export default function TilesetEditorTab() {
 
     async (files: FileWithPath[]) => {
       if (!files.length) return;
-      const file = files[0];
-      await loadTileset(file);
+      for (const file of files) {
+        await loadTileset(file);
+      }
     },
     []
   );
@@ -113,7 +114,7 @@ export default function TilesetEditorTab() {
           onDrop={uploadImage}
           maxSize={5 * 1024 ** 2}
           accept={IMAGE_MIME_TYPE}
-          multiple={false}
+          multiple={true}
         >
           <Group
             justify="center"
@@ -159,7 +160,7 @@ export default function TilesetEditorTab() {
         </ScrollArea>
       </Stack>
       <Flex direction="column" style={{ flex: 5, minHeight: 0 }}>
-        <div ref={cRef} style={{ flex: 3 }} />
+        <div ref={cRef} style={{ flex: 3 }}></div>
 
         <Stack style={{ flex: 2, minHeight: 0 }} p={0}>
           <Tabs

@@ -95,6 +95,7 @@ export async function loadTileset(source: File) {
       });
       if (chunk.length > 10) {
         store.dispatch(mapActions.bulkAddSinglePaletteTiles(chunk));
+        store.dispatch(tsActions.setScanPos(coords));
         await schedulerYield();
         chunk = [];
       }
@@ -104,5 +105,6 @@ export async function loadTileset(source: File) {
   if (chunk.length > 0) {
     store.dispatch(mapActions.bulkAddSinglePaletteTiles(chunk));
   }
+  store.dispatch(tsActions.setScanPos(null));
   store.dispatch(mapActions.loadingPalette(false));
 }

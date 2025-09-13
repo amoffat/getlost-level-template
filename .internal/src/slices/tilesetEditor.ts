@@ -1,4 +1,5 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Rect } from "../types/rect";
 import { Tileset } from "../types/tileset";
 
 type Mode = null | "pan" | "group";
@@ -12,6 +13,7 @@ interface TilesetEditorState {
   tilesetIds: string[];
   tilesets: Record<string, Tileset>;
   mode: Mode;
+  scanPos: Rect | null;
 }
 
 const slice = createSlice({
@@ -25,6 +27,7 @@ const slice = createSlice({
     tilesetIds: [],
     tilesets: {},
     mode: null,
+    scanPos: null,
   } as TilesetEditorState,
   reducers: {
     setGridVisible(state, action: PayloadAction<boolean>) {
@@ -44,6 +47,9 @@ const slice = createSlice({
       state.tilesets[ts.id] = ts;
       state.tilesetIds = state.tilesetIds.filter((id) => id !== ts.id);
       state.tilesetIds.push(ts.id);
+    },
+    setScanPos: (state, action: PayloadAction<Rect | null>) => {
+      state.scanPos = action.payload;
     },
   },
   selectors: {

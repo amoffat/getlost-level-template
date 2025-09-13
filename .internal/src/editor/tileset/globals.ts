@@ -9,6 +9,7 @@ interface Globals {
   backgroundContainer: P.Container;
   grid: P.Container;
   currentTileset?: P.Sprite;
+  scanPos: P.Container;
 }
 
 export const globals: Globals = {} as Globals;

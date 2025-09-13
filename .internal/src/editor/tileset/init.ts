@@ -37,6 +37,14 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   g.groupSelContainer.zIndex = 100;
   g.tilesetContainer.addChild(g.groupSelContainer);
 
+  g.scanPos = new P.Container();
+  g.scanPos.zIndex = 200;
+  g.scanPos.visible = false;
+  g.tilesetContainer.addChild(g.scanPos);
+  const scanGfx = new P.Graphics();
+  scanGfx.rect(0, 0, 16, 16).fill({ color: 0x00ff00, alpha: 0.75 });
+  g.scanPos.addChild(scanGfx);
+
   // Route events directly to the stage to avoid per-move hit testing of children
   // (reduces pointermove overhead) and disable child event handling
   stage.interactive = true;
@@ -94,6 +102,20 @@ subscribeToSelector(
       canvas.style.cursor = "grabbing";
     } else if (mode === null) {
       canvas.style.cursor = "default";
+    }
+  }
+);
+
+subscribeToSelector(
+  (state) => state.tilesetEditor.scanPos,
+  (scanPos) => {
+    if (scanPos === null) {
+      g.scanPos.visible = false;
+    } else {
+      g.scanPos.visible = true;
+      g.scanPos.position.set(scanPos.ul.x, scanPos.ul.y);
+      g.scanPos.width = scanPos.br.x - scanPos.ul.x;
+      g.scanPos.height = scanPos.br.y - scanPos.ul.y;
     }
   }
 );

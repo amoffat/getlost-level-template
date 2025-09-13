@@ -1,4 +1,4 @@
-import { ActionIcon, HoverCard } from "@mantine/core";
+import { HoverCard } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { ReactNode } from "react";
 
@@ -10,9 +10,7 @@ export default function HelpHoverCard({ children }: HelpHoverCardProps) {
   return (
     <HoverCard width={260} shadow="md" radius={0} withArrow openDelay={500}>
       <HoverCard.Target>
-        <ActionIcon variant="subtle" size="xs" aria-label="Help">
-          <IconInfoCircle size={16} />
-        </ActionIcon>
+        <IconInfoCircle size={16} />
       </HoverCard.Target>
       <HoverCard.Dropdown>{children}</HoverCard.Dropdown>
     </HoverCard>
