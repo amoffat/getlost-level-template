@@ -14,6 +14,7 @@ const theme: MantineThemeOverride = {
     Stack: { defaultProps: { p: "xs" } },
     // Flex: { defaultProps: { gap: "xs" } },
     Dropzone: { defaultProps: { radius: 0 } },
+    Fieldset: { defaultProps: { radius: 0 } },
     Tabs: { defaultProps: { radius: 0 } },
     // "Tabs.Panel": { defaultProps: { pt: "xs" } },
     // TextInput: { defaultProps: { size: "xs" } },

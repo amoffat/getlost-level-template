@@ -1,17 +1,14 @@
-import { AppShell, LoadingOverlay, ScrollArea, Tabs } from "@mantine/core";
+import { AppShell, Tabs } from "@mantine/core";
 import { ReactFlowProvider } from "@xyflow/react";
-import { JSX, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../hooks/redux";
 import { log } from "../log";
-import { actions } from "../slices/mapEditor";
 import { RootState } from "../store";
 import DialogueTab from "./Dialogue";
-import LogPane from "./LogPane";
 import MapEditorTab from "./MapEditor";
 import PreviewTab from "./Preview";
 import TilesetEditorTab from "./TilesetEditor";
-import TilesetGroup from "./TilesetGroup";
 
 declare global {
   interface Window {
@@ -94,37 +91,8 @@ export function ShellApp() {
     }
   }, []);
 
-  const objects: JSX.Element[] = useMemo(() => {
-    const objs: JSX.Element[] = [];
-    const num = ms.paletteIds.length;
-    for (let i = num - 1; i >= 0; i--) {
-      const objId = ms.paletteIds[i];
-      const group = ms.palette[objId];
-      objs.push(
-        <TilesetGroup
-          scale={1}
-          key={i}
-          id={group.id}
-          src={group.objectUrl}
-          coords={group.pos}
-        />
-      );
-    }
-
-    return objs;
-  }, [ms.paletteIds, ms.palette]);
-
-  const selectObject = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.tagName !== "DIV") return;
-    const objId = target.dataset.objid;
-    if (!objId) return;
-    const obj = ms.palette[objId];
-    dispatch(actions.setPlace(obj));
-  };
-
   return (
-    <AppShell footer={{ height: "30%", collapsed: false }} withBorder={true}>
+    <AppShell withBorder={true}>
       <AppShell.Main>
         <Tabs
           value={activeTab}
@@ -164,32 +132,6 @@ export function ShellApp() {
           )}
         </Tabs>
       </AppShell.Main>
-      <AppShell.Footer>
-        <Tabs
-          defaultValue={"palette"}
-          style={{ height: "100%", display: "flex", flexDirection: "column" }}
-        >
-          <Tabs.List>
-            <Tabs.Tab value="log">Log</Tabs.Tab>
-            <Tabs.Tab value="palette">Palette</Tabs.Tab>
-          </Tabs.List>
-          <Tabs.Panel value="log">
-            <div id="log-messages">
-              <LogPane maxMessages={300} />
-            </div>
-          </Tabs.Panel>
-          <Tabs.Panel value="palette" style={{ flex: 1, overflow: "hidden" }}>
-            <LoadingOverlay
-              visible={ms.loadingPalette}
-              zIndex={1000}
-              overlayProps={{ blur: 2 }}
-            />
-            <ScrollArea h="100%" type="auto" p="md">
-              <div onClick={selectObject}>{objects}</div>
-            </ScrollArea>
-          </Tabs.Panel>
-        </Tabs>
-      </AppShell.Footer>
     </AppShell>
   );
 }

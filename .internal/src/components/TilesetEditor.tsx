@@ -2,26 +2,33 @@ import {
   Fieldset,
   Flex,
   Group,
+  Image,
+  LoadingOverlay,
   ScrollArea,
   Stack,
   Switch,
+  Tabs,
   TagsInput,
   Text,
 } from "@mantine/core";
 import { Dropzone, FileWithPath, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 import { Application } from "pixi.js";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { JSX, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { init, loadTileset } from "../editor/tileset/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
-import { actions } from "../slices/tilesetEditor";
+import { actions as mapActions } from "../slices/mapEditor";
+import { actions, selectors } from "../slices/tilesetEditor";
 import GridsizeSlider from "./GridsizeSlider";
+import HelpHoverCard from "./HelpHoverCard";
+import TilesetGroup from "./TilesetGroup";
 
 export default function TilesetEditorTab() {
   const cRef = useRef<HTMLDivElement>(null);
   const [app, setApp] = useState<Application>();
   const dispatch = useAppDispatch();
   const s = useAppSelector((state) => state.tilesetEditor);
+  const ms = useAppSelector((state) => state.mapEditor);
   const gridSizes = useMemo(() => [8, 16, 32], []);
 
   useEffect(() => {
@@ -65,9 +72,43 @@ export default function TilesetEditorTab() {
     [dispatch]
   );
 
+  const loadedTilesets = useAppSelector(selectors.selectTilesets);
+  const tilesetImages = loadedTilesets.map((ts) => (
+    <Image key={ts.id} src={ts.objectUrl} />
+  ));
+
+  const objects: JSX.Element[] = useMemo(() => {
+    const objs: JSX.Element[] = [];
+    const num = ms.paletteIds.length;
+    for (let i = num - 1; i >= 0; i--) {
+      const objId = ms.paletteIds[i];
+      const group = ms.palette[objId];
+      objs.push(
+        <TilesetGroup
+          scale={1}
+          key={i}
+          id={group.id}
+          src={group.objectUrl}
+          coords={group.pos}
+        />
+      );
+    }
+
+    return objs;
+  }, [ms.paletteIds, ms.palette]);
+
+  const selectObject = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName !== "DIV") return;
+    const objId = target.dataset.objid;
+    if (!objId) return;
+    const obj = ms.palette[objId];
+    dispatch(mapActions.setPlace(obj));
+  };
+
   return (
-    <Flex style={{ height: "100dvh", minHeight: 0 }}>
-      <Stack miw={200} style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
+    <Flex h="100dvh" style={{ flex: 1 }}>
+      <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
         <Dropzone
           onDrop={uploadImage}
           maxSize={5 * 1024 ** 2}
@@ -113,11 +154,66 @@ export default function TilesetEditorTab() {
           </Group>
         </Dropzone>
 
-        <ScrollArea style={{ flex: 1, minHeight: 0 }}>
-          <Text>Hello</Text>
+        <ScrollArea type="hover" offsetScrollbars="y" style={{ flex: 1 }}>
+          <Stack pb={50}>{tilesetImages}</Stack>
         </ScrollArea>
       </Stack>
-      <div ref={cRef} style={{ flex: 5, height: "100dvh" }} />
+      <Flex direction="column" style={{ flex: 5, minHeight: 0 }}>
+        <div ref={cRef} style={{ flex: 3 }} />
+
+        <Stack style={{ flex: 2, minHeight: 0 }} p={0}>
+          <Tabs
+            defaultValue={"palette"}
+            style={{
+              height: "100%",
+              minHeight: 0,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Tabs.List>
+              <Tabs.Tab value="palette">
+                <Group gap="xs">
+                  Objects
+                  <HelpHoverCard>
+                    <Text size="sm">
+                      These are objects that have been extracted from the
+                      tileset. By default, all single-tile objects are added. As
+                      you create groupings, the single-tile objects will be
+                      replaced by the groups.
+                    </Text>
+                  </HelpHoverCard>
+                </Group>
+              </Tabs.Tab>
+            </Tabs.List>
+            <Tabs.Panel
+              value="palette"
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflow: "hidden",
+                display: "flex",
+              }}
+            >
+              <ScrollArea
+                p="xs"
+                type="hover"
+                offsetScrollbars="y"
+                style={{ flex: 1 }}
+              >
+                <LoadingOverlay
+                  visible={ms.loadingPalette}
+                  zIndex={1000}
+                  overlayProps={{ blur: 2 }}
+                />
+                <div onClick={selectObject} style={{ paddingBottom: 50 }}>
+                  {objects}
+                </div>
+              </ScrollArea>
+            </Tabs.Panel>
+          </Tabs>
+        </Stack>
+      </Flex>
       <Stack miw={200} style={{ flex: 1 }}>
         <Fieldset legend="Grid settings">
           <Stack p={0}>
