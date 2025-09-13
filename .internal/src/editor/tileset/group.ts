@@ -45,7 +45,7 @@ export function setupGrouper() {
         store.dispatch(tsActions.setMode(null));
 
         const tsState = store.getState().tilesetEditor;
-        const ts = tsState.tileset!;
+        const ts = tsState.activeTileset!;
         const gridSize = tsState.grid.size;
 
         const c = g.groupSelContainer;

@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Tileset } from "../types/tileset";
 
 type Mode = null | "pan" | "group";
@@ -8,7 +8,9 @@ interface TilesetEditorState {
     size: number;
     visible: boolean;
   };
-  tileset: Tileset | null;
+  activeTileset: Tileset | null;
+  tilesetIds: string[];
+  tilesets: Record<string, Tileset>;
   mode: Mode;
 }
 
@@ -19,7 +21,9 @@ const slice = createSlice({
       size: 16,
       visible: true,
     },
-    tileset: null,
+    activeTileset: null,
+    tilesetIds: [],
+    tilesets: {},
     mode: null,
   } as TilesetEditorState,
   reducers: {
@@ -32,11 +36,24 @@ const slice = createSlice({
     setMode(state, action: PayloadAction<Mode>) {
       state.mode = action.payload;
     },
-    setTileset: (state, action: PayloadAction<Tileset>) => {
-      state.tileset = action.payload;
+    setActiveTileset: (state, action: PayloadAction<Tileset>) => {
+      state.activeTileset = action.payload;
     },
+    addTileset: (state, action: PayloadAction<Tileset>) => {
+      const ts = action.payload;
+      state.tilesets[ts.id] = ts;
+      state.tilesetIds = state.tilesetIds.filter((id) => id !== ts.id);
+      state.tilesetIds.push(ts.id);
+    },
+  },
+  selectors: {
+    selectTilesets: createSelector.withTypes<TilesetEditorState>()(
+      [(state) => state.tilesetIds, (state) => state.tilesets],
+      (tilesetIds, tilesets): Tileset[] => tilesetIds.map((id) => tilesets[id])
+    ),
   },
 });
 
+export const selectors = slice.selectors;
 export const actions = slice.actions;
 export default slice.reducer;

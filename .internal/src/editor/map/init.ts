@@ -88,7 +88,7 @@ subscribeToSelector(
 );
 
 subscribeToSelector(
-  (state) => state.tilesetEditor.tileset,
+  (state) => state.tilesetEditor.activeTileset,
   async (tileset) => {
     if (!tileset) return;
 

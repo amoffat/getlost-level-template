@@ -4,6 +4,7 @@ import { actions as tsActions } from "../../slices/tilesetEditor";
 import { store } from "../../store";
 import { Rect } from "../../types/rect";
 import { TileGroup } from "../../types/tilegroup";
+import { Tileset } from "../../types/tileset";
 import { schedulerYield } from "../../utils/async";
 import { genGroupId, genTilesetId } from "../../utils/tileset";
 import { globals as g } from "./globals";
@@ -61,7 +62,10 @@ export async function loadTileset(source: File) {
 
   const objectUrl = URL.createObjectURL(source);
   const tsId = await genTilesetId(source);
-  store.dispatch(tsActions.setTileset({ objectUrl, id: tsId }));
+  const ts: Tileset = { id: tsId, objectUrl };
+
+  store.dispatch(tsActions.setActiveTileset(ts));
+  store.dispatch(tsActions.addTileset(ts));
 
   // Add all single-tile groups by default
   const cols = Math.floor(sprite.width / gridSize);
