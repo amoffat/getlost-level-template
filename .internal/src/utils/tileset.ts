@@ -9,26 +9,6 @@ function bufferToHex(buffer: ArrayBuffer): string {
     .join("");
 }
 
-export async function genGroupId2({
-  coords,
-  tsId,
-}: {
-  coords: Rect;
-  tsId: string;
-}): Promise<string> {
-  const data = new TextEncoder().encode(
-    `${tsId}:${coords.ul.x},${coords.ul.y},${coords.br.x},${coords.br.y}`
-  );
-  const hash = await window.crypto.subtle.digest("SHA-1", data);
-  return bufferToHex(hash);
-}
-
-export async function genTilesetId2(source: File): Promise<string> {
-  const data = await source.arrayBuffer();
-  const hash = await window.crypto.subtle.digest("SHA-1", data);
-  return bufferToHex(hash);
-}
-
 export async function genGroupId({
   coords,
   tsId,

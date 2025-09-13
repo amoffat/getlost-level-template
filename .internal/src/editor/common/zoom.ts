@@ -1,14 +1,22 @@
 import * as P from "pixi.js";
-import * as constants from "./constants";
-import { globals as g } from "./globals";
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
-export function setupWheelZoom() {
+export function setupWheelZoom({
+  stage,
+  container,
+  minZoom = 0.125,
+  maxZoom = 16,
+}: {
+  stage: P.Container;
+  container: P.Container;
+  minZoom?: number;
+  maxZoom?: number;
+}) {
   // Use Pixi's federated wheel events on the stage
-  g.app.stage.on("wheel", (e: P.FederatedWheelEvent) => {
+  stage.on("wheel", (e: P.FederatedWheelEvent) => {
     // Prevent page scroll to make zoom feel native
     // e.preventDefault();
 
@@ -19,22 +27,18 @@ export function setupWheelZoom() {
     const global = e.global; // { x, y }
 
     // Convert the pointer position to the container's local coords BEFORE scaling
-    const beforeLocal = g.tilesetContainer.toLocal(global);
+    const beforeLocal = container.toLocal(global);
 
     // Apply clamped uniform scaling
-    const current = g.tilesetContainer.scale.x || 1;
-    const next = clamp(
-      current * zoomFactor,
-      constants.MIN_ZOOM,
-      constants.MAX_ZOOM
-    );
-    g.tilesetContainer.scale.set(next);
+    const current = container.scale.x || 1;
+    const next = clamp(current * zoomFactor, minZoom, maxZoom);
+    container.scale.set(next);
 
     // Compute where that same local point is AFTER scaling in global coords
-    const afterGlobal = g.tilesetContainer.toGlobal(beforeLocal);
+    const afterGlobal = container.toGlobal(beforeLocal);
 
     // Translate so the zoom centers around the pointer
-    g.tilesetContainer.position.x += global.x - afterGlobal.x;
-    g.tilesetContainer.position.y += global.y - afterGlobal.y;
+    container.position.x += global.x - afterGlobal.x;
+    container.position.y += global.y - afterGlobal.y;
   });
 }

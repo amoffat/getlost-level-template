@@ -57,6 +57,7 @@ export function setupGrouper() {
         const id = await genGroupId({ coords, tsId: ts.id });
         const group: TileGroup = {
           id,
+          tilesetId: ts.id,
           pos: coords,
           objectUrl: ts.objectUrl,
           singleTile: false,

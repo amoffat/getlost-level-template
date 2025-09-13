@@ -1,11 +1,11 @@
 import * as P from "pixi.js";
 import { subscribeToSelector } from "../../utils/redux";
+import { setupWheelZoom } from "../common/zoom";
 import { makeBackground } from "./bg";
 import { globals as g } from "./globals";
 import { drawGrid } from "./grid";
 import { setupGrouper } from "./group";
 import { setupPanControls } from "./pan";
-import { setupWheelZoom } from "./zoom";
 export { loadTileset } from "./loader";
 
 export async function init(parent: HTMLElement): Promise<P.Application> {
@@ -52,7 +52,7 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
     //
   });
 
-  setupWheelZoom();
+  setupWheelZoom({ stage, container: g.tilesetContainer });
   setupPanControls();
   setupGrouper();
 
@@ -79,12 +79,10 @@ subscribeToSelector(
   (mode) => {
     const canvas = g.app.canvas;
     if (mode === "group") {
-      console.log("Group mode activated");
       canvas.style.cursor = "crosshair";
     } else if (mode === "pan") {
       canvas.style.cursor = "grabbing";
     } else if (mode === null) {
-      console.log("Exited mode");
       canvas.style.cursor = "default";
     }
   }

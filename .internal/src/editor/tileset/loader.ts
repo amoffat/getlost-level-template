@@ -83,6 +83,7 @@ export async function loadTileset(source: File) {
         mapActions.addSinglePaletteTile({
           id,
           pos: coords,
+          tilesetId: tsId,
           objectUrl,
           gridSize,
           singleTile: true,
