@@ -9,20 +9,23 @@ import {
   Tabs,
   TagsInput,
   Text,
+  UnstyledButton,
 } from "@mantine/core";
 import { Dropzone, FileWithPath, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 import { Application } from "pixi.js";
-import { JSX, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { init, loadTileset } from "../editor/tileset/init";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { init } from "../editor/tileset/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions as mapActions } from "../slices/mapEditor";
 import { actions, selectors } from "../slices/tilesetEditor";
+import { loadTilesetThunk } from "../thunks/tileset";
 import { TileGroup } from "../types/tilegroup";
+import { Tileset } from "../types/tileset";
+import { genTilesetId } from "../utils/tileset";
 import GridsizeSlider from "./GridsizeSlider";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
-import TilesetGroup from "./TilesetGroup";
 
 export default function TilesetEditorTab() {
   const cRef = useRef<HTMLDivElement>(null);
@@ -61,10 +64,13 @@ export default function TilesetEditorTab() {
     async (files: FileWithPath[]) => {
       if (!files.length) return;
       for (const file of files) {
-        await loadTileset(file);
+        const objectUrl = URL.createObjectURL(file);
+        const tsId = await genTilesetId(file);
+        const ts: Tileset = { id: tsId, objectUrl };
+        await dispatch(loadTilesetThunk(ts));
       }
     },
-    []
+    [dispatch]
   );
 
   const changeGridSize = useCallback(
@@ -75,29 +81,26 @@ export default function TilesetEditorTab() {
   );
 
   const loadedTilesets = useAppSelector(selectors.selectTilesets);
-  const tilesetImages = loadedTilesets.map((ts) => (
-    <Image key={ts.id} src={ts.objectUrl} />
+  const tilesetImages = loadedTilesets.map((ts, i) => (
+    <UnstyledButton
+      key={i}
+      p={0}
+      onClick={() => dispatch(loadTilesetThunk(ts))}
+      style={(theme) => ({
+        overflow: "hidden",
+        border:
+          ts === s.activeTileset
+            ? `2px solid ${theme.colors.blue[6]}`
+            : "2px solid transparent",
+        "&:hover": {
+          borderColor: theme.colors.gray[4],
+          cursor: "pointer",
+        },
+      })}
+    >
+      <Image key={ts.id} src={ts.objectUrl} />
+    </UnstyledButton>
   ));
-
-  const objects: JSX.Element[] = useMemo(() => {
-    const objs: JSX.Element[] = [];
-    const num = ms.paletteIds.length;
-    for (let i = num - 1; i >= 0; i--) {
-      const objId = ms.paletteIds[i];
-      const group = ms.palette[objId];
-      objs.push(
-        <TilesetGroup
-          scale={1}
-          key={i}
-          id={group.id}
-          src={group.objectUrl}
-          coords={group.pos}
-        />
-      );
-    }
-
-    return objs;
-  }, [ms.paletteIds, ms.palette]);
 
   const selectObject = (obj: TileGroup) => {
     dispatch(mapActions.setPlace(obj));

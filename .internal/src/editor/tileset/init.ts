@@ -20,9 +20,11 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
 
   // Tweak canvas interaction to avoid browser scroll/selection during drag
   const canvas = g.app.canvas;
+  canvas.tabIndex = 0; // Make canvas focusable to receive keyboard events
   canvas.style.touchAction = "none";
   canvas.style.userSelect = "none";
   canvas.style.cursor = "default";
+  g.canvas = canvas;
 
   // Background container with checkerboard pattern (conventional transparent-bg look)
   g.backgroundContainer = new P.Container();
@@ -74,6 +76,12 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   });
   setupGrouper();
 
+  canvas.addEventListener("mouseover", () => {
+    canvas.focus();
+  });
+  canvas.addEventListener("mouseout", () => {
+    canvas.blur();
+  });
   return g.app;
 }
 

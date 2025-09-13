@@ -32,15 +32,21 @@ function isGrouping(): boolean {
 }
 
 export function setupGrouper() {
-  window.addEventListener("keydown", (e) => {
+  const canvas = g.canvas;
+
+  canvas.addEventListener("keydown", (e) => {
     if (e.repeat) return;
     if (e.key === "g") {
+      e.preventDefault();
+      const state = store.getState();
+      if (!state.tilesetEditor.activeTileset) return;
       store.dispatch(tsActions.setMode("group"));
     }
   });
 
-  window.addEventListener("keyup", async (e) => {
+  canvas.addEventListener("keyup", async (e) => {
     if (e.key === "g") {
+      e.preventDefault();
       if (isGrouping()) {
         store.dispatch(tsActions.setMode(null));
 

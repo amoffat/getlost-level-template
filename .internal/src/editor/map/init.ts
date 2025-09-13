@@ -9,10 +9,18 @@ const tilesetCache = new Map<string, P.Texture>();
 export async function init(parent: HTMLElement): Promise<P.Application> {
   // Create a new application
   const app = new P.Application();
+  g.app = app;
 
   // Initialize the application
   await app.init({ backgroundAlpha: 0, resizeTo: parent });
   const stage = app.stage;
+
+  // Tweak canvas interaction to avoid browser scroll/selection during drag
+  const canvas = app.canvas;
+  canvas.tabIndex = 0; // Make canvas focusable to receive keyboard events
+  canvas.style.touchAction = "none";
+  canvas.style.userSelect = "none";
+  canvas.style.cursor = "default";
 
   g.gridSnap = 16;
   stage.interactive = true;
@@ -60,6 +68,12 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
 
   setupWheelZoom({ stage, container: g.mapContainer });
 
+  canvas.addEventListener("mouseover", () => {
+    canvas.focus();
+  });
+  canvas.addEventListener("mouseout", () => {
+    canvas.blur();
+  });
   return app;
 }
 
@@ -91,6 +105,7 @@ subscribeToSelector(
   (state) => state.tilesetEditor.activeTileset,
   async (tileset) => {
     if (!tileset) return;
+    if (tilesetCache.has(tileset.id)) return;
 
     const tex = await P.Assets.load<P.Texture>({
       src: tileset.objectUrl,

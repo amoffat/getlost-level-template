@@ -4,7 +4,7 @@ import { Tileset } from "../types/tileset";
 
 type Mode = null | "pan" | "group";
 
-interface TilesetEditorState {
+export interface TilesetEditorState {
   grid: {
     size: number;
     visible: boolean;
@@ -45,8 +45,9 @@ const slice = createSlice({
     addTileset: (state, action: PayloadAction<Tileset>) => {
       const ts = action.payload;
       state.tilesets[ts.id] = ts;
-      state.tilesetIds = state.tilesetIds.filter((id) => id !== ts.id);
-      state.tilesetIds.push(ts.id);
+      if (!state.tilesetIds.includes(ts.id)) {
+        state.tilesetIds.push(ts.id);
+      }
     },
     setScanPos: (state, action: PayloadAction<Rect | null>) => {
       state.scanPos = action.payload;
