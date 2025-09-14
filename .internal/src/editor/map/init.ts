@@ -1,5 +1,6 @@
 import * as P from "pixi.js";
 import { subscribeToSelector } from "../../utils/redux";
+import { groupStroke } from "../common/strokes";
 import { setupWheelZoom } from "../common/zoom";
 import { makeBackground } from "../tileset/bg";
 import { globals as g } from "./globals";
@@ -79,7 +80,7 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
 
 subscribeToSelector(
   (state) => state.mapEditor.place,
-  (place, state) => {
+  (place) => {
     if (!place) return;
 
     g.gridSnap = place.gridSize;
@@ -98,6 +99,20 @@ subscribeToSelector(
     g.placableContainer.removeChildren();
     g.placableContainer.addChild(sprite);
     g.placableSprite = sprite;
+
+    const mask = new P.Graphics();
+    mask
+      .rect(0, 0, frame.width, frame.height)
+      .fill({ color: 0x00ff00, alpha: 1 });
+    g.placableContainer.addChild(mask);
+
+    const gfx = new P.Graphics();
+    gfx.rect(0, 0, frame.width, frame.height).stroke(groupStroke);
+    g.placableContainer.addChild(gfx);
+    gfx.setMask({
+      mask,
+      inverse: true,
+    });
   }
 );
 

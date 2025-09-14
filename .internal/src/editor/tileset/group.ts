@@ -7,6 +7,7 @@ import { TileGroup } from "../../types/tilegroup";
 import { closeEnough } from "../../utils/math";
 import { subscribeToSelector } from "../../utils/redux";
 import { genGroupId } from "../../utils/tileset";
+import { groupStroke } from "../common/strokes";
 import { globals as g } from "./globals";
 
 let groupStart = { x: 0, y: 0 };
@@ -133,11 +134,7 @@ async function drawGroups(groups: TileGroup[]) {
       group.pos.br.x - group.pos.ul.x,
       group.pos.br.y - group.pos.ul.y
     );
-    g.rect(rect.x, rect.y, rect.width, rect.height).stroke({
-      color: 0x00ff00,
-      width: 2,
-      alpha: 1,
-    });
+    g.rect(rect.x, rect.y, rect.width, rect.height).stroke(groupStroke);
 
     mask
       .rect(rect.x, rect.y, rect.width, rect.height)
