@@ -118,7 +118,7 @@ subscribeToSelector(
     } else if (mode === "pan") {
       canvas.style.cursor = "grabbing";
     } else if (mode === null) {
-      canvas.style.cursor = "default";
+      canvas.style.cursor = "grab";
     }
   }
 );

@@ -43,26 +43,29 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   // Listen for animate update
   app.ticker.add(() => {});
 
+  const mouseToPos = (e: P.FederatedPointerEvent) => {
+    const pos = g.mapContainer.toLocal(e.global);
+    return {
+      x: Math.floor(pos.x / g.gridSnap) * g.gridSnap,
+      y: Math.floor(pos.y / g.gridSnap) * g.gridSnap,
+    };
+  };
+
   stage.on("pointermove", (e) => {
     e.preventDefault();
 
     if (g.placableSprite) {
-      const pos = g.mapContainer.toLocal(e.global);
-      g.placableContainer.x = Math.floor(pos.x / g.gridSnap) * g.gridSnap;
-      g.placableContainer.y = Math.floor(pos.y / g.gridSnap) * g.gridSnap;
+      const pos = mouseToPos(e);
+      g.placableContainer.position = pos;
     }
   });
 
   stage.on("pointerdown", (e) => {
     e.preventDefault();
     if (g.placableSprite) {
-      const pos = g.mapContainer.toLocal(e.global);
-      const placePosX = Math.floor(pos.x / g.gridSnap) * g.gridSnap;
-      const placePosY = Math.floor(pos.y / g.gridSnap) * g.gridSnap;
-
       const sprite = new P.Sprite(g.placableSprite.texture);
-      sprite.x = placePosX;
-      sprite.y = placePosY;
+      const pos = mouseToPos(e);
+      sprite.position = pos;
       g.mapContainer.addChild(sprite);
     }
   });

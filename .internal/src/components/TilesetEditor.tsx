@@ -12,7 +12,7 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { Dropzone, FileWithPath, IMAGE_MIME_TYPE } from "@mantine/dropzone";
-import { IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
+import { IconUpload, IconX } from "@tabler/icons-react";
 import { Application } from "pixi.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { init } from "../editor/tileset/init";
@@ -32,7 +32,6 @@ export default function TilesetEditorTab() {
   const [app, setApp] = useState<Application>();
   const dispatch = useAppDispatch();
   const s = useAppSelector((state) => state.tilesetEditor);
-  const ms = useAppSelector((state) => state.mapEditor);
   const gridSizes = useMemo(() => [8, 16, 32], []);
 
   useEffect(() => {
@@ -108,52 +107,40 @@ export default function TilesetEditorTab() {
 
   return (
     <Flex h="100dvh" style={{ flex: 1 }}>
-      <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
-        <Dropzone
-          onDrop={uploadImage}
-          maxSize={5 * 1024 ** 2}
-          accept={IMAGE_MIME_TYPE}
-          multiple={true}
+      {/* Fullscreen dropzone overlay (only visible while dragging files) */}
+      <Dropzone.FullScreen
+        onDrop={uploadImage}
+        maxSize={5 * 1024 ** 2}
+        accept={IMAGE_MIME_TYPE}
+        multiple
+      >
+        <Group
+          justify="center"
+          gap="xl"
+          mih={220}
+          style={{ pointerEvents: "none" }}
         >
-          <Group
-            justify="center"
-            gap="xs"
-            mih={220}
-            style={{ pointerEvents: "none" }}
-          >
-            <Dropzone.Accept>
-              <IconUpload
-                size={52}
-                color="var(--mantine-color-blue-6)"
-                stroke={1.5}
-              />
-            </Dropzone.Accept>
-            <Dropzone.Reject>
-              <IconX
-                size={52}
-                color="var(--mantine-color-red-6)"
-                stroke={1.5}
-              />
-            </Dropzone.Reject>
-            <Dropzone.Idle>
-              <IconPhoto
-                size={52}
-                color="var(--mantine-color-dimmed)"
-                stroke={1.5}
-              />
-            </Dropzone.Idle>
-
-            <div>
-              <Text size="xl" inline>
-                Drag a tileset here or click to select file
-              </Text>
-              <Text size="sm" c="dimmed" inline mt={7}>
-                The file should not exceed 5mb
-              </Text>
-            </div>
-          </Group>
-        </Dropzone>
-
+          <Dropzone.Accept>
+            <IconUpload
+              size={52}
+              color="var(--mantine-color-blue-6)"
+              stroke={1.5}
+            />
+          </Dropzone.Accept>
+          <Dropzone.Reject>
+            <IconX size={52} color="var(--mantine-color-red-6)" stroke={1.5} />
+          </Dropzone.Reject>
+          <div>
+            <Text size="xl" inline>
+              Drag images here or click to select files
+            </Text>
+            <Text size="sm" c="dimmed" inline mt={7}>
+              Attach as many files as you like, each file should not exceed 5mb
+            </Text>
+          </div>
+        </Group>
+      </Dropzone.FullScreen>
+      <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
         <ScrollArea type="hover" offsetScrollbars="y" style={{ flex: 1 }}>
           <Stack pb={50}>{tilesetImages}</Stack>
         </ScrollArea>
