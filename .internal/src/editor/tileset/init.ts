@@ -1,3 +1,4 @@
+import debounce from "debounce";
 import * as P from "pixi.js";
 import { actions } from "../../slices/tilesetEditor";
 import { store } from "../../store";
@@ -64,7 +65,15 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
     //
   });
 
-  setupWheelZoom({ stage, container: g.tilesetContainer });
+  setupWheelZoom({
+    stage,
+    container: g.tilesetContainer,
+    // Debounce, because redux state changes can lag if we're scrolling fast
+    onZoomChange: debounce((zoomPan) => {
+      store.dispatch(actions.setZoom(zoomPan.zoom));
+      store.dispatch(actions.setPan(zoomPan.pan));
+    }, 100),
+  });
   setupPanControls({
     stage,
     onPanningStart: () => {

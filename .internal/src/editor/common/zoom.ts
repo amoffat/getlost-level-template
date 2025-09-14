@@ -1,4 +1,5 @@
 import * as P from "pixi.js";
+import { ZoomPan } from "../../types/zoompan";
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
@@ -9,11 +10,13 @@ export function setupWheelZoom({
   container,
   minZoom = 0.125,
   maxZoom = 16,
+  onZoomChange,
 }: {
   stage: P.Container;
   container: P.Container;
   minZoom?: number;
   maxZoom?: number;
+  onZoomChange?: (zoomPan: ZoomPan) => void;
 }) {
   // Use Pixi's federated wheel events on the stage
   stage.on("wheel", (e: P.FederatedWheelEvent) => {
@@ -40,5 +43,10 @@ export function setupWheelZoom({
     // Translate so the zoom centers around the pointer
     container.position.x += global.x - afterGlobal.x;
     container.position.y += global.y - afterGlobal.y;
+
+    onZoomChange?.({
+      zoom: next,
+      pan: { x: container.position.x, y: container.position.y },
+    });
   });
 }

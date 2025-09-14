@@ -6,6 +6,7 @@ import { Rect } from "../../types/rect";
 import { TileGroup } from "../../types/tilegroup";
 import { Tileset } from "../../types/tileset";
 import { schedulerYield } from "../../utils/async";
+import { subscribeToSelector } from "../../utils/redux";
 import { genGroupId } from "../../utils/tileset";
 import { globals as g } from "./globals";
 import { drawGrid } from "./grid";
@@ -49,6 +50,7 @@ export async function loadTileset({
   g.currentTileset?.removeFromParent();
   g.grid?.removeFromParent();
   g.tilesetContainer.position.set(0);
+  g.tilesetContainer.scale.set(1);
   g.groupSelContainer.setSize(0);
 
   const texture = await P.Assets.load<P.Texture>({
@@ -114,3 +116,11 @@ export async function loadTileset({
     store.dispatch(mapActions.loadingPalette(false));
   }
 }
+
+subscribeToSelector(
+  (state) => state.tilesetEditor.activeZoomPan,
+  (activeZoomPan) => {
+    g.tilesetContainer.scale.set(activeZoomPan.zoom);
+    g.tilesetContainer.position.set(activeZoomPan.pan.x, activeZoomPan.pan.y);
+  }
+);

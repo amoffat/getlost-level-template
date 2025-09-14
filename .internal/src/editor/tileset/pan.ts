@@ -36,10 +36,11 @@ export function setupPanControls({
     e.preventDefault();
     const dx = e.global.x - panStartGlobal.x;
     const dy = e.global.y - panStartGlobal.y;
-    g.tilesetContainer.position.set(
-      panStartContainer.x + dx,
-      panStartContainer.y + dy
-    );
+    const pos = {
+      x: panStartContainer.x + dx,
+      y: panStartContainer.y + dy,
+    };
+    g.tilesetContainer.position.set(pos.x, pos.y);
   });
 
   const endPan = (e: P.FederatedPointerEvent) => {
@@ -47,6 +48,12 @@ export function setupPanControls({
     e.preventDefault();
     panning = false;
     onPanningEnd?.();
+
+    const panPos = {
+      x: g.tilesetContainer.position.x,
+      y: g.tilesetContainer.position.y,
+    };
+    store.dispatch(actions.setPan(panPos));
     store.dispatch(actions.setMode(null));
   };
 

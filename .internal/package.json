@@ -19,6 +19,7 @@
     "@tabler/icons-react": "^3.34.1",
     "@xyflow/react": "^12.8.4",
     "classnames": "^2.5.1",
+    "debounce": "^2.2.0",
     "diff": "^8.0.2",
     "express": "^5.1.0",
     "fflate": "^0.8.2",
