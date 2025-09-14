@@ -8,4 +8,5 @@ export interface TileGroup {
   objectUrl: string;
   pos: Rect;
   singleTile: boolean;
+  children?: TileGroup[];
 }

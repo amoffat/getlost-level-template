@@ -46,7 +46,11 @@ interface MapEditorState {
     active: ActiveLayer;
     dimInactive: boolean;
   };
+  // The ids of the objects in the palette, in order. This controls what is
+  // actually rendered. This contains ids for single and multi-tile objects.
   paletteIds: string[];
+  // All objects in the palette, keyed by id. This will always contain *ALL*
+  // single-tiled objects, but multi-tiled objects may be added/removed.
   palette: Record<string, TileGroup>;
   loadingPalette: boolean;
 }
@@ -112,37 +116,79 @@ const slice = createSlice({
       const tileset = group.objectUrl;
       const tileIndex = getTileIndex(tileset);
       const bbox = groupToBBox(group);
+      const deleting = group.singleTile;
+      const creatingGroup = !deleting;
 
       // Find overlapping groups (same objectUrl via cache) and remove them
       const overlaps = tileIndex.search(bbox);
       if (overlaps.length > 0) {
         const removeIds = new Set(overlaps.map((o) => o.id));
-        // Remove from state lists
-        state.paletteIds = state.paletteIds.filter((id) => {
-          if (removeIds.has(id)) {
-            // Also drop from palette map
-            delete state.palette[id];
+        const addBackChildren: Set<string> = new Set();
+
+        // Create the authoritative list of children for this group. We need
+        // this list to be accurate to determine which children of dissolved
+        // groups we should add back to the palette.
+        if (creatingGroup) {
+          for (const [toRemove] of removeIds.entries()) {
+            const child = state.palette[toRemove];
+            if (child.singleTile) {
+              (group.children ??= []).push(child);
+            }
+          }
+        }
+
+        // Remove all overlapping groups (even single-tiled ones) from our list
+        // of palette ids.
+        state.paletteIds = state.paletteIds.filter((removeCandId) => {
+          if (removeIds.has(removeCandId)) {
+            const child = state.palette[removeCandId];
+            if (child.singleTile) {
+              // If it's a single child, it belongs to our group now.
+              if (creatingGroup) {
+                // Record all children, so if we dissolve this group later, we
+                // can put them back in the palette
+                (group.children ??= []).push(child);
+              } else {
+                // We can't delete a single child.
+                return true;
+              }
+            }
+            // If we're disolving a multi-tile group, we want to take its
+            // children and add them back to the palette. We'll also re-parent
+            // the children to our new group other passes of this filter loop
+            // (because they're treated as single tiles).
+            else {
+              for (const grandChild of child.children ?? []) {
+                addBackChildren.add(grandChild.id);
+              }
+              // Remove the multi-tile group from the palette and spatial index
+              delete state.palette[removeCandId];
+              tileIndex.remove(groupToBBox(child), (a, b) => a.id === b.id);
+            }
+
             return false;
           }
           return true;
         });
-        // Remove from cache
-        for (const item of overlaps) {
-          tileIndex.remove(item, (a, b) => a.id === b.id);
+
+        for (const child of group.children ?? []) {
+          addBackChildren.delete(child.id);
         }
+        state.paletteIds.push(...Array.from(addBackChildren));
       }
 
-      // If an item with the same id already exists anywhere, ensure it's
-      // removed and cache updated
-      if (state.palette[group.id]) {
-        const existing = state.palette[group.id];
-        tileIndex.remove(groupToBBox(existing), (a, b) => a.id === b.id);
-        delete state.palette[group.id];
-        state.paletteIds = state.paletteIds.filter((id) => id !== group.id);
-      }
-
-      // Add the new group unless it's meant to be a "deleting" single tile
-      if (!group.singleTile) {
+      if (creatingGroup) {
+        // If an item with the same id already exists anywhere, ensure it's
+        // removed and spatial index updated. The purpose of this is to ensure
+        // that the group isn't double-added to the paletteIds and the spatial
+        // index. It could probably be simplified.
+        if (state.palette[group.id]) {
+          const existing = state.palette[group.id];
+          tileIndex.remove(groupToBBox(existing), (a, b) => a.id === b.id);
+          delete state.palette[group.id];
+          state.paletteIds = state.paletteIds.filter((id) => id !== group.id);
+        }
+        // Now that we're sure we won't double-add it, add the new group
         state.paletteIds.push(group.id);
         state.palette[group.id] = group;
         tileIndex.insert(bbox);
