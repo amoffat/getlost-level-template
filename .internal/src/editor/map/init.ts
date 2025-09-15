@@ -1,5 +1,6 @@
 import * as P from "pixi.js";
 import { subscribeToSelector } from "../../utils/redux";
+import { onVisible } from "../../utils/visible";
 import { groupStroke } from "../common/strokes";
 import { setupWheelZoom } from "../common/zoom";
 import { makeBackground } from "../tileset/bg";
@@ -34,7 +35,7 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   stage.addChild(g.mapContainer);
 
   // Build checkerboard background
-  makeBackground(g.backgroundContainer);
+  const checkerboard = makeBackground(g.backgroundContainer);
 
   g.placableContainer = new P.Container();
   g.mapContainer.addChild(g.placableContainer);
@@ -78,6 +79,16 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   canvas.addEventListener("mouseout", () => {
     canvas.blur();
   });
+
+  function redrawLayout() {
+    const rect = parent.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    checkerboard.width = rect.width;
+    checkerboard.height = rect.height;
+  }
+  window.addEventListener("resize", redrawLayout);
+  onVisible(canvas, redrawLayout);
+
   return app;
 }
 

@@ -79,8 +79,11 @@ export default function MapEditorTab() {
         </Tabs>
       </Stack>
 
-      <Flex direction="column" style={{ flex: 5, minHeight: 0 }}>
-        <div ref={cRef} style={{ flex: 3, height: "100dvh" }} />
+      <Flex direction="column" style={{ flex: 5, minHeight: 0, minWidth: 0 }}>
+        <div
+          ref={cRef}
+          style={{ flex: 3, height: "100dvh", overflow: "hidden" }}
+        />
 
         <Stack style={{ flex: 2, minHeight: 0 }} p={0}>
           <Tabs

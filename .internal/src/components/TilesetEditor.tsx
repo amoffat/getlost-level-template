@@ -145,8 +145,11 @@ export default function TilesetEditorTab() {
           <Stack pb={50}>{tilesetImages}</Stack>
         </ScrollArea>
       </Stack>
-      <Flex direction="column" style={{ flex: 5, minHeight: 0 }}>
-        <div ref={cRef} style={{ flex: 3 }}></div>
+      <Flex direction="column" style={{ flex: 5, minHeight: 0, minWidth: 0 }}>
+        <div
+          ref={cRef}
+          style={{ flex: 3, minHeight: 0, overflow: "hidden" }}
+        ></div>
 
         <Stack style={{ flex: 2, minHeight: 0 }} p={0}>
           <Tabs

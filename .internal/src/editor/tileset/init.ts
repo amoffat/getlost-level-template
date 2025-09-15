@@ -3,6 +3,7 @@ import * as P from "pixi.js";
 import { actions } from "../../slices/tilesetEditor";
 import { store } from "../../store";
 import { subscribeToSelector } from "../../utils/redux";
+import { onVisible } from "../../utils/visible";
 import { setupWheelZoom } from "../common/zoom";
 import { makeBackground } from "./bg";
 import { globals as g } from "./globals";
@@ -13,14 +14,15 @@ export { loadTileset } from "./loader";
 
 export async function init(parent: HTMLElement): Promise<P.Application> {
   // Create a new application
-  g.app = new P.Application();
+  const app = new P.Application();
+  g.app = app;
 
   // Initialize the application
-  await g.app.init({ backgroundAlpha: 0, resizeTo: parent });
-  const stage = g.app.stage;
+  await app.init({ backgroundAlpha: 0, resizeTo: parent });
+  const stage = app.stage;
 
   // Tweak canvas interaction to avoid browser scroll/selection during drag
-  const canvas = g.app.canvas;
+  const canvas = app.canvas;
   canvas.tabIndex = 0; // Make canvas focusable to receive keyboard events
   canvas.style.touchAction = "none";
   canvas.style.userSelect = "none";
@@ -53,13 +55,13 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   stage.interactive = true;
   // Make sure the stage captures pointer events across the whole viewport
   // and update its hitArea to the current screen when needed
-  stage.hitArea = g.app.screen;
+  stage.hitArea = app.screen;
 
   // Overlay container for grid lines (kept separate so clearing tileset doesn't remove grid)
   g.gridContainer = new P.Container();
 
   // Build checkerboard background
-  makeBackground(g.backgroundContainer);
+  const checkerboard = makeBackground(g.backgroundContainer);
 
   g.app.ticker.add(() => {
     //
@@ -91,7 +93,17 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   canvas.addEventListener("mouseout", () => {
     canvas.blur();
   });
-  return g.app;
+
+  function redrawLayout() {
+    const rect = parent.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    checkerboard.width = rect.width;
+    checkerboard.height = rect.height;
+  }
+  window.addEventListener("resize", redrawLayout);
+  onVisible(canvas, redrawLayout);
+
+  return app;
 }
 
 subscribeToSelector(
