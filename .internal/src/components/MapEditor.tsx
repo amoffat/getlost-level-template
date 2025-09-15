@@ -80,12 +80,9 @@ export default function MapEditorTab() {
       </Stack>
 
       <Flex direction="column" style={{ flex: 5, minHeight: 0, minWidth: 0 }}>
-        <div
-          ref={cRef}
-          style={{ flex: 3, height: "100dvh", overflow: "hidden" }}
-        />
+        <div ref={cRef} style={{ flex: 3, minHeight: 0, overflow: "hidden" }} />
 
-        <Stack style={{ flex: 2, minHeight: 0 }} p={0}>
+        <Stack style={{ flex: 2, minHeight: 0 }} h="100%" p={0}>
           <Tabs defaultValue={"palette"} className="flex-overflow">
             <Tabs.List>
               <Tabs.Tab value="palette">
@@ -104,7 +101,7 @@ export default function MapEditorTab() {
               style={{
                 flex: 1,
                 minHeight: 0,
-                overflow: "hidden",
+                height: "100%",
                 display: "flex",
               }}
             >

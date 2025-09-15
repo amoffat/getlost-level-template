@@ -173,11 +173,14 @@ export default function TilesetEditorTab() {
               style={{
                 flex: 1,
                 minHeight: 0,
-                overflow: "hidden",
+                height: "100%",
                 display: "flex",
               }}
             >
-              <ObjectPalette onSelectObject={selectObject} />
+              <ObjectPalette
+                onSelectObject={selectObject}
+                tileset={s.activeTileset}
+              />
             </Tabs.Panel>
           </Tabs>
         </Stack>

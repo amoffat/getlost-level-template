@@ -2,20 +2,31 @@ import { LoadingOverlay, ScrollArea } from "@mantine/core";
 import { JSX, useMemo } from "react";
 import { useAppSelector } from "../hooks/redux";
 import { TileGroup } from "../types/tilegroup";
+import { Tileset } from "../types/tileset";
 import TilesetGroup from "./TilesetGroup";
 
 interface ObjectPaletteProps {
+  tileset?: Tileset | null;
   onSelectObject?: (obj: TileGroup) => void;
 }
 
-export default function ObjectPalette({ onSelectObject }: ObjectPaletteProps) {
+export default function ObjectPalette({
+  onSelectObject,
+  tileset,
+}: ObjectPaletteProps) {
   const ms = useAppSelector((state) => state.mapEditor);
 
   const objects: JSX.Element[] = useMemo(() => {
     const objs: JSX.Element[] = [];
-    const num = ms.paletteIds.length;
+
+    const filteredIds = ms.paletteIds.filter((id) => {
+      const obj = ms.palette[id];
+      return !tileset || obj.tilesetId === tileset?.id;
+    });
+
+    const num = filteredIds.length;
     for (let i = num - 1; i >= 0; i--) {
-      const objId = ms.paletteIds[i];
+      const objId = filteredIds[i];
       const group = ms.palette[objId];
       objs.push(
         <TilesetGroup
@@ -29,7 +40,7 @@ export default function ObjectPalette({ onSelectObject }: ObjectPaletteProps) {
     }
 
     return objs;
-  }, [ms.paletteIds, ms.palette]);
+  }, [ms.paletteIds, ms.palette, tileset]);
 
   const selectObject = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -41,7 +52,13 @@ export default function ObjectPalette({ onSelectObject }: ObjectPaletteProps) {
   };
 
   return (
-    <ScrollArea p="xs" type="hover" offsetScrollbars="y" style={{ flex: 1 }}>
+    <ScrollArea.Autosize
+      p="xs"
+      type="auto"
+      offsetScrollbars
+      h="100%"
+      style={{ flex: 1, minHeight: 0 }}
+    >
       <LoadingOverlay
         visible={ms.loadingPalette}
         zIndex={1000}
@@ -50,6 +67,6 @@ export default function ObjectPalette({ onSelectObject }: ObjectPaletteProps) {
       <div onClick={selectObject} style={{ paddingBottom: 50 }}>
         {objects}
       </div>
-    </ScrollArea>
+    </ScrollArea.Autosize>
   );
 }
