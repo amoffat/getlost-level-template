@@ -71,7 +71,7 @@ export default function MapEditorTab() {
       <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
         <Tabs defaultValue={"tilesets"}>
           <Tabs.List>
-            <Tabs.Tab value="tilesets">Tilesets</Tabs.Tab>
+            <Tabs.Tab value="tilesets">NPCs</Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value="tilesets">
             <Text>hello</Text>
@@ -86,15 +86,7 @@ export default function MapEditorTab() {
         />
 
         <Stack style={{ flex: 2, minHeight: 0 }} p={0}>
-          <Tabs
-            defaultValue={"palette"}
-            style={{
-              height: "100%",
-              minHeight: 0,
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
+          <Tabs defaultValue={"palette"} className="flex-overflow">
             <Tabs.List>
               <Tabs.Tab value="palette">
                 <Group gap="xs">

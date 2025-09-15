@@ -152,15 +152,7 @@ export default function TilesetEditorTab() {
         ></div>
 
         <Stack style={{ flex: 2, minHeight: 0 }} p={0}>
-          <Tabs
-            defaultValue={"palette"}
-            style={{
-              height: "100%",
-              minHeight: 0,
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
+          <Tabs defaultValue={"palette"} className="flex-overflow">
             <Tabs.List>
               <Tabs.Tab value="palette">
                 <Group gap="xs">
