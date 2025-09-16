@@ -1,8 +1,9 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import dialogueReducer from "./slices/dialogue";
-import mapEditorReducer from "./slices/mapEditor";
-import tilesetEditorReducer from "./slices/tilesetEditor";
+import dialogueReducer from "../slices/dialogue";
+import mapEditorReducer from "../slices/mapEditor";
+import tilesetEditorReducer from "../slices/tilesetEditor";
+import { listenerMiddleware } from "./listener";
 
 export const rootReducer = combineReducers({
   dialogue: dialogueReducer,
@@ -15,7 +16,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     // We also add our middleware for the RTK Query API slices here, which
     // handle things like async thunks.
-    getDefaultMiddleware().concat(),
+    getDefaultMiddleware().prepend(listenerMiddleware.middleware),
 });
 
 // Connects the store to page listeners, so that we can respond to the page

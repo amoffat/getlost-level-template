@@ -1,7 +1,6 @@
 import * as P from "pixi.js";
-import { actions as mapActions } from "../../slices/mapEditor";
 import { actions as tsActions } from "../../slices/tilesetEditor";
-import { store } from "../../store";
+import { store } from "../../store/store";
 import { Rect } from "../../types/rect";
 import { TileGroup } from "../../types/tilegroup";
 import { Tileset } from "../../types/tileset";
@@ -39,7 +38,7 @@ function isRectTransparent(imageData: ImageData, rect: Rect): boolean {
   return true;
 }
 
-export async function loadTileset({
+export async function unpackTileset({
   ts,
   extractTiles,
 }: {
@@ -80,7 +79,7 @@ export async function loadTileset({
     // Build a single ImageData snapshot so we can quickly test transparency per tile
     const imageData = getImageDataFromBitmap(bitmap);
 
-    store.dispatch(mapActions.loadingPalette(true));
+    store.dispatch(tsActions.loadingPalette(true));
     let chunk: TileGroup[] = [];
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
@@ -101,7 +100,7 @@ export async function loadTileset({
           singleTile: true,
         });
         if (chunk.length > 10) {
-          store.dispatch(mapActions.bulkAddSinglePaletteTiles(chunk));
+          store.dispatch(tsActions.bulkAddSinglePaletteTiles(chunk));
           store.dispatch(tsActions.setScanPos(coords));
           await schedulerYield();
           chunk = [];
@@ -110,10 +109,10 @@ export async function loadTileset({
     }
 
     if (chunk.length > 0) {
-      store.dispatch(mapActions.bulkAddSinglePaletteTiles(chunk));
+      store.dispatch(tsActions.bulkAddSinglePaletteTiles(chunk));
     }
     store.dispatch(tsActions.setScanPos(null));
-    store.dispatch(mapActions.loadingPalette(false));
+    store.dispatch(tsActions.loadingPalette(false));
   }
 }
 

@@ -1,6 +1,6 @@
 import * as P from "pixi.js";
 import { actions } from "../../slices/tilesetEditor";
-import { store } from "../../store";
+import { store } from "../../store/store";
 import { globals as g } from "./globals";
 
 export function setupPanControls({

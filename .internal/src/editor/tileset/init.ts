@@ -1,7 +1,7 @@
 import debounce from "debounce";
 import * as P from "pixi.js";
 import { actions } from "../../slices/tilesetEditor";
-import { store } from "../../store";
+import { store } from "../../store/store";
 import { subscribeToSelector } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
 import { setupWheelZoom } from "../common/zoom";
@@ -10,7 +10,7 @@ import { globals as g } from "./globals";
 import { drawGrid } from "./grid";
 import { setupGrouper } from "./group";
 import { setupPanControls } from "./pan";
-export { loadTileset } from "./loader";
+export { unpackTileset as loadTileset } from "./loader";
 
 export async function init(parent: HTMLElement): Promise<P.Application> {
   // Create a new application

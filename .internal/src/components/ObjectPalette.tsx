@@ -12,42 +12,36 @@ interface ObjectPaletteProps {
 
 export default function ObjectPalette({
   onSelectObject,
-  tileset,
+  tileset: showTileset,
 }: ObjectPaletteProps) {
-  const ms = useAppSelector((state) => state.mapEditor);
+  const tsState = useAppSelector((state) => state.tilesetEditor);
 
   const objects: JSX.Element[] = useMemo(() => {
     const objs: JSX.Element[] = [];
 
-    const filteredIds = ms.paletteIds.filter((id) => {
-      const obj = ms.palette[id];
-      return !tileset || obj.tilesetId === tileset?.id;
+    const tilesets: Tileset[] = Object.values(tsState.tilesets).filter((t) => {
+      if (showTileset) return t.id === showTileset.id;
+      return true;
     });
 
-    const num = filteredIds.length;
-    for (let i = num - 1; i >= 0; i--) {
-      const objId = filteredIds[i];
-      const group = ms.palette[objId];
-      objs.push(
-        <TilesetGroup
-          scale={1}
-          key={i}
-          id={group.id}
-          src={group.objectUrl}
-          coords={group.pos}
-        />
-      );
+    for (const ts of tilesets) {
+      const num = ts.paletteIds.length;
+      for (let i = num - 1; i >= 0; i--) {
+        const objId = ts.paletteIds[i];
+        const group = ts.palette[objId];
+        objs.push(<TilesetGroup scale={1} key={i} group={group} />);
+      }
     }
 
     return objs;
-  }, [ms.paletteIds, ms.palette, tileset]);
+  }, [tsState.tilesets, showTileset]);
 
   const selectObject = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.tagName !== "DIV") return;
-    const objId = target.dataset.objid;
-    if (!objId) return;
-    const obj = ms.palette[objId];
+    const objId = target.dataset.objid as string;
+    const tsId = target.dataset.tsid as string;
+    const obj = tsState.tilesets[tsId].palette[objId];
     onSelectObject?.(obj);
   };
 
@@ -60,7 +54,7 @@ export default function ObjectPalette({
       style={{ flex: 1, minHeight: 0 }}
     >
       <LoadingOverlay
-        visible={ms.loadingPalette}
+        visible={tsState.loadingPalette}
         zIndex={1000}
         overlayProps={{ blur: 2 }}
       />

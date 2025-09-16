@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../hooks/redux";
 import { log } from "../log";
-import { RootState } from "../store";
+import { RootState } from "../store/store";
 import DialogueTab from "./Dialogue";
 import MapEditorTab from "./MapEditor";
 import PreviewTab from "./Preview";

@@ -1,6 +1,6 @@
 import * as P from "pixi.js";
 import { activeTilesetGroups } from "../../selectors/tileset";
-import { store } from "../../store";
+import { store } from "../../store/store";
 import { TileGroup } from "../../types/tilegroup";
 import { subscribeToSelector } from "../../utils/redux";
 import { globals as g } from "./globals";

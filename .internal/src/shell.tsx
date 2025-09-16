@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { Provider as ReduxProvider } from "react-redux";
 import { ShellApp } from "./components/ShellApp";
 import { CommsProvider } from "./components/providers/CommsProvider";
-import { store } from "./store";
+import { store } from "./store/store";
 
 const theme: MantineThemeOverride = {
   components: {

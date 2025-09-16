@@ -1,12 +1,10 @@
+import { TileGroup } from "@/types/tilegroup";
 import classNames from "classnames";
 import React from "react";
-import { Rect } from "../types/rect";
 import styles from "./styles/TilesetGroup.module.css";
 
 export interface TilesetCropProps extends React.HTMLAttributes<HTMLDivElement> {
-  id: string;
-  src: string;
-  coords: Rect;
+  group: TileGroup;
   className?: string;
   scale?: number;
   style?: React.CSSProperties;
@@ -15,20 +13,12 @@ export interface TilesetCropProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const TilesetGroup = React.forwardRef<HTMLDivElement, TilesetCropProps>(
   function TilesetGroup(
-    {
-      id,
-      src,
-      coords: group,
-      className,
-      style,
-      scale = 1,
-      ...others
-    }: TilesetCropProps,
+    { group, className, style, scale = 1, ...others }: TilesetCropProps,
     ref
   ) {
-    const width = Math.max(0, group.br.x - group.ul.x);
-    const height = Math.max(0, group.br.y - group.ul.y);
-    const bgPos = `-${group.ul.x}px -${group.ul.y}px`;
+    const width = Math.max(0, group.pos.br.x - group.pos.ul.x);
+    const height = Math.max(0, group.pos.br.y - group.pos.ul.y);
+    const bgPos = `-${group.pos.ul.x}px -${group.pos.ul.y}px`;
 
     return (
       <div
@@ -37,12 +27,13 @@ const TilesetGroup = React.forwardRef<HTMLDivElement, TilesetCropProps>(
         style={{ width: width * scale, height: height * scale }}
       >
         <div
-          data-objid={id}
+          data-tsid={group.tilesetId}
+          data-objid={group.id}
           className={classNames(styles.crop, className)}
           style={{
             width,
             height,
-            backgroundImage: `url(${src})`,
+            backgroundImage: `url(${group.objectUrl})`,
             backgroundPosition: bgPos,
             transform: `scale(${scale})`,
             transformOrigin: "top left",

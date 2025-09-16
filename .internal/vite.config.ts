@@ -1,6 +1,7 @@
 import react from "@vitejs/plugin-react";
+import path from "path";
 import { defineConfig, ViteDevServer } from "vite";
-import apiPlugin from "./src/plugins/api";
+import apiPlugin from "./src/plugins/api/main";
 import compileWasmPlugin from "./src/plugins/assemblyscript";
 import levelPlugin from "./src/plugins/level";
 import { isAllowedOrigin } from "./src/plugins/utils";
@@ -39,6 +40,11 @@ function addHeadersPlugin() {
 
 export default defineConfig(() => {
   return {
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+    },
     plugins: [
       // There's a bug in Github codespaces. Even though we have our vite port
       // set as https in the devcontainer.json, Codespaces will set the protocol

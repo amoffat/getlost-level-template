@@ -131,16 +131,17 @@ subscribeToSelector(
 );
 
 subscribeToSelector(
-  (state) => state.tilesetEditor.activeTileset,
-  async (tileset) => {
-    if (!tileset) return;
-    if (tilesetCache.has(tileset.id)) return;
+  (state) => state.tilesetEditor.activeTilesetId,
+  async (tsId, state) => {
+    if (!tsId) return;
+    if (tilesetCache.has(tsId)) return;
 
+    const tileset = state.tilesetEditor.tilesets[tsId];
     const tex = await P.Assets.load<P.Texture>({
       src: tileset.objectUrl,
       parser: "loadTextures",
     });
     tex.source.scaleMode = "nearest";
-    tilesetCache.set(tileset.id, tex);
+    tilesetCache.set(tsId, tex);
   }
 );

@@ -67,6 +67,10 @@ export default function levelWatcher() {
             gameReload = true;
           }
 
+          if (changed.endsWith(".cbor")) {
+            gameReload = true;
+          }
+
           if (changed.includes("syncthing")) {
             gameReload = false;
           }

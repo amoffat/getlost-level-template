@@ -1,4 +1,4 @@
-import { RootState, store } from "../store";
+import { RootState, store } from "../store/store";
 
 export function subscribeToSelector<T>(
   selector: (state: RootState) => T,

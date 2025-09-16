@@ -25,7 +25,7 @@ import { useCallback, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../hooks/redux";
 import { setEdges, setNodeData, setNodes } from "../slices/dialogue";
-import type { RootState } from "../store";
+import type { RootState } from "../store/store";
 import type { DNode } from "../types/dialogue";
 
 export default function DialogueTab() {

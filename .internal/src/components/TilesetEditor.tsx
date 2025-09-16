@@ -19,7 +19,7 @@ import { init } from "../editor/tileset/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions as mapActions } from "../slices/mapEditor";
 import { actions, selectors } from "../slices/tilesetEditor";
-import { loadTilesetThunk } from "../thunks/tileset";
+import { addTilesetThunk } from "../thunks/tileset";
 import { TileGroup } from "../types/tilegroup";
 import { Tileset } from "../types/tileset";
 import { genTilesetId } from "../utils/tileset";
@@ -65,8 +65,14 @@ export default function TilesetEditorTab() {
       for (const file of files) {
         const objectUrl = URL.createObjectURL(file);
         const tsId = await genTilesetId(file);
-        const ts: Tileset = { id: tsId, objectUrl };
-        await dispatch(loadTilesetThunk(ts));
+        const ts: Tileset = {
+          id: tsId,
+          objectUrl,
+          palette: {},
+          paletteIds: [],
+          saved: false,
+        };
+        await dispatch(addTilesetThunk(ts));
       }
     },
     [dispatch]
@@ -84,11 +90,11 @@ export default function TilesetEditorTab() {
     <UnstyledButton
       key={i}
       p={0}
-      onClick={() => dispatch(loadTilesetThunk(ts))}
+      onClick={() => dispatch(addTilesetThunk(ts))}
       style={(theme) => ({
         overflow: "hidden",
         border:
-          ts === s.activeTileset
+          ts.id === s.activeTilesetId
             ? `2px solid ${theme.colors.blue[6]}`
             : "2px solid transparent",
         "&:hover": {
@@ -179,7 +185,9 @@ export default function TilesetEditorTab() {
             >
               <ObjectPalette
                 onSelectObject={selectObject}
-                tileset={s.activeTileset}
+                tileset={
+                  s.activeTilesetId ? s.tilesets[s.activeTilesetId] : null
+                }
               />
             </Tabs.Panel>
           </Tabs>

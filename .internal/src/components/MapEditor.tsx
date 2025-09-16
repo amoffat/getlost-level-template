@@ -17,7 +17,7 @@ import { actions } from "../slices/mapEditor";
 
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
-import { RootState } from "../store";
+import { RootState } from "../store/store";
 import { ActiveLayer } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
 import HelpHoverCard from "./HelpHoverCard";

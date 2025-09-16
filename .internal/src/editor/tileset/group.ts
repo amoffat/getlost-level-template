@@ -1,8 +1,7 @@
 import * as P from "pixi.js";
 import { activeTilesetGroups } from "../../selectors/tileset";
-import { actions as mapActions } from "../../slices/mapEditor";
 import { actions as tsActions } from "../../slices/tilesetEditor";
-import { store } from "../../store";
+import { store } from "../../store/store";
 import { TileGroup } from "../../types/tilegroup";
 import { closeEnough } from "../../utils/math";
 import { subscribeToSelector } from "../../utils/redux";
@@ -40,7 +39,7 @@ export function setupGrouper() {
     if (e.key === "g") {
       e.preventDefault();
       const state = store.getState();
-      if (!state.tilesetEditor.activeTileset) return;
+      if (!state.tilesetEditor.activeTilesetId) return;
       store.dispatch(tsActions.setMode("group"));
     }
   });
@@ -52,7 +51,8 @@ export function setupGrouper() {
         store.dispatch(tsActions.setMode(null));
 
         const tsState = store.getState().tilesetEditor;
-        const ts = tsState.activeTileset!;
+        const tsId = tsState.activeTilesetId!;
+        const tileset = tsState.tilesets[tsId];
         const gridSize = tsState.grid.size;
 
         const c = g.groupSelContainer;
@@ -61,12 +61,12 @@ export function setupGrouper() {
           ul: { x: c.x, y: c.y },
           br: { x: c.x + c.width, y: c.y + c.height },
         };
-        const id = await genGroupId({ coords, tsId: ts.id });
+        const id = await genGroupId({ coords, tsId });
         const group: TileGroup = {
           id,
-          tilesetId: ts.id,
+          tilesetId: tsId,
           pos: coords,
-          objectUrl: ts.objectUrl,
+          objectUrl: tileset.objectUrl,
           singleTile: false,
           gridSize,
         };
@@ -74,7 +74,7 @@ export function setupGrouper() {
         group.singleTile =
           closeEnough(c.width, gridSize) && closeEnough(c.height, gridSize);
 
-        store.dispatch(mapActions.addPaletteObject(group));
+        store.dispatch(tsActions.addPaletteObject(group));
       }
     }
   });
