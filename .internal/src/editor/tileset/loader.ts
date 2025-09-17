@@ -8,7 +8,6 @@ import { schedulerYield } from "../../utils/async";
 import { subscribeToSelector } from "../../utils/redux";
 import { genGroupId } from "../../utils/tileset";
 import { globals as g } from "./globals";
-import { drawGrid } from "./grid";
 
 function getImageDataFromBitmap(bitmap: ImageBitmap): ImageData {
   const width = bitmap.width;
@@ -38,13 +37,7 @@ function isRectTransparent(imageData: ImageData, rect: Rect): boolean {
   return true;
 }
 
-export async function unpackTileset({
-  ts,
-  extractTiles,
-}: {
-  ts: Tileset;
-  extractTiles: boolean;
-}) {
+export async function setCanvasTileset(ts: Tileset) {
   // Clear any previous content
   g.currentTileset?.removeFromParent();
   g.grid?.removeFromParent();
@@ -64,59 +57,63 @@ export async function unpackTileset({
   sprite.roundPixels = true;
 
   g.currentTileset = sprite;
-
   g.tilesetContainer.addChild(sprite);
-  const gridSize = store.getState().tilesetEditor.grid.size;
-  g.grid = drawGrid(gridSize);
+}
 
-  if (extractTiles) {
-    const canvas = g.app.renderer.extract.canvas(texture) as HTMLCanvasElement;
-    const bitmap = await createImageBitmap(canvas);
+export async function unpackActiveTileset() {
+  const state = store.getState();
+  const gridSize = state.tilesetEditor.grid.size;
+  const tsId = state.tilesetEditor.activeTilesetId!;
 
-    // Add all single-tile groups by default
-    const cols = Math.floor(sprite.width / gridSize);
-    const rows = Math.floor(sprite.height / gridSize);
-    // Build a single ImageData snapshot so we can quickly test transparency per tile
-    const imageData = getImageDataFromBitmap(bitmap);
+  const sprite = g.currentTileset!;
+  const texture = sprite.texture;
 
-    store.dispatch(tsActions.loadingPalette(true));
-    let chunk: TileGroup[] = [];
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const coords: Rect = {
-          ul: { x: x * gridSize, y: y * gridSize },
-          br: { x: (x + 1) * gridSize, y: (y + 1) * gridSize },
-        };
-        // Skip empty tiles (all pixels fully transparent)
-        if (isRectTransparent(imageData, coords)) continue;
+  const canvas = g.app.renderer.extract.canvas(texture) as HTMLCanvasElement;
+  const bitmap = await createImageBitmap(canvas);
 
-        const id = await genGroupId({ coords, tsId: ts.id });
-        chunk.push({
-          id,
-          pos: coords,
-          tilesetId: ts.id,
-          gridSize,
-          singleTile: true,
-        });
-        if (chunk.length > 10) {
-          store.dispatch(
-            tsActions.bulkAddSinglePaletteTiles({ tsId: ts.id, groups: chunk })
-          );
-          store.dispatch(tsActions.setScanPos(coords));
-          await schedulerYield();
-          chunk = [];
-        }
+  // Add all single-tile groups by default
+  const cols = Math.floor(sprite.width / gridSize);
+  const rows = Math.floor(sprite.height / gridSize);
+  // Build a single ImageData snapshot so we can quickly test transparency per tile
+  const imageData = getImageDataFromBitmap(bitmap);
+
+  store.dispatch(tsActions.loadingPalette(true));
+  let chunk: TileGroup[] = [];
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const coords: Rect = {
+        ul: { x: x * gridSize, y: y * gridSize },
+        br: { x: (x + 1) * gridSize, y: (y + 1) * gridSize },
+      };
+      // Skip empty tiles (all pixels fully transparent)
+      if (isRectTransparent(imageData, coords)) continue;
+
+      const id = await genGroupId({ coords, tsId });
+      chunk.push({
+        id,
+        pos: coords,
+        tilesetId: tsId,
+        gridSize,
+        singleTile: true,
+      });
+      if (chunk.length > 10) {
+        store.dispatch(
+          tsActions.bulkAddSinglePaletteTiles({ tsId, groups: chunk })
+        );
+        store.dispatch(tsActions.setScanPos(coords));
+        await schedulerYield();
+        chunk = [];
       }
     }
-
-    if (chunk.length > 0) {
-      store.dispatch(
-        tsActions.bulkAddSinglePaletteTiles({ tsId: ts.id, groups: chunk })
-      );
-    }
-    store.dispatch(tsActions.setScanPos(null));
-    store.dispatch(tsActions.loadingPalette(false));
   }
+
+  if (chunk.length > 0) {
+    store.dispatch(
+      tsActions.bulkAddSinglePaletteTiles({ tsId, groups: chunk })
+    );
+  }
+  store.dispatch(tsActions.setScanPos(null));
+  store.dispatch(tsActions.loadingPalette(false));
 }
 
 subscribeToSelector(

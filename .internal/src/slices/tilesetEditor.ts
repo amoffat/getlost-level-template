@@ -87,7 +87,6 @@ const slice = createSlice({
       action: PayloadAction<{
         tsId: string;
         ts: Tileset;
-        triggerAutosave?: boolean;
       }>
     ) => {
       const { ts } = action.payload;
@@ -250,6 +249,19 @@ const slice = createSlice({
     selectTilesets: createSelector.withTypes<TilesetEditorState>()(
       [(state) => state.tilesetIds, (state) => state.tilesets],
       (tilesetIds, tilesets): Tileset[] => tilesetIds.map((id) => tilesets[id])
+    ),
+    activeTileset: createSelector.withTypes<TilesetEditorState>()(
+      [(state) => state.activeTilesetId, (state) => state.tilesets],
+      (tsId, tilesets): Tileset | null =>
+        tsId ? (tilesets[tsId] ?? null) : null
+    ),
+    activeTilesetGroups: createSelector.withTypes<TilesetEditorState>()(
+      [(state) => state.activeTilesetId, (state) => state.tilesets],
+      (tsId, tilesets): TileGroup[] => {
+        if (!tsId) return [];
+        const ts = tilesets[tsId];
+        return ts.paletteIds.map((id) => ts.palette[id]);
+      }
     ),
   },
 });

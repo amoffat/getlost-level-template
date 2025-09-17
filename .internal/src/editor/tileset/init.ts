@@ -10,7 +10,6 @@ import { globals as g } from "./globals";
 import { drawGrid } from "./grid";
 import { setupGrouper } from "./group";
 import { setupPanControls } from "./pan";
-export { unpackTileset as loadTileset } from "./loader";
 
 export async function init(parent: HTMLElement): Promise<P.Application> {
   // Create a new application
@@ -116,8 +115,7 @@ subscribeToSelector(
 subscribeToSelector(
   (state) => state.tilesetEditor.grid.size,
   (size) => {
-    g.grid.removeFromParent();
-    g.grid = drawGrid(size);
+    drawGrid(size);
   }
 );
 

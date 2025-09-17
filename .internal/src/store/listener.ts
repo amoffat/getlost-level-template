@@ -65,11 +65,6 @@ startAppListening({
     tsActions.addSinglePaletteTile
   ),
   effect: async (action: TsAction, { dispatch, getState }) => {
-    if (tsActions.addTileset.match(action)) {
-      const { triggerAutosave } = action.payload;
-      if (!triggerAutosave) return;
-    }
-
     // All matched actions carry a { ts: Tileset } payload
     const { tsId } = action.payload;
     const ts = getState().tilesetEditor.tilesets[tsId];

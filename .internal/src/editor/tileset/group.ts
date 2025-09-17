@@ -1,6 +1,5 @@
 import * as P from "pixi.js";
-import { activeTilesetGroups } from "../../selectors/tileset";
-import { actions as tsActions } from "../../slices/tilesetEditor";
+import { selectors, actions as tsActions } from "../../slices/tilesetEditor";
 import { store } from "../../store/store";
 import { TileGroup } from "../../types/tilegroup";
 import { closeEnough } from "../../utils/math";
@@ -141,4 +140,7 @@ async function drawGroups(groups: TileGroup[]) {
   groupsContainer.addChild(g);
 }
 
-subscribeToSelector(activeTilesetGroups, drawGroups);
+subscribeToSelector(selectors.activeTilesetGroups, (groups) => {
+  if (!groups) return;
+  drawGroups(groups);
+});

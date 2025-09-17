@@ -1,15 +1,17 @@
+import { selectors } from "@/slices/tilesetEditor";
 import * as P from "pixi.js";
-import { activeTilesetGroups } from "../../selectors/tileset";
 import { store } from "../../store/store";
 import { TileGroup } from "../../types/tilegroup";
 import { subscribeToSelector } from "../../utils/redux";
 import { globals as g } from "./globals";
 
-let container: P.Container | null = null;
 let mask: P.Graphics | null = null;
 
-export function drawGrid(gridSize: number): P.Container {
-  container = new P.Container();
+export function drawGrid(gridSize: number) {
+  g.grid?.removeFromParent();
+
+  const container = new P.Container();
+  g.grid = container;
 
   const gfx = new P.Graphics();
 
@@ -45,17 +47,15 @@ export function drawGrid(gridSize: number): P.Container {
   container.addChild(gfx);
   g.tilesetContainer.addChild(container);
 
-  const groups = activeTilesetGroups(store.getState());
+  const groups = selectors.activeTilesetGroups(store.getState());
   drawGridMask(groups);
-
-  return container;
 }
 
 function drawGridMask(groups: TileGroup[]) {
   mask?.removeFromParent();
 
   mask = new P.Graphics();
-  container?.addChild(mask);
+  g.grid.addChild(mask);
 
   mask.fill({ color: 0x000000, alpha: 0 });
   for (const group of groups.filter((g) => !g.singleTile)) {
@@ -69,10 +69,21 @@ function drawGridMask(groups: TileGroup[]) {
       .fill({ color: 0x000000, alpha: 1 });
   }
 
-  container?.setMask({
+  g.grid.setMask({
     mask,
     inverse: true,
   });
 }
 
-subscribeToSelector(activeTilesetGroups, drawGridMask);
+subscribeToSelector(selectors.activeTilesetGroups, (groups) => {
+  if (!g.grid) return;
+  if (!groups) return;
+  drawGridMask(groups);
+});
+subscribeToSelector(
+  (state) => state.tilesetEditor.activeTilesetId,
+  (_, state) => {
+    const gridSize = state.tilesetEditor.grid.size;
+    drawGrid(gridSize);
+  }
+);

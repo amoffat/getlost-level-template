@@ -19,7 +19,7 @@ import { init } from "../editor/tileset/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions as mapActions } from "../slices/mapEditor";
 import { actions, selectors } from "../slices/tilesetEditor";
-import { addTilesetThunk } from "../thunks/tileset";
+import { selectTilesetThunk } from "../thunks/tileset";
 import { TileGroup } from "../types/tilegroup";
 import { Tileset } from "../types/tileset";
 import { genTilesetId } from "../utils/tileset";
@@ -51,14 +51,6 @@ export default function TilesetEditorTab() {
   }, [app]);
 
   const uploadImage = useCallback(
-    // const form = new FormData();
-    // for (const f of files) form.append("file", f, f.name);
-
-    // await fetch("/api/image-upload", {
-    //   method: "POST",
-    //   body: form,
-    // });
-
     async (files: FileWithPath[]) => {
       if (!files.length) return;
       for (const file of files) {
@@ -71,7 +63,7 @@ export default function TilesetEditorTab() {
           paletteIds: [],
           saved: false,
         };
-        await dispatch(addTilesetThunk(ts));
+        await dispatch(selectTilesetThunk(ts));
       }
     },
     [dispatch]
@@ -89,7 +81,7 @@ export default function TilesetEditorTab() {
     <UnstyledButton
       key={ts.id}
       p={0}
-      onClick={() => dispatch(addTilesetThunk(ts))}
+      onClick={() => dispatch(selectTilesetThunk(ts))}
       style={(theme) => ({
         overflow: "hidden",
         border:
