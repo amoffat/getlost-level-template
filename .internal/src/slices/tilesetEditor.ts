@@ -17,7 +17,7 @@ type BBoxItem = {
 type TileIndex = RBush<BBoxItem>;
 const tileIndices: Record<string, TileIndex> = {};
 
-function getTileIndex(id: string): TileIndex {
+export function getTileIndex(id: string): TileIndex {
   if (!tileIndices[id]) {
     tileIndices[id] = new RBush<BBoxItem>();
   }
@@ -25,7 +25,7 @@ function getTileIndex(id: string): TileIndex {
 }
 
 // The padding prevents RBush false positives when tiles are adjacent
-function groupToBBox(group: TileGroup, pad: number = 0.1): BBoxItem {
+export function groupToBBox(group: TileGroup, pad: number = 0.1): BBoxItem {
   return {
     minX: group.pos.ul.x + pad,
     minY: group.pos.ul.y + pad,
@@ -94,6 +94,11 @@ const slice = createSlice({
       state.tilesetZoomPans[ts.id] ??= { zoom: 1, pan: { x: 0, y: 0 } };
       if (!state.tilesetIds.includes(ts.id)) {
         state.tilesetIds.push(ts.id);
+      }
+
+      const idx = getTileIndex(ts.id);
+      for (const group of Object.values(ts.palette)) {
+        idx.insert(groupToBBox(group));
       }
     },
     setScanPos: (state, action: PayloadAction<Rect | null>) => {

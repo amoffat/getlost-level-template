@@ -1,3 +1,4 @@
+import { unpackActiveTileset } from "@/editor/tileset/loader";
 import {
   Fieldset,
   Flex,
@@ -63,7 +64,9 @@ export default function TilesetEditorTab() {
           paletteIds: [],
           saved: false,
         };
+        dispatch(actions.addTileset({ tsId, ts }));
         await dispatch(selectTilesetThunk(ts));
+        await unpackActiveTileset();
       }
     },
     [dispatch]

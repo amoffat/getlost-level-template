@@ -1,5 +1,5 @@
 import { useAppDispatch } from "@/hooks/redux";
-import { loadTilesetThunk } from "@/thunks/tileset";
+import { loadTilesetsThunk } from "@/thunks/tileset";
 import { AppShell, Tabs } from "@mantine/core";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useEffect, useState } from "react";
@@ -39,7 +39,7 @@ export function ShellApp() {
   useEffect(() => {
     (async () => {
       try {
-        await dispatch(loadTilesetThunk()).unwrap();
+        await dispatch(loadTilesetsThunk()).unwrap();
       } catch (e) {
         log.error({ e }, "Failed to load tilesets:");
       }
