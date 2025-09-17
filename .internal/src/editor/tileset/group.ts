@@ -54,8 +54,6 @@ export function setupGrouper() {
     if (e.key === GROUP_KEY || e.key === ADD_KEY) {
       e.preventDefault();
       if (isGrouping()) {
-        store.dispatch(tsActions.setMode(null));
-
         const tsState = store.getState().tilesetEditor;
         const tsId = tsState.activeTilesetId!;
         const gridSize = tsState.grid.size;
@@ -80,6 +78,7 @@ export function setupGrouper() {
           closeEnough(c.width, gridSize) && closeEnough(c.height, gridSize);
 
         store.dispatch(tsActions.addPaletteObject({ tsId, group }));
+        store.dispatch(tsActions.setMode(null));
       }
     }
   });

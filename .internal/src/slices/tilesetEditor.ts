@@ -177,7 +177,7 @@ const slice = createSlice({
 
       // Find overlapping groups (same objectUrl via cache) and remove them
       const overlaps = tileIndex.search(bbox);
-      if (overlaps.length > 0) {
+      if (overlaps.length > 0 && replaceMode) {
         const removeIds = new Set(overlaps.map((o) => o.id));
         const addBackChildrenIds: Set<string> = new Set();
         const groupChildrenIds: Set<string> = new Set();
