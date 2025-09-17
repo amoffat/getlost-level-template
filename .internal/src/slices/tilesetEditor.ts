@@ -82,8 +82,15 @@ const slice = createSlice({
       state.activeTilesetId = ts.id;
       state.activeZoomPan = state.tilesetZoomPans[ts.id];
     },
-    addTileset: (state, action: PayloadAction<Tileset>) => {
-      const ts = action.payload;
+    addTileset: (
+      state,
+      action: PayloadAction<{
+        tsId: string;
+        ts: Tileset;
+        triggerAutosave?: boolean;
+      }>
+    ) => {
+      const { ts } = action.payload;
       state.tilesets[ts.id] = ts;
       state.tilesetZoomPans[ts.id] ??= { zoom: 1, pan: { x: 0, y: 0 } };
       if (!state.tilesetIds.includes(ts.id)) {
@@ -117,9 +124,12 @@ const slice = createSlice({
       }
     },
 
-    bulkAddSinglePaletteTiles(state, action: PayloadAction<TileGroup[]>) {
-      const ts = state.tilesets[state.activeTilesetId!]!;
-      const groups = action.payload;
+    bulkAddSinglePaletteTiles(
+      state,
+      action: PayloadAction<{ tsId: string; groups: TileGroup[] }>
+    ) {
+      const { tsId, groups } = action.payload;
+      const ts = state.tilesets[tsId];
       const newPaletteIds: string[] = [];
       const newPalette: Record<string, TileGroup> = { ...ts.palette };
       const idx = getTileIndex(ts.id);
@@ -136,9 +146,12 @@ const slice = createSlice({
       ts.palette = newPalette;
     },
 
-    addSinglePaletteTile(state, action: PayloadAction<TileGroup>) {
-      const ts = state.tilesets[state.activeTilesetId!]!;
-      const group = action.payload;
+    addSinglePaletteTile(
+      state,
+      action: PayloadAction<{ tsId: string; group: TileGroup }>
+    ) {
+      const { tsId, group } = action.payload;
+      const ts = state.tilesets[tsId];
       if (group.id in ts.palette) return;
       ts.paletteIds.push(group.id);
       ts.palette[group.id] = group;
@@ -146,9 +159,12 @@ const slice = createSlice({
       getTileIndex(ts.id).insert(groupToBBox(group));
     },
 
-    addPaletteObject(state, action: PayloadAction<TileGroup>) {
-      const ts = state.tilesets[state.activeTilesetId!]!;
-      const group = action.payload;
+    addPaletteObject(
+      state,
+      action: PayloadAction<{ tsId: string; group: TileGroup }>
+    ) {
+      const { tsId, group } = action.payload;
+      const ts = state.tilesets[tsId];
       const tileIndex = getTileIndex(ts.id);
       const bbox = groupToBBox(group);
       const deleting = group.singleTile;

@@ -29,7 +29,8 @@ export default function ObjectPalette({
       for (let i = num - 1; i >= 0; i--) {
         const objId = ts.paletteIds[i];
         const group = ts.palette[objId];
-        objs.push(<TilesetGroup scale={1} key={i} group={group} />);
+        const key = `${ts.id}-${group.id}`;
+        objs.push(<TilesetGroup scale={1} key={key} group={group} ts={ts} />);
       }
     }
 

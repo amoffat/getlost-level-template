@@ -1,10 +1,9 @@
+import { useAppDispatch } from "@/hooks/redux";
+import { loadTilesetThunk } from "@/thunks/tileset";
 import { AppShell, Tabs } from "@mantine/core";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { useAppSelector } from "../hooks/redux";
 import { log } from "../log";
-import { RootState } from "../store/store";
 import DialogueTab from "./Dialogue";
 import MapEditorTab from "./MapEditor";
 import PreviewTab from "./Preview";
@@ -35,9 +34,17 @@ export function ShellApp() {
   >({
     [defaultTab]: true,
   });
-  const ts = useAppSelector((state: RootState) => state.tilesetEditor);
-  const ms = useAppSelector((state: RootState) => state.mapEditor);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        await dispatch(loadTilesetThunk()).unwrap();
+      } catch (e) {
+        log.error({ e }, "Failed to load tilesets:");
+      }
+    })();
+  }, [dispatch]);
 
   const handleTabChange = (value: TabName | null) => {
     if (!value) return;

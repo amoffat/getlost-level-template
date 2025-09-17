@@ -1,5 +1,6 @@
 import { Tileset } from "@/types/tileset";
-import { encode } from "cbor2";
+import { decode, encode } from "cbor2";
+import { TilesetDocV1 } from "./schema";
 
 interface LoadTilesetsResponse {
   ids: string[];
@@ -8,7 +9,7 @@ interface LoadTilesetsResponse {
 export async function loadTilesets(): Promise<string[]> {
   const res = await fetch("/api/tilesets", {
     method: "GET",
-    headers: { "content-type": "application/json", accept: "application/json" },
+    headers: { "content-type": "application/json" },
   });
   if (!res.ok) throw new Error(`openProject failed: ${res.status}`);
   return ((await res.json()) as LoadTilesetsResponse).ids;
@@ -17,19 +18,27 @@ export async function loadTilesets(): Promise<string[]> {
 export async function loadTileset(id: string): Promise<Tileset> {
   const res = await fetch(`/api/tilesets/${encodeURIComponent(id)}`, {
     method: "GET",
-    headers: { accept: "application/json" },
   });
   if (!res.ok) throw new Error(`loadTileset failed: ${res.status}`);
-  return res.json();
+
+  const decoded = decode(await res.bytes()) as TilesetDocV1;
+  const ts = decoded.tileset;
+  // Recreate an object URL for the tileset image from persisted bytes
+  // Copy to a standalone ArrayBuffer to satisfy TS's BlobPart typing
+  const ab = new ArrayBuffer(decoded.imageData.byteLength);
+  new Uint8Array(ab).set(decoded.imageData);
+  ts.objectUrl = URL.createObjectURL(new Blob([ab]));
+  return ts;
 }
 
 export async function saveTileset(ts: Tileset) {
-  const imageData = new Uint8Array(
-    await (await fetch(ts.objectUrl)).arrayBuffer()
-  );
-  const payload = encode({
+  const imageData = await (await fetch(ts.objectUrl)).bytes();
+  const doc: TilesetDocV1 = {
+    tileset: ts,
     imageData,
-  });
+    version: 1,
+  };
+  const payload = encode(doc);
   // Send as multipart/form-data so the server's formidable parser can handle it
   const form = new FormData();
   // Wrap the CBOR payload in a Blob and name the file deterministically; server

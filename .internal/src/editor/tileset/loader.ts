@@ -95,12 +95,13 @@ export async function unpackTileset({
           id,
           pos: coords,
           tilesetId: ts.id,
-          objectUrl: ts.objectUrl,
           gridSize,
           singleTile: true,
         });
         if (chunk.length > 10) {
-          store.dispatch(tsActions.bulkAddSinglePaletteTiles(chunk));
+          store.dispatch(
+            tsActions.bulkAddSinglePaletteTiles({ tsId: ts.id, groups: chunk })
+          );
           store.dispatch(tsActions.setScanPos(coords));
           await schedulerYield();
           chunk = [];
@@ -109,7 +110,9 @@ export async function unpackTileset({
     }
 
     if (chunk.length > 0) {
-      store.dispatch(tsActions.bulkAddSinglePaletteTiles(chunk));
+      store.dispatch(
+        tsActions.bulkAddSinglePaletteTiles({ tsId: ts.id, groups: chunk })
+      );
     }
     store.dispatch(tsActions.setScanPos(null));
     store.dispatch(tsActions.loadingPalette(false));

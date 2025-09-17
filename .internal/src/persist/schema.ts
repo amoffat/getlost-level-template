@@ -1,8 +1,7 @@
-import { TileGroup } from "../types/tilegroup";
+import { Tileset } from "@/types/tileset";
 
 export type TilesetDocV1 = {
   version: 1;
-  tsId: string; // stable id for the image, based on hash of the image
-  filename: string; // e.g., "mytiles.png"
-  groups: TileGroup[];
+  tileset: Tileset;
+  imageData: Uint8Array;
 };

@@ -5,7 +5,5 @@ export function activeTilesetGroups(state: RootState): TileGroup[] {
   const tsId = state.tilesetEditor.activeTilesetId;
   if (!tsId) return [];
   const tileset = state.tilesetEditor.tilesets[tsId];
-  return tileset.paletteIds
-    .map((id) => tileset.palette[id])
-    .filter((g) => g.objectUrl === tileset.objectUrl);
+  return tileset.paletteIds.map((id) => tileset.palette[id]);
 }

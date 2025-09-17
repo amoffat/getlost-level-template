@@ -35,11 +35,10 @@ export default function TilesetEditorTab() {
   const gridSizes = useMemo(() => [8, 16, 32], []);
 
   useEffect(() => {
-    const fn = async () => {
+    (async () => {
       const app = await init(cRef.current!);
       setApp(app);
-    };
-    fn();
+    })();
   }, []);
 
   useEffect(() => {
@@ -86,9 +85,9 @@ export default function TilesetEditorTab() {
   );
 
   const loadedTilesets = useAppSelector(selectors.selectTilesets);
-  const tilesetImages = loadedTilesets.map((ts, i) => (
+  const tilesetImages = loadedTilesets.map((ts) => (
     <UnstyledButton
-      key={i}
+      key={ts.id}
       p={0}
       onClick={() => dispatch(addTilesetThunk(ts))}
       style={(theme) => ({

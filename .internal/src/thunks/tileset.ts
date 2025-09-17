@@ -1,3 +1,4 @@
+import { loadTileset, loadTilesets } from "@/persist/api";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { unpackTileset } from "../editor/tileset/loader";
 import {
@@ -12,8 +13,19 @@ export const addTilesetThunk = createAsyncThunk(
     const state = getState() as { tilesetEditor: TilesetEditorState };
     const extractTiles = !state.tilesetEditor.tilesetIds.includes(ts.id);
 
-    dispatch(tsActions.addTileset(ts));
+    dispatch(tsActions.addTileset({ tsId: ts.id, ts, triggerAutosave: true }));
     dispatch(tsActions.setActiveTileset(ts));
     await unpackTileset({ ts, extractTiles });
+  }
+);
+
+export const loadTilesetThunk = createAsyncThunk(
+  "tilesetEditor/loadTilesetThunk",
+  async (_, { dispatch }) => {
+    const tilesetIds = await loadTilesets();
+    for (const tsId of tilesetIds) {
+      const ts = await loadTileset(tsId);
+      dispatch(tsActions.addTileset({ tsId, ts }));
+    }
   }
 );

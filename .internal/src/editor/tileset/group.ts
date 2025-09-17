@@ -52,7 +52,6 @@ export function setupGrouper() {
 
         const tsState = store.getState().tilesetEditor;
         const tsId = tsState.activeTilesetId!;
-        const tileset = tsState.tilesets[tsId];
         const gridSize = tsState.grid.size;
 
         const c = g.groupSelContainer;
@@ -66,7 +65,6 @@ export function setupGrouper() {
           id,
           tilesetId: tsId,
           pos: coords,
-          objectUrl: tileset.objectUrl,
           singleTile: false,
           gridSize,
         };
@@ -74,7 +72,7 @@ export function setupGrouper() {
         group.singleTile =
           closeEnough(c.width, gridSize) && closeEnough(c.height, gridSize);
 
-        store.dispatch(tsActions.addPaletteObject(group));
+        store.dispatch(tsActions.addPaletteObject({ tsId, group }));
       }
     }
   });

@@ -1,9 +1,11 @@
 import { TileGroup } from "@/types/tilegroup";
+import { Tileset } from "@/types/tileset";
 import classNames from "classnames";
 import React from "react";
 import styles from "./styles/TilesetGroup.module.css";
 
 export interface TilesetCropProps extends React.HTMLAttributes<HTMLDivElement> {
+  ts: Tileset;
   group: TileGroup;
   className?: string;
   scale?: number;
@@ -13,7 +15,7 @@ export interface TilesetCropProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const TilesetGroup = React.forwardRef<HTMLDivElement, TilesetCropProps>(
   function TilesetGroup(
-    { group, className, style, scale = 1, ...others }: TilesetCropProps,
+    { group, ts, className, style, scale = 1, ...others }: TilesetCropProps,
     ref
   ) {
     const width = Math.max(0, group.pos.br.x - group.pos.ul.x);
@@ -33,7 +35,7 @@ const TilesetGroup = React.forwardRef<HTMLDivElement, TilesetCropProps>(
           style={{
             width,
             height,
-            backgroundImage: `url(${group.objectUrl})`,
+            backgroundImage: `url(${ts.objectUrl})`,
             backgroundPosition: bgPos,
             transform: `scale(${scale})`,
             transformOrigin: "top left",
