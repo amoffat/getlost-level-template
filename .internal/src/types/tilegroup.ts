@@ -7,5 +7,5 @@ export interface TileGroup {
   tilesetId: string;
   pos: Rect;
   singleTile: boolean;
-  children?: TileGroup[];
+  children: string[];
 }

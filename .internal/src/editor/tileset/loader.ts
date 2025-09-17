@@ -95,6 +95,7 @@ export async function unpackActiveTileset() {
         tilesetId: tsId,
         gridSize,
         singleTile: true,
+        children: [],
       });
       if (chunk.length > 10) {
         store.dispatch(

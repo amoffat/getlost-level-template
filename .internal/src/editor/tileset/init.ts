@@ -129,6 +129,8 @@ subscribeToSelector(
       canvas.style.cursor = "grabbing";
     } else if (mode === null) {
       canvas.style.cursor = "grab";
+    } else if (mode === "add") {
+      canvas.style.cursor = "crosshair";
     }
   }
 );

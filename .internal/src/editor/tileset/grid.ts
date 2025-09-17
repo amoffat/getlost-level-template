@@ -58,7 +58,7 @@ function drawGridMask(groups: TileGroup[]) {
   g.grid.addChild(mask);
 
   mask.fill({ color: 0x000000, alpha: 0 });
-  for (const group of groups.filter((g) => !g.singleTile)) {
+  for (const group of groups.filter((gr) => !gr.singleTile)) {
     mask
       .rect(
         group.pos.ul.x,
@@ -77,7 +77,6 @@ function drawGridMask(groups: TileGroup[]) {
 
 subscribeToSelector(selectors.activeTilesetGroups, (groups) => {
   if (!g.grid) return;
-  if (!groups) return;
   drawGridMask(groups);
 });
 subscribeToSelector(

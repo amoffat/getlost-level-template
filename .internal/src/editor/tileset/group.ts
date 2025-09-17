@@ -6,6 +6,7 @@ import { closeEnough } from "../../utils/math";
 import { subscribeToSelector } from "../../utils/redux";
 import { genGroupId } from "../../utils/tileset";
 import { groupStroke } from "../common/strokes";
+import { ADD_KEY, GROUP_KEY } from "./constants";
 import { globals as g } from "./globals";
 
 let groupStart = { x: 0, y: 0 };
@@ -27,7 +28,8 @@ function snapUp(n: number, size: number): number {
 }
 
 function isGrouping(): boolean {
-  return store.getState().tilesetEditor.mode === "group";
+  const mode = store.getState().tilesetEditor.mode;
+  return mode === "group" || mode === "add";
 }
 
 export function setupGrouper() {
@@ -35,16 +37,21 @@ export function setupGrouper() {
 
   canvas.addEventListener("keydown", (e) => {
     if (e.repeat) return;
-    if (e.key === "g") {
+    if (e.key === GROUP_KEY) {
       e.preventDefault();
       const state = store.getState();
       if (!state.tilesetEditor.activeTilesetId) return;
       store.dispatch(tsActions.setMode("group"));
+    } else if (e.key === ADD_KEY) {
+      e.preventDefault();
+      const state = store.getState();
+      if (!state.tilesetEditor.activeTilesetId) return;
+      store.dispatch(tsActions.setMode("add"));
     }
   });
 
   canvas.addEventListener("keyup", async (e) => {
-    if (e.key === "g") {
+    if (e.key === GROUP_KEY || e.key === ADD_KEY) {
       e.preventDefault();
       if (isGrouping()) {
         store.dispatch(tsActions.setMode(null));
@@ -66,6 +73,7 @@ export function setupGrouper() {
           pos: coords,
           singleTile: false,
           gridSize,
+          children: [], // currently unknown
         };
 
         group.singleTile =

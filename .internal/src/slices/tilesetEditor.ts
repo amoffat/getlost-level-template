@@ -35,7 +35,7 @@ export function groupToBBox(group: TileGroup, pad: number = 0.1): BBoxItem {
   };
 }
 
-type Mode = null | "pan" | "group";
+type Mode = null | "pan" | "group" | "add";
 export interface TilesetEditorState {
   grid: {
     size: number;
@@ -173,12 +173,14 @@ const slice = createSlice({
       const bbox = groupToBBox(group);
       const deleting = group.singleTile;
       const creatingGroup = !deleting;
+      const replaceMode = state.mode === "group";
 
       // Find overlapping groups (same objectUrl via cache) and remove them
       const overlaps = tileIndex.search(bbox);
       if (overlaps.length > 0) {
         const removeIds = new Set(overlaps.map((o) => o.id));
-        const addBackChildren: Set<string> = new Set();
+        const addBackChildrenIds: Set<string> = new Set();
+        const groupChildrenIds: Set<string> = new Set();
 
         // Create the authoritative list of children for this group. We need
         // this list to be accurate to determine which children of dissolved
@@ -187,7 +189,7 @@ const slice = createSlice({
           for (const [toRemove] of removeIds.entries()) {
             const child = ts.palette[toRemove];
             if (child.singleTile) {
-              (group.children ??= []).push(child);
+              groupChildrenIds.add(child.id);
             }
           }
         }
@@ -197,14 +199,11 @@ const slice = createSlice({
         ts.paletteIds = ts.paletteIds.filter((removeCandId) => {
           if (removeIds.has(removeCandId)) {
             const child = ts.palette[removeCandId];
+
+            // We can't delete a single tile object, so make sure it isn't
+            // filtered out of the paletteIds.
             if (child.singleTile) {
-              // If it's a single child, it belongs to our group now.
-              if (creatingGroup) {
-                // Record all children, so if we dissolve this group later, we
-                // can put them back in the palette
-                (group.children ??= []).push(child);
-              } else {
-                // We can't delete a single child.
+              if (!creatingGroup) {
                 return true;
               }
             }
@@ -213,8 +212,8 @@ const slice = createSlice({
             // the children to our new group other passes of this filter loop
             // (because they're treated as single tiles).
             else {
-              for (const grandChild of child.children ?? []) {
-                addBackChildren.add(grandChild.id);
+              for (const grandChildId of child.children) {
+                addBackChildrenIds.add(grandChildId);
               }
               // Remove the multi-tile group from the palette and spatial index
               delete ts.palette[removeCandId];
@@ -226,10 +225,14 @@ const slice = createSlice({
           return true;
         });
 
-        for (const child of group.children ?? []) {
-          addBackChildren.delete(child.id);
+        // We don't want to add children back to the palette if they are
+        // becoming part of our new group.
+        for (const childId of groupChildrenIds.values()) {
+          addBackChildrenIds.delete(childId);
         }
-        ts.paletteIds.push(...Array.from(addBackChildren));
+        ts.paletteIds.push(...Array.from(addBackChildrenIds));
+
+        group.children = Array.from(groupChildrenIds);
       }
 
       if (creatingGroup) {
