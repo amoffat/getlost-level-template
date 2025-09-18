@@ -18,7 +18,6 @@ import { Application } from "pixi.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { init } from "../editor/tileset/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
-import { actions as mapActions } from "../slices/mapEditor";
 import { actions, selectors } from "../slices/tilesetEditor";
 import { selectTilesetThunk } from "../thunks/tileset";
 import { TileGroup } from "../types/tilegroup";
@@ -102,7 +101,7 @@ export default function TilesetEditorTab() {
   ));
 
   const selectObject = (obj: TileGroup) => {
-    dispatch(mapActions.setPlace(obj));
+    // dispatch(mapActions.setPlace(obj));
   };
 
   return (

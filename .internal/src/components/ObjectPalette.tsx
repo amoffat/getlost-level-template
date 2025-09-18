@@ -40,8 +40,9 @@ export default function ObjectPalette({
   const selectObject = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.tagName !== "DIV") return;
-    const objId = target.dataset.objid as string;
-    const tsId = target.dataset.tsid as string;
+    const objId = target.dataset.objid;
+    const tsId = target.dataset.tsid;
+    if (!objId || !tsId) return; // Not clicking on an object
     const obj = tsState.tilesets[tsId].palette[objId];
     onSelectObject?.(obj);
   };

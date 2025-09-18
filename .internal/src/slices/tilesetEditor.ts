@@ -45,7 +45,7 @@ export interface TilesetEditorState {
   activeZoomPan: ZoomPan;
   tilesetIds: string[];
   tilesets: Record<string, Tileset>;
-  mode: Mode;
+  modeStack: Mode[];
   scanPos: Rect | null;
   tilesetZoomPans: Record<string, ZoomPan>;
   loadingPalette: boolean;
@@ -62,7 +62,7 @@ const slice = createSlice({
     activeZoomPan: { zoom: 1, pan: { x: 0, y: 0 } },
     tilesetIds: [],
     tilesets: {},
-    mode: null,
+    modeStack: [],
     scanPos: null,
     tilesetZoomPans: {},
     loadingPalette: false,
@@ -74,8 +74,12 @@ const slice = createSlice({
     setGridSize(state, action: PayloadAction<number>) {
       state.grid.size = action.payload;
     },
-    setMode(state, action: PayloadAction<Mode>) {
-      state.mode = action.payload;
+    pushMode(state, action: PayloadAction<Mode>) {
+      if (state.modeStack.at(-1) === action.payload) return;
+      state.modeStack.push(action.payload);
+    },
+    popMode(state) {
+      state.modeStack.pop();
     },
     setActiveTileset: (state, action: PayloadAction<Tileset>) => {
       const ts = action.payload;
@@ -173,7 +177,7 @@ const slice = createSlice({
       const bbox = groupToBBox(group);
       const deleting = group.singleTile;
       const creatingGroup = !deleting;
-      const replaceMode = state.mode === "group";
+      const replaceMode = state.modeStack.at(-1) === "group";
 
       // Find overlapping groups (same objectUrl via cache) and remove them
       const overlaps = tileIndex.search(bbox);
@@ -270,6 +274,10 @@ const slice = createSlice({
         const ts = tilesets[tsId];
         return ts.paletteIds.map((id) => ts.palette[id]);
       }
+    ),
+    selectMode: createSelector.withTypes<TilesetEditorState>()(
+      [(state) => state.modeStack],
+      (modeStack): Mode | null => modeStack.at(-1) ?? null
     ),
   },
 });

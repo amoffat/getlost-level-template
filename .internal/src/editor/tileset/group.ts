@@ -28,7 +28,7 @@ function snapUp(n: number, size: number): number {
 }
 
 function isGrouping(): boolean {
-  const mode = store.getState().tilesetEditor.mode;
+  const mode = selectors.selectMode(store.getState());
   return mode === "group" || mode === "add";
 }
 
@@ -41,12 +41,12 @@ export function setupGrouper() {
       e.preventDefault();
       const state = store.getState();
       if (!state.tilesetEditor.activeTilesetId) return;
-      store.dispatch(tsActions.setMode("group"));
+      store.dispatch(tsActions.pushMode("group"));
     } else if (e.key === ADD_KEY) {
       e.preventDefault();
       const state = store.getState();
       if (!state.tilesetEditor.activeTilesetId) return;
-      store.dispatch(tsActions.setMode("add"));
+      store.dispatch(tsActions.pushMode("add"));
     }
   });
 
@@ -78,7 +78,7 @@ export function setupGrouper() {
           closeEnough(c.width, gridSize) && closeEnough(c.height, gridSize);
 
         store.dispatch(tsActions.addPaletteObject({ tsId, group }));
-        store.dispatch(tsActions.setMode(null));
+        store.dispatch(tsActions.pushMode(null));
       }
     }
   });

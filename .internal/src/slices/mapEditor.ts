@@ -1,15 +1,15 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ActiveLayer } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
 
-type Mode = null | "pan" | "place";
+type Mode = "pan" | "place";
 
 interface MapEditorState {
   grid: {
     size: number;
     visible: boolean;
   };
-  mode: Mode;
+  modeStack: Mode[];
   place: TileGroup | null;
   layers: {
     active: ActiveLayer;
@@ -25,7 +25,7 @@ const slice = createSlice({
       visible: true,
     },
     place: null,
-    mode: null,
+    modeStack: [],
     layers: {
       active: "ground",
       dimInactive: true,
@@ -43,6 +43,28 @@ const slice = createSlice({
     setPlace(state, action: PayloadAction<TileGroup | null>) {
       state.place = action.payload;
     },
+
+    placeObject(
+      _state,
+      _action: PayloadAction<{ obj: TileGroup; pos: { x: number; y: number } }>
+    ) {
+      // TODO: implement placement logic for obj at pos on the active layer
+    },
+
+    pushMode(state, action: PayloadAction<Mode>) {
+      if (state.modeStack.at(-1) === action.payload) return;
+      state.modeStack.push(action.payload);
+    },
+
+    popMode(state) {
+      state.modeStack.pop();
+    },
+  },
+  selectors: {
+    selectMode: createSelector.withTypes<MapEditorState>()(
+      [(state) => state.modeStack],
+      (modeStack): Mode | null => modeStack.at(-1) ?? null
+    ),
   },
 });
 

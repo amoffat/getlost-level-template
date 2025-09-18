@@ -64,6 +64,7 @@ export default function MapEditorTab() {
 
   const selectObject = (obj: TileGroup) => {
     dispatch(actions.setPlace(obj));
+    dispatch(actions.pushMode("place"));
   };
 
   return (

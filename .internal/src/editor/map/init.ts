@@ -1,12 +1,17 @@
+import { actions, selectors } from "@/slices/mapEditor";
+import { store } from "@/store/store";
 import * as P from "pixi.js";
 import { subscribeToSelector } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
+import { setupPanControls } from "../common/pan";
 import { groupStroke } from "../common/strokes";
 import { setupWheelZoom } from "../common/zoom";
 import { makeBackground } from "../tileset/bg";
 import { globals as g } from "./globals";
+import { setupPlacer } from "./place";
 
 const tilesetCache = new Map<string, P.Texture>();
+let initialized = false;
 
 export async function init(parent: HTMLElement): Promise<P.Application> {
   // Create a new application
@@ -23,6 +28,11 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   canvas.style.touchAction = "none";
   canvas.style.userSelect = "none";
   canvas.style.cursor = "default";
+  g.canvas = canvas;
+
+  canvas.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
 
   g.gridSnap = 16;
   stage.interactive = true;
@@ -44,34 +54,18 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   // Listen for animate update
   app.ticker.add(() => {});
 
-  const mouseToPos = (e: P.FederatedPointerEvent) => {
-    const pos = g.mapContainer.toLocal(e.global);
-    return {
-      x: Math.floor(pos.x / g.gridSnap) * g.gridSnap,
-      y: Math.floor(pos.y / g.gridSnap) * g.gridSnap,
-    };
-  };
-
-  stage.on("pointermove", (e) => {
-    e.preventDefault();
-
-    if (g.placableSprite) {
-      const pos = mouseToPos(e);
-      g.placableContainer.position = pos;
-    }
-  });
-
-  stage.on("pointerdown", (e) => {
-    e.preventDefault();
-    if (g.placableSprite) {
-      const sprite = new P.Sprite(g.placableSprite.texture);
-      const pos = mouseToPos(e);
-      sprite.position = pos;
-      g.mapContainer.addChild(sprite);
-    }
-  });
-
+  setupPlacer();
   setupWheelZoom({ stage, container: g.mapContainer });
+  setupPanControls({
+    stage,
+    panContainer: g.mapContainer,
+    onPanningStart: () => {
+      store.dispatch(actions.pushMode("pan"));
+    },
+    onPanningEnd: (panPos) => {
+      store.dispatch(actions.popMode());
+    },
+  });
 
   canvas.addEventListener("mouseover", () => {
     canvas.focus();
@@ -89,6 +83,7 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   window.addEventListener("resize", redrawLayout);
   onVisible(canvas, redrawLayout);
 
+  initialized = true;
   return app;
 }
 
@@ -96,6 +91,7 @@ subscribeToSelector(
   (state) => state.mapEditor.place,
   (place) => {
     if (!place) return;
+    if (!initialized) return;
 
     g.gridSnap = place.gridSize;
     const rect = place.pos;
@@ -130,18 +126,28 @@ subscribeToSelector(
   }
 );
 
+// Transfer our textures from the tileset editor to the map editor
 subscribeToSelector(
-  (state) => state.tilesetEditor.activeTilesetId,
-  async (tsId, state) => {
-    if (!tsId) return;
-    if (tilesetCache.has(tsId)) return;
-
-    const tileset = state.tilesetEditor.tilesets[tsId];
-    const tex = await P.Assets.load<P.Texture>({
-      src: tileset.objectUrl,
-      parser: "loadTextures",
-    });
-    tex.source.scaleMode = "nearest";
-    tilesetCache.set(tsId, tex);
+  (state) => state.tilesetEditor.tilesets,
+  async (tilesets, state) => {
+    for (const tileset of Object.values(tilesets)) {
+      const tex = await P.Assets.load<P.Texture>({
+        src: tileset.objectUrl,
+        parser: "loadTextures",
+      });
+      tex.source.scaleMode = "nearest";
+      tilesetCache.set(tileset.id, tex);
+    }
   }
 );
+
+subscribeToSelector(selectors.selectMode, (mode) => {
+  const canvas = g.app.canvas;
+  if (mode === "pan") {
+    canvas.style.cursor = "grabbing";
+  } else if (mode === "place") {
+    canvas.style.cursor = "crosshair";
+  } else if (mode === null) {
+    canvas.style.cursor = "default";
+  }
+});

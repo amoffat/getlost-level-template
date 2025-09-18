@@ -1,15 +1,16 @@
+import { selectors } from "@/slices/tilesetEditor";
 import debounce from "debounce";
 import * as P from "pixi.js";
 import { actions } from "../../slices/tilesetEditor";
 import { store } from "../../store/store";
 import { subscribeToSelector } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
+import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
 import { makeBackground } from "./bg";
 import { globals as g } from "./globals";
 import { drawGrid } from "./grid";
 import { setupGrouper } from "./group";
-import { setupPanControls } from "./pan";
 
 export async function init(parent: HTMLElement): Promise<P.Application> {
   // Create a new application
@@ -27,6 +28,10 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   canvas.style.userSelect = "none";
   canvas.style.cursor = "default";
   g.canvas = canvas;
+
+  canvas.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
 
   // Background container with checkerboard pattern (conventional transparent-bg look)
   g.backgroundContainer = new P.Container();
@@ -77,11 +82,13 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   });
   setupPanControls({
     stage,
+    panContainer: g.tilesetContainer,
     onPanningStart: () => {
-      store.dispatch(actions.setMode("pan"));
+      store.dispatch(actions.pushMode("pan"));
     },
-    onPanningEnd: () => {
-      store.dispatch(actions.setMode(null));
+    onPanningEnd: (panPos) => {
+      store.dispatch(actions.setPan(panPos));
+      store.dispatch(actions.pushMode(null));
     },
   });
   setupGrouper();
@@ -119,21 +126,18 @@ subscribeToSelector(
   }
 );
 
-subscribeToSelector(
-  (state) => state.tilesetEditor.mode,
-  (mode) => {
-    const canvas = g.app.canvas;
-    if (mode === "group") {
-      canvas.style.cursor = "crosshair";
-    } else if (mode === "pan") {
-      canvas.style.cursor = "grabbing";
-    } else if (mode === null) {
-      canvas.style.cursor = "grab";
-    } else if (mode === "add") {
-      canvas.style.cursor = "crosshair";
-    }
+subscribeToSelector(selectors.selectMode, (mode) => {
+  const canvas = g.app.canvas;
+  if (mode === "group") {
+    canvas.style.cursor = "crosshair";
+  } else if (mode === "pan") {
+    canvas.style.cursor = "grabbing";
+  } else if (mode === null) {
+    canvas.style.cursor = "grab";
+  } else if (mode === "add") {
+    canvas.style.cursor = "crosshair";
   }
-);
+});
 
 subscribeToSelector(
   (state) => state.tilesetEditor.scanPos,
