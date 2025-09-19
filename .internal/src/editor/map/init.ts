@@ -1,3 +1,5 @@
+import { log } from "@/log";
+import { setReconciler } from "@/slices/map";
 import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import * as P from "pixi.js";
@@ -9,11 +11,14 @@ import { setupWheelZoom } from "../common/zoom";
 import { makeBackground } from "../tileset/bg";
 import { globals as g } from "./globals";
 import { setupPlacer } from "./place";
+import { ReduxReconciler } from "./reconciler";
 
 const tilesetCache = new Map<string, P.Texture>();
 let initialized = false;
 
 export async function init(parent: HTMLElement): Promise<P.Application> {
+  console.assert(!initialized, "Map editor already initialized");
+
   // Create a new application
   const app = new P.Application();
   g.app = app;
@@ -50,6 +55,12 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   g.placableContainer = new P.Container();
   g.mapContainer.addChild(g.placableContainer);
   g.mapContainer.sortableChildren = true;
+
+  const reconciler = new ReduxReconciler({
+    root: g.mapContainer,
+    tilesetCache,
+  });
+  setReconciler(reconciler);
 
   // Listen for animate update
   app.ticker.add(() => {});
@@ -103,7 +114,10 @@ subscribeToSelector(
       rect.br.y - rect.ul.y
     );
     const tsTex = tilesetCache.get(place.tilesetId);
-    if (!tsTex) return;
+    if (!tsTex) {
+      log.error("Tileset texture not found for placer");
+      return;
+    }
     const texture = new P.Texture({ source: tsTex.source, frame });
     const sprite = new P.Sprite(texture);
     g.placableContainer.removeChildren();

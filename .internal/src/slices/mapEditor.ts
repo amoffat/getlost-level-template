@@ -1,3 +1,4 @@
+import { Vector } from "@/vec";
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ActiveLayer } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
@@ -46,7 +47,7 @@ const slice = createSlice({
 
     placeObject(
       _state,
-      _action: PayloadAction<{ obj: TileGroup; pos: { x: number; y: number } }>
+      _action: PayloadAction<{ obj: TileGroup; pos: Vector }>
     ) {
       // TODO: implement placement logic for obj at pos on the active layer
     },

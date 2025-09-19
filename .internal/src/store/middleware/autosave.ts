@@ -1,12 +1,9 @@
 import { log } from "@/log";
 import { saveTileset } from "@/persist/api";
 import { actions as tsActions } from "@/slices/tilesetEditor";
+import { AppStartListening } from "@/types/redux";
 import { Tileset } from "@/types/tileset";
-import {
-  createListenerMiddleware,
-  isAnyOf,
-  type TypedStartListening,
-} from "@reduxjs/toolkit";
+import { createListenerMiddleware, isAnyOf } from "@reduxjs/toolkit";
 import { EMPTY, Subject, from } from "rxjs";
 import {
   catchError,
@@ -16,13 +13,9 @@ import {
   mergeMap,
   tap,
 } from "rxjs/operators";
-import { AppDispatch, type RootState } from "./store";
+import { AppDispatch, type RootState } from "../store";
 
-export const listenerMiddleware = createListenerMiddleware();
-
-type AppStartListening = TypedStartListening<RootState, AppDispatch>;
-export const startAppListening =
-  listenerMiddleware.startListening as AppStartListening;
+const listenerMiddleware = createListenerMiddleware();
 
 type TsAction =
   | ReturnType<typeof tsActions.addTileset>
@@ -57,6 +50,9 @@ saveRequests$
   )
   .subscribe();
 
+const startAppListening =
+  listenerMiddleware.startListening as AppStartListening;
+
 startAppListening({
   matcher: isAnyOf(
     tsActions.addTileset,
@@ -81,3 +77,5 @@ export const saveNow =
     await saveTileset(ts);
     dispatch(tsActions.markSaved({ tsId, saved: true }));
   };
+
+export default listenerMiddleware.middleware;

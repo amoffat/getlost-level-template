@@ -20,8 +20,13 @@ export default function ObjectPalette({
     const objs: JSX.Element[] = [];
 
     const tilesets: Tileset[] = Object.values(tsState.tilesets).filter((t) => {
-      if (showTileset) return t.id === showTileset.id;
-      return true;
+      if (showTileset) {
+        return t.id === showTileset.id;
+      } else if (showTileset === null) {
+        return false;
+      } else {
+        return true;
+      }
     });
 
     for (const ts of tilesets) {
