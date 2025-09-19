@@ -1,4 +1,3 @@
-import { Vector } from "@/vec";
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ActiveLayer } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
@@ -9,9 +8,11 @@ interface MapEditorState {
   grid: {
     size: number;
     visible: boolean;
+    snap: boolean;
   };
   modeStack: Mode[];
   place: TileGroup | null;
+  selectedObj: string | null;
   layers: {
     active: ActiveLayer;
     dimInactive: boolean;
@@ -24,8 +25,10 @@ const slice = createSlice({
     grid: {
       size: 16,
       visible: true,
+      snap: true,
     },
     place: null,
+    selectedObj: null,
     modeStack: [],
     layers: {
       active: "ground",
@@ -33,6 +36,10 @@ const slice = createSlice({
     },
   } as MapEditorState,
   reducers: {
+    setGridSnap(state, action: { payload: boolean }) {
+      state.grid.snap = action.payload;
+    },
+
     setActiveLayer(state, action: { payload: ActiveLayer }) {
       state.layers.active = action.payload;
     },
@@ -45,11 +52,8 @@ const slice = createSlice({
       state.place = action.payload;
     },
 
-    placeObject(
-      _state,
-      _action: PayloadAction<{ obj: TileGroup; pos: Vector }>
-    ) {
-      // TODO: implement placement logic for obj at pos on the active layer
+    selectObj: (_state, _action: { payload: string | null }) => {
+      // handled in middleware
     },
 
     pushMode(state, action: PayloadAction<Mode>) {

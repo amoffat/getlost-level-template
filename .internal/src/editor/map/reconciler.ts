@@ -116,7 +116,7 @@ export class ReduxReconciler {
       });
       const sprite = new P.Sprite(tileTex);
       sprite.position.set(obj.x, obj.y);
-      sprite.zIndex = obj.y + sprite.height;
+      sprite.zIndex = obj.y;
       sprite.interactive = true;
       sprite.label = obj.id;
 
@@ -128,7 +128,10 @@ export class ReduxReconciler {
 
   private applyProps(node: DO, p: Partial<MapObj>) {
     if (p.x != null) node.x = p.x;
-    if (p.y != null) node.y = p.y;
+    if (p.y != null) {
+      node.y = p.y;
+      node.zIndex = p.y;
+    }
     // if (p.angle != null) (node as any).angle = p.angle;
     // if (p.z != null) (node as any).zIndex = p.z;
     // // If sprite can change:

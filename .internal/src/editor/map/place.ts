@@ -9,10 +9,18 @@ import { globals as g } from "./globals";
 
 function mouseToPos(e: P.FederatedPointerEvent) {
   const pos = g.mapContainer.toLocal(e.global);
-  return {
-    x: Math.floor(pos.x / g.gridSnap) * g.gridSnap,
-    y: Math.floor(pos.y / g.gridSnap) * g.gridSnap,
-  };
+  const snap = store.getState().mapEditor.grid.snap;
+  if (snap) {
+    return {
+      x: Math.floor(pos.x / g.gridSnap) * g.gridSnap,
+      y: Math.floor(pos.y / g.gridSnap) * g.gridSnap,
+    };
+  } else {
+    return {
+      x: pos.x,
+      y: pos.y,
+    };
+  }
 }
 
 export function setupPlacer() {
@@ -48,7 +56,7 @@ export function setupPlacer() {
     if (g.placableSprite) {
       const pos = mouseToPos(e);
       g.placableContainer.position = pos;
-      g.placableContainer.zIndex = pos.y + g.placableSprite.height;
+      g.placableContainer.zIndex = pos.y;
       g.selectedOutline.position = pos;
     }
   });

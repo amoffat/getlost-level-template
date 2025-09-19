@@ -8,6 +8,7 @@ import { makeBackground } from "../common/bg";
 import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
 import { globals as g } from "./globals";
+import { setupKeys } from "./keys";
 import { setupPlacer } from "./place";
 import { ReduxReconciler } from "./reconciler";
 
@@ -96,6 +97,8 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   canvas.addEventListener("mouseout", () => {
     canvas.blur();
   });
+
+  setupKeys(canvas);
 
   function redrawLayout() {
     const rect = parent.getBoundingClientRect();
