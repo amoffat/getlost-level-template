@@ -1,7 +1,10 @@
+import { log } from "@/log";
 import { actions } from "@/slices/map";
 import { store } from "@/store/store";
 import { TileObj } from "@/types/editor";
+import { subscribeToSelector } from "@/utils/redux";
 import * as P from "pixi.js";
+import { groupStroke } from "../common/strokes";
 import { globals as g } from "./globals";
 
 function mouseToPos(e: P.FederatedPointerEvent) {
@@ -48,3 +51,50 @@ export function setupPlacer() {
     }
   });
 }
+
+subscribeToSelector(
+  (state) => state.mapEditor.place,
+  (place) => {
+    if (!g.initialized) return;
+
+    if (place) {
+      g.gridSnap = place.gridSize;
+      const rect = place.pos;
+
+      const frame = new P.Rectangle(
+        rect.ul.x,
+        rect.ul.y,
+        rect.br.x - rect.ul.x,
+        rect.br.y - rect.ul.y
+      );
+      const tsTex = g.tilesetCache.get(place.tilesetId);
+      if (!tsTex) {
+        log.error("Tileset texture not found for placer");
+        return;
+      }
+      const texture = new P.Texture({ source: tsTex.source, frame });
+      const sprite = new P.Sprite(texture);
+      g.placableContainer.removeChildren();
+      g.placableContainer.addChild(sprite);
+      g.placableSprite = sprite;
+
+      const mask = new P.Graphics();
+      mask
+        .rect(0, 0, frame.width, frame.height)
+        .fill({ color: 0x00ff00, alpha: 1 });
+      g.placableContainer.addChild(mask);
+
+      const gfx = new P.Graphics();
+      gfx.rect(0, 0, frame.width, frame.height).stroke(groupStroke);
+      g.placableContainer.addChild(gfx);
+      gfx.setMask({
+        mask,
+        inverse: true,
+      });
+    } else {
+      g.placableContainer.removeChildren();
+      g.placableSprite?.destroy();
+      g.placableSprite = undefined;
+    }
+  }
+);

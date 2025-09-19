@@ -67,6 +67,11 @@ export default function MapEditorTab() {
     dispatch(actions.pushMode("place"));
   };
 
+  const deselectObject = () => {
+    dispatch(actions.setPlace(null));
+    dispatch(actions.popMode());
+  };
+
   return (
     <Flex h="100dvh" style={{ flex: 1 }}>
       <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
@@ -106,7 +111,10 @@ export default function MapEditorTab() {
                 display: "flex",
               }}
             >
-              <ObjectPalette onSelectObject={selectObject} />
+              <ObjectPalette
+                onSelectObject={selectObject}
+                onDeselectObject={deselectObject}
+              />
             </Tabs.Panel>
           </Tabs>
         </Stack>

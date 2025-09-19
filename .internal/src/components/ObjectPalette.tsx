@@ -1,5 +1,5 @@
 import { LoadingOverlay, ScrollArea } from "@mantine/core";
-import { JSX, useMemo } from "react";
+import { JSX, useCallback, useMemo, useState } from "react";
 import { useAppSelector } from "../hooks/redux";
 import { TileGroup } from "../types/tilegroup";
 import { Tileset } from "../types/tileset";
@@ -8,13 +8,16 @@ import TilesetGroup from "./TilesetGroup";
 interface ObjectPaletteProps {
   tileset?: Tileset | null;
   onSelectObject?: (obj: TileGroup) => void;
+  onDeselectObject?: () => void;
 }
 
 export default function ObjectPalette({
   onSelectObject,
+  onDeselectObject,
   tileset: showTileset,
 }: ObjectPaletteProps) {
   const tsState = useAppSelector((state) => state.tilesetEditor);
+  const [selected, setSelected] = useState<TileGroup | null>(null);
 
   const objects: JSX.Element[] = useMemo(() => {
     const objs: JSX.Element[] = [];
@@ -35,22 +38,45 @@ export default function ObjectPalette({
         const objId = ts.paletteIds[i];
         const group = ts.palette[objId];
         const key = `${ts.id}-${group.id}`;
-        objs.push(<TilesetGroup scale={1} key={key} group={group} ts={ts} />);
+        objs.push(
+          <TilesetGroup
+            scale={1}
+            key={key}
+            group={group}
+            ts={ts}
+            selected={selected?.id === group.id}
+          />
+        );
       }
     }
 
     return objs;
-  }, [tsState.tilesets, showTileset]);
+  }, [tsState.tilesets, showTileset, selected]);
 
-  const selectObject = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.tagName !== "DIV") return;
-    const objId = target.dataset.objid;
-    const tsId = target.dataset.tsid;
-    if (!objId || !tsId) return; // Not clicking on an object
-    const obj = tsState.tilesets[tsId].palette[objId];
-    onSelectObject?.(obj);
-  };
+  const selectObject = useCallback(
+    (e: React.MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName !== "DIV") return;
+      const objId = target.dataset.objid;
+      const tsId = target.dataset.tsid;
+
+      if (!objId || !tsId) {
+        onDeselectObject?.();
+        setSelected(null);
+        return;
+      }
+
+      const obj = tsState.tilesets[tsId].palette[objId];
+      if (obj === selected) {
+        onDeselectObject?.();
+        setSelected(null);
+      } else {
+        onSelectObject?.(obj);
+        setSelected(obj);
+      }
+    },
+    [selected, onSelectObject, onDeselectObject, tsState.tilesets]
+  );
 
   return (
     <ScrollArea.Autosize

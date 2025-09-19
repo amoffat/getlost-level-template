@@ -1,4 +1,3 @@
-import { log } from "@/log";
 import { setReconciler } from "@/slices/map";
 import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
@@ -6,18 +5,14 @@ import * as P from "pixi.js";
 import { subscribeToSelector } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
 import { setupPanControls } from "../common/pan";
-import { groupStroke } from "../common/strokes";
 import { setupWheelZoom } from "../common/zoom";
 import { makeBackground } from "../tileset/bg";
 import { globals as g } from "./globals";
 import { setupPlacer } from "./place";
 import { ReduxReconciler } from "./reconciler";
 
-const tilesetCache = new Map<string, P.Texture>();
-let initialized = false;
-
 export async function init(parent: HTMLElement): Promise<P.Application> {
-  console.assert(!initialized, "Map editor already initialized");
+  console.assert(!g.initialized, "Map editor already initialized");
 
   // Create a new application
   const app = new P.Application();
@@ -58,7 +53,7 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
 
   const reconciler = new ReduxReconciler({
     root: g.mapContainer,
-    tilesetCache,
+    tilesetCache: g.tilesetCache,
   });
   setReconciler(reconciler);
 
@@ -94,51 +89,9 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   window.addEventListener("resize", redrawLayout);
   onVisible(canvas, redrawLayout);
 
-  initialized = true;
+  g.initialized = true;
   return app;
 }
-
-subscribeToSelector(
-  (state) => state.mapEditor.place,
-  (place) => {
-    if (!place) return;
-    if (!initialized) return;
-
-    g.gridSnap = place.gridSize;
-    const rect = place.pos;
-
-    const frame = new P.Rectangle(
-      rect.ul.x,
-      rect.ul.y,
-      rect.br.x - rect.ul.x,
-      rect.br.y - rect.ul.y
-    );
-    const tsTex = tilesetCache.get(place.tilesetId);
-    if (!tsTex) {
-      log.error("Tileset texture not found for placer");
-      return;
-    }
-    const texture = new P.Texture({ source: tsTex.source, frame });
-    const sprite = new P.Sprite(texture);
-    g.placableContainer.removeChildren();
-    g.placableContainer.addChild(sprite);
-    g.placableSprite = sprite;
-
-    const mask = new P.Graphics();
-    mask
-      .rect(0, 0, frame.width, frame.height)
-      .fill({ color: 0x00ff00, alpha: 1 });
-    g.placableContainer.addChild(mask);
-
-    const gfx = new P.Graphics();
-    gfx.rect(0, 0, frame.width, frame.height).stroke(groupStroke);
-    g.placableContainer.addChild(gfx);
-    gfx.setMask({
-      mask,
-      inverse: true,
-    });
-  }
-);
 
 // Transfer our textures from the tileset editor to the map editor
 subscribeToSelector(
@@ -150,7 +103,7 @@ subscribeToSelector(
         parser: "loadTextures",
       });
       tex.source.scaleMode = "nearest";
-      tilesetCache.set(tileset.id, tex);
+      g.tilesetCache.set(tileset.id, tex);
     }
   }
 );

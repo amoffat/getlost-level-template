@@ -11,16 +11,26 @@ export interface TilesetCropProps extends React.HTMLAttributes<HTMLDivElement> {
   scale?: number;
   style?: React.CSSProperties;
   title?: string;
+  selected?: boolean;
 }
 
 const TilesetGroup = React.forwardRef<HTMLDivElement, TilesetCropProps>(
   function TilesetGroup(
-    { group, ts, className, style, scale = 1, ...others }: TilesetCropProps,
+    {
+      group,
+      ts,
+      className,
+      style,
+      scale = 1,
+      selected,
+      ...others
+    }: TilesetCropProps,
     ref
   ) {
     const width = Math.max(0, group.pos.br.x - group.pos.ul.x);
     const height = Math.max(0, group.pos.br.y - group.pos.ul.y);
     const bgPos = `-${group.pos.ul.x}px -${group.pos.ul.y}px`;
+    const border = selected ? "1px solid rgba(0, 255, 0, 1)" : undefined;
 
     return (
       <div
@@ -37,6 +47,7 @@ const TilesetGroup = React.forwardRef<HTMLDivElement, TilesetCropProps>(
             height,
             backgroundImage: `url(${ts.objectUrl})`,
             backgroundPosition: bgPos,
+            border,
             transform: `scale(${scale})`,
             transformOrigin: "top left",
             imageRendering: "pixelated",

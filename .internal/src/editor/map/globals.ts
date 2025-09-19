@@ -10,6 +10,11 @@ interface Globals {
   placableSprite?: P.Sprite;
   grid: P.Container;
   gridSnap: number;
+  tilesetCache: Map<string, P.Texture>;
+  initialized: boolean;
 }
 
-export const globals: Globals = {} as Globals;
+export const globals: Globals = {
+  initialized: false,
+  tilesetCache: new Map<string, P.Texture>(),
+} as unknown as Globals;
