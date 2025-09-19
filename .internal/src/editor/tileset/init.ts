@@ -5,9 +5,9 @@ import { actions } from "../../slices/tilesetEditor";
 import { store } from "../../store/store";
 import { subscribeToSelector } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
+import { makeBackground } from "../common/bg";
 import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
-import { makeBackground } from "./bg";
 import { globals as g } from "./globals";
 import { drawGrid } from "./grid";
 import { setupGrouper } from "./group";
@@ -65,7 +65,11 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   g.gridContainer = new P.Container();
 
   // Build checkerboard background
-  const checkerboard = makeBackground(g.backgroundContainer);
+  const checkerboard = makeBackground({
+    container: g.backgroundContainer,
+    width: app.screen.width,
+    height: app.screen.height,
+  });
 
   g.app.ticker.add(() => {
     //
