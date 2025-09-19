@@ -44,6 +44,15 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   g.mapContainer = new P.Container();
   stage.addChild(g.mapContainer);
 
+  g.mapContainer.interactive = true;
+  g.mapContainer.on("pointerdown", (e) => {
+    const mode = selectors.selectMode(store.getState());
+    if (mode !== null) return;
+    if (e.button !== 0) return;
+    const el = e.target;
+    console.log(el.label);
+  });
+
   // Build checkerboard background
   const checkerboard = makeBackground({
     container: g.backgroundContainer,

@@ -117,6 +117,8 @@ export class ReduxReconciler {
       const sprite = new P.Sprite(tileTex);
       sprite.position.set(obj.x, obj.y);
       sprite.zIndex = obj.y + sprite.height;
+      sprite.interactive = true;
+      sprite.label = obj.id;
 
       return sprite;
     } else {

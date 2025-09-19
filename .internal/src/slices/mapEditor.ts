@@ -3,7 +3,7 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ActiveLayer } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
 
-type Mode = "pan" | "place";
+type Mode = "pan" | "place" | "select";
 
 interface MapEditorState {
   grid: {
