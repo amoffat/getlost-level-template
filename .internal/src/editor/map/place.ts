@@ -48,6 +48,8 @@ export function setupPlacer() {
     if (g.placableSprite) {
       const pos = mouseToPos(e);
       g.placableContainer.position = pos;
+      g.placableContainer.zIndex = pos.y + g.placableSprite.height;
+      g.selectedOutline.position = pos;
     }
   });
 }
@@ -56,6 +58,9 @@ subscribeToSelector(
   (state) => state.mapEditor.place,
   (place) => {
     if (!g.initialized) return;
+
+    g.selectedOutline.removeChildren();
+    g.placableContainer.removeChildren();
 
     if (place) {
       g.gridSnap = place.gridSize;
@@ -74,6 +79,7 @@ subscribeToSelector(
       }
       const texture = new P.Texture({ source: tsTex.source, frame });
       const sprite = new P.Sprite(texture);
+
       g.placableContainer.removeChildren();
       g.placableContainer.addChild(sprite);
       g.placableSprite = sprite;
@@ -82,17 +88,18 @@ subscribeToSelector(
       mask
         .rect(0, 0, frame.width, frame.height)
         .fill({ color: 0x00ff00, alpha: 1 });
-      g.placableContainer.addChild(mask);
+      g.selectedOutline.addChild(mask);
+      g.selectedOutline.width = frame.width;
+      g.selectedOutline.height = frame.height;
 
       const gfx = new P.Graphics();
       gfx.rect(0, 0, frame.width, frame.height).stroke(groupStroke);
-      g.placableContainer.addChild(gfx);
+      g.selectedOutline.addChild(gfx);
       gfx.setMask({
         mask,
         inverse: true,
       });
     } else {
-      g.placableContainer.removeChildren();
       g.placableSprite?.destroy();
       g.placableSprite = undefined;
     }

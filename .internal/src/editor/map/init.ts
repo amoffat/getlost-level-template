@@ -60,6 +60,10 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
     height: app.screen.height,
   });
 
+  g.selectedOutline = new P.Container();
+  g.selectedOutline.zIndex = Infinity;
+  g.mapContainer.addChild(g.selectedOutline);
+
   g.placableContainer = new P.Container();
   g.mapContainer.addChild(g.placableContainer);
   g.mapContainer.sortableChildren = true;

@@ -7,6 +7,7 @@ interface Globals {
   mapContainer: P.Container;
   backgroundContainer: P.Container;
   placableContainer: P.Container;
+  selectedOutline: P.Container;
   placableSprite?: P.Sprite;
   grid: P.Container;
   gridSnap: number;
