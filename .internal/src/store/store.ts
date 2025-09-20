@@ -11,6 +11,7 @@ export const rootReducer = combineReducers({
   dialogue: dialogueReducer,
   tilesetEditor: tilesetEditorReducer,
   mapEditor: mapEditorReducer,
+  map: mapSlice.default,
 });
 
 const mapMiddleware = makeMapMiddleware(

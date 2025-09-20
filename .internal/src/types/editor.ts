@@ -6,6 +6,7 @@ export interface MapObj {
   id: string;
   x: number;
   y: number;
+  z: number;
 }
 
 export interface TileObj extends MapObj {
@@ -13,5 +14,4 @@ export interface TileObj extends MapObj {
   tilesetId: string;
   frame: Rect;
   flipX?: boolean;
-  z: number;
 }

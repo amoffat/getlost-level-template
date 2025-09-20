@@ -37,8 +37,8 @@ export const objectsSlice = createSlice({
 });
 
 export const selectors = objects.getSelectors<{
-  objects: typeof initialState;
-}>((s) => s.objects);
+  map: typeof initialState;
+}>((s) => s.map);
 
 export const actions = objectsSlice.actions;
 export default objectsSlice.reducer;

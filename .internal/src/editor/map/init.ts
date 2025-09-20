@@ -1,6 +1,7 @@
 import { setReconciler } from "@/slices/map";
 import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
+import { SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
 import { subscribeToSelector } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
@@ -11,6 +12,7 @@ import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
 import { setupPlacer } from "./place";
 import { ReduxReconciler } from "./reconciler";
+import { setupSelector } from "./select";
 
 export async function init(parent: HTMLElement): Promise<P.Application> {
   console.assert(!g.initialized, "Map editor already initialized");
@@ -46,14 +48,6 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   stage.addChild(g.mapContainer);
 
   g.mapContainer.interactive = true;
-  g.mapContainer.on("pointerdown", (e) => {
-    const mode = selectors.selectMode(store.getState());
-    if (mode !== null) return;
-    if (e.button !== 0) return;
-
-    const el = e.target;
-    store.dispatch(actions.selectObj(el.label));
-  });
 
   stage.on("pointermove", (e) => {
     const el = e.target;
@@ -82,11 +76,14 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   g.mapContainer.addChild(g.placableContainer);
   g.mapContainer.sortableChildren = true;
 
+  const spatialIndex = new SpatialIndex();
   const reconciler = new ReduxReconciler({
     root: g.mapContainer,
     tilesetCache: g.tilesetCache,
+    spatialIndex,
   });
   setReconciler(reconciler);
+  setupSelector(spatialIndex);
 
   // Listen for animate update
   app.ticker.add(() => {});

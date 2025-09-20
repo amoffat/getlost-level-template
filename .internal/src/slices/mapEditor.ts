@@ -11,7 +11,7 @@ interface MapEditorState {
   };
   modeStack: Mode[];
   place: TileGroup | null;
-  selectedObj: string | null;
+  selectedObjs: string[];
   layers: {
     active: ActiveLayer;
     dimInactive: boolean;
@@ -27,7 +27,7 @@ const slice = createSlice({
       snap: true,
     },
     place: null,
-    selectedObj: null,
+    selectedObjs: [],
     modeStack: [],
     layers: {
       active: "ground",
@@ -51,8 +51,8 @@ const slice = createSlice({
       state.place = action.payload;
     },
 
-    selectObj: (state, action: { payload: string | null }) => {
-      state.selectedObj = action.payload;
+    selectObj: (state, action: PayloadAction<string[] | null>) => {
+      state.selectedObjs = action.payload ?? [];
     },
 
     pushMode(state, action: PayloadAction<Mode>) {

@@ -1,11 +1,22 @@
 // pixiReconciler.ts
 import { MapObj, TileObj } from "@/types/editor";
+import { IndexItem, SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
-
-type DO = P.Container | P.Sprite;
 
 function isTileObj(obj: MapObj): obj is TileObj {
   return (obj as TileObj).tileId !== undefined;
+}
+
+// Create an RBush index item from a node's world-space bounds
+function makeIndexItem(id: string, node: P.Container): IndexItem {
+  const r = node.getLocalBounds();
+  return {
+    id,
+    minX: r.minX + node.position.x,
+    minY: r.minY + node.position.y,
+    maxX: r.maxX + node.position.x,
+    maxY: r.maxY + node.position.y,
+  };
 }
 
 /**
@@ -15,20 +26,27 @@ function isTileObj(obj: MapObj): obj is TileObj {
 export class ReduxReconciler {
   private root: P.Container;
   private tilesetCache: Map<string, P.Texture>;
+  // Axis-aligned bbox entry for RBush
+  private spatialIndex: SpatialIndex;
+  // Track the last indexed bbox per object id for fast remove/update
+  private indexItems = new Map<string, IndexItem>();
 
   constructor({
     root,
     tilesetCache,
+    spatialIndex,
   }: {
     root: P.Container;
     tilesetCache: Map<string, P.Texture>;
+    spatialIndex: SpatialIndex;
   }) {
     this.root = root;
     this.tilesetCache = tilesetCache;
+    this.spatialIndex = spatialIndex;
   }
 
   // id -> DisplayObject
-  private nodes = new Map<string, DO>();
+  private nodes = new Map<string, P.Container>();
 
   // coalesced ops for this frame
   private pendingAdds: MapObj[] = [];
@@ -77,6 +95,12 @@ export class ReduxReconciler {
     for (const id of this.pendingRemoves) {
       const node = this.nodes.get(id);
       if (node) {
+        // Remove from spatial index if present
+        const prev = this.indexItems.get(id);
+        if (prev) {
+          this.spatialIndex.remove(prev, (a, b) => a.id === b.id);
+          this.indexItems.delete(id);
+        }
         node.destroy({ children: true });
         this.root.removeChild(node);
         this.nodes.delete(id);
@@ -89,18 +113,42 @@ export class ReduxReconciler {
       this.nodes.set(obj.id, node);
       this.root.addChild(node);
       this.applyProps(node, obj); // position/angle/z, etc.
+
+      // Index in spatial structure
+      const item = makeIndexItem(obj.id, node);
+      this.spatialIndex.insert(item);
+      this.indexItems.set(obj.id, item);
     }
     this.pendingAdds.length = 0;
 
     for (const { id, changes } of this.pendingUpdates) {
       const node = this.nodes.get(id);
       if (!node) continue;
+      // If position-affecting props are changing, update spatial index.
+      const willAffectPos =
+        "x" in changes || "y" in changes || "frame" in (changes as any);
+
+      // Remove previous bbox before we mutate
+      if (willAffectPos) {
+        const prev = this.indexItems.get(id);
+        if (prev) {
+          this.spatialIndex.remove(prev, (a, b) => a.id === b.id);
+          this.indexItems.delete(id);
+        }
+      }
+
       this.applyProps(node, changes);
+
+      if (willAffectPos) {
+        const nextItem = makeIndexItem(id, node);
+        this.spatialIndex.insert(nextItem);
+        this.indexItems.set(id, nextItem);
+      }
     }
     this.pendingUpdates.length = 0;
   }
 
-  private createNode(obj: MapObj): DO {
+  private createNode(obj: MapObj): P.Container {
     if (isTileObj(obj)) {
       const tsTex = this.tilesetCache.get(obj.tilesetId);
       const frame = obj.frame;
@@ -126,17 +174,11 @@ export class ReduxReconciler {
     }
   }
 
-  private applyProps(node: DO, p: Partial<MapObj>) {
+  private applyProps(node: P.Container, p: Partial<MapObj>) {
     if (p.x != null) node.x = p.x;
     if (p.y != null) {
       node.y = p.y;
       node.zIndex = p.y;
     }
-    // if (p.angle != null) (node as any).angle = p.angle;
-    // if (p.z != null) (node as any).zIndex = p.z;
-    // // If sprite can change:
-    // if (p.sprite) {
-    //   if (node instanceof P.Sprite) node.texture = P.Texture.from(p.sprite);
-    // }
   }
 }
