@@ -6,23 +6,27 @@ function clamp(n: number, min: number, max: number) {
 }
 
 export function setupWheelZoom({
+  canvas,
   stage,
   container,
   minZoom = 0.125,
   maxZoom = 16,
   onZoomChange,
 }: {
+  canvas: HTMLCanvasElement;
   stage: P.Container;
   container: P.Container;
   minZoom?: number;
   maxZoom?: number;
   onZoomChange?: (zoomPan: ZoomPan) => void;
 }) {
+  canvas.addEventListener("wheel", (e) => {
+    // Prevent the whole page from scrolling
+    e.preventDefault();
+  });
+
   // Use Pixi's federated wheel events on the stage
   stage.on("wheel", (e: P.FederatedWheelEvent) => {
-    // Prevent page scroll to make zoom feel native
-    // e.preventDefault();
-
     // Determine zoom direction and amount using convenience deltaY
     const zoomFactor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
 

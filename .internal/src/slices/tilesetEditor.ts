@@ -81,6 +81,10 @@ const slice = createSlice({
     popMode(state) {
       state.modeStack.pop();
     },
+
+    setMode(state, action: PayloadAction<Mode>) {
+      state.modeStack = [action.payload];
+    },
     setActiveTileset: (state, action: PayloadAction<Tileset>) => {
       const ts = action.payload;
       state.activeTilesetId = ts.id;

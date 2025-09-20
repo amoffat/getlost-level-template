@@ -6,7 +6,6 @@ import { closeEnough } from "../../utils/math";
 import { subscribeToSelector } from "../../utils/redux";
 import { genGroupId } from "../../utils/tileset";
 import { groupStroke } from "../common/strokes";
-import { ADD_KEY, GROUP_KEY } from "./constants";
 import { globals as g } from "./globals";
 
 let groupStart = { x: 0, y: 0 };
@@ -14,6 +13,8 @@ let groupEnd = { x: 0, y: 0 };
 const groupsContainer = new P.Container();
 groupsContainer.zIndex = 100;
 // groupsContainer.blendMode = "screen";
+
+const pressedKeys: Record<string, boolean> = {};
 
 function getGridSize(): number {
   return store.getState().tilesetEditor.grid.size;
@@ -33,25 +34,35 @@ function isGrouping(): boolean {
 }
 
 export function setupGrouper() {
-  const canvas = g.canvas;
-
-  canvas.addEventListener("keydown", (e) => {
-    if (e.repeat) return;
-    if (e.key === GROUP_KEY) {
-      e.preventDefault();
-      const state = store.getState();
-      if (!state.tilesetEditor.activeTilesetId) return;
-      store.dispatch(tsActions.pushMode("group"));
-    } else if (e.key === ADD_KEY) {
-      e.preventDefault();
-      const state = store.getState();
-      if (!state.tilesetEditor.activeTilesetId) return;
-      store.dispatch(tsActions.pushMode("add"));
+  g.canvas.addEventListener("keydown", (e) => {
+    pressedKeys[e.key] = true;
+  });
+  g.canvas.addEventListener("keyup", (e) => {
+    pressedKeys[e.key] = false;
+    if (e.key === "Escape" && isGrouping()) {
+      store.dispatch(tsActions.pushMode(null));
     }
   });
 
-  canvas.addEventListener("keyup", async (e) => {
-    if (e.key === GROUP_KEY || e.key === ADD_KEY) {
+  g.tilesetContainer.on("pointerdown", (e: P.FederatedPointerEvent) => {
+    const mode = selectors.selectMode(store.getState());
+
+    if (mode === null) {
+      e.preventDefault();
+      if (pressedKeys["Control"]) {
+        const state = store.getState();
+        if (!state.tilesetEditor.activeTilesetId) return;
+        store.dispatch(tsActions.pushMode("add"));
+      } else {
+        const state = store.getState();
+        if (!state.tilesetEditor.activeTilesetId) return;
+        store.dispatch(tsActions.pushMode("group"));
+      }
+    }
+  });
+
+  g.tilesetContainer.on("pointerup", async (e: P.FederatedPointerEvent) => {
+    if (isGrouping()) {
       e.preventDefault();
       if (isGrouping()) {
         const tsState = store.getState().tilesetEditor;

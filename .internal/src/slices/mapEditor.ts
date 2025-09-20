@@ -1,8 +1,7 @@
+import { Mode } from "@/types/editor";
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ActiveLayer } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
-
-type Mode = "pan" | "place" | "select";
 
 interface MapEditorState {
   grid: {
@@ -52,8 +51,8 @@ const slice = createSlice({
       state.place = action.payload;
     },
 
-    selectObj: (_state, _action: { payload: string | null }) => {
-      // handled in middleware
+    selectObj: (state, action: { payload: string | null }) => {
+      state.selectedObj = action.payload;
     },
 
     pushMode(state, action: PayloadAction<Mode>) {
@@ -63,6 +62,14 @@ const slice = createSlice({
 
     popMode(state) {
       state.modeStack.pop();
+    },
+
+    setMode(state, action: PayloadAction<Mode>) {
+      const mode = action.payload;
+      if (mode === "select") {
+        state.place = null;
+      }
+      state.modeStack = [mode];
     },
   },
   selectors: {

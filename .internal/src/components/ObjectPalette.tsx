@@ -1,5 +1,5 @@
 import { LoadingOverlay, ScrollArea } from "@mantine/core";
-import { JSX, useCallback, useMemo, useState } from "react";
+import { JSX, useCallback, useMemo } from "react";
 import { useAppSelector } from "../hooks/redux";
 import { TileGroup } from "../types/tilegroup";
 import { Tileset } from "../types/tileset";
@@ -7,17 +7,18 @@ import TilesetGroup from "./TilesetGroup";
 
 interface ObjectPaletteProps {
   tileset?: Tileset | null;
+  selected?: TileGroup | null;
   onSelectObject?: (obj: TileGroup) => void;
   onDeselectObject?: () => void;
 }
 
 export default function ObjectPalette({
+  selected = null,
   onSelectObject,
   onDeselectObject,
   tileset: showTileset,
 }: ObjectPaletteProps) {
   const tsState = useAppSelector((state) => state.tilesetEditor);
-  const [selected, setSelected] = useState<TileGroup | null>(null);
 
   const objects: JSX.Element[] = useMemo(() => {
     const objs: JSX.Element[] = [];
@@ -62,17 +63,14 @@ export default function ObjectPalette({
 
       if (!objId || !tsId) {
         onDeselectObject?.();
-        setSelected(null);
         return;
       }
 
       const obj = tsState.tilesets[tsId].palette[objId];
       if (obj === selected) {
         onDeselectObject?.();
-        setSelected(null);
       } else {
         onSelectObject?.(obj);
-        setSelected(obj);
       }
     },
     [selected, onSelectObject, onDeselectObject, tsState.tilesets]

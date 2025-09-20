@@ -76,6 +76,7 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   });
 
   setupWheelZoom({
+    canvas,
     stage,
     container: g.tilesetContainer,
     // Debounce, because redux state changes can lag if we're scrolling fast

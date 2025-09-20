@@ -17,8 +17,8 @@ function mouseToPos(e: P.FederatedPointerEvent) {
     };
   } else {
     return {
-      x: pos.x,
-      y: pos.y,
+      x: Math.round(pos.x),
+      y: Math.round(pos.y),
     };
   }
 }

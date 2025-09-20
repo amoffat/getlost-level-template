@@ -50,8 +50,19 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
     const mode = selectors.selectMode(store.getState());
     if (mode !== null) return;
     if (e.button !== 0) return;
+
     const el = e.target;
-    console.log(el.label);
+    store.dispatch(actions.selectObj(el.label));
+  });
+
+  stage.on("pointermove", (e) => {
+    const el = e.target;
+    let cursor = "default";
+    // Only objects in the map container are clickable
+    if (el && el !== g.mapContainer && el !== stage) {
+      cursor = "pointer";
+    }
+    canvas.style.cursor = cursor;
   });
 
   // Build checkerboard background
@@ -61,10 +72,12 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
     height: app.screen.height,
   });
 
+  // Our selection outline must be on top of everything
   g.selectedOutline = new P.Container();
   g.selectedOutline.zIndex = Infinity;
   g.mapContainer.addChild(g.selectedOutline);
 
+  // This stores the tileset object that we're about to place with the mouse
   g.placableContainer = new P.Container();
   g.mapContainer.addChild(g.placableContainer);
   g.mapContainer.sortableChildren = true;
@@ -79,7 +92,7 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   app.ticker.add(() => {});
 
   setupPlacer();
-  setupWheelZoom({ stage, container: g.mapContainer });
+  setupWheelZoom({ canvas, stage, container: g.mapContainer });
   setupPanControls({
     stage,
     panContainer: g.mapContainer,

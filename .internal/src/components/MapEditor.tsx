@@ -1,8 +1,10 @@
 import {
+  Center,
   Fieldset,
   Flex,
   Group,
   Radio,
+  SegmentedControl,
   Stack,
   Switch,
   Tabs,
@@ -15,9 +17,13 @@ import { init as initMain } from "../editor/map/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions } from "../slices/mapEditor";
 
+import { selectors } from "@/slices/mapEditor";
+import { Mode } from "@/types/editor";
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
-import { RootState } from "../store/store";
+import { IconClick, IconPlus } from "@tabler/icons-react";
+import { useSelector } from "react-redux";
+import { RootState, store } from "../store/store";
 import { ActiveLayer } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
 import HelpHoverCard from "./HelpHoverCard";
@@ -29,11 +35,7 @@ export default function MapEditorTab() {
   const s = useAppSelector((state: RootState) => state.mapEditor);
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    // const mat = cv.imread("");
-    // cv.imshow("tileset-canvas", mat);
-  }, []);
-
+  // Initialize pixi.js app once
   useEffect(() => {
     const fn = async () => {
       const app = await initMain(cRef.current!);
@@ -43,6 +45,7 @@ export default function MapEditorTab() {
     fn();
   }, []);
 
+  // When the app is set, append its canvas to the container div
   useEffect(() => {
     if (!app) return;
 
@@ -64,13 +67,52 @@ export default function MapEditorTab() {
 
   const selectObject = (obj: TileGroup) => {
     dispatch(actions.setPlace(obj));
-    dispatch(actions.pushMode("place"));
+    dispatch(actions.setMode("place"));
   };
 
   const deselectObject = () => {
     dispatch(actions.setPlace(null));
-    dispatch(actions.popMode());
+    dispatch(actions.setMode("select"));
   };
+
+  const mode = useSelector(selectors.selectMode);
+  const changeMode = (val: string) => {
+    store.dispatch(actions.setMode(val as Mode));
+  };
+
+  const controls = (
+    <SegmentedControl
+      size="xs"
+      radius={0}
+      onChange={changeMode}
+      value={mode ?? "select"}
+      style={{
+        position: "absolute",
+        top: "0.2em",
+        right: "0.2em",
+      }}
+      data={[
+        {
+          value: "select",
+          label: (
+            <Center style={{ gap: 10 }}>
+              <IconClick size={16} />
+              <span>Select</span>
+            </Center>
+          ),
+        },
+        {
+          value: "place",
+          label: (
+            <Center style={{ gap: 10 }}>
+              <IconPlus size={16} />
+              <span>Place</span>
+            </Center>
+          ),
+        },
+      ]}
+    />
+  );
 
   return (
     <Flex h="100dvh" style={{ flex: 1 }}>
@@ -85,8 +127,19 @@ export default function MapEditorTab() {
         </Tabs>
       </Stack>
 
-      <Flex direction="column" style={{ flex: 5, minHeight: 0, minWidth: 0 }}>
-        <div ref={cRef} style={{ flex: 3, minHeight: 0, overflow: "hidden" }} />
+      <Flex
+        direction="column"
+        style={{ flex: 5, minHeight: 0, minWidth: 0, position: "relative" }}
+      >
+        {controls}
+        <div
+          ref={cRef}
+          style={{
+            flex: 3,
+            minHeight: 0,
+            overflow: "hidden",
+          }}
+        ></div>
 
         <Stack style={{ flex: 2, minHeight: 0 }} h="100%" p={0}>
           <Tabs defaultValue={"palette"} className="flex-overflow">
@@ -112,6 +165,7 @@ export default function MapEditorTab() {
               }}
             >
               <ObjectPalette
+                selected={s.place}
                 onSelectObject={selectObject}
                 onDeselectObject={deselectObject}
               />
