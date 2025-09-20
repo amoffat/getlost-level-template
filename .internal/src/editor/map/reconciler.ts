@@ -10,12 +10,13 @@ function isTileObj(obj: MapObj): obj is TileObj {
 // Create an RBush index item from a node's world-space bounds
 function makeIndexItem(id: string, node: P.Container): IndexItem {
   const r = node.getLocalBounds();
+  const pos = node.position;
   return {
     id,
-    minX: r.minX + node.position.x,
-    minY: r.minY + node.position.y,
-    maxX: r.maxX + node.position.x,
-    maxY: r.maxY + node.position.y,
+    minX: r.minX + pos.x,
+    minY: r.minY + pos.y,
+    maxX: r.maxX + pos.x,
+    maxY: r.maxY + pos.y,
   };
 }
 
