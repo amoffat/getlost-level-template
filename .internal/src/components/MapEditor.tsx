@@ -26,6 +26,7 @@ import {
   IconClick,
   IconHandStop,
   IconPlus,
+  IconSquarePlus2,
 } from "@tabler/icons-react";
 import { useSelector } from "react-redux";
 import { RootState, store } from "../store/store";
@@ -104,6 +105,15 @@ export default function MapEditorTab() {
             <Center style={{ gap: 10 }}>
               <IconClick size={16} />
               <span>Select</span>
+            </Center>
+          ),
+        },
+        {
+          value: "rect-select",
+          label: (
+            <Center style={{ gap: 10 }}>
+              <IconSquarePlus2 size={16} />
+              <span>Rect Select</span>
             </Center>
           ),
         },

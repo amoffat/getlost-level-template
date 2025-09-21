@@ -7,10 +7,10 @@ import { SpatialIndex } from "@/types/spatial";
 import { subscribeToSelector } from "@/utils/redux";
 import { Vector } from "@/vec";
 import * as P from "pixi.js";
-import { trackKeyPresses } from "../common/keypress";
 import { drawMaskedOutline } from "../common/outline";
 import { selectStroke } from "../common/strokes";
 import { globals as g } from "./globals";
+import { pressedKeys } from "./keys";
 
 function isSelectionMode(mode: Mode | null): boolean {
   return mode === "select" || mode === "rect-select";
@@ -18,7 +18,6 @@ function isSelectionMode(mode: Mode | null): boolean {
 
 export function setupSelector(spatialIndex: SpatialIndex) {
   const stage = g.app.stage;
-  const pressedKeys = trackKeyPresses();
 
   let dragStart: Vector | null = null;
   let dragEnd: Vector | null = null;
@@ -124,10 +123,19 @@ export function setupSelector(spatialIndex: SpatialIndex) {
       if (hits.length === 1) {
         const obj = hits[0];
 
-        const action = addToSelection
-          ? actions.addOneSelected
-          : actions.setOneSelected;
-        store.dispatch(action(obj));
+        const curSelected = state.mapEditor.selectedObjs;
+        const alreadySelected = curSelected.ids.includes(obj.id);
+
+        if (alreadySelected && addToSelection) {
+          // If the object is already selected, and we're adding to selection,
+          // just deselect it.
+          store.dispatch(actions.removeOneSelected(obj));
+        } else {
+          const action = addToSelection
+            ? actions.addOneSelected
+            : actions.setOneSelected;
+          store.dispatch(action(obj));
+        }
       } else {
         store.dispatch(
           actions.setProposedSelection({

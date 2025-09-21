@@ -33,7 +33,7 @@ function isGrouping(): boolean {
 }
 
 export function setupGrouper() {
-  const pressedKeys = trackKeyPresses();
+  const pressedKeys = trackKeyPresses({ element: g.app.canvas });
 
   g.tilesetContainer.on("pointerdown", (e: P.FederatedPointerEvent) => {
     const mode = selectors.selectMode(store.getState());
