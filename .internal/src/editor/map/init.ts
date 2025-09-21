@@ -6,6 +6,7 @@ import * as P from "pixi.js";
 import { subscribeToSelector } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
 import { makeBackground } from "../common/bg";
+import { getCursorForMode } from "../common/cursor";
 import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
 import { globals as g } from "./globals";
@@ -51,9 +52,10 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
 
   stage.on("pointermove", (e) => {
     const el = e.target;
-    let cursor = "default";
+    const mode = selectors.selectMode(store.getState());
+    let cursor = getCursorForMode(mode);
     // Only objects in the map container are clickable
-    if (el && el !== g.mapContainer && el !== stage) {
+    if (el && el !== g.mapContainer && el !== stage && mode === "select") {
       cursor = "pointer";
     }
     canvas.style.cursor = cursor;
@@ -149,11 +151,5 @@ subscribeToSelector(
 
 subscribeToSelector(selectors.selectMode, (mode) => {
   const canvas = g.app.canvas;
-  if (mode === "pan") {
-    canvas.style.cursor = "grabbing";
-  } else if (mode === "place") {
-    canvas.style.cursor = "crosshair";
-  } else if (mode === null) {
-    canvas.style.cursor = "default";
-  }
+  canvas.style.cursor = getCursorForMode(mode);
 });

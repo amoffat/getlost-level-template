@@ -118,7 +118,7 @@ const slice = createSlice({
   selectors: {
     selectMode: createSelector.withTypes<MapEditorState>()(
       [(state) => state.modeStack],
-      (modeStack): Mode | null => modeStack.at(-1) ?? null
+      (modeStack): Mode => modeStack.at(-1) ?? "select"
     ),
   },
 });

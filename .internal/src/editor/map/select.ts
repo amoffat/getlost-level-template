@@ -5,7 +5,7 @@ import { isTileGroupInstance, Mode, TileGroupInstance } from "@/types/editor";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { subscribeToSelector } from "@/utils/redux";
-import { Vector } from "@/vec";
+import { Vec2 } from "@/vec";
 import * as P from "pixi.js";
 import { drawMaskedOutline } from "../common/outline";
 import { selectStroke } from "../common/strokes";
@@ -19,8 +19,8 @@ function isSelectionMode(mode: Mode | null): boolean {
 export function setupSelector(spatialIndex: SpatialIndex) {
   const stage = g.app.stage;
 
-  let dragStart: Vector | null = null;
-  let dragEnd: Vector | null = null;
+  let dragStart: Vec2 | null = null;
+  let dragEnd: Vec2 | null = null;
 
   // When our pointer moves, and we're in a select mode, we're doing a
   // rect-select.
@@ -31,14 +31,23 @@ export function setupSelector(spatialIndex: SpatialIndex) {
     const mode = mapEdSelectors.selectMode(state);
     if (!isSelectionMode(mode)) return;
 
-    if (mode !== "rect-select") {
+    const globalPos = { x: e.global.x, y: e.global.y };
+    const globalStart = Vec2.fromPoint(g.mapContainer.toGlobal(dragStart));
+    const pos = g.mapContainer.toLocal(globalPos);
+    dragEnd = new Vec2(pos.x, pos.y);
+    const globalEnd = Vec2.fromPoint(g.mapContainer.toGlobal(dragEnd));
+
+    // Important that we do this in screen space, so that zoom doesn't affect
+    // the drag threshold.
+    const travelDist = globalStart.distanceTo(globalEnd);
+
+    if (mode !== "rect-select" && travelDist > 10) {
       store.dispatch(actions.setMode("rect-select"));
     }
 
-    const globalPos = { x: e.global.x, y: e.global.y };
-    const pos = g.mapContainer.toLocal(globalPos);
-    dragEnd = { x: pos.x, y: pos.y };
-    drawRectSelect({ ul: dragStart, br: dragEnd });
+    if (mode === "rect-select") {
+      drawRectSelect({ ul: dragStart, br: dragEnd });
+    }
   });
 
   // On pointer down, we're starting a rect-select, but it's not yet confirmed
@@ -51,7 +60,7 @@ export function setupSelector(spatialIndex: SpatialIndex) {
 
     const globalPos = { x: e.global.x, y: e.global.y };
     const pos = g.mapContainer.toLocal(globalPos);
-    dragStart = { x: pos.x, y: pos.y };
+    dragStart = new Vec2(pos.x, pos.y);
   });
 
   stage.addEventListener("pointerup", (e) => {
@@ -69,8 +78,8 @@ export function setupSelector(spatialIndex: SpatialIndex) {
 
     const globalPos = { x: e.global.x, y: e.global.y };
     const pos = g.mapContainer.toLocal(globalPos);
-    if (!dragStart) dragStart = { x: pos.x, y: pos.y };
-    dragEnd = { x: pos.x, y: pos.y };
+    if (!dragStart) dragStart = new Vec2(pos.x, pos.y);
+    dragEnd = new Vec2(pos.x, pos.y);
 
     const pagePos = { x: e.pageX, y: e.pageY };
 
@@ -104,7 +113,7 @@ export function setupSelector(spatialIndex: SpatialIndex) {
       const hasProposed = state.mapEditor.proposedSelection;
       if (hasProposed) {
         store.dispatch(actions.setProposedSelection(null));
-      } else {
+      } else if (!addToSelection) {
         store.dispatch(actions.clearSelection());
       }
     }
