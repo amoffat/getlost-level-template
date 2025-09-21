@@ -1,6 +1,6 @@
 import { Rect } from "./rect";
 
-export type Mode = "pan" | "place" | "select";
+export type Mode = "pan" | "place" | "select" | "move" | "rect-select";
 
 export interface MapObj {
   id: string;

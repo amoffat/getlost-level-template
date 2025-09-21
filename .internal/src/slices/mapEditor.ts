@@ -66,15 +66,21 @@ const slice = createSlice({
     },
 
     setOneSelected: (state, action: PayloadAction<TileGroupInstance>) => {
-      const obj = action.payload;
       selectedAdapter.removeAll(state.selectedObjs);
-      if (obj) {
-        selectedAdapter.setOne(state.selectedObjs, obj);
-      }
+      selectedAdapter.setOne(state.selectedObjs, action.payload);
     },
 
     addOneSelected: (state, action: PayloadAction<TileGroupInstance>) => {
       selectedAdapter.setOne(state.selectedObjs, action.payload);
+    },
+
+    setManySelected: (state, action: PayloadAction<TileGroupInstance[]>) => {
+      selectedAdapter.removeAll(state.selectedObjs);
+      selectedAdapter.setMany(state.selectedObjs, action.payload);
+    },
+
+    addManySelected: (state, action: PayloadAction<TileGroupInstance[]>) => {
+      selectedAdapter.setMany(state.selectedObjs, action.payload);
     },
 
     removeOneSelected: (state, action: PayloadAction<TileGroupInstance>) => {

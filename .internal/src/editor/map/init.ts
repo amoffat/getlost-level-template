@@ -81,6 +81,10 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   g.selectionOutlines.zIndex = Infinity - 1;
   g.mapContainer.addChild(g.selectionOutlines);
 
+  g.rectSelectOutline = new P.Container();
+  g.rectSelectOutline.zIndex = Infinity - 2;
+  g.mapContainer.addChild(g.rectSelectOutline);
+
   const spatialIndex = new SpatialIndex();
   const reconciler = new ReduxReconciler({
     root: g.mapContainer,

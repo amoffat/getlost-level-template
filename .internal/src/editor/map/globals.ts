@@ -10,6 +10,7 @@ interface Globals {
   placableOutline: P.Container;
   placableSprite?: P.Sprite;
   selectionOutlines: P.Container;
+  rectSelectOutline: P.Container;
   grid: P.Container;
   gridSnap: number;
   tilesetCache: Map<string, P.Texture>;
