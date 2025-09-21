@@ -21,7 +21,12 @@ import { selectors } from "@/slices/mapEditor";
 import { Mode } from "@/types/editor";
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
-import { IconClick, IconPlus } from "@tabler/icons-react";
+import {
+  IconArrowsMove,
+  IconClick,
+  IconHandStop,
+  IconPlus,
+} from "@tabler/icons-react";
 import { useSelector } from "react-redux";
 import { RootState, store } from "../store/store";
 import { ActiveLayer } from "../types/layer";
@@ -103,7 +108,27 @@ export default function MapEditorTab() {
           ),
         },
         {
+          value: "pan",
+          disabled: true,
+          label: (
+            <Center style={{ gap: 10 }}>
+              <IconHandStop size={16} />
+              <span>Pan</span>
+            </Center>
+          ),
+        },
+        {
+          value: "move",
+          label: (
+            <Center style={{ gap: 10 }}>
+              <IconArrowsMove size={16} />
+              <span>Move</span>
+            </Center>
+          ),
+        },
+        {
           value: "place",
+          disabled: true,
           label: (
             <Center style={{ gap: 10 }}>
               <IconPlus size={16} />
