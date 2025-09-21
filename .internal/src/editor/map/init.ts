@@ -67,14 +67,19 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   });
 
   // Our selection outline must be on top of everything
-  g.selectedOutline = new P.Container();
-  g.selectedOutline.zIndex = Infinity;
-  g.mapContainer.addChild(g.selectedOutline);
+  g.placableOutline = new P.Container();
+  g.placableOutline.zIndex = Infinity;
+  g.mapContainer.addChild(g.placableOutline);
 
   // This stores the tileset object that we're about to place with the mouse
   g.placableContainer = new P.Container();
   g.mapContainer.addChild(g.placableContainer);
   g.mapContainer.sortableChildren = true;
+
+  // This stores the outlines of selected objects
+  g.selectionOutlines = new P.Container();
+  g.selectionOutlines.zIndex = Infinity - 1;
+  g.mapContainer.addChild(g.selectionOutlines);
 
   const spatialIndex = new SpatialIndex();
   const reconciler = new ReduxReconciler({

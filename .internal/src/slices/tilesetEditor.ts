@@ -1,31 +1,22 @@
+import { TileGroupInstance } from "@/types/editor";
+import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { TileGroup } from "@/types/tilegroup";
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import RBush from "rbush";
 import { Rect } from "../types/rect";
 import { Tileset } from "../types/tileset";
 import { Pan, Zoom, ZoomPan } from "../types/zoompan";
 
-// External, per-tileset spatial index of palette TileGroups.
-// Keyed by objectUrl (tileset url). Not part of Redux state.
-type BBoxItem = {
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
-  id: string;
-};
-type TileIndex = RBush<BBoxItem>;
-const tileIndices: Record<string, TileIndex> = {};
+const tileIndices: Record<string, SpatialIndex> = {};
 
-export function getTileIndex(id: string): TileIndex {
+export function getTileIndex(id: string): SpatialIndex {
   if (!tileIndices[id]) {
-    tileIndices[id] = new RBush<BBoxItem>();
+    tileIndices[id] = new SpatialIndex();
   }
   return tileIndices[id];
 }
 
 // The padding prevents RBush false positives when tiles are adjacent
-export function groupToBBox(group: TileGroup, pad: number = 0.1): BBoxItem {
+export function groupToBBox(group: TileGroup, pad: number = 0.1): IndexItem {
   return {
     minX: group.pos.ul.x + pad,
     minY: group.pos.ul.y + pad,
@@ -225,7 +216,7 @@ const slice = createSlice({
               }
               // Remove the multi-tile group from the palette and spatial index
               delete ts.palette[removeCandId];
-              tileIndex.remove(groupToBBox(child), (a, b) => a.id === b.id);
+              tileIndex.removeById(removeCandId);
             }
 
             return false;
@@ -249,8 +240,7 @@ const slice = createSlice({
         // that the group isn't double-added to the paletteIds and the spatial
         // index. It could probably be simplified.
         if (ts.palette[group.id]) {
-          const existing = ts.palette[group.id];
-          tileIndex.remove(groupToBBox(existing), (a, b) => a.id === b.id);
+          tileIndex.removeById(group.id);
           delete ts.palette[group.id];
           ts.paletteIds = ts.paletteIds.filter((id) => id !== group.id);
         }
@@ -282,6 +272,12 @@ const slice = createSlice({
     selectMode: createSelector.withTypes<TilesetEditorState>()(
       [(state) => state.modeStack],
       (modeStack): Mode | null => modeStack.at(-1) ?? null
+    ),
+    selectTileGroupByInstanceId: createSelector.withTypes<TilesetEditorState>()(
+      [(state) => state.tilesets, (_, inst: TileGroupInstance) => inst],
+      (tilesets, inst): TileGroup => {
+        return tilesets[inst.tilesetId].palette[inst.tileId];
+      }
     ),
   },
 });

@@ -7,8 +7,9 @@ interface Globals {
   mapContainer: P.Container;
   backgroundContainer: P.Container;
   placableContainer: P.Container;
-  selectedOutline: P.Container;
+  placableOutline: P.Container;
   placableSprite?: P.Sprite;
+  selectionOutlines: P.Container;
   grid: P.Container;
   gridSnap: number;
   tilesetCache: Map<string, P.Texture>;

@@ -9,9 +9,13 @@ export interface MapObj {
   z: number;
 }
 
-export interface TileObj extends MapObj {
+export interface TileGroupInstance extends MapObj {
   tileId: string;
   tilesetId: string;
   frame: Rect;
   flipX?: boolean;
+}
+
+export function isTileGroupInstance(obj: MapObj): obj is TileGroupInstance {
+  return (obj as TileGroupInstance).tileId !== undefined;
 }

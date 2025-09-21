@@ -28,6 +28,7 @@ import { ActiveLayer } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
+import ObjSelHover from "./ObjSelHover";
 
 export default function MapEditorTab() {
   const cRef = useRef<HTMLDivElement>(null);
@@ -114,105 +115,111 @@ export default function MapEditorTab() {
     />
   );
 
+  const selectionHover = <ObjSelHover />;
+
   return (
-    <Flex h="100dvh" style={{ flex: 1 }}>
-      <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
-        <Tabs defaultValue={"tilesets"}>
-          <Tabs.List>
-            <Tabs.Tab value="tilesets">NPCs</Tabs.Tab>
-          </Tabs.List>
-          <Tabs.Panel value="tilesets">
-            <Text>hello</Text>
-          </Tabs.Panel>
-        </Tabs>
-      </Stack>
-
-      <Flex
-        direction="column"
-        style={{ flex: 5, minHeight: 0, minWidth: 0, position: "relative" }}
-      >
-        {controls}
-        <div
-          ref={cRef}
-          style={{
-            flex: 3,
-            minHeight: 0,
-            overflow: "hidden",
-          }}
-        ></div>
-
-        <Stack style={{ flex: 2, minHeight: 0 }} h="100%" p={0}>
-          <Tabs defaultValue={"palette"} className="flex-overflow">
+    <>
+      <Flex h="100dvh" style={{ flex: 1 }}>
+        <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
+          <Tabs defaultValue={"tilesets"}>
             <Tabs.List>
-              <Tabs.Tab value="palette">
-                <Group gap="xs">
-                  Palette
-                  <HelpHoverCard>
-                    <Text size="sm">
-                      Place an object from the palette onto the map.
-                    </Text>
-                  </HelpHoverCard>
-                </Group>
-              </Tabs.Tab>
+              <Tabs.Tab value="tilesets">NPCs</Tabs.Tab>
             </Tabs.List>
-            <Tabs.Panel
-              value="palette"
-              style={{
-                flex: 1,
-                minHeight: 0,
-                height: "100%",
-                display: "flex",
-              }}
-            >
-              <ObjectPalette
-                selected={s.place}
-                onSelectObject={selectObject}
-                onDeselectObject={deselectObject}
-              />
+            <Tabs.Panel value="tilesets">
+              <Text>hello</Text>
             </Tabs.Panel>
           </Tabs>
         </Stack>
+
+        <Flex
+          direction="column"
+          style={{ flex: 5, minHeight: 0, minWidth: 0, position: "relative" }}
+        >
+          {controls}
+          <div
+            ref={cRef}
+            style={{
+              flex: 3,
+              minHeight: 0,
+              overflow: "hidden",
+            }}
+          ></div>
+
+          <Stack style={{ flex: 2, minHeight: 0 }} h="100%" p={0}>
+            <Tabs defaultValue={"palette"} className="flex-overflow">
+              <Tabs.List>
+                <Tabs.Tab value="palette">
+                  <Group gap="xs">
+                    Palette
+                    <HelpHoverCard>
+                      <Text size="sm">
+                        Place an object from the palette onto the map.
+                      </Text>
+                    </HelpHoverCard>
+                  </Group>
+                </Tabs.Tab>
+              </Tabs.List>
+              <Tabs.Panel
+                value="palette"
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  height: "100%",
+                  display: "flex",
+                }}
+              >
+                <ObjectPalette
+                  selected={s.place}
+                  onSelectObject={selectObject}
+                  onDeselectObject={deselectObject}
+                />
+              </Tabs.Panel>
+            </Tabs>
+          </Stack>
+        </Flex>
+
+        <Stack miw={200} style={{ flex: 1 }}>
+          <Fieldset legend="Active tile layer">
+            <Radio.Group onChange={changeActiveLayer} value={s.layers.active}>
+              <Stack p={0}>
+                <Tooltip
+                  multiline
+                  withArrow
+                  position="left"
+                  w={200}
+                  openDelay={1000}
+                  label="World tiles can appear in front of and behind characters"
+                  refProp="rootRef"
+                >
+                  <Radio value="world" label="World" />
+                </Tooltip>
+                <Tooltip
+                  multiline
+                  withArrow
+                  position="left"
+                  w={200}
+                  openDelay={1000}
+                  label="Ground tiles always appear underneath characters"
+                  refProp="rootRef"
+                >
+                  <Radio value="ground" label="Ground" />
+                </Tooltip>
+                <Switch
+                  label="Dim inactive layer"
+                  checked={s.layers.dimInactive}
+                  onChange={(event) => {
+                    dispatch(
+                      actions.setDimInactiveLayer(event.currentTarget.checked)
+                    );
+                  }}
+                />
+              </Stack>
+            </Radio.Group>
+          </Fieldset>
+        </Stack>
       </Flex>
 
-      <Stack miw={200} style={{ flex: 1 }}>
-        <Fieldset legend="Active tile layer">
-          <Radio.Group onChange={changeActiveLayer} value={s.layers.active}>
-            <Stack p={0}>
-              <Tooltip
-                multiline
-                withArrow
-                position="left"
-                w={200}
-                openDelay={1000}
-                label="World tiles can appear in front of and behind characters"
-                refProp="rootRef"
-              >
-                <Radio value="world" label="World" />
-              </Tooltip>
-              <Tooltip
-                multiline
-                withArrow
-                position="left"
-                w={200}
-                openDelay={1000}
-                label="Ground tiles always appear underneath characters"
-                refProp="rootRef"
-              >
-                <Radio value="ground" label="Ground" />
-              </Tooltip>
-              <Switch
-                label="Dim inactive layer"
-                checked={s.layers.dimInactive}
-                onChange={(event) => {
-                  dispatch(
-                    actions.setDimInactiveLayer(event.currentTarget.checked)
-                  );
-                }}
-              />
-            </Stack>
-          </Radio.Group>
-        </Fieldset>
-      </Stack>
-    </Flex>
+      {selectionHover}
+    </>
   );
 }

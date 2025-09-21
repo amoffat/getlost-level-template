@@ -1,11 +1,7 @@
 // pixiReconciler.ts
-import { MapObj, TileObj } from "@/types/editor";
+import { isTileGroupInstance, MapObj } from "@/types/editor";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
-
-function isTileObj(obj: MapObj): obj is TileObj {
-  return (obj as TileObj).tileId !== undefined;
-}
 
 // Create an RBush index item from a node's world-space bounds
 function makeIndexItem(id: string, node: P.Container): IndexItem {
@@ -29,8 +25,6 @@ export class ReduxReconciler {
   private tilesetCache: Map<string, P.Texture>;
   // Axis-aligned bbox entry for RBush
   private spatialIndex: SpatialIndex;
-  // Track the last indexed bbox per object id for fast remove/update
-  private indexItems = new Map<string, IndexItem>();
 
   constructor({
     root,
@@ -96,12 +90,7 @@ export class ReduxReconciler {
     for (const id of this.pendingRemoves) {
       const node = this.nodes.get(id);
       if (node) {
-        // Remove from spatial index if present
-        const prev = this.indexItems.get(id);
-        if (prev) {
-          this.spatialIndex.remove(prev, (a, b) => a.id === b.id);
-          this.indexItems.delete(id);
-        }
+        this.spatialIndex.removeById(id);
         node.destroy({ children: true });
         this.root.removeChild(node);
         this.nodes.delete(id);
@@ -118,7 +107,6 @@ export class ReduxReconciler {
       // Index in spatial structure
       const item = makeIndexItem(obj.id, node);
       this.spatialIndex.insert(item);
-      this.indexItems.set(obj.id, item);
     }
     this.pendingAdds.length = 0;
 
@@ -129,28 +117,18 @@ export class ReduxReconciler {
       const willAffectPos =
         "x" in changes || "y" in changes || "frame" in (changes as any);
 
-      // Remove previous bbox before we mutate
-      if (willAffectPos) {
-        const prev = this.indexItems.get(id);
-        if (prev) {
-          this.spatialIndex.remove(prev, (a, b) => a.id === b.id);
-          this.indexItems.delete(id);
-        }
-      }
-
       this.applyProps(node, changes);
 
       if (willAffectPos) {
         const nextItem = makeIndexItem(id, node);
-        this.spatialIndex.insert(nextItem);
-        this.indexItems.set(id, nextItem);
+        this.spatialIndex.update(nextItem);
       }
     }
     this.pendingUpdates.length = 0;
   }
 
   private createNode(obj: MapObj): P.Container {
-    if (isTileObj(obj)) {
+    if (isTileGroupInstance(obj)) {
       const tsTex = this.tilesetCache.get(obj.tilesetId);
       const frame = obj.frame;
       const texFrame = new P.Rectangle(

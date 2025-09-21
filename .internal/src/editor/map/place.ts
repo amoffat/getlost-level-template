@@ -1,10 +1,11 @@
 import { log } from "@/log";
 import { actions } from "@/slices/map";
 import { store } from "@/store/store";
-import { TileObj } from "@/types/editor";
+import { TileGroupInstance } from "@/types/editor";
 import { subscribeToSelector } from "@/utils/redux";
 import * as P from "pixi.js";
-import { groupStroke } from "../common/strokes";
+import { drawMaskedOutline } from "../common/outline";
+import { selectStroke } from "../common/strokes";
 import { globals as g } from "./globals";
 
 function mouseToPos(e: P.FederatedPointerEvent) {
@@ -36,7 +37,7 @@ export function setupPlacer() {
     const place = state.mapEditor.place!;
     const id = crypto.randomUUID();
 
-    const obj: TileObj = {
+    const obj: TileGroupInstance = {
       id,
       x: pos.x,
       y: pos.y,
@@ -57,7 +58,7 @@ export function setupPlacer() {
       const pos = mouseToPos(e);
       g.placableContainer.position = pos;
       g.placableContainer.zIndex = pos.y;
-      g.selectedOutline.position = pos;
+      g.placableOutline.position = pos;
     }
   });
 }
@@ -67,7 +68,7 @@ subscribeToSelector(
   (place) => {
     if (!g.initialized) return;
 
-    g.selectedOutline.removeChildren();
+    g.placableOutline.removeChildren();
     g.placableContainer.removeChildren();
 
     if (place) {
@@ -92,20 +93,10 @@ subscribeToSelector(
       g.placableContainer.addChild(sprite);
       g.placableSprite = sprite;
 
-      const mask = new P.Graphics();
-      mask
-        .rect(0, 0, frame.width, frame.height)
-        .fill({ color: 0x00ff00, alpha: 1 });
-      g.selectedOutline.addChild(mask);
-      g.selectedOutline.width = frame.width;
-      g.selectedOutline.height = frame.height;
-
-      const gfx = new P.Graphics();
-      gfx.rect(0, 0, frame.width, frame.height).stroke(groupStroke);
-      g.selectedOutline.addChild(gfx);
-      gfx.setMask({
-        mask,
-        inverse: true,
+      drawMaskedOutline({
+        container: g.placableOutline,
+        frame: rect,
+        stroke: selectStroke,
       });
     } else {
       g.placableSprite?.destroy();

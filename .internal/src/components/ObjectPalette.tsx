@@ -44,7 +44,6 @@ export default function ObjectPalette({
             scale={1}
             key={key}
             group={group}
-            ts={ts}
             selected={selected?.id === group.id}
           />
         );

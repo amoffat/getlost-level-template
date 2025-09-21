@@ -5,6 +5,7 @@ import { TileGroup } from "../../types/tilegroup";
 import { closeEnough } from "../../utils/math";
 import { subscribeToSelector } from "../../utils/redux";
 import { genGroupId } from "../../utils/tileset";
+import { trackKeyPresses } from "../common/keypress";
 import { groupStroke } from "../common/strokes";
 import { globals as g } from "./globals";
 
@@ -13,8 +14,6 @@ let groupEnd = { x: 0, y: 0 };
 const groupsContainer = new P.Container();
 groupsContainer.zIndex = 100;
 // groupsContainer.blendMode = "screen";
-
-const pressedKeys: Record<string, boolean> = {};
 
 function getGridSize(): number {
   return store.getState().tilesetEditor.grid.size;
@@ -34,15 +33,7 @@ function isGrouping(): boolean {
 }
 
 export function setupGrouper() {
-  g.canvas.addEventListener("keydown", (e) => {
-    pressedKeys[e.key] = true;
-  });
-  g.canvas.addEventListener("keyup", (e) => {
-    pressedKeys[e.key] = false;
-    if (e.key === "Escape" && isGrouping()) {
-      store.dispatch(tsActions.pushMode(null));
-    }
-  });
+  const pressedKeys = trackKeyPresses();
 
   g.tilesetContainer.on("pointerdown", (e: P.FederatedPointerEvent) => {
     const mode = selectors.selectMode(store.getState());

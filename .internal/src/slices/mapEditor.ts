@@ -1,7 +1,16 @@
-import { Mode } from "@/types/editor";
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Mode, TileGroupInstance } from "@/types/editor";
+import { Vector } from "@/vec";
+import {
+  createEntityAdapter,
+  createSelector,
+  createSlice,
+  EntityState,
+  PayloadAction,
+} from "@reduxjs/toolkit";
 import { ActiveLayer } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
+
+const selectedAdapter = createEntityAdapter<TileGroupInstance>();
 
 interface MapEditorState {
   grid: {
@@ -11,7 +20,11 @@ interface MapEditorState {
   };
   modeStack: Mode[];
   place: TileGroup | null;
-  selectedObjs: string[];
+  selectedObjs: EntityState<TileGroupInstance, string>;
+  proposedSelection: {
+    objects: TileGroupInstance[];
+    pos: Vector;
+  } | null;
   layers: {
     active: ActiveLayer;
     dimInactive: boolean;
@@ -27,7 +40,8 @@ const slice = createSlice({
       snap: true,
     },
     place: null,
-    selectedObjs: [],
+    selectedObjs: selectedAdapter.getInitialState(),
+    proposedSelection: null,
     modeStack: [],
     layers: {
       active: "ground",
@@ -51,8 +65,31 @@ const slice = createSlice({
       state.place = action.payload;
     },
 
-    selectObj: (state, action: PayloadAction<string[] | null>) => {
-      state.selectedObjs = action.payload ?? [];
+    setOneSelected: (state, action: PayloadAction<TileGroupInstance>) => {
+      const obj = action.payload;
+      selectedAdapter.removeAll(state.selectedObjs);
+      if (obj) {
+        selectedAdapter.setOne(state.selectedObjs, obj);
+      }
+    },
+
+    addOneSelected: (state, action: PayloadAction<TileGroupInstance>) => {
+      selectedAdapter.setOne(state.selectedObjs, action.payload);
+    },
+
+    removeOneSelected: (state, action: PayloadAction<TileGroupInstance>) => {
+      selectedAdapter.removeOne(state.selectedObjs, action.payload.id);
+    },
+
+    clearSelection: (state) => {
+      selectedAdapter.removeAll(state.selectedObjs);
+    },
+
+    setProposedSelection(
+      state,
+      action: PayloadAction<MapEditorState["proposedSelection"]>
+    ) {
+      state.proposedSelection = action.payload;
     },
 
     pushMode(state, action: PayloadAction<Mode>) {
