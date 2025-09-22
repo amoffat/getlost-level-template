@@ -37,6 +37,10 @@ export function setupKeys(canvas: HTMLCanvasElement) {
           store.dispatch(mapEdActions.clearSelection());
         }
       },
+      g: (keydown: boolean) => {
+        if (!keydown) return;
+        store.dispatch(mapEdActions.setMode("move"));
+      },
     },
   });
 }

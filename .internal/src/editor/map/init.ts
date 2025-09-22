@@ -11,6 +11,7 @@ import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
 import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
+import { setupMover } from "./move";
 import { setupPlacer } from "./place";
 import { ReduxReconciler } from "./reconciler";
 import { setupSelector } from "./select";
@@ -99,6 +100,7 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   // Listen for animate update
   app.ticker.add(() => {});
 
+  setupMover();
   setupPlacer();
   setupWheelZoom({ canvas, stage, container: g.mapContainer });
   setupPanControls({

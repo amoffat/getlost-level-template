@@ -10,7 +10,7 @@ import {
 import { ActiveLayer } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
 
-const selectedAdapter = createEntityAdapter<TileGroupInstance>();
+export const selectedAdapter = createEntityAdapter<TileGroupInstance>();
 
 interface MapEditorState {
   grid: {
@@ -81,6 +81,15 @@ const slice = createSlice({
 
     addManySelected: (state, action: PayloadAction<TileGroupInstance[]>) => {
       selectedAdapter.setMany(state.selectedObjs, action.payload);
+    },
+
+    updateManySelected: (
+      state,
+      action: PayloadAction<
+        { id: string; changes: Partial<TileGroupInstance> }[]
+      >
+    ) => {
+      selectedAdapter.updateMany(state.selectedObjs, action.payload);
     },
 
     removeOneSelected: (state, action: PayloadAction<TileGroupInstance>) => {

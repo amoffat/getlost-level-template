@@ -12,7 +12,7 @@ import { selectStroke } from "../common/strokes";
 import { globals as g } from "./globals";
 import { pressedKeys } from "./keys";
 
-function isSelectionMode(mode: Mode | null): boolean {
+function isSelectionMode(mode: Mode): boolean {
   return mode === "select" || mode === "rect-select";
 }
 
