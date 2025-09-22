@@ -12,6 +12,8 @@ import { selectStroke } from "../common/strokes";
 import { globals as g } from "./globals";
 import { pressedKeys } from "./keys";
 
+const MOVE_THRESHOLD = 10;
+
 function isSelectionMode(mode: Mode): boolean {
   return mode === "select" || mode === "rect-select";
 }
@@ -41,7 +43,7 @@ export function setupSelector(spatialIndex: SpatialIndex) {
     // the drag threshold.
     const travelDist = globalStart.distanceTo(globalEnd);
 
-    if (mode !== "rect-select" && travelDist > 10) {
+    if (mode !== "rect-select" && travelDist > MOVE_THRESHOLD) {
       store.dispatch(actions.setMode("rect-select"));
     }
 
