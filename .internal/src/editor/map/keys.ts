@@ -1,4 +1,5 @@
-import { actions, selectors } from "@/slices/mapEditor";
+import { actions as mapActions } from "@/slices/map";
+import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { trackKeyPresses } from "../common/keypress";
 
@@ -15,14 +16,26 @@ export function setupKeys(canvas: HTMLCanvasElement) {
         const state = store.getState();
         const mode = selectors.selectMode(state);
         if (mode === "select" || mode === "rect-select") {
-          store.dispatch(actions.setPlace(null));
-          store.dispatch(actions.clearSelection());
+          store.dispatch(mapEdActions.setPlace(null));
+          store.dispatch(mapEdActions.clearSelection());
         }
 
-        store.dispatch(actions.setMode("select"));
+        store.dispatch(mapEdActions.setMode("select"));
       },
       Control: (pressed: boolean) => {
-        store.dispatch(actions.setGridSnap(!pressed));
+        store.dispatch(mapEdActions.setGridSnap(!pressed));
+      },
+      Delete: (keydown: boolean) => {
+        if (!keydown) return;
+
+        const state = store.getState();
+        const mode = selectors.selectMode(state);
+
+        if (mode === "select" || mode === "rect-select") {
+          const selection = state.mapEditor.selectedObjs.ids;
+          store.dispatch(mapActions.removeMany(selection));
+          store.dispatch(mapEdActions.clearSelection());
+        }
       },
     },
   });
