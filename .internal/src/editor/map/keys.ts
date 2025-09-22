@@ -9,7 +9,9 @@ export function setupKeys(canvas: HTMLCanvasElement) {
     element: canvas,
     pressedKeys,
     handlers: {
-      Escape: () => {
+      Escape: (keydown: boolean) => {
+        if (!keydown) return;
+
         const state = store.getState();
         const mode = selectors.selectMode(state);
         if (mode === "select" || mode === "rect-select") {
