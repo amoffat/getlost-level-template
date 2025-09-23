@@ -1,10 +1,8 @@
 import {
-  Center,
   Fieldset,
   Flex,
   Group,
   Radio,
-  SegmentedControl,
   Stack,
   Switch,
   Tabs,
@@ -21,13 +19,6 @@ import { selectors } from "@/slices/mapEditor";
 import { Mode } from "@/types/editor";
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
-import {
-  IconArrowsMove,
-  IconClick,
-  IconHandStop,
-  IconPlus,
-  IconSquarePlus2,
-} from "@tabler/icons-react";
 import { useSelector } from "react-redux";
 import { RootState, store } from "../store/store";
 import { ActiveLayer } from "../types/layer";
@@ -87,69 +78,6 @@ export default function MapEditorTab() {
     store.dispatch(actions.setMode(val as Mode));
   };
 
-  const controls = (
-    <SegmentedControl
-      size="xs"
-      radius={0}
-      onChange={changeMode}
-      value={mode ?? "select"}
-      style={{
-        position: "absolute",
-        top: "0.2em",
-        right: "0.2em",
-      }}
-      data={[
-        {
-          value: "select",
-          label: (
-            <Center style={{ gap: 10 }}>
-              <IconClick size={16} />
-              <span>Select</span>
-            </Center>
-          ),
-        },
-        {
-          value: "rect-select",
-          label: (
-            <Center style={{ gap: 10 }}>
-              <IconSquarePlus2 size={16} />
-              <span>Rect Select</span>
-            </Center>
-          ),
-        },
-        {
-          value: "pan",
-          disabled: true,
-          label: (
-            <Center style={{ gap: 10 }}>
-              <IconHandStop size={16} />
-              <span>Pan</span>
-            </Center>
-          ),
-        },
-        {
-          value: "move",
-          label: (
-            <Center style={{ gap: 10 }}>
-              <IconArrowsMove size={16} />
-              <span>Move</span>
-            </Center>
-          ),
-        },
-        {
-          value: "place",
-          disabled: true,
-          label: (
-            <Center style={{ gap: 10 }}>
-              <IconPlus size={16} />
-              <span>Place</span>
-            </Center>
-          ),
-        },
-      ]}
-    />
-  );
-
   const selectionHover = <ObjSelHover />;
 
   return (
@@ -170,7 +98,6 @@ export default function MapEditorTab() {
           direction="column"
           style={{ flex: 5, minHeight: 0, minWidth: 0, position: "relative" }}
         >
-          {controls}
           <div
             ref={cRef}
             style={{
