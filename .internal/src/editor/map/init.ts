@@ -9,6 +9,7 @@ import { makeBackground } from "../common/bg";
 import { getCursorForMode } from "../common/cursor";
 import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
+import { ClickDragger } from "./drag";
 import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
 import { setupMover } from "./move";
@@ -55,8 +56,11 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
     const el = e.target;
     const mode = selectors.selectMode(store.getState());
     let cursor = getCursorForMode(mode);
+
     // Only objects in the map container are clickable
-    if (el && el !== g.mapContainer && el !== stage && mode === "select") {
+    const isOverObject = el && el !== g.mapContainer && el !== stage;
+
+    if (isOverObject && mode === "select") {
       cursor = "pointer";
     }
     canvas.style.cursor = cursor;
@@ -95,7 +99,12 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
     spatialIndex,
   });
   setReconciler(reconciler);
-  setupSelector(spatialIndex);
+
+  const cd = new ClickDragger({
+    stage,
+    container: g.mapContainer,
+  });
+  setupSelector(cd, spatialIndex);
 
   // Listen for animate update
   app.ticker.add(() => {});

@@ -5,72 +5,39 @@ import { isTileGroupInstance, Mode, TileGroupInstance } from "@/types/editor";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { subscribeToSelector } from "@/utils/redux";
-import { Vec2 } from "@/vec";
 import * as P from "pixi.js";
 import { drawMaskedOutline } from "../common/outline";
 import { selectStroke } from "../common/strokes";
+import { ClickDragger, ClickDragListener, PointerEventData } from "./drag";
 import { globals as g } from "./globals";
 import { pressedKeys } from "./keys";
-
-const MOVE_THRESHOLD = 10;
 
 function isSelectionMode(mode: Mode): boolean {
   return mode === "select" || mode === "rect-select";
 }
 
-export function setupSelector(spatialIndex: SpatialIndex) {
-  const stage = g.app.stage;
+class Selector implements ClickDragListener {
+  private marqueeEnabled = false;
 
-  let dragStart: Vec2 | null = null;
-  let dragEnd: Vec2 | null = null;
+  constructor(private spatialIndex: SpatialIndex) {}
 
-  // When our pointer moves, and we're in a select mode, we're doing a
-  // rect-select.
-  stage.addEventListener("pointermove", (e) => {
-    if (!dragStart) return;
-
-    const state = store.getState();
-    const mode = mapEdSelectors.selectMode(state);
-    if (!isSelectionMode(mode)) return;
-
-    const globalPos = { x: e.global.x, y: e.global.y };
-    const globalStart = Vec2.fromPoint(g.mapContainer.toGlobal(dragStart));
-    const pos = g.mapContainer.toLocal(globalPos);
-    dragEnd = new Vec2(pos.x, pos.y);
-    const globalEnd = Vec2.fromPoint(g.mapContainer.toGlobal(dragEnd));
-
-    // Important that we do this in screen space, so that zoom doesn't affect
-    // the drag threshold.
-    const travelDist = globalStart.distanceTo(globalEnd);
-
-    if (mode !== "rect-select" && travelDist > MOVE_THRESHOLD) {
-      store.dispatch(actions.setMode("rect-select"));
+  pointerDown(e: PointerEventData) {
+    if (e.over) {
+      this.marqueeEnabled = false;
+    } else {
+      this.marqueeEnabled = true;
     }
+  }
 
-    if (mode === "rect-select") {
-      drawRectSelect({ ul: dragStart, br: dragEnd });
-    }
-  });
-
-  // On pointer down, we're starting a rect-select, but it's not yet confirmed
-  // until we start dragging.
-  stage.addEventListener("pointerdown", (e) => {
+  pointerUp(e: PointerEventData) {
+    this.marqueeEnabled = false;
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
     if (!isSelectionMode(mode)) return;
-    if (e.button !== 0) return;
 
-    const globalPos = { x: e.global.x, y: e.global.y };
-    const pos = g.mapContainer.toLocal(globalPos);
-    dragStart = new Vec2(pos.x, pos.y);
-  });
-
-  stage.addEventListener("pointerup", (e) => {
-    const state = store.getState();
-    const mode = mapEdSelectors.selectMode(state);
-
-    if (!isSelectionMode(mode)) return;
-    if (e.button !== 0) return;
+    // We don't want any selection logic to run if we initially clicked on an
+    // object.
+    if (e.clickedTarget && e.moved) return;
 
     const rectSelect = mode === "rect-select";
     clearRectSelect();
@@ -78,32 +45,15 @@ export function setupSelector(spatialIndex: SpatialIndex) {
 
     const addToSelection = pressedKeys["Control"] ?? false;
 
-    const globalPos = { x: e.global.x, y: e.global.y };
-    const pos = g.mapContainer.toLocal(globalPos);
-    if (!dragStart) dragStart = new Vec2(pos.x, pos.y);
-    dragEnd = new Vec2(pos.x, pos.y);
-
-    const pagePos = { x: e.pageX, y: e.pageY };
-
-    // This logic ensures that our rect select hitbox can go "negative" correctly
-    const left = Math.min(dragStart.x, dragEnd.x);
-    const top = Math.min(dragStart.y, dragEnd.y);
-    const right = Math.max(dragStart.x, dragEnd.x);
-    const bottom = Math.max(dragStart.y, dragEnd.y);
-    const minPos = { x: left, y: top };
-    const maxPos = { x: right, y: bottom };
-    const hitBox = {
-      minX: minPos.x,
-      minY: minPos.y,
-      maxX: maxPos.x,
-      maxY: maxPos.y,
+    const searchBounds = {
+      minX: e.hitbox.ul.x,
+      minY: e.hitbox.ul.y,
+      maxX: e.hitbox.br.x,
+      maxY: e.hitbox.br.y,
     };
 
-    dragStart = null;
-    dragEnd = null;
-
-    const hits = spatialIndex
-      .search(hitBox)
+    const hits = this.spatialIndex
+      .search(searchBounds)
       .map((it) => it.id)
       .map((hit) => mapSelectors.selectById(state, hit))
       .filter((obj) => isTileGroupInstance(obj))
@@ -151,12 +101,32 @@ export function setupSelector(spatialIndex: SpatialIndex) {
         store.dispatch(
           actions.setProposedSelection({
             objects: hits,
-            pos: pagePos,
+            pos: e.pagePos,
           })
         );
       }
     }
-  });
+  }
+
+  pointerDrag(e: PointerEventData) {
+    if (!this.marqueeEnabled) return;
+
+    const state = store.getState();
+    const mode = mapEdSelectors.selectMode(state);
+    if (!isSelectionMode(mode)) return;
+
+    if (mode !== "rect-select") {
+      store.dispatch(actions.setMode("rect-select"));
+    }
+
+    if (mode === "rect-select") {
+      drawRectSelect(e.hitbox);
+    }
+  }
+}
+
+export function setupSelector(cd: ClickDragger, spatialIndex: SpatialIndex) {
+  cd.addListener(new Selector(spatialIndex));
 }
 
 /**
