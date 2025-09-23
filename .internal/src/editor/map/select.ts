@@ -27,6 +27,8 @@ class Selector implements ClickDragListener {
 
   pointerDown(e: PointerEventData) {
     const state = store.getState();
+    const mode = mapEdSelectors.selectMode(state);
+    if (!isSelectionMode(mode)) return;
 
     // If we're over something, it means we want to select it directly, not
     // start a marquee.
@@ -46,6 +48,10 @@ class Selector implements ClickDragListener {
   }
 
   pointerUp(e: PointerEventData) {
+    const state = store.getState();
+    const mode = mapEdSelectors.selectMode(state);
+    if (!isSelectionMode(mode)) return;
+
     // In pointerDown, we may have deferred to our mover if we clicked "over" an
     // element. However, if we've now determined that we never moved, we should
     // handle the click selection here.
@@ -63,12 +69,7 @@ class Selector implements ClickDragListener {
 
     this.doSelection(e);
     this.marqueeEnabled = false;
-
-    const state = store.getState();
-    const mode = mapEdSelectors.selectMode(state);
-    if (isSelectionMode(mode)) {
-      store.dispatch(actions.setMode("select"));
-    }
+    store.dispatch(actions.setMode("select"));
   }
 
   /**
