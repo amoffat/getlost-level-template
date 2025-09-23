@@ -21,29 +21,65 @@ class Selector implements ClickDragListener {
 
   constructor(private spatialIndex: SpatialIndex) {}
 
+  private get addToSelection(): boolean {
+    return pressedKeys["Control"] ?? false;
+  }
+
   pointerDown(e: PointerEventData) {
+    const state = store.getState();
+
+    // If we're over something, it means we want to select it directly, not
+    // start a marquee.
     if (e.over) {
+      const sel = state.mapEditor.selectedObjs;
+
+      // If we're clicking down on an object that's already selected, and we're
+      // not deselecting it, abort so that the Mover can handle it.
+      const isOverSelected = sel.ids.includes(e.over.label);
+      if (isOverSelected && !this.addToSelection) return;
+
       this.marqueeEnabled = false;
+      this.doSelection(e);
     } else {
       this.marqueeEnabled = true;
     }
   }
 
   pointerUp(e: PointerEventData) {
-    this.marqueeEnabled = false;
-    const state = store.getState();
-    const mode = mapEdSelectors.selectMode(state);
-    if (!isSelectionMode(mode)) return;
+    // In pointerDown, we may have deferred to our mover if we clicked "over" an
+    // element. However, if we've now determined that we never moved, we should
+    // handle the click selection here.
+    if (e.over && !e.moved && !this.addToSelection) {
+      this.doSelection(e);
+      this.marqueeEnabled = false;
+      return;
+    }
+
+    if (!this.marqueeEnabled) return;
 
     // We don't want any selection logic to run if we initially clicked on an
     // object.
     if (e.clickedTarget && e.moved) return;
 
-    const rectSelect = mode === "rect-select";
-    clearRectSelect();
-    store.dispatch(actions.setMode("select"));
+    this.doSelection(e);
+    this.marqueeEnabled = false;
 
-    const addToSelection = pressedKeys["Control"] ?? false;
+    const state = store.getState();
+    const mode = mapEdSelectors.selectMode(state);
+    if (isSelectionMode(mode)) {
+      store.dispatch(actions.setMode("select"));
+    }
+  }
+
+  /**
+   * Handles both a marquee selection or a single-click selection (in the case
+   * of the marquee rectangle being a single point).
+   *
+   * @param e Event data
+   */
+  private doSelection(e: PointerEventData) {
+    clearRectSelect();
+    const state = store.getState();
 
     const searchBounds = {
       minX: e.hitbox.ul.x,
@@ -65,14 +101,14 @@ class Selector implements ClickDragListener {
       const hasProposed = state.mapEditor.proposedSelection;
       if (hasProposed) {
         store.dispatch(actions.setProposedSelection(null));
-      } else if (!addToSelection) {
+      } else if (!this.addToSelection) {
         store.dispatch(actions.clearSelection());
       }
     }
     // Group select means we shouldn't use proposed selection at all. Just add
     // everything in the rect to the selection.
-    else if (rectSelect) {
-      const action = addToSelection
+    else if (this.marqueeEnabled) {
+      const action = this.addToSelection
         ? actions.addManySelected
         : actions.setManySelected;
       store.dispatch(action(hits));
@@ -87,12 +123,12 @@ class Selector implements ClickDragListener {
         const curSelected = state.mapEditor.selectedObjs;
         const alreadySelected = curSelected.ids.includes(obj.id);
 
-        if (alreadySelected && addToSelection) {
+        if (alreadySelected && this.addToSelection) {
           // If the object is already selected, and we're adding to selection,
           // just deselect it.
           store.dispatch(actions.removeOneSelected(obj));
         } else {
-          const action = addToSelection
+          const action = this.addToSelection
             ? actions.addOneSelected
             : actions.setOneSelected;
           store.dispatch(action(obj));

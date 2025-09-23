@@ -104,12 +104,9 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
     stage,
     container: g.mapContainer,
   });
+
   setupSelector(cd, spatialIndex);
-
-  // Listen for animate update
-  app.ticker.add(() => {});
-
-  setupMover();
+  setupMover(cd);
   setupPlacer();
   setupWheelZoom({ canvas, stage, container: g.mapContainer });
   setupPanControls({

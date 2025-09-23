@@ -11,6 +11,8 @@ export interface PointerEventData {
   hitbox: Rect;
   over: P.Container | null;
   moved: boolean;
+  globalMoveVector: Vec2;
+  localMoveVector: Vec2;
 }
 
 export interface ClickDragListener {
@@ -43,13 +45,8 @@ export class ClickDragger {
       if (!this.dragStart) return;
 
       this.dragEnd = Vec2.fromPoint(e.getLocalPosition(container));
-      const globalStart = Vec2.fromPoint(container.toGlobal(this.dragStart));
-      const globalEnd = Vec2.fromPoint(container.toGlobal(this.dragEnd));
 
-      // Important that we do this in screen space, so that zoom doesn't affect
-      // the drag threshold.
-      const travelDist = globalStart.distanceTo(globalEnd);
-      if (travelDist < MOVE_THRESHOLD) return;
+      if (this.globalMoveVector.magnitude < MOVE_THRESHOLD) return;
       this.moved = true;
 
       const ev: PointerEventData = {
@@ -58,6 +55,8 @@ export class ClickDragger {
         over: this.hoverObject(e),
         clickedTarget: this.clickedTarget,
         moved: this.moved,
+        globalMoveVector: this.globalMoveVector,
+        localMoveVector: this.localMoveVector,
         pagePos: {
           x: e.pageX,
           y: e.pageY,
@@ -71,7 +70,7 @@ export class ClickDragger {
     stage.addEventListener("pointerdown", (e) => {
       if (e.button !== 0) return;
       this.dragStart = Vec2.fromPoint(e.getLocalPosition(container));
-      this.dragEnd = null;
+      this.dragEnd = Vec2.fromPoint(e.getLocalPosition(container));
       this.moved = false;
 
       const clickedTarget = this.hoverObject(e);
@@ -79,10 +78,12 @@ export class ClickDragger {
 
       const ev: PointerEventData = {
         localPos: Vec2.fromPoint(e.getLocalPosition(container)),
-        hitbox: { ul: { x: 0, y: 0 }, br: { x: 0, y: 0 } },
+        hitbox: this.makeHitbox(),
         over: clickedTarget,
         clickedTarget,
         moved: this.moved,
+        globalMoveVector: this.globalMoveVector,
+        localMoveVector: this.localMoveVector,
         pagePos: {
           x: e.pageX,
           y: e.pageY,
@@ -104,6 +105,8 @@ export class ClickDragger {
         over: this.hoverObject(e),
         clickedTarget: this.clickedTarget,
         moved: this.moved,
+        globalMoveVector: this.globalMoveVector,
+        localMoveVector: this.localMoveVector,
         pagePos: {
           x: e.pageX,
           y: e.pageY,
@@ -123,6 +126,24 @@ export class ClickDragger {
     const isOverObject = el && el !== this.container && el !== this.stage;
     const hovering = isOverObject ? el : null;
     return hovering;
+  }
+
+  private get localMoveVector(): Vec2 {
+    if (!this.dragStart || !this.dragEnd) {
+      return new Vec2(0, 0);
+    }
+    return this.dragEnd.subbed(this.dragStart);
+  }
+
+  private get globalMoveVector(): Vec2 {
+    if (!this.dragStart || !this.dragEnd) {
+      return new Vec2(0, 0);
+    }
+    // Important that we do this in screen space, so that zoom doesn't affect
+    // the drag threshold.
+    const globalStart = Vec2.fromPoint(this.container.toGlobal(this.dragStart));
+    const globalEnd = Vec2.fromPoint(this.container.toGlobal(this.dragEnd));
+    return globalEnd.subbed(globalStart);
   }
 
   private makeHitbox(): Rect {
