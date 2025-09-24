@@ -106,7 +106,6 @@ export default function TilesetEditorTab() {
 
   return (
     <Flex h="100dvh" style={{ flex: 1 }}>
-      {/* Fullscreen dropzone overlay (only visible while dragging files) */}
       <Dropzone.FullScreen
         onDrop={uploadImage}
         maxSize={5 * 1024 ** 2}
@@ -131,7 +130,7 @@ export default function TilesetEditorTab() {
           </Dropzone.Reject>
           <div>
             <Text size="xl" inline>
-              Drag images here or click to select files
+              Drag tilesets here
             </Text>
             <Text size="sm" c="dimmed" inline mt={7}>
               Attach as many files as you like, each file should not exceed 5mb

@@ -89,7 +89,7 @@ export default function MapEditorTab() {
               <Tabs.Tab value="tilesets">NPCs</Tabs.Tab>
             </Tabs.List>
             <Tabs.Panel value="tilesets">
-              <Text>hello</Text>
+              <Text></Text>
             </Tabs.Panel>
           </Tabs>
         </Stack>
@@ -112,10 +112,20 @@ export default function MapEditorTab() {
               <Tabs.List>
                 <Tabs.Tab value="palette">
                   <Group gap="xs">
-                    Palette
+                    Object Palette
                     <HelpHoverCard>
                       <Text size="sm">
                         Place an object from the palette onto the map.
+                      </Text>
+                    </HelpHoverCard>
+                  </Group>
+                </Tabs.Tab>
+                <Tabs.Tab value="npcs">
+                  <Group gap="xs">
+                    NPCs
+                    <HelpHoverCard>
+                      <Text size="sm">
+                        Place an NPC from the palette onto the map.
                       </Text>
                     </HelpHoverCard>
                   </Group>
