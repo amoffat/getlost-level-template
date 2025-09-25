@@ -6,10 +6,11 @@ import { store } from "../../store/store";
 import { subscribeToSelector } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
 import { makeBackground } from "../common/bg";
+import { drawGrid } from "../common/grid";
 import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
 import { globals as g } from "./globals";
-import { drawGrid } from "./grid";
+import { drawGridMask } from "./grid";
 import { setupGrouper } from "./group";
 
 export async function init(parent: HTMLElement): Promise<P.Application> {
@@ -127,7 +128,18 @@ subscribeToSelector(
 subscribeToSelector(
   (state) => state.tilesetEditor.grid.size,
   (size) => {
-    drawGrid(size);
+    const coverSize = {
+      x: g.currentTileset!.width,
+      y: g.currentTileset!.height,
+    };
+    g.grid = drawGrid({
+      gridSize: size,
+      oldGrid: g.grid,
+      gridContainer: g.tilesetContainer,
+      coverSize,
+    });
+    const groups = selectors.activeTilesetGroups(store.getState());
+    drawGridMask(groups);
   }
 );
 
