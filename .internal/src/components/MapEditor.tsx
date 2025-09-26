@@ -17,8 +17,6 @@ import { actions } from "../slices/mapEditor";
 
 import { selectors } from "@/slices/mapEditor";
 import { Mode } from "@/types/editor";
-import "@mantine/core/styles.css";
-import "@mantine/dropzone/styles.css";
 import { useSelector } from "react-redux";
 import { RootState, store } from "../store/store";
 import { ActiveLayer } from "../types/layer";

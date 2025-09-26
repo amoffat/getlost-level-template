@@ -3,7 +3,9 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import dialogueReducer from "../slices/dialogue";
 import * as mapSlice from "../slices/map";
 import mapEditorReducer from "../slices/mapEditor";
+import npcEditorReducer from "../slices/npcEditor";
 import tilesetEditorReducer from "../slices/tilesetEditor";
+import uiReducer from "../slices/ui";
 import listenerMiddleware from "./middleware/autosave";
 import { makeMiddleware as makeMapMiddleware } from "./middleware/map";
 
@@ -11,7 +13,9 @@ export const rootReducer = combineReducers({
   dialogue: dialogueReducer,
   tilesetEditor: tilesetEditorReducer,
   mapEditor: mapEditorReducer,
+  npcEditor: npcEditorReducer,
   map: mapSlice.default,
+  ui: uiReducer,
 });
 
 const mapMiddleware = makeMapMiddleware(

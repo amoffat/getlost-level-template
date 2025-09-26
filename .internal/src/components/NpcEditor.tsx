@@ -1,3 +1,4 @@
+import { mergeFrames } from "@/utils/image";
 import {
   Fieldset,
   Flex,
@@ -9,23 +10,23 @@ import {
   TagsInput,
   Text,
 } from "@mantine/core";
+import { FileWithPath } from "@mantine/dropzone";
 import { Application } from "pixi.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { init } from "../editor/tileset/init";
+import { init } from "../editor/npc/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
-import { actions, selectors } from "../slices/tilesetEditor";
-import { selectTilesetThunk } from "../thunks/tileset";
+import { actions, selectors } from "../slices/npcEditor";
+import { selectTilesetThunk } from "../thunks/npc";
 import { TileGroup } from "../types/tilegroup";
 import GridsizeSlider from "./GridsizeSlider";
 import HelpHoverCard from "./HelpHoverCard";
-import ObjectPalette from "./ObjectPalette";
 import TilesetButton from "./TilesetButton";
 
-export default function TilesetEditorTab() {
+export default function NpcEditorTab() {
   const cRef = useRef<HTMLDivElement>(null);
   const [app, setApp] = useState<Application>();
   const dispatch = useAppDispatch();
-  const s = useAppSelector((state) => state.tilesetEditor);
+  const s = useAppSelector((state) => state.npcEditor);
   const gridSizes = useMemo(() => [8, 16, 32], []);
 
   useEffect(() => {
@@ -44,6 +45,16 @@ export default function TilesetEditorTab() {
     }
   }, [app]);
 
+  const uploadNPCFrames = useCallback(
+    async (files: FileWithPath[]) => {
+      if (!files.length) return;
+      if (files.length > 1) {
+        const merged = await mergeFrames(files);
+      }
+    },
+    [dispatch]
+  );
+
   const changeGridSize = useCallback(
     async (size: number) => {
       dispatch(actions.setGridSize(size));
@@ -51,7 +62,7 @@ export default function TilesetEditorTab() {
     [dispatch]
   );
 
-  const loadedTilesets = useAppSelector(selectors.selectTilesets);
+  const loadedTilesets = useAppSelector(selectors.selectNPCs);
   const tilesetImages = loadedTilesets.map((ts) => (
     <TilesetButton
       key={ts.id}
@@ -64,6 +75,10 @@ export default function TilesetEditorTab() {
   const selectObject = (obj: TileGroup) => {
     // dispatch(mapActions.setPlace(obj));
   };
+
+  const onAssetTypeSubmit = useCallback((assetType: string) => {
+    console.log(assetType);
+  }, []);
 
   return (
     <>
@@ -84,7 +99,7 @@ export default function TilesetEditorTab() {
               <Tabs.List>
                 <Tabs.Tab value="palette">
                   <Group gap="xs">
-                    Objects
+                    NPCs
                     <HelpHoverCard>
                       <Text size="sm">
                         These are objects that have been extracted from the
@@ -105,12 +120,7 @@ export default function TilesetEditorTab() {
                   display: "flex",
                 }}
               >
-                <ObjectPalette
-                  onSelectObject={selectObject}
-                  tileset={
-                    s.activeTilesetId ? s.tilesets[s.activeTilesetId] : null
-                  }
-                />
+                <Text></Text>
               </Tabs.Panel>
             </Tabs>
           </Stack>

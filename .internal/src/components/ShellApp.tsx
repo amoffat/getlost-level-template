@@ -1,13 +1,22 @@
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { actions as uiActions } from "@/slices/ui";
 import { loadTilesetsThunk } from "@/thunks/tileset";
-import { AppShell, Tabs } from "@mantine/core";
+import { TabName } from "@/types/tab";
+import { AppShell, Group, Tabs, Text } from "@mantine/core";
+import "@mantine/core/styles.css";
+import { Dropzone, FileWithPath } from "@mantine/dropzone";
+import "@mantine/dropzone/styles.css";
+import { useDisclosure } from "@mantine/hooks";
+import { IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { log } from "../log";
 import DialogueTab from "./Dialogue";
 import MapEditorTab from "./MapEditor";
+import NpcEditorTab from "./NpcEditor";
 import PreviewTab from "./Preview";
 import TilesetEditorTab from "./TilesetEditor";
+import UploadAssetModal from "./UploadAssetModal";
 
 declare global {
   interface Window {
@@ -23,18 +32,12 @@ declare global {
   }
 }
 
-type TabName = "preview" | "map-editor" | "tileset-editor" | "dialogue-editor";
-const defaultTab: TabName = "tileset-editor";
-
 export function ShellApp() {
-  // Track active tab and which tabs have been mounted at least once
-  const [activeTab, setActiveTab] = useState<TabName>(defaultTab);
-  const [mountedTabs, setMountedTabs] = useState<
-    Partial<Record<TabName, boolean>>
-  >({
-    [defaultTab]: true,
-  });
   const dispatch = useAppDispatch();
+  const [draggedFiles, setDraggedFiles] = useState<File[] | null>(null);
+  const [assetTypeOpened, { open: openAssetType, close: closeAssetType }] =
+    useDisclosure(false);
+  const { activeTab, mountedTabs } = useAppSelector((state) => state.ui);
 
   useEffect(() => {
     (async () => {
@@ -48,8 +51,9 @@ export function ShellApp() {
 
   const handleTabChange = (value: TabName | null) => {
     if (!value) return;
-    setActiveTab(value);
-    setMountedTabs((prev) => (prev[value] ? prev : { ...prev, [value]: true }));
+
+    dispatch(uiActions.setTab(value));
+    dispatch(uiActions.mountTab(value));
   };
   // useEffect(() => {
   //   if (!comms) return;
@@ -98,47 +102,98 @@ export function ShellApp() {
     }
   }, []);
 
+  const onDrop = useCallback(
+    (files: FileWithPath[]) => {
+      setDraggedFiles(files);
+      openAssetType();
+    },
+    [openAssetType]
+  );
+
   return (
-    <AppShell withBorder={true}>
-      <AppShell.Main>
-        <Tabs
-          value={activeTab}
-          onChange={(tab) => handleTabChange(tab as TabName)}
+    <>
+      {draggedFiles && (
+        <UploadAssetModal
+          files={draggedFiles}
+          opened={assetTypeOpened}
+          closeModal={closeAssetType}
+        />
+      )}
+      <AppShell withBorder={true}>
+        <AppShell.Main>
+          <Tabs
+            value={activeTab}
+            onChange={(tab) => handleTabChange(tab as TabName)}
+          >
+            <Tabs.List>
+              <Tabs.Tab value="map-editor">Map</Tabs.Tab>
+              <Tabs.Tab value="tileset-editor">Tilesets</Tabs.Tab>
+              <Tabs.Tab value="npc-editor">NPCs</Tabs.Tab>
+              <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
+              <Tabs.Tab value="preview">Level Preview</Tabs.Tab>
+            </Tabs.List>
+
+            {mountedTabs["preview"] && (
+              <Tabs.Panel value="preview">
+                <PreviewTab />
+              </Tabs.Panel>
+            )}
+
+            {mountedTabs["map-editor"] && (
+              <Tabs.Panel value="map-editor">
+                <MapEditorTab />
+              </Tabs.Panel>
+            )}
+
+            {mountedTabs["tileset-editor"] && (
+              <Tabs.Panel value="tileset-editor">
+                <TilesetEditorTab />
+              </Tabs.Panel>
+            )}
+
+            {mountedTabs["npc-editor"] && (
+              <Tabs.Panel value="npc-editor">
+                <NpcEditorTab />
+              </Tabs.Panel>
+            )}
+
+            {mountedTabs["dialogue-editor"] && (
+              <Tabs.Panel value="dialogue-editor">
+                <ReactFlowProvider>
+                  <DialogueTab />
+                </ReactFlowProvider>
+              </Tabs.Panel>
+            )}
+          </Tabs>
+        </AppShell.Main>
+      </AppShell>
+      <Dropzone.FullScreen onDrop={onDrop} multiple>
+        <Group
+          justify="center"
+          gap="xl"
+          mih={220}
+          style={{ pointerEvents: "none" }}
         >
-          <Tabs.List>
-            <Tabs.Tab value="map-editor">Map</Tabs.Tab>
-            <Tabs.Tab value="tileset-editor">Tilesets</Tabs.Tab>
-            <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
-            <Tabs.Tab value="preview">Level Preview</Tabs.Tab>
-          </Tabs.List>
-
-          {mountedTabs["preview"] && (
-            <Tabs.Panel value="preview">
-              <PreviewTab />
-            </Tabs.Panel>
-          )}
-
-          {mountedTabs["map-editor"] && (
-            <Tabs.Panel value="map-editor">
-              <MapEditorTab />
-            </Tabs.Panel>
-          )}
-
-          {mountedTabs["tileset-editor"] && (
-            <Tabs.Panel value="tileset-editor">
-              <TilesetEditorTab />
-            </Tabs.Panel>
-          )}
-
-          {mountedTabs["dialogue-editor"] && (
-            <Tabs.Panel value="dialogue-editor">
-              <ReactFlowProvider>
-                <DialogueTab />
-              </ReactFlowProvider>
-            </Tabs.Panel>
-          )}
-        </Tabs>
-      </AppShell.Main>
-    </AppShell>
+          <Dropzone.Accept>
+            <IconUpload
+              size={52}
+              color="var(--mantine-color-blue-6)"
+              stroke={1.5}
+            />
+          </Dropzone.Accept>
+          <Dropzone.Reject>
+            <IconX size={52} color="var(--mantine-color-red-6)" stroke={1.5} />
+          </Dropzone.Reject>
+          <div>
+            <Text size="xl" inline>
+              Drag assets here
+            </Text>
+            <Text size="sm" c="dimmed" inline mt={7}>
+              Attach as many assets as you like.
+            </Text>
+          </div>
+        </Group>
+      </Dropzone.FullScreen>
+    </>
   );
 }
