@@ -1,35 +1,217 @@
-import { unpackActiveTileset } from "@/editor/tileset/loader";
-import { useAppDispatch } from "@/hooks/redux";
-import { actions } from "@/slices/tilesetEditor";
-import { selectTilesetThunk } from "@/thunks/tileset";
-import { Tileset } from "@/types/tileset";
-import { genTilesetId } from "@/utils/tileset";
+import { Button, Group, Radio, Stack, Stepper, Text } from "@mantine/core";
 import { FileWithPath } from "@mantine/dropzone";
-import { useCallback } from "react";
+import { useForm } from "@mantine/form";
+import { ReactNode, useState } from "react";
+import RadioCard from "./RadioCard";
 
-export default function TilesetSteps() {
-  const dispatch = useAppDispatch();
+interface StepProps {
+  files: FileWithPath[];
+  closeModal: () => void;
+}
 
-  const uploadTileset = useCallback(
-    async (files: FileWithPath[]) => {
-      if (!files.length) return;
-      for (const file of files) {
-        const objectUrl = URL.createObjectURL(file);
-        const tsId = await genTilesetId(file);
-        const ts: Tileset = {
-          id: tsId,
-          objectUrl,
-          palette: {},
-          paletteIds: [],
-          saved: false,
-        };
-        dispatch(actions.addTileset({ tsId, ts }));
-        await dispatch(selectTilesetThunk(ts));
-        await unpackActiveTileset();
-      }
+interface FormValues {
+  assetType: "tileset" | "npc";
+  tilesetType: "tileset" | "object" | "tileset-composite";
+  npcType: "npc-spritesheet" | "npc-animation";
+}
+
+export default function TilesetSteps({ files, closeModal }: StepProps) {
+  const [step, setStep] = useState(0);
+
+  const form = useForm<FormValues>({
+    name: "tile-asset-type",
+    mode: "uncontrolled",
+    onSubmitPreventDefault: "always",
+    initialValues: {
+      assetType: "tileset",
+      tilesetType: "tileset",
+      npcType: "npc-spritesheet",
     },
-    [dispatch]
+  });
+
+  const formSubmit = form.onSubmit((_values) => {
+    closeModal();
+  });
+
+  const values = form.getValues();
+
+  // Build steps array preserving conditional inclusion logic
+  const steps: ReactNode[] = [];
+
+  steps.push(
+    <Stepper.Step label="Asset type" key="step-asset-type">
+      <Stack>
+        <Text>Are you uploading tileset assets or NPC assets?</Text>
+        <Radio.Group
+          {...form.getInputProps("assetType")}
+          key={form.key("assetType")}
+        >
+          <Stack>
+            <RadioCard
+              value="tileset"
+              label="Tileset"
+              description="Images containing tilesets or objects to be used in the map editor."
+            />
+            <RadioCard
+              value="npc"
+              label="NPC"
+              description="Images containing NPC spritesheets or animation frames."
+            />
+          </Stack>
+        </Radio.Group>
+      </Stack>
+    </Stepper.Step>
   );
 
-  return <div>Tileset Steps Component</div>;
+  if (values.assetType === "tileset") {
+    if (files.length === 1) {
+      steps.push(
+        <Stepper.Step label="Tileset type" key="step-tileset-single">
+          <Stack>
+            <Text>What type of tileset is this?</Text>
+            <Radio.Group
+              {...form.getInputProps("tilesetType")}
+              key={form.key("tilesetType")}
+            >
+              <Stack>
+                <RadioCard
+                  value="tileset"
+                  label="Single tileset"
+                  description="The image is a single tileset of objects."
+                />
+                <RadioCard
+                  value="object"
+                  label="Single object"
+                  description="The image is a single object."
+                />
+              </Stack>
+            </Radio.Group>
+          </Stack>
+        </Stepper.Step>
+      );
+    } else {
+      steps.push(
+        <Stepper.Step label="Tileset type" key="step-tileset-multi">
+          <Stack>
+            <Text>What type of tilesets are these?</Text>
+            <Radio.Group
+              {...form.getInputProps("tilesetType")}
+              key={form.key("tilesetType")}
+            >
+              <Stack>
+                <RadioCard
+                  value="tileset"
+                  label="Individual tilesets"
+                  description="Each image is a separate tileset of objects."
+                />
+                <RadioCard
+                  value="tileset-composite"
+                  label="Composite tileset"
+                  description="Each image is a separate object and will be combined into a single tileset."
+                />
+              </Stack>
+            </Radio.Group>
+          </Stack>
+        </Stepper.Step>
+      );
+    }
+  }
+
+  if (values.assetType === "npc") {
+    if (files.length === 1) {
+      steps.push(
+        <Stepper.Step label="NPC type" key="step-npc-single">
+          <Stack>
+            <Text>What type of NPC asset is this?</Text>
+            <Radio.Group
+              {...form.getInputProps("npcType")}
+              key={form.key("npcType")}
+            >
+              <Stack>
+                <RadioCard
+                  value="npc-spritesheet"
+                  label="NPC animation spritesheet"
+                  description="The image is a spritesheet of NPC animations."
+                />
+                <RadioCard
+                  value="npc-animation"
+                  label="NPC animation frame"
+                  description="The image is a single frame in an NPC animation."
+                />
+              </Stack>
+            </Radio.Group>
+          </Stack>
+        </Stepper.Step>
+      );
+    } else {
+      steps.push(
+        <Stepper.Step label="NPC type" key="step-npc-multi">
+          <Stack>
+            <Text>What type of NPC assets are these?</Text>
+            <Radio.Group
+              {...form.getInputProps("npcType")}
+              key={form.key("npcType")}
+            >
+              <Stack>
+                <RadioCard
+                  value="npc-spritesheet"
+                  label="NPC spritesheets"
+                  description="Each image is a separate NPC spritesheet of animations."
+                />
+                <RadioCard
+                  value="npc-animation"
+                  label="NPC animation frames"
+                  description="Each image is a separate animation frame in a single NPC animation."
+                />
+              </Stack>
+            </Radio.Group>
+          </Stack>
+        </Stepper.Step>
+      );
+    }
+  }
+
+  const actionButton =
+    step === steps.length - 1 ? (
+      <Button color="blue" type="submit" radius="md">
+        Submit
+      </Button>
+    ) : (
+      <Button
+        color="blue"
+        type="button"
+        radius="md"
+        onClick={(e) => {
+          e.preventDefault();
+          setStep((s) => s + 1);
+        }}
+      >
+        Next
+      </Button>
+    );
+
+  return (
+    <form onSubmit={formSubmit}>
+      <Stepper active={step} allowNextStepsSelect={false}>
+        {steps}
+        <Stepper.Completed>
+          Completed, click back button to get to previous step
+        </Stepper.Completed>
+      </Stepper>
+
+      <Group mt="lg" justify="flex-end">
+        <Button
+          variant="default"
+          type="button"
+          radius="md"
+          disabled={step === 0}
+          onClick={() => setStep((s) => s - 1)}
+        >
+          Back
+        </Button>
+
+        {actionButton}
+      </Group>
+    </form>
+  );
 }

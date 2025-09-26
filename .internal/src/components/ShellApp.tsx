@@ -119,6 +119,35 @@ export function ShellApp() {
           closeModal={closeAssetType}
         />
       )}
+
+      <Dropzone.FullScreen onDrop={onDrop} multiple>
+        <Group
+          justify="center"
+          gap="xl"
+          mih={220}
+          style={{ pointerEvents: "none" }}
+        >
+          <Dropzone.Accept>
+            <IconUpload
+              size={52}
+              color="var(--mantine-color-blue-6)"
+              stroke={1.5}
+            />
+          </Dropzone.Accept>
+          <Dropzone.Reject>
+            <IconX size={52} color="var(--mantine-color-red-6)" stroke={1.5} />
+          </Dropzone.Reject>
+          <div>
+            <Text size="xl" inline>
+              Drag assets here
+            </Text>
+            <Text size="sm" c="dimmed" inline mt={7}>
+              Attach as many assets as you like.
+            </Text>
+          </div>
+        </Group>
+      </Dropzone.FullScreen>
+
       <AppShell withBorder={true}>
         <AppShell.Main>
           <Tabs
@@ -167,33 +196,6 @@ export function ShellApp() {
           </Tabs>
         </AppShell.Main>
       </AppShell>
-      <Dropzone.FullScreen onDrop={onDrop} multiple>
-        <Group
-          justify="center"
-          gap="xl"
-          mih={220}
-          style={{ pointerEvents: "none" }}
-        >
-          <Dropzone.Accept>
-            <IconUpload
-              size={52}
-              color="var(--mantine-color-blue-6)"
-              stroke={1.5}
-            />
-          </Dropzone.Accept>
-          <Dropzone.Reject>
-            <IconX size={52} color="var(--mantine-color-red-6)" stroke={1.5} />
-          </Dropzone.Reject>
-          <div>
-            <Text size="xl" inline>
-              Drag assets here
-            </Text>
-            <Text size="sm" c="dimmed" inline mt={7}>
-              Attach as many assets as you like.
-            </Text>
-          </div>
-        </Group>
-      </Dropzone.FullScreen>
     </>
   );
 }
