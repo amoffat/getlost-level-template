@@ -1,7 +1,14 @@
+import { unpackActiveTileset } from "@/editor/tileset/loader";
+import { useAppDispatch } from "@/hooks/redux";
+import { actions as tsActions } from "@/slices/tilesetEditor";
+import { actions as uiActions } from "@/slices/ui";
+import { selectTilesetThunk } from "@/thunks/tileset";
+import { Tileset } from "@/types/tileset";
+import { genTilesetId } from "@/utils/tileset";
 import { Button, Group, Radio, Stack, Stepper, Text } from "@mantine/core";
 import { FileWithPath } from "@mantine/dropzone";
 import { useForm } from "@mantine/form";
-import { ReactNode, useState } from "react";
+import { ReactNode, useCallback, useState } from "react";
 import RadioCard from "./RadioCard";
 
 interface StepProps {
@@ -17,6 +24,7 @@ interface FormValues {
 
 export default function TilesetSteps({ files, closeModal }: StepProps) {
   const [step, setStep] = useState(0);
+  const dispatch = useAppDispatch();
 
   const form = useForm<FormValues>({
     name: "tile-asset-type",
@@ -29,8 +37,36 @@ export default function TilesetSteps({ files, closeModal }: StepProps) {
     },
   });
 
-  const formSubmit = form.onSubmit((_values) => {
+  const uploadTileset = useCallback(
+    async (files: FileWithPath[]) => {
+      if (!files.length) return;
+      for (const file of files) {
+        const objectUrl = URL.createObjectURL(file);
+        const tsId = await genTilesetId(file);
+        const ts: Tileset = {
+          id: tsId,
+          objectUrl,
+          palette: {},
+          paletteIds: [],
+          saved: false,
+        };
+        dispatch(tsActions.addTileset({ tsId, ts }));
+        await dispatch(selectTilesetThunk(ts));
+        await unpackActiveTileset();
+      }
+    },
+    [dispatch]
+  );
+
+  const formSubmit = form.onSubmit((values) => {
     closeModal();
+
+    if (values.assetType === "tileset") {
+      uploadTileset(files);
+      dispatch(uiActions.setTab("tileset-editor"));
+    } else if (values.assetType === "npc") {
+      dispatch(uiActions.setTab("npc-editor"));
+    }
   });
 
   const values = form.getValues();

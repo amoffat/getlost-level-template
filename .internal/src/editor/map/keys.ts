@@ -1,6 +1,7 @@
 import { actions as mapActions } from "@/slices/map";
 import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
+import { duplicateSelectionThunk } from "@/thunks/map";
 import { trackKeyPresses } from "../common/keypress";
 
 export const pressedKeys: Record<string, boolean> = {};
@@ -24,6 +25,10 @@ export function setupKeys(canvas: HTMLCanvasElement) {
       },
       Control: (pressed: boolean) => {
         store.dispatch(mapEdActions.setGridSnap(!pressed));
+      },
+      "Control-D": (keydown: boolean) => {
+        if (!keydown) return;
+        store.dispatch(duplicateSelectionThunk());
       },
       Delete: (keydown: boolean) => {
         if (!keydown) return;

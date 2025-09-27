@@ -101,12 +101,12 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   setReconciler(reconciler);
 
   const cd = new ClickDragger({
-    stage,
+    app,
     container: g.mapContainer,
   });
 
   setupSelector(cd, spatialIndex);
-  setupMover(cd);
+  g.mover = setupMover(cd);
   setupPlacer();
   setupWheelZoom({ canvas, stage, container: g.mapContainer });
   setupPanControls({
@@ -160,4 +160,7 @@ subscribeToSelector(
 subscribeToSelector(selectors.selectMode, (mode) => {
   const canvas = g.app.canvas;
   canvas.style.cursor = getCursorForMode(mode);
+  if (mode === "duplicate") {
+    g.mover.startDuplicateMove();
+  }
 });

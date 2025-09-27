@@ -26,7 +26,7 @@ export default function TilesetButton({
         },
       })}
     >
-      <Image src={imgSrc} />
+      <Image src={imgSrc} draggable={false} />
     </UnstyledButton>
   );
 }

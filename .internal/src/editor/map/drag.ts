@@ -22,8 +22,8 @@ export interface ClickDragListener {
 }
 
 export class ClickDragger {
-  private stage: P.Container;
-  private container: P.Container;
+  private readonly app: P.Application;
+  public readonly container: P.Container;
 
   private dragStart: Vec2 | null = null;
   private dragEnd: Vec2 | null = null;
@@ -32,21 +32,22 @@ export class ClickDragger {
   private moved = false;
 
   constructor({
-    stage,
+    app,
     container,
   }: {
-    stage: P.Container;
+    app: P.Application;
     container: P.Container;
   }) {
-    this.stage = stage;
+    this.app = app;
     this.container = container;
 
-    stage.addEventListener("pointermove", (e) => {
+    app.stage.addEventListener("pointermove", (e) => {
       if (!this.dragStart) return;
 
       this.dragEnd = Vec2.fromPoint(e.getLocalPosition(container));
 
-      if (this.globalMoveVector.magnitude < MOVE_THRESHOLD) return;
+      if (this.globalMoveVector.magnitude < MOVE_THRESHOLD && !this.moved)
+        return;
       this.moved = true;
 
       const ev: PointerEventData = {
@@ -67,7 +68,7 @@ export class ClickDragger {
       }
     });
 
-    stage.addEventListener("pointerdown", (e) => {
+    app.stage.addEventListener("pointerdown", (e) => {
       if (e.button !== 0) return;
       this.dragStart = Vec2.fromPoint(e.getLocalPosition(container));
       this.dragEnd = Vec2.fromPoint(e.getLocalPosition(container));
@@ -92,7 +93,7 @@ export class ClickDragger {
       this.listeners.forEach((listener) => listener.pointerDown(ev));
     });
 
-    stage.addEventListener("pointerup", (e) => {
+    app.stage.addEventListener("pointerup", (e) => {
       const localPos = Vec2.fromPoint(e.getLocalPosition(container));
       if (!this.dragStart) {
         this.dragStart = Vec2.fromPoint(localPos);
@@ -121,9 +122,19 @@ export class ClickDragger {
     this.listeners.push(listener);
   }
 
+  public syncDragStart() {
+    this.dragStart = Vec2.fromVector(this.currentPointerPos);
+  }
+
+  private get currentPointerPos(): Vector {
+    const globalPos = this.app.renderer.events.pointer.global;
+    const pos = this.container.toLocal(globalPos);
+    return pos;
+  }
+
   private hoverObject(e: P.FederatedEvent) {
     const el = e.target;
-    const isOverObject = el && el !== this.container && el !== this.stage;
+    const isOverObject = el && el !== this.container && el !== this.app.stage;
     const hovering = isOverObject ? el : null;
     return hovering;
   }

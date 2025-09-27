@@ -31,6 +31,10 @@ interface MapEditorState {
   };
 }
 
+const tgiSelectors = selectedAdapter.getSelectors(
+  (state: MapEditorState) => state.selectedObjs
+);
+
 const slice = createSlice({
   name: "mapEditor",
   initialState: {
@@ -132,6 +136,9 @@ const slice = createSlice({
   },
 });
 
-export const selectors = slice.selectors;
+export const selectors = {
+  ...slice.selectors,
+  selection: tgiSelectors,
+};
 export const actions = slice.actions;
 export default slice.reducer;

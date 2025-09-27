@@ -1,7 +1,7 @@
-import { selectors } from "@/slices/tilesetEditor";
+import { selectors } from "@/slices/npcEditor";
 import debounce from "debounce";
 import * as P from "pixi.js";
-import { actions } from "../../slices/tilesetEditor";
+import { actions } from "../../slices/npcEditor";
 import { store } from "../../store/store";
 import { subscribeToSelector } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";

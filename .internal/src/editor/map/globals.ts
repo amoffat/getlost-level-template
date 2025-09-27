@@ -1,8 +1,10 @@
 import * as P from "pixi.js";
+import { Mover } from "./move";
 
 interface Globals {
   app: P.Application;
   canvas: HTMLCanvasElement;
+  mover: Mover;
   gridContainer: P.Container;
   mapContainer: P.Container;
   backgroundContainer: P.Container;

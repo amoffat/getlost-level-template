@@ -8,8 +8,27 @@ import { Vector } from "@/vec";
 import { ClickDragger, ClickDragListener, PointerEventData } from "./drag";
 import { globals as g } from "./globals";
 
-class Mover implements ClickDragListener {
-  private moveEnabled = false;
+export class Mover implements ClickDragListener {
+  private _moveEnabled = false;
+  private _cd: ClickDragger;
+
+  constructor(cd: ClickDragger) {
+    this._cd = cd;
+  }
+
+  /**
+   * Forces the mover into "move" mode, as if the user had clicked on a
+   * selected object and started dragging it. This is used when the user
+   * selects "duplicate" mode, to immediately start moving the duplicated
+   * objects.
+   *
+   * We need to synchronize the drag start position with the current mouse
+   * position, so that the move offset is calculated correctly.
+   */
+  public startDuplicateMove(): void {
+    this._moveEnabled = true;
+    this._cd.syncDragStart();
+  }
 
   public pointerDown(e: PointerEventData): void {
     const state = store.getState();
@@ -17,16 +36,16 @@ class Mover implements ClickDragListener {
     const sel = state.mapEditor.selectedObjs;
 
     if ((sel.ids.length > 0 && e.over) || mode === "move") {
-      this.moveEnabled = true;
+      this._moveEnabled = true;
     } else {
-      this.moveEnabled = false;
+      this._moveEnabled = false;
     }
   }
 
   public pointerUp(e: PointerEventData): void {
-    if (!this.moveEnabled) return;
+    if (!this._moveEnabled) return;
 
-    this.moveEnabled = false;
+    this._moveEnabled = false;
     const state = store.getState();
     const sel = state.mapEditor.selectedObjs;
 
@@ -46,7 +65,7 @@ class Mover implements ClickDragListener {
   }
 
   public pointerDrag(e: PointerEventData): void {
-    if (!this.moveEnabled) return;
+    if (!this._moveEnabled) return;
 
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
@@ -88,6 +107,8 @@ class Mover implements ClickDragListener {
   }
 }
 
-export function setupMover(cd: ClickDragger) {
-  cd.addListener(new Mover());
+export function setupMover(cd: ClickDragger): Mover {
+  const mover = new Mover(cd);
+  cd.addListener(mover);
+  return mover;
 }
