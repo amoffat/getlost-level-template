@@ -1,8 +1,8 @@
 import { ReduxReconciler } from "@/editor/map/reconciler";
-import { MapObj } from "@/types/editor";
+import { MapObj, TileGroupInstance } from "@/types/editor";
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 
-const objects = createEntityAdapter<MapObj>({
+const objects = createEntityAdapter<MapObj | TileGroupInstance>({
   sortComparer: (a, b) => {
     return a.id.localeCompare(b.id);
   },

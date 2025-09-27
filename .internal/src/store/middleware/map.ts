@@ -35,6 +35,7 @@ export function makeMiddleware<T = { id: string }>(
 ) {
   const listener = createListenerMiddleware();
 
+  // Add
   listener.startListening({
     matcher: isAnyOf(actions.addOne, actions.addMany, actions.upsertMany),
     effect: async (action, _api) => {
@@ -46,18 +47,20 @@ export function makeMiddleware<T = { id: string }>(
     },
   });
 
+  // Update
   listener.startListening({
     matcher: isAnyOf(actions.updateOne, actions.updateMany),
     effect: async (action, _api) => {
       const reconciler = getReconciler();
-      const updates = Array.isArray((action as any).payload)
-        ? (action as any).payload
-        : [(action as any).payload];
+      const updates = Array.isArray(action.payload)
+        ? action.payload
+        : [action.payload];
 
       for (const u of updates) reconciler.enqueueUpdate(u.id, u.changes);
     },
   });
 
+  // Remove
   listener.startListening({
     matcher: isAnyOf(actions.removeOne, actions.removeMany),
     effect: async (action, _api) => {
@@ -75,7 +78,7 @@ export function makeMiddleware<T = { id: string }>(
     effect: async (action, _api) => {
       const reconciler = getReconciler();
       // `action.payload` is the full array; you can use that directly:
-      reconciler.enqueueDiff(action.payload as any[]);
+      reconciler.enqueueDiff(action.payload);
     },
   });
 

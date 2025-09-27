@@ -46,6 +46,23 @@ export function setupKeys(canvas: HTMLCanvasElement) {
         if (!keydown) return;
         store.dispatch(mapEdActions.setMode("move"));
       },
+      x: (keydown: boolean) => {
+        if (!keydown) return;
+        const state = store.getState();
+        const mode = selectors.selectMode(state);
+
+        if (mode === "select" || mode === "rect-select") {
+          const sel = state.mapEditor.selectedObjs;
+          const updates = [];
+          for (const obj of Object.values(sel.entities)) {
+            updates.push({ id: obj.id, changes: { flipX: !obj.flipX } });
+          }
+          store.dispatch(mapEdActions.updateManySelected(updates));
+          store.dispatch(mapActions.updateMany(updates));
+        } else if (mode === "place") {
+          store.dispatch(mapEdActions.toggleFlipX());
+        }
+      },
     },
   });
 }

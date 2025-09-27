@@ -139,7 +139,7 @@ export default function MapEditorTab() {
                 }}
               >
                 <ObjectPalette
-                  selected={s.place}
+                  selected={s.place.obj}
                   onSelectObject={selectObject}
                   onDeselectObject={deselectObject}
                 />

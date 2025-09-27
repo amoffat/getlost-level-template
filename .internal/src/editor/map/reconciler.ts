@@ -1,5 +1,5 @@
 // pixiReconciler.ts
-import { isTileGroupInstance, MapObj } from "@/types/editor";
+import { isTileGroupInstance, MapObj, TileGroupInstance } from "@/types/editor";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
 
@@ -45,7 +45,10 @@ export class ReduxReconciler {
 
   // coalesced ops for this frame
   private pendingAdds: MapObj[] = [];
-  private pendingUpdates: Array<{ id: string; changes: Partial<MapObj> }> = [];
+  private pendingUpdates: Array<{
+    id: string;
+    changes: Partial<MapObj & TileGroupInstance>;
+  }> = [];
   private pendingRemoves: string[] = [];
   private rafScheduled = false;
 
@@ -142,22 +145,35 @@ export class ReduxReconciler {
         frame: texFrame,
       });
       const sprite = new P.Sprite(tileTex);
-      sprite.position.set(obj.x, obj.y);
+      sprite.position.set(sprite.width / 2, sprite.height / 2);
       sprite.zIndex = obj.y;
-      sprite.interactive = true;
-      sprite.label = obj.id;
+      sprite.interactive = false;
+      sprite.anchor.set(0.5);
+      sprite.scale.x = obj.flipX ? -1 : 1;
 
-      return sprite;
+      const spriteContainer = new P.Container();
+      spriteContainer.label = obj.id;
+      spriteContainer.position.set(obj.x, obj.y);
+      spriteContainer.addChild(sprite);
+      spriteContainer.interactive = true;
+
+      return spriteContainer;
     } else {
       throw new Error("Unsupported MapObj type");
     }
   }
 
-  private applyProps(node: P.Container, p: Partial<MapObj>) {
+  private applyProps(
+    node: P.Container,
+    p: Partial<MapObj & TileGroupInstance>
+  ) {
     if (p.x != null) node.x = p.x;
     if (p.y != null) {
       node.y = p.y;
       node.zIndex = p.y;
+    }
+    if (p.flipX != null) {
+      node.children[0].scale.x = p.flipX ? -1 : 1;
     }
   }
 }

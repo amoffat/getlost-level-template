@@ -34,21 +34,22 @@ export function setupPlacer() {
 
     const pos = g.placableContainer.position;
     const state = store.getState();
-    const place = state.mapEditor.place!;
+    const place = state.mapEditor.place;
+    const obj = place.obj!;
     const id = crypto.randomUUID();
 
-    const obj: TileGroupInstance = {
+    const tgi: TileGroupInstance = {
       id,
       x: pos.x,
       y: pos.y,
-      tileId: place.id,
-      tilesetId: place.tilesetId,
-      frame: place.pos,
-      flipX: false,
+      tileId: obj.id,
+      tilesetId: obj.tilesetId,
+      frame: obj.pos,
+      flipX: place.flipX,
       z: pos.y + g.placableSprite.height,
     };
 
-    store.dispatch(actions.addOne(obj));
+    store.dispatch(actions.addOne(tgi));
   });
 
   stage.on("pointermove", (e) => {
@@ -64,16 +65,16 @@ export function setupPlacer() {
 }
 
 subscribeToSelector(
-  (state) => state.mapEditor.place,
-  (place) => {
+  (state) => state.mapEditor.place.obj,
+  (placeObj) => {
     if (!g.initialized) return;
 
     g.placableOutline.removeChildren();
     g.placableContainer.removeChildren();
 
-    if (place) {
-      g.gridSnap = place.gridSize;
-      const rect = place.pos;
+    if (placeObj) {
+      g.gridSnap = placeObj.gridSize;
+      const rect = placeObj.pos;
 
       const frame = new P.Rectangle(
         rect.ul.x,
@@ -81,13 +82,15 @@ subscribeToSelector(
         rect.br.x - rect.ul.x,
         rect.br.y - rect.ul.y
       );
-      const tsTex = g.tilesetCache.get(place.tilesetId);
+      const tsTex = g.tilesetCache.get(placeObj.tilesetId);
       if (!tsTex) {
         log.error("Tileset texture not found for placer");
         return;
       }
       const texture = new P.Texture({ source: tsTex.source, frame });
       const sprite = new P.Sprite(texture);
+      sprite.anchor.set(0.5);
+      sprite.position.set(sprite.width / 2, sprite.height / 2);
 
       g.placableContainer.removeChildren();
       g.placableContainer.addChild(sprite);
@@ -102,5 +105,13 @@ subscribeToSelector(
       g.placableSprite?.destroy();
       g.placableSprite = undefined;
     }
+  }
+);
+
+subscribeToSelector(
+  (state) => state.mapEditor.place.flipX,
+  (flipX) => {
+    if (!g.initialized) return;
+    g.placableContainer.children[0].scale.x = flipX ? -1 : 1;
   }
 );

@@ -19,9 +19,11 @@ export interface TileGroupInstance extends MapObj {
   tileId: string;
   tilesetId: string;
   frame: Rect;
-  flipX?: boolean;
+  flipX: boolean;
 }
 
-export function isTileGroupInstance(obj: MapObj): obj is TileGroupInstance {
+export function isTileGroupInstance(
+  obj: Partial<MapObj>
+): obj is TileGroupInstance {
   return (obj as TileGroupInstance).tileId !== undefined;
 }

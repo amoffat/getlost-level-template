@@ -19,7 +19,10 @@ interface MapEditorState {
     snap: boolean;
   };
   modeStack: Mode[];
-  place: TileGroup | null;
+  place: {
+    obj: TileGroup | null;
+    flipX: boolean;
+  };
   selectedObjs: EntityState<TileGroupInstance, string>;
   proposedSelection: {
     objects: TileGroupInstance[];
@@ -43,7 +46,10 @@ const slice = createSlice({
       visible: true,
       snap: true,
     },
-    place: null,
+    place: {
+      obj: null,
+      flipX: false,
+    },
     selectedObjs: selectedAdapter.getInitialState(),
     proposedSelection: null,
     modeStack: [],
@@ -66,7 +72,11 @@ const slice = createSlice({
     },
 
     setPlace(state, action: PayloadAction<TileGroup | null>) {
-      state.place = action.payload;
+      state.place.obj = action.payload;
+    },
+
+    toggleFlipX(state) {
+      state.place.flipX = !state.place.flipX;
     },
 
     setOneSelected: (state, action: PayloadAction<TileGroupInstance>) => {
@@ -123,7 +133,8 @@ const slice = createSlice({
     setMode(state, action: PayloadAction<Mode>) {
       const mode = action.payload;
       if (mode === "select") {
-        state.place = null;
+        state.place.obj = null;
+        state.place.flipX = false;
       }
       state.modeStack = [mode];
     },
