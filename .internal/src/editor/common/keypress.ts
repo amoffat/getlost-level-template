@@ -91,5 +91,10 @@ export function trackKeyPresses({
     single?.(false);
     comboFn?.(false);
   });
+
+  window.addEventListener("blur", () => {
+    for (const k of Object.keys(pressedKeys)) pressedKeys[k] = false;
+  });
+
   return pressedKeys;
 }
