@@ -22,6 +22,7 @@ const slice = createSlice({
   reducers: {
     setTab: (state, action: PayloadAction<TabName>) => {
       state.activeTab = action.payload;
+      state.mountedTabs[action.payload] = true;
     },
     mountTab: (state, action: PayloadAction<TabName>) => {
       state.mountedTabs[action.payload] = true;
