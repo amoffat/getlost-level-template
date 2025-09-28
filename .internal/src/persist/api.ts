@@ -23,6 +23,7 @@ export async function loadTileset(id: string): Promise<Tileset> {
   });
   if (!res.ok) throw new Error(`loadTileset failed: ${res.status}`);
 
+  // Apply all applicable migrations to bring the doc up to the latest version
   const migrations = await getMigrations();
   const latestVersion = migrations.reduce((max, m) => Math.max(max, m.to), 0);
 
