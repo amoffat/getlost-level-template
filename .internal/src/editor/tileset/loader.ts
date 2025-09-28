@@ -96,6 +96,9 @@ export async function unpackActiveTileset() {
         gridSize,
         singleTile: true,
         children: [],
+        zIndices: [],
+        name: "",
+        tags: [],
       });
       if (chunk.length > 10) {
         store.dispatch(

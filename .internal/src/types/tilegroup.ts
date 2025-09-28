@@ -8,4 +8,7 @@ export interface TileGroup {
   pos: Rect;
   singleTile: boolean;
   children: string[];
+  zIndices: number[];
+  name: string;
+  tags: string[];
 }

@@ -1,6 +1,8 @@
+import { log } from "@/log";
 import { Tileset } from "@/types/tileset";
 import { decode, encode } from "cbor2";
-import { TilesetDocV1 } from "./schema";
+import { getMigrations } from "./migrations";
+import { BaseTilesetDoc, LatestTilesetDoc } from "./schema";
 
 interface LoadTilesetsResponse {
   ids: string[];
@@ -21,22 +23,44 @@ export async function loadTileset(id: string): Promise<Tileset> {
   });
   if (!res.ok) throw new Error(`loadTileset failed: ${res.status}`);
 
-  const decoded = decode(await res.bytes()) as TilesetDocV1;
+  const migrations = await getMigrations();
+  const latestVersion = migrations.reduce((max, m) => Math.max(max, m.to), 0);
+
+  const baseDecoded = decode<BaseTilesetDoc>(await res.bytes());
+  const oldVersion = baseDecoded.version;
+  let migrated = false;
+
+  for (const migration of migrations) {
+    if (migration.from >= oldVersion && migration.to <= latestVersion) {
+      log.info(`Applying migration: ${migration.from} -> ${migration.to}`);
+      await migration.migrate(baseDecoded);
+      baseDecoded.version = migration.to;
+      migrated = true;
+    }
+  }
+
+  const decoded = baseDecoded as LatestTilesetDoc;
   const ts = decoded.tileset;
   // Recreate an object URL for the tileset image from persisted bytes
   // Copy to a standalone ArrayBuffer to satisfy TS's BlobPart typing
   const ab = new ArrayBuffer(decoded.imageData.byteLength);
   new Uint8Array(ab).set(decoded.imageData);
   ts.objectUrl = URL.createObjectURL(new Blob([ab]));
+
+  if (migrated) {
+    log.info(`Tileset ${id} migrated to version ${latestVersion}, saving...`);
+    await saveTileset(ts);
+  }
+
   return ts;
 }
 
 export async function saveTileset(ts: Tileset) {
   const imageData = await (await fetch(ts.objectUrl)).bytes();
-  const doc: TilesetDocV1 = {
+  const doc: LatestTilesetDoc = {
     tileset: ts,
     imageData,
-    version: 1,
+    version: 2,
   };
   const payload = encode(doc);
   // Send as multipart/form-data so the server's formidable parser can handle it

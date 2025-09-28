@@ -16,10 +16,7 @@ import { init as initMain } from "../editor/map/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions } from "../slices/mapEditor";
 
-import { selectors } from "@/slices/mapEditor";
-import { Mode } from "@/types/editor";
-import { useSelector } from "react-redux";
-import { RootState, store } from "../store/store";
+import { RootState } from "../store/store";
 import { ActiveLayer } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
 import HelpHoverCard from "./HelpHoverCard";
@@ -71,13 +68,6 @@ export default function MapEditorTab() {
     dispatch(actions.setPlace(null));
     dispatch(actions.setMode("select"));
   };
-
-  const mode = useSelector(selectors.selectMode);
-  const changeMode = (val: string) => {
-    store.dispatch(actions.setMode(val as Mode));
-  };
-
-  const selectionHover = <ObjSelHover />;
 
   return (
     <>
@@ -190,7 +180,9 @@ export default function MapEditorTab() {
         </Stack>
       </Flex>
 
-      <Portal>{selectionHover}</Portal>
+      <Portal>
+        <ObjSelHover />
+      </Portal>
     </>
   );
 }
