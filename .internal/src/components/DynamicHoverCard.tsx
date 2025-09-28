@@ -29,6 +29,7 @@ export function DynamicHoverCard({
 }: DynamicHoverCardProps) {
   return (
     <Popover
+      key={`${x}-${y}`} // force remount when coordinates change
       opened={opened}
       position={position}
       middlewares={middlewares}

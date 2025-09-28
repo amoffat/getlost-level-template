@@ -112,6 +112,8 @@ subscribeToSelector(
   (state) => state.mapEditor.place.flipX,
   (flipX) => {
     if (!g.initialized) return;
-    g.placableContainer.children[0].scale.x = flipX ? -1 : 1;
+    const child = g.placableContainer.children[0];
+    if (!child) return;
+    child.scale.x = flipX ? -1 : 1;
   }
 );

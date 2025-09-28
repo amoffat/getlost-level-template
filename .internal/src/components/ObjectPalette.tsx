@@ -8,7 +8,7 @@ import TilesetGroup from "./TilesetGroup";
 interface ObjectPaletteProps {
   tileset?: Tileset | null;
   selected?: TileGroup | null;
-  onSelectObject?: (obj: TileGroup) => void;
+  onSelectObject?: (obj: TileGroup, e: React.MouseEvent) => void;
   onDeselectObject?: () => void;
 }
 
@@ -69,7 +69,7 @@ export default function ObjectPalette({
       if (obj === selected) {
         onDeselectObject?.();
       } else {
-        onSelectObject?.(obj);
+        onSelectObject?.(obj, e);
       }
     },
     [selected, onSelectObject, onDeselectObject, tsState.tilesets]

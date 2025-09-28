@@ -106,14 +106,14 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
 }
 
 subscribeToSelector(
-  (state) => state.tilesetEditor.grid.visible,
+  (state) => state.npcEditor.grid.visible,
   (visible) => {
     g.grid.visible = visible;
   }
 );
 
 subscribeToSelector(
-  (state) => state.tilesetEditor.grid.size,
+  (state) => state.npcEditor.grid.size,
   (size) => {
     const coverSize = {
       x: g.currentTileset!.width,

@@ -2,6 +2,7 @@ import {
   Fieldset,
   Flex,
   Group,
+  Portal,
   Radio,
   Stack,
   Switch,
@@ -189,7 +190,7 @@ export default function MapEditorTab() {
         </Stack>
       </Flex>
 
-      {selectionHover}
+      <Portal>{selectionHover}</Portal>
     </>
   );
 }

@@ -18,7 +18,7 @@ import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions, selectors } from "../slices/npcEditor";
 import { selectTilesetThunk } from "../thunks/npc";
 import { TileGroup } from "../types/tilegroup";
-import GridsizeSlider from "./GridsizeSlider";
+import GridSizeInput from "./GridSizeInput";
 import HelpHoverCard from "./HelpHoverCard";
 import TilesetButton from "./TilesetButton";
 
@@ -56,7 +56,8 @@ export default function NpcEditorTab() {
   );
 
   const changeGridSize = useCallback(
-    async (size: number) => {
+    async (size: number | string) => {
+      if (typeof size === "string") return;
       dispatch(actions.setGridSize(size));
     },
     [dispatch]
@@ -128,7 +129,10 @@ export default function NpcEditorTab() {
         <Stack miw={200} style={{ flex: 1 }}>
           <Fieldset legend="Grid settings">
             <Stack p={0}>
-              <GridsizeSlider labels={gridSizes} onChange={changeGridSize} />
+              <GridSizeInput
+                defaultValue={s.grid.size}
+                onChange={changeGridSize}
+              />
               <Switch
                 mt="lg"
                 label="Visible"

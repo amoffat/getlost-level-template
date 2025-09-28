@@ -26,7 +26,7 @@ export function setupKeys(canvas: HTMLCanvasElement) {
       Control: (pressed: boolean) => {
         store.dispatch(mapEdActions.setGridSnap(!pressed));
       },
-      "Control-D": (keydown: boolean) => {
+      "Shift-D": (keydown: boolean) => {
         if (!keydown) return;
         store.dispatch(duplicateSelectionThunk());
       },
