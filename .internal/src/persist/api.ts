@@ -27,11 +27,11 @@ export async function loadTileset(id: string): Promise<Tileset> {
   const latestVersion = migrations.reduce((max, m) => Math.max(max, m.to), 0);
 
   const baseDecoded = decode<BaseTilesetDoc>(await res.bytes());
-  const oldVersion = baseDecoded.version;
+  const startVersion = baseDecoded.version;
   let migrated = false;
 
   for (const migration of migrations) {
-    if (migration.from >= oldVersion && migration.to <= latestVersion) {
+    if (migration.from >= startVersion && migration.to <= latestVersion) {
       log.info(`Applying migration: ${migration.from} -> ${migration.to}`);
       await migration.migrate(baseDecoded);
       baseDecoded.version = migration.to;
