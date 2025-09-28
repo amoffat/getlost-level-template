@@ -73,8 +73,16 @@ export function trackKeyPresses({
 
   element.addEventListener("keydown", (e: KeyboardEvent) => {
     if (e.repeat) return; // Ignore repeats
-    pressedKeys[e.key] = true;
-    const single = handlers?.[e.key];
+
+    const norm = normalizeKey(e);
+    pressedKeys[norm] = true;
+
+    // Prefer exact handler match first (user supplied), then normalized (lower), then upper
+    const single =
+      handlers?.[e.key] ??
+      handlers?.[norm] ??
+      handlers?.[norm.length === 1 ? norm.toUpperCase() : norm];
+
     const combo = buildComboName();
     const comboFn = combo ? handlers?.[combo] : undefined;
     if (single || comboFn) e.preventDefault();
@@ -82,10 +90,29 @@ export function trackKeyPresses({
     comboFn?.(true);
   });
   element.addEventListener("keyup", (e: KeyboardEvent) => {
+    // Determine normalized key for release; events may report a different
+    // shifted character than what was stored on keydown (e.g. "d" vs "D", "/"
+    // vs "?", "1" vs "!").
+    const norm = normalizeKey(e);
+
     // Build combo name (including the key being released) BEFORE clearing it
-    const combo = buildComboName(e.key);
-    pressedKeys[e.key] = false;
-    const single = handlers?.[e.key];
+    // Use the normalized key so combo resolution is stable regardless of shift
+    // timing.
+    const combo = buildComboName(norm);
+
+    // Mark the normalized key as no longer pressed. Also defensively clear any
+    // variant that might exist due to legacy state (uppercase/lowercase or
+    // shifted symbol).
+    pressedKeys[norm] = false;
+    if (norm.length === 1) {
+      // in case old state used upper variant
+      pressedKeys[norm.toUpperCase()] = false;
+    }
+
+    const single =
+      handlers?.[e.key] ??
+      handlers?.[norm] ??
+      handlers?.[norm.length === 1 ? norm.toUpperCase() : norm];
     const comboFn = combo ? handlers?.[combo] : undefined;
     if (single || comboFn) e.preventDefault();
     single?.(false);
@@ -99,4 +126,45 @@ export function trackKeyPresses({
   window.addEventListener("focus", clearKeys);
 
   return pressedKeys;
+}
+
+/**
+ * Normalize a KeyboardEvent's key so that shifted variants map to a stable base
+ * form.
+ *
+ * Letters -> lowercase
+ * Shifted symbols (e.g. ! @ #) -> unshifted counterpart (1 2 3)
+ * Modifiers and multi-char words left intact.
+ */
+function normalizeKey(e: KeyboardEvent): string {
+  const k = e.key;
+  if (k.length === 1) {
+    // Alphabetic letter
+    if (/[a-zA-Z]/.test(k)) return k.toLowerCase();
+    const symbolMap: Record<string, string> = {
+      "~": "`",
+      "!": "1",
+      "@": "2",
+      "#": "3",
+      $: "4",
+      "%": "5",
+      "^": "6",
+      "&": "7",
+      "*": "8",
+      "(": "9",
+      ")": "0",
+      _: "-",
+      "+": "=",
+      "{": "[",
+      "}": "]",
+      "|": "\\",
+      ":": ";",
+      '"': "'",
+      "<": ",",
+      ">": ".",
+      "?": "/",
+    };
+    if (symbolMap[k]) return symbolMap[k];
+  }
+  return k; // Leave words like "Shift", "Control" as-is
 }
