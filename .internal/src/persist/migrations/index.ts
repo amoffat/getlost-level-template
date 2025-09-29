@@ -1,7 +1,9 @@
+import { BaseTilesetDoc } from "../schema";
+
 export interface Migration {
   from: number;
   to: number;
-  migrate: (data: any) => Promise<void> | void;
+  migrate: (data: BaseTilesetDoc) => Promise<void> | void;
 }
 
 export async function getMigrations(): Promise<Migration[]> {

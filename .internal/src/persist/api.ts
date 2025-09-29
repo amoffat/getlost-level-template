@@ -61,7 +61,7 @@ export async function saveTileset(ts: Tileset) {
   const doc: LatestTilesetDoc = {
     tileset: ts,
     imageData,
-    version: 2,
+    version: 3,
   };
   const payload = encode(doc);
   // Send as multipart/form-data so the server's formidable parser can handle it

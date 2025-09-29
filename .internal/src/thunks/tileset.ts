@@ -5,6 +5,7 @@ import {
   TilesetEditorState,
   actions as tsActions,
 } from "../slices/tilesetEditor";
+import { actions as uiActions } from "../slices/ui";
 import { Tileset } from "../types/tileset";
 
 export const selectTilesetThunk = createAsyncThunk(
@@ -31,6 +32,11 @@ export const loadTilesetsThunk = createAsyncThunk(
     for (const tsId of tilesetIds) {
       const ts = await loadTileset(tsId);
       dispatch(tsActions.addTileset({ tsId, ts }));
+      for (const obj of Object.values(ts.palette)) {
+        if (obj.tags.length > 0) {
+          dispatch(uiActions.addTilesetGroupTags(obj.tags));
+        }
+      }
     }
   }
 );

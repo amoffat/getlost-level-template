@@ -73,6 +73,27 @@ const slice = createSlice({
       state.modeStack.pop();
     },
 
+    updateTileGroup(
+      state,
+      action: PayloadAction<{
+        tsId: string;
+        group: TileGroup;
+        changes: Partial<TileGroup>;
+      }>
+    ) {
+      const { group, changes } = action.payload;
+      const ts = state.tilesets[group.tilesetId];
+      if (!ts || !ts.palette[group.id]) return;
+
+      const tg = ts.palette[group.id];
+      const changed = { ...tg, ...changes };
+      ts.palette[group.id] = changed;
+
+      const spatialIdx = getTileIndex(ts.id);
+      spatialIdx.removeById(group.id);
+      spatialIdx.insert(groupToBBox(ts.palette[group.id]));
+    },
+
     setMode(state, action: PayloadAction<Mode>) {
       state.modeStack = [action.payload];
     },

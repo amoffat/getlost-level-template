@@ -1,7 +1,9 @@
-import { useAppSelector } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { actions as tsActions } from "@/slices/tilesetEditor";
+import { actions as uiActions, selectors as uiSelectors } from "@/slices/ui";
 import { TileGroup } from "@/types/tilegroup";
 import { Vector } from "@/vec";
-import { Input, Menu, Modal, Stack, TagsInput } from "@mantine/core";
+import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
 import {
   IconBlocks,
   IconMapPin,
@@ -28,6 +30,8 @@ export default function TileGroupMenu({
 }: TileGroupMenuProps) {
   const tab = useAppSelector((state) => state.ui.activeTab);
   const [openTagsModal, setOpenTagsModal] = useState(false);
+  const tgTags = useAppSelector(uiSelectors.selectTilesetGroupTags);
+  const dispatch = useAppDispatch();
 
   const onTagsItemClicked = useCallback(
     (e: React.MouseEvent) => {
@@ -36,6 +40,42 @@ export default function TileGroupMenu({
       setOpenTagsModal(true);
     },
     [closeMenu]
+  );
+
+  const addTag = useCallback(
+    (tag: string) => {
+      if (!group) return;
+      if (group.tags.includes(tag)) return;
+      tag = tag.trim();
+      if (tag.length === 0) return;
+
+      const allTags = Array.from(new Set(group.tags).add(tag));
+      dispatch(
+        tsActions.updateTileGroup({
+          tsId: group.tilesetId,
+          group,
+          changes: { tags: allTags },
+        })
+      );
+      dispatch(uiActions.addTilesetGroupTags([tag]));
+    },
+    [dispatch, group]
+  );
+
+  const removeTag = useCallback(
+    (tag: string) => {
+      if (!group) return;
+      const allTags = group.tags.filter((t) => t !== tag);
+      dispatch(
+        tsActions.updateTileGroup({
+          tsId: group.tilesetId,
+          group,
+          changes: { tags: allTags },
+        })
+      );
+      dispatch(uiActions.removeTilesetGroupTags([tag]));
+    },
+    [dispatch, group]
   );
 
   const mapEd = tab === "map-editor";
@@ -90,12 +130,14 @@ export default function TileGroupMenu({
       >
         <Stack p={0} align="stretch">
           {group && <TilesetGroup group={group} scale={4} />}
-          <Input placeholder="Object name" />
           <TagsInput
             placeholder="Enter tag"
             splitChars={[",", " ", "|"]}
             limit={5}
-            data={[]}
+            onOptionSubmit={addTag}
+            onRemove={removeTag}
+            data={tgTags}
+            defaultValue={group?.tags || []}
           />
         </Stack>
       </Modal>

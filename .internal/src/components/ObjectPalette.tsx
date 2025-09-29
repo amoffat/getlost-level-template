@@ -1,6 +1,7 @@
 import { actions } from "@/slices/mapEditor";
 import { Vector } from "@/vec";
-import { LoadingOverlay, Portal, ScrollArea } from "@mantine/core";
+import { LoadingOverlay, Portal, ScrollArea, TextInput } from "@mantine/core";
+import { IconSearch } from "@tabler/icons-react";
 import React, { JSX, useCallback, useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { TileGroup } from "../types/tilegroup";
@@ -132,12 +133,20 @@ export default function ObjectPalette({
         h="100%"
         style={{ flex: 1, minHeight: 0 }}
       >
+        {objects.length > 0 && (
+          <TextInput
+            placeholder="Filter objects"
+            leftSection={<IconSearch size={16} />}
+            mb="sm"
+          />
+        )}
+
         <LoadingOverlay
           visible={tsState.loadingPalette}
           zIndex={1000}
           overlayProps={{ blur: 2 }}
         />
-        <div onClick={onClick} style={{ paddingBottom: 50 }}>
+        <div onClick={onClick} style={{ paddingBottom: 75 }}>
           {objects}
         </div>
       </ScrollArea.Autosize>
