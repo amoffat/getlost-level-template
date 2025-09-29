@@ -18,7 +18,6 @@ import { actions } from "../slices/mapEditor";
 
 import { RootState } from "../store/store";
 import { ActiveLayer } from "../types/layer";
-import { TileGroup } from "../types/tilegroup";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
@@ -58,16 +57,6 @@ export default function MapEditorTab() {
     },
     [dispatch]
   );
-
-  const selectObject = (obj: TileGroup) => {
-    dispatch(actions.setPlace(obj));
-    dispatch(actions.setMode("place"));
-  };
-
-  const deselectObject = () => {
-    dispatch(actions.setPlace(null));
-    dispatch(actions.setMode("select"));
-  };
 
   return (
     <>
@@ -129,11 +118,7 @@ export default function MapEditorTab() {
                   display: "flex",
                 }}
               >
-                <ObjectPalette
-                  selected={s.place.obj}
-                  onSelectObject={selectObject}
-                  onDeselectObject={deselectObject}
-                />
+                <ObjectPalette selected={s.place.obj} />
               </Tabs.Panel>
             </Tabs>
           </Stack>

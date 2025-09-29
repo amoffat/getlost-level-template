@@ -1,7 +1,8 @@
+import { actions } from "@/slices/mapEditor";
 import { Vector } from "@/vec";
 import { LoadingOverlay, Portal, ScrollArea } from "@mantine/core";
-import { JSX, useCallback, useEffect, useMemo, useState } from "react";
-import { useAppSelector } from "../hooks/redux";
+import React, { JSX, useCallback, useEffect, useMemo, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { TileGroup } from "../types/tilegroup";
 import { Tileset } from "../types/tileset";
 import TileGroupMenu from "./TileGroupMenu";
@@ -24,6 +25,7 @@ export default function ObjectPalette({
   const [clickedPaletteObject, setClickedPaletteObject] =
     useState<TileGroup | null>(null);
   const tsState = useAppSelector((state) => state.tilesetEditor);
+  const dispatch = useAppDispatch();
 
   const objects: JSX.Element[] = useMemo(() => {
     const objs: JSX.Element[] = [];
@@ -57,6 +59,12 @@ export default function ObjectPalette({
 
     return objs;
   }, [tsState.tilesets, showTileset, selected]);
+
+  const onPlaceClick = (e: React.MouseEvent) => {
+    const obj = clickedPaletteObject;
+    dispatch(actions.setPlace(obj));
+    dispatch(actions.setMode("place"));
+  };
 
   const selectObject = useCallback(
     (obj: TileGroup, e: React.MouseEvent) => {
@@ -137,6 +145,7 @@ export default function ObjectPalette({
         <TileGroupMenu
           pos={objMenuPos}
           group={clickedPaletteObject}
+          onPlaceClick={onPlaceClick}
           closeMenu={() => setObjMenuPos(null)}
         />
       </Portal>

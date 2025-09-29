@@ -17,12 +17,14 @@ interface TileGroupMenuProps {
   pos: Vector | null;
   group: TileGroup | null;
   closeMenu: () => void;
+  onPlaceClick?: (e: React.MouseEvent) => void;
 }
 
 export default function TileGroupMenu({
   pos,
   group,
   closeMenu,
+  onPlaceClick,
 }: TileGroupMenuProps) {
   const tab = useAppSelector((state) => state.ui.activeTab);
   const [openTagsModal, setOpenTagsModal] = useState(false);
@@ -36,13 +38,21 @@ export default function TileGroupMenu({
     [closeMenu]
   );
 
+  const mapEd = tab === "map-editor";
+  const tilesetEd = tab === "tileset-editor";
+
   return (
     <>
       <ObjectMenu pos={pos} opened={pos !== null}>
-        {tab === "map-editor" && (
+        {mapEd && (
           <>
             <Menu.Label>Map Editor Actions</Menu.Label>
-            <Menu.Item leftSection={<IconMapPin size={14} />}>Place</Menu.Item>
+            <Menu.Item
+              onClick={onPlaceClick}
+              leftSection={<IconMapPin size={14} />}
+            >
+              Place
+            </Menu.Item>
           </>
         )}
         <Menu.Label>Tile Group Actions</Menu.Label>
@@ -60,12 +70,16 @@ export default function TileGroupMenu({
           Set tags
         </Menu.Item>
 
-        <Menu.Divider />
+        {tilesetEd && (
+          <>
+            <Menu.Divider />
 
-        <Menu.Label>Danger zone</Menu.Label>
-        <Menu.Item color="red" leftSection={<IconTrash size={14} />}>
-          Delete
-        </Menu.Item>
+            <Menu.Label>Danger zone</Menu.Label>
+            <Menu.Item color="red" leftSection={<IconTrash size={14} />}>
+              Delete
+            </Menu.Item>
+          </>
+        )}
       </ObjectMenu>
 
       <Modal
