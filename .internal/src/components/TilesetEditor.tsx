@@ -1,33 +1,21 @@
-import { Vector } from "@/vec";
 import {
   Fieldset,
   Flex,
   Group,
-  Menu,
-  Portal,
   ScrollArea,
   Stack,
   Switch,
   Tabs,
-  TagsInput,
   Text,
 } from "@mantine/core";
-import {
-  IconBlocks,
-  IconStack2,
-  IconTag,
-  IconTrash,
-} from "@tabler/icons-react";
 import { Application } from "pixi.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { init } from "../editor/tileset/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions, selectors } from "../slices/tilesetEditor";
 import { selectTilesetThunk } from "../thunks/tileset";
-import { TileGroup } from "../types/tilegroup";
 import GridSizeInput from "./GridSizeInput";
 import HelpHoverCard from "./HelpHoverCard";
-import ObjectMenu from "./ObjectMenu";
 import ObjectPalette from "./ObjectPalette";
 import TilesetButton from "./TilesetButton";
 
@@ -36,7 +24,6 @@ export default function TilesetEditorTab() {
   const [app, setApp] = useState<Application>();
   const dispatch = useAppDispatch();
   const s = useAppSelector((state) => state.tilesetEditor);
-  const [objMenuPos, setObjMenuPos] = useState<Vector | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -71,33 +58,6 @@ export default function TilesetEditorTab() {
       isActive={ts.id === s.activeTilesetId}
     />
   ));
-
-  const selectObject = (obj: TileGroup, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const el = e.target as HTMLElement;
-    const rect = el.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 4;
-    setObjMenuPos({ x, y });
-  };
-
-  const deselectObject = () => {
-    setObjMenuPos(null);
-  };
-
-  useEffect(() => {
-    const escapeHandler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        deselectObject();
-      }
-    };
-    window.addEventListener("keydown", escapeHandler);
-    window.addEventListener("click", deselectObject);
-    return () => {
-      window.removeEventListener("keydown", escapeHandler);
-      window.removeEventListener("click", deselectObject);
-    };
-  }, []);
 
   return (
     <>
@@ -140,8 +100,6 @@ export default function TilesetEditorTab() {
                 }}
               >
                 <ObjectPalette
-                  onSelectObject={selectObject}
-                  onDeselectObject={deselectObject}
                   tileset={
                     s.activeTilesetId ? s.tilesets[s.activeTilesetId] : null
                   }
@@ -167,38 +125,8 @@ export default function TilesetEditorTab() {
               />
             </Stack>
           </Fieldset>
-          <Fieldset legend="Tags">
-            <Stack p={0}>
-              <TagsInput
-                placeholder="Enter tag"
-                splitChars={[",", " ", "|"]}
-                limit={5}
-                data={[]}
-              />
-            </Stack>
-          </Fieldset>
         </Stack>
       </Flex>
-      <Portal>
-        <ObjectMenu pos={objMenuPos} opened={objMenuPos !== null}>
-          <Menu.Label>Tile Group Actions</Menu.Label>
-
-          <Menu.Item leftSection={<IconStack2 size={14} />}>
-            Set z-index
-          </Menu.Item>
-          <Menu.Item leftSection={<IconBlocks size={14} />}>
-            Set colliders
-          </Menu.Item>
-          <Menu.Item leftSection={<IconTag size={14} />}>Set tags</Menu.Item>
-
-          <Menu.Divider />
-
-          <Menu.Label>Danger zone</Menu.Label>
-          <Menu.Item color="red" leftSection={<IconTrash size={14} />}>
-            Delete
-          </Menu.Item>
-        </ObjectMenu>
-      </Portal>
     </>
   );
 }

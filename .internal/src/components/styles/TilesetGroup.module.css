@@ -2,6 +2,7 @@
   /* Provides the scaled layout box while inner content scales via transform */
   position: relative;
   display: inline-block;
+  align-self: center;
 }
 
 .crop {

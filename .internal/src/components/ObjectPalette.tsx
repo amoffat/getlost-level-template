@@ -1,8 +1,10 @@
-import { LoadingOverlay, ScrollArea } from "@mantine/core";
-import { JSX, useCallback, useMemo } from "react";
+import { Vector } from "@/vec";
+import { LoadingOverlay, Portal, ScrollArea } from "@mantine/core";
+import { JSX, useCallback, useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "../hooks/redux";
 import { TileGroup } from "../types/tilegroup";
 import { Tileset } from "../types/tileset";
+import TileGroupMenu from "./TileGroupMenu";
 import TilesetGroup from "./TilesetGroup";
 
 interface ObjectPaletteProps {
@@ -18,6 +20,9 @@ export default function ObjectPalette({
   onDeselectObject,
   tileset: showTileset,
 }: ObjectPaletteProps) {
+  const [objMenuPos, setObjMenuPos] = useState<Vector | null>(null);
+  const [clickedPaletteObject, setClickedPaletteObject] =
+    useState<TileGroup | null>(null);
   const tsState = useAppSelector((state) => state.tilesetEditor);
 
   const objects: JSX.Element[] = useMemo(() => {
@@ -54,43 +59,87 @@ export default function ObjectPalette({
   }, [tsState.tilesets, showTileset, selected]);
 
   const selectObject = useCallback(
+    (obj: TileGroup, e: React.MouseEvent) => {
+      const el = e.target as HTMLElement;
+      const rect = el.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 4;
+      setObjMenuPos({ x, y });
+      setClickedPaletteObject(obj);
+
+      onSelectObject?.(obj, e);
+    },
+    [onSelectObject]
+  );
+
+  const deselectObject = useCallback(() => {
+    setObjMenuPos(null);
+    onDeselectObject?.();
+  }, [onDeselectObject]);
+
+  useEffect(() => {
+    const escapeHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        deselectObject();
+      }
+    };
+    window.addEventListener("keydown", escapeHandler);
+    window.addEventListener("click", deselectObject);
+    return () => {
+      window.removeEventListener("keydown", escapeHandler);
+      window.removeEventListener("click", deselectObject);
+    };
+  }, [deselectObject]);
+
+  const onClick = useCallback(
     (e: React.MouseEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName !== "DIV") return;
+
+      e.stopPropagation();
       const objId = target.dataset.objid;
       const tsId = target.dataset.tsid;
 
       if (!objId || !tsId) {
-        onDeselectObject?.();
+        deselectObject();
         return;
       }
 
       const obj = tsState.tilesets[tsId].palette[objId];
       if (obj === selected) {
-        onDeselectObject?.();
+        deselectObject();
       } else {
-        onSelectObject?.(obj, e);
+        selectObject(obj, e);
       }
     },
-    [selected, onSelectObject, onDeselectObject, tsState.tilesets]
+    [selected, selectObject, deselectObject, tsState.tilesets]
   );
 
   return (
-    <ScrollArea.Autosize
-      p="xs"
-      type="auto"
-      offsetScrollbars
-      h="100%"
-      style={{ flex: 1, minHeight: 0 }}
-    >
-      <LoadingOverlay
-        visible={tsState.loadingPalette}
-        zIndex={1000}
-        overlayProps={{ blur: 2 }}
-      />
-      <div onClick={selectObject} style={{ paddingBottom: 50 }}>
-        {objects}
-      </div>
-    </ScrollArea.Autosize>
+    <>
+      <ScrollArea.Autosize
+        p="xs"
+        type="auto"
+        offsetScrollbars
+        h="100%"
+        style={{ flex: 1, minHeight: 0 }}
+      >
+        <LoadingOverlay
+          visible={tsState.loadingPalette}
+          zIndex={1000}
+          overlayProps={{ blur: 2 }}
+        />
+        <div onClick={onClick} style={{ paddingBottom: 50 }}>
+          {objects}
+        </div>
+      </ScrollArea.Autosize>
+      <Portal>
+        <TileGroupMenu
+          pos={objMenuPos}
+          group={clickedPaletteObject}
+          closeMenu={() => setObjMenuPos(null)}
+        />
+      </Portal>
+    </>
   );
 }
