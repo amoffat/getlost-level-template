@@ -13,13 +13,15 @@ import { globals as g } from "./globals";
 import { drawGridMask } from "./grid";
 import { setupGrouper } from "./group";
 
-export async function init(parent: HTMLElement): Promise<P.Application> {
+export async function init(
+  getParent: () => HTMLElement
+): Promise<P.Application> {
   // Create a new application
   const app = new P.Application();
   g.app = app;
 
   // Initialize the application
-  await app.init({ backgroundAlpha: 0, resizeTo: parent });
+  await app.init({ backgroundAlpha: 0 });
   const stage = app.stage;
 
   // Tweak canvas interaction to avoid browser scroll/selection during drag
@@ -103,6 +105,7 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   });
 
   function redrawLayout() {
+    const parent = getParent();
     const rect = parent.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     checkerboard.width = rect.width;

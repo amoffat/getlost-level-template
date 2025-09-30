@@ -1,9 +1,8 @@
-import { actions } from "@/slices/mapEditor";
 import { Vector } from "@/vec";
 import { LoadingOverlay, Portal, ScrollArea, TextInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import React, { JSX, useCallback, useEffect, useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../hooks/redux";
+import { useAppSelector } from "../hooks/redux";
 import { TileGroup } from "../types/tilegroup";
 import { Tileset } from "../types/tileset";
 import TileGroupMenu from "./TileGroupMenu";
@@ -11,22 +10,22 @@ import TilesetGroup from "./TilesetGroup";
 
 interface ObjectPaletteProps {
   tileset?: Tileset | null;
-  selected?: TileGroup | null;
+  allowSelect?: boolean;
   onSelectObject?: (obj: TileGroup, e: React.MouseEvent) => void;
   onDeselectObject?: () => void;
 }
 
 export default function ObjectPalette({
-  selected = null,
   onSelectObject,
   onDeselectObject,
   tileset: showTileset,
+  allowSelect = true,
 }: ObjectPaletteProps) {
   const [objMenuPos, setObjMenuPos] = useState<Vector | null>(null);
   const [clickedPaletteObject, setClickedPaletteObject] =
     useState<TileGroup | null>(null);
   const tsState = useAppSelector((state) => state.tilesetEditor);
-  const dispatch = useAppDispatch();
+  const [selectedObject, setSelectedObject] = useState<TileGroup | null>(null);
 
   const objects: JSX.Element[] = useMemo(() => {
     const objs: JSX.Element[] = [];
@@ -52,38 +51,19 @@ export default function ObjectPalette({
             scale={1}
             key={key}
             group={group}
-            selected={selected?.id === group.id}
+            selected={selectedObject?.id === group.id && allowSelect}
           />
         );
       }
     }
 
     return objs;
-  }, [tsState.tilesets, showTileset, selected]);
-
-  const onPlaceClick = (e: React.MouseEvent) => {
-    const obj = clickedPaletteObject;
-    dispatch(actions.setPlace(obj));
-    dispatch(actions.setMode("place"));
-  };
-
-  const selectObject = useCallback(
-    (obj: TileGroup, e: React.MouseEvent) => {
-      const el = e.target as HTMLElement;
-      const rect = el.getBoundingClientRect();
-      const x = rect.left + rect.width / 2;
-      const y = rect.top + rect.height / 4;
-      setObjMenuPos({ x, y });
-      setClickedPaletteObject(obj);
-
-      onSelectObject?.(obj, e);
-    },
-    [onSelectObject]
-  );
+  }, [tsState.tilesets, showTileset, selectedObject, allowSelect]);
 
   const deselectObject = useCallback(() => {
     setObjMenuPos(null);
     onDeselectObject?.();
+    setSelectedObject(null);
   }, [onDeselectObject]);
 
   useEffect(() => {
@@ -93,14 +73,18 @@ export default function ObjectPalette({
       }
     };
     window.addEventListener("keydown", escapeHandler);
-    window.addEventListener("click", deselectObject);
+    window.addEventListener("onpointerdown", deselectObject);
     return () => {
       window.removeEventListener("keydown", escapeHandler);
-      window.removeEventListener("click", deselectObject);
+      window.removeEventListener("onpointerdown", deselectObject);
     };
   }, [deselectObject]);
 
-  const onClick = useCallback(
+  const onContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+  }, []);
+
+  const onPointerDown = useCallback(
     (e: React.MouseEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName !== "DIV") return;
@@ -115,13 +99,23 @@ export default function ObjectPalette({
       }
 
       const obj = tsState.tilesets[tsId].palette[objId];
-      if (obj === selected) {
-        deselectObject();
-      } else {
-        selectObject(obj, e);
+      if (e.button === 0) {
+        if (objId === selectedObject?.id) {
+          deselectObject();
+        } else {
+          setSelectedObject(obj);
+          onSelectObject?.(obj, e);
+        }
+      } else if (e.button === 2) {
+        const el = e.target as HTMLElement;
+        const rect = el.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 4;
+        setObjMenuPos({ x, y });
+        setClickedPaletteObject(obj);
       }
     },
-    [selected, selectObject, deselectObject, tsState.tilesets]
+    [tsState.tilesets, deselectObject, selectedObject?.id, onSelectObject]
   );
 
   return (
@@ -146,7 +140,11 @@ export default function ObjectPalette({
           zIndex={1000}
           overlayProps={{ blur: 2 }}
         />
-        <div onClick={onClick} style={{ paddingBottom: 75 }}>
+        <div
+          onPointerDown={onPointerDown}
+          onContextMenu={onContextMenu}
+          style={{ paddingBottom: 75 }}
+        >
           {objects}
         </div>
       </ScrollArea.Autosize>
@@ -154,8 +152,8 @@ export default function ObjectPalette({
         <TileGroupMenu
           pos={objMenuPos}
           group={clickedPaletteObject}
-          onPlaceClick={onPlaceClick}
           closeMenu={() => setObjMenuPos(null)}
+          onTagsModalOpened={deselectObject}
         />
       </Portal>
     </>

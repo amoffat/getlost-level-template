@@ -1,3 +1,4 @@
+import { globals as g } from "@/globals";
 import {
   Fieldset,
   Flex,
@@ -8,8 +9,7 @@ import {
   Tabs,
   Text,
 } from "@mantine/core";
-import { Application } from "pixi.js";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { init } from "../editor/tileset/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions, selectors } from "../slices/tilesetEditor";
@@ -20,26 +20,28 @@ import ObjectPalette from "./ObjectPalette";
 import TilesetButton from "./TilesetButton";
 
 export default function TilesetEditorTab() {
-  const cRef = useRef<HTMLDivElement>(null);
-  const [app, setApp] = useState<Application>();
   const dispatch = useAppDispatch();
   const s = useAppSelector((state) => state.tilesetEditor);
 
-  useEffect(() => {
-    (async () => {
-      const app = await init(cRef.current!);
-      setApp(app);
-    })();
+  const getContainer = useCallback(() => {
+    return document.getElementById("tileset-editor-container")!;
   }, []);
 
+  // Initialize pixi.js app once
   useEffect(() => {
-    if (!app) return;
+    (async () => {
+      const container = getContainer();
+      if (g.tilesetEditorApp) {
+        g.tilesetEditorApp.resizeTo = container;
+        return;
+      }
 
-    const c = cRef.current;
-    if (c && c.childNodes.length === 0) {
-      c.appendChild(app.canvas);
-    }
-  }, [app]);
+      const app = await init(getContainer);
+      app.resizeTo = container;
+      g.tilesetEditorApp = app;
+      container.appendChild(app.canvas);
+    })();
+  }, [getContainer]);
 
   const changeGridSize = useCallback(
     async (size: number | string) => {
@@ -69,7 +71,7 @@ export default function TilesetEditorTab() {
         </Stack>
         <Flex direction="column" style={{ flex: 5, minHeight: 0, minWidth: 0 }}>
           <div
-            ref={cRef}
+            id="tileset-editor-container"
             style={{ flex: 3, minHeight: 0, overflow: "hidden" }}
           ></div>
 
@@ -100,6 +102,7 @@ export default function TilesetEditorTab() {
                 }}
               >
                 <ObjectPalette
+                  allowSelect={false}
                   tileset={
                     s.activeTilesetId ? s.tilesets[s.activeTilesetId] : null
                   }

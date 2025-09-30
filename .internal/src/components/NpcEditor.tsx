@@ -1,3 +1,4 @@
+import { globals as g } from "@/globals";
 import { mergeFrames } from "@/utils/image";
 import {
   Fieldset,
@@ -11,8 +12,7 @@ import {
   Text,
 } from "@mantine/core";
 import { FileWithPath } from "@mantine/dropzone";
-import { Application } from "pixi.js";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { init } from "../editor/npc/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions, selectors } from "../slices/npcEditor";
@@ -23,27 +23,28 @@ import HelpHoverCard from "./HelpHoverCard";
 import TilesetButton from "./TilesetButton";
 
 export default function NpcEditorTab() {
-  const cRef = useRef<HTMLDivElement>(null);
-  const [app, setApp] = useState<Application>();
   const dispatch = useAppDispatch();
   const s = useAppSelector((state) => state.npcEditor);
-  const gridSizes = useMemo(() => [8, 16, 32], []);
 
-  useEffect(() => {
-    (async () => {
-      const app = await init(cRef.current!);
-      setApp(app);
-    })();
+  const getContainer = useCallback(() => {
+    return document.getElementById("npc-editor-container")!;
   }, []);
 
+  // Initialize pixi.js app once
   useEffect(() => {
-    if (!app) return;
+    (async () => {
+      const container = getContainer();
+      if (g.npcEditorApp) {
+        g.npcEditorApp.resizeTo = container;
+        return;
+      }
 
-    const c = cRef.current;
-    if (c && c.childNodes.length === 0) {
-      c.appendChild(app.canvas);
-    }
-  }, [app]);
+      const app = await init(getContainer);
+      app.resizeTo = container;
+      g.npcEditorApp = app;
+      container.appendChild(app.canvas);
+    })();
+  }, [getContainer]);
 
   const uploadNPCFrames = useCallback(
     async (files: FileWithPath[]) => {
@@ -91,7 +92,7 @@ export default function NpcEditorTab() {
         </Stack>
         <Flex direction="column" style={{ flex: 5, minHeight: 0, minWidth: 0 }}>
           <div
-            ref={cRef}
+            id="npc-editor-container"
             style={{ flex: 3, minHeight: 0, overflow: "hidden" }}
           ></div>
 

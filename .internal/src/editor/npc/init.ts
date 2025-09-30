@@ -12,7 +12,9 @@ import { setupWheelZoom } from "../common/zoom";
 import { globals as g } from "./globals";
 // import { setupGrouper } from "./group";
 
-export async function init(parent: HTMLElement): Promise<P.Application> {
+export async function init(
+  getContainer: () => HTMLElement
+): Promise<P.Application> {
   // Create a new application
   const app = new P.Application();
   g.app = app;
@@ -94,6 +96,7 @@ export async function init(parent: HTMLElement): Promise<P.Application> {
   });
 
   function redrawLayout() {
+    const parent = getContainer();
     const rect = parent.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     checkerboard.width = rect.width;

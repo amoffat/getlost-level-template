@@ -6,7 +6,6 @@ import { Vector } from "@/vec";
 import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
 import {
   IconBlocks,
-  IconMapPin,
   IconStack2,
   IconTag,
   IconTrash,
@@ -18,15 +17,15 @@ import TilesetGroup from "./TilesetGroup";
 interface TileGroupMenuProps {
   pos: Vector | null;
   group: TileGroup | null;
+  onTagsModalOpened?: VoidFunction;
   closeMenu: () => void;
-  onPlaceClick?: (e: React.MouseEvent) => void;
 }
 
 export default function TileGroupMenu({
   pos,
   group,
   closeMenu,
-  onPlaceClick,
+  onTagsModalOpened,
 }: TileGroupMenuProps) {
   const tab = useAppSelector((state) => state.ui.activeTab);
   const [openTagsModal, setOpenTagsModal] = useState(false);
@@ -38,8 +37,9 @@ export default function TileGroupMenu({
       e.stopPropagation();
       closeMenu();
       setOpenTagsModal(true);
+      onTagsModalOpened?.();
     },
-    [closeMenu]
+    [closeMenu, onTagsModalOpened]
   );
 
   const addTag = useCallback(
@@ -84,17 +84,6 @@ export default function TileGroupMenu({
   return (
     <>
       <ObjectMenu pos={pos} opened={pos !== null}>
-        {mapEd && (
-          <>
-            <Menu.Label>Map Editor Actions</Menu.Label>
-            <Menu.Item
-              onClick={onPlaceClick}
-              leftSection={<IconMapPin size={14} />}
-            >
-              Place
-            </Menu.Item>
-          </>
-        )}
         <Menu.Label>Tile Group Actions</Menu.Label>
 
         <Menu.Item leftSection={<IconStack2 size={14} />}>

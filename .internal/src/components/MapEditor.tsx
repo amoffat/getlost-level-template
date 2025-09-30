@@ -10,12 +10,12 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
-import { Application } from "pixi.js";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { init as initMain } from "../editor/map/init";
+import { useCallback, useEffect } from "react";
+import { init } from "../editor/map/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions } from "../slices/mapEditor";
 
+import { globals as g } from "@/globals";
 import { RootState } from "../store/store";
 import { ActiveLayer } from "../types/layer";
 import HelpHoverCard from "./HelpHoverCard";
@@ -23,32 +23,27 @@ import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
 
 export default function MapEditorTab() {
-  const cRef = useRef<HTMLDivElement>(null);
-  const [app, setApp] = useState<Application>();
   const s = useAppSelector((state: RootState) => state.mapEditor);
   const dispatch = useAppDispatch();
 
-  // Initialize pixi.js app once
-  useEffect(() => {
-    const fn = async () => {
-      const app = await initMain(cRef.current!);
-      app.resizeTo = cRef.current!;
-      setApp(app);
-    };
-    fn();
+  const getContainer = useCallback(() => {
+    return document.getElementById("map-editor-container")!;
   }, []);
 
-  // When the app is set, append its canvas to the container div
+  // Initialize pixi.js app once
   useEffect(() => {
-    if (!app) return;
-
-    const c = cRef.current;
-    if (c && c.childNodes.length === 0) {
-      c.appendChild(app.canvas);
-    }
-
-    return () => {};
-  }, [app]);
+    (async () => {
+      const container = getContainer();
+      if (g.mapEditorApp) {
+        g.mapEditorApp.resizeTo = container;
+        return;
+      }
+      const app = await init(getContainer);
+      app.resizeTo = container;
+      g.mapEditorApp = app;
+      container.appendChild(app.canvas);
+    })();
+  }, [getContainer]);
 
   const changeActiveLayer = useCallback(
     (id: string) => {
@@ -57,6 +52,20 @@ export default function MapEditorTab() {
     },
     [dispatch]
   );
+
+  const onSelectObject = useCallback(
+    (obj: any, e: React.MouseEvent) => {
+      e.preventDefault();
+      dispatch(actions.setPlace(obj));
+      dispatch(actions.setMode("place"));
+    },
+    [dispatch]
+  );
+
+  const onDeselectObject = useCallback(() => {
+    dispatch(actions.setPlace(null));
+    dispatch(actions.setMode("select"));
+  }, [dispatch]);
 
   return (
     <>
@@ -77,7 +86,7 @@ export default function MapEditorTab() {
           style={{ flex: 5, minHeight: 0, minWidth: 0, position: "relative" }}
         >
           <div
-            ref={cRef}
+            id="map-editor-container"
             style={{
               flex: 3,
               minHeight: 0,
@@ -118,7 +127,10 @@ export default function MapEditorTab() {
                   display: "flex",
                 }}
               >
-                <ObjectPalette selected={s.place.obj} />
+                <ObjectPalette
+                  onSelectObject={onSelectObject}
+                  onDeselectObject={onDeselectObject}
+                />
               </Tabs.Panel>
             </Tabs>
           </Stack>
