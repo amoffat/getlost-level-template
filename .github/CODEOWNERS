@@ -1,0 +1,42 @@
+# CODEOWNERS
+#
+# Purpose: Require explicit review by the repository owner for any change
+# that could introduce supply‑chain risk, alter build/deploy behavior, leak
+# secrets, or silently modify game logic/content in privileged ways.
+#
+# Notes:
+# - GitHub uses the last matching pattern for ownership resolution. Since all
+#   patterns map to the same owner right now, order is mainly documentary.
+# - Keep the list tight to reduce review noise. Do NOT add a catch‑all * rule
+#   unless you truly want to review every change.
+# - To add additional reviewers, append them to the line (e.g. @amoffat @team/sec @user2).
+
+# --- CI / Automation Workflow Definitions ---
+.github/**              @amoffat
+
+# --- Dev Container & Development Environment ---
+.devcontainer/**                 @amoffat
+
+# --- Build / Tooling Config (root + internal) ---
+postcss.config.cjs              @amoffat
+engine_version.txt              @amoffat
+upgrade.patch                   @amoffat
+
+# Internal build system / project tooling
+.internal/package.json          @amoffat
+.internal/package-lock.json     @amoffat
+.internal/eslint.config.js      @amoffat
+.internal/vite.config.ts        @amoffat
+.internal/tsconfig*.json        @amoffat
+
+# Scripts capable of mutating artifacts or publishing
+.internal/scripts/**            @amoffat
+
+# Catch specific high‑risk file types at root (add more as needed)
+/*.py                           @amoffat
+/*.sh                           @amoffat
+
+# Optional: uncomment to guard repository documentation changes
+# README.md                      @amoffat
+
+# End of CODEOWNERS
