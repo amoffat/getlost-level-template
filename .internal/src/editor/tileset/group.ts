@@ -9,8 +9,9 @@ import { trackKeyPresses } from "../common/keypress";
 import { groupStroke } from "../common/strokes";
 import { globals as g } from "./globals";
 
-let groupStart = { x: 0, y: 0 };
-let groupEnd = { x: 0, y: 0 };
+let groupStartPos = { x: 0, y: 0 }; // current mouse position at the start of grouping
+let groupStart = { x: 0, y: 0 }; // grid snapped start position of the group
+let groupEnd = { x: 0, y: 0 }; // grid snapped end position of the group
 const groupsContainer = new P.Container();
 groupsContainer.zIndex = 100;
 // groupsContainer.blendMode = "screen";
@@ -91,10 +92,21 @@ export function setupGrouper() {
 
     if (isGrouping()) {
       // Copy values to avoid keeping a mutable reference to PIXI's global point
-      groupEnd = { x: snapUp(pos.x, size), y: snapUp(pos.y, size) };
+      const groupEndPos = { x: pos.x, y: pos.y };
+      
+      // Calculate bounds for both axes using the same logic
+      for (const axis of ['x', 'y'] as const) {
+        const [start, end] = groupEndPos[axis] < groupStartPos[axis] 
+          ? [groupEndPos[axis], groupStartPos[axis]]
+          : [groupStartPos[axis], groupEndPos[axis]];
+        
+        groupStart[axis] = snapDown(start, size);
+        groupEnd[axis] = snapUp(end, size);
+      }
     } else {
       const x = snapDown(pos.x, size);
       const y = snapDown(pos.y, size);
+      groupStartPos = { x: pos.x, y: pos.y };
       groupStart = { x, y };
       groupEnd = { x, y };
     }
