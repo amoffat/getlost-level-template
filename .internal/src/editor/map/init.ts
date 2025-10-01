@@ -7,9 +7,9 @@ import { subscribeToSelector } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
 import { makeBackground } from "../common/bg";
 import { getCursorForMode } from "../common/cursor";
+import { ClickDragger } from "../common/drag";
 import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
-import { ClickDragger } from "./drag";
 import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
 import { setupMover } from "./move";
@@ -102,7 +102,7 @@ export async function init(
 
   const cd = new ClickDragger({
     app,
-    container: g.mapContainer,
+    container: stage,
   });
 
   setupSelector(cd, spatialIndex);

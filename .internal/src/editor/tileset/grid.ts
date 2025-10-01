@@ -5,6 +5,7 @@ import { TileGroup } from "../../types/tilegroup";
 import { subscribeToSelector } from "../../utils/redux";
 import { drawGrid } from "../common/grid";
 import { globals as g } from "./globals";
+import { shouldOutline } from "./utils/outline";
 
 let mask: P.Graphics | null = null;
 
@@ -15,7 +16,7 @@ export function drawGridMask(groups: TileGroup[]) {
   g.grid.addChild(mask);
 
   mask.fill({ color: 0x000000, alpha: 0 });
-  for (const group of groups.filter((gr) => !gr.singleTile)) {
+  for (const group of groups.filter(shouldOutline)) {
     mask
       .rect(
         group.pos.ul.x,

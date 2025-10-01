@@ -1,19 +1,19 @@
+import { closeEnough } from "@/utils/math";
+import { genGroupId } from "@/utils/tileset";
 import * as P from "pixi.js";
 import { selectors, actions as tsActions } from "../../slices/tilesetEditor";
 import { store } from "../../store/store";
 import { TileGroup } from "../../types/tilegroup";
-import { closeEnough } from "../../utils/math";
 import { subscribeToSelector } from "../../utils/redux";
-import { genGroupId } from "../../utils/tileset";
-import { trackKeyPresses } from "../common/keypress";
+import {
+  ClickDragger,
+  ClickDragListener,
+  PointerEventData,
+} from "../common/drag";
 import { groupStroke } from "../common/strokes";
 import { globals as g } from "./globals";
-
-let groupStart = { x: 0, y: 0 };
-let groupEnd = { x: 0, y: 0 };
-const groupsContainer = new P.Container();
-groupsContainer.zIndex = 100;
-// groupsContainer.blendMode = "screen";
+import { pressedKeys } from "./keys";
+import { shouldOutline } from "./utils/outline";
 
 function getGridSize(): number {
   return store.getState().tilesetEditor.grid.size;
@@ -32,121 +32,108 @@ function isGrouping(): boolean {
   return mode === "group" || mode === "add";
 }
 
-export function setupGrouper() {
-  const pressedKeys = trackKeyPresses({ element: g.app.canvas });
-
-  g.tilesetContainer.on("pointerdown", (e: P.FederatedPointerEvent) => {
-    const mode = selectors.selectMode(store.getState());
-
-    if (mode === null) {
-      e.preventDefault();
-      if (pressedKeys["Control"]) {
-        const state = store.getState();
-        if (!state.tilesetEditor.activeTilesetId) return;
-        store.dispatch(tsActions.pushMode("add"));
-      } else {
-        const state = store.getState();
-        if (!state.tilesetEditor.activeTilesetId) return;
-        store.dispatch(tsActions.pushMode("group"));
-      }
-    }
-  });
-
-  g.tilesetContainer.on("pointerup", async (e: P.FederatedPointerEvent) => {
-    if (isGrouping()) {
-      e.preventDefault();
-      if (isGrouping()) {
-        const tsState = store.getState().tilesetEditor;
-        const tsId = tsState.activeTilesetId!;
-        const gridSize = tsState.grid.size;
-
-        const c = g.groupSelContainer;
-
-        const coords = {
-          ul: { x: c.x, y: c.y },
-          br: { x: c.x + c.width, y: c.y + c.height },
-        };
-        const id = await genGroupId({ coords, tsId });
-        const group: TileGroup = {
-          id,
-          tilesetId: tsId,
-          pos: coords,
-          singleTile: false,
-          gridSize,
-          children: [], // currently unknown
-        };
-
-        group.singleTile =
-          closeEnough(c.width, gridSize) && closeEnough(c.height, gridSize);
-
-        store.dispatch(tsActions.addPaletteObject({ tsId, group }));
-        store.dispatch(tsActions.pushMode(null));
-      }
-    }
-  });
-
-  g.tilesetContainer.on("pointermove", (e: P.FederatedPointerEvent) => {
-    const size = getGridSize();
-    const pos = g.tilesetContainer.toLocal(e.global);
-
-    if (isGrouping()) {
-      // Copy values to avoid keeping a mutable reference to PIXI's global point
-      groupEnd = { x: snapUp(pos.x, size), y: snapUp(pos.y, size) };
+class Grouper implements ClickDragListener {
+  pointerDown(e: PointerEventData) {
+    if (pressedKeys["Control"]) {
+      const state = store.getState();
+      if (!state.tilesetEditor.activeTilesetId) return;
+      store.dispatch(tsActions.setMode("add"));
     } else {
-      const x = snapDown(pos.x, size);
-      const y = snapDown(pos.y, size);
-      groupStart = { x, y };
-      groupEnd = { x, y };
+      const state = store.getState();
+      if (!state.tilesetEditor.activeTilesetId) return;
+      store.dispatch(tsActions.setMode("group"));
     }
-  });
+  }
 
-  const gfx = new P.Graphics();
-  gfx.visible = false;
-  gfx.rect(0, 0, 16, 16).fill({ color: "0x00ff00", alpha: 0.3 });
-  g.groupSelContainer.addChild(gfx);
-  g.groupSelContainer.parent!.addChild(groupsContainer);
-
-  g.app.ticker.add(() => {
+  pointerUp(e: PointerEventData) {
     if (isGrouping()) {
-      gfx.visible = true;
+      const tsState = store.getState().tilesetEditor;
+      const tsId = tsState.activeTilesetId!;
+      const gridSize = tsState.grid.size;
+
       const c = g.groupSelContainer;
-      // Normalize rectangle so that width/height are always positive
-      const left = Math.min(groupStart.x, groupEnd.x);
-      const top = Math.min(groupStart.y, groupEnd.y);
-      const width = Math.abs(groupEnd.x - groupStart.x);
-      const height = Math.abs(groupEnd.y - groupStart.y);
 
-      c.position.set(left, top);
-      c.width = width;
-      c.height = height;
-    } else {
-      gfx.visible = false;
+      const coords = {
+        ul: { x: c.x, y: c.y },
+        br: { x: c.x + c.width, y: c.y + c.height },
+      };
+      const id = genGroupId({ coords, tsId });
+      const group: TileGroup = {
+        id,
+        tilesetId: tsId,
+        pos: coords,
+        singleTile: false,
+        gridSize,
+        children: [],
+        zIndices: [],
+        name: "",
+        tags: [],
+        pinned: true,
+      };
+
+      group.singleTile =
+        closeEnough(c.width, gridSize) && closeEnough(c.height, gridSize);
+
+      store.dispatch(tsActions.addPaletteObject({ tsId, group }));
+      store.dispatch(tsActions.popMode());
+      g.groupSelGraphics.visible = false;
+      g.groupSelContainer.setSize(0);
     }
-  });
+  }
+
+  pointerDrag(e: PointerEventData) {
+    if (!isGrouping()) return;
+
+    g.groupSelGraphics.visible = true;
+    const c = g.groupSelContainer;
+
+    const hb = e.hitbox;
+    const gridSize = getGridSize();
+
+    // Normalize rectangle so that width/height are always positive
+
+    const left = snapDown(Math.min(hb.ul.x, hb.br.x), gridSize);
+    const top = snapDown(Math.min(hb.ul.y, hb.br.y), gridSize);
+    const right = snapUp(Math.max(hb.ul.x, hb.br.x), gridSize);
+    const bottom = snapUp(Math.max(hb.ul.y, hb.br.y), gridSize);
+    const width = right - left;
+    const height = bottom - top;
+
+    c.position.set(left, top);
+    c.width = width;
+    c.height = height;
+  }
+}
+
+export function setupGrouper(cd: ClickDragger) {
+  cd.addListener(new Grouper());
 }
 
 async function drawGroups(groups: TileGroup[]) {
-  groupsContainer.removeChildren();
-  const g = new P.Graphics();
+  if (!g.allGroupsOverlay) return;
+
+  g.allGroupsOverlay.removeChildren();
+  const gfx = new P.Graphics();
   const mask = new P.Graphics();
-  groupsContainer.addChild(mask);
-  groupsContainer.setMask({
+  g.allGroupsOverlay.addChild(mask);
+  g.allGroupsOverlay.setMask({
     mask,
   });
-  for (const group of groups.filter((g) => !g.singleTile)) {
+
+  for (const group of groups.filter(shouldOutline)) {
     const rect = new P.Rectangle(
       group.pos.ul.x,
       group.pos.ul.y,
       group.pos.br.x - group.pos.ul.x,
       group.pos.br.y - group.pos.ul.y
     );
-    g.rect(rect.x, rect.y, rect.width, rect.height).stroke(groupStroke);
+    gfx.rect(rect.x, rect.y, rect.width, rect.height).stroke(groupStroke);
 
     mask
       .rect(rect.x, rect.y, rect.width, rect.height)
       .fill({ color: 0x000000, alpha: 1 });
   }
-  groupsContainer.addChild(g);
+  g.allGroupsOverlay.addChild(gfx);
 }
 
 subscribeToSelector(selectors.activeTilesetGroups, (groups) => {

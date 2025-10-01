@@ -1,10 +1,11 @@
+import { log } from "@/log";
 import { TileGroupInstance } from "@/types/editor";
+import { Rect } from "@/types/rect";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { TileGroup } from "@/types/tilegroup";
+import { Mode, Tileset } from "@/types/tileset";
+import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Rect } from "../types/rect";
-import { Tileset } from "../types/tileset";
-import { Pan, Zoom, ZoomPan } from "../types/zoompan";
 
 const tileIndices: Record<string, SpatialIndex> = {};
 
@@ -26,7 +27,6 @@ export function groupToBBox(group: TileGroup, pad: number = 0.1): IndexItem {
   };
 }
 
-type Mode = null | "pan" | "group" | "add";
 export interface TilesetEditorState {
   grid: {
     size: number;
@@ -121,6 +121,19 @@ const slice = createSlice({
         idx.insert(groupToBBox(group));
       }
     },
+
+    removeTileset: (state, action: PayloadAction<string>) => {
+      const tsId = action.payload;
+      delete state.tilesets[tsId];
+      state.tilesetIds = state.tilesetIds.filter((id) => id !== tsId);
+      if (state.activeTilesetId === tsId) {
+        state.activeTilesetId = null;
+        state.activeZoomPan = { zoom: 1, pan: { x: 0, y: 0 } };
+      }
+      delete state.tilesetZoomPans[tsId];
+      delete tileIndices[tsId];
+    },
+
     setScanPos: (state, action: PayloadAction<Rect | null>) => {
       state.scanPos = action.payload;
     },
@@ -145,6 +158,24 @@ const slice = createSlice({
       const ts = state.tilesets[tsId];
       if (ts) {
         ts.saved = saved;
+      }
+    },
+
+    clearPalette(state, action: PayloadAction<string>) {
+      const tsId = action.payload;
+      const ts = state.tilesets[tsId];
+      if (ts) {
+        const idsToDelete = new Set<string>();
+        const spatialIdx = getTileIndex(ts.id);
+        for (const obj of Object.values(ts.palette)) {
+          // Single tile objects can be deleted outright
+          if (obj.singleTile && !obj.pinned) {
+            delete ts.palette[obj.id];
+            idsToDelete.add(obj.id);
+            spatialIdx.removeById(obj.id);
+          }
+        }
+        ts.paletteIds = ts.paletteIds.filter((id) => !idsToDelete.has(id));
       }
     },
 
@@ -191,12 +222,19 @@ const slice = createSlice({
       const ts = state.tilesets[tsId];
       const tileIndex = getTileIndex(ts.id);
       const bbox = groupToBBox(group);
-      const deleting = group.singleTile;
+      const overlaps = tileIndex.search(bbox);
+
+      let isOverlappingSelf = false;
+      if (overlaps.length === 1) {
+        isOverlappingSelf = overlaps[0].id === group.id;
+      }
+
+      const deleting = group.singleTile && !isOverlappingSelf;
       const creatingGroup = !deleting;
       const replaceMode = state.modeStack.at(-1) === "group";
+      const curGridSize = state.grid.size;
 
       // Find overlapping groups (same objectUrl via cache) and remove them
-      const overlaps = tileIndex.search(bbox);
       if (overlaps.length > 0 && replaceMode) {
         const removeIds = new Set(overlaps.map((o) => o.id));
         const addBackChildrenIds: Set<string> = new Set();
@@ -223,7 +261,8 @@ const slice = createSlice({
             // We can't delete a single tile object, so make sure it isn't
             // filtered out of the paletteIds.
             if (child.singleTile) {
-              if (!creatingGroup) {
+              const sameGridSize = child.gridSize === curGridSize;
+              if (!creatingGroup && sameGridSize) {
                 return true;
               }
             }
@@ -235,11 +274,13 @@ const slice = createSlice({
               for (const grandChildId of child.children) {
                 addBackChildrenIds.add(grandChildId);
               }
-              // Remove the multi-tile group from the palette and spatial index
-              delete ts.palette[removeCandId];
-              tileIndex.removeById(removeCandId);
             }
 
+            // Remove the multi-tile group from the palette and spatial index
+            if (!child.singleTile) {
+              delete ts.palette[removeCandId];
+            }
+            tileIndex.removeById(removeCandId);
             return false;
           }
           return true;
@@ -287,12 +328,19 @@ const slice = createSlice({
       (tsId, tilesets): TileGroup[] => {
         if (!tsId) return [];
         const ts = tilesets[tsId];
-        return ts.paletteIds.map((id) => ts.palette[id]);
+        const objs = ts.paletteIds.map((id) => ts.palette[id]);
+        const broken = ts.paletteIds.filter(
+          (id) => ts.palette[id] === undefined
+        );
+        if (broken.length) {
+          log.warn({ broken }, "Broken palette ids detected");
+        }
+        return objs;
       }
     ),
     selectMode: createSelector.withTypes<TilesetEditorState>()(
       [(state) => state.modeStack],
-      (modeStack): Mode | null => modeStack.at(-1) ?? null
+      (modeStack): Mode => modeStack.at(-1) ?? "select"
     ),
     selectTileGroupByInstanceId: createSelector.withTypes<TilesetEditorState>()(
       [(state) => state.tilesets, (_, inst: TileGroupInstance) => inst],

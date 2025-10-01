@@ -2,7 +2,7 @@ import { log } from "@/log";
 import { Tileset } from "@/types/tileset";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
-import { BaseTilesetDoc, LatestTilesetDoc } from "./schema";
+import { BaseTilesetDoc, LatestTilesetDoc, latestVersion } from "./schema";
 
 interface LoadTilesetsResponse {
   ids: string[];
@@ -42,6 +42,7 @@ export async function loadTileset(id: string): Promise<Tileset> {
 
   const decoded = baseDecoded as LatestTilesetDoc;
   const ts = decoded.tileset;
+
   // Recreate an object URL for the tileset image from persisted bytes
   // Copy to a standalone ArrayBuffer to satisfy TS's BlobPart typing
   const ab = new ArrayBuffer(decoded.imageData.byteLength);
@@ -61,7 +62,7 @@ export async function saveTileset(ts: Tileset) {
   const doc: LatestTilesetDoc = {
     tileset: ts,
     imageData,
-    version: 3,
+    version: latestVersion,
   };
   const payload = encode(doc);
   // Send as multipart/form-data so the server's formidable parser can handle it
@@ -80,4 +81,11 @@ export async function saveTileset(ts: Tileset) {
     body: form,
   });
   if (!res.ok) throw new Error(`saveMeta failed: ${res.status}`);
+}
+
+export async function deleteTileset(id: string) {
+  const res = await fetch(`/api/tilesets/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error(`deleteTileset failed: ${res.status}`);
 }

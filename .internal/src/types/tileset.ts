@@ -1,5 +1,7 @@
 import { TileGroup } from "./tilegroup";
 
+export type Mode = "select" | "pan" | "group" | "add";
+
 export interface Tileset {
   id: string;
   objectUrl: string;

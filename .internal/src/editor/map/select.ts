@@ -6,9 +6,13 @@ import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { subscribeToSelector } from "@/utils/redux";
 import * as P from "pixi.js";
+import {
+  ClickDragger,
+  ClickDragListener,
+  PointerEventData,
+} from "../common/drag";
 import { drawMaskedOutline } from "../common/outline";
 import { selectStroke } from "../common/strokes";
-import { ClickDragger, ClickDragListener, PointerEventData } from "./drag";
 import { globals as g } from "./globals";
 import { pressedKeys } from "./keys";
 

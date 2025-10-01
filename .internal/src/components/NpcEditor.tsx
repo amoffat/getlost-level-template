@@ -69,7 +69,7 @@ export default function NpcEditorTab() {
     <TilesetButton
       key={ts.id}
       onClick={() => dispatch(selectTilesetThunk(ts))}
-      imgSrc={ts.objectUrl}
+      ts={ts}
       isActive={ts.id === s.activeTilesetId}
     />
   ));

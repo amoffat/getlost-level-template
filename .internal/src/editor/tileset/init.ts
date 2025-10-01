@@ -6,12 +6,15 @@ import { store } from "../../store/store";
 import { subscribeToSelector } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
 import { makeBackground } from "../common/bg";
+import { getCursorForMode } from "../common/cursor";
+import { ClickDragger } from "../common/drag";
 import { drawGrid } from "../common/grid";
 import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
 import { globals as g } from "./globals";
 import { drawGridMask } from "./grid";
 import { setupGrouper } from "./group";
+import { setupKeys } from "./keys";
 
 export async function init(
   getParent: () => HTMLElement
@@ -49,6 +52,17 @@ export async function init(
   g.groupSelContainer.zIndex = 100;
   g.tilesetContainer.addChild(g.groupSelContainer);
 
+  const allGroupsOverlay = new P.Container();
+  allGroupsOverlay.zIndex = 100;
+  g.tilesetContainer.addChild(allGroupsOverlay);
+  g.allGroupsOverlay = allGroupsOverlay;
+
+  const gfx = new P.Graphics();
+  gfx.visible = false;
+  gfx.rect(0, 0, 16, 16).fill({ color: "0x00ff00", alpha: 0.3 });
+  g.groupSelContainer.addChild(gfx);
+  g.groupSelGraphics = gfx;
+
   g.scanPos = new P.Container();
   g.scanPos.zIndex = 200;
   g.scanPos.visible = false;
@@ -74,6 +88,7 @@ export async function init(
     height: app.screen.height,
   });
 
+  setupKeys(canvas);
   setupWheelZoom({
     canvas,
     stage,
@@ -92,10 +107,16 @@ export async function init(
     },
     onPanningEnd: (panPos) => {
       store.dispatch(actions.setPan(panPos));
-      store.dispatch(actions.pushMode(null));
+      store.dispatch(actions.popMode());
     },
   });
-  setupGrouper();
+
+  const cd = new ClickDragger({
+    app,
+    container: g.tilesetContainer,
+  });
+
+  setupGrouper(cd);
 
   canvas.addEventListener("mouseover", () => {
     canvas.focus();
@@ -144,15 +165,7 @@ subscribeToSelector(
 
 subscribeToSelector(selectors.selectMode, (mode) => {
   const canvas = g.app.canvas;
-  if (mode === "group") {
-    canvas.style.cursor = "crosshair";
-  } else if (mode === "pan") {
-    canvas.style.cursor = "grabbing";
-  } else if (mode === null) {
-    canvas.style.cursor = "grab";
-  } else if (mode === "add") {
-    canvas.style.cursor = "crosshair";
-  }
+  canvas.style.cursor = getCursorForMode(mode);
 });
 
 subscribeToSelector(

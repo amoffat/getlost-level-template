@@ -1,5 +1,5 @@
 import { log } from "@/log";
-import { saveTileset } from "@/persist/api";
+import { deleteTileset, saveTileset } from "@/persist/api";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { AppStartListening } from "@/types/redux";
 import { Tileset } from "@/types/tileset";
@@ -68,6 +68,13 @@ startAppListening({
     const { tsId } = action.payload;
     const ts = getState().tilesetEditor.tilesets[tsId];
     saveRequests$.next({ ts, dispatch });
+  },
+});
+
+startAppListening({
+  actionCreator: tsActions.removeTileset,
+  effect: async (action: ReturnType<typeof tsActions.removeTileset>) => {
+    await deleteTileset(action.payload);
   },
 });
 

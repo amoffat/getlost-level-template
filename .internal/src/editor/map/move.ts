@@ -5,7 +5,11 @@ import {
 } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Vector } from "@/vec";
-import { ClickDragger, ClickDragListener, PointerEventData } from "./drag";
+import {
+  ClickDragger,
+  ClickDragListener,
+  PointerEventData,
+} from "../common/drag";
 import { globals as g } from "./globals";
 
 export class Mover implements ClickDragListener {

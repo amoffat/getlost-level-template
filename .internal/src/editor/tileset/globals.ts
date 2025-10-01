@@ -5,6 +5,8 @@ interface Globals {
   canvas: HTMLCanvasElement;
   tilesetContainer: P.Container;
   groupSelContainer: P.Container;
+  groupSelGraphics: P.Graphics;
+  allGroupsOverlay: P.Container;
   gridContainer: P.Container;
   backgroundContainer: P.Container;
   grid: P.Container;

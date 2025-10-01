@@ -1,11 +1,12 @@
+import { unpackActiveTileset } from "@/editor/tileset/loader";
 import { globals as g } from "@/globals";
 import {
+  Button,
   Fieldset,
   Flex,
   Group,
   ScrollArea,
   Stack,
-  Switch,
   Tabs,
   Text,
 } from "@mantine/core";
@@ -51,12 +52,18 @@ export default function TilesetEditorTab() {
     [dispatch]
   );
 
+  const resliceTiles = useCallback(() => {
+    if (!s.activeTilesetId) return;
+    dispatch(actions.clearPalette(s.activeTilesetId));
+    unpackActiveTileset();
+  }, [dispatch, s.activeTilesetId]);
+
   const loadedTilesets = useAppSelector(selectors.selectTilesets);
   const tilesetImages = loadedTilesets.map((ts) => (
     <TilesetButton
       key={ts.id}
+      ts={ts}
       onClick={() => dispatch(selectTilesetThunk(ts))}
-      imgSrc={ts.objectUrl}
       isActive={ts.id === s.activeTilesetId}
     />
   ));
@@ -112,20 +119,15 @@ export default function TilesetEditorTab() {
           </Stack>
         </Flex>
         <Stack miw={200} style={{ flex: 1 }}>
-          <Fieldset legend="Grid settings">
+          <Fieldset p={"xs"} legend="Grid settings">
             <Stack p={0}>
               <GridSizeInput
                 defaultValue={s.grid.size}
                 onChange={changeGridSize}
               />
-              <Switch
-                mt="lg"
-                label="Visible"
-                checked={s.grid.visible}
-                onChange={(event) => {
-                  dispatch(actions.setGridVisible(event.currentTarget.checked));
-                }}
-              />
+              <Button size="compact-sm" onClick={resliceTiles}>
+                Re-slice tiles
+              </Button>
             </Stack>
           </Fieldset>
         </Stack>

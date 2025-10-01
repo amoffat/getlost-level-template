@@ -41,7 +41,7 @@ export class ClickDragger {
     this.app = app;
     this.container = container;
 
-    app.stage.addEventListener("pointermove", (e) => {
+    container.addEventListener("pointermove", (e) => {
       if (!this.dragStart) return;
 
       this.dragEnd = Vec2.fromPoint(e.getLocalPosition(container));
@@ -68,7 +68,7 @@ export class ClickDragger {
       }
     });
 
-    app.stage.addEventListener("pointerdown", (e) => {
+    container.addEventListener("pointerdown", (e) => {
       if (e.button !== 0) return;
       this.dragStart = Vec2.fromPoint(e.getLocalPosition(container));
       this.dragEnd = Vec2.fromPoint(e.getLocalPosition(container));
@@ -93,7 +93,7 @@ export class ClickDragger {
       this.listeners.forEach((listener) => listener.pointerDown(ev));
     });
 
-    app.stage.addEventListener("pointerup", (e) => {
+    container.addEventListener("pointerup", (e) => {
       const localPos = Vec2.fromPoint(e.getLocalPosition(container));
       if (!this.dragStart) {
         this.dragStart = Vec2.fromPoint(localPos);
@@ -157,7 +157,7 @@ export class ClickDragger {
     return globalEnd.subbed(globalStart);
   }
 
-  private makeHitbox(): Rect {
+  public makeHitbox(): Rect {
     if (!this.dragStart || !this.dragEnd) {
       return { ul: { x: 0, y: 0 }, br: { x: 0, y: 0 } };
     }

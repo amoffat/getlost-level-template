@@ -10,6 +10,12 @@ const texturesDir = resolve(levelDir, "textures");
 
 export const router = express.Router({ mergeParams: true });
 
+// Sanitize a requested tileset ID so it can be safely used as a filename stem.
+// Allowed characters: a-z A-Z 0-9 . _ - (mirrors previous inline regex)
+function sanitizeId(raw: unknown): string {
+  return (typeof raw === "string" ? raw : "").replace(/[^a-zA-Z0-9._-]/g, "");
+}
+
 // GET "/" — list all tileset IDs (derived from *.cbor files in level/textures)
 router.get("/", (_req, res) => {
   try {
@@ -31,8 +37,7 @@ router.get("/", (_req, res) => {
 // GET "/:id" — serve the specific CBOR file
 router.get("/:id", (req, res) => {
   try {
-    const idRaw = (req.params as any)["id"] as string | undefined;
-    const id = (idRaw || "").replace(/[^a-zA-Z0-9._-]/g, "");
+    const id = sanitizeId((req.params as any)["id"]);
     if (!id) {
       res.status(400).send("Invalid id in URL");
       return;
@@ -56,6 +61,26 @@ router.get("/:id", (req, res) => {
   }
 });
 
+router.delete("/:id", (req, res) => {
+  try {
+    const id = sanitizeId((req.params as any)["id"]);
+    if (!id) {
+      res.status(400).send("Invalid id in URL");
+      return;
+    }
+
+    const outPath = resolve(texturesDir, `${id}.cbor`);
+    if (fs.existsSync(outPath)) {
+      fs.unlinkSync(outPath);
+    }
+
+    res.sendStatus(204);
+  } catch (error) {
+    console.error("Error deleting tileset:", error);
+    res.sendStatus(500);
+  }
+});
+
 router.put("/:id", (req, res) => {
   const form = formidable({
     multiples: false,
@@ -70,8 +95,7 @@ router.put("/:id", (req, res) => {
       }
 
       // Use id from URL to build output filename <id>.cbor
-      const idRaw = (req.params as any)["id"] as string | undefined;
-      const id = (idRaw || "").replace(/[^a-zA-Z0-9._-]/g, "");
+      const id = sanitizeId((req.params as any)["id"]);
       if (!id) {
         res.status(400).send("Invalid id in URL");
         return;

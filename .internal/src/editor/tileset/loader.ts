@@ -88,7 +88,7 @@ export async function unpackActiveTileset() {
       // Skip empty tiles (all pixels fully transparent)
       if (isRectTransparent(imageData, coords)) continue;
 
-      const id = await genGroupId({ coords, tsId });
+      const id = genGroupId({ coords, tsId });
       chunk.push({
         id,
         pos: coords,
@@ -99,6 +99,7 @@ export async function unpackActiveTileset() {
         zIndices: [],
         name: "",
         tags: [],
+        pinned: false,
       });
       if (chunk.length > 10) {
         store.dispatch(
