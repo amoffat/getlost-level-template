@@ -37,7 +37,7 @@ function isRectTransparent(imageData: ImageData, rect: Rect): boolean {
   return true;
 }
 
-export async function setCanvasTileset(ts: Tileset) {
+export async function setCanvasTileset(ts: Tileset | null) {
   // Clear any previous content
   g.currentTileset?.removeFromParent();
   g.grid?.removeFromParent();
@@ -45,19 +45,21 @@ export async function setCanvasTileset(ts: Tileset) {
   g.tilesetContainer.scale.set(1);
   g.groupSelContainer.setSize(0);
 
-  const texture = await P.Assets.load<P.Texture>({
-    src: ts.objectUrl,
-    parser: "loadTextures",
-  });
-  texture.source.scaleMode = "nearest";
+  if (ts) {
+    const texture = await P.Assets.load<P.Texture>({
+      src: ts.objectUrl,
+      parser: "loadTextures",
+    });
+    texture.source.scaleMode = "nearest";
 
-  const sprite = new P.Sprite(texture);
-  sprite.x = 0;
-  sprite.y = 0;
-  sprite.roundPixels = true;
+    const sprite = new P.Sprite(texture);
+    sprite.x = 0;
+    sprite.y = 0;
+    sprite.roundPixels = true;
 
-  g.currentTileset = sprite;
-  g.tilesetContainer.addChild(sprite);
+    g.currentTileset = sprite;
+    g.tilesetContainer.addChild(sprite);
+  }
 }
 
 export async function unpackActiveTileset() {
@@ -94,8 +96,6 @@ export async function unpackActiveTileset() {
         pos: coords,
         tilesetId: tsId,
         gridSize,
-        singleTile: true,
-        children: [],
         zIndices: [],
         name: "",
         tags: [],

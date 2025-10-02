@@ -1,5 +1,5 @@
 import { useAppDispatch } from "@/hooks/redux";
-import { actions as tsActions } from "@/slices/tilesetEditor";
+import { removeTilesetThunk } from "@/thunks/tileset";
 import { DisplayableImage } from "@/types/image";
 import { Image, Menu, UnstyledButton } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
@@ -32,7 +32,7 @@ export default function TilesetButton({
 
   const onDelete = () => {
     setOpened(false);
-    dispatch(tsActions.removeTileset(ts.id));
+    dispatch(removeTilesetThunk(ts.id));
   };
 
   return (

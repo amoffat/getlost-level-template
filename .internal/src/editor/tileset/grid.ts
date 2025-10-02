@@ -37,6 +37,7 @@ subscribeToSelector(selectors.activeTilesetGroups, (groups) => {
   if (!g.grid) return;
   drawGridMask(groups);
 });
+
 subscribeToSelector(
   (state) => state.tilesetEditor.activeTilesetId,
   (_, state) => {

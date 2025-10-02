@@ -10,10 +10,10 @@ import { Tileset } from "../types/tileset";
 
 export const selectTilesetThunk = createAsyncThunk(
   "tilesetEditor/selectTilesetThunk",
-  async (ts: Tileset, { dispatch, getState }) => {
+  async (ts: Tileset | null, { dispatch, getState }) => {
     const state = getState() as { tilesetEditor: TilesetEditorState };
 
-    if (ts.id === state.tilesetEditor.activeTilesetId) {
+    if (ts?.id === state.tilesetEditor.activeTilesetId) {
       // Already active
       return true;
     }
@@ -37,6 +37,23 @@ export const loadTilesetsThunk = createAsyncThunk(
           dispatch(uiActions.addTilesetGroupTags(obj.tags));
         }
       }
+    }
+  }
+);
+
+export const removeTilesetThunk = createAsyncThunk(
+  "tilesetEditor/removeTilesetThunk",
+  async (tsId: string, { dispatch, getState }) => {
+    const state = getState() as { tilesetEditor: TilesetEditorState };
+    const ts = state.tilesetEditor.tilesets[tsId];
+    if (!ts) return;
+
+    dispatch(tsActions.removeTileset(tsId));
+
+    // If it's the active tileset, clear the canvas
+    if (state.tilesetEditor.activeTilesetId === tsId) {
+      await setCanvasTileset(null);
+      dispatch(tsActions.setActiveTileset(null));
     }
   }
 );

@@ -6,9 +6,7 @@ export interface TileGroup {
   gridSize: number;
   tilesetId: string;
   pos: Rect;
-  singleTile: boolean;
   pinned: boolean;
-  children: string[];
   zIndices: number[];
   name: string;
   tags: string[];

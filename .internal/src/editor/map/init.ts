@@ -103,6 +103,7 @@ export async function init(
   const cd = new ClickDragger({
     app,
     container: stage,
+    coordsRelativeTo: g.mapContainer,
   });
 
   setupSelector(cd, spatialIndex);

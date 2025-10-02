@@ -24,6 +24,7 @@ export interface ClickDragListener {
 export class ClickDragger {
   private readonly app: P.Application;
   public readonly container: P.Container;
+  private readonly coordsRelativeTo: P.Container;
 
   private dragStart: Vec2 | null = null;
   private dragEnd: Vec2 | null = null;
@@ -34,17 +35,20 @@ export class ClickDragger {
   constructor({
     app,
     container,
+    coordsRelativeTo,
   }: {
     app: P.Application;
     container: P.Container;
+    coordsRelativeTo?: P.Container;
   }) {
     this.app = app;
     this.container = container;
+    this.coordsRelativeTo = coordsRelativeTo ?? container;
 
     container.addEventListener("pointermove", (e) => {
       if (!this.dragStart) return;
 
-      this.dragEnd = Vec2.fromPoint(e.getLocalPosition(container));
+      this.dragEnd = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
 
       if (this.globalMoveVector.magnitude < MOVE_THRESHOLD && !this.moved)
         return;
@@ -70,15 +74,17 @@ export class ClickDragger {
 
     container.addEventListener("pointerdown", (e) => {
       if (e.button !== 0) return;
-      this.dragStart = Vec2.fromPoint(e.getLocalPosition(container));
-      this.dragEnd = Vec2.fromPoint(e.getLocalPosition(container));
+      this.dragStart = Vec2.fromPoint(
+        e.getLocalPosition(this.coordsRelativeTo)
+      );
+      this.dragEnd = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
       this.moved = false;
 
       const clickedTarget = this.hoverObject(e);
       this.clickedTarget = clickedTarget;
 
       const ev: PointerEventData = {
-        localPos: Vec2.fromPoint(e.getLocalPosition(container)),
+        localPos: Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo)),
         hitbox: this.makeHitbox(),
         over: clickedTarget,
         clickedTarget,
@@ -94,7 +100,9 @@ export class ClickDragger {
     });
 
     container.addEventListener("pointerup", (e) => {
-      const localPos = Vec2.fromPoint(e.getLocalPosition(container));
+      const localPos = Vec2.fromPoint(
+        e.getLocalPosition(this.coordsRelativeTo)
+      );
       if (!this.dragStart) {
         this.dragStart = Vec2.fromPoint(localPos);
       }
@@ -128,7 +136,7 @@ export class ClickDragger {
 
   private get currentPointerPos(): Vector {
     const globalPos = this.app.renderer.events.pointer.global;
-    const pos = this.container.toLocal(globalPos);
+    const pos = this.coordsRelativeTo.toLocal(globalPos);
     return pos;
   }
 
@@ -152,8 +160,12 @@ export class ClickDragger {
     }
     // Important that we do this in screen space, so that zoom doesn't affect
     // the drag threshold.
-    const globalStart = Vec2.fromPoint(this.container.toGlobal(this.dragStart));
-    const globalEnd = Vec2.fromPoint(this.container.toGlobal(this.dragEnd));
+    const globalStart = Vec2.fromPoint(
+      this.coordsRelativeTo.toGlobal(this.dragStart)
+    );
+    const globalEnd = Vec2.fromPoint(
+      this.coordsRelativeTo.toGlobal(this.dragEnd)
+    );
     return globalEnd.subbed(globalStart);
   }
 

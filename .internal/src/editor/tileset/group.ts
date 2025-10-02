@@ -1,4 +1,3 @@
-import { closeEnough } from "@/utils/math";
 import { genGroupId } from "@/utils/tileset";
 import * as P from "pixi.js";
 import { selectors, actions as tsActions } from "../../slices/tilesetEditor";
@@ -12,7 +11,6 @@ import {
 } from "../common/drag";
 import { groupStroke } from "../common/strokes";
 import { globals as g } from "./globals";
-import { pressedKeys } from "./keys";
 import { shouldOutline } from "./utils/outline";
 
 function getGridSize(): number {
@@ -27,62 +25,76 @@ function snapUp(n: number, size: number): number {
   return Math.ceil(n / size) * size;
 }
 
-function isGrouping(): boolean {
-  const mode = selectors.selectMode(store.getState());
-  return mode === "group" || mode === "add";
+function isGroupActionMode(mode: string | null): boolean {
+  return (
+    mode === "add-group" || mode === "delete-group" || mode === "replace-group"
+  );
 }
 
 class Grouper implements ClickDragListener {
   pointerDown(e: PointerEventData) {
-    if (pressedKeys["Control"]) {
-      const state = store.getState();
-      if (!state.tilesetEditor.activeTilesetId) return;
-      store.dispatch(tsActions.setMode("add"));
-    } else {
-      const state = store.getState();
-      if (!state.tilesetEditor.activeTilesetId) return;
-      store.dispatch(tsActions.setMode("group"));
+    const state = store.getState();
+    if (!state.tilesetEditor.activeTilesetId) return;
+    const mode = state.tilesetEditor.selectedMode;
+    if (mode === "add-group") {
+      store.dispatch(tsActions.setMode("add-group"));
+    } else if (mode === "delete-group") {
+      store.dispatch(tsActions.setMode("delete-group"));
+    } else if (mode === "replace-group") {
+      store.dispatch(tsActions.setMode("replace-group"));
     }
   }
 
   pointerUp(e: PointerEventData) {
-    if (isGrouping()) {
-      const tsState = store.getState().tilesetEditor;
+    const state = store.getState();
+    const tsState = state.tilesetEditor;
+    const mode = selectors.selectMode(state);
+
+    const c = g.groupSelContainer;
+    const coords = {
+      ul: { x: c.x, y: c.y },
+      br: { x: c.x + c.width, y: c.y + c.height },
+    };
+
+    let finishMode = false;
+    if (mode === "delete-group" || mode === "replace-group") {
+      const tsId = tsState.activeTilesetId!;
+      store.dispatch(tsActions.deletePaletteObject({ tsId, coords }));
+      finishMode = true;
+    }
+
+    if (mode === "add-group" || mode === "replace-group") {
       const tsId = tsState.activeTilesetId!;
       const gridSize = tsState.grid.size;
 
-      const c = g.groupSelContainer;
-
-      const coords = {
-        ul: { x: c.x, y: c.y },
-        br: { x: c.x + c.width, y: c.y + c.height },
-      };
       const id = genGroupId({ coords, tsId });
       const group: TileGroup = {
         id,
         tilesetId: tsId,
         pos: coords,
-        singleTile: false,
         gridSize,
-        children: [],
         zIndices: [],
         name: "",
         tags: [],
         pinned: true,
       };
 
-      group.singleTile =
-        closeEnough(c.width, gridSize) && closeEnough(c.height, gridSize);
-
       store.dispatch(tsActions.addPaletteObject({ tsId, group }));
-      store.dispatch(tsActions.popMode());
+      finishMode = true;
+    }
+
+    if (finishMode) {
       g.groupSelGraphics.visible = false;
       g.groupSelContainer.setSize(0);
+      store.dispatch(tsActions.setMode(null));
     }
   }
 
   pointerDrag(e: PointerEventData) {
-    if (!isGrouping()) return;
+    const state = store.getState();
+    const mode = selectors.selectMode(state);
+
+    if (!isGroupActionMode(mode)) return;
 
     g.groupSelGraphics.visible = true;
     const c = g.groupSelContainer;

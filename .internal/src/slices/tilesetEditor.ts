@@ -8,6 +8,7 @@ import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const tileIndices: Record<string, SpatialIndex> = {};
+const DEFAULT_ZOOMPAN: ZoomPan = { zoom: 1, pan: { x: 0, y: 0 } };
 
 export function getTileIndex(id: string): SpatialIndex {
   if (!tileIndices[id]) {
@@ -32,11 +33,12 @@ export interface TilesetEditorState {
     size: number;
     visible: boolean;
   };
+  selectedMode: Mode | null;
+  activeModeStack: Mode[];
   activeTilesetId: string | null;
   activeZoomPan: ZoomPan;
   tilesetIds: string[];
   tilesets: Record<string, Tileset>;
-  modeStack: Mode[];
   scanPos: Rect | null;
   tilesetZoomPans: Record<string, ZoomPan>;
   loadingPalette: boolean;
@@ -49,11 +51,12 @@ const slice = createSlice({
       size: 16,
       visible: true,
     },
+    selectedMode: null,
+    activeModeStack: [],
     activeTilesetId: null,
-    activeZoomPan: { zoom: 1, pan: { x: 0, y: 0 } },
+    activeZoomPan: DEFAULT_ZOOMPAN,
     tilesetIds: [],
     tilesets: {},
-    modeStack: [],
     scanPos: null,
     tilesetZoomPans: {},
     loadingPalette: false,
@@ -65,12 +68,17 @@ const slice = createSlice({
     setGridSize(state, action: PayloadAction<number>) {
       state.grid.size = action.payload;
     },
+
+    setActiveTool(state, action: PayloadAction<Mode | null>) {
+      state.selectedMode = action.payload;
+    },
+
     pushMode(state, action: PayloadAction<Mode>) {
-      if (state.modeStack.at(-1) === action.payload) return;
-      state.modeStack.push(action.payload);
+      if (state.activeModeStack.at(-1) === action.payload) return;
+      state.activeModeStack.push(action.payload);
     },
     popMode(state) {
-      state.modeStack.pop();
+      state.activeModeStack.pop();
     },
 
     updateTileGroup(
@@ -94,13 +102,14 @@ const slice = createSlice({
       spatialIdx.insert(groupToBBox(ts.palette[group.id]));
     },
 
-    setMode(state, action: PayloadAction<Mode>) {
-      state.modeStack = [action.payload];
+    setMode(state, action: PayloadAction<Mode | null>) {
+      const mode = action.payload;
+      state.activeModeStack = mode === null ? [] : [mode];
     },
-    setActiveTileset: (state, action: PayloadAction<Tileset>) => {
+    setActiveTileset: (state, action: PayloadAction<Tileset | null>) => {
       const ts = action.payload;
-      state.activeTilesetId = ts.id;
-      state.activeZoomPan = state.tilesetZoomPans[ts.id];
+      state.activeTilesetId = ts?.id ?? null;
+      state.activeZoomPan = ts ? state.tilesetZoomPans[ts.id] : DEFAULT_ZOOMPAN;
     },
     addTileset: (
       state,
@@ -111,7 +120,7 @@ const slice = createSlice({
     ) => {
       const { ts } = action.payload;
       state.tilesets[ts.id] = ts;
-      state.tilesetZoomPans[ts.id] ??= { zoom: 1, pan: { x: 0, y: 0 } };
+      state.tilesetZoomPans[ts.id] ??= DEFAULT_ZOOMPAN;
       if (!state.tilesetIds.includes(ts.id)) {
         state.tilesetIds.push(ts.id);
       }
@@ -128,7 +137,7 @@ const slice = createSlice({
       state.tilesetIds = state.tilesetIds.filter((id) => id !== tsId);
       if (state.activeTilesetId === tsId) {
         state.activeTilesetId = null;
-        state.activeZoomPan = { zoom: 1, pan: { x: 0, y: 0 } };
+        state.activeZoomPan = DEFAULT_ZOOMPAN;
       }
       delete state.tilesetZoomPans[tsId];
       delete tileIndices[tsId];
@@ -169,7 +178,7 @@ const slice = createSlice({
         const spatialIdx = getTileIndex(ts.id);
         for (const obj of Object.values(ts.palette)) {
           // Single tile objects can be deleted outright
-          if (obj.singleTile && !obj.pinned) {
+          if (!obj.pinned) {
             delete ts.palette[obj.id];
             idsToDelete.add(obj.id);
             spatialIdx.removeById(obj.id);
@@ -214,6 +223,28 @@ const slice = createSlice({
       getTileIndex(ts.id).insert(groupToBBox(group));
     },
 
+    deletePaletteObject(
+      state,
+      action: PayloadAction<{ tsId: string; coords: Rect }>
+    ) {
+      const { tsId, coords } = action.payload;
+      const ts = state.tilesets[tsId];
+      if (!ts) return;
+
+      const bbox = {
+        minX: coords.ul.x,
+        minY: coords.ul.y,
+        maxX: coords.br.x,
+        maxY: coords.br.y,
+      };
+
+      const overlaps = getTileIndex(ts.id).search(bbox);
+      for (const item of overlaps) {
+        delete ts.palette[item.id];
+        ts.paletteIds = ts.paletteIds.filter((pid) => pid !== item.id);
+      }
+    },
+
     addPaletteObject(
       state,
       action: PayloadAction<{ tsId: string; group: TileGroup }>
@@ -224,93 +255,19 @@ const slice = createSlice({
       const bbox = groupToBBox(group);
       const overlaps = tileIndex.search(bbox);
 
-      let isOverlappingSelf = false;
-      if (overlaps.length === 1) {
-        isOverlappingSelf = overlaps[0].id === group.id;
+      // If an item with the same id already exists anywhere, ensure it's
+      // removed and spatial index updated. The purpose of this is to ensure
+      // that the group isn't double-added to the paletteIds and the spatial
+      // index. It could probably be simplified.
+      if (ts.palette[group.id]) {
+        tileIndex.removeById(group.id);
+        delete ts.palette[group.id];
+        ts.paletteIds = ts.paletteIds.filter((id) => id !== group.id);
       }
-
-      const deleting = group.singleTile && !isOverlappingSelf;
-      const creatingGroup = !deleting;
-      const replaceMode = state.modeStack.at(-1) === "group";
-      const curGridSize = state.grid.size;
-
-      // Find overlapping groups (same objectUrl via cache) and remove them
-      if (overlaps.length > 0 && replaceMode) {
-        const removeIds = new Set(overlaps.map((o) => o.id));
-        const addBackChildrenIds: Set<string> = new Set();
-        const groupChildrenIds: Set<string> = new Set();
-
-        // Create the authoritative list of children for this group. We need
-        // this list to be accurate to determine which children of dissolved
-        // groups we should add back to the palette.
-        if (creatingGroup) {
-          for (const [toRemove] of removeIds.entries()) {
-            const child = ts.palette[toRemove];
-            if (child.singleTile) {
-              groupChildrenIds.add(child.id);
-            }
-          }
-        }
-
-        // Remove all overlapping groups (even single-tiled ones) from our list
-        // of palette ids.
-        ts.paletteIds = ts.paletteIds.filter((removeCandId) => {
-          if (removeIds.has(removeCandId)) {
-            const child = ts.palette[removeCandId];
-
-            // We can't delete a single tile object, so make sure it isn't
-            // filtered out of the paletteIds.
-            if (child.singleTile) {
-              const sameGridSize = child.gridSize === curGridSize;
-              if (!creatingGroup && sameGridSize) {
-                return true;
-              }
-            }
-            // If we're disolving a multi-tile group, we want to take its
-            // children and add them back to the palette. We'll also re-parent
-            // the children to our new group other passes of this filter loop
-            // (because they're treated as single tiles).
-            else {
-              for (const grandChildId of child.children) {
-                addBackChildrenIds.add(grandChildId);
-              }
-            }
-
-            // Remove the multi-tile group from the palette and spatial index
-            if (!child.singleTile) {
-              delete ts.palette[removeCandId];
-            }
-            tileIndex.removeById(removeCandId);
-            return false;
-          }
-          return true;
-        });
-
-        // We don't want to add children back to the palette if they are
-        // becoming part of our new group.
-        for (const childId of groupChildrenIds.values()) {
-          addBackChildrenIds.delete(childId);
-        }
-        ts.paletteIds.push(...Array.from(addBackChildrenIds));
-
-        group.children = Array.from(groupChildrenIds);
-      }
-
-      if (creatingGroup) {
-        // If an item with the same id already exists anywhere, ensure it's
-        // removed and spatial index updated. The purpose of this is to ensure
-        // that the group isn't double-added to the paletteIds and the spatial
-        // index. It could probably be simplified.
-        if (ts.palette[group.id]) {
-          tileIndex.removeById(group.id);
-          delete ts.palette[group.id];
-          ts.paletteIds = ts.paletteIds.filter((id) => id !== group.id);
-        }
-        // Now that we're sure we won't double-add it, add the new group
-        ts.paletteIds.push(group.id);
-        ts.palette[group.id] = group;
-        tileIndex.insert(bbox);
-      }
+      // Now that we're sure we won't double-add it, add the new group
+      ts.paletteIds.push(group.id);
+      ts.palette[group.id] = group;
+      tileIndex.insert(bbox);
     },
   },
   selectors: {
@@ -339,8 +296,8 @@ const slice = createSlice({
       }
     ),
     selectMode: createSelector.withTypes<TilesetEditorState>()(
-      [(state) => state.modeStack],
-      (modeStack): Mode => modeStack.at(-1) ?? "select"
+      [(state) => state.activeModeStack],
+      (activeModeStack): Mode => activeModeStack.at(-1) ?? "select"
     ),
     selectTileGroupByInstanceId: createSelector.withTypes<TilesetEditorState>()(
       [(state) => state.tilesets, (_, inst: TileGroupInstance) => inst],

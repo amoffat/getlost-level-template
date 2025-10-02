@@ -1,7 +1,7 @@
 import { unpackActiveTileset } from "@/editor/tileset/loader";
 import { globals as g } from "@/globals";
+import { Mode } from "@/types/tileset";
 import {
-  Button,
   Fieldset,
   Flex,
   Group,
@@ -10,7 +10,13 @@ import {
   Tabs,
   Text,
 } from "@mantine/core";
-import { useCallback, useEffect } from "react";
+import {
+  IconCut,
+  IconGrid4x4,
+  IconReplace,
+  IconTrash,
+} from "@tabler/icons-react";
+import { useCallback, useEffect, useMemo } from "react";
 import { init } from "../editor/tileset/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions, selectors } from "../slices/tilesetEditor";
@@ -19,6 +25,7 @@ import GridSizeInput from "./GridSizeInput";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
 import TilesetButton from "./TilesetButton";
+import ToolPalette, { ToolDescriptor } from "./ToolPalette";
 
 export default function TilesetEditorTab() {
   const dispatch = useAppDispatch();
@@ -67,6 +74,46 @@ export default function TilesetEditorTab() {
       isActive={ts.id === s.activeTilesetId}
     />
   ));
+
+  // Tool palette descriptors (placeholder tools)
+  const toolPalette: ToolDescriptor<Mode | "reslice-tiles">[] = useMemo(
+    () => [
+      {
+        slug: "replace-group",
+        name: "Replace group",
+        icon: <IconReplace size={16} />,
+        canActivate: true,
+      },
+      {
+        slug: "add-group",
+        name: "Add group",
+        icon: <IconCut size={16} />,
+        canActivate: true,
+      },
+
+      {
+        slug: "delete-group",
+        name: "Delete group",
+        icon: <IconTrash size={16} />,
+        canActivate: true,
+      },
+      {
+        slug: "reslice-tiles",
+        name: "Re-slice tiles",
+        icon: <IconGrid4x4 size={16} />,
+        onClick: resliceTiles,
+        canActivate: false,
+      },
+    ],
+    [resliceTiles]
+  );
+
+  const onToolActivated = useCallback(
+    (slug: string) => {
+      dispatch(actions.setActiveTool(slug as Mode));
+    },
+    [dispatch]
+  );
 
   return (
     <>
@@ -119,15 +166,13 @@ export default function TilesetEditorTab() {
           </Stack>
         </Flex>
         <Stack miw={200} style={{ flex: 1 }}>
+          <ToolPalette tools={toolPalette} onToolActivated={onToolActivated} />
           <Fieldset p={"xs"} legend="Grid settings">
             <Stack p={0}>
               <GridSizeInput
                 defaultValue={s.grid.size}
                 onChange={changeGridSize}
               />
-              <Button size="compact-sm" onClick={resliceTiles}>
-                Re-slice tiles
-              </Button>
             </Stack>
           </Fieldset>
         </Stack>
