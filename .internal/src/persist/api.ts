@@ -60,10 +60,11 @@ export async function loadTileset(id: string): Promise<Tileset> {
 export async function saveTileset(ts: Tileset) {
   const imageData = await (await fetch(ts.objectUrl)).bytes();
   const doc: LatestTilesetDoc = {
-    tileset: ts,
+    tileset: { ...ts, objectUrl: "" },
     imageData,
     version: latestVersion,
   };
+
   const payload = encode(doc);
   // Send as multipart/form-data so the server's formidable parser can handle it
   const form = new FormData();

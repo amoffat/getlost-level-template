@@ -6,6 +6,9 @@ export type Mode =
   | "select"
   | "move"
   | "rect-select"
+  | "set-waypoint"
+  | "circle-collision"
+  | "rect-collision"
   | "duplicate";
 
 export interface MapObj {

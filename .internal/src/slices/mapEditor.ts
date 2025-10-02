@@ -20,6 +20,7 @@ interface MapEditorState {
     snap: boolean;
   };
   zoomPan: ZoomPan;
+  selectedMode: Mode | null;
   modeStack: Mode[];
   place: {
     obj: TileGroup | null;
@@ -55,6 +56,7 @@ const slice = createSlice({
     },
     selectedObjs: selectedAdapter.getInitialState(),
     proposedSelection: null,
+    selectedMode: null,
     modeStack: [],
     layers: {
       active: "ground",
@@ -144,6 +146,11 @@ const slice = createSlice({
         state.place.flipX = false;
       }
       state.modeStack = [mode];
+    },
+
+    setActiveTool(state, action: PayloadAction<Mode | null>) {
+      const mode = action.payload;
+      state.selectedMode = mode;
     },
   },
   selectors: {

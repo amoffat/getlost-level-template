@@ -75,7 +75,6 @@ export default function TilesetEditorTab() {
     />
   ));
 
-  // Tool palette descriptors (placeholder tools)
   const toolPalette: ToolDescriptor<Mode | "reslice-tiles">[] = useMemo(
     () => [
       {

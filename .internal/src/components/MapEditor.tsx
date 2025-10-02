@@ -10,17 +10,25 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { init } from "../editor/map/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions } from "../slices/mapEditor";
 
 import { globals as g } from "@/globals";
+import { Mode } from "@/types/editor";
+import {
+  IconCircle,
+  IconMapPin,
+  IconPlus,
+  IconRectangle,
+} from "@tabler/icons-react";
 import { RootState } from "../store/store";
 import { ActiveLayer } from "../types/layer";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
+import ToolPalette, { ToolDescriptor } from "./ToolPalette";
 
 export default function MapEditorTab() {
   const s = useAppSelector((state: RootState) => state.mapEditor);
@@ -66,6 +74,43 @@ export default function MapEditorTab() {
     dispatch(actions.setPlace(null));
     dispatch(actions.setMode("select"));
   }, [dispatch]);
+
+  const toolPalette: ToolDescriptor<Mode>[] = useMemo(
+    () => [
+      {
+        slug: "place",
+        name: "Place object",
+        icon: <IconPlus size={16} />,
+        canActivate: true,
+      },
+      {
+        slug: "set-waypoint",
+        name: "Set waypoint",
+        icon: <IconMapPin size={16} />,
+        canActivate: true,
+      },
+      {
+        slug: "circle-collision",
+        name: "Circle collider",
+        icon: <IconCircle size={16} />,
+        canActivate: true,
+      },
+      {
+        slug: "rect-collision",
+        name: "Rectangle collider",
+        icon: <IconRectangle size={16} />,
+        canActivate: true,
+      },
+    ],
+    []
+  );
+
+  const onToolActivated = useCallback(
+    (slug: string) => {
+      dispatch(actions.setActiveTool(slug as Mode));
+    },
+    [dispatch]
+  );
 
   return (
     <>
@@ -137,6 +182,8 @@ export default function MapEditorTab() {
         </Flex>
 
         <Stack miw={200} style={{ flex: 1 }}>
+          <ToolPalette tools={toolPalette} onToolActivated={onToolActivated} />
+
           <Fieldset legend="Active tile layer">
             <Radio.Group onChange={changeActiveLayer} value={s.layers.active}>
               <Stack p={0}>
