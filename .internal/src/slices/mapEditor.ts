@@ -1,4 +1,5 @@
 import { Mode, TileGroupInstance } from "@/types/editor";
+import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
 import {
   createEntityAdapter,
@@ -18,6 +19,7 @@ interface MapEditorState {
     visible: boolean;
     snap: boolean;
   };
+  zoomPan: ZoomPan;
   modeStack: Mode[];
   place: {
     obj: TileGroup | null;
@@ -46,6 +48,7 @@ const slice = createSlice({
       visible: true,
       snap: true,
     },
+    zoomPan: { zoom: 1, pan: { x: 0, y: 0 } },
     place: {
       obj: null,
       flipX: false,
@@ -59,6 +62,10 @@ const slice = createSlice({
     },
   } as MapEditorState,
   reducers: {
+    setZoomPan(state, action: PayloadAction<ZoomPan>) {
+      state.zoomPan = action.payload;
+    },
+
     setGridSnap(state, action: { payload: boolean }) {
       state.grid.snap = action.payload;
     },

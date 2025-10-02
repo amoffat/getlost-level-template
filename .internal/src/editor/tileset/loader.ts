@@ -122,7 +122,7 @@ export async function unpackActiveTileset() {
 }
 
 subscribeToSelector(
-  (state) => state.tilesetEditor.activeZoomPan,
+  [(state) => state.tilesetEditor.activeZoomPan],
   (activeZoomPan) => {
     g.tilesetContainer.scale.set(activeZoomPan.zoom);
     g.tilesetContainer.position.set(activeZoomPan.pan.x, activeZoomPan.pan.y);

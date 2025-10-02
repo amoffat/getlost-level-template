@@ -108,30 +108,24 @@ export async function init(
   return app;
 }
 
-subscribeToSelector(
-  (state) => state.npcEditor.grid.visible,
-  (visible) => {
-    g.grid.visible = visible;
-  }
-);
+subscribeToSelector([(state) => state.npcEditor.grid.visible], (visible) => {
+  g.grid.visible = visible;
+});
 
-subscribeToSelector(
-  (state) => state.npcEditor.grid.size,
-  (size) => {
-    const coverSize = {
-      x: g.currentTileset!.width,
-      y: g.currentTileset!.height,
-    };
-    g.grid = drawGrid({
-      gridSize: size,
-      oldGrid: g.grid,
-      gridContainer: g.tilesetContainer,
-      coverSize,
-    });
-  }
-);
+subscribeToSelector([(state) => state.npcEditor.grid.size], (size) => {
+  const coverSize = {
+    x: g.currentTileset!.width,
+    y: g.currentTileset!.height,
+  };
+  g.grid = drawGrid({
+    gridSize: size,
+    oldGrid: g.grid,
+    gridContainer: g.tilesetContainer,
+    coverSize,
+  });
+});
 
-subscribeToSelector(selectors.selectMode, (mode) => {
+subscribeToSelector([selectors.selectMode], (mode) => {
   const canvas = g.app.canvas;
   if (mode === "group") {
     canvas.style.cursor = "crosshair";

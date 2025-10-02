@@ -46,7 +46,7 @@ export class Mover implements ClickDragListener {
     }
   }
 
-  public pointerUp(e: PointerEventData): void {
+  public pointerUp(_e: PointerEventData): void {
     if (!this._moveEnabled) return;
 
     this._moveEnabled = false;

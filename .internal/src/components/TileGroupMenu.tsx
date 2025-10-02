@@ -78,7 +78,7 @@ export default function TileGroupMenu({
     [dispatch, group]
   );
 
-  const mapEd = tab === "map-editor";
+  // const mapEd = tab === "map-editor";
   const tilesetEd = tab === "tileset-editor";
 
   return (

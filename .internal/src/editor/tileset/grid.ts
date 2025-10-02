@@ -33,13 +33,13 @@ export function drawGridMask(groups: TileGroup[]) {
   });
 }
 
-subscribeToSelector(selectors.activeTilesetGroups, (groups) => {
+subscribeToSelector([selectors.activeTilesetGroups], (groups) => {
   if (!g.grid) return;
   drawGridMask(groups);
 });
 
 subscribeToSelector(
-  (state) => state.tilesetEditor.activeTilesetId,
+  [(state) => state.tilesetEditor.activeTilesetId],
   (_, state) => {
     const gridSize = state.tilesetEditor.grid.size;
     const size = {

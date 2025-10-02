@@ -32,7 +32,7 @@ function isGroupActionMode(mode: string | null): boolean {
 }
 
 class Grouper implements ClickDragListener {
-  pointerDown(e: PointerEventData) {
+  pointerDown(_e: PointerEventData) {
     const state = store.getState();
     if (!state.tilesetEditor.activeTilesetId) return;
     const mode = state.tilesetEditor.selectedMode;
@@ -45,7 +45,7 @@ class Grouper implements ClickDragListener {
     }
   }
 
-  pointerUp(e: PointerEventData) {
+  pointerUp(_e: PointerEventData) {
     const state = store.getState();
     const tsState = state.tilesetEditor;
     const mode = selectors.selectMode(state);
@@ -148,7 +148,7 @@ async function drawGroups(groups: TileGroup[]) {
   g.allGroupsOverlay.addChild(gfx);
 }
 
-subscribeToSelector(selectors.activeTilesetGroups, (groups) => {
+subscribeToSelector([selectors.activeTilesetGroups], (groups) => {
   if (!groups) return;
   drawGroups(groups);
 });

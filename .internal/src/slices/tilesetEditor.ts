@@ -253,7 +253,6 @@ const slice = createSlice({
       const ts = state.tilesets[tsId];
       const tileIndex = getTileIndex(ts.id);
       const bbox = groupToBBox(group);
-      const overlaps = tileIndex.search(bbox);
 
       // If an item with the same id already exists anywhere, ensure it's
       // removed and spatial index updated. The purpose of this is to ensure

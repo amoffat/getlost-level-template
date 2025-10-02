@@ -109,14 +109,21 @@ export async function init(
   setupSelector(cd, spatialIndex);
   g.mover = setupMover(cd);
   setupPlacer();
-  setupWheelZoom({ canvas, stage, container: g.mapContainer });
+  setupWheelZoom({
+    canvas,
+    stage,
+    container: g.mapContainer,
+    onZoomChange: (zp) => {
+      store.dispatch(actions.setZoomPan(zp));
+    },
+  });
   setupPanControls({
     stage,
     panContainer: g.mapContainer,
     onPanningStart: () => {
       store.dispatch(actions.pushMode("pan"));
     },
-    onPanningEnd: (panPos) => {
+    onPanningEnd: (_panPos) => {
       store.dispatch(actions.popMode());
     },
   });
@@ -146,8 +153,8 @@ export async function init(
 
 // Transfer our textures from the tileset editor to the map editor
 subscribeToSelector(
-  (state) => state.tilesetEditor.tilesets,
-  async (tilesets, state) => {
+  [(state) => state.tilesetEditor.tilesets],
+  async (tilesets, _state) => {
     for (const tileset of Object.values(tilesets)) {
       const tex = await P.Assets.load<P.Texture>({
         src: tileset.objectUrl,
@@ -159,7 +166,7 @@ subscribeToSelector(
   }
 );
 
-subscribeToSelector(selectors.selectMode, (mode) => {
+subscribeToSelector([selectors.selectMode], (mode) => {
   const canvas = g.app.canvas;
   canvas.style.cursor = getCursorForMode(mode);
   if (mode === "duplicate") {

@@ -65,8 +65,8 @@ export function setupPlacer() {
 }
 
 subscribeToSelector(
-  (state) => state.mapEditor.place.obj,
-  (placeObj) => {
+  [(state) => state.mapEditor.place.obj, (state) => state.mapEditor.zoomPan],
+  (placeObj, zoomPan) => {
     if (!g.initialized) return;
 
     g.placableOutline.removeChildren();
@@ -96,10 +96,15 @@ subscribeToSelector(
       g.placableContainer.addChild(sprite);
       g.placableSprite = sprite;
 
+      const stroke = {
+        ...selectStroke,
+        width: (selectStroke.width ?? 1) / zoomPan.zoom,
+      };
+
       drawMaskedOutline({
         container: g.placableOutline,
         frame: rect,
-        stroke: selectStroke,
+        stroke,
       });
     } else {
       g.placableSprite?.destroy();
@@ -108,12 +113,9 @@ subscribeToSelector(
   }
 );
 
-subscribeToSelector(
-  (state) => state.mapEditor.place.flipX,
-  (flipX) => {
-    if (!g.initialized) return;
-    const child = g.placableContainer.children[0];
-    if (!child) return;
-    child.scale.x = flipX ? -1 : 1;
-  }
-);
+subscribeToSelector([(state) => state.mapEditor.place.flipX], (flipX) => {
+  if (!g.initialized) return;
+  const child = g.placableContainer.children[0];
+  if (!child) return;
+  child.scale.x = flipX ? -1 : 1;
+});

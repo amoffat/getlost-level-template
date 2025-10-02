@@ -161,7 +161,7 @@ class Selector implements ClickDragListener {
     }
 
     if (mode === "rect-select") {
-      drawRectSelect(e.hitbox);
+      drawRectSelect(e.hitbox, state.mapEditor.zoomPan.zoom);
     }
   }
 }
@@ -173,8 +173,9 @@ export function setupSelector(cd: ClickDragger, spatialIndex: SpatialIndex) {
 /**
  * Draws a rectangle selection outline. Called frequently during drag.
  * @param rect Rectangle in map container space
+ * @param zoom Current zoom level
  */
-function drawRectSelect(rect: Rect) {
+function drawRectSelect(rect: Rect, zoom: number) {
   clearRectSelect();
   const gfx = new P.Graphics();
 
@@ -184,7 +185,10 @@ function drawRectSelect(rect: Rect) {
   const width = Math.abs(rect.br.x - rect.ul.x);
   const height = Math.abs(rect.br.y - rect.ul.y);
 
-  gfx.rect(left, top, width, height).stroke(selectStroke);
+  const strokeWidth = (selectStroke.width ?? 1) * 0.5;
+  gfx
+    .rect(left, top, width, height)
+    .stroke({ ...selectStroke, width: strokeWidth / zoom });
   g.rectSelectOutline.addChild(gfx);
 }
 
@@ -196,8 +200,10 @@ function clearRectSelect() {
  * Outlines the given objects.
  * @param obs Objects to outline
  */
-export function outlineObjects(obs: TileGroupInstance[]) {
+export function outlineObjects(obs: TileGroupInstance[], zoom: number) {
   clearObjectOutlines();
+
+  const stroke = { ...selectStroke, width: (selectStroke.width ?? 1) / zoom };
 
   for (const obj of obs) {
     const container = new P.Container();
@@ -207,7 +213,7 @@ export function outlineObjects(obs: TileGroupInstance[]) {
     drawMaskedOutline({
       container,
       frame: obj.frame,
-      stroke: selectStroke,
+      stroke,
     });
   }
 }
@@ -223,11 +229,11 @@ export function clearObjectOutlines() {
  * When the selected objects change, we need to update the outlines.
  */
 subscribeToSelector(
-  (state) => state.mapEditor.selectedObjs,
-  (selectedObjs) => {
+  [(state) => state.mapEditor.selectedObjs, (state) => state.mapEditor.zoomPan],
+  (selectedObjs, zoomPan) => {
     if (selectedObjs) {
       const objs = selectedObjs.ids.map((id) => selectedObjs.entities[id]);
-      outlineObjects(objs);
+      outlineObjects(objs, zoomPan.zoom);
     } else {
       clearObjectOutlines();
     }

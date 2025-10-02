@@ -139,45 +139,39 @@ export async function init(
 }
 
 subscribeToSelector(
-  (state) => state.tilesetEditor.grid.visible,
+  [(state) => state.tilesetEditor.grid.visible],
   (visible) => {
     g.grid.visible = visible;
   }
 );
 
-subscribeToSelector(
-  (state) => state.tilesetEditor.grid.size,
-  (size) => {
-    const coverSize = {
-      x: g.currentTileset!.width,
-      y: g.currentTileset!.height,
-    };
-    g.grid = drawGrid({
-      gridSize: size,
-      oldGrid: g.grid,
-      gridContainer: g.tilesetContainer,
-      coverSize,
-    });
-    const groups = selectors.activeTilesetGroups(store.getState());
-    drawGridMask(groups);
-  }
-);
+subscribeToSelector([(state) => state.tilesetEditor.grid.size], (size) => {
+  const coverSize = {
+    x: g.currentTileset!.width,
+    y: g.currentTileset!.height,
+  };
+  g.grid = drawGrid({
+    gridSize: size,
+    oldGrid: g.grid,
+    gridContainer: g.tilesetContainer,
+    coverSize,
+  });
+  const groups = selectors.activeTilesetGroups(store.getState());
+  drawGridMask(groups);
+});
 
-subscribeToSelector(selectors.selectMode, (mode) => {
+subscribeToSelector([selectors.selectMode], (mode) => {
   const canvas = g.app.canvas;
   canvas.style.cursor = getCursorForMode(mode);
 });
 
-subscribeToSelector(
-  (state) => state.tilesetEditor.scanPos,
-  (scanPos) => {
-    if (scanPos === null) {
-      g.scanPos.visible = false;
-    } else {
-      g.scanPos.visible = true;
-      g.scanPos.position.set(scanPos.ul.x, scanPos.ul.y);
-      g.scanPos.width = scanPos.br.x - scanPos.ul.x;
-      g.scanPos.height = scanPos.br.y - scanPos.ul.y;
-    }
+subscribeToSelector([(state) => state.tilesetEditor.scanPos], (scanPos) => {
+  if (scanPos === null) {
+    g.scanPos.visible = false;
+  } else {
+    g.scanPos.visible = true;
+    g.scanPos.position.set(scanPos.ul.x, scanPos.ul.y);
+    g.scanPos.width = scanPos.br.x - scanPos.ul.x;
+    g.scanPos.height = scanPos.br.y - scanPos.ul.y;
   }
-);
+});

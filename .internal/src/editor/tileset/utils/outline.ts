@@ -1,5 +1,5 @@
 import { TileGroup } from "@/types/tilegroup";
 
-export function shouldOutline(g: TileGroup) {
+export function shouldOutline(_g: TileGroup) {
   return true;
 }
