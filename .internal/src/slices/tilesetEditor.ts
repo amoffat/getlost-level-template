@@ -149,12 +149,14 @@ const slice = createSlice({
     setZoom: (state, action: PayloadAction<Zoom>) => {
       const zoom = action.payload;
       const tsId = state.activeTilesetId;
+      state.activeZoomPan.zoom = zoom;
       if (!tsId) return;
       state.tilesetZoomPans[tsId].zoom = zoom;
     },
     setPan: (state, action: PayloadAction<Pan>) => {
       const pan = action.payload;
       const tsId = state.activeTilesetId;
+      state.activeZoomPan.pan = pan;
       if (!tsId) return;
       state.tilesetZoomPans[tsId].pan = pan;
     },

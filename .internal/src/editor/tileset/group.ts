@@ -121,7 +121,7 @@ export function setupGrouper(cd: ClickDragger) {
   cd.addListener(new Grouper());
 }
 
-async function drawGroups(groups: TileGroup[]) {
+async function drawGroups(groups: TileGroup[], zoom: number) {
   if (!g.allGroupsOverlay) return;
 
   g.allGroupsOverlay.removeChildren();
@@ -132,6 +132,8 @@ async function drawGroups(groups: TileGroup[]) {
     mask,
   });
 
+  const stroke = { ...groupStroke, width: (groupStroke.width ?? 1) / zoom };
+
   for (const group of groups.filter(shouldOutline)) {
     const rect = new P.Rectangle(
       group.pos.ul.x,
@@ -139,7 +141,7 @@ async function drawGroups(groups: TileGroup[]) {
       group.pos.br.x - group.pos.ul.x,
       group.pos.br.y - group.pos.ul.y
     );
-    gfx.rect(rect.x, rect.y, rect.width, rect.height).stroke(groupStroke);
+    gfx.rect(rect.x, rect.y, rect.width, rect.height).stroke(stroke);
 
     mask
       .rect(rect.x, rect.y, rect.width, rect.height)
@@ -148,7 +150,13 @@ async function drawGroups(groups: TileGroup[]) {
   g.allGroupsOverlay.addChild(gfx);
 }
 
-subscribeToSelector([selectors.activeTilesetGroups], (groups) => {
-  if (!groups) return;
-  drawGroups(groups);
-});
+subscribeToSelector(
+  [
+    selectors.activeTilesetGroups,
+    (state) => state.tilesetEditor.activeZoomPan.zoom,
+  ],
+  (groups, zoom) => {
+    if (!groups) return;
+    drawGroups(groups, zoom);
+  }
+);
