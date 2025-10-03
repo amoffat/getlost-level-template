@@ -13,6 +13,8 @@ interface Globals {
   placableSprite?: P.Sprite;
   selectionOutlines: P.Container;
   rectSelectOutline: P.Container;
+  boundsContainer: P.Graphics;
+  boundsMask: P.Graphics;
   grid: P.Container;
   gridSnap: number;
   tilesetCache: Map<string, P.Texture>;

@@ -1,6 +1,13 @@
 import { Vector } from "@/vec";
-import { LoadingOverlay, Portal, ScrollArea, TextInput } from "@mantine/core";
-import { IconSearch } from "@tabler/icons-react";
+import {
+  ActionIcon,
+  Group,
+  LoadingOverlay,
+  Portal,
+  ScrollArea,
+  TextInput,
+} from "@mantine/core";
+import { IconSearch, IconZoomIn, IconZoomOut } from "@tabler/icons-react";
 import React, { JSX, useCallback, useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "../hooks/redux";
 import { TileGroup } from "../types/tilegroup";
@@ -26,6 +33,7 @@ export default function ObjectPalette({
     useState<TileGroup | null>(null);
   const tsState = useAppSelector((state) => state.tilesetEditor);
   const [selectedObject, setSelectedObject] = useState<TileGroup | null>(null);
+  const [scale, setScale] = useState(1);
 
   const objects: JSX.Element[] = useMemo(() => {
     const objs: JSX.Element[] = [];
@@ -48,7 +56,7 @@ export default function ObjectPalette({
         const key = `${ts.id}-${group.id}`;
         objs.push(
           <TilesetGroup
-            scale={1}
+            scale={scale}
             key={key}
             group={group}
             selected={selectedObject?.id === group.id && allowSelect}
@@ -58,7 +66,7 @@ export default function ObjectPalette({
     }
 
     return objs;
-  }, [tsState.tilesets, showTileset, selectedObject, allowSelect]);
+  }, [tsState.tilesets, showTileset, selectedObject, allowSelect, scale]);
 
   const deselectObject = useCallback(() => {
     setObjMenuPos(null);
@@ -118,6 +126,14 @@ export default function ObjectPalette({
     [tsState.tilesets, deselectObject, selectedObject?.id, onSelectObject]
   );
 
+  const zoomInClick = useCallback(() => {
+    setScale((s) => Math.min(4, s + 0.25));
+  }, []);
+
+  const zoomOutClick = useCallback(() => {
+    setScale((s) => Math.max(0.25, s - 0.25));
+  }, []);
+
   return (
     <>
       <ScrollArea.Autosize
@@ -128,11 +144,29 @@ export default function ObjectPalette({
         style={{ flex: 1, minHeight: 0 }}
       >
         {objects.length > 0 && (
-          <TextInput
-            placeholder="Filter objects"
-            leftSection={<IconSearch size={16} />}
-            mb="sm"
-          />
+          <Group mb="sm" me="sm">
+            <TextInput
+              flex="1"
+              placeholder="Filter objects"
+              leftSection={<IconSearch size={16} />}
+            />
+            <Group gap="xs">
+              <ActionIcon
+                size="input-sm"
+                variant="default"
+                onClick={zoomInClick}
+              >
+                <IconZoomIn />
+              </ActionIcon>
+              <ActionIcon
+                size="input-sm"
+                variant="default"
+                onClick={zoomOutClick}
+              >
+                <IconZoomOut />
+              </ActionIcon>
+            </Group>
+          </Group>
         )}
 
         <LoadingOverlay

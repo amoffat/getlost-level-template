@@ -10,7 +10,7 @@ interface UIState {
   };
 }
 
-const defaultTab: TabName = "tileset-editor";
+const defaultTab: TabName = "map-editor";
 
 const initialState: UIState = {
   activeTab: defaultTab,

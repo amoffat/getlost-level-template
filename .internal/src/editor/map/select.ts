@@ -229,11 +229,14 @@ export function clearObjectOutlines() {
  * When the selected objects change, we need to update the outlines.
  */
 subscribeToSelector(
-  [(state) => state.mapEditor.selectedObjs, (state) => state.mapEditor.zoomPan],
-  (selectedObjs, zoomPan) => {
+  [
+    (state) => state.mapEditor.selectedObjs,
+    (state) => state.mapEditor.zoomPan.zoom,
+  ],
+  (selectedObjs, zoom) => {
     if (selectedObjs) {
       const objs = selectedObjs.ids.map((id) => selectedObjs.entities[id]);
-      outlineObjects(objs, zoomPan.zoom);
+      outlineObjects(objs, zoom);
     } else {
       clearObjectOutlines();
     }

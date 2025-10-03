@@ -1,4 +1,5 @@
 import { Mode, TileGroupInstance } from "@/types/editor";
+import { Rect } from "@/types/rect";
 import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
 import {
@@ -19,6 +20,7 @@ interface MapEditorState {
     visible: boolean;
     snap: boolean;
   };
+  bounds: Rect;
   zoomPan: ZoomPan;
   selectedMode: Mode | null;
   modeStack: Mode[];
@@ -49,6 +51,7 @@ const slice = createSlice({
       visible: true,
       snap: true,
     },
+    bounds: { ul: { x: 0, y: 0 }, br: { x: 5000, y: 5000 } },
     zoomPan: { zoom: 1, pan: { x: 0, y: 0 } },
     place: {
       obj: null,

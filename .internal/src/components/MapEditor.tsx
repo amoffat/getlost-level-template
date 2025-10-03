@@ -18,9 +18,12 @@ import { actions } from "../slices/mapEditor";
 import { globals as g } from "@/globals";
 import { Mode } from "@/types/editor";
 import {
+  IconBrush,
+  IconCameraSearch,
   IconCircle,
+  IconEar,
   IconMapPin,
-  IconPlus,
+  IconPaint,
   IconRectangle,
 } from "@tabler/icons-react";
 import { RootState } from "../store/store";
@@ -80,7 +83,13 @@ export default function MapEditorTab() {
       {
         slug: "place",
         name: "Place object",
-        icon: <IconPlus size={16} />,
+        icon: <IconBrush size={16} />,
+        canActivate: true,
+      },
+      {
+        slug: "fill",
+        name: "Fill area",
+        icon: <IconPaint size={16} />,
         canActivate: true,
       },
       {
@@ -101,9 +110,29 @@ export default function MapEditorTab() {
         icon: <IconRectangle size={16} />,
         canActivate: true,
       },
+      // {
+      //   slug: "set-bounds",
+      //   name: "Set map bounds",
+      //   icon: <IconCrop size={16} />,
+      //   canActivate: true,
+      // },
+      {
+        slug: "set-sound-zones",
+        name: "Sound zones",
+        icon: <IconEar size={16} />,
+        canActivate: true,
+      },
+      {
+        slug: "set-zoom-zones",
+        name: "Zoom zones",
+        icon: <IconCameraSearch size={16} />,
+        canActivate: true,
+      },
     ],
     []
   );
+
+  let toolOptions = null;
 
   const onToolActivated = useCallback(
     (slug: string) => {
@@ -184,7 +213,11 @@ export default function MapEditorTab() {
         <Stack miw={200} style={{ flex: 1 }}>
           <ToolPalette tools={toolPalette} onToolActivated={onToolActivated} />
 
-          <Fieldset legend="Active tile layer">
+          {toolOptions && (
+            <Fieldset legend="Tool options">{toolOptions}</Fieldset>
+          )}
+
+          <Fieldset legend="Active layer">
             <Radio.Group onChange={changeActiveLayer} value={s.layers.active}>
               <Stack p={0}>
                 <Tooltip

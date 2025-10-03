@@ -9,6 +9,10 @@ export type Mode =
   | "set-waypoint"
   | "circle-collision"
   | "rect-collision"
+  | "fill"
+  | "set-bounds"
+  | "set-sound-zones"
+  | "set-zoom-zones"
   | "duplicate";
 
 export interface MapObj {

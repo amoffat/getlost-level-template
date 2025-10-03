@@ -74,13 +74,7 @@ export default function ToolPalette<T extends string>({
 
   return (
     <Fieldset p={"xs"} legend={legend}>
-      <SimpleGrid
-        ref={ref}
-        cols={cols}
-        spacing={gap}
-        verticalSpacing={gap}
-        style={{ alignContent: "start" }}
-      >
+      <SimpleGrid ref={ref} cols={cols} spacing={gap} verticalSpacing={gap}>
         {toolComponents}
       </SimpleGrid>
     </Fieldset>

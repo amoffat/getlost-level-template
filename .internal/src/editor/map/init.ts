@@ -10,6 +10,7 @@ import { getCursorForMode } from "../common/cursor";
 import { ClickDragger } from "../common/drag";
 import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
+import { drawBounds } from "./bounds";
 import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
 import { setupMover } from "./move";
@@ -20,6 +21,8 @@ import { setupSelector } from "./select";
 export async function init(
   getParent: () => HTMLElement
 ): Promise<P.Application> {
+  const mapState = store.getState().mapEditor;
+
   // Create a new application
   const app = new P.Application();
   g.app = app;
@@ -92,6 +95,13 @@ export async function init(
   g.rectSelectOutline.zIndex = Infinity - 2;
   g.mapContainer.addChild(g.rectSelectOutline);
 
+  g.boundsContainer = new P.Graphics();
+  stage.addChild(g.boundsContainer);
+  g.boundsMask = new P.Graphics();
+  g.boundsContainer.setMask({ mask: g.boundsMask, inverse: true });
+  g.mapContainer.addChild(g.boundsMask);
+  drawBounds();
+
   const spatialIndex = new SpatialIndex();
   const reconciler = new ReduxReconciler({
     root: g.mapContainer,
@@ -121,7 +131,10 @@ export async function init(
     stage,
     panContainer: g.mapContainer,
     onPanningStart: () => {
-      store.dispatch(actions.pushMode("pan"));
+      const mode = selectors.selectMode(store.getState());
+      if (mode !== "pan") {
+        store.dispatch(actions.pushMode("pan"));
+      }
     },
     onPanningEnd: (_panPos) => {
       store.dispatch(actions.popMode());
@@ -143,6 +156,7 @@ export async function init(
     if (!rect.width || !rect.height) return;
     checkerboard.width = rect.width;
     checkerboard.height = rect.height;
+    drawBounds();
   }
   window.addEventListener("resize", redrawLayout);
   onVisible(canvas, redrawLayout);
