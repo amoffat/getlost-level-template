@@ -88,7 +88,7 @@ export default function MapEditorTab() {
       },
       {
         slug: "fill",
-        name: "Fill area",
+        name: "Paint area",
         icon: <IconPaint size={16} />,
         canActivate: true,
       },

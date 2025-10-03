@@ -118,7 +118,7 @@ export async function init(
 
   setupSelector(cd, spatialIndex);
   g.mover = setupMover(cd);
-  setupPlacer();
+  setupPlacer(cd);
   setupWheelZoom({
     canvas,
     stage,

@@ -3,36 +3,72 @@ import { actions } from "@/slices/map";
 import { store } from "@/store/store";
 import { TileGroupInstance } from "@/types/editor";
 import { subscribeToSelector } from "@/utils/redux";
+import { Vector } from "@/vec";
 import * as P from "pixi.js";
+import {
+  ClickDragger,
+  ClickDragListener,
+  PointerEventData,
+} from "../common/drag";
 import { drawMaskedOutline } from "../common/outline";
 import { selectStroke } from "../common/strokes";
 import { globals as g } from "./globals";
 
-function mouseToPos(e: P.FederatedPointerEvent) {
-  const pos = g.mapContainer.toLocal(e.global);
-  const snap = store.getState().mapEditor.grid.snap;
-  if (snap) {
-    return {
-      x: Math.floor(pos.x / g.gridSnap) * g.gridSnap,
-      y: Math.floor(pos.y / g.gridSnap) * g.gridSnap,
-    };
-  } else {
-    return {
-      x: Math.round(pos.x),
-      y: Math.round(pos.y),
-    };
+class Placer implements ClickDragListener {
+  private paint = false;
+  // The positions of objects we've placed during this paint session, to avoid
+  // placing duplicates on top of each other.
+  private painted: Set<string> = new Set();
+
+  public pointerUp(e: PointerEventData): void {
+    this.instantiatePlacable();
+    this.paint = false;
+    this.painted.clear();
   }
-}
 
-export function setupPlacer() {
-  const stage = g.app.stage;
+  public pointerDown(e: PointerEventData): void {
+    this.paint = true;
+  }
 
-  stage.addEventListener("pointerdown", (e) => {
-    if (e.button !== 0) return;
+  public pointerMove(e: PointerEventData): void {
     if (!g.placableSprite) return;
-    e.preventDefault();
+
+    const rawPos = e.localPos;
+    let finalPos: Vector = rawPos;
+    const snap = store.getState().mapEditor.grid.snap;
+    if (snap) {
+      finalPos = {
+        x: Math.floor(rawPos.x / g.gridSnap) * g.gridSnap,
+        y: Math.floor(rawPos.y / g.gridSnap) * g.gridSnap,
+      };
+    } else {
+      finalPos = {
+        x: Math.round(rawPos.x),
+        y: Math.round(rawPos.y),
+      };
+    }
+
+    g.placableOutline.position = finalPos;
+    g.placableContainer.position = finalPos;
+    g.placableContainer.zIndex = finalPos.y;
+  }
+
+  public pointerDrag(e: PointerEventData): void {
+    if (this.paint) {
+      this.instantiatePlacable();
+    }
+  }
+
+  private instantiatePlacable(): void {
+    if (!g.placableSprite) return;
 
     const pos = g.placableContainer.position;
+    const key = `${pos.x},${pos.y}`;
+    if (this.painted.has(key)) {
+      return;
+    }
+    this.painted.add(key);
+
     const state = store.getState();
     const place = state.mapEditor.place;
     const obj = place.obj!;
@@ -50,18 +86,11 @@ export function setupPlacer() {
     };
 
     store.dispatch(actions.addOne(tgi));
-  });
+  }
+}
 
-  stage.on("pointermove", (e) => {
-    e.preventDefault();
-
-    if (g.placableSprite) {
-      const pos = mouseToPos(e);
-      g.placableContainer.position = pos;
-      g.placableContainer.zIndex = pos.y;
-      g.placableOutline.position = pos;
-    }
-  });
+export function setupPlacer(cd: ClickDragger) {
+  cd.addListener(new Placer());
 }
 
 subscribeToSelector(

@@ -16,9 +16,10 @@ export interface PointerEventData {
 }
 
 export interface ClickDragListener {
-  pointerDown: (e: PointerEventData) => void;
-  pointerUp: (e: PointerEventData) => void;
-  pointerDrag: (e: PointerEventData) => void;
+  pointerDown?: (e: PointerEventData) => void;
+  pointerUp?: (e: PointerEventData) => void;
+  pointerDrag?: (e: PointerEventData) => void;
+  pointerMove?: (e: PointerEventData) => void;
 }
 
 export class ClickDragger {
@@ -46,14 +47,7 @@ export class ClickDragger {
     this.coordsRelativeTo = coordsRelativeTo ?? container;
 
     container.addEventListener("pointermove", (e) => {
-      if (!this.dragStart) return;
-
       this.dragEnd = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
-
-      if (this.globalMoveVector.magnitude < MOVE_THRESHOLD && !this.moved)
-        return;
-      this.moved = true;
-
       const ev: PointerEventData = {
         localPos: this.dragEnd,
         hitbox: this.makeHitbox(),
@@ -67,8 +61,19 @@ export class ClickDragger {
           y: e.pageY,
         },
       };
+
       for (const listener of this.listeners) {
-        listener.pointerDrag(ev);
+        listener.pointerMove?.(ev);
+      }
+
+      if (this.dragStart) {
+        if (this.globalMoveVector.magnitude < MOVE_THRESHOLD && !this.moved)
+          return;
+        this.moved = true;
+
+        for (const listener of this.listeners) {
+          listener.pointerDrag?.(ev);
+        }
       }
     });
 
@@ -96,17 +101,13 @@ export class ClickDragger {
           y: e.pageY,
         },
       };
-      this.listeners.forEach((listener) => listener.pointerDown(ev));
+      this.listeners.forEach((listener) => listener.pointerDown?.(ev));
     });
 
     container.addEventListener("pointerup", (e) => {
       const localPos = Vec2.fromPoint(
         e.getLocalPosition(this.coordsRelativeTo)
       );
-      if (!this.dragStart) {
-        this.dragStart = Vec2.fromPoint(localPos);
-      }
-      this.dragEnd = Vec2.fromPoint(localPos);
 
       const ev: PointerEventData = {
         localPos,
@@ -121,8 +122,10 @@ export class ClickDragger {
           y: e.pageY,
         },
       };
-      this.listeners.forEach((listener) => listener.pointerUp(ev));
+      this.listeners.forEach((listener) => listener.pointerUp?.(ev));
       this.moved = false;
+      this.dragStart = null;
+      this.dragEnd = null;
     });
   }
 
