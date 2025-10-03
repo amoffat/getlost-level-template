@@ -20,6 +20,7 @@
     "@xyflow/react": "^12.8.4",
     "cbor2": "^2.0.1",
     "classnames": "^2.5.1",
+    "culori": "^4.0.2",
     "debounce": "^2.2.0",
     "diff": "^8.0.2",
     "express": "^5.1.0",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
+    "@types/culori": "^4.0.1",
     "@types/express": "^5.0.3",
     "@types/formidable": "^3.4.5",
     "@types/rbush": "^4.0.0",
