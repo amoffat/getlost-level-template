@@ -5,13 +5,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     # Base deps
     git-crypt \
-    # Tiled deps
-    qtbase5-dev \
-    libqt5svg5-dev \
-    qttools5-dev-tools \
-    zlib1g-dev \
-    qtdeclarative5-dev \
-    qbs \
     # For converting audio assets
     ffmpeg \
     # For binaryen
@@ -19,18 +12,6 @@ RUN apt-get update \
     # cleanup
     && rm -rf /var/lib/apt/lists/*
 
-# Build Tiled from source
-RUN git clone \
-    --depth=1 \
-    https://github.com/mapeditor/tiled.git \
-    --branch v1.11.2 \
-    /tmp/tiled
-
-RUN cd /tmp/tiled \
-    && qbs setup-toolchains --detect \
-    && qbs build config:release \
-    && cp -a /tmp/tiled/release/install-root/usr / \
-    && rm -rf /tmp/tiled
 
 # Binaryen gets us wasm-opt, which lets us asyncify our WASM code
 RUN git clone \
@@ -51,15 +32,6 @@ USER node
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install twinejs and apply our autosaving patch
-RUN git clone \
-    --depth=1 \
-    --branch 2.10.0 \
-    https://github.com/klembot/twinejs.git \
-    $HOME/twinejs
-COPY patches/autosave.patch /home/node/twinejs/
-RUN cd $HOME/twinejs \
-    && git apply autosave.patch
 
 COPY fluxbox-menu.txt $HOME/.fluxbox/menu
 COPY fluxbox-startup.sh $HOME/.fluxbox/startup

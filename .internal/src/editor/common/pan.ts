@@ -19,7 +19,6 @@ export function setupPanControls({
 
   stage.on("pointerdown", (e: P.FederatedPointerEvent) => {
     if (e.button !== 2) return;
-    e.preventDefault();
 
     panStartGlobal = { x: e.global.x, y: e.global.y };
     panStartContainer = {
@@ -32,7 +31,6 @@ export function setupPanControls({
 
   stage.on("pointermove", (e: P.FederatedPointerEvent) => {
     if (!panning) return;
-    e.preventDefault();
     const dx = e.global.x - panStartGlobal.x;
     const dy = e.global.y - panStartGlobal.y;
     const pos = {
@@ -44,7 +42,6 @@ export function setupPanControls({
 
   const endPan = (e: P.FederatedPointerEvent) => {
     if (!panning) return;
-    e.preventDefault();
     panning = false;
 
     const panPos = {
