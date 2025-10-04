@@ -54,6 +54,7 @@ class Placer implements ClickDragListener {
     }
 
     const z = finalPos.y + g.placableSprite.height;
+    console.log(z);
     g.placableOutline.position = finalPos;
     g.placableContainer.position = finalPos;
     g.placableContainer.zIndex = z;

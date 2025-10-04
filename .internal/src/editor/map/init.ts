@@ -194,3 +194,21 @@ subscribeToSelector([selectors.selectMode], (mode) => {
     g.mover.startDuplicateMove();
   }
 });
+
+subscribeToSelector([(state) => state.mapEditor.layers], (layers) => {
+  const lc = g.layerContainers;
+  if (layers.lockInactive) {
+    for (const layer of Object.values(lc)) {
+      layer.alpha = 0.5;
+      layer.eventMode = "none";
+    }
+    const active = lc[layers.active];
+    active.alpha = 1;
+    active.interactive = true;
+  } else {
+    for (const layer of Object.values(lc)) {
+      layer.alpha = 1;
+      layer.interactive = true;
+    }
+  }
+});
