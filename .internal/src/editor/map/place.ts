@@ -36,27 +36,34 @@ class Placer implements ClickDragListener {
   }
 
   public pointerMove(e: PointerEventData): void {
-    if (!g.placableSprite) return;
+    const state = store.getState();
+    const mode = selectors.selectMode(state);
 
-    const rawPos = e.localPos;
-    let finalPos: Vector = rawPos;
-    const snap = store.getState().mapEditor.grid.snap;
-    if (snap) {
-      finalPos = {
-        x: Math.floor(rawPos.x / g.gridSnap) * g.gridSnap,
-        y: Math.floor(rawPos.y / g.gridSnap) * g.gridSnap,
-      };
-    } else {
-      finalPos = {
-        x: Math.round(rawPos.x),
-        y: Math.round(rawPos.y),
-      };
+    if (mode === "place") {
+      if (!g.placableSprite) return;
+
+      const rawPos = e.localPos;
+      let finalPos: Vector = rawPos;
+      const snap = state.mapEditor.grid.snap;
+      if (snap) {
+        finalPos = {
+          x: Math.floor(rawPos.x / g.gridSnap) * g.gridSnap,
+          y: Math.floor(rawPos.y / g.gridSnap) * g.gridSnap,
+        };
+      } else {
+        finalPos = {
+          x: Math.round(rawPos.x),
+          y: Math.round(rawPos.y),
+        };
+      }
+
+      const z = finalPos.y + g.placableSprite.height;
+      g.placableOutline.position = finalPos;
+      g.placableContainer.position = finalPos;
+      g.placableContainer.zIndex = z;
+    } else if (mode === "magic-paint") {
+      console.log("magic paint");
     }
-
-    const z = finalPos.y + g.placableSprite.height;
-    g.placableOutline.position = finalPos;
-    g.placableContainer.position = finalPos;
-    g.placableContainer.zIndex = z;
   }
 
   public pointerDrag(e: PointerEventData): void {

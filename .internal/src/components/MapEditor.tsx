@@ -16,6 +16,7 @@ import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions } from "../slices/mapEditor";
 
 import { globals as g } from "@/globals";
+import { setToolThunk } from "@/thunks/map";
 import { Mode } from "@/types/editor";
 import {
   IconBulb,
@@ -150,10 +151,14 @@ export default function MapEditorTab() {
 
   const onToolActivated = useCallback(
     (slug: string) => {
-      dispatch(actions.setActiveTool(slug as Mode));
+      dispatch(setToolThunk(slug as Mode));
     },
     [dispatch]
   );
+
+  const onToolDeactivated = useCallback(() => {
+    dispatch(setToolThunk(null));
+  }, [dispatch]);
 
   return (
     <>
@@ -225,7 +230,12 @@ export default function MapEditorTab() {
         </Flex>
 
         <Stack miw={200} style={{ flex: 1 }}>
-          <ToolPalette tools={toolPalette} onToolActivated={onToolActivated} />
+          <ToolPalette
+            tools={toolPalette}
+            activeTool={s.selectedTool}
+            onToolActivated={onToolActivated}
+            onToolDeactivated={onToolDeactivated}
+          />
 
           {toolOptions && (
             <Fieldset legend="Tool options">{toolOptions}</Fieldset>

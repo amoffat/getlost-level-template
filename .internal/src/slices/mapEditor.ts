@@ -22,7 +22,7 @@ interface MapEditorState {
   };
   bounds: Rect;
   zoomPan: ZoomPan;
-  selectedMode: Mode | null;
+  selectedTool: Mode | null;
   modeStack: Mode[];
   place: {
     obj: TileGroup | null;
@@ -59,7 +59,7 @@ const slice = createSlice({
     },
     selectedObjs: selectedAdapter.getInitialState(),
     proposedSelection: null,
-    selectedMode: null,
+    selectedTool: null,
     modeStack: [],
     layers: {
       active: "ground",
@@ -140,20 +140,28 @@ const slice = createSlice({
 
     popMode(state) {
       state.modeStack.pop();
+      state.selectedTool = null;
     },
 
-    setMode(state, action: PayloadAction<Mode>) {
+    setMode(state, action: PayloadAction<Mode | null>) {
       const mode = action.payload;
+      if (mode === null) {
+        state.modeStack = [];
+        state.selectedTool = null;
+        return;
+      }
+
       if (mode === "select") {
         state.place.obj = null;
         state.place.flipX = false;
+        state.selectedTool = null;
       }
       state.modeStack = [mode];
     },
 
     setActiveTool(state, action: PayloadAction<Mode | null>) {
       const mode = action.payload;
-      state.selectedMode = mode;
+      state.selectedTool = mode;
     },
   },
   selectors: {

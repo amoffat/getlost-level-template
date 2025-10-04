@@ -33,7 +33,7 @@ export interface TilesetEditorState {
     size: number;
     visible: boolean;
   };
-  selectedMode: Mode | null;
+  selectedTool: Mode | null;
   activeModeStack: Mode[];
   activeTilesetId: string | null;
   activeZoomPan: ZoomPan;
@@ -51,7 +51,7 @@ const slice = createSlice({
       size: 16,
       visible: true,
     },
-    selectedMode: null,
+    selectedTool: null,
     activeModeStack: [],
     activeTilesetId: null,
     activeZoomPan: DEFAULT_ZOOMPAN,
@@ -70,7 +70,7 @@ const slice = createSlice({
     },
 
     setActiveTool(state, action: PayloadAction<Mode | null>) {
-      state.selectedMode = action.payload;
+      state.selectedTool = action.payload;
     },
 
     pushMode(state, action: PayloadAction<Mode>) {

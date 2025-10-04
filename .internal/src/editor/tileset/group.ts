@@ -35,7 +35,7 @@ class Grouper implements ClickDragListener {
   pointerDown(_e: PointerEventData) {
     const state = store.getState();
     if (!state.tilesetEditor.activeTilesetId) return;
-    const mode = state.tilesetEditor.selectedMode;
+    const mode = state.tilesetEditor.selectedTool;
     if (mode === "add-group") {
       store.dispatch(tsActions.setMode("add-group"));
     } else if (mode === "delete-group") {

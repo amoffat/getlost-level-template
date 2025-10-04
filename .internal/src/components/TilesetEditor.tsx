@@ -165,7 +165,11 @@ export default function TilesetEditorTab() {
           </Stack>
         </Flex>
         <Stack miw={200} style={{ flex: 1 }}>
-          <ToolPalette tools={toolPalette} onToolActivated={onToolActivated} />
+          <ToolPalette
+            activeTool={s.selectedTool}
+            tools={toolPalette}
+            onToolActivated={onToolActivated}
+          />
           <Fieldset p={"xs"} legend="Grid settings">
             <Stack p={0}>
               <GridSizeInput

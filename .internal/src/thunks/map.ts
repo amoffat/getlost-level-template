@@ -4,7 +4,7 @@ import {
   selectors as mapEdSelectors,
 } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
-import { TileGroupInstance } from "@/types/editor";
+import { Mode, TileGroupInstance } from "@/types/editor";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const duplicateSelectionThunk = createAsyncThunk(
@@ -28,5 +28,21 @@ export const duplicateSelectionThunk = createAsyncThunk(
     dispatch(mapEdActions.setManySelected(newObjs));
     // Switch to "duplicate" mode which will allow immediate moving
     dispatch(mapEdActions.setMode("duplicate"));
+  }
+);
+
+export const setToolThunk = createAsyncThunk(
+  "mapEditor/setToolThunk",
+  async (tool: Mode | null, { dispatch, getState }) => {
+    const state = getState() as RootState;
+    const currentMode = mapEdSelectors.selectMode(state);
+
+    dispatch(mapEdActions.setActiveTool(tool));
+
+    if (tool === null) {
+      dispatch(mapEdActions.setMode(null));
+    } else {
+      dispatch(mapEdActions.pushMode(tool));
+    }
   }
 );

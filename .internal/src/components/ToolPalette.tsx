@@ -1,6 +1,6 @@
 import { ActionIcon, Fieldset, SimpleGrid, Tooltip } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useMemo } from "react";
 
 export interface ToolDescriptor<T extends string> {
   slug: T;
@@ -14,10 +14,12 @@ export interface ToolDescriptor<T extends string> {
 
 interface ToolPaletteProps<T extends string> {
   tools: ToolDescriptor<T>[];
+  activeTool: T | null;
   legend?: string;
   iconSize?: number; // px square side; default 32
   gap?: number; // px gap; default 4
   onToolActivated?: (slug: T) => void;
+  onToolDeactivated?: (slug: T) => void;
 }
 
 /**
@@ -25,13 +27,14 @@ interface ToolPaletteProps<T extends string> {
  */
 export default function ToolPalette<T extends string>({
   tools,
+  activeTool,
   legend = "Tools",
   iconSize = 32,
   gap = 4,
   onToolActivated,
+  onToolDeactivated,
 }: ToolPaletteProps<T>) {
   const { ref, width } = useElementSize();
-  const [activeTool, setActiveTool] = useState<string | null>(null);
 
   const cols = useMemo(() => {
     return Math.max(1, Math.floor((width + gap) / (iconSize + gap)));
@@ -44,13 +47,12 @@ export default function ToolPalette<T extends string>({
     const onClick = () => {
       // Deactivate if already active
       if (activeTool === t.slug) {
-        setActiveTool(null);
+        onToolDeactivated?.(t.slug);
         return;
       }
 
       if (t.disabled) return;
       if (t.canActivate) {
-        setActiveTool(t.slug);
         onToolActivated?.(t.slug);
       }
       t.onClick?.();
