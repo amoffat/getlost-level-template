@@ -1,4 +1,4 @@
-import { buildSignatureIndex } from "@/editor/tileset/autojoin";
+import { buildSignatureIndex } from "@/editor/tileset/autotile";
 import { setCanvasTileset } from "@/editor/tileset/loader";
 import { globals as g } from "@/globals";
 import { loadTileset, loadTilesets } from "@/persist/api";

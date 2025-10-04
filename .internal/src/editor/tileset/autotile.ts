@@ -138,6 +138,8 @@ export interface MatchResult {
 export interface MatchOptions extends EdgeSignatureOptions {
   /** Aggregation: currently only 'sum' (L2 per-edge then summed) */
   aggregation?: "sum";
+  /** Number of top matches to return (default 1). If <=0 returns empty array. */
+  topN?: number;
 }
 
 /** Euclidean distance between vectors (assumed equal length) */
@@ -160,24 +162,34 @@ function l2(a: number[], b: number[]): number {
 export function matchTile(
   query: ImageData,
   index: SignatureIndex,
-  edges: EdgeName[],
+  edges: Array<EdgeName | [EdgeName, number]>,
   options: MatchOptions = {}
-): MatchResult | undefined {
+): MatchResult[] {
   if (!edges.length) throw new Error("edges array must not be empty");
+
+  const { topN = 1 } = options;
+  if (topN <= 0) return [];
+
+  // Normalize edge specs into { edge, weight }
+  const weightedEdges: { edge: EdgeName; weight: number }[] = edges.map((e) =>
+    Array.isArray(e) ? { edge: e[0], weight: e[1] } : { edge: e, weight: 1 }
+  );
+
   const sigOpts: EdgeSignatureOptions = options;
   const querySig = computeEdgeSignatures(query, sigOpts);
-  let best: MatchResult | undefined;
+  const results: MatchResult[] = [];
+
   for (const [id, sig] of index.entries()) {
     let total = 0;
     const edgeDistances: Partial<Record<EdgeName, number>> = {};
-    for (const e of edges) {
-      const d = l2(querySig[e], sig[e]);
-      edgeDistances[e] = d;
-      total += d; // aggregation 'sum'
+    for (const { edge, weight } of weightedEdges) {
+      const d = l2(querySig[edge], sig[edge]);
+      edgeDistances[edge] = d; // store raw distance (unweighted) for transparency
+      total += weight * d; // weighted aggregation
     }
-    if (!best || total < best.distance) {
-      best = { id, distance: total, edgeDistances, signatures: sig };
-    }
+    results.push({ id, distance: total, edgeDistances, signatures: sig });
   }
-  return best;
+
+  results.sort((a, b) => a.distance - b.distance);
+  return results.slice(0, Math.min(topN, results.length));
 }

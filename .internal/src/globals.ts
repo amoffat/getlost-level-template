@@ -1,5 +1,5 @@
 import * as P from "pixi.js";
-import type { SignatureIndex } from "./editor/tileset/autojoin";
+import type { SignatureIndex } from "./editor/tileset/autotile";
 
 interface Globals {
   mapEditorApp: P.Application | null;
