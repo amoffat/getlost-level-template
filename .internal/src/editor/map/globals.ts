@@ -1,3 +1,4 @@
+import { LayerName } from "@/types/layer";
 import * as P from "pixi.js";
 import { Mover } from "./move";
 
@@ -7,6 +8,7 @@ interface Globals {
   mover: Mover;
   gridContainer: P.Container;
   mapContainer: P.Container;
+  layerContainers: Record<LayerName, P.Container>;
   backgroundContainer: P.Container;
   placableContainer: P.Container;
   placableOutline: P.Container;
@@ -24,4 +26,5 @@ interface Globals {
 export const globals: Globals = {
   initialized: false,
   tilesetCache: new Map<string, P.Texture>(),
+  layerContainers: {} as Record<LayerName, P.Container>,
 } as unknown as Globals;

@@ -1,5 +1,6 @@
 import { log } from "@/log";
 import { actions } from "@/slices/map";
+import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { TileGroupInstance } from "@/types/editor";
 import { subscribeToSelector } from "@/utils/redux";
@@ -21,6 +22,10 @@ class Placer implements ClickDragListener {
   private painted: Set<string> = new Set();
 
   public pointerUp(e: PointerEventData): void {
+    const state = store.getState();
+    const mode = selectors.selectMode(state);
+    if (mode !== "place") return;
+
     this.instantiatePlacable();
     this.paint = false;
     this.painted.clear();
@@ -48,9 +53,10 @@ class Placer implements ClickDragListener {
       };
     }
 
+    const z = finalPos.y + g.placableSprite.height;
     g.placableOutline.position = finalPos;
     g.placableContainer.position = finalPos;
-    g.placableContainer.zIndex = finalPos.y;
+    g.placableContainer.zIndex = z;
   }
 
   public pointerDrag(e: PointerEventData): void {
@@ -76,7 +82,8 @@ class Placer implements ClickDragListener {
     const id = crypto.randomUUID();
 
     let z = pos.y + g.placableSprite.height;
-    if (mState.layers.active === "ground") {
+    const layer = mState.layers.active;
+    if (layer === "ground") {
       z = 0;
     }
 
@@ -89,6 +96,7 @@ class Placer implements ClickDragListener {
       frame: obj.pos,
       flipX: place.flipX,
       z,
+      layer,
     };
 
     store.dispatch(actions.addOne(tgi));

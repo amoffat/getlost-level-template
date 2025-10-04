@@ -37,6 +37,8 @@ export class Mover implements ClickDragListener {
   public pointerDown(e: PointerEventData): void {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
+    if (mode === "place") return;
+
     const sel = state.mapEditor.selectedObjs;
 
     if ((sel.ids.length > 0 && e.over) || mode === "move") {
@@ -102,9 +104,16 @@ export class Mover implements ClickDragListener {
         newPos.x = Math.floor(newPos.x / gridSnap) * gridSnap;
         newPos.y = Math.floor(newPos.y / gridSnap) * gridSnap;
       }
+      const height = obj.frame.br.y - obj.frame.ul.y;
+      const z = newPos.y + height;
+
       updates.push({
         id: objId,
-        changes: { x: newPos.x, y: newPos.y },
+        changes: {
+          x: newPos.x,
+          y: newPos.y,
+          z,
+        },
       });
     }
     store.dispatch(mapActions.updateMany(updates));

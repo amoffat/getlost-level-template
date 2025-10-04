@@ -1,3 +1,4 @@
+import { LayerName } from "./layer";
 import { Rect } from "./rect";
 
 export type Mode =
@@ -14,6 +15,8 @@ export type Mode =
   | "set-bounds"
   | "set-sound-zones"
   | "set-zoom-zones"
+  | "set-water-zones"
+  | "add-light"
   | "duplicate";
 
 export interface MapObj {
@@ -21,6 +24,7 @@ export interface MapObj {
   x: number;
   y: number;
   z: number;
+  layer: LayerName;
 }
 
 export interface TileGroupInstance extends MapObj {

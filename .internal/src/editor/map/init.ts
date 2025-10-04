@@ -88,6 +88,8 @@ export async function init(
 
   // This stores the outlines of selected objects
   g.selectionOutlines = new P.Container();
+  g.selectionOutlines.eventMode = "none";
+  g.selectionOutlines.interactiveChildren = false;
   g.selectionOutlines.zIndex = Infinity - 1;
   g.mapContainer.addChild(g.selectionOutlines);
 
@@ -102,9 +104,14 @@ export async function init(
   g.mapContainer.addChild(g.boundsMask);
   drawBounds();
 
+  g.layerContainers.ground = new P.Container();
+  g.mapContainer.addChild(g.layerContainers.ground);
+  g.layerContainers.world = new P.Container();
+  g.mapContainer.addChild(g.layerContainers.world);
+
   const spatialIndex = new SpatialIndex();
   const reconciler = new ReduxReconciler({
-    root: g.mapContainer,
+    layerContainers: g.layerContainers,
     tilesetCache: g.tilesetCache,
     spatialIndex,
   });

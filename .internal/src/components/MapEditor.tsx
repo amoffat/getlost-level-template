@@ -18,16 +18,18 @@ import { actions } from "../slices/mapEditor";
 import { globals as g } from "@/globals";
 import { Mode } from "@/types/editor";
 import {
+  IconBulb,
   IconCameraSearch,
   IconCircle,
   IconEar,
   IconMapPin,
   IconPaint,
   IconRectangle,
+  IconRipple,
   IconWand,
 } from "@tabler/icons-react";
 import { RootState } from "../store/store";
-import { ActiveLayer } from "../types/layer";
+import { LayerName } from "../types/layer";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
@@ -58,8 +60,8 @@ export default function MapEditorTab() {
 
   const changeActiveLayer = useCallback(
     (id: string) => {
-      dispatch(actions.setActiveLayer(id as ActiveLayer));
-      dispatch(actions.setDimInactiveLayer(true));
+      dispatch(actions.setActiveLayer(id as LayerName));
+      dispatch(actions.setLockInactiveLayer(true));
     },
     [dispatch]
   );
@@ -117,6 +119,12 @@ export default function MapEditorTab() {
       //   canActivate: true,
       // },
       {
+        slug: "set-water-zones",
+        name: "Water zones",
+        icon: <IconRipple size={16} />,
+        canActivate: true,
+      },
+      {
         slug: "set-sound-zones",
         name: "Sound zones",
         icon: <IconEar size={16} />,
@@ -127,6 +135,12 @@ export default function MapEditorTab() {
         name: "Zoom zones",
         icon: <IconCameraSearch size={16} />,
         canActivate: true,
+      },
+      {
+        slug: "add-light",
+        name: "Add light",
+        icon: <IconBulb size={16} />,
+        canActivate: false,
       },
     ],
     []
@@ -243,11 +257,11 @@ export default function MapEditorTab() {
                   <Radio value="ground" label="Ground" />
                 </Tooltip>
                 <Switch
-                  label="Dim inactive layer"
-                  checked={s.layers.dimInactive}
+                  label="Lock inactive layer"
+                  checked={s.layers.lockInactive}
                   onChange={(event) => {
                     dispatch(
-                      actions.setDimInactiveLayer(event.currentTarget.checked)
+                      actions.setLockInactiveLayer(event.currentTarget.checked)
                     );
                   }}
                 />

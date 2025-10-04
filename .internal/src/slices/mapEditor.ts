@@ -9,7 +9,7 @@ import {
   EntityState,
   PayloadAction,
 } from "@reduxjs/toolkit";
-import { ActiveLayer } from "../types/layer";
+import { LayerName } from "../types/layer";
 import { TileGroup } from "../types/tilegroup";
 
 export const selectedAdapter = createEntityAdapter<TileGroupInstance>();
@@ -34,8 +34,8 @@ interface MapEditorState {
     pos: Vector;
   } | null;
   layers: {
-    active: ActiveLayer;
-    dimInactive: boolean;
+    active: LayerName;
+    lockInactive: boolean;
   };
 }
 
@@ -63,7 +63,7 @@ const slice = createSlice({
     modeStack: [],
     layers: {
       active: "ground",
-      dimInactive: true,
+      lockInactive: true,
     },
   } as MapEditorState,
   reducers: {
@@ -75,12 +75,12 @@ const slice = createSlice({
       state.grid.snap = action.payload;
     },
 
-    setActiveLayer(state, action: { payload: ActiveLayer }) {
+    setActiveLayer(state, action: { payload: LayerName }) {
       state.layers.active = action.payload;
     },
 
-    setDimInactiveLayer(state, action: { payload: boolean }) {
-      state.layers.dimInactive = action.payload;
+    setLockInactiveLayer(state, action: { payload: boolean }) {
+      state.layers.lockInactive = action.payload;
     },
 
     setPlace(state, action: PayloadAction<TileGroup | null>) {

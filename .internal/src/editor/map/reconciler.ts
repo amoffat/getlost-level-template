@@ -1,5 +1,6 @@
 // pixiReconciler.ts
 import { isTileGroupInstance, MapObj, TileGroupInstance } from "@/types/editor";
+import { LayerName } from "@/types/layer";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
 
@@ -21,27 +22,14 @@ function makeIndexItem(id: string, node: P.Container): IndexItem {
  * It batches changes and applies them on the next animation frame.
  */
 export class ReduxReconciler {
-  private root: P.Container;
+  private layerContainers: Record<LayerName, P.Container>;
   private tilesetCache: Map<string, P.Texture>;
   // Axis-aligned bbox entry for RBush
   private spatialIndex: SpatialIndex;
 
-  constructor({
-    root,
-    tilesetCache,
-    spatialIndex,
-  }: {
-    root: P.Container;
-    tilesetCache: Map<string, P.Texture>;
-    spatialIndex: SpatialIndex;
-  }) {
-    this.root = root;
-    this.tilesetCache = tilesetCache;
-    this.spatialIndex = spatialIndex;
-  }
-
   // id -> DisplayObject
   private nodes = new Map<string, P.Container>();
+  private layerLookup = new Map<string, P.Container>();
 
   // coalesced ops for this frame
   private pendingAdds: MapObj[] = [];
@@ -51,6 +39,20 @@ export class ReduxReconciler {
   }> = [];
   private pendingRemoves: string[] = [];
   private rafScheduled = false;
+
+  constructor({
+    layerContainers,
+    tilesetCache,
+    spatialIndex,
+  }: {
+    layerContainers: Record<LayerName, P.Container>;
+    tilesetCache: Map<string, P.Texture>;
+    spatialIndex: SpatialIndex;
+  }) {
+    this.layerContainers = layerContainers;
+    this.tilesetCache = tilesetCache;
+    this.spatialIndex = spatialIndex;
+  }
 
   enqueueAdd(obj: MapObj) {
     this.pendingAdds.push(obj);
@@ -95,7 +97,9 @@ export class ReduxReconciler {
       if (node) {
         this.spatialIndex.removeById(id);
         node.destroy({ children: true });
-        this.root.removeChild(node);
+        const layer = this.layerLookup.get(id)!;
+        this.layerLookup.delete(id);
+        layer.removeChild(node);
         this.nodes.delete(id);
       }
     }
@@ -104,7 +108,9 @@ export class ReduxReconciler {
     for (const obj of this.pendingAdds) {
       const node = this.createNode(obj);
       this.nodes.set(obj.id, node);
-      this.root.addChild(node);
+      const layer = this.layerContainers[obj.layer]!;
+      this.layerLookup.set(obj.id, layer);
+      layer.addChild(node);
       this.applyProps(node, obj); // position/angle/z, etc.
 
       // Index in spatial structure
@@ -146,7 +152,7 @@ export class ReduxReconciler {
       });
       const sprite = new P.Sprite(tileTex);
       sprite.position.set(sprite.width / 2, sprite.height / 2);
-      sprite.zIndex = obj.y;
+      sprite.zIndex = obj.z;
       sprite.interactive = false;
       sprite.anchor.set(0.5);
       sprite.scale.x = obj.flipX ? -1 : 1;
@@ -174,6 +180,15 @@ export class ReduxReconciler {
     if (p.z !== undefined) node.zIndex = p.z;
     if (p.flipX !== undefined) {
       node.children[0].scale.x = p.flipX ? -1 : 1;
+    }
+    if (p.layer !== undefined) {
+      const oldLayer = this.layerLookup.get(node.label)!;
+      const newLayer = this.layerContainers[p.layer]!;
+      if (oldLayer !== newLayer) {
+        oldLayer.removeChild(node);
+        newLayer.addChild(node);
+        this.layerLookup.set(node.label, newLayer);
+      }
     }
   }
 }

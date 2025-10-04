@@ -1,7 +1,7 @@
 import BTree from "sorted-btree";
 import { Vector } from "../vec";
 
-export type ActiveLayer = "world" | "ground";
+export type LayerName = "world" | "ground";
 
 interface Vector3 extends Vector {
   z: number;

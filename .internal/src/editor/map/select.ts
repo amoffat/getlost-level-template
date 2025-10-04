@@ -85,6 +85,7 @@ class Selector implements ClickDragListener {
   private doSelection(e: PointerEventData) {
     clearRectSelect();
     const state = store.getState();
+    const ms = state.mapEditor;
 
     const searchBounds = {
       minX: e.hitbox.ul.x,
@@ -97,13 +98,16 @@ class Selector implements ClickDragListener {
       .search(searchBounds)
       .map((it) => it.id)
       .map((hit) => mapSelectors.selectById(state, hit))
+      .filter(
+        (obj) => !ms.layers.lockInactive || obj.layer === ms.layers.active
+      )
       .filter((obj) => isTileGroupInstance(obj))
       .sort((a, b) => b.z - a.z);
 
     // Nothing selected? Clear either the proposed selection (if any) (first
     // click), or the actual selection (second click).
     if (hits.length === 0) {
-      const hasProposed = state.mapEditor.proposedSelection;
+      const hasProposed = ms.proposedSelection;
       if (hasProposed) {
         store.dispatch(actions.setProposedSelection(null));
       } else if (!this.addToSelection) {
@@ -125,7 +129,7 @@ class Selector implements ClickDragListener {
       if (hits.length === 1) {
         const obj = hits[0];
 
-        const curSelected = state.mapEditor.selectedObjs;
+        const curSelected = ms.selectedObjs;
         const alreadySelected = curSelected.ids.includes(obj.id);
 
         if (alreadySelected && this.addToSelection) {

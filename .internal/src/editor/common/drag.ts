@@ -6,6 +6,7 @@ const MOVE_THRESHOLD = 10;
 
 export interface PointerEventData {
   localPos: Vec2;
+  button?: "left" | "right";
   pagePos: Vector;
   clickedTarget: P.Container | null;
   hitbox: Rect;
@@ -90,6 +91,7 @@ export class ClickDragger {
 
       const ev: PointerEventData = {
         localPos: Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo)),
+        button: e.button === 0 ? "left" : e.button === 2 ? "right" : undefined,
         hitbox: this.makeHitbox(),
         over: clickedTarget,
         clickedTarget,
@@ -111,6 +113,7 @@ export class ClickDragger {
 
       const ev: PointerEventData = {
         localPos,
+        button: e.button === 0 ? "left" : e.button === 2 ? "right" : undefined,
         hitbox: this.makeHitbox(),
         over: this.hoverObject(e),
         clickedTarget: this.clickedTarget,
