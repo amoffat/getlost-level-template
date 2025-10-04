@@ -167,12 +167,12 @@ export class ReduxReconciler {
     node: P.Container,
     p: Partial<MapObj & TileGroupInstance>
   ) {
-    if (p.x != null) node.x = p.x;
-    if (p.y != null) {
+    if (p.x !== undefined) node.x = p.x;
+    if (p.y !== undefined) {
       node.y = p.y;
-      node.zIndex = p.y;
     }
-    if (p.flipX != null) {
+    if (p.z !== undefined) node.zIndex = p.z;
+    if (p.flipX !== undefined) {
       node.children[0].scale.x = p.flipX ? -1 : 1;
     }
   }

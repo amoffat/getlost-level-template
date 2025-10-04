@@ -1,3 +1,4 @@
+import { getImageDataFromBitmap } from "@/utils/image";
 import * as P from "pixi.js";
 import { actions as tsActions } from "../../slices/tilesetEditor";
 import { store } from "../../store/store";
@@ -8,16 +9,6 @@ import { schedulerYield } from "../../utils/async";
 import { subscribeToSelector } from "../../utils/redux";
 import { genGroupId } from "../../utils/tileset";
 import { globals as g } from "./globals";
-
-function getImageDataFromBitmap(bitmap: ImageBitmap): ImageData {
-  const width = bitmap.width;
-  const height = bitmap.height;
-  const canvas = new OffscreenCanvas(width, height);
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Failed to get 2D context for OffscreenCanvas");
-  ctx.drawImage(bitmap, 0, 0);
-  return ctx.getImageData(0, 0, width, height);
-}
 
 // Returns true if every pixel within the rect has alpha == 0
 function isRectTransparent(imageData: ImageData, rect: Rect): boolean {

@@ -47,7 +47,8 @@ export async function loadTileset(id: string): Promise<Tileset> {
   // Copy to a standalone ArrayBuffer to satisfy TS's BlobPart typing
   const ab = new ArrayBuffer(decoded.imageData.byteLength);
   new Uint8Array(ab).set(decoded.imageData);
-  ts.objectUrl = URL.createObjectURL(new Blob([ab]));
+  const blob = new Blob([ab]);
+  ts.objectUrl = URL.createObjectURL(blob);
 
   if (migrated) {
     log.info(`Tileset ${id} migrated to version ${latestVersion}, saving...`);

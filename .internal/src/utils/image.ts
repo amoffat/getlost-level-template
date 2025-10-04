@@ -1,3 +1,5 @@
+import { Rect } from "@/types/rect";
+
 export interface MergeFramesResult {
   frames: number; // number of frames merged
   blob: Blob; // output PNG blob (default canvas encoding)
@@ -71,4 +73,31 @@ export async function mergeFrames(files: File[]): Promise<MergeFramesResult> {
     frameWidth,
     names: loaded.map(({ file }) => file.name),
   };
+}
+
+export function getImageDataFromBitmap(bitmap: ImageBitmap): ImageData {
+  const width = bitmap.width;
+  const height = bitmap.height;
+  const canvas = new OffscreenCanvas(width, height);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Failed to get 2D context for OffscreenCanvas");
+  ctx.drawImage(bitmap, 0, 0);
+  return ctx.getImageData(0, 0, width, height);
+}
+
+export function subImageData(source: ImageData, rect: Rect): ImageData {
+  const { width: sw, data: sdata } = source;
+  const { ul, br } = rect;
+  const w = Math.ceil(br.x) - Math.floor(ul.x);
+  const h = Math.ceil(br.y) - Math.floor(ul.y);
+  const out = new Uint8ClampedArray(w * h * 4);
+
+  for (let row = 0; row < h; row++) {
+    const srcStart = ((Math.floor(ul.y) + row) * sw + Math.floor(ul.x)) * 4;
+    const srcEnd = srcStart + w * 4;
+    const dstStart = row * w * 4;
+    out.set(sdata.subarray(srcStart, srcEnd), dstStart);
+  }
+
+  return new ImageData(out, w, h);
 }

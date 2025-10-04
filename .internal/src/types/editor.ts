@@ -10,6 +10,7 @@ export type Mode =
   | "circle-collision"
   | "rect-collision"
   | "fill"
+  | "magic-paint"
   | "set-bounds"
   | "set-sound-zones"
   | "set-zoom-zones"

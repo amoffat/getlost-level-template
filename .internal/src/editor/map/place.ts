@@ -70,9 +70,15 @@ class Placer implements ClickDragListener {
     this.painted.add(key);
 
     const state = store.getState();
-    const place = state.mapEditor.place;
+    const mState = state.mapEditor;
+    const place = mState.place;
     const obj = place.obj!;
     const id = crypto.randomUUID();
+
+    let z = pos.y + g.placableSprite.height;
+    if (mState.layers.active === "ground") {
+      z = 0;
+    }
 
     const tgi: TileGroupInstance = {
       id,
@@ -82,7 +88,7 @@ class Placer implements ClickDragListener {
       tilesetId: obj.tilesetId,
       frame: obj.pos,
       flipX: place.flipX,
-      z: pos.y + g.placableSprite.height,
+      z,
     };
 
     store.dispatch(actions.addOne(tgi));

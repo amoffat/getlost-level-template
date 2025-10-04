@@ -7,6 +7,7 @@ import {
   isAnyOf,
   SliceCaseReducers,
 } from "@reduxjs/toolkit";
+import { AppDispatch, RootState } from "../store";
 
 type EntityAdapter<T = { id: string }> = ReturnType<
   typeof createEntityAdapter<T & { id: string }>
@@ -34,9 +35,13 @@ export function makeMiddleware<T = { id: string }>(
   getReconciler: () => ReduxReconciler
 ) {
   const listener = createListenerMiddleware();
+  const startAppListening = listener.startListening.withTypes<
+    RootState,
+    AppDispatch
+  >();
 
   // Add
-  listener.startListening({
+  startAppListening({
     matcher: isAnyOf(actions.addOne, actions.addMany, actions.upsertMany),
     effect: async (action, _api) => {
       const reconciler = getReconciler();
@@ -48,7 +53,7 @@ export function makeMiddleware<T = { id: string }>(
   });
 
   // Update
-  listener.startListening({
+  startAppListening({
     matcher: isAnyOf(actions.updateOne, actions.updateMany),
     effect: async (action, _api) => {
       const reconciler = getReconciler();
@@ -56,12 +61,14 @@ export function makeMiddleware<T = { id: string }>(
         ? action.payload
         : [action.payload];
 
-      for (const u of updates) reconciler.enqueueUpdate(u.id, u.changes);
+      for (const u of updates) {
+        reconciler.enqueueUpdate(u.id, u.changes);
+      }
     },
   });
 
   // Remove
-  listener.startListening({
+  startAppListening({
     matcher: isAnyOf(actions.removeOne, actions.removeMany),
     effect: async (action, _api) => {
       const reconciler = getReconciler();
@@ -73,7 +80,7 @@ export function makeMiddleware<T = { id: string }>(
   });
 
   // Optional: if you sometimes `setAll`, use one-shot diff (still O(#diff)):
-  listener.startListening({
+  startAppListening({
     actionCreator: actions.setAll,
     effect: async (action, _api) => {
       const reconciler = getReconciler();

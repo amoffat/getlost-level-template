@@ -18,13 +18,13 @@ import { actions } from "../slices/mapEditor";
 import { globals as g } from "@/globals";
 import { Mode } from "@/types/editor";
 import {
-  IconBrush,
   IconCameraSearch,
   IconCircle,
   IconEar,
   IconMapPin,
   IconPaint,
   IconRectangle,
+  IconWand,
 } from "@tabler/icons-react";
 import { RootState } from "../store/store";
 import { ActiveLayer } from "../types/layer";
@@ -81,15 +81,15 @@ export default function MapEditorTab() {
   const toolPalette: ToolDescriptor<Mode>[] = useMemo(
     () => [
       {
-        slug: "place",
-        name: "Place object",
-        icon: <IconBrush size={16} />,
-        canActivate: true,
-      },
-      {
         slug: "fill",
         name: "Paint area",
         icon: <IconPaint size={16} />,
+        canActivate: true,
+      },
+      {
+        slug: "magic-paint",
+        name: "Magic paint",
+        icon: <IconWand size={16} />,
         canActivate: true,
       },
       {

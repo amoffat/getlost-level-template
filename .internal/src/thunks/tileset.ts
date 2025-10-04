@@ -1,12 +1,15 @@
+import { buildSignatureIndex } from "@/editor/tileset/autojoin";
 import { setCanvasTileset } from "@/editor/tileset/loader";
+import { globals as g } from "@/globals";
 import { loadTileset, loadTilesets } from "@/persist/api";
-import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   TilesetEditorState,
   actions as tsActions,
-} from "../slices/tilesetEditor";
-import { actions as uiActions } from "../slices/ui";
-import { Tileset } from "../types/tileset";
+} from "@/slices/tilesetEditor";
+import { actions as uiActions } from "@/slices/ui";
+import { Tileset } from "@/types/tileset";
+import { getImageDataFromBitmap, subImageData } from "@/utils/image";
+import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const selectTilesetThunk = createAsyncThunk(
   "tilesetEditor/selectTilesetThunk",
@@ -32,6 +35,22 @@ export const loadTilesetsThunk = createAsyncThunk(
     for (const tsId of tilesetIds) {
       const ts = await loadTileset(tsId);
       dispatch(tsActions.addTileset({ tsId, ts }));
+
+      // Start edge signature indexing
+      const bitmap = await createImageBitmap(
+        await fetch(ts.objectUrl).then((r) => r.blob())
+      );
+      const imageData = getImageDataFromBitmap(bitmap);
+
+      const objs = new Map<string, ImageData>();
+      for (const obj of Object.values(ts.palette)) {
+        const cropped = subImageData(imageData, obj.pos);
+        objs.set(obj.id, cropped);
+      }
+      const sigs = buildSignatureIndex(objs);
+      g.tilesetEdgeSigs.set(ts.id, sigs);
+      // End edge signature indexing
+
       for (const obj of Object.values(ts.palette)) {
         if (obj.tags.length > 0) {
           dispatch(uiActions.addTilesetGroupTags(obj.tags));
