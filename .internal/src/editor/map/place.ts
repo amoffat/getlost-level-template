@@ -13,6 +13,7 @@ import {
 } from "../common/drag";
 import { drawMaskedOutline } from "../common/outline";
 import { selectStroke } from "../common/strokes";
+import { pickDirectionWeights } from "../tileset/autotile";
 import { globals as g } from "./globals";
 
 class Placer implements ClickDragListener {
@@ -24,7 +25,7 @@ class Placer implements ClickDragListener {
   public pointerUp(e: PointerEventData): void {
     const state = store.getState();
     const mode = selectors.selectMode(state);
-    if (mode !== "place") return;
+    if (mode !== "paint") return;
 
     this.instantiatePlacable();
     this.paint = false;
@@ -39,7 +40,7 @@ class Placer implements ClickDragListener {
     const state = store.getState();
     const mode = selectors.selectMode(state);
 
-    if (mode === "place") {
+    if (mode === "paint") {
       if (!g.placableSprite) return;
 
       const rawPos = e.localPos;
@@ -62,7 +63,8 @@ class Placer implements ClickDragListener {
       g.placableContainer.position = finalPos;
       g.placableContainer.zIndex = z;
     } else if (mode === "magic-paint") {
-      console.log("magic paint");
+      const dirs = pickDirectionWeights(e.localPos, g.gridSnap);
+      console.log("magic paint", dirs);
     }
   }
 

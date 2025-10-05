@@ -1,4 +1,5 @@
 import { converter } from "culori";
+import { Vector } from "../../vec";
 
 export type EdgeName = "top" | "right" | "bottom" | "left";
 
@@ -192,4 +193,62 @@ export function matchTile(
 
   results.sort((a, b) => a.distance - b.distance);
   return results.slice(0, Math.min(topN, results.length));
+}
+
+/**
+ * Pick direction (edge) weights based on a position within a square grid.
+ * The idea is to weaken (lower) the weight of edges when the position is
+ * close to either edge along that axis. The "weakness" is symmetric: if a
+ * point is near the top, both the top and bottom weights are reduced while
+ * left/right remain comparatively high (and vice‑versa). Corner positions
+ * therefore reduce all edges.
+ *
+ * We map the minimum distance to the pair of edges on an axis into a weight
+ * in (0,1], where 1 represents strong / fully trusted (center of the grid)
+ * and values approach 0 as we near an edge. No weight is ever exactly 0.
+ *
+ * @param pos Position inside the grid (0 <= x,y < gridSize assumed).
+ * @param gridSize Size of the (square) grid.
+ * @returns Array of [edgeName, weight] suitable for `matchTile`.
+ */
+export function pickDirectionWeights(
+  pos: Vector,
+  gridSize: number
+): Array<[EdgeName, number]> {
+  // Guard: degenerate grid -> all equal weights of 1
+  if (gridSize <= 1) {
+    return [
+      ["top", 1],
+      ["bottom", 1],
+      ["left", 1],
+      ["right", 1],
+    ];
+  }
+
+  // Clamp position defensively into [0, gridSize-1]
+  const maxIndex = gridSize - 1;
+  const x = Math.max(0, Math.min(maxIndex, pos.x));
+  const y = Math.max(0, Math.min(maxIndex, pos.y));
+
+  // Distance to nearest vertical (left/right) and horizontal (top/bottom) edges
+  const dx = Math.min(x, maxIndex - x);
+  const dy = Math.min(y, maxIndex - y);
+
+  // Maximum possible min-distance (occurs at the center). For even sizes
+  // the "center band" shares the same max distance.
+  const maxMinDist = Math.floor(maxIndex / 2);
+
+  // Ensure denominator > 0 (already guaranteed by gridSize > 1, but double safe)
+  const EPS = 1e-6; // prevents ever returning 0 exactly
+  const norm = (d: number) => (d + EPS) / (maxMinDist + EPS);
+
+  const horizWeight = norm(dy); // applies to top & bottom
+  const vertWeight = norm(dx); // applies to left & right
+
+  return [
+    ["top", horizWeight],
+    ["bottom", horizWeight],
+    ["left", vertWeight],
+    ["right", vertWeight],
+  ];
 }

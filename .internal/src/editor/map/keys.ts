@@ -59,7 +59,7 @@ export function setupKeys(canvas: HTMLCanvasElement) {
           }
           store.dispatch(mapEdActions.updateManySelected(updates));
           store.dispatch(mapActions.updateMany(updates));
-        } else if (mode === "place") {
+        } else if (mode === "paint") {
           store.dispatch(mapEdActions.toggleFlipX());
         }
       },

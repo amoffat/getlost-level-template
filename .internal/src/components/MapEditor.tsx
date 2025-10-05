@@ -71,20 +71,20 @@ export default function MapEditorTab() {
     (obj: any, e: React.MouseEvent) => {
       e.preventDefault();
       dispatch(actions.setPlace(obj));
-      dispatch(actions.setMode("place"));
+      dispatch(setToolThunk("paint"));
     },
     [dispatch]
   );
 
   const onDeselectObject = useCallback(() => {
     dispatch(actions.setPlace(null));
-    dispatch(actions.setMode("select"));
+    dispatch(setToolThunk(null));
   }, [dispatch]);
 
   const toolPalette: ToolDescriptor<Mode>[] = useMemo(
     () => [
       {
-        slug: "fill",
+        slug: "paint",
         name: "Paint area",
         icon: <IconPaint size={16} />,
         canActivate: true,
@@ -164,14 +164,43 @@ export default function MapEditorTab() {
     <>
       <Flex h="100dvh" style={{ flex: 1 }}>
         <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
-          <Tabs defaultValue={"tilesets"}>
-            <Tabs.List>
-              <Tabs.Tab value="tilesets">NPCs</Tabs.Tab>
-            </Tabs.List>
-            <Tabs.Panel value="tilesets">
-              <Text></Text>
-            </Tabs.Panel>
-          </Tabs>
+          <Fieldset legend="Active layer">
+            <Radio.Group onChange={changeActiveLayer} value={s.layers.active}>
+              <Stack p={0}>
+                <Tooltip
+                  multiline
+                  withArrow
+                  position="left"
+                  w={200}
+                  openDelay={500}
+                  label="World tiles can appear in front of and behind characters"
+                  refProp="rootRef"
+                >
+                  <Radio value="world" label="World" />
+                </Tooltip>
+                <Tooltip
+                  multiline
+                  withArrow
+                  position="left"
+                  w={200}
+                  openDelay={500}
+                  label="Ground tiles always appear underneath characters"
+                  refProp="rootRef"
+                >
+                  <Radio value="ground" label="Ground" />
+                </Tooltip>
+                <Switch
+                  label="Lock inactive layer"
+                  checked={s.layers.lockInactive}
+                  onChange={(event) => {
+                    dispatch(
+                      actions.setLockInactiveLayer(event.currentTarget.checked)
+                    );
+                  }}
+                />
+              </Stack>
+            </Radio.Group>
+          </Fieldset>
         </Stack>
 
         <Flex
@@ -240,44 +269,6 @@ export default function MapEditorTab() {
           {toolOptions && (
             <Fieldset legend="Tool options">{toolOptions}</Fieldset>
           )}
-
-          <Fieldset legend="Active layer">
-            <Radio.Group onChange={changeActiveLayer} value={s.layers.active}>
-              <Stack p={0}>
-                <Tooltip
-                  multiline
-                  withArrow
-                  position="left"
-                  w={200}
-                  openDelay={1000}
-                  label="World tiles can appear in front of and behind characters"
-                  refProp="rootRef"
-                >
-                  <Radio value="world" label="World" />
-                </Tooltip>
-                <Tooltip
-                  multiline
-                  withArrow
-                  position="left"
-                  w={200}
-                  openDelay={1000}
-                  label="Ground tiles always appear underneath characters"
-                  refProp="rootRef"
-                >
-                  <Radio value="ground" label="Ground" />
-                </Tooltip>
-                <Switch
-                  label="Lock inactive layer"
-                  checked={s.layers.lockInactive}
-                  onChange={(event) => {
-                    dispatch(
-                      actions.setLockInactiveLayer(event.currentTarget.checked)
-                    );
-                  }}
-                />
-              </Stack>
-            </Radio.Group>
-          </Fieldset>
         </Stack>
       </Flex>
 

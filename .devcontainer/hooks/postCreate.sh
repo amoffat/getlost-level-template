@@ -12,7 +12,6 @@ KEY_FILE="$LEVEL_DIR/assets.key"
 
 
 npm ci --prefix "$INTERNAL_DIR"
-npm ci --prefix "$HOME/twinejs"
 
 uv self update
 

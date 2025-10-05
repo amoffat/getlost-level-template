@@ -5,7 +5,6 @@ WORKSPACE_DIR=$(realpath /workspaces/*)
 INTERNAL_DIR="$WORKSPACE_DIR/.internal"
 
 npm install --prefix "$INTERNAL_DIR"
-npm install --prefix "$HOME/twinejs"
 
 uv self update
 uv venv --allow-existing /home/node/venv

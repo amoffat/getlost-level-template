@@ -32,7 +32,7 @@
       "description": "OpenAI API key for LLM access"
     }
   },
-  "forwardPorts": [5173, 5174, 6080],
+  "forwardPorts": [5173],
   "customizations": {
     "vscode": {
       "settings": {
@@ -62,13 +62,7 @@
   "remoteUser": "node",
   "portsAttributes": {
     "5173": {
-      "label": "Level Preview"
-    },
-    "5174": {
-      "label": "Twine - Dialogue"
-    },
-    "6080": {
-      "label": "Tiled - Map"
+      "label": "Get Lost Editor"
     }
   },
   "onCreateCommand": "bash .devcontainer/hooks/onCreate.sh",

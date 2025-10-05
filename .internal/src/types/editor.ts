@@ -3,14 +3,13 @@ import { Rect } from "./rect";
 
 export type Mode =
   | "pan"
-  | "place"
   | "select"
   | "move"
   | "rect-select"
   | "set-waypoint"
   | "circle-collision"
   | "rect-collision"
-  | "fill"
+  | "paint"
   | "magic-paint"
   | "set-bounds"
   | "set-sound-zones"

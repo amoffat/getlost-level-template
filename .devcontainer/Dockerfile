@@ -32,10 +32,5 @@ USER node
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
-
-COPY fluxbox-menu.txt $HOME/.fluxbox/menu
-COPY fluxbox-startup.sh $HOME/.fluxbox/startup
-COPY fluxbox-apps.txt $HOME/.fluxbox/apps
-
 # Doesn't work because the devcontainer.json feature overrides this
 COPY zshrc $HOME/.zshrc

@@ -22,24 +22,5 @@ module.exports = {
       restart_delay: 1000,
       env: {},
     },
-    {
-      name: "tiled",
-      script: "tiled",
-      args: "level/tiled/level.tiled-project",
-      stop_exit_codes: [0],
-    },
-    {
-      name: "twine",
-      cwd: DEVENV_DIR,
-      interpreter: "npx",
-      script: isCodespace
-        ? `vite --port ${TWINE_PORT}`
-        : `vite --host --port ${TWINE_PORT}`,
-      cwd: process.env.HOME + "/twinejs",
-      restart_delay: 1000,
-      env: {
-        TWEE_OUTPUT_PATH: `${WORKSPACE_DIR}/level/story/Level.twee`,
-      },
-    },
   ],
 };

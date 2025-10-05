@@ -34,9 +34,6 @@ export const duplicateSelectionThunk = createAsyncThunk(
 export const setToolThunk = createAsyncThunk(
   "mapEditor/setToolThunk",
   async (tool: Mode | null, { dispatch, getState }) => {
-    const state = getState() as RootState;
-    const currentMode = mapEdSelectors.selectMode(state);
-
     dispatch(mapEdActions.setActiveTool(tool));
 
     if (tool === null) {

@@ -37,7 +37,7 @@ export class Mover implements ClickDragListener {
   public pointerDown(e: PointerEventData): void {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
-    if (mode === "place") return;
+    if (mode === "paint") return;
 
     const sel = state.mapEditor.selectedObjs;
 
