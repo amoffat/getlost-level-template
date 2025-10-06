@@ -6,14 +6,7 @@ import { actions as uiActions } from "@/slices/ui";
 import { loadMapThunk } from "@/thunks/map";
 import { loadTilesetsThunk } from "@/thunks/tileset";
 import { TabName } from "@/types/tab";
-import {
-  AppShell,
-  Box,
-  Group,
-  LoadingOverlay,
-  Tabs,
-  Text,
-} from "@mantine/core";
+import { AppShell, Group, Tabs, Text } from "@mantine/core";
 import "@mantine/core/styles.css";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import "@mantine/dropzone/styles.css";
@@ -25,6 +18,7 @@ import { log } from "../log";
 import DialogueTab from "./Dialogue";
 import MapEditorTab from "./MapEditor";
 import NpcEditorTab from "./NpcEditor";
+import PanelLoader from "./PanelLoader";
 import PreviewTab from "./Preview";
 import TilesetEditorTab from "./TilesetEditor";
 import UploadAssetModal from "./UploadAssetModal";
@@ -43,31 +37,23 @@ declare global {
   }
 }
 
-function PanelLoader() {
-  return (
-    <Box
-      pos="relative"
-      style={{
-        height: "100dvh",
-      }}
-    >
-      <LoadingOverlay visible zIndex={1000} />
-    </Box>
-  );
-}
+// PanelLoader moved to its own component file.
 
 export function ShellApp() {
   const dispatch = useAppDispatch();
   const [draggedFiles, setDraggedFiles] = useState<File[] | null>(null);
   const [assetTypeOpened, { open: openAssetType, close: closeAssetType }] =
     useDisclosure(false);
-  const { activeTab, mountedTabs } = useAppSelector((state) => state.ui);
+  const { activeTab, mountedTabs, loadingMessage } = useAppSelector(
+    (state) => state.ui
+  );
 
   // Initial data loading now handled via Suspense boundaries below.
 
   const handleTabChange = (value: TabName | null) => {
     if (!value) return;
 
+    dispatch(uiActions.setLoadingMessage(null));
     dispatch(uiActions.setTab(value));
     dispatch(uiActions.mountTab(value));
   };
@@ -172,7 +158,7 @@ export function ShellApp() {
 
             {mountedTabs["map-editor"] && (
               <Tabs.Panel value="map-editor">
-                <Suspense fallback={<PanelLoader />}>
+                <Suspense fallback={<PanelLoader message={loadingMessage} />}>
                   <MapEditorTab initPromise={mapInitPromise} />
                 </Suspense>
               </Tabs.Panel>
@@ -180,7 +166,7 @@ export function ShellApp() {
 
             {mountedTabs["tileset-editor"] && (
               <Tabs.Panel value="tileset-editor">
-                <Suspense fallback={<PanelLoader />}>
+                <Suspense fallback={<PanelLoader message={loadingMessage} />}>
                   <TilesetEditorTab initPromise={tilesetInitPromise} />
                 </Suspense>
               </Tabs.Panel>

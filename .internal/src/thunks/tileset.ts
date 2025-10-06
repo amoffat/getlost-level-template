@@ -33,6 +33,7 @@ export const loadTilesetsThunk = createAsyncThunk(
   async (_, { dispatch, getState }) => {
     const state = getState() as { tilesetEditor: TilesetEditorState };
 
+    dispatch(uiActions.setLoadingMessage("Loading tilesets ids..."));
     const tilesetIds = await loadTilesets();
     for (const tsId of tilesetIds) {
       if (state.tilesetEditor.tilesetIds.includes(tsId)) {
@@ -40,10 +41,14 @@ export const loadTilesetsThunk = createAsyncThunk(
         continue;
       }
 
+      dispatch(uiActions.setLoadingMessage(`Loading tileset ${tsId}...`));
       const ts = await loadTileset(tsId);
       dispatch(tsActions.addTileset({ tsId, ts }));
 
       // Start edge signature indexing
+      dispatch(
+        uiActions.setLoadingMessage(`Indexing edges for tileset ${tsId}...`)
+      );
       const bitmap = await createImageBitmap(
         await fetch(ts.objectUrl).then((r) => r.blob())
       );

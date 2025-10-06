@@ -4,6 +4,7 @@ import {
   actions as mapEdActions,
   selectors as mapEdSelectors,
 } from "@/slices/mapEditor";
+import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
 import { MapObj, Mode, TileGroupInstance } from "@/types/editor";
 import { createAsyncThunk } from "@reduxjs/toolkit";
@@ -11,6 +12,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 export const loadMapThunk = createAsyncThunk(
   "map/loadMapThunk",
   async (_: void, { dispatch }) => {
+    dispatch(uiActions.setLoadingMessage(`Loading map...`));
     const persisted = await loadMap();
     const objs: (MapObj | TileGroupInstance)[] = [];
     for (const id of persisted.ids) {
