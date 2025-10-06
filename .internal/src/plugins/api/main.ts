@@ -1,5 +1,6 @@
 import express from "express";
 import type { Plugin } from "vite";
+import { router as mapRouter } from "./map";
 import { router as pathgraphRouter } from "./pathgraph";
 import { router as tilesetRouter } from "./tileset";
 
@@ -14,6 +15,7 @@ export default function expressApi(): Plugin {
 
       app.use("/pathgraph", pathgraphRouter);
       app.use("/tilesets", tilesetRouter);
+      app.use("/map", mapRouter);
 
       // Mount under /api
       server.middlewares.use("/api", app);

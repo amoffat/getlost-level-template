@@ -1,3 +1,4 @@
+import * as constants from "@/constants";
 import { selectors } from "@/slices/tilesetEditor";
 import debounce from "debounce";
 import * as P from "pixi.js";
@@ -16,9 +17,7 @@ import { drawGridMask } from "./grid";
 import { setupGrouper } from "./group";
 import { setupKeys } from "./keys";
 
-export async function init(
-  getParent: () => HTMLElement
-): Promise<P.Application> {
+export async function init(): Promise<P.Application> {
   // Create a new application
   const app = new P.Application();
   g.app = app;
@@ -126,7 +125,8 @@ export async function init(
   });
 
   function redrawLayout() {
-    const parent = getParent();
+    const parent = document.getElementById(constants.tilesetEditorContainerId)!;
+    if (!parent) return;
     const rect = parent.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     checkerboard.width = rect.width;

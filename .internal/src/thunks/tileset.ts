@@ -1,7 +1,7 @@
 import { buildSignatureIndex } from "@/editor/tileset/autotile";
 import { setCanvasTileset } from "@/editor/tileset/loader";
 import { globals as g } from "@/globals";
-import { loadTileset, loadTilesets } from "@/persist/api";
+import { loadTileset, loadTilesets } from "@/persist/tileset/api";
 import {
   TilesetEditorState,
   actions as tsActions,
@@ -30,9 +30,16 @@ export const selectTilesetThunk = createAsyncThunk(
 
 export const loadTilesetsThunk = createAsyncThunk(
   "tilesetEditor/loadTilesetsThunk",
-  async (_, { dispatch }) => {
+  async (_, { dispatch, getState }) => {
+    const state = getState() as { tilesetEditor: TilesetEditorState };
+
     const tilesetIds = await loadTilesets();
     for (const tsId of tilesetIds) {
+      if (state.tilesetEditor.tilesetIds.includes(tsId)) {
+        // Already loaded
+        continue;
+      }
+
       const ts = await loadTileset(tsId);
       dispatch(tsActions.addTileset({ tsId, ts }));
 

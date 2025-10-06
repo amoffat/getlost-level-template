@@ -1,3 +1,4 @@
+import * as constants from "@/constants";
 import { unpackActiveTileset } from "@/editor/tileset/loader";
 import { globals as g } from "@/globals";
 import { Mode } from "@/types/tileset";
@@ -16,8 +17,7 @@ import {
   IconReplace,
   IconTrash,
 } from "@tabler/icons-react";
-import { useCallback, useEffect, useMemo } from "react";
-import { init } from "../editor/tileset/init";
+import { use, useCallback, useEffect, useMemo, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions, selectors } from "../slices/tilesetEditor";
 import { selectTilesetThunk } from "../thunks/tileset";
@@ -27,29 +27,25 @@ import ObjectPalette from "./ObjectPalette";
 import TilesetButton from "./TilesetButton";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
 
-export default function TilesetEditorTab() {
+export default function TilesetEditorTab({
+  initPromise,
+}: {
+  initPromise: Promise<unknown>;
+}) {
   const dispatch = useAppDispatch();
   const s = useAppSelector((state) => state.tilesetEditor);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const getContainer = useCallback(() => {
-    return document.getElementById("tileset-editor-container")!;
-  }, []);
+  use(initPromise);
 
-  // Initialize pixi.js app once
   useEffect(() => {
-    (async () => {
-      const container = getContainer();
-      if (g.tilesetEditorApp) {
-        g.tilesetEditorApp.resizeTo = container;
-        return;
-      }
-
-      const app = await init(getContainer);
-      app.resizeTo = container;
-      g.tilesetEditorApp = app;
-      container.appendChild(app.canvas);
-    })();
-  }, [getContainer]);
+    const container = containerRef.current!;
+    const canvas = g.tilesetEditorApp!.canvas;
+    g.tilesetEditorApp!.resizeTo = container;
+    if (!container.contains(canvas)) {
+      container.appendChild(canvas);
+    }
+  }, []);
 
   const changeGridSize = useCallback(
     async (size: number | string) => {
@@ -124,7 +120,8 @@ export default function TilesetEditorTab() {
         </Stack>
         <Flex direction="column" style={{ flex: 5, minHeight: 0, minWidth: 0 }}>
           <div
-            id="tileset-editor-container"
+            ref={containerRef}
+            id={constants.tilesetEditorContainerId}
             style={{ flex: 3, minHeight: 0, overflow: "hidden" }}
           ></div>
 

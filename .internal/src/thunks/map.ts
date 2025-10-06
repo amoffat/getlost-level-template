@@ -1,11 +1,25 @@
+import { loadMap } from "@/persist/map/api";
 import { actions as mapActions } from "@/slices/map";
 import {
   actions as mapEdActions,
   selectors as mapEdSelectors,
 } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
-import { Mode, TileGroupInstance } from "@/types/editor";
+import { MapObj, Mode, TileGroupInstance } from "@/types/editor";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+
+export const loadMapThunk = createAsyncThunk(
+  "map/loadMapThunk",
+  async (_: void, { dispatch }) => {
+    const persisted = await loadMap();
+    const objs: (MapObj | TileGroupInstance)[] = [];
+    for (const id of persisted.ids) {
+      const obj = persisted.entities[id];
+      if (obj) objs.push(obj);
+    }
+    dispatch(mapActions.setAll(objs));
+  }
+);
 
 export const duplicateSelectionThunk = createAsyncThunk(
   "mapEditor/duplicateSelectionThunk",
@@ -33,7 +47,7 @@ export const duplicateSelectionThunk = createAsyncThunk(
 
 export const setToolThunk = createAsyncThunk(
   "mapEditor/setToolThunk",
-  async (tool: Mode | null, { dispatch, getState }) => {
+  async (tool: Mode | null, { dispatch }) => {
     dispatch(mapEdActions.setActiveTool(tool));
 
     if (tool === null) {

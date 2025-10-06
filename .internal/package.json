@@ -26,6 +26,7 @@
     "express": "^5.1.0",
     "fflate": "^0.8.2",
     "formidable": "^3.5.4",
+    "memoizee": "^0.4.17",
     "pino": "^9.9.2",
     "pixi-filters": "^6.1.4",
     "pixi.js": "^8.13.1",

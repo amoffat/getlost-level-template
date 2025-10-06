@@ -1,3 +1,7 @@
+import * as constants from "@/constants";
+import { globals as g } from "@/globals";
+import { setToolThunk } from "@/thunks/map";
+import { Mode } from "@/types/editor";
 import {
   Fieldset,
   Flex,
@@ -10,14 +14,6 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
-import { useCallback, useEffect, useMemo } from "react";
-import { init } from "../editor/map/init";
-import { useAppDispatch, useAppSelector } from "../hooks/redux";
-import { actions } from "../slices/mapEditor";
-
-import { globals as g } from "@/globals";
-import { setToolThunk } from "@/thunks/map";
-import { Mode } from "@/types/editor";
 import {
   IconBulb,
   IconCameraSearch,
@@ -29,6 +25,9 @@ import {
   IconRipple,
   IconWand,
 } from "@tabler/icons-react";
+import { use, useCallback, useEffect, useMemo, useRef } from "react";
+import { useAppDispatch, useAppSelector } from "../hooks/redux";
+import { actions } from "../slices/mapEditor";
 import { RootState } from "../store/store";
 import { LayerName } from "../types/layer";
 import HelpHoverCard from "./HelpHoverCard";
@@ -36,28 +35,25 @@ import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
 
-export default function MapEditorTab() {
+export default function MapEditorTab({
+  initPromise,
+}: {
+  initPromise: Promise<unknown>;
+}) {
   const s = useAppSelector((state: RootState) => state.mapEditor);
   const dispatch = useAppDispatch();
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const getContainer = useCallback(() => {
-    return document.getElementById("map-editor-container")!;
-  }, []);
+  use(initPromise);
 
-  // Initialize pixi.js app once
   useEffect(() => {
-    (async () => {
-      const container = getContainer();
-      if (g.mapEditorApp) {
-        g.mapEditorApp.resizeTo = container;
-        return;
-      }
-      const app = await init(getContainer);
-      app.resizeTo = container;
-      g.mapEditorApp = app;
-      container.appendChild(app.canvas);
-    })();
-  }, [getContainer]);
+    const container = containerRef.current!;
+    const canvas = g.mapEditorApp!.canvas;
+    g.mapEditorApp!.resizeTo = container;
+    if (!container.contains(canvas)) {
+      container.appendChild(canvas);
+    }
+  }, []);
 
   const changeActiveLayer = useCallback(
     (id: string) => {
@@ -147,7 +143,7 @@ export default function MapEditorTab() {
     []
   );
 
-  let toolOptions = null;
+  const toolOptions = null;
 
   const onToolActivated = useCallback(
     (slug: string) => {
@@ -208,7 +204,8 @@ export default function MapEditorTab() {
           style={{ flex: 5, minHeight: 0, minWidth: 0, position: "relative" }}
         >
           <div
-            id="map-editor-container"
+            ref={containerRef}
+            id={constants.mapEditorContainerId}
             style={{
               flex: 3,
               minHeight: 0,

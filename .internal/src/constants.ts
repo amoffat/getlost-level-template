@@ -6,3 +6,6 @@ const localDev = true;
 export const gameUrl = localDev
   ? "http://localhost:5176"
   : "https://getlost.gg/";
+
+export const mapEditorContainerId = "map-editor-container";
+export const tilesetEditorContainerId = "tileset-editor-container";

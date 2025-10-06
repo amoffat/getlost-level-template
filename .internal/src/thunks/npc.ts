@@ -1,4 +1,4 @@
-import { loadTileset, loadTilesets } from "@/persist/api";
+import { loadTileset, loadTilesets } from "@/persist/tileset/api";
 import { NpcEditorState } from "@/slices/npcEditor";
 import { NpcSpritesheet } from "@/types/npc";
 import { createAsyncThunk } from "@reduxjs/toolkit";

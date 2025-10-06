@@ -6,8 +6,9 @@ import mapEditorReducer from "../slices/mapEditor";
 import npcEditorReducer from "../slices/npcEditor";
 import tilesetEditorReducer from "../slices/tilesetEditor";
 import uiReducer from "../slices/ui";
-import listenerMiddleware from "./middleware/autosave";
 import { makeMiddleware as makeMapMiddleware } from "./middleware/map";
+import autosaveMapMiddleware from "./middleware/map/autosave";
+import autosaveTilesetMiddleware from "./middleware/tileset/autosave";
 
 export const rootReducer = combineReducers({
   dialogue: dialogueReducer,
@@ -28,7 +29,11 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     // We also add our middleware for the RTK Query API slices here, which
     // handle things like async thunks.
-    getDefaultMiddleware().prepend(listenerMiddleware, mapMiddleware),
+    getDefaultMiddleware().prepend(
+      autosaveTilesetMiddleware,
+      autosaveMapMiddleware,
+      mapMiddleware
+    ),
 });
 
 // Connects the store to page listeners, so that we can respond to the page

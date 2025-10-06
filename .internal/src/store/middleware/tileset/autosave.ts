@@ -1,6 +1,7 @@
 import { log } from "@/log";
-import { deleteTileset, saveTileset } from "@/persist/api";
+import { deleteTileset, saveTileset } from "@/persist/tileset/api";
 import { actions as tsActions } from "@/slices/tilesetEditor";
+import { AppDispatch, type RootState } from "@/store/store";
 import { AppStartListening } from "@/types/redux";
 import { Tileset } from "@/types/tileset";
 import { createListenerMiddleware, isAnyOf } from "@reduxjs/toolkit";
@@ -13,7 +14,6 @@ import {
   mergeMap,
   tap,
 } from "rxjs/operators";
-import { AppDispatch, type RootState } from "../store";
 
 const listenerMiddleware = createListenerMiddleware();
 

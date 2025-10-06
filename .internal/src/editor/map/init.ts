@@ -1,3 +1,4 @@
+import * as constants from "@/constants";
 import { setReconciler } from "@/slices/map";
 import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
@@ -13,16 +14,13 @@ import { setupWheelZoom } from "../common/zoom";
 import { drawBounds } from "./bounds";
 import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
+import { initLayerVisibility } from "./layers";
 import { setupMover } from "./move";
 import { setupPlacer } from "./place";
 import { ReduxReconciler } from "./reconciler";
 import { setupSelector } from "./select";
 
-export async function init(
-  getParent: () => HTMLElement
-): Promise<P.Application> {
-  const mapState = store.getState().mapEditor;
-
+export async function init(): Promise<P.Application> {
   // Create a new application
   const app = new P.Application();
   g.app = app;
@@ -148,6 +146,8 @@ export async function init(
     },
   });
 
+  initLayerVisibility();
+
   canvas.addEventListener("mouseover", () => {
     canvas.focus();
   });
@@ -158,7 +158,9 @@ export async function init(
   setupKeys(canvas);
 
   function redrawLayout() {
-    const parent = getParent();
+    const parent = document.getElementById(constants.mapEditorContainerId)!;
+    if (!parent) return;
+
     const rect = parent.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     checkerboard.width = rect.width;
@@ -177,6 +179,8 @@ subscribeToSelector(
   [(state) => state.tilesetEditor.tilesets],
   async (tilesets, _state) => {
     for (const tileset of Object.values(tilesets)) {
+      if (g.tilesetCache.has(tileset.id)) continue;
+
       const tex = await P.Assets.load<P.Texture>({
         src: tileset.objectUrl,
         parser: "loadTextures",
@@ -192,23 +196,5 @@ subscribeToSelector([selectors.selectMode], (mode) => {
   canvas.style.cursor = getCursorForMode(mode);
   if (mode === "duplicate") {
     g.mover.startDuplicateMove();
-  }
-});
-
-subscribeToSelector([(state) => state.mapEditor.layers], (layers) => {
-  const lc = g.layerContainers;
-  if (layers.lockInactive) {
-    for (const layer of Object.values(lc)) {
-      layer.alpha = 0.5;
-      layer.eventMode = "none";
-    }
-    const active = lc[layers.active];
-    active.alpha = 1;
-    active.interactive = true;
-  } else {
-    for (const layer of Object.values(lc)) {
-      layer.alpha = 1;
-      layer.interactive = true;
-    }
   }
 });

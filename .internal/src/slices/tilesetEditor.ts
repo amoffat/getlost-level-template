@@ -42,6 +42,10 @@ export interface TilesetEditorState {
   scanPos: Rect | null;
   tilesetZoomPans: Record<string, ZoomPan>;
   loadingPalette: boolean;
+  // Async status flags for initial tileset loading
+  loadingTilesets: boolean;
+  tilesetsLoaded: boolean;
+  tilesetsError: string | null;
 }
 
 const slice = createSlice({
@@ -60,6 +64,9 @@ const slice = createSlice({
     scanPos: null,
     tilesetZoomPans: {},
     loadingPalette: false,
+    loadingTilesets: false,
+    tilesetsLoaded: false,
+    tilesetsError: null,
   } as TilesetEditorState,
   reducers: {
     setGridVisible(state, action: PayloadAction<boolean>) {
@@ -270,6 +277,36 @@ const slice = createSlice({
       ts.palette[group.id] = group;
       tileIndex.insert(bbox);
     },
+  },
+  extraReducers: (builder) => {
+    // Because we don't want to directly import the thunk (avoids circular deps),
+    // we key off the action type strings.
+    builder
+      .addMatcher(
+        (action): action is any =>
+          action.type === "tilesetEditor/loadTilesetsThunk/pending",
+        (state) => {
+          state.loadingTilesets = true;
+          state.tilesetsError = null;
+        }
+      )
+      .addMatcher(
+        (action): action is any =>
+          action.type === "tilesetEditor/loadTilesetsThunk/fulfilled",
+        (state) => {
+          state.loadingTilesets = false;
+          state.tilesetsLoaded = true;
+        }
+      )
+      .addMatcher(
+        (action): action is any =>
+          action.type === "tilesetEditor/loadTilesetsThunk/rejected",
+        (state, action) => {
+          state.loadingTilesets = false;
+          state.tilesetsError =
+            action.error?.message ?? "Failed to load tilesets";
+        }
+      );
   },
   selectors: {
     selectTilesets: createSelector.withTypes<TilesetEditorState>()(

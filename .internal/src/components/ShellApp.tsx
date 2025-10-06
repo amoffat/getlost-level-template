@@ -1,15 +1,26 @@
+import { init as mapInit } from "@/editor/map/init";
+import { init as tsInit } from "@/editor/tileset/init";
+import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as uiActions } from "@/slices/ui";
+import { loadMapThunk } from "@/thunks/map";
 import { loadTilesetsThunk } from "@/thunks/tileset";
 import { TabName } from "@/types/tab";
-import { AppShell, Group, Tabs, Text } from "@mantine/core";
+import {
+  AppShell,
+  Box,
+  Group,
+  LoadingOverlay,
+  Tabs,
+  Text,
+} from "@mantine/core";
 import "@mantine/core/styles.css";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import "@mantine/dropzone/styles.css";
 import { useDisclosure } from "@mantine/hooks";
 import { IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { log } from "../log";
 import DialogueTab from "./Dialogue";
 import MapEditorTab from "./MapEditor";
@@ -32,6 +43,19 @@ declare global {
   }
 }
 
+function PanelLoader() {
+  return (
+    <Box
+      pos="relative"
+      style={{
+        height: "100dvh",
+      }}
+    >
+      <LoadingOverlay visible zIndex={1000} />
+    </Box>
+  );
+}
+
 export function ShellApp() {
   const dispatch = useAppDispatch();
   const [draggedFiles, setDraggedFiles] = useState<File[] | null>(null);
@@ -39,15 +63,7 @@ export function ShellApp() {
     useDisclosure(false);
   const { activeTab, mountedTabs } = useAppSelector((state) => state.ui);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        await dispatch(loadTilesetsThunk()).unwrap();
-      } catch (e) {
-        log.error({ e }, "Failed to load tilesets:");
-      }
-    })();
-  }, [dispatch]);
+  // Initial data loading now handled via Suspense boundaries below.
 
   const handleTabChange = (value: TabName | null) => {
     if (!value) return;
@@ -55,37 +71,6 @@ export function ShellApp() {
     dispatch(uiActions.setTab(value));
     dispatch(uiActions.mountTab(value));
   };
-  // useEffect(() => {
-  //   if (!comms) return;
-
-  //   window.gl = {
-  //     markers: {
-  //       record: (slug: string) => {
-  //         log.info({ dev: true }, `Recording marker '${slug}'`);
-  //         comms.request({
-  //           type: "record-marker",
-  //           data: { slug },
-  //         });
-  //       },
-  //       clear: (slug: string) => {
-  //         log.info({ dev: true }, `Clearing marker '${slug}'`);
-  //         comms.request({
-  //           type: "clear-marker",
-  //           data: { slug: slug ?? null },
-  //         });
-  //       },
-  //     },
-  //     nav: {
-  //       clearCache: async () => {
-  //         log.info({ dev: true }, `Clearing navigation cache`);
-  //         await fetch("/api/pathgraph", {
-  //           method: "DELETE",
-  //         });
-  //         setReloadCount((c) => c + 1);
-  //       },
-  //     },
-  //   };
-  // }, [comms]);
 
   useEffect(() => {
     if (import.meta.hot) {
@@ -109,6 +94,23 @@ export function ShellApp() {
     },
     [openAssetType]
   );
+
+  const tilesetInitPromise = useMemo(async () => {
+    await dispatch(loadTilesetsThunk()).unwrap();
+    const app = await tsInit();
+    g.tilesetEditorApp = app;
+    return app;
+  }, [dispatch]);
+
+  const mapInitPromise = useMemo(async () => {
+    await tilesetInitPromise;
+    const app = await mapInit();
+    g.mapEditorApp = app;
+    // This has to happen after the app is initialized, because it depends on
+    // the map reconciler existing.
+    await dispatch(loadMapThunk()).unwrap();
+    return app;
+  }, [tilesetInitPromise, dispatch]);
 
   return (
     <>
@@ -170,13 +172,17 @@ export function ShellApp() {
 
             {mountedTabs["map-editor"] && (
               <Tabs.Panel value="map-editor">
-                <MapEditorTab />
+                <Suspense fallback={<PanelLoader />}>
+                  <MapEditorTab initPromise={mapInitPromise} />
+                </Suspense>
               </Tabs.Panel>
             )}
 
             {mountedTabs["tileset-editor"] && (
               <Tabs.Panel value="tileset-editor">
-                <TilesetEditorTab />
+                <Suspense fallback={<PanelLoader />}>
+                  <TilesetEditorTab initPromise={tilesetInitPromise} />
+                </Suspense>
               </Tabs.Panel>
             )}
 
