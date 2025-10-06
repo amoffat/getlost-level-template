@@ -4,7 +4,7 @@ import { globals as g } from "./globals";
 
 function setLayerVisibility(layers: RootState["mapEditor"]["layers"]) {
   const lc = g.layerContainers;
-  if (layers.lockInactive) {
+  if (layers.dimInactive) {
     for (const layer of Object.values(lc)) {
       layer.alpha = 0.5;
       layer.eventMode = "none";

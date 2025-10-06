@@ -12,9 +12,10 @@ export type Mode =
   | "paint"
   | "magic-paint"
   | "set-bounds"
-  | "set-sound-zones"
-  | "set-zoom-zones"
-  | "set-water-zones"
+  | "set-sensor-zone"
+  | "set-sound-zone"
+  | "set-zoom-zone"
+  | "set-sink-zone"
   | "add-light"
   | "duplicate";
 

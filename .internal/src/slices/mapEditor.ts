@@ -36,6 +36,7 @@ interface MapEditorState {
   layers: {
     active: LayerName;
     lockInactive: boolean;
+    dimInactive: boolean;
   };
 }
 
@@ -64,6 +65,7 @@ const slice = createSlice({
     layers: {
       active: "ground",
       lockInactive: true,
+      dimInactive: false,
     },
   } as MapEditorState,
   reducers: {
@@ -81,6 +83,10 @@ const slice = createSlice({
 
     setLockInactiveLayer(state, action: { payload: boolean }) {
       state.layers.lockInactive = action.payload;
+    },
+
+    setDimInactiveLayer(state, action: { payload: boolean }) {
+      state.layers.dimInactive = action.payload;
     },
 
     setPlace(state, action: PayloadAction<TileGroup | null>) {

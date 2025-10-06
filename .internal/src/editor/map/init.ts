@@ -107,6 +107,9 @@ export async function init(): Promise<P.Application> {
   g.layerContainers.world = new P.Container();
   g.mapContainer.addChild(g.layerContainers.world);
 
+  g.metaContainer = new P.Container();
+  g.mapContainer.addChild(g.metaContainer);
+
   const spatialIndex = new SpatialIndex();
   const reconciler = new ReduxReconciler({
     layerContainers: g.layerContainers,

@@ -19,6 +19,7 @@ import {
   IconCameraSearch,
   IconCircle,
   IconEar,
+  IconInputSpark,
   IconMapPin,
   IconPaint,
   IconRectangle,
@@ -116,20 +117,26 @@ export default function MapEditorTab({
       //   canActivate: true,
       // },
       {
-        slug: "set-water-zones",
-        name: "Water zones",
+        slug: "set-sensor-zone",
+        name: "Sensor zone",
+        icon: <IconInputSpark size={16} />,
+        canActivate: true,
+      },
+      {
+        slug: "set-sink-zone",
+        name: "Sink zone",
         icon: <IconRipple size={16} />,
         canActivate: true,
       },
       {
-        slug: "set-sound-zones",
-        name: "Sound zones",
+        slug: "set-sound-zone",
+        name: "Sound zone",
         icon: <IconEar size={16} />,
         canActivate: true,
       },
       {
-        slug: "set-zoom-zones",
-        name: "Zoom zones",
+        slug: "set-zoom-zone",
+        name: "Zoom zone",
         icon: <IconCameraSearch size={16} />,
         canActivate: true,
       },
@@ -191,6 +198,15 @@ export default function MapEditorTab({
                   onChange={(event) => {
                     dispatch(
                       actions.setLockInactiveLayer(event.currentTarget.checked)
+                    );
+                  }}
+                />
+                <Switch
+                  label="Dim inactive layer"
+                  checked={s.layers.dimInactive}
+                  onChange={(event) => {
+                    dispatch(
+                      actions.setDimInactiveLayer(event.currentTarget.checked)
                     );
                   }}
                 />
