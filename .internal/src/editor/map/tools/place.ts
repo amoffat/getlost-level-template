@@ -1,8 +1,9 @@
 import { log } from "@/log";
-import { actions } from "@/slices/map";
+import { actions, selectors as mapSelectors } from "@/slices/map";
 import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { TileGroupInstance } from "@/types/editor";
+import { isTileGroupInstance, TileGroupInstance } from "@/types/editor";
+import { SpatialIndex } from "@/types/spatial";
 import { subscribeToSelector } from "@/utils/redux";
 import { Vector } from "@/vec";
 import * as P from "pixi.js";
@@ -10,29 +11,31 @@ import {
   ClickDragger,
   ClickDragListener,
   PointerEventData,
-} from "../common/drag";
-import { drawMaskedOutline } from "../common/outline";
-import { selectStroke } from "../common/strokes";
-import { pickDirectionWeights } from "../tileset/autotile";
-import { globals as g } from "./globals";
+} from "../../common/drag";
+import { drawMaskedOutline } from "../../common/outline";
+import { selectStroke } from "../../common/strokes";
+import { globals as g } from "../globals";
 
 class Placer implements ClickDragListener {
   private paint = false;
-  // The positions of objects we've placed during this paint session, to avoid
-  // placing duplicates on top of each other.
-  private painted: Set<string> = new Set();
 
-  public pointerUp(e: PointerEventData): void {
+  // This exists purely because we want to paint fast if the user is dragging,
+  // and our full spatial index is only updated by the reconciler, which is too
+  // late.
+  private tempSpatialIndex: Set<string> = new Set();
+
+  constructor(private spatialIndex: SpatialIndex) {}
+
+  public pointerUp(_e: PointerEventData): void {
     const state = store.getState();
     const mode = selectors.selectMode(state);
     if (mode !== "paint") return;
 
     this.instantiatePlacable();
     this.paint = false;
-    this.painted.clear();
   }
 
-  public pointerDown(e: PointerEventData): void {
+  public pointerDown(_e: PointerEventData): void {
     this.paint = true;
   }
 
@@ -62,12 +65,10 @@ class Placer implements ClickDragListener {
       g.placableOutline.position = finalPos;
       g.placableContainer.position = finalPos;
       g.placableContainer.zIndex = z;
-    } else if (mode === "magic-paint") {
-      const dirs = pickDirectionWeights(e.localPos, g.gridSnap);
     }
   }
 
-  public pointerDrag(e: PointerEventData): void {
+  public pointerDrag(_e: PointerEventData): void {
     if (this.paint) {
       this.instantiatePlacable();
     }
@@ -76,24 +77,52 @@ class Placer implements ClickDragListener {
   private instantiatePlacable(): void {
     if (!g.placableSprite) return;
 
+    const state = store.getState();
+    const ms = state.mapEditor;
+
     const pos = g.placableContainer.position;
-    const key = `${pos.x},${pos.y}`;
-    if (this.painted.has(key)) {
+    const { width, height } = g.placableSprite;
+    const posKey = `${pos.x},${pos.y}`;
+    if (this.tempSpatialIndex.has(posKey)) {
       return;
     }
-    this.painted.add(key);
 
-    const state = store.getState();
-    const mState = state.mapEditor;
-    const place = mState.place;
+    const innerPadding = 0.01;
+    // We check a slightly smaller area than the actual object size to allow
+    // for some small gaps between objects.
+    const searchBounds = {
+      minX: pos.x + innerPadding,
+      minY: pos.y + innerPadding,
+      maxX: pos.x + width - innerPadding,
+      maxY: pos.y + height - innerPadding,
+    };
+
+    const layer = ms.layers.active;
+    let z = pos.y + g.placableSprite.height;
+
+    if (layer === "ground") {
+      const maxZ = this.spatialIndex
+        .search(searchBounds)
+        .map((it) => it.id)
+        .map((hit) => mapSelectors.selectById(state, hit))
+        .filter((obj) => obj.layer === ms.layers.active)
+        .filter((obj) => isTileGroupInstance(obj))
+        // Get the max z-index of any existing objects here
+        .reduce((max, obj) => (obj.z > max ? obj.z : max), 0);
+
+      // Don't place if there's already something here
+      const occupied = maxZ !== 0;
+      if (occupied) {
+        return;
+      }
+      z = maxZ + 0.01;
+    }
+
+    this.tempSpatialIndex.add(posKey);
+
+    const place = ms.place;
     const obj = place.obj!;
     const id = crypto.randomUUID();
-
-    let z = pos.y + g.placableSprite.height;
-    const layer = mState.layers.active;
-    if (layer === "ground") {
-      z = 0;
-    }
 
     const tgi: TileGroupInstance = {
       id,
@@ -111,8 +140,14 @@ class Placer implements ClickDragListener {
   }
 }
 
-export function setupPlacer(cd: ClickDragger) {
-  cd.addListener(new Placer());
+export function setupPlacer({
+  cd,
+  spatialIndex,
+}: {
+  cd: ClickDragger;
+  spatialIndex: SpatialIndex;
+}) {
+  cd.addListener(new Placer(spatialIndex));
 }
 
 subscribeToSelector(

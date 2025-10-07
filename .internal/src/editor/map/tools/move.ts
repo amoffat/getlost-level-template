@@ -9,8 +9,8 @@ import {
   ClickDragger,
   ClickDragListener,
   PointerEventData,
-} from "../common/drag";
-import { globals as g } from "./globals";
+} from "../../common/drag";
+import { globals as g } from "../globals";
 
 export class Mover implements ClickDragListener {
   private _moveEnabled = false;

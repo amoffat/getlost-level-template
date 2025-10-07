@@ -155,18 +155,21 @@ function l2(a: number[], b: number[]): number {
 
 /**
  * Match a query ImageData against an index.
- * @param query The tile we want matches for
+ * @param id The tile we want matches for
  * @param index Precomputed signature index
  * @param edges Which edges to consider (at least one)
  * @param options Signature generation + matching options
  */
 export function matchTile(
-  query: ImageData,
+  id: string,
   index: SignatureIndex,
   edges: Array<EdgeName | [EdgeName, number]>,
   options: MatchOptions = {}
 ): MatchResult[] {
   if (!edges.length) throw new Error("edges array must not be empty");
+
+  const querySig = index.get(id);
+  if (!querySig) return [];
 
   const { topN = 1 } = options;
   if (topN <= 0) return [];
@@ -176,8 +179,6 @@ export function matchTile(
     Array.isArray(e) ? { edge: e[0], weight: e[1] } : { edge: e, weight: 1 }
   );
 
-  const sigOpts: EdgeSignatureOptions = options;
-  const querySig = computeEdgeSignatures(query, sigOpts);
   const results: MatchResult[] = [];
 
   for (const [id, sig] of index.entries()) {
@@ -225,25 +226,28 @@ export function pickDirectionWeights(
     ];
   }
 
-  // Clamp position defensively into [0, gridSize-1]
+  // Position within the current grid cell (ensure non‑negative modulo)
+  const cellXRaw = pos.x % gridSize;
+  const cellYRaw = pos.y % gridSize;
+  const cellX = (cellXRaw + gridSize) % gridSize; // [0, gridSize)
+  const cellY = (cellYRaw + gridSize) % gridSize; // [0, gridSize)
+
   const maxIndex = gridSize - 1;
-  const x = Math.max(0, Math.min(maxIndex, pos.x));
-  const y = Math.max(0, Math.min(maxIndex, pos.y));
 
-  // Distance to nearest vertical (left/right) and horizontal (top/bottom) edges
-  const dx = Math.min(x, maxIndex - x);
-  const dy = Math.min(y, maxIndex - y);
+  // Distance to nearest opposite pair edges inside THIS cell
+  const dx = Math.min(cellX, maxIndex - cellX);
+  const dy = Math.min(cellY, maxIndex - cellY);
 
-  // Maximum possible min-distance (occurs at the center). For even sizes
-  // the "center band" shares the same max distance.
+  // Maximum achievable min-distance (center region). For even sizes there are
+  // two central columns/rows sharing this value.
   const maxMinDist = Math.floor(maxIndex / 2);
 
-  // Ensure denominator > 0 (already guaranteed by gridSize > 1, but double safe)
-  const EPS = 1e-6; // prevents ever returning 0 exactly
+  // Avoid ever returning 0 exactly to keep edges influential.
+  const EPS = 1e-6;
   const norm = (d: number) => (d + EPS) / (maxMinDist + EPS);
 
-  const horizWeight = norm(dy); // applies to top & bottom
-  const vertWeight = norm(dx); // applies to left & right
+  const horizWeight = norm(dy); // top & bottom share horizontal proximity
+  const vertWeight = norm(dx); // left & right share vertical proximity
 
   return [
     ["top", horizWeight],

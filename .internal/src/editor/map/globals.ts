@@ -1,6 +1,6 @@
 import { LayerName } from "@/types/layer";
 import * as P from "pixi.js";
-import { Mover } from "./move";
+import { Mover } from "./tools/move";
 
 interface Globals {
   app: P.Application;
@@ -27,6 +27,7 @@ interface Globals {
   boundsMask: P.Graphics;
   grid: P.Container;
   gridSnap: number;
+  // Tileset texture cache, keyed by tileset ID
   tilesetCache: Map<string, P.Texture>;
   initialized: boolean;
 }

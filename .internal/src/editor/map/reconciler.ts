@@ -150,9 +150,12 @@ export class ReduxReconciler {
         source: tsTex!.source,
         frame: texFrame,
       });
+
+      // We apply the x-flip on the child sprite so that it can happen about the
+      // center anchor, while the container can have its anchor at top-left for
+      // easier positioning.
       const sprite = new P.Sprite(tileTex);
       sprite.position.set(sprite.width / 2, sprite.height / 2);
-      sprite.zIndex = obj.z;
       sprite.interactive = false;
       sprite.anchor.set(0.5);
       sprite.scale.x = obj.flipX ? -1 : 1;
@@ -160,6 +163,7 @@ export class ReduxReconciler {
       const spriteContainer = new P.Container();
       spriteContainer.label = obj.id;
       spriteContainer.position.set(obj.x, obj.y);
+      spriteContainer.zIndex = obj.z;
       spriteContainer.addChild(sprite);
       spriteContainer.interactive = true;
 

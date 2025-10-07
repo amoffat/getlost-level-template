@@ -15,10 +15,11 @@ import { drawBounds } from "./bounds";
 import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
 import { initLayerVisibility } from "./layers";
-import { setupMover } from "./move";
-import { setupPlacer } from "./place";
 import { ReduxReconciler } from "./reconciler";
-import { setupSelector } from "./select";
+import { setupMagicPainter } from "./tools/magicPaint";
+import { setupMover } from "./tools/move";
+import { setupPlacer } from "./tools/place";
+import { setupSelector } from "./tools/select";
 
 export async function init(): Promise<P.Application> {
   // Create a new application
@@ -103,6 +104,7 @@ export async function init(): Promise<P.Application> {
   drawBounds();
 
   g.layerContainers.ground = new P.Container();
+  g.layerContainers.ground.sortableChildren = false;
   g.mapContainer.addChild(g.layerContainers.ground);
   g.layerContainers.world = new P.Container();
   g.mapContainer.addChild(g.layerContainers.world);
@@ -126,7 +128,8 @@ export async function init(): Promise<P.Application> {
 
   setupSelector(cd, spatialIndex);
   g.mover = setupMover(cd);
-  setupPlacer(cd);
+  setupPlacer({ cd, spatialIndex });
+  setupMagicPainter({ cd, spatialIndex });
   setupWheelZoom({
     canvas,
     stage,

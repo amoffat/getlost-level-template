@@ -10,11 +10,11 @@ import {
   ClickDragger,
   ClickDragListener,
   PointerEventData,
-} from "../common/drag";
-import { drawMaskedOutline } from "../common/outline";
-import { selectStroke } from "../common/strokes";
-import { globals as g } from "./globals";
-import { pressedKeys } from "./keys";
+} from "../../common/drag";
+import { drawMaskedOutline } from "../../common/outline";
+import { selectStroke } from "../../common/strokes";
+import { globals as g } from "../globals";
+import { pressedKeys } from "../keys";
 
 function isSelectionMode(mode: Mode): boolean {
   return mode === "select" || mode === "rect-select";
