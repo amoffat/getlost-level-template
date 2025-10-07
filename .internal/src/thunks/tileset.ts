@@ -1,3 +1,4 @@
+import { globals as gMap } from "@/editor/map/globals";
 import { buildSignatureIndex } from "@/editor/tileset/autotile";
 import { setCanvasTileset } from "@/editor/tileset/loader";
 import { globals as g } from "@/globals";
@@ -10,6 +11,7 @@ import { actions as uiActions } from "@/slices/ui";
 import { Tileset } from "@/types/tileset";
 import { getImageDataFromBitmap, subImageData } from "@/utils/image";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import * as P from "pixi.js";
 
 export const selectTilesetThunk = createAsyncThunk(
   "tilesetEditor/selectTilesetThunk",
@@ -30,45 +32,64 @@ export const selectTilesetThunk = createAsyncThunk(
 
 export const loadTilesetsThunk = createAsyncThunk(
   "tilesetEditor/loadTilesetsThunk",
-  async (_, { dispatch, getState }) => {
-    const state = getState() as { tilesetEditor: TilesetEditorState };
-
+  async (_, { dispatch }) => {
     dispatch(uiActions.setLoadingMessage("Loading tilesets ids..."));
     const tilesetIds = await loadTilesets();
     for (const tsId of tilesetIds) {
-      if (state.tilesetEditor.tilesetIds.includes(tsId)) {
-        // Already loaded
-        continue;
-      }
+      await dispatch(loadTilesetThunk(tsId));
+    }
+  }
+);
 
-      dispatch(uiActions.setLoadingMessage(`Loading tileset ${tsId}...`));
-      const ts = await loadTileset(tsId);
-      dispatch(tsActions.addTileset({ tsId, ts }));
+// New thunk that loads a single tileset and performs all related side effects
+export const loadTilesetThunk = createAsyncThunk(
+  "tilesetEditor/loadTilesetThunk",
+  async (tsId: string, { dispatch, getState }) => {
+    const state = getState() as { tilesetEditor: TilesetEditorState };
 
-      // Start edge signature indexing
-      dispatch(
-        uiActions.setLoadingMessage(`Indexing edges for tileset ${tsId}...`)
-      );
-      const bitmap = await createImageBitmap(
-        await fetch(ts.objectUrl).then((r) => r.blob())
-      );
-      const imageData = getImageDataFromBitmap(bitmap);
+    if (state.tilesetEditor.tilesetIds.includes(tsId)) {
+      // Already loaded
+      return true;
+    }
 
-      const objs = new Map<string, ImageData>();
-      for (const obj of Object.values(ts.palette)) {
-        const cropped = subImageData(imageData, obj.pos);
-        objs.set(obj.id, cropped);
-      }
-      const sigs = buildSignatureIndex(objs);
-      g.tilesetEdgeSigs.set(ts.id, sigs);
-      // End edge signature indexing
+    dispatch(uiActions.setLoadingMessage(`Loading tileset ${tsId}...`));
+    const ts = await loadTileset(tsId);
+    dispatch(tsActions.addTileset({ tsId, ts }));
 
-      for (const obj of Object.values(ts.palette)) {
-        if (obj.tags.length > 0) {
-          dispatch(uiActions.addTilesetGroupTags(obj.tags));
-        }
+    if (!gMap.tilesetCache.has(tsId)) {
+      const tex = await P.Assets.load<P.Texture>({
+        src: ts.objectUrl,
+        parser: "loadTextures",
+      });
+      tex.source.scaleMode = "nearest";
+      gMap.tilesetCache.set(tsId, tex);
+    }
+
+    // Start edge signature indexing
+    dispatch(
+      uiActions.setLoadingMessage(`Indexing edges for tileset ${tsId}...`)
+    );
+    const bitmap = await createImageBitmap(
+      await fetch(ts.objectUrl).then((r) => r.blob())
+    );
+    const imageData = getImageDataFromBitmap(bitmap);
+
+    const objs = new Map<string, ImageData>();
+    for (const obj of Object.values(ts.palette)) {
+      const cropped = subImageData(imageData, obj.pos);
+      objs.set(obj.id, cropped);
+    }
+    const sigs = buildSignatureIndex(objs);
+    g.tilesetEdgeSigs.set(ts.id, sigs);
+    // End edge signature indexing
+
+    for (const obj of Object.values(ts.palette)) {
+      if (obj.tags.length > 0) {
+        dispatch(uiActions.addTilesetGroupTags(obj.tags));
       }
     }
+
+    return true;
   }
 );
 

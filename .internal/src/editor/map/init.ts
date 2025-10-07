@@ -177,23 +177,6 @@ export async function init(): Promise<P.Application> {
   return app;
 }
 
-// Transfer our textures from the tileset editor to the map editor
-subscribeToSelector(
-  [(state) => state.tilesetEditor.tilesets],
-  async (tilesets, _state) => {
-    for (const tileset of Object.values(tilesets)) {
-      if (g.tilesetCache.has(tileset.id)) continue;
-
-      const tex = await P.Assets.load<P.Texture>({
-        src: tileset.objectUrl,
-        parser: "loadTextures",
-      });
-      tex.source.scaleMode = "nearest";
-      g.tilesetCache.set(tileset.id, tex);
-    }
-  }
-);
-
 subscribeToSelector([selectors.selectMode], (mode) => {
   const canvas = g.app.canvas;
   canvas.style.cursor = getCursorForMode(mode);

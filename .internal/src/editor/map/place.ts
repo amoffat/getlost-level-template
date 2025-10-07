@@ -64,7 +64,6 @@ class Placer implements ClickDragListener {
       g.placableContainer.zIndex = z;
     } else if (mode === "magic-paint") {
       const dirs = pickDirectionWeights(e.localPos, g.gridSnap);
-      console.log("magic paint", dirs);
     }
   }
 
