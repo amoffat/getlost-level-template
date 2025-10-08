@@ -59,7 +59,13 @@ export default function ToolPalette<T extends string>({
     };
 
     toolComponents.push(
-      <Tooltip key={t.slug} label={t.name} position="left-start" withArrow>
+      <Tooltip
+        key={t.slug}
+        label={t.name}
+        position="left-start"
+        withArrow
+        openDelay={500}
+      >
         <ActionIcon
           variant={isActive ? "filled" : "default"}
           size={iconSize}

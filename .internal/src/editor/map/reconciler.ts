@@ -29,6 +29,7 @@ export class ReduxReconciler {
 
   // id -> DisplayObject
   private nodes = new Map<string, P.Container>();
+  // Object id -> layer container
   private layerLookup = new Map<string, P.Container>();
 
   // coalesced ops for this frame

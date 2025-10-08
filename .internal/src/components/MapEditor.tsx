@@ -34,6 +34,8 @@ import { LayerName } from "../types/layer";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
+import MagicPaint from "./toolOptions/MagicPaint";
+import Paint from "./toolOptions/Paint";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
 
 export default function MapEditorTab({
@@ -149,8 +151,19 @@ export default function MapEditorTab({
     ],
     []
   );
+  const toolName = useMemo(() => {
+    const tool = toolPalette.find((t) => t.slug === s.selectedTool);
+    return tool ? tool.name : null;
+  }, [s.selectedTool, toolPalette]);
 
-  const toolOptions = null;
+  const allToolOptions: Partial<Record<Mode, React.ReactNode>> = useMemo(
+    () => ({
+      paint: <Paint />,
+      "magic-paint": <MagicPaint />,
+    }),
+    []
+  );
+  const toolOptions = s.selectedTool ? allToolOptions[s.selectedTool] : null;
 
   const onToolActivated = useCallback(
     (slug: string) => {
@@ -280,7 +293,7 @@ export default function MapEditorTab({
           />
 
           {toolOptions && (
-            <Fieldset legend="Tool options">{toolOptions}</Fieldset>
+            <Fieldset legend={`${toolName} options`}>{toolOptions}</Fieldset>
           )}
         </Stack>
       </Flex>

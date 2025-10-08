@@ -17,12 +17,14 @@ import { selectStroke } from "../../common/strokes";
 import { globals as g } from "../globals";
 
 class Placer implements ClickDragListener {
+  public immediateDrag = true;
   private paint = false;
 
   // This exists purely because we want to paint fast if the user is dragging,
   // and our full spatial index is only updated by the reconciler, which is too
   // late.
   private tempSpatialIndex: Set<string> = new Set();
+  private dragSessionIndex: Set<string> = new Set();
 
   constructor(private spatialIndex: SpatialIndex) {}
 
@@ -37,6 +39,8 @@ class Placer implements ClickDragListener {
 
   public pointerDown(_e: PointerEventData): void {
     this.paint = true;
+    this.dragSessionIndex.clear();
+    this.tempSpatialIndex.clear();
   }
 
   public pointerMove(e: PointerEventData): void {
@@ -79,15 +83,14 @@ class Placer implements ClickDragListener {
 
     const state = store.getState();
     const ms = state.mapEditor;
+    const opts = ms.toolOptions.paint;
 
     const pos = g.placableContainer.position;
     const { width, height } = g.placableSprite;
     const posKey = `${pos.x},${pos.y}`;
-    if (this.tempSpatialIndex.has(posKey)) {
-      return;
-    }
+    const placedThisSession = this.dragSessionIndex.has(posKey);
 
-    const innerPadding = 0.01;
+    const innerPadding = 0.1;
     // We check a slightly smaller area than the actual object size to allow
     // for some small gaps between objects.
     const searchBounds = {
@@ -101,24 +104,46 @@ class Placer implements ClickDragListener {
     let z = pos.y + g.placableSprite.height;
 
     if (layer === "ground") {
-      const maxZ = this.spatialIndex
+      // This is the authoritative spatial index, but it might be out of sync
+      // with the map, since it updates async.
+      const hits = this.spatialIndex
         .search(searchBounds)
         .map((it) => it.id)
         .map((hit) => mapSelectors.selectById(state, hit))
-        .filter((obj) => obj.layer === ms.layers.active)
-        .filter((obj) => isTileGroupInstance(obj))
-        // Get the max z-index of any existing objects here
-        .reduce((max, obj) => (obj.z > max ? obj.z : max), 0);
+        // This is because the removed objects (like from removeMany below) get
+        // removed from the spatialIndex during reconciliation, which is *after*
+        // the createEntityAdapter action removes it from the state. In other
+        // words, the object might no longer exist in the state, but still
+        // temporarily exist in the spatial index.
+        .filter((obj) => obj !== undefined)
+        .filter((obj) => obj.layer === layer)
+        .filter((obj) => isTileGroupInstance(obj));
+
+      // Also check our temp index which has objects we've placed this drag
+      // session but which aren't in the main spatial index yet. This prevents
+      // placing multiple objects on top of each other while dragging.
+      const occupied = hits.length > 0 || this.tempSpatialIndex.has(posKey);
+
+      // Get the max z-index of any existing objects here
+      const maxZ = hits.reduce((max, obj) => (obj.z > max ? obj.z : max), 0);
 
       // Don't place if there's already something here
-      const occupied = maxZ !== 0;
-      if (occupied) {
-        return;
+      if (opts.mode === "place-once") {
+        if (occupied) {
+          return;
+        }
+      } else if (opts.mode === "stack") {
+        if (placedThisSession) return;
+        // Stack just above the highest object here
+        z = maxZ + 0.01;
+      } else if (opts.mode === "overwrite") {
+        if (placedThisSession) return;
+        store.dispatch(actions.removeMany(hits.map((h) => h.id)));
       }
-      z = maxZ + 0.01;
     }
 
     this.tempSpatialIndex.add(posKey);
+    this.dragSessionIndex.add(posKey);
 
     const place = ms.place;
     const obj = place.obj!;

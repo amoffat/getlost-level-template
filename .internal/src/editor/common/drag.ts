@@ -17,6 +17,7 @@ export interface PointerEventData {
 }
 
 export interface ClickDragListener {
+  immediateDrag?: boolean;
   pointerDown?: (e: PointerEventData) => void;
   pointerUp?: (e: PointerEventData) => void;
   pointerDrag?: (e: PointerEventData) => void;
@@ -68,12 +69,19 @@ export class ClickDragger {
       }
 
       if (this.dragStart) {
-        if (this.globalMoveVector.magnitude < MOVE_THRESHOLD && !this.moved)
+        if (this.globalMoveVector.magnitude < MOVE_THRESHOLD && !this.moved) {
+          for (const listener of this.listeners) {
+            if (listener.immediateDrag) {
+              listener.pointerDrag?.(ev);
+            }
+          }
           return;
-        this.moved = true;
+        } else {
+          this.moved = true;
 
-        for (const listener of this.listeners) {
-          listener.pointerDrag?.(ev);
+          for (const listener of this.listeners) {
+            listener.pointerDrag?.(ev);
+          }
         }
       }
     });
