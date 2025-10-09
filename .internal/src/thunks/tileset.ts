@@ -9,7 +9,11 @@ import {
 } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { Tileset } from "@/types/tileset";
-import { getImageDataFromBitmap, subImageData } from "@/utils/image";
+import {
+  getImageDataFromBitmap,
+  hasSolidEdges,
+  subImageData,
+} from "@/utils/image";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import * as P from "pixi.js";
 
@@ -76,6 +80,11 @@ export const loadTilesetThunk = createAsyncThunk(
 
     const objs = new Map<string, ImageData>();
     for (const obj of Object.values(ts.palette)) {
+      // Skip tiles with transparent edges
+      if (!hasSolidEdges(imageData, obj.pos)) {
+        continue;
+      }
+
       const cropped = subImageData(imageData, obj.pos);
       objs.set(obj.id, cropped);
       g.tileIdToTileGroup.set(obj.id, obj);

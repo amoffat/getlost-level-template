@@ -1,4 +1,4 @@
-import { getImageDataFromBitmap } from "@/utils/image";
+import { getImageDataFromBitmap, isRectTransparent } from "@/utils/image";
 import * as P from "pixi.js";
 import { actions as tsActions } from "../../slices/tilesetEditor";
 import { store } from "../../store/store";
@@ -9,24 +9,6 @@ import { schedulerYield } from "../../utils/async";
 import { subState } from "../../utils/redux";
 import { genGroupId } from "../../utils/tileset";
 import { globals as g } from "./globals";
-
-// Returns true if every pixel within the rect has alpha == 0
-function isRectTransparent(imageData: ImageData, rect: Rect): boolean {
-  const { width, data } = imageData;
-  const x0 = Math.max(0, Math.floor(rect.ul.x));
-  const y0 = Math.max(0, Math.floor(rect.ul.y));
-  const x1 = Math.min(imageData.width, Math.ceil(rect.br.x));
-  const y1 = Math.min(imageData.height, Math.ceil(rect.br.y));
-
-  for (let y = y0; y < y1; y++) {
-    let idx = (y * width + x0) * 4 + 3; // start at alpha channel for (x0, y)
-    for (let x = x0; x < x1; x++) {
-      if (data[idx] !== 0) return false; // found a non-transparent pixel
-      idx += 4; // advance to next pixel's alpha
-    }
-  }
-  return true;
-}
 
 export async function setCanvasTileset(ts: Tileset | null) {
   // Clear any previous content

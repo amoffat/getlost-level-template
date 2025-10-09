@@ -226,6 +226,17 @@ export default function MapEditorTab({
               </Stack>
             </Radio.Group>
           </Fieldset>
+
+          <Fieldset legend="Grid">
+            <Stack p={0}>
+              <Text>
+                Position:{" "}
+                {s.grid.curPos
+                  ? `${s.grid.curPos.x}, ${s.grid.curPos.y}`
+                  : "N/A"}
+              </Text>
+            </Stack>
+          </Fieldset>
         </Stack>
 
         <Flex

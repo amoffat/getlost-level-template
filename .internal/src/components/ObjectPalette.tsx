@@ -185,7 +185,7 @@ export default function ObjectPalette({
       <Portal>
         <TileGroupMenu
           pos={objMenuPos}
-          group={clickedPaletteObject}
+          obj={clickedPaletteObject}
           closeMenu={() => setObjMenuPos(null)}
           onTagsModalOpened={deselectObject}
         />

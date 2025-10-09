@@ -28,6 +28,7 @@ interface MapEditorState {
     size: number;
     visible: boolean;
     snap: boolean;
+    curPos: Vector | null;
   };
   bounds: Rect;
   zoomPan: ZoomPan;
@@ -63,6 +64,7 @@ const slice = createSlice({
       size: 16,
       visible: true,
       snap: true,
+      curPos: null,
     },
     bounds: { ul: { x: 0, y: 0 }, br: { x: 5000, y: 5000 } },
     zoomPan: { zoom: 1, pan: { x: 0, y: 0 } },
@@ -106,6 +108,10 @@ const slice = createSlice({
 
     setPlace(state, action: PayloadAction<TileGroup | null>) {
       state.place.obj = action.payload;
+    },
+
+    setGridPos(state, action: PayloadAction<Vector>) {
+      state.grid.curPos = action.payload;
     },
 
     toggleFlipX(state) {

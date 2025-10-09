@@ -64,15 +64,23 @@ function normalize(vec: number[]): number[] {
   return vec.map((v) => v / mag);
 }
 
-/** Extract OKLab-based 1D signal for an edge */
-function edgeSignal(
+// (Deprecated) Previously used interleaved-channel edge signal helper removed.
+
+/**
+ * Extract OKLab-based 1D signals per channel for an edge.
+ * When useAllChannels is false, only L is populated for efficiency.
+ */
+function edgeSignalsPerChannel(
   data: ImageData,
   edge: EdgeName,
   useAllChannels: boolean
-): number[] {
+): { L: number[]; A?: number[]; B?: number[] } {
   const { width, height } = data;
   const d = data.data;
-  const signal: number[] = [];
+  const L: number[] = [];
+  const A: number[] | undefined = useAllChannels ? [] : undefined;
+  const B: number[] | undefined = useAllChannels ? [] : undefined;
+
   if (edge === "top" || edge === "bottom") {
     const y = edge === "top" ? 0 : height - 1;
     for (let x = 0; x < width; x++) {
@@ -80,11 +88,11 @@ function edgeSignal(
       const r = d[idx] / 255,
         g = d[idx + 1] / 255,
         b = d[idx + 2] / 255;
-      const { l: L, a, b: b2 } = toOKLab({ mode: "rgb", r, g, b });
+      const { l: lVal, a, b: b2 } = toOKLab({ mode: "rgb", r, g, b });
+      L.push(lVal);
       if (useAllChannels) {
-        signal.push(L, a, b2);
-      } else {
-        signal.push(L);
+        (A as number[]).push(a);
+        (B as number[]).push(b2);
       }
     }
   } else {
@@ -95,15 +103,16 @@ function edgeSignal(
       const r = d[idx] / 255,
         g = d[idx + 1] / 255,
         b = d[idx + 2] / 255;
-      const { l: L, a, b: b2 } = toOKLab({ mode: "rgb", r, g, b });
+      const { l: lVal, a, b: b2 } = toOKLab({ mode: "rgb", r, g, b });
+      L.push(lVal);
       if (useAllChannels) {
-        signal.push(L, a, b2);
-      } else {
-        signal.push(L);
+        (A as number[]).push(a);
+        (B as number[]).push(b2);
       }
     }
   }
-  return signal;
+
+  return { L, A, B };
 }
 
 /** Compute the 4 edge signatures for a tile. */
@@ -119,8 +128,20 @@ export function computeEdgeSignatures(
   const edges: EdgeName[] = ["top", "right", "bottom", "left"];
   const result: Partial<EdgeSignatures> = {};
   for (const e of edges) {
-    const sig = dct(edgeSignal(image, e, useAllChannels), coefficients);
-    result[e] = doNorm ? normalize(sig) : sig;
+    // Build per-channel edge signals and compute DCT per channel to avoid
+    // interleaving artifacts that harm color separability.
+    const sigs = edgeSignalsPerChannel(image, e, useAllChannels);
+    let combined: number[];
+    if (useAllChannels) {
+      const kPer = Math.max(1, Math.ceil(coefficients / 3));
+      const lCoeffs = dct(sigs.L, kPer);
+      const aCoeffs = dct(sigs.A as number[], kPer);
+      const bCoeffs = dct(sigs.B as number[], kPer);
+      combined = lCoeffs.concat(aCoeffs, bCoeffs).slice(0, coefficients);
+    } else {
+      combined = dct(sigs.L, coefficients);
+    }
+    result[e] = doNorm ? normalize(combined) : combined;
   }
   return result as EdgeSignatures;
 }

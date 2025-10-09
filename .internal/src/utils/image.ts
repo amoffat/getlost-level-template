@@ -101,3 +101,74 @@ export function subImageData(source: ImageData, rect: Rect): ImageData {
 
   return new ImageData(out, w, h);
 }
+
+// Returns true if every pixel within the rect has alpha == 0
+export function isRectTransparent(imageData: ImageData, rect: Rect): boolean {
+  const { width, data } = imageData;
+  const x0 = Math.max(0, Math.floor(rect.ul.x));
+  const y0 = Math.max(0, Math.floor(rect.ul.y));
+  const x1 = Math.min(imageData.width, Math.ceil(rect.br.x));
+  const y1 = Math.min(imageData.height, Math.ceil(rect.br.y));
+
+  for (let y = y0; y < y1; y++) {
+    let idx = (y * width + x0) * 4 + 3; // start at alpha channel for (x0, y)
+    for (let x = x0; x < x1; x++) {
+      if (data[idx] !== 0) return false; // found a non-transparent pixel
+      idx += 4; // advance to next pixel's alpha
+    }
+  }
+  return true;
+}
+
+/**
+ * Returns true if all four edges (top, bottom, left, right) of the given rect
+ * are completely opaque (alpha == 255) within the provided ImageData. The rect
+ * is clipped to the ImageData bounds.
+ */
+export function hasSolidEdges(imageData: ImageData, rect: Rect): boolean {
+  const { width, data } = imageData;
+  const x0 = Math.max(0, Math.floor(rect.ul.x));
+  const y0 = Math.max(0, Math.floor(rect.ul.y));
+  const x1 = Math.min(imageData.width, Math.ceil(rect.br.x));
+  const y1 = Math.min(imageData.height, Math.ceil(rect.br.y));
+
+  const w = x1 - x0;
+  const h = y1 - y0;
+  if (w <= 0 || h <= 0) return false; // degenerate rect cannot have solid edges
+
+  // Top edge (y = y0)
+  {
+    let idx = (y0 * width + x0) * 4 + 3; // alpha channel
+    for (let x = x0; x < x1; x++) {
+      if (data[idx] !== 255) return false;
+      idx += 4;
+    }
+  }
+
+  // Bottom edge (y = y1 - 1)
+  {
+    const y = y1 - 1;
+    let idx = (y * width + x0) * 4 + 3;
+    for (let x = x0; x < x1; x++) {
+      if (data[idx] !== 255) return false;
+      idx += 4;
+    }
+  }
+
+  // Left edge (x = x0)
+  for (let y = y0; y < y1; y++) {
+    const idx = (y * width + x0) * 4 + 3;
+    if (data[idx] !== 255) return false;
+  }
+
+  // Right edge (x = x1 - 1)
+  {
+    const x = x1 - 1;
+    for (let y = y0; y < y1; y++) {
+      const idx = (y * width + x) * 4 + 3;
+      if (data[idx] !== 255) return false;
+    }
+  }
+
+  return true;
+}

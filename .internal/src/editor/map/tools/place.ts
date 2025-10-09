@@ -4,6 +4,7 @@ import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { isTileGroupInstance, TileGroupInstance } from "@/types/editor";
 import { SpatialIndex } from "@/types/spatial";
+import { PaintOpts } from "@/types/tools";
 import { subState } from "@/utils/redux";
 import { Vector } from "@/vec";
 import * as P from "pixi.js";
@@ -16,24 +17,27 @@ import { drawMaskedOutline } from "../../common/outline";
 import { selectStroke } from "../../common/strokes";
 import { globals as g } from "../globals";
 
-class Placer implements ClickDragListener {
+export class Placer implements ClickDragListener {
   public immediateDrag = true;
-  private paint = false;
+  protected paint = false;
 
   // This exists purely because we want to paint fast if the user is dragging,
   // and our full spatial index is only updated by the reconciler, which is too
   // late.
-  private tempSpatialIndex: Set<string> = new Set();
-  private dragSessionIndex: Set<string> = new Set();
+  protected tempSpatialIndex: Set<string> = new Set();
+  protected dragSessionIndex: Set<string> = new Set();
 
-  constructor(private spatialIndex: SpatialIndex) {}
+  constructor(protected spatialIndex: SpatialIndex) {}
 
   public pointerUp(_e: PointerEventData): void {
     const state = store.getState();
     const mode = selectors.selectMode(state);
     if (mode !== "paint") return;
 
-    this.instantiatePlacable();
+    const ms = state.mapEditor;
+    const paintMode = ms.toolOptions.paint.mode;
+    this.instantiatePlacable(paintMode);
+
     this.paint = false;
   }
 
@@ -74,16 +78,18 @@ class Placer implements ClickDragListener {
 
   public pointerDrag(_e: PointerEventData): void {
     if (this.paint) {
-      this.instantiatePlacable();
+      const state = store.getState();
+      const ms = state.mapEditor;
+      const paintMode = ms.toolOptions.paint.mode;
+      this.instantiatePlacable(paintMode);
     }
   }
 
-  private instantiatePlacable(): void {
+  protected instantiatePlacable(paintMode: PaintOpts["mode"]): void {
     if (!g.placableSprite) return;
 
     const state = store.getState();
     const ms = state.mapEditor;
-    const opts = ms.toolOptions.paint;
 
     const pos = g.placableContainer.position;
     const { width, height } = g.placableSprite;
@@ -128,15 +134,15 @@ class Placer implements ClickDragListener {
       const maxZ = hits.reduce((max, obj) => (obj.z > max ? obj.z : max), 0);
 
       // Don't place if there's already something here
-      if (opts.mode === "place-once") {
+      if (paintMode === "place-once") {
         if (occupied) {
           return;
         }
-      } else if (opts.mode === "stack") {
+      } else if (paintMode === "stack") {
         if (placedThisSession) return;
         // Stack just above the highest object here
         z = maxZ + 0.01;
-      } else if (opts.mode === "overwrite") {
+      } else if (paintMode === "overwrite") {
         if (placedThisSession) return;
         store.dispatch(actions.removeMany(hits.map((h) => h.id)));
       }

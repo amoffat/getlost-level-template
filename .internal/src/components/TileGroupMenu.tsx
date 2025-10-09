@@ -6,6 +6,7 @@ import { Vector } from "@/vec";
 import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
 import {
   IconBlocks,
+  IconCopy,
   IconStack2,
   IconTag,
   IconTrash,
@@ -16,14 +17,14 @@ import TilesetGroup from "./TilesetGroup";
 
 interface TileGroupMenuProps {
   pos: Vector | null;
-  group: TileGroup | null;
+  obj: TileGroup | null;
   onTagsModalOpened?: VoidFunction;
   closeMenu: () => void;
 }
 
 export default function TileGroupMenu({
   pos,
-  group,
+  obj,
   closeMenu,
   onTagsModalOpened,
 }: TileGroupMenuProps) {
@@ -44,39 +45,45 @@ export default function TileGroupMenu({
 
   const addTag = useCallback(
     (tag: string) => {
-      if (!group) return;
-      if (group.tags.includes(tag)) return;
+      if (!obj) return;
+      if (obj.tags.includes(tag)) return;
       tag = tag.trim();
       if (tag.length === 0) return;
 
-      const allTags = Array.from(new Set(group.tags).add(tag));
+      const allTags = Array.from(new Set(obj.tags).add(tag));
       dispatch(
         tsActions.updateTileGroup({
-          tsId: group.tilesetId,
-          group,
+          tsId: obj.tilesetId,
+          group: obj,
           changes: { tags: allTags },
         })
       );
       dispatch(uiActions.addTilesetGroupTags([tag]));
     },
-    [dispatch, group]
+    [dispatch, obj]
   );
 
   const removeTag = useCallback(
     (tag: string) => {
-      if (!group) return;
-      const allTags = group.tags.filter((t) => t !== tag);
+      if (!obj) return;
+      const allTags = obj.tags.filter((t) => t !== tag);
       dispatch(
         tsActions.updateTileGroup({
-          tsId: group.tilesetId,
-          group,
+          tsId: obj.tilesetId,
+          group: obj,
           changes: { tags: allTags },
         })
       );
       dispatch(uiActions.removeTilesetGroupTags([tag]));
     },
-    [dispatch, group]
+    [dispatch, obj]
   );
+
+  const onCopyId = useCallback(() => {
+    if (!obj) return;
+    navigator.clipboard.writeText(obj.id);
+    closeMenu();
+  }, [obj, closeMenu]);
 
   // const mapEd = tab === "map-editor";
   const tilesetEd = tab === "tileset-editor";
@@ -98,6 +105,9 @@ export default function TileGroupMenu({
         >
           Set tags
         </Menu.Item>
+        <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
+          Copy object id
+        </Menu.Item>
 
         {tilesetEd && (
           <>
@@ -118,7 +128,7 @@ export default function TileGroupMenu({
         title="Set tags"
       >
         <Stack p={0} align="stretch">
-          {group && <TilesetGroup group={group} scale={4} />}
+          {obj && <TilesetGroup group={obj} scale={4} />}
           <TagsInput
             placeholder="Enter tag"
             splitChars={[",", " ", "|"]}
@@ -126,7 +136,7 @@ export default function TileGroupMenu({
             onOptionSubmit={addTag}
             onRemove={removeTag}
             data={tgTags}
-            defaultValue={group?.tags || []}
+            defaultValue={obj?.tags || []}
           />
         </Stack>
       </Modal>
