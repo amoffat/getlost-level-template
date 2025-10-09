@@ -104,9 +104,11 @@ class Painter extends Placer {
       right: { sig: matchSigs.right, weight: dirWeights.right },
     };
 
-    const matches = matchTile(query, appG.tileEdgeSigs, { topN: 20 });
-    // const match = choose(matches);
-    const match = matches[0];
+    const underPos = topByPos.get(`${baseX},${baseY}`);
+
+    const matches = matchTile(query, appG.tileEdgeSigs, { topN: 5 });
+    const match = matches.find((m) => m.id !== underPos?.tileId);
+    // const match = matches[0];
     if (match) {
       const obj = appG.tileIdToTileGroup.get(match.id);
       store.dispatch(mapEdActions.setPlace(obj ?? null));

@@ -3,15 +3,6 @@ import { Vector } from "../../vec";
 
 export type EdgeName = "top" | "right" | "bottom" | "left";
 
-export interface EdgeSignatureOptions {
-  /** Number of DCT coefficients to retain per edge (>=1) */
-  coefficients?: number;
-  /** Whether to use all OKLab channels (L,a,b) or just L (lightness). */
-  useAllChannels?: boolean;
-  /** Normalize signature by dividing by magnitude (L2). */
-  normalize?: boolean;
-}
-
 export type EdgeSig = number[];
 
 export interface EdgeSignatures {
@@ -30,56 +21,21 @@ export type MatchQuery = Partial<Record<EdgeName, EdgeQuery>>;
 
 export type SignatureIndex = Map<string, EdgeSignatures>;
 
-const DEFAULT_OPTIONS: Required<EdgeSignatureOptions> = {
-  coefficients: 16,
-  useAllChannels: true,
-  normalize: true,
-};
-
 // Culori color space converter (l,a,b values in OKLab)
 const toOKLab = converter("oklab");
 
-/** Compute DCT-II for a 1D real signal. Returns first k coefficients (k <= n). */
-function dct(signal: number[], k: number): number[] {
-  const n = signal.length;
-  const out: number[] = new Array(Math.min(k, n));
-  const factor = Math.PI / n;
-  for (let i = 0; i < out.length; i++) {
-    let sum = 0;
-    for (let j = 0; j < n; j++) {
-      sum += signal[j] * Math.cos((j + 0.5) * i * factor);
-    }
-    // Orthogonal normalization (approx). For i=0 multiply by sqrt(1/n), else sqrt(2/n)
-    const norm = i === 0 ? Math.sqrt(1 / n) : Math.sqrt(2 / n);
-    out[i] = sum * norm;
-  }
-  return out;
-}
-
-/** Optional L2 normalization */
-function normalize(vec: number[]): number[] {
-  let sumSq = 0;
-  for (const v of vec) sumSq += v * v;
-  const mag = Math.sqrt(sumSq) || 1;
-  return vec.map((v) => v / mag);
-}
-
-// (Deprecated) Previously used interleaved-channel edge signal helper removed.
-
 /**
  * Extract OKLab-based 1D signals per channel for an edge.
- * When useAllChannels is false, only L is populated for efficiency.
  */
 function edgeSignalsPerChannel(
   data: ImageData,
-  edge: EdgeName,
-  useAllChannels: boolean
-): { L: number[]; A?: number[]; B?: number[] } {
+  edge: EdgeName
+): { L: number[]; A: number[]; B: number[] } {
   const { width, height } = data;
   const d = data.data;
   const L: number[] = [];
-  const A: number[] | undefined = useAllChannels ? [] : undefined;
-  const B: number[] | undefined = useAllChannels ? [] : undefined;
+  const A: number[] = [];
+  const B: number[] = [];
 
   if (edge === "top" || edge === "bottom") {
     const y = edge === "top" ? 0 : height - 1;
@@ -90,10 +46,8 @@ function edgeSignalsPerChannel(
         b = d[idx + 2] / 255;
       const { l: lVal, a, b: b2 } = toOKLab({ mode: "rgb", r, g, b });
       L.push(lVal);
-      if (useAllChannels) {
-        (A as number[]).push(a);
-        (B as number[]).push(b2);
-      }
+      A.push(a);
+      B.push(b2);
     }
   } else {
     // left/right
@@ -105,10 +59,8 @@ function edgeSignalsPerChannel(
         b = d[idx + 2] / 255;
       const { l: lVal, a, b: b2 } = toOKLab({ mode: "rgb", r, g, b });
       L.push(lVal);
-      if (useAllChannels) {
-        (A as number[]).push(a);
-        (B as number[]).push(b2);
-      }
+      A.push(a);
+      B.push(b2);
     }
   }
 
@@ -116,32 +68,14 @@ function edgeSignalsPerChannel(
 }
 
 /** Compute the 4 edge signatures for a tile. */
-export function computeEdgeSignatures(
-  image: ImageData,
-  options: EdgeSignatureOptions = {}
-): EdgeSignatures {
-  const {
-    coefficients,
-    useAllChannels,
-    normalize: doNorm,
-  } = { ...DEFAULT_OPTIONS, ...options };
+export function computeEdgeSignatures(image: ImageData): EdgeSignatures {
   const edges: EdgeName[] = ["top", "right", "bottom", "left"];
   const result: Partial<EdgeSignatures> = {};
   for (const e of edges) {
-    // Build per-channel edge signals and compute DCT per channel to avoid
-    // interleaving artifacts that harm color separability.
-    const sigs = edgeSignalsPerChannel(image, e, useAllChannels);
-    let combined: number[];
-    if (useAllChannels) {
-      const kPer = Math.max(1, Math.ceil(coefficients / 3));
-      const lCoeffs = dct(sigs.L, kPer);
-      const aCoeffs = dct(sigs.A as number[], kPer);
-      const bCoeffs = dct(sigs.B as number[], kPer);
-      combined = lCoeffs.concat(aCoeffs, bCoeffs).slice(0, coefficients);
-    } else {
-      combined = dct(sigs.L, coefficients);
-    }
-    result[e] = doNorm ? normalize(combined) : combined;
+    // Build per-channel edge signals and concatenate raw OKLab values (no DCT, no truncation).
+    const sigs = edgeSignalsPerChannel(image, e);
+    const combined = sigs.L.concat(sigs.A, sigs.B);
+    result[e] = combined;
   }
   return result as EdgeSignatures;
 }
@@ -154,7 +88,7 @@ export interface MatchResult {
   signatures: EdgeSignatures;
 }
 
-export interface MatchOptions extends EdgeSignatureOptions {
+export interface MatchOptions {
   /** Aggregation: currently only 'sum' (L2 per-edge then summed) */
   aggregation?: "sum";
   /** Number of top matches to return (default 1). If <=0 returns empty array. */
@@ -224,15 +158,12 @@ export function matchTile(
 
 /**
  * Pick direction (edge) weights based on a position within a square grid.
- * The idea is to weaken (lower) the weight of edges when the position is
- * close to either edge along that axis. The "weakness" is symmetric: if a
- * point is near the top, both the top and bottom weights are reduced while
- * left/right remain comparatively high (and vice‑versa). Corner positions
- * therefore reduce all edges.
- *
- * We map the minimum distance to the pair of edges on an axis into a weight
- * in (0,1], where 1 represents strong / fully trusted (center of the grid)
- * and values approach 0 as we near an edge. No weight is ever exactly 0.
+ * We reduce only the nearest edge on each axis independently:
+ * - Vertical axis: reduce either 'top' or 'bottom'.
+ * - Horizontal axis: reduce either 'left' or 'right'.
+ * At the center, all weights are 1. As the position drifts toward an edge,
+ * that edge is reduced with a sharper-than-linear (quadratic) falloff.
+ * Reduction bottoms out at 0 and never goes negative.
  *
  * @param pos Position inside the grid (0 <= x,y < gridSize assumed).
  * @param gridSize Size of the (square) grid.
@@ -258,27 +189,43 @@ export function pickDirectionWeights(
   const cellX = (cellXRaw + gridSize) % gridSize; // [0, gridSize)
   const cellY = (cellYRaw + gridSize) % gridSize; // [0, gridSize)
 
-  const maxIndex = gridSize - 1;
-
-  // Distance to nearest opposite pair edges inside THIS cell
-  const dx = Math.min(cellX, maxIndex - cellX);
-  const dy = Math.min(cellY, maxIndex - cellY);
-
-  // Maximum achievable min-distance (center region). For even sizes there are
-  // two central columns/rows sharing this value.
-  const maxMinDist = Math.floor(maxIndex / 2);
-
-  // Avoid ever returning 0 exactly to keep edges influential.
-  const EPS = 1e-6;
-  const norm = (d: number) => (d + EPS) / (maxMinDist + EPS);
-
-  const horizWeight = norm(dy); // top & bottom share horizontal proximity
-  const vertWeight = norm(dx); // left & right share vertical proximity
-
-  return {
-    top: horizWeight,
-    bottom: horizWeight,
-    left: vertWeight,
-    right: vertWeight,
+  // Distances to each edge within this cell (continuous model with edges at 0 and gridSize).
+  const distances: Record<EdgeName, number> = {
+    top: cellY,
+    right: gridSize - cellX,
+    bottom: gridSize - cellY,
+    left: cellX,
   };
+
+  // Compute nearest per-axis edges and apply quadratic falloff on each axis independently.
+  const maxMinDist = gridSize / 2;
+  const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+  const gamma = 2; // quadratic
+
+  // Vertical axis (top/bottom)
+  const dTop = distances.top;
+  const dBottom = distances.bottom;
+  const vEdge: EdgeName = dTop <= dBottom ? "top" : "bottom";
+  const vDist = Math.min(dTop, dBottom);
+  const vNormalized = vDist / maxMinDist; // [0,1]
+  const vWeight = clamp01(Math.pow(vNormalized, gamma));
+
+  // Horizontal axis (left/right)
+  const dLeft = distances.left;
+  const dRight = distances.right;
+  const hEdge: EdgeName = dLeft <= dRight ? "left" : "right";
+  const hDist = Math.min(dLeft, dRight);
+  const hNormalized = hDist / maxMinDist; // [0,1]
+  const hWeight = clamp01(Math.pow(hNormalized, gamma));
+
+  // Start with all 1s, then reduce the chosen edges per axis.
+  const weights: Record<EdgeName, number> = {
+    top: 1,
+    right: 1,
+    bottom: 1,
+    left: 1,
+  };
+  weights[vEdge] = vWeight;
+  weights[hEdge] = hWeight;
+  return weights;
 }
