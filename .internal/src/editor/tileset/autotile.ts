@@ -1,9 +1,11 @@
 import { converter } from "culori";
+import Heap from "heap";
 import { Vector } from "../../vec";
 
 export type EdgeName = "top" | "right" | "bottom" | "left";
 
-export type EdgeSig = number[];
+// Use typed arrays for faster numeric loops and better memory locality
+export type EdgeSig = Float32Array;
 
 export interface EdgeSignatures {
   top: EdgeSig;
@@ -30,12 +32,13 @@ const toOKLab = converter("oklab");
 function edgeSignalsPerChannel(
   data: ImageData,
   edge: EdgeName
-): { L: number[]; A: number[]; B: number[] } {
+): { L: Float32Array; A: Float32Array; B: Float32Array } {
   const { width, height } = data;
   const d = data.data;
-  const L: number[] = [];
-  const A: number[] = [];
-  const B: number[] = [];
+  const len = edge === "top" || edge === "bottom" ? width : height;
+  const L = new Float32Array(len);
+  const A = new Float32Array(len);
+  const B = new Float32Array(len);
 
   if (edge === "top" || edge === "bottom") {
     const y = edge === "top" ? 0 : height - 1;
@@ -45,9 +48,9 @@ function edgeSignalsPerChannel(
         g = d[idx + 1] / 255,
         b = d[idx + 2] / 255;
       const { l: lVal, a, b: b2 } = toOKLab({ mode: "rgb", r, g, b });
-      L.push(lVal);
-      A.push(a);
-      B.push(b2);
+      L[x] = lVal as number;
+      A[x] = a as number;
+      B[x] = b2 as number;
     }
   } else {
     // left/right
@@ -58,9 +61,9 @@ function edgeSignalsPerChannel(
         g = d[idx + 1] / 255,
         b = d[idx + 2] / 255;
       const { l: lVal, a, b: b2 } = toOKLab({ mode: "rgb", r, g, b });
-      L.push(lVal);
-      A.push(a);
-      B.push(b2);
+      L[y] = lVal as number;
+      A[y] = a as number;
+      B[y] = b2 as number;
     }
   }
 
@@ -74,8 +77,15 @@ export function computeEdgeSignatures(image: ImageData): EdgeSignatures {
   for (const e of edges) {
     // Build per-channel edge signals and concatenate raw OKLab values (no DCT, no truncation).
     const sigs = edgeSignalsPerChannel(image, e);
-    const combined = sigs.L.concat(sigs.A, sigs.B);
-    result[e] = combined;
+    const len = sigs.L.length + sigs.A.length + sigs.B.length;
+    const combined = new Float32Array(len);
+    let o = 0;
+    combined.set(sigs.L, o);
+    o += sigs.L.length;
+    combined.set(sigs.A, o);
+    o += sigs.A.length;
+    combined.set(sigs.B, o);
+    result[e] = combined as EdgeSig;
   }
   return result as EdgeSignatures;
 }
@@ -95,14 +105,31 @@ export interface MatchOptions {
   topN?: number;
 }
 
-/** Euclidean distance between vectors (assumed equal length) */
-function l2(a: number[], b: number[]): number {
-  let s = 0;
-  for (let i = 0; i < a.length; i++) {
+// Helper to compute L2 distance with optional mid-vector early abandon.
+// Returns {dist, finished}. If finished=false, the caller abandoned early.
+function l2WithEarlyAbandon(
+  a: ArrayLike<number>,
+  b: ArrayLike<number>,
+  len: number,
+  weight: number,
+  currentTotal: number,
+  threshold: number
+): { dist: number; finished: boolean } {
+  let ssd = 0;
+  // Only attempt early-abandon if we already have a full topN and thus a finite threshold
+  const canAbandon = Number.isFinite(threshold);
+  for (let i = 0; i < len; i++) {
     const d = a[i] - b[i];
-    s += d * d;
+    ssd += d * d;
+    if (canAbandon) {
+      // Lower bound of this edge's contribution if we stopped here
+      const lowerBound = currentTotal + weight * Math.sqrt(ssd);
+      if (lowerBound > threshold) {
+        return { dist: Number.POSITIVE_INFINITY, finished: false };
+      }
+    }
   }
-  return Math.sqrt(s);
+  return { dist: Math.sqrt(ssd), finished: true };
 }
 
 /**
@@ -121,39 +148,75 @@ export function matchTile(
 
   const { topN = 1 } = options;
   if (topN <= 0) return [];
-
-  const results: MatchResult[] = [];
+  // Max-heap of size topN (largest distance at root) using 'heap' npm module
+  const heap = new Heap<MatchResult>((a, b) => b.distance - a.distance);
 
   for (const [id, sigs] of index.entries()) {
     let total = 0;
+    let exceeded = false;
+    // Only track per-edge distances if we end up within topN
     const edgeDistances: Partial<Record<EdgeName, number>> = {};
+
+    // Local snapshot of threshold to enable early-abandon
+    const threshold =
+      heap.size() === topN
+        ? (heap.peek() as MatchResult).distance
+        : Number.POSITIVE_INFINITY;
+
     for (const [edgeName, q] of Object.entries(query)) {
       const edge = edgeName as EdgeName;
       const { weight, sig } = q;
-      if (!sig) {
-        // Query lacks this edge (null), skip it
+      if (!sig || weight === 0) {
         continue;
       }
 
       const targetSig = sigs[edge];
       if (!targetSig) {
-        // If the target tile lacks this edge signature, penalize heavily (or skip). We choose skip.
-        total = Number.POSITIVE_INFINITY;
+        exceeded = true; // skip this tile
         break;
       }
-      // Assume equal length; if mismatch, compare on overlapping portion to remain robust.
+
       const len = Math.min(sig.length, targetSig.length);
-      const dist = l2(sig.slice(0, len), targetSig.slice(0, len));
-      edgeDistances[edge] = dist; // raw (unweighted) distance for transparency
+      const { dist, finished } = l2WithEarlyAbandon(
+        sig,
+        targetSig,
+        len,
+        weight,
+        total,
+        threshold
+      );
+      if (!finished) {
+        exceeded = true; // early abandon due to threshold
+        break;
+      }
+      edgeDistances[edge] = dist;
       total += weight * dist;
+
+      if (total > threshold) {
+        exceeded = true;
+        break;
+      }
     }
-    if (total !== Number.POSITIVE_INFINITY) {
-      results.push({ id, distance: total, edgeDistances, signatures: sigs });
+
+    if (!exceeded) {
+      const candidate: MatchResult = {
+        id,
+        distance: total,
+        edgeDistances,
+        signatures: sigs,
+      };
+      if (heap.size() < topN) {
+        heap.push(candidate);
+      } else if (candidate.distance < (heap.peek() as MatchResult).distance) {
+        heap.replace(candidate);
+      }
     }
   }
 
-  results.sort((a, b) => a.distance - b.distance);
-  return results.slice(0, Math.min(topN, results.length));
+  // Sort the winners by ascending distance for stable output
+  const winners = heap.toArray();
+  winners.sort((a, b) => a.distance - b.distance);
+  return winners;
 }
 
 /**

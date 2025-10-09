@@ -57,7 +57,8 @@ class Painter extends Placer {
       if (!obj) continue;
       if (obj.layer !== "ground") continue;
       if (!isTileGroupInstance(obj)) continue;
-      const key = `${obj.x},${obj.y}`; // Positions are snapped when placed, so exact match is fine.
+
+      const key = `${obj.x},${obj.y}`;
       const existing = topByPos.get(key);
       if (!existing || obj.z > existing.z) {
         topByPos.set(key, obj);
