@@ -1,6 +1,6 @@
 import * as P from "pixi.js";
 import { Tileset } from "../../types/tileset";
-import { subscribeToSelector } from "../../utils/redux";
+import { subState } from "../../utils/redux";
 import { globals as g } from "./globals";
 
 export async function setCanvasTileset(ts: Tileset) {
@@ -26,10 +26,7 @@ export async function setCanvasTileset(ts: Tileset) {
   g.tilesetContainer.addChild(sprite);
 }
 
-subscribeToSelector(
-  [(state) => state.tilesetEditor.activeZoomPan],
-  (activeZoomPan) => {
-    g.tilesetContainer.scale.set(activeZoomPan.zoom);
-    g.tilesetContainer.position.set(activeZoomPan.pan.x, activeZoomPan.pan.y);
-  }
-);
+subState([(state) => state.tilesetEditor.activeZoomPan], (activeZoomPan) => {
+  g.tilesetContainer.scale.set(activeZoomPan.zoom);
+  g.tilesetContainer.position.set(activeZoomPan.pan.x, activeZoomPan.pan.y);
+});

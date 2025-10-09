@@ -4,7 +4,7 @@ import { store } from "@/store/store";
 import { isTileGroupInstance, Mode, TileGroupInstance } from "@/types/editor";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
-import { subscribeToSelector } from "@/utils/redux";
+import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
 import {
   ClickDragger,
@@ -232,7 +232,7 @@ export function clearObjectOutlines() {
 /**
  * When the selected objects change, we need to update the outlines.
  */
-subscribeToSelector(
+subState(
   [
     (state) => state.mapEditor.selectedObjs,
     (state) => state.mapEditor.zoomPan.zoom,

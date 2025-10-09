@@ -4,7 +4,7 @@ import debounce from "debounce";
 import * as P from "pixi.js";
 import { actions } from "../../slices/tilesetEditor";
 import { store } from "../../store/store";
-import { subscribeToSelector } from "../../utils/redux";
+import { subState } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
 import { makeBackground } from "../common/bg";
 import { getCursorForMode } from "../common/cursor";
@@ -138,14 +138,11 @@ export async function init(): Promise<P.Application> {
   return app;
 }
 
-subscribeToSelector(
-  [(state) => state.tilesetEditor.grid.visible],
-  (visible) => {
-    g.grid.visible = visible;
-  }
-);
+subState([(state) => state.tilesetEditor.grid.visible], (visible) => {
+  g.grid.visible = visible;
+});
 
-subscribeToSelector([(state) => state.tilesetEditor.grid.size], (size) => {
+subState([(state) => state.tilesetEditor.grid.size], (size) => {
   const coverSize = {
     x: g.currentTileset!.width,
     y: g.currentTileset!.height,
@@ -160,12 +157,12 @@ subscribeToSelector([(state) => state.tilesetEditor.grid.size], (size) => {
   drawGridMask(groups);
 });
 
-subscribeToSelector([selectors.selectMode], (mode) => {
+subState([selectors.selectMode], (mode) => {
   const canvas = g.app.canvas;
   canvas.style.cursor = getCursorForMode(mode);
 });
 
-subscribeToSelector([(state) => state.tilesetEditor.scanPos], (scanPos) => {
+subState([(state) => state.tilesetEditor.scanPos], (scanPos) => {
   if (scanPos === null) {
     g.scanPos.visible = false;
   } else {

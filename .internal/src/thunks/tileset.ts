@@ -1,5 +1,5 @@
 import { globals as gMap } from "@/editor/map/globals";
-import { buildSignatureIndex } from "@/editor/tileset/autotile";
+import { computeEdgeSignatures } from "@/editor/tileset/autotile";
 import { setCanvasTileset } from "@/editor/tileset/loader";
 import { globals as g } from "@/globals";
 import { loadTileset, loadTilesets } from "@/persist/tileset/api";
@@ -36,7 +36,7 @@ export const loadTilesetsThunk = createAsyncThunk(
     dispatch(uiActions.setLoadingMessage("Loading tilesets ids..."));
     const tilesetIds = await loadTilesets();
     for (const tsId of tilesetIds) {
-      await dispatch(loadTilesetThunk(tsId));
+      await dispatch(loadTilesetThunk(tsId)).unwrap();
     }
   }
 );
@@ -78,9 +78,11 @@ export const loadTilesetThunk = createAsyncThunk(
     for (const obj of Object.values(ts.palette)) {
       const cropped = subImageData(imageData, obj.pos);
       objs.set(obj.id, cropped);
+      g.tileIdToTileGroup.set(obj.id, obj);
     }
-    const sigs = buildSignatureIndex(objs);
-    g.tilesetEdgeSigs.set(ts.id, sigs);
+    for (const [id, img] of objs.entries()) {
+      g.tileEdgeSigs.set(id, computeEdgeSignatures(img));
+    }
     // End edge signature indexing
 
     for (const obj of Object.values(ts.palette)) {

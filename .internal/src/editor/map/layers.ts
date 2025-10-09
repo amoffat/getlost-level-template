@@ -1,5 +1,5 @@
 import { RootState, store } from "@/store/store";
-import { subscribeToSelector } from "../../utils/redux";
+import { subState } from "../../utils/redux";
 import { globals as g } from "./globals";
 
 function setLayerVisibility(layers: RootState["mapEditor"]["layers"]) {
@@ -25,9 +25,6 @@ export function initLayerVisibility() {
   setLayerVisibility(state.mapEditor.layers);
 }
 
-subscribeToSelector(
-  [(state: RootState) => state.mapEditor.layers],
-  (layers, _state) => {
-    setLayerVisibility(layers);
-  }
-);
+subState([(state: RootState) => state.mapEditor.layers], (layers, _state) => {
+  setLayerVisibility(layers);
+});

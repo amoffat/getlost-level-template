@@ -12,12 +12,21 @@ export interface EdgeSignatureOptions {
   normalize?: boolean;
 }
 
+export type EdgeSig = number[];
+
 export interface EdgeSignatures {
-  top: number[];
-  right: number[];
-  bottom: number[];
-  left: number[];
+  top: EdgeSig;
+  right: EdgeSig;
+  bottom: EdgeSig;
+  left: EdgeSig;
 }
+
+export interface EdgeQuery {
+  sig: EdgeSig | null;
+  weight: number;
+}
+
+export type MatchQuery = Partial<Record<EdgeName, EdgeQuery>>;
 
 export type SignatureIndex = Map<string, EdgeSignatures>;
 
@@ -116,18 +125,6 @@ export function computeEdgeSignatures(
   return result as EdgeSignatures;
 }
 
-/** Build a signature index for multiple tiles. */
-export function buildSignatureIndex(
-  tiles: Map<string, ImageData>,
-  options?: EdgeSignatureOptions
-): SignatureIndex {
-  const index: SignatureIndex = new Map();
-  for (const [id, img] of tiles.entries()) {
-    index.set(id, computeEdgeSignatures(img, options));
-  }
-  return index;
-}
-
 export interface MatchResult {
   id: string;
   distance: number;
@@ -155,41 +152,49 @@ function l2(a: number[], b: number[]): number {
 
 /**
  * Match a query ImageData against an index.
- * @param id The tile we want matches for
+ * @param query Query edge signatures with weights
  * @param index Precomputed signature index
  * @param edges Which edges to consider (at least one)
  * @param options Signature generation + matching options
  */
 export function matchTile(
-  id: string,
+  query: MatchQuery,
   index: SignatureIndex,
-  edges: Array<EdgeName | [EdgeName, number]>,
   options: MatchOptions = {}
 ): MatchResult[] {
-  if (!edges.length) throw new Error("edges array must not be empty");
-
-  const querySig = index.get(id);
-  if (!querySig) return [];
+  if (!Object.keys(query).length) throw new Error("query must not be empty");
 
   const { topN = 1 } = options;
   if (topN <= 0) return [];
 
-  // Normalize edge specs into { edge, weight }
-  const weightedEdges: { edge: EdgeName; weight: number }[] = edges.map((e) =>
-    Array.isArray(e) ? { edge: e[0], weight: e[1] } : { edge: e, weight: 1 }
-  );
-
   const results: MatchResult[] = [];
 
-  for (const [id, sig] of index.entries()) {
+  for (const [id, sigs] of index.entries()) {
     let total = 0;
     const edgeDistances: Partial<Record<EdgeName, number>> = {};
-    for (const { edge, weight } of weightedEdges) {
-      const d = l2(querySig[edge], sig[edge]);
-      edgeDistances[edge] = d; // store raw distance (unweighted) for transparency
-      total += weight * d; // weighted aggregation
+    for (const [edgeName, q] of Object.entries(query)) {
+      const edge = edgeName as EdgeName;
+      const { weight, sig } = q;
+      if (!sig) {
+        // Query lacks this edge (null), skip it
+        continue;
+      }
+
+      const targetSig = sigs[edge];
+      if (!targetSig) {
+        // If the target tile lacks this edge signature, penalize heavily (or skip). We choose skip.
+        total = Number.POSITIVE_INFINITY;
+        break;
+      }
+      // Assume equal length; if mismatch, compare on overlapping portion to remain robust.
+      const len = Math.min(sig.length, targetSig.length);
+      const dist = l2(sig.slice(0, len), targetSig.slice(0, len));
+      edgeDistances[edge] = dist; // raw (unweighted) distance for transparency
+      total += weight * dist;
     }
-    results.push({ id, distance: total, edgeDistances, signatures: sig });
+    if (total !== Number.POSITIVE_INFINITY) {
+      results.push({ id, distance: total, edgeDistances, signatures: sigs });
+    }
   }
 
   results.sort((a, b) => a.distance - b.distance);
@@ -215,15 +220,15 @@ export function matchTile(
 export function pickDirectionWeights(
   pos: Vector,
   gridSize: number
-): Array<[EdgeName, number]> {
+): Record<EdgeName, number> {
   // Guard: degenerate grid -> all equal weights of 1
   if (gridSize <= 1) {
-    return [
-      ["top", 1],
-      ["bottom", 1],
-      ["left", 1],
-      ["right", 1],
-    ];
+    return {
+      top: 1,
+      bottom: 1,
+      left: 1,
+      right: 1,
+    };
   }
 
   // Position within the current grid cell (ensure non‑negative modulo)
@@ -249,10 +254,10 @@ export function pickDirectionWeights(
   const horizWeight = norm(dy); // top & bottom share horizontal proximity
   const vertWeight = norm(dx); // left & right share vertical proximity
 
-  return [
-    ["top", horizWeight],
-    ["bottom", horizWeight],
-    ["left", vertWeight],
-    ["right", vertWeight],
-  ];
+  return {
+    top: horizWeight,
+    bottom: horizWeight,
+    left: vertWeight,
+    right: vertWeight,
+  };
 }

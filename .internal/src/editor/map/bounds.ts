@@ -1,5 +1,5 @@
 import { store } from "@/store/store";
-import { subscribeToSelector } from "@/utils/redux";
+import { subState } from "@/utils/redux";
 import { globals as g } from "./globals";
 
 /**
@@ -32,6 +32,6 @@ export function redrawBounds() {
     .fill({ color: 0x000000, alpha: 1 });
 }
 
-subscribeToSelector([(state) => state.mapEditor.bounds], (bounds) => {
+subState([(state) => state.mapEditor.bounds], (bounds) => {
   redrawBounds();
 });

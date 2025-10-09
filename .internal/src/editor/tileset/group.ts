@@ -3,7 +3,7 @@ import * as P from "pixi.js";
 import { selectors, actions as tsActions } from "../../slices/tilesetEditor";
 import { store } from "../../store/store";
 import { TileGroup } from "../../types/tilegroup";
-import { subscribeToSelector } from "../../utils/redux";
+import { subState } from "../../utils/redux";
 import {
   ClickDragger,
   ClickDragListener,
@@ -150,7 +150,7 @@ async function drawGroups(groups: TileGroup[], zoom: number) {
   g.allGroupsOverlay.addChild(gfx);
 }
 
-subscribeToSelector(
+subState(
   [
     selectors.activeTilesetGroups,
     (state) => state.tilesetEditor.activeZoomPan.zoom,

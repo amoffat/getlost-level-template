@@ -4,7 +4,7 @@ import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { isTileGroupInstance, TileGroupInstance } from "@/types/editor";
 import { SpatialIndex } from "@/types/spatial";
-import { subscribeToSelector } from "@/utils/redux";
+import { subState } from "@/utils/redux";
 import { Vector } from "@/vec";
 import * as P from "pixi.js";
 import {
@@ -175,7 +175,7 @@ export function setupPlacer({
   cd.addListener(new Placer(spatialIndex));
 }
 
-subscribeToSelector(
+subState(
   [(state) => state.mapEditor.place.obj, (state) => state.mapEditor.zoomPan],
   (placeObj, zoomPan) => {
     if (!g.initialized) return;
@@ -224,9 +224,61 @@ subscribeToSelector(
   }
 );
 
-subscribeToSelector([(state) => state.mapEditor.place.flipX], (flipX) => {
+subState([(state) => state.mapEditor.place.flipX], (flipX) => {
   if (!g.initialized) return;
   const child = g.placableContainer.children[0];
   if (!child) return;
   child.scale.x = flipX ? -1 : 1;
+});
+
+subState([(state) => state.mapEditor.toolOptions.paint.size], (size) => {
+  // Update preview container to show a size x size grid of the placable sprite.
+  if (!g.initialized) return;
+  // If we don't currently have a base sprite (no object selected), nothing to
+  // do.
+  if (!g.placableSprite) return;
+
+  return; // TODO
+
+  // Remove all children; we'll rebuild the grid. Keep reference to original
+  // texture.
+  const baseTex = g.placableSprite.texture;
+  g.placableContainer.removeChildren();
+
+  // We want a flush grid where each cell is exactly the width/height of the base sprite.
+  const cellW = g.placableSprite.width; // width already accounts for frame
+  const cellH = g.placableSprite.height;
+
+  // Anchor handling: existing single sprite used anchor (0.5, 0.5) and was
+  // positioned at (w/2, h/2) For a multi-cell brush we center the whole grid
+  // around (0,0) like before so placement math still works. Compute total
+  // extents and offset so that (0,0) corresponds to top-left of first cell then
+  // shift as before. We'll position each sprite with anchor (0.5,0.5) like the
+  // original; position = cell origin + half size.
+  const offsetX = 0; // We'll later translate container so its registration mimics previous single-sprite layout.
+  const offsetY = 0;
+
+  for (let gy = 0; gy < size; gy++) {
+    for (let gx = 0; gx < size; gx++) {
+      const sprite = new P.Sprite(baseTex);
+      sprite.anchor.set(0.5);
+      sprite.position.set(
+        offsetX + gx * cellW + cellW / 2,
+        offsetY + gy * cellH + cellH / 2
+      );
+      g.placableContainer.addChild(sprite);
+    }
+  }
+
+  // Adjust outline: reuse existing outline container but redraw if we have rect
+  // info. We don't have direct access to place.obj here; derive from existing
+  // single frame dimensions. The outline was previously drawn in the other
+  // subState when place.obj changes, so here we'll just scale the outline
+  // container. Simplest: scale outline to size in both directions if it
+  // currently matches one cell.
+  const outlineChild = g.placableOutline.children[0];
+  if (outlineChild) {
+    // Reset any previous scaling then apply new
+    outlineChild.scale.set(size, size);
+  }
 });

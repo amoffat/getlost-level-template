@@ -8,10 +8,9 @@ export default function Paint() {
   const dispatch = useAppDispatch();
 
   const activeLayer = useAppSelector((state) => state.mapEditor.layers.active);
-  const toolOptions = useAppSelector(selectors.selectToolOptions);
-  const mode = toolOptions?.mode;
+  const opts = useAppSelector(selectors.selectToolOptions)!;
 
-  const onChange = useCallback(
+  const onChangeMode = useCallback(
     (value: string) => {
       const mode = value as PaintOpts["mode"];
       dispatch(
@@ -24,11 +23,24 @@ export default function Paint() {
     [dispatch]
   );
 
+  const onChangeSize = useCallback(
+    (value: number | string) => {
+      if (typeof value !== "number") return;
+      dispatch(
+        actions.setToolOptions({
+          tool: "paint",
+          options: { size: value },
+        })
+      );
+    },
+    [dispatch]
+  );
+
   if (activeLayer !== "ground") return null;
 
   return (
     <Stack p={0}>
-      <Radio.Group name="paint-mode" value={mode} onChange={onChange}>
+      <Radio.Group name="paint-mode" value={opts.mode} onChange={onChangeMode}>
         <Stack p={0}>
           <Tooltip
             label="Places only on empty spaces"
@@ -54,6 +66,14 @@ export default function Paint() {
           >
             <Radio value="stack" label="Stack" />
           </Tooltip>
+          {/* <NumberInput
+            label="Brush size"
+            value={opts.size}
+            min={1}
+            max={10}
+            step={1}
+            onChange={onChangeSize}
+          /> */}
         </Stack>
       </Radio.Group>
     </Stack>

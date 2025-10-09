@@ -1,10 +1,17 @@
-import { SignatureIndex } from "@/editor/tileset/autotile";
+import {
+  EdgeName,
+  EdgeSig,
+  EdgeSignatures,
+  MatchQuery,
+  matchTile,
+  pickDirectionWeights,
+} from "@/editor/tileset/autotile";
+import { globals as appG } from "@/globals";
 import { actions, selectors as mapSelectors } from "@/slices/map";
-import { selectors } from "@/slices/mapEditor";
+import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { isTileGroupInstance, TileGroupInstance } from "@/types/editor";
 import { SpatialIndex } from "@/types/spatial";
-import { globals as appG } from "../../../globals";
 import {
   ClickDragger,
   ClickDragListener,
@@ -71,18 +78,51 @@ class Painter implements ClickDragListener {
       const resolveEdgeSig = function (
         x: number,
         y: number
-      ): SignatureIndex | undefined {
+      ): EdgeSignatures | undefined {
         const t = topByPos.get(`${x},${y}`);
         if (t) {
-          const sigs = appG.tilesetEdgeSigs.get(t.id);
+          const sigs = appG.tileEdgeSigs.get(t.tileId);
           return sigs;
         }
       };
 
-      const topSig = resolveEdgeSig(baseX, baseY - step);
-      const bottomSig = resolveEdgeSig(baseX, baseY + step);
-      const leftSig = resolveEdgeSig(baseX - step, baseY);
-      const rightSig = resolveEdgeSig(baseX + step, baseY);
+      const topSigs = resolveEdgeSig(baseX, baseY - step);
+      const bottomSigs = resolveEdgeSig(baseX, baseY + step);
+      const leftSigs = resolveEdgeSig(baseX - step, baseY);
+      const rightSigs = resolveEdgeSig(baseX + step, baseY);
+
+      const dirWeights = pickDirectionWeights(
+        { x: baseX, y: baseY },
+        g.gridSnap
+      );
+
+      // Compose the signatures that we want to match against at our position,
+      // by looking at the adjacent tiles that are touching us.
+      const matchSigs: Record<EdgeName, EdgeSig | null> = {
+        top: topSigs ? topSigs.bottom : null,
+        bottom: bottomSigs ? bottomSigs.top : null,
+        left: leftSigs ? leftSigs.right : null,
+        right: rightSigs ? rightSigs.left : null,
+      };
+
+      const query: MatchQuery = {
+        top: { sig: matchSigs.top, weight: 1 },
+        bottom: { sig: matchSigs.bottom, weight: 1 },
+        left: { sig: matchSigs.left, weight: 1 },
+        right: { sig: matchSigs.right, weight: 1 },
+      };
+
+      const matches = matchTile(query, appG.tileEdgeSigs, { topN: 1 });
+      const match = matches[0];
+      if (match) {
+        const obj = appG.tileIdToTileGroup.get(match.id);
+        store.dispatch(mapEdActions.setPlace(obj ?? null));
+
+        const z = baseY;
+        g.placableOutline.position = { x: baseX, y: baseY };
+        g.placableContainer.position = { x: baseX, y: baseY };
+        g.placableContainer.zIndex = z;
+      }
     }
   }
 

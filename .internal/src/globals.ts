@@ -1,16 +1,21 @@
+import type { SignatureIndex } from "@/editor/tileset/autotile";
+import type { TileGroup } from "@/types/tilegroup";
 import * as P from "pixi.js";
-import type { SignatureIndex } from "./editor/tileset/autotile";
 
 interface Globals {
   mapEditorApp: P.Application | null;
   tilesetEditorApp: P.Application | null;
   npcEditorApp: P.Application | null;
-  tilesetEdgeSigs: Map<string, SignatureIndex>;
+  tileEdgeSigs: SignatureIndex;
+  // This lets us quickly find the TileGroup that a tile ID belongs to, so we
+  // can look up its tileset, etc
+  tileIdToTileGroup: Map<string, TileGroup>;
 }
 
 export const globals: Globals = {
   mapEditorApp: null,
   tilesetEditorApp: null,
   npcEditorApp: null,
-  tilesetEdgeSigs: new Map(),
-} as unknown as Globals;
+  tileEdgeSigs: new Map(),
+  tileIdToTileGroup: new Map(),
+};

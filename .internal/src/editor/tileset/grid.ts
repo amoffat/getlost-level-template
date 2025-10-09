@@ -2,7 +2,7 @@ import { selectors } from "@/slices/tilesetEditor";
 import * as P from "pixi.js";
 import { store } from "../../store/store";
 import { TileGroup } from "../../types/tilegroup";
-import { subscribeToSelector } from "../../utils/redux";
+import { subState } from "../../utils/redux";
 import { drawGrid } from "../common/grid";
 import { globals as g } from "./globals";
 import { shouldOutline } from "./utils/outline";
@@ -33,26 +33,23 @@ export function drawGridMask(groups: TileGroup[]) {
   });
 }
 
-subscribeToSelector([selectors.activeTilesetGroups], (groups) => {
+subState([selectors.activeTilesetGroups], (groups) => {
   if (!g.grid) return;
   drawGridMask(groups);
 });
 
-subscribeToSelector(
-  [(state) => state.tilesetEditor.activeTilesetId],
-  (_, state) => {
-    const gridSize = state.tilesetEditor.grid.size;
-    const size = {
-      x: g.currentTileset!.width,
-      y: g.currentTileset!.height,
-    };
-    g.grid = drawGrid({
-      gridSize,
-      oldGrid: g.grid,
-      gridContainer: g.tilesetContainer,
-      coverSize: size,
-    });
-    const groups = selectors.activeTilesetGroups(store.getState());
-    drawGridMask(groups);
-  }
-);
+subState([(state) => state.tilesetEditor.activeTilesetId], (_, state) => {
+  const gridSize = state.tilesetEditor.grid.size;
+  const size = {
+    x: g.currentTileset!.width,
+    y: g.currentTileset!.height,
+  };
+  g.grid = drawGrid({
+    gridSize,
+    oldGrid: g.grid,
+    gridContainer: g.tilesetContainer,
+    coverSize: size,
+  });
+  const groups = selectors.activeTilesetGroups(store.getState());
+  drawGridMask(groups);
+});

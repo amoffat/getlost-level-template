@@ -6,7 +6,7 @@ import { Rect } from "../../types/rect";
 import { TileGroup } from "../../types/tilegroup";
 import { Tileset } from "../../types/tileset";
 import { schedulerYield } from "../../utils/async";
-import { subscribeToSelector } from "../../utils/redux";
+import { subState } from "../../utils/redux";
 import { genGroupId } from "../../utils/tileset";
 import { globals as g } from "./globals";
 
@@ -112,10 +112,7 @@ export async function unpackActiveTileset() {
   store.dispatch(tsActions.loadingPalette(false));
 }
 
-subscribeToSelector(
-  [(state) => state.tilesetEditor.activeZoomPan],
-  (activeZoomPan) => {
-    g.tilesetContainer.scale.set(activeZoomPan.zoom);
-    g.tilesetContainer.position.set(activeZoomPan.pan.x, activeZoomPan.pan.y);
-  }
-);
+subState([(state) => state.tilesetEditor.activeZoomPan], (activeZoomPan) => {
+  g.tilesetContainer.scale.set(activeZoomPan.zoom);
+  g.tilesetContainer.position.set(activeZoomPan.pan.x, activeZoomPan.pan.y);
+});

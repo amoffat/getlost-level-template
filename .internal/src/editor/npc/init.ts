@@ -3,7 +3,7 @@ import debounce from "debounce";
 import * as P from "pixi.js";
 import { actions } from "../../slices/npcEditor";
 import { store } from "../../store/store";
-import { subscribeToSelector } from "../../utils/redux";
+import { subState } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
 import { makeBackground } from "../common/bg";
 import { drawGrid } from "../common/grid";
@@ -108,11 +108,11 @@ export async function init(
   return app;
 }
 
-subscribeToSelector([(state) => state.npcEditor.grid.visible], (visible) => {
+subState([(state) => state.npcEditor.grid.visible], (visible) => {
   g.grid.visible = visible;
 });
 
-subscribeToSelector([(state) => state.npcEditor.grid.size], (size) => {
+subState([(state) => state.npcEditor.grid.size], (size) => {
   const coverSize = {
     x: g.currentTileset!.width,
     y: g.currentTileset!.height,
@@ -125,7 +125,7 @@ subscribeToSelector([(state) => state.npcEditor.grid.size], (size) => {
   });
 });
 
-subscribeToSelector([selectors.selectMode], (mode) => {
+subState([selectors.selectMode], (mode) => {
   const canvas = g.app.canvas;
   if (mode === "group") {
     canvas.style.cursor = "crosshair";

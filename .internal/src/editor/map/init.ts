@@ -4,7 +4,7 @@ import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
-import { subscribeToSelector } from "../../utils/redux";
+import { subState } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
 import { makeBackground } from "../common/bg";
 import { getCursorForMode } from "../common/cursor";
@@ -180,7 +180,7 @@ export async function init(): Promise<P.Application> {
   return app;
 }
 
-subscribeToSelector([selectors.selectMode], (mode) => {
+subState([selectors.selectMode], (mode) => {
   const canvas = g.app.canvas;
   canvas.style.cursor = getCursorForMode(mode);
   if (mode === "duplicate") {
