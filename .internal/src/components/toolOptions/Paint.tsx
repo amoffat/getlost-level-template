@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { actions, selectors } from "@/slices/mapEditor";
+import { actions } from "@/slices/mapEditor";
 import { PaintOpts } from "@/types/tools";
 import { Radio, Stack, Tooltip } from "@mantine/core";
 import { useCallback } from "react";
@@ -8,7 +8,7 @@ export default function Paint() {
   const dispatch = useAppDispatch();
 
   const activeLayer = useAppSelector((state) => state.mapEditor.layers.active);
-  const opts = useAppSelector(selectors.selectToolOptions)!;
+  const opts = useAppSelector((state) => state.mapEditor.toolOptions.paint);
 
   const onChangeMode = useCallback(
     (value: string) => {

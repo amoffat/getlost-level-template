@@ -1,7 +1,11 @@
 import * as constants from "@/constants";
 import { globals as g } from "@/globals";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { actions } from "@/slices/mapEditor";
+import { RootState } from "@/store/store";
 import { setToolThunk } from "@/thunks/map";
 import { Mode } from "@/types/editor";
+import { LayerName } from "@/types/layer";
 import {
   Fieldset,
   Flex,
@@ -27,10 +31,6 @@ import {
   IconWand,
 } from "@tabler/icons-react";
 import { use, useCallback, useEffect, useMemo, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "../hooks/redux";
-import { actions } from "../slices/mapEditor";
-import { RootState } from "../store/store";
-import { LayerName } from "../types/layer";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";

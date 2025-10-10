@@ -1,6 +1,6 @@
 import { Mode, TileGroupInstance } from "@/types/editor";
 import { Rect } from "@/types/rect";
-import { PaintOpts } from "@/types/tools";
+import { MagicPaintOpts, PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
 import {
@@ -17,7 +17,7 @@ export const selectedAdapter = createEntityAdapter<TileGroupInstance>();
 
 type ToolOptMapping = {
   paint: PaintOpts;
-  // add more tools-with-options here
+  "magic-paint": MagicPaintOpts;
 };
 
 // Derive the tool names with options directly from the mapping type.
@@ -36,7 +36,6 @@ interface MapEditorState {
   toolOptions: {
     [K in ToolWithOptions]: ToolOptMapping[K];
   };
-  magicPaintCandidates: TileGroup[];
   modeStack: Mode[];
   place: {
     obj: TileGroup | null;
@@ -78,8 +77,8 @@ const slice = createSlice({
     selectedTool: null,
     toolOptions: {
       paint: { mode: "place-once", size: 1 },
+      "magic-paint": { candidates: [], gridPosFreeze: null },
     },
-    magicPaintCandidates: [],
     modeStack: [],
     layers: {
       active: "ground",
@@ -108,10 +107,6 @@ const slice = createSlice({
 
     setLockInactiveLayer(state, action: { payload: boolean }) {
       state.layers.lockInactive = action.payload;
-    },
-
-    setMagicPaintCandidates(state, action: PayloadAction<TileGroup[]>) {
-      state.magicPaintCandidates = action.payload;
     },
 
     setDimInactiveLayer(state, action: { payload: boolean }) {
@@ -210,19 +205,6 @@ const slice = createSlice({
     selectMode: createSelector.withTypes<MapEditorState>()(
       [(state) => state.modeStack],
       (modeStack): Mode => modeStack.at(-1) ?? "select"
-    ),
-    selectToolOptions: createSelector.withTypes<MapEditorState>()(
-      [(state) => state.selectedTool, (state) => state.toolOptions],
-      (selectedTool, toolOptions) => {
-        if (!selectedTool) return null;
-        // Runtime: we only return if an options object exists.
-        if (selectedTool in toolOptions) {
-          return (toolOptions as Record<string, unknown>)[
-            selectedTool
-          ] as ToolOptMapping[keyof ToolOptMapping];
-        }
-        return null;
-      }
     ),
   },
 });

@@ -36,7 +36,12 @@ class Painter extends Placer {
     });
 
     this.candidateDispatcher = createRafThrottled((cands: TileGroup[]) => {
-      store.dispatch(mapEdActions.setMagicPaintCandidates(cands));
+      store.dispatch(
+        mapEdActions.setToolOptions({
+          tool: "magic-paint",
+          options: { candidates: cands },
+        })
+      );
     });
   }
   public pointerUp(_e: PointerEventData): void {
@@ -64,14 +69,35 @@ class Painter extends Placer {
 
     if (mode !== "magic-paint") return;
 
+    // Determine the snapped center tile position from the cursor using gridSnap
+    const step = g.gridSnap;
+    const baseX = Math.floor(e.localPos.x / step) * step;
+    const baseY = Math.floor(e.localPos.y / step) * step;
+
+    const freezeCand = state.mapEditor.toolOptions["magic-paint"].gridPosFreeze;
+    if (freezeCand) {
+      // If the candidate freeze position is set and matches our current grid pos,
+      // then don't do anything more here.
+      if (freezeCand.x === baseX && freezeCand.y === baseY) {
+        return;
+      } else {
+        store.dispatch(
+          mapEdActions.setToolOptions({
+            tool: "magic-paint",
+            options: { gridPosFreeze: null },
+          })
+        );
+      }
+    }
+
     const curObj = state.mapEditor.place.obj;
 
     // Get all of the tiles in a 9x9 area around the cursor
     const searchBounds = {
-      minX: e.localPos.x - 1.5 * g.gridSnap,
-      minY: e.localPos.y - 1.5 * g.gridSnap,
-      maxX: e.localPos.x + 1.5 * g.gridSnap,
-      maxY: e.localPos.y + 1.5 * g.gridSnap,
+      minX: e.localPos.x - 1.5 * step,
+      minY: e.localPos.y - 1.5 * step,
+      maxX: e.localPos.x + 1.5 * step,
+      maxY: e.localPos.y + 1.5 * step,
     };
     // Collect all overlapping ground tile group instances, but for each (x,y) stack
     // keep only the topmost (highest z). This preserves one representative per tile position.
@@ -88,10 +114,6 @@ class Painter extends Placer {
         topByPos.set(key, obj);
       }
     }
-    // Determine the snapped center tile position from the cursor using gridSnap
-    const baseX = Math.floor(e.localPos.x / g.gridSnap) * g.gridSnap;
-    const baseY = Math.floor(e.localPos.y / g.gridSnap) * g.gridSnap;
-    const step = g.gridSnap;
 
     const curGridPos = state.mapEditor.grid.curPos;
     const gridChanged = curGridPos?.x !== baseX || curGridPos?.y !== baseY;
@@ -121,7 +143,7 @@ class Painter extends Placer {
       return;
     }
 
-    const dirWeights = pickDirectionWeights(e.localPos, g.gridSnap);
+    const dirWeights = pickDirectionWeights(e.localPos, step);
 
     // Compose the signatures that we want to match against at our position,
     // by looking at the adjacent tiles that are touching us.
