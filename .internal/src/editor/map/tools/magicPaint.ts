@@ -22,6 +22,7 @@ import { Placer } from "./place";
 class Painter extends Placer {
   placeDispatcher: ReturnType<typeof createRafThrottled>;
   posDispatcher: ReturnType<typeof createRafThrottled>;
+  candidateDispatcher: ReturnType<typeof createRafThrottled>;
 
   constructor(spatialIndex: SpatialIndex) {
     super(spatialIndex);
@@ -32,6 +33,10 @@ class Painter extends Placer {
 
     this.posDispatcher = createRafThrottled((pos: Vector) => {
       store.dispatch(mapEdActions.setGridPos(pos));
+    });
+
+    this.candidateDispatcher = createRafThrottled((cands: TileGroup[]) => {
+      store.dispatch(mapEdActions.setMagicPaintCandidates(cands));
     });
   }
   public pointerUp(_e: PointerEventData): void {
@@ -112,6 +117,7 @@ class Painter extends Placer {
     // No adjacent tiles to match against, so we can't do anything here.
     if (!hasAdjacentTiles) {
       if (curObj) this.placeDispatcher(null);
+      this.candidateDispatcher([]);
       return;
     }
 
@@ -133,13 +139,32 @@ class Painter extends Placer {
       right: { sig: matchSigs.right, weight: dirWeights.right },
     };
 
-    const underPos = topByPos.get(`${baseX},${baseY}`);
+    const matches = matchTile(query, appG.tileEdgeSigs, { topN: 5 });
 
-    const matches = matchTile(query, appG.tileEdgeSigs, { topN: 3 });
-    const match = matches.find((m) => m.id !== underPos?.tileId);
-    // const match = matches[0];
+    // Exclude the tile currently under the cursor from consideration
+    const underPos = topByPos.get(`${baseX},${baseY}`);
+    const filtered = matches.filter((m) => m.id !== underPos?.tileId);
+    const match = filtered[0];
+    const excludedUnder = !!underPos && filtered.length !== matches.length;
+
     if (match) {
       const obj = appG.tileIdToTileGroup.get(match.id)!;
+
+      let orderedCandidates: TileGroup[] = [];
+      if (excludedUnder) {
+        // If we excluded the tile under the cursor, then include it at the end
+        // of the candidates list
+        orderedCandidates = [
+          ...filtered.map((m) => m.id),
+          underPos!.tileId,
+        ].map((id) => appG.tileIdToTileGroup.get(id)!);
+      } else {
+        orderedCandidates = matches.map(
+          (m) => appG.tileIdToTileGroup.get(m.id)!
+        );
+      }
+      this.candidateDispatcher(orderedCandidates);
+
       if (obj.id !== curObj?.id) {
         this.placeDispatcher(obj);
       }

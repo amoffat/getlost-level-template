@@ -7,7 +7,7 @@ export function getCursorForMode(
   let cursor = "default";
   if (mode === "pan") {
     cursor = "grabbing";
-  } else if (mode === "place") {
+  } else if (mode === "paint") {
     cursor = "crosshair";
   } else if (mode === "select") {
     cursor = "default";

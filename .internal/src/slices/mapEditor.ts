@@ -36,6 +36,7 @@ interface MapEditorState {
   toolOptions: {
     [K in ToolWithOptions]: ToolOptMapping[K];
   };
+  magicPaintCandidates: TileGroup[];
   modeStack: Mode[];
   place: {
     obj: TileGroup | null;
@@ -78,6 +79,7 @@ const slice = createSlice({
     toolOptions: {
       paint: { mode: "place-once", size: 1 },
     },
+    magicPaintCandidates: [],
     modeStack: [],
     layers: {
       active: "ground",
@@ -95,11 +97,21 @@ const slice = createSlice({
     },
 
     setActiveLayer(state, action: { payload: LayerName }) {
-      state.layers.active = action.payload;
+      const newLayer = action.payload;
+      state.layers.active = newLayer;
+
+      if (state.selectedTool === "magic-paint" && newLayer !== "ground") {
+        state.selectedTool = null;
+        state.modeStack = [];
+      }
     },
 
     setLockInactiveLayer(state, action: { payload: boolean }) {
       state.layers.lockInactive = action.payload;
+    },
+
+    setMagicPaintCandidates(state, action: PayloadAction<TileGroup[]>) {
+      state.magicPaintCandidates = action.payload;
     },
 
     setDimInactiveLayer(state, action: { payload: boolean }) {
