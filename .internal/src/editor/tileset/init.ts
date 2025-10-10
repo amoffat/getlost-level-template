@@ -96,7 +96,7 @@ export async function init(): Promise<P.Application> {
     onZoomChange: debounce((zoomPan) => {
       store.dispatch(actions.setZoom(zoomPan.zoom));
       store.dispatch(actions.setPan(zoomPan.pan));
-    }, 100),
+    }, 50),
   });
   setupPanControls({
     stage,

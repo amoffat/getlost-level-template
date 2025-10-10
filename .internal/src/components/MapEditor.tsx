@@ -236,9 +236,11 @@ export default function MapEditorTab({
 
           <Fieldset legend="Grid">
             <Stack p={0}>
-              <Text size="sm">
-                Position: {gridPos ? `${gridPos.x}, ${gridPos.y}` : "N/A"}
-              </Text>
+              {gridPos && (
+                <Text size="sm" variant="text">
+                  Position: {gridPos.x}, {gridPos.y}
+                </Text>
+              )}
             </Stack>
           </Fieldset>
         </Stack>

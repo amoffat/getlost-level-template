@@ -215,7 +215,13 @@ export function matchTile(
 
   // Sort the winners by ascending distance for stable output
   const winners = heap.toArray();
-  winners.sort((a, b) => a.distance - b.distance);
+  // Sort first by distance, then by id for stable ordering
+  winners.sort((a, b) => {
+    if (a.distance === b.distance) {
+      return a.id.localeCompare(b.id);
+    }
+    return a.distance - b.distance;
+  });
   return winners;
 }
 
