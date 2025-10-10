@@ -12,11 +12,28 @@ import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { isTileGroupInstance, TileGroupInstance } from "@/types/editor";
 import { SpatialIndex } from "@/types/spatial";
+import { TileGroup } from "@/types/tilegroup";
+import { createRafThrottled } from "@/utils/throttle";
+import { Vector } from "@/vec";
 import { ClickDragger, PointerEventData } from "../../common/drag";
 import { globals as g } from "../globals";
 import { Placer } from "./place";
 
 class Painter extends Placer {
+  placeDispatcher: ReturnType<typeof createRafThrottled>;
+  posDispatcher: ReturnType<typeof createRafThrottled>;
+
+  constructor(spatialIndex: SpatialIndex) {
+    super(spatialIndex);
+
+    this.placeDispatcher = createRafThrottled((obj: TileGroup | null) => {
+      store.dispatch(mapEdActions.setPlace(obj));
+    });
+
+    this.posDispatcher = createRafThrottled((pos: Vector) => {
+      store.dispatch(mapEdActions.setGridPos(pos));
+    });
+  }
   public pointerUp(_e: PointerEventData): void {
     const state = store.getState();
     const mode = selectors.selectMode(state);
@@ -41,6 +58,8 @@ class Painter extends Placer {
     const mode = selectors.selectMode(state);
 
     if (mode !== "magic-paint") return;
+
+    const curObj = state.mapEditor.place.obj;
 
     // Get all of the tiles in a 9x9 area around the cursor
     const searchBounds = {
@@ -69,7 +88,9 @@ class Painter extends Placer {
     const baseY = Math.floor(e.localPos.y / g.gridSnap) * g.gridSnap;
     const step = g.gridSnap;
 
-    // store.dispatch(mapEdActions.setGridPos({ x: baseX, y: baseY }));
+    const curGridPos = state.mapEditor.grid.curPos;
+    const gridChanged = curGridPos?.x !== baseX || curGridPos?.y !== baseY;
+    if (gridChanged) this.posDispatcher({ x: baseX, y: baseY });
 
     const resolveEdgeSig = function (
       x: number,
@@ -86,6 +107,13 @@ class Painter extends Placer {
     const bottomSigs = resolveEdgeSig(baseX, baseY + step);
     const leftSigs = resolveEdgeSig(baseX - step, baseY);
     const rightSigs = resolveEdgeSig(baseX + step, baseY);
+
+    const hasAdjacentTiles = topSigs || bottomSigs || leftSigs || rightSigs;
+    // No adjacent tiles to match against, so we can't do anything here.
+    if (!hasAdjacentTiles) {
+      if (curObj) this.placeDispatcher(null);
+      return;
+    }
 
     const dirWeights = pickDirectionWeights(e.localPos, g.gridSnap);
 
@@ -107,12 +135,14 @@ class Painter extends Placer {
 
     const underPos = topByPos.get(`${baseX},${baseY}`);
 
-    const matches = matchTile(query, appG.tileEdgeSigs, { topN: 5 });
+    const matches = matchTile(query, appG.tileEdgeSigs, { topN: 3 });
     const match = matches.find((m) => m.id !== underPos?.tileId);
     // const match = matches[0];
     if (match) {
-      const obj = appG.tileIdToTileGroup.get(match.id);
-      store.dispatch(mapEdActions.setPlace(obj ?? null));
+      const obj = appG.tileIdToTileGroup.get(match.id)!;
+      if (obj.id !== curObj?.id) {
+        this.placeDispatcher(obj);
+      }
 
       const z = baseY;
       g.placableOutline.position = { x: baseX, y: baseY };

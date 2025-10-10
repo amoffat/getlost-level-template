@@ -14,6 +14,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { shallowEqual } from "react-redux";
 import { log } from "../log";
 import DialogueTab from "./Dialogue";
 import MapEditorTab from "./MapEditor";
@@ -44,8 +45,15 @@ export function ShellApp() {
   const [draggedFiles, setDraggedFiles] = useState<File[] | null>(null);
   const [assetTypeOpened, { open: openAssetType, close: closeAssetType }] =
     useDisclosure(false);
+  // Select only the fields we need and use shallowEqual so unrelated ui changes
+  // don't cause ShellApp to re-render.
   const { activeTab, mountedTabs, loadingMessage } = useAppSelector(
-    (state) => state.ui
+    (state) => ({
+      activeTab: state.ui.activeTab,
+      mountedTabs: state.ui.mountedTabs,
+      loadingMessage: state.ui.loadingMessage,
+    }),
+    shallowEqual
   );
 
   // Initial data loading now handled via Suspense boundaries below.

@@ -170,13 +170,8 @@ const slice = createSlice({
       state.selectedTool = state.modeStack.at(-1) ?? null;
     },
 
-    setMode(state, action: PayloadAction<Mode | null>) {
+    setMode(state, action: PayloadAction<Mode>) {
       const mode = action.payload;
-      if (mode === null) {
-        state.modeStack = [];
-        state.selectedTool = null;
-        return;
-      }
 
       if (mode === "select") {
         state.place.obj = null;

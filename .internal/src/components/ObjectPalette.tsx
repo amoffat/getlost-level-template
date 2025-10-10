@@ -31,14 +31,15 @@ export default function ObjectPalette({
   const [objMenuPos, setObjMenuPos] = useState<Vector | null>(null);
   const [clickedPaletteObject, setClickedPaletteObject] =
     useState<TileGroup | null>(null);
-  const tsState = useAppSelector((state) => state.tilesetEditor);
+  const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
+  const loadingPalette = useAppSelector((state) => state.ui.loadingPalette);
   const [selectedObject, setSelectedObject] = useState<TileGroup | null>(null);
   const [scale, setScale] = useState(1);
 
   const objects: JSX.Element[] = useMemo(() => {
     const objs: JSX.Element[] = [];
 
-    const tilesets: Tileset[] = Object.values(tsState.tilesets).filter((t) => {
+    const filteredTilesets: Tileset[] = Object.values(tilesets).filter((t) => {
       if (showTileset) {
         return t.id === showTileset.id;
       } else if (showTileset === null) {
@@ -48,7 +49,7 @@ export default function ObjectPalette({
       }
     });
 
-    for (const ts of tilesets) {
+    for (const ts of filteredTilesets) {
       const num = ts.paletteIds.length;
       for (let i = num - 1; i >= 0; i--) {
         const objId = ts.paletteIds[i];
@@ -66,7 +67,7 @@ export default function ObjectPalette({
     }
 
     return objs;
-  }, [tsState.tilesets, showTileset, selectedObject, allowSelect, scale]);
+  }, [tilesets, showTileset, selectedObject, allowSelect, scale]);
 
   const deselectObject = useCallback(() => {
     setObjMenuPos(null);
@@ -106,7 +107,7 @@ export default function ObjectPalette({
         return;
       }
 
-      const obj = tsState.tilesets[tsId].palette[objId];
+      const obj = tilesets[tsId].palette[objId];
       if (e.button === 0) {
         if (objId === selectedObject?.id) {
           deselectObject();
@@ -123,7 +124,7 @@ export default function ObjectPalette({
         setClickedPaletteObject(obj);
       }
     },
-    [tsState.tilesets, deselectObject, selectedObject?.id, onSelectObject]
+    [tilesets, deselectObject, selectedObject?.id, onSelectObject]
   );
 
   const zoomInClick = useCallback(() => {
@@ -170,7 +171,7 @@ export default function ObjectPalette({
         )}
 
         <LoadingOverlay
-          visible={tsState.loadingPalette}
+          visible={loadingPalette}
           zIndex={1000}
           overlayProps={{ blur: 2 }}
         />

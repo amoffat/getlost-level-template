@@ -9,6 +9,7 @@ interface UIState {
     tilesetGroups: Record<string, number>;
   };
   loadingMessage: string | null;
+  loadingPalette: boolean;
 }
 
 const defaultTab: TabName = "map-editor";
@@ -22,6 +23,7 @@ const initialState: UIState = {
     tilesetGroups: {},
   },
   loadingMessage: null,
+  loadingPalette: false,
 };
 
 const slice = createSlice({
@@ -31,6 +33,9 @@ const slice = createSlice({
     setTab: (state, action: PayloadAction<TabName>) => {
       state.activeTab = action.payload;
       state.mountedTabs[action.payload] = true;
+    },
+    loadingPalette(state, action: PayloadAction<boolean>) {
+      state.loadingPalette = action.payload;
     },
     setLoadingMessage(state, action: PayloadAction<string | null>) {
       state.loadingMessage = action.payload;

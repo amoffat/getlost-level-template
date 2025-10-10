@@ -53,7 +53,7 @@ export const setToolThunk = createAsyncThunk(
     dispatch(mapEdActions.setActiveTool(tool));
 
     if (tool === null) {
-      dispatch(mapEdActions.setMode(null));
+      dispatch(mapEdActions.setMode("select"));
     } else {
       dispatch(mapEdActions.pushMode(tool));
     }

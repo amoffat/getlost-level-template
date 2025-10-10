@@ -43,7 +43,13 @@ export default function MapEditorTab({
 }: {
   initPromise: Promise<unknown>;
 }) {
-  const s = useAppSelector((state: RootState) => state.mapEditor);
+  const selectedTool = useAppSelector(
+    (state: RootState) => state.mapEditor.selectedTool
+  );
+  const layers = useAppSelector((state: RootState) => state.mapEditor.layers);
+  const gridPos = useAppSelector(
+    (state: RootState) => state.mapEditor.grid.curPos
+  );
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -93,6 +99,7 @@ export default function MapEditorTab({
         name: "Magic paint",
         icon: <IconWand size={16} />,
         canActivate: true,
+        disabled: layers.active !== "ground",
       },
       {
         slug: "set-waypoint",
@@ -149,12 +156,12 @@ export default function MapEditorTab({
         canActivate: false,
       },
     ],
-    []
+    [layers.active]
   );
   const toolName = useMemo(() => {
-    const tool = toolPalette.find((t) => t.slug === s.selectedTool);
+    const tool = toolPalette.find((t) => t.slug === selectedTool);
     return tool ? tool.name : null;
-  }, [s.selectedTool, toolPalette]);
+  }, [selectedTool, toolPalette]);
 
   const allToolOptions: Partial<Record<Mode, React.ReactNode>> = useMemo(
     () => ({
@@ -163,7 +170,7 @@ export default function MapEditorTab({
     }),
     []
   );
-  const toolOptions = s.selectedTool ? allToolOptions[s.selectedTool] : null;
+  const toolOptions = selectedTool ? allToolOptions[selectedTool] : null;
 
   const onToolActivated = useCallback(
     (slug: string) => {
@@ -181,7 +188,7 @@ export default function MapEditorTab({
       <Flex h="100dvh" style={{ flex: 1 }}>
         <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
           <Fieldset legend="Active layer">
-            <Radio.Group onChange={changeActiveLayer} value={s.layers.active}>
+            <Radio.Group onChange={changeActiveLayer} value={layers.active}>
               <Stack p={0}>
                 <Tooltip
                   multiline
@@ -207,7 +214,7 @@ export default function MapEditorTab({
                 </Tooltip>
                 <Switch
                   label="Lock inactive layer"
-                  checked={s.layers.lockInactive}
+                  checked={layers.lockInactive}
                   onChange={(event) => {
                     dispatch(
                       actions.setLockInactiveLayer(event.currentTarget.checked)
@@ -216,7 +223,7 @@ export default function MapEditorTab({
                 />
                 <Switch
                   label="Dim inactive layer"
-                  checked={s.layers.dimInactive}
+                  checked={layers.dimInactive}
                   onChange={(event) => {
                     dispatch(
                       actions.setDimInactiveLayer(event.currentTarget.checked)
@@ -229,11 +236,8 @@ export default function MapEditorTab({
 
           <Fieldset legend="Grid">
             <Stack p={0}>
-              <Text>
-                Position:{" "}
-                {s.grid.curPos
-                  ? `${s.grid.curPos.x}, ${s.grid.curPos.y}`
-                  : "N/A"}
+              <Text size="sm">
+                Position: {gridPos ? `${gridPos.x}, ${gridPos.y}` : "N/A"}
               </Text>
             </Stack>
           </Fieldset>
@@ -298,7 +302,7 @@ export default function MapEditorTab({
         <Stack miw={200} style={{ flex: 1 }}>
           <ToolPalette
             tools={toolPalette}
-            activeTool={s.selectedTool}
+            activeTool={selectedTool}
             onToolActivated={onToolActivated}
             onToolDeactivated={onToolDeactivated}
           />

@@ -1,13 +1,14 @@
+import { actions as tsActions } from "@/slices/tilesetEditor";
+import { actions as uiActions } from "@/slices/ui";
+import { store } from "@/store/store";
+import { Rect } from "@/types/rect";
+import { TileGroup } from "@/types/tilegroup";
+import { Tileset } from "@/types/tileset";
+import { schedulerYield } from "@/utils/async";
 import { getImageDataFromBitmap, isRectTransparent } from "@/utils/image";
+import { subState } from "@/utils/redux";
+import { genGroupId } from "@/utils/tileset";
 import * as P from "pixi.js";
-import { actions as tsActions } from "../../slices/tilesetEditor";
-import { store } from "../../store/store";
-import { Rect } from "../../types/rect";
-import { TileGroup } from "../../types/tilegroup";
-import { Tileset } from "../../types/tileset";
-import { schedulerYield } from "../../utils/async";
-import { subState } from "../../utils/redux";
-import { genGroupId } from "../../utils/tileset";
 import { globals as g } from "./globals";
 
 export async function setCanvasTileset(ts: Tileset | null) {
@@ -52,7 +53,7 @@ export async function unpackActiveTileset() {
   // Build a single ImageData snapshot so we can quickly test transparency per tile
   const imageData = getImageDataFromBitmap(bitmap);
 
-  store.dispatch(tsActions.loadingPalette(true));
+  store.dispatch(uiActions.loadingPalette(true));
   let chunk: TileGroup[] = [];
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
@@ -91,7 +92,7 @@ export async function unpackActiveTileset() {
     );
   }
   store.dispatch(tsActions.setScanPos(null));
-  store.dispatch(tsActions.loadingPalette(false));
+  store.dispatch(uiActions.loadingPalette(false));
 }
 
 subState([(state) => state.tilesetEditor.activeZoomPan], (activeZoomPan) => {

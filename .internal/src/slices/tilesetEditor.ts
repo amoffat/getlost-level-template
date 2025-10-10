@@ -41,7 +41,6 @@ export interface TilesetEditorState {
   tilesets: Record<string, Tileset>;
   scanPos: Rect | null;
   tilesetZoomPans: Record<string, ZoomPan>;
-  loadingPalette: boolean;
   // Async status flags for initial tileset loading
   loadingTilesets: boolean;
   tilesetsLoaded: boolean;
@@ -63,7 +62,6 @@ const slice = createSlice({
     tilesets: {},
     scanPos: null,
     tilesetZoomPans: {},
-    loadingPalette: false,
     loadingTilesets: false,
     tilesetsLoaded: false,
     tilesetsError: null,
@@ -166,9 +164,6 @@ const slice = createSlice({
       state.activeZoomPan.pan = pan;
       if (!tsId) return;
       state.tilesetZoomPans[tsId].pan = pan;
-    },
-    loadingPalette(state, action: PayloadAction<boolean>) {
-      state.loadingPalette = action.payload;
     },
 
     markSaved(state, action: PayloadAction<{ tsId: string; saved: boolean }>) {
