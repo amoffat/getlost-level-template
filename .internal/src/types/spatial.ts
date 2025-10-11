@@ -1,5 +1,8 @@
-import { Vector } from "@/vec";
-import RBush from "rbush";
+import { selectors } from "@/slices/map";
+import { store } from "@/store/store";
+import { isVector, Vector } from "@/vec";
+import RBush, { BBox } from "rbush";
+import type { MapObj, TileGroupInstance } from "./editor";
 
 export interface IndexItem {
   id: string;
@@ -40,4 +43,35 @@ export class SpatialIndex extends RBush<IndexItem> {
     this.insert(item);
     return this;
   }
+}
+
+export function getObjects({
+  index,
+  pos,
+}: {
+  index: SpatialIndex;
+  pos: Vector | BBox;
+}): (MapObj | TileGroupInstance)[] {
+  const state = store.getState();
+  const ms = state.mapEditor;
+
+  let firstPass: IndexItem[];
+  if (isVector(pos)) {
+    firstPass = index.searchByPos(pos);
+  } else {
+    firstPass = index.search(pos);
+  }
+
+  const objs = firstPass
+    .map((it) => it.id)
+    .map((hit) => selectors.selectById(state, hit))
+    // This is because the removed objects (like from removeMany in place.ts)
+    // get removed from the spatialIndex during reconciliation, which is *after*
+    // the createEntityAdapter action removes it from the state. In other words,
+    // the object might no longer exist in the state, but still temporarily
+    // exist in the spatial index. It's temporary but we need to check for it.
+    .filter((obj) => obj !== undefined)
+    .filter((obj) => !ms.layers.lockInactive || obj.layer === ms.layers.active)
+    .sort((a, b) => b.z - a.z);
+  return objs;
 }

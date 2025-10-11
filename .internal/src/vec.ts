@@ -6,6 +6,10 @@ export interface Vector {
   y: number;
 }
 
+export function isVector(pos: any): pos is Vector {
+  return typeof pos.x === "number" && typeof pos.y === "number";
+}
+
 export class Vec2 implements Vector {
   x: number;
   y: number;

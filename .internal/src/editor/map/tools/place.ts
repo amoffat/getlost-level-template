@@ -1,9 +1,9 @@
 import { log } from "@/log";
-import { actions, selectors as mapSelectors } from "@/slices/map";
+import { actions } from "@/slices/map";
 import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { isTileGroupInstance, TileGroupInstance } from "@/types/editor";
-import { SpatialIndex } from "@/types/spatial";
+import { getObjects, SpatialIndex } from "@/types/spatial";
 import { PaintOpts } from "@/types/tools";
 import { subState } from "@/utils/redux";
 import { Vector } from "@/vec";
@@ -112,18 +112,10 @@ export class Placer implements ClickDragListener {
     if (layer === "ground") {
       // This is the authoritative spatial index, but it might be out of sync
       // with the map, since it updates async.
-      const hits = this.spatialIndex
-        .search(searchBounds)
-        .map((it) => it.id)
-        .map((hit) => mapSelectors.selectById(state, hit))
-        // This is because the removed objects (like from removeMany below) get
-        // removed from the spatialIndex during reconciliation, which is *after*
-        // the createEntityAdapter action removes it from the state. In other
-        // words, the object might no longer exist in the state, but still
-        // temporarily exist in the spatial index.
-        .filter((obj) => obj !== undefined)
-        .filter((obj) => obj.layer === layer)
-        .filter((obj) => isTileGroupInstance(obj));
+      const hits = getObjects({
+        index: this.spatialIndex,
+        pos: searchBounds,
+      }).filter((obj) => isTileGroupInstance(obj));
 
       // Also check our temp index which has objects we've placed this drag
       // session but which aren't in the main spatial index yet. This prevents

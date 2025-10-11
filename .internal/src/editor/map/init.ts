@@ -1,8 +1,8 @@
 import * as constants from "@/constants";
-import { selectors as mapSelectors, setReconciler } from "@/slices/map";
+import { setReconciler } from "@/slices/map";
 import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { SpatialIndex } from "@/types/spatial";
+import { getObjects, SpatialIndex } from "@/types/spatial";
 import { Vector } from "@/vec";
 import * as P from "pixi.js";
 import { subState } from "../../utils/redux";
@@ -59,19 +59,15 @@ export async function init(): Promise<P.Application> {
 
   stage.on("pointermove", (e) => {
     const state = store.getState();
-    const ms = state.mapEditor;
     const mode = selectors.selectMode(state);
     let cursor = getCursorForMode(mode);
 
     const localPos = e.getLocalPosition(g.mapContainer);
 
-    const hits = spatialIndex
-      .searchByPos(localPos)
-      .map((it) => it.id)
-      .map((hit) => mapSelectors.selectById(state, hit))
-      .filter(
-        (obj) => !ms.layers.lockInactive || obj.layer === ms.layers.active
-      );
+    const hits = getObjects({
+      index: spatialIndex,
+      pos: localPos,
+    });
     const isOverObject = hits.length > 0;
 
     if (isOverObject && mode === "select") {
@@ -136,17 +132,10 @@ export async function init(): Promise<P.Application> {
     container: stage,
     coordsRelativeTo: g.mapContainer,
     checkPointerOver: (localPos: Vector): string[] => {
-      const state = store.getState();
-      const ms = state.mapEditor;
-
-      const hits = spatialIndex
-        .searchByPos(localPos)
-        .map((it) => it.id)
-        .map((hit) => mapSelectors.selectById(state, hit))
-        .filter(
-          (obj) => !ms.layers.lockInactive || obj.layer === ms.layers.active
-        )
-        .sort((a, b) => b.z - a.z);
+      const hits = getObjects({
+        index: spatialIndex,
+        pos: localPos,
+      });
       return hits.map((h) => h.id);
     },
   });

@@ -1,9 +1,8 @@
-import { selectors as mapSelectors } from "@/slices/map";
 import { actions, selectors as mapEdSelectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { isTileGroupInstance, Mode, TileGroupInstance } from "@/types/editor";
 import { Rect } from "@/types/rect";
-import { SpatialIndex } from "@/types/spatial";
+import { getObjects, SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
 import {
@@ -103,15 +102,10 @@ class Selector implements ClickDragListener {
       maxY: e.hitbox.br.y,
     };
 
-    const hits = this.spatialIndex
-      .search(searchBounds)
-      .map((it) => it.id)
-      .map((hit) => mapSelectors.selectById(state, hit))
-      .filter(
-        (obj) => !ms.layers.lockInactive || obj.layer === ms.layers.active
-      )
-      .filter((obj) => isTileGroupInstance(obj))
-      .sort((a, b) => b.z - a.z);
+    const hits = getObjects({
+      index: this.spatialIndex,
+      pos: searchBounds,
+    }).filter((obj) => isTileGroupInstance(obj));
 
     // Nothing selected? Clear either the proposed selection (if any) (first
     // click), or the actual selection (second click).
