@@ -4,6 +4,7 @@ import type { TileGroup } from "./tilegroup";
 export interface PaintOpts {
   mode: "place-once" | "overwrite" | "stack";
   size: number;
+  snap: "grid" | "object" | "free";
 }
 
 export interface MagicPaintOpts {

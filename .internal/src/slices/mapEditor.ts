@@ -76,7 +76,7 @@ const slice = createSlice({
     proposedSelection: null,
     selectedTool: null,
     toolOptions: {
-      paint: { mode: "place-once", size: 1 },
+      paint: { mode: "place-once", size: 1, snap: "object" },
       "magic-paint": { candidates: [], gridPosFreeze: null },
     },
     modeStack: [],

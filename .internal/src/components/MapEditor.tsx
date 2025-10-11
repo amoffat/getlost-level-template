@@ -50,6 +50,7 @@ export default function MapEditorTab({
   const gridPos = useAppSelector(
     (state: RootState) => state.mapEditor.grid.curPos
   );
+  const place = useAppSelector((state: RootState) => state.mapEditor.place.obj);
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -93,6 +94,7 @@ export default function MapEditorTab({
         name: "Paint area",
         icon: <IconPaint size={16} />,
         canActivate: true,
+        disabled: place === null,
       },
       {
         slug: "magic-paint",
@@ -156,7 +158,7 @@ export default function MapEditorTab({
         canActivate: false,
       },
     ],
-    [layers.active]
+    [layers.active, place]
   );
   const toolName = useMemo(() => {
     const tool = toolPalette.find((t) => t.slug === selectedTool);
@@ -310,7 +312,9 @@ export default function MapEditorTab({
           />
 
           {toolOptions && (
-            <Fieldset legend={`${toolName} options`}>{toolOptions}</Fieldset>
+            <Fieldset legend={`${toolName} options`} p="xs">
+              {toolOptions}
+            </Fieldset>
           )}
         </Stack>
       </Flex>
