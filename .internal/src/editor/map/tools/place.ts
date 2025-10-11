@@ -146,6 +146,8 @@ export class Placer implements ClickDragListener {
         if (placedThisSession) return;
         store.dispatch(actions.removeMany(hits.map((h) => h.id)));
       }
+    } else {
+      if (placedThisSession) return;
     }
 
     this.tempSpatialIndex.add(posKey);

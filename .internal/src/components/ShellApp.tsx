@@ -102,7 +102,11 @@ export function ShellApp() {
     g.mapEditorApp = app;
     // This has to happen after the app is initialized, because it depends on
     // the map reconciler existing.
-    await dispatch(loadMapThunk()).unwrap();
+    try {
+      await dispatch(loadMapThunk()).unwrap();
+    } catch (e) {
+      log.error("Failed to load map");
+    }
     return app;
   }, [tilesetInitPromise, dispatch]);
 

@@ -41,7 +41,7 @@ export class Mover implements ClickDragListener {
 
     const sel = state.mapEditor.selectedObjs;
 
-    if ((sel.ids.length > 0 && e.over) || mode === "move") {
+    if ((sel.ids.length > 0 && e.overId) || mode === "move") {
       this._moveEnabled = true;
     } else {
       this._moveEnabled = false;

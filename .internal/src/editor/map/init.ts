@@ -1,8 +1,9 @@
 import * as constants from "@/constants";
-import { setReconciler } from "@/slices/map";
+import { selectors as mapSelectors, setReconciler } from "@/slices/map";
 import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { SpatialIndex } from "@/types/spatial";
+import { Vector } from "@/vec";
 import * as P from "pixi.js";
 import { subState } from "../../utils/redux";
 import { onVisible } from "../../utils/visible";
@@ -45,6 +46,8 @@ export async function init(): Promise<P.Application> {
   g.gridSnap = 16;
   stage.interactive = true;
 
+  const spatialIndex = new SpatialIndex();
+
   // Background container with checkerboard pattern (conventional transparent-bg look)
   g.backgroundContainer = new P.Container();
   stage.addChild(g.backgroundContainer);
@@ -55,12 +58,21 @@ export async function init(): Promise<P.Application> {
   g.mapContainer.interactive = true;
 
   stage.on("pointermove", (e) => {
-    const el = e.target;
-    const mode = selectors.selectMode(store.getState());
+    const state = store.getState();
+    const ms = state.mapEditor;
+    const mode = selectors.selectMode(state);
     let cursor = getCursorForMode(mode);
 
-    // Only objects in the map container are clickable
-    const isOverObject = el && el !== g.mapContainer && el !== stage;
+    const localPos = e.getLocalPosition(g.mapContainer);
+
+    const hits = spatialIndex
+      .searchByPos(localPos)
+      .map((it) => it.id)
+      .map((hit) => mapSelectors.selectById(state, hit))
+      .filter(
+        (obj) => !ms.layers.lockInactive || obj.layer === ms.layers.active
+      );
+    const isOverObject = hits.length > 0;
 
     if (isOverObject && mode === "select") {
       cursor = "pointer";
@@ -112,7 +124,6 @@ export async function init(): Promise<P.Application> {
   g.metaContainer = new P.Container();
   g.mapContainer.addChild(g.metaContainer);
 
-  const spatialIndex = new SpatialIndex();
   const reconciler = new ReduxReconciler({
     layerContainers: g.layerContainers,
     tilesetCache: g.tilesetCache,
@@ -124,6 +135,21 @@ export async function init(): Promise<P.Application> {
     app,
     container: stage,
     coordsRelativeTo: g.mapContainer,
+    checkPointerOver: (localPos: Vector): string | null => {
+      const state = store.getState();
+      const ms = state.mapEditor;
+
+      const hits = spatialIndex
+        .searchByPos(localPos)
+        .map((it) => it.id)
+        .map((hit) => mapSelectors.selectById(state, hit))
+        .filter(
+          (obj) => !ms.layers.lockInactive || obj.layer === ms.layers.active
+        )
+        .sort((a, b) => b.z - a.z);
+      const hit = hits[0];
+      return hit?.id ?? null;
+    },
   });
 
   setupSelector(cd, spatialIndex);

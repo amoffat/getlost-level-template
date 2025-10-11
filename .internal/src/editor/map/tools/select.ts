@@ -36,12 +36,12 @@ class Selector implements ClickDragListener {
 
     // If we're over something, it means we want to select it directly, not
     // start a marquee.
-    if (e.over) {
+    if (e.overId) {
       const sel = state.mapEditor.selectedObjs;
 
       // If we're clicking down on an object that's already selected, and we're
       // not deselecting it, abort so that the Mover can handle it.
-      const isOverSelected = sel.ids.includes(e.over.label);
+      const isOverSelected = sel.ids.includes(e.overId);
       if (isOverSelected && !this.addToSelection) return;
 
       this.marqueeEnabled = false;
@@ -59,7 +59,7 @@ class Selector implements ClickDragListener {
     // In pointerDown, we may have deferred to our mover if we clicked "over" an
     // element. However, if we've now determined that we never moved, we should
     // handle the click selection here.
-    if (e.over && !e.moved && !this.addToSelection) {
+    if (e.overId && !e.moved && !this.addToSelection) {
       this.doSelection(e);
       this.marqueeEnabled = false;
       return;
@@ -69,7 +69,7 @@ class Selector implements ClickDragListener {
 
     // We don't want any selection logic to run if we initially clicked on an
     // object.
-    if (e.clickedTarget && e.moved) return;
+    if (e.clickedId && e.moved) return;
 
     this.doSelection(e);
     this.marqueeEnabled = false;

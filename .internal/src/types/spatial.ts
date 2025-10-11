@@ -1,3 +1,4 @@
+import { Vector } from "@/vec";
 import RBush from "rbush";
 
 export interface IndexItem {
@@ -10,6 +11,15 @@ export interface IndexItem {
 
 export class SpatialIndex extends RBush<IndexItem> {
   private indexItems = new Map<string, IndexItem>();
+
+  public searchByPos(pos: Vector): IndexItem[] {
+    return this.search({
+      minX: pos.x,
+      minY: pos.y,
+      maxX: pos.x,
+      maxY: pos.y,
+    });
+  }
 
   public removeById(id: string): void {
     const item = this.indexItems.get(id);

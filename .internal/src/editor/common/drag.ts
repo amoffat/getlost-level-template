@@ -8,9 +8,9 @@ export interface PointerEventData {
   localPos: Vec2;
   button?: "left" | "right";
   pagePos: Vector;
-  clickedTarget: P.Container | null;
+  clickedId: string | null;
   hitbox: Rect;
-  over: P.Container | null;
+  overId: string | null;
   moved: boolean;
   globalMoveVector: Vec2;
   localMoveVector: Vec2;
@@ -28,33 +28,37 @@ export class ClickDragger {
   private readonly app: P.Application;
   public readonly container: P.Container;
   private readonly coordsRelativeTo: P.Container;
+  private readonly checkPointerOver?: (pos: Vector) => string | null;
 
   private dragStart: Vec2 | null = null;
   private dragEnd: Vec2 | null = null;
   private listeners: ClickDragListener[] = [];
-  private clickedTarget: P.Container | null = null;
+  private clickedId: string | null = null;
   private moved = false;
 
   constructor({
     app,
     container,
     coordsRelativeTo,
+    checkPointerOver,
   }: {
     app: P.Application;
     container: P.Container;
     coordsRelativeTo?: P.Container;
+    checkPointerOver?: (pos: Vector) => string | null;
   }) {
     this.app = app;
     this.container = container;
     this.coordsRelativeTo = coordsRelativeTo ?? container;
+    this.checkPointerOver = checkPointerOver;
 
     container.addEventListener("pointermove", (e) => {
       this.dragEnd = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
       const ev: PointerEventData = {
         localPos: this.dragEnd,
         hitbox: this.makeHitbox(),
-        over: this.hoverObject(e),
-        clickedTarget: this.clickedTarget,
+        overId: this.hoverObject(e),
+        clickedId: this.clickedId,
         moved: this.moved,
         globalMoveVector: this.globalMoveVector,
         localMoveVector: this.localMoveVector,
@@ -94,15 +98,15 @@ export class ClickDragger {
       this.dragEnd = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
       this.moved = false;
 
-      const clickedTarget = this.hoverObject(e);
-      this.clickedTarget = clickedTarget;
+      const clickedId = this.hoverObject(e);
+      this.clickedId = clickedId;
 
       const ev: PointerEventData = {
         localPos: Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo)),
         button: e.button === 0 ? "left" : e.button === 2 ? "right" : undefined,
         hitbox: this.makeHitbox(),
-        over: clickedTarget,
-        clickedTarget,
+        overId: clickedId,
+        clickedId: clickedId,
         moved: this.moved,
         globalMoveVector: this.globalMoveVector,
         localMoveVector: this.localMoveVector,
@@ -123,8 +127,8 @@ export class ClickDragger {
         localPos,
         button: e.button === 0 ? "left" : e.button === 2 ? "right" : undefined,
         hitbox: this.makeHitbox(),
-        over: this.hoverObject(e),
-        clickedTarget: this.clickedTarget,
+        overId: this.hoverObject(e),
+        clickedId: this.clickedId,
         moved: this.moved,
         globalMoveVector: this.globalMoveVector,
         localMoveVector: this.localMoveVector,
@@ -154,11 +158,16 @@ export class ClickDragger {
     return pos;
   }
 
-  private hoverObject(e: P.FederatedEvent) {
+  private hoverObject(e: P.FederatedPointerEvent): string | null {
+    if (this.checkPointerOver) {
+      const localPos = e.getLocalPosition(this.coordsRelativeTo);
+      return this.checkPointerOver(localPos);
+    }
+
     const el = e.target;
     const isOverObject = el && el !== this.container && el !== this.app.stage;
     const hovering = isOverObject ? el : null;
-    return hovering;
+    return hovering ? hovering.label : null;
   }
 
   private get localMoveVector(): Vec2 {
