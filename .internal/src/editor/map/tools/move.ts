@@ -37,11 +37,13 @@ export class Mover implements ClickDragListener {
   public pointerDown(e: PointerEventData): void {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
-    if (mode === "paint") return;
+    if (!(mode === "select" || mode === "move")) return;
 
     const sel = state.mapEditor.selectedObjs;
+    const selIds = new Set(sel.ids);
+    const shouldMove = e.hoverIds.some((id) => selIds.has(id));
 
-    if ((sel.ids.length > 0 && e.overId) || mode === "move") {
+    if (shouldMove || mode === "move") {
       this._moveEnabled = true;
     } else {
       this._moveEnabled = false;

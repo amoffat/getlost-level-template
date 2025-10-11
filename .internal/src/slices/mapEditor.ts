@@ -99,6 +99,8 @@ const slice = createSlice({
       const newLayer = action.payload;
       state.layers.active = newLayer;
 
+      selectedAdapter.removeAll(state.selectedObjs);
+
       if (state.selectedTool === "magic-paint" && newLayer !== "ground") {
         state.selectedTool = null;
         state.modeStack = [];

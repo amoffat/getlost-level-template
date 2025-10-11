@@ -34,18 +34,30 @@ class Selector implements ClickDragListener {
     const mode = mapEdSelectors.selectMode(state);
     if (!isSelectionMode(mode)) return;
 
+    const isGroundLayer = state.mapEditor.layers.active === "ground";
+
     // If we're over something, it means we want to select it directly, not
-    // start a marquee.
-    if (e.overId) {
+    // start a marquee. This will always be true if we're on the ground layer,
+    // so we'll do some extra checks related to the ground layer in this block.
+    if (e.hoverIds.length > 0) {
       const sel = state.mapEditor.selectedObjs;
+      const selIds = new Set(sel.ids);
 
       // If we're clicking down on an object that's already selected, and we're
-      // not deselecting it, abort so that the Mover can handle it.
-      const isOverSelected = sel.ids.includes(e.overId);
+      // not deselecting it, abort our select logic so that the Mover can handle
+      // what to do.
+      const isOverSelected = e.hoverIds.some((id) => selIds.has(id));
       if (isOverSelected && !this.addToSelection) return;
 
-      this.marqueeEnabled = false;
-      this.doSelection(e);
+      // The ground layer is special because it is dense with objects, so we
+      // should always allow marquee selection, unless we're directly over a
+      // selected object.
+      if (isGroundLayer && !isOverSelected) {
+        this.marqueeEnabled = true;
+      } else {
+        this.marqueeEnabled = false;
+        this.doSelection(e);
+      }
     } else {
       this.marqueeEnabled = true;
     }
@@ -58,18 +70,15 @@ class Selector implements ClickDragListener {
 
     // In pointerDown, we may have deferred to our mover if we clicked "over" an
     // element. However, if we've now determined that we never moved, we should
-    // handle the click selection here.
-    if (e.overId && !e.moved && !this.addToSelection) {
-      this.doSelection(e);
+    // handle the click selection here. We should be able to trigger this branch
+    // by simply clicking on an object.
+    if (e.hoverIds.length > 0 && !e.moved && !this.addToSelection) {
       this.marqueeEnabled = false;
+      this.doSelection(e);
       return;
     }
 
     if (!this.marqueeEnabled) return;
-
-    // We don't want any selection logic to run if we initially clicked on an
-    // object.
-    if (e.clickedId && e.moved) return;
 
     this.doSelection(e);
     this.marqueeEnabled = false;

@@ -135,7 +135,7 @@ export async function init(): Promise<P.Application> {
     app,
     container: stage,
     coordsRelativeTo: g.mapContainer,
-    checkPointerOver: (localPos: Vector): string | null => {
+    checkPointerOver: (localPos: Vector): string[] => {
       const state = store.getState();
       const ms = state.mapEditor;
 
@@ -147,8 +147,7 @@ export async function init(): Promise<P.Application> {
           (obj) => !ms.layers.lockInactive || obj.layer === ms.layers.active
         )
         .sort((a, b) => b.z - a.z);
-      const hit = hits[0];
-      return hit?.id ?? null;
+      return hits.map((h) => h.id);
     },
   });
 
