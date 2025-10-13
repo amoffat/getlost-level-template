@@ -1,5 +1,6 @@
+import { overlayProps } from "@/constants";
 import { Modal, Portal } from "@mantine/core";
-import TilesetSteps from "./assetTypes/tileset";
+import TilesetSteps from "./assetTypes/TilesetSteps";
 
 interface TileAssetTypeModalProps {
   files: File[];
@@ -22,10 +23,7 @@ export default function UploadAssetModal({
         opened={opened}
         onClose={() => closeModal()}
         title="Asset upload"
-        overlayProps={{
-          backgroundOpacity: 0.55,
-          blur: 3,
-        }}
+        overlayProps={overlayProps}
       >
         {steps}
       </Modal>

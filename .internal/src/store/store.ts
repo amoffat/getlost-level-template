@@ -1,27 +1,38 @@
+import {
+  objectSlice as collisionObjectSlice,
+  slice as collisionSlice,
+} from "@/editor/collision/state";
+import { globals as g } from "@/globals";
+import { slice as dialogueSlice } from "@/slices/dialogue";
+import { slice as mapSlice } from "@/slices/map";
+import { slice as mapEditorSlice } from "@/slices/mapEditor";
+import { slice as npcEditorSlice } from "@/slices/npcEditor";
+import { slice as tilesetEditorSlice } from "@/slices/tilesetEditor";
+import { slice as uiSlice } from "@/slices/ui";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import dialogueReducer from "../slices/dialogue";
-import * as mapSlice from "../slices/map";
-import mapEditorReducer from "../slices/mapEditor";
-import npcEditorReducer from "../slices/npcEditor";
-import tilesetEditorReducer from "../slices/tilesetEditor";
-import uiReducer from "../slices/ui";
-import { makeMiddleware as makeMapMiddleware } from "./middleware/map";
+import { makeEditorSyncMiddleware } from "./middleware/map";
 import autosaveMapMiddleware from "./middleware/map/autosave";
 import autosaveTilesetMiddleware from "./middleware/tileset/autosave";
 
 export const rootReducer = combineReducers({
-  dialogue: dialogueReducer,
-  tilesetEditor: tilesetEditorReducer,
-  mapEditor: mapEditorReducer,
-  npcEditor: npcEditorReducer,
-  map: mapSlice.default,
-  ui: uiReducer,
+  dialogue: dialogueSlice.reducer,
+  tilesetEditor: tilesetEditorSlice.reducer,
+  mapEditor: mapEditorSlice.reducer,
+  npcEditor: npcEditorSlice.reducer,
+  collisionEditor: collisionSlice.reducer,
+  map: mapSlice.reducer,
+  ui: uiSlice.reducer,
 });
 
-const mapMiddleware = makeMapMiddleware(
+const mapMiddleware = makeEditorSyncMiddleware(
   mapSlice.actions,
-  mapSlice.getReconciler
+  g.mapEditorReconciler
+);
+
+const collisionMiddleware = makeEditorSyncMiddleware(
+  collisionObjectSlice.actions,
+  g.collisionEditorReconciler
 );
 
 export const store = configureStore({
@@ -32,7 +43,8 @@ export const store = configureStore({
     getDefaultMiddleware().prepend(
       autosaveTilesetMiddleware,
       autosaveMapMiddleware,
-      mapMiddleware
+      mapMiddleware,
+      collisionMiddleware
     ),
 });
 

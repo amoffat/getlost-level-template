@@ -12,6 +12,7 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
+import CollisionModal from "./CollisionModal";
 import ObjectMenu from "./ObjectMenu";
 import TilesetGroup from "./TilesetGroup";
 
@@ -30,6 +31,8 @@ export default function TileGroupMenu({
 }: TileGroupMenuProps) {
   const tab = useAppSelector((state) => state.ui.activeTab);
   const [openTagsModal, setOpenTagsModal] = useState(false);
+  const [openCollidersModal, setOpenCollidersModal] = useState(false);
+
   const tgTags = useAppSelector(uiSelectors.selectTilesetGroupTags);
   const dispatch = useAppDispatch();
 
@@ -41,6 +44,15 @@ export default function TileGroupMenu({
       onTagsModalOpened?.();
     },
     [closeMenu, onTagsModalOpened]
+  );
+
+  const onCollidersItemClicked = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      closeMenu();
+      setOpenCollidersModal(true);
+    },
+    [closeMenu]
   );
 
   const addTag = useCallback(
@@ -96,7 +108,10 @@ export default function TileGroupMenu({
         <Menu.Item leftSection={<IconStack2 size={14} />}>
           Set z-index
         </Menu.Item>
-        <Menu.Item leftSection={<IconBlocks size={14} />}>
+        <Menu.Item
+          leftSection={<IconBlocks size={14} />}
+          onClick={onCollidersItemClicked}
+        >
           Set colliders
         </Menu.Item>
         <Menu.Item
@@ -140,6 +155,11 @@ export default function TileGroupMenu({
           />
         </Stack>
       </Modal>
+
+      <CollisionModal
+        opened={openCollidersModal}
+        closeModal={() => setOpenCollidersModal(false)}
+      />
     </>
   );
 }

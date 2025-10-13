@@ -1,6 +1,9 @@
 // pixiReconciler.ts
-import { isTileGroupInstance, MapObj, TileGroupInstance } from "@/types/editor";
-import { LayerName } from "@/types/layer";
+import {
+  isTileGroupInstance,
+  MapObj,
+  TileGroupInstance,
+} from "@/types/reconciler";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
 
@@ -22,10 +25,10 @@ function makeIndexItem(id: string, node: P.Container): IndexItem {
  * It batches changes and applies them on the next animation frame.
  */
 export class ReduxReconciler {
-  private layerContainers: Record<LayerName, P.Container>;
+  private layerContainers?: Record<number, P.Container>;
   private tilesetCache: Map<string, P.Texture>;
   // Axis-aligned bbox entry for RBush
-  private spatialIndex: SpatialIndex;
+  private spatialIndex?: SpatialIndex;
 
   // id -> DisplayObject
   private nodes = new Map<string, P.Container>();
@@ -41,17 +44,18 @@ export class ReduxReconciler {
   private pendingRemoves: string[] = [];
   private rafScheduled = false;
 
-  constructor({
+  constructor(tilesetCache: Map<string, P.Texture>) {
+    this.tilesetCache = tilesetCache;
+  }
+
+  attachCanvas({
     layerContainers,
-    tilesetCache,
     spatialIndex,
   }: {
-    layerContainers: Record<LayerName, P.Container>;
-    tilesetCache: Map<string, P.Texture>;
+    layerContainers: Record<number, P.Container>;
     spatialIndex: SpatialIndex;
   }) {
     this.layerContainers = layerContainers;
-    this.tilesetCache = tilesetCache;
     this.spatialIndex = spatialIndex;
   }
 
@@ -92,6 +96,8 @@ export class ReduxReconciler {
   }
 
   private flush() {
+    if (!this.layerContainers || !this.spatialIndex) return;
+
     // removes first so re-add in same frame won’t conflict
     for (const id of this.pendingRemoves) {
       const node = this.nodes.get(id);
@@ -178,6 +184,8 @@ export class ReduxReconciler {
     node: P.Container,
     p: Partial<MapObj & TileGroupInstance>
   ) {
+    if (!this.layerContainers || !this.spatialIndex) return;
+
     if (p.x !== undefined) node.x = p.x;
     if (p.y !== undefined) {
       node.y = p.y;

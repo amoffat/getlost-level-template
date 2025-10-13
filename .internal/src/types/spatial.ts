@@ -1,8 +1,7 @@
-import { selectors } from "@/slices/map";
-import { store } from "@/store/store";
+import { RootState, store } from "@/store/store";
 import { isVector, Vector } from "@/vec";
 import RBush, { BBox } from "rbush";
-import type { MapObj, TileGroupInstance } from "./editor";
+import { MapObj, TileGroupInstance } from "./reconciler";
 
 export interface IndexItem {
   id: string;
@@ -14,6 +13,26 @@ export interface IndexItem {
 
 export class SpatialIndex extends RBush<IndexItem> {
   private indexItems = new Map<string, IndexItem>();
+  private selectById: (
+    state: RootState,
+    id: string
+  ) => MapObj | TileGroupInstance | undefined;
+  private filterLayer: (state: RootState, layer: number) => boolean;
+
+  constructor({
+    selectById,
+    filterLayer,
+  }: {
+    selectById: (
+      state: RootState,
+      id: string
+    ) => MapObj | TileGroupInstance | undefined;
+    filterLayer: (state: RootState, layer: number) => boolean;
+  }) {
+    super();
+    this.selectById = selectById;
+    this.filterLayer = filterLayer;
+  }
 
   public searchByPos(pos: Vector): IndexItem[] {
     return this.search({
@@ -43,35 +62,32 @@ export class SpatialIndex extends RBush<IndexItem> {
     this.insert(item);
     return this;
   }
-}
 
-export function getObjects({
-  index,
-  pos,
-}: {
-  index: SpatialIndex;
-  pos: Vector | BBox;
-}): (MapObj | TileGroupInstance)[] {
-  const state = store.getState();
-  const ms = state.mapEditor;
+  public getObjects({
+    pos,
+  }: {
+    pos: Vector | BBox;
+  }): (MapObj | TileGroupInstance)[] {
+    let firstPass: IndexItem[];
+    if (isVector(pos)) {
+      firstPass = this.searchByPos(pos);
+    } else {
+      firstPass = this.search(pos);
+    }
 
-  let firstPass: IndexItem[];
-  if (isVector(pos)) {
-    firstPass = index.searchByPos(pos);
-  } else {
-    firstPass = index.search(pos);
+    const state = store.getState();
+
+    const objs = firstPass
+      .map((it) => it.id)
+      .map((hit) => this.selectById(state, hit))
+      // This is because the removed objects (like from removeMany in place.ts)
+      // get removed from the spatialIndex during reconciliation, which is *after*
+      // the createEntityAdapter action removes it from the state. In other words,
+      // the object might no longer exist in the state, but still temporarily
+      // exist in the spatial index. It's temporary but we need to check for it.
+      .filter((obj) => obj !== undefined)
+      .filter((obj) => this.filterLayer(state, obj.layer))
+      .sort((a, b) => b.z - a.z);
+    return objs;
   }
-
-  const objs = firstPass
-    .map((it) => it.id)
-    .map((hit) => selectors.selectById(state, hit))
-    // This is because the removed objects (like from removeMany in place.ts)
-    // get removed from the spatialIndex during reconciliation, which is *after*
-    // the createEntityAdapter action removes it from the state. In other words,
-    // the object might no longer exist in the state, but still temporarily
-    // exist in the spatial index. It's temporary but we need to check for it.
-    .filter((obj) => obj !== undefined)
-    .filter((obj) => !ms.layers.lockInactive || obj.layer === ms.layers.active)
-    .sort((a, b) => b.z - a.z);
-  return objs;
 }

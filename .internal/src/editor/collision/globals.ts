@@ -1,18 +1,16 @@
-import { MapLayerName } from "@/types/layer";
 import * as P from "pixi.js";
-import { Mover } from "./tools/move";
+import { LayerName } from "./types/layer";
 
 interface Globals {
   app: P.Application;
   canvas: HTMLCanvasElement;
-  mover: Mover;
   // For the grid overlay
   gridContainer: P.Container;
   mapContainer: P.Container;
   // For sensors, sound zones, zoom zones, sink zones, lights, etc.
   metaContainer: P.Container;
   // For ground-level stuff: tiles, decorations, etc.
-  layerContainers: Record<MapLayerName, P.Container>;
+  layerContainers: Record<LayerName, P.Container>;
   // For the checkerboard background
   backgroundContainer: P.Container;
   // For the object about to be placed with the mouse
@@ -32,5 +30,5 @@ interface Globals {
 
 export const globals: Globals = {
   initialized: false,
-  layerContainers: {} as Record<MapLayerName, P.Container>,
+  layerContainers: {} as Record<LayerName, P.Container>,
 } as unknown as Globals;

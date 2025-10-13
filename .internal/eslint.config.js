@@ -13,7 +13,7 @@ export default tseslint.config(
       ecmaVersion: 2020,
       globals: globals.browser,
     },
-    ignores: ["level/**/*"],
+    ignores: ["level/**/*", "assemblyscript/**/*"],
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,

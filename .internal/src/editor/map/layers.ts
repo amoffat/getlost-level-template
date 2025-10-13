@@ -1,5 +1,6 @@
 import { RootState, store } from "@/store/store";
-import { subState } from "../../utils/redux";
+import { MapLayerName } from "@/types/layer";
+import { subState } from "@/utils/redux";
 import { globals as g } from "./globals";
 
 function setLayerVisibility(layers: RootState["mapEditor"]["layers"]) {
@@ -9,7 +10,7 @@ function setLayerVisibility(layers: RootState["mapEditor"]["layers"]) {
       layer.alpha = 0.5;
       layer.eventMode = "none";
     }
-    const active = lc[layers.active];
+    const active = lc[layers.active as MapLayerName];
     active.alpha = 1;
     active.interactive = true;
   } else {

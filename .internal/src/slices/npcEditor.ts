@@ -18,7 +18,7 @@ export interface NpcEditorState {
   loadingPalette: boolean;
 }
 
-const slice = createSlice({
+export const slice = createSlice({
   name: "npcEditor",
   initialState: {
     grid: {
@@ -115,4 +115,3 @@ const slice = createSlice({
 
 export const selectors = slice.selectors;
 export const actions = slice.actions;
-export default slice.reducer;

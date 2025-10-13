@@ -1,5 +1,5 @@
 import { log } from "@/log";
-import { MapObj, TileGroupInstance } from "@/types/editor";
+import { MapObj, TileGroupInstance } from "@/types/reconciler";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
 import { BaseMapDoc, LatestMapDoc, latestVersion } from "./schema";

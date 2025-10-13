@@ -1,9 +1,13 @@
+import { drawMaskedOutline } from "@/editor/common/outline";
+import { selectStroke } from "@/editor/common/strokes";
+import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import { actions } from "@/slices/map";
 import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { isTileGroupInstance, TileGroupInstance } from "@/types/editor";
-import { getObjects, SpatialIndex } from "@/types/spatial";
+import { MapLayerName } from "@/types/layer";
+import { isTileGroupInstance, TileGroupInstance } from "@/types/reconciler";
+import { SpatialIndex } from "@/types/spatial";
 import { PaintOpts } from "@/types/tools";
 import { subState } from "@/utils/redux";
 import { Vector } from "@/vec";
@@ -13,8 +17,6 @@ import {
   ClickDragListener,
   PointerEventData,
 } from "../../common/drag";
-import { drawMaskedOutline } from "../../common/outline";
-import { selectStroke } from "../../common/strokes";
 import { globals as g } from "../globals";
 
 export class Placer implements ClickDragListener {
@@ -109,13 +111,14 @@ export class Placer implements ClickDragListener {
     const layer = ms.layers.active;
     let z = pos.y + g.placableSprite.height;
 
-    if (layer === "ground") {
+    if (layer === MapLayerName.Ground) {
       // This is the authoritative spatial index, but it might be out of sync
       // with the map, since it updates async.
-      const hits = getObjects({
-        index: this.spatialIndex,
-        pos: searchBounds,
-      }).filter((obj) => isTileGroupInstance(obj));
+      const hits = this.spatialIndex
+        .getObjects({
+          pos: searchBounds,
+        })
+        .filter((obj) => isTileGroupInstance(obj));
 
       // Also check our temp index which has objects we've placed this drag
       // session but which aren't in the main spatial index yet. This prevents
@@ -193,7 +196,7 @@ subState(
         rect.br.x - rect.ul.x,
         rect.br.y - rect.ul.y
       );
-      const tsTex = g.tilesetCache.get(placeObj.tilesetId);
+      const tsTex = gApp.tilesetCache.get(placeObj.tilesetId);
       if (!tsTex) {
         log.error("Tileset texture not found for placer");
         return;
@@ -231,54 +234,54 @@ subState([(state) => state.mapEditor.place.flipX], (flipX) => {
   child.scale.x = flipX ? -1 : 1;
 });
 
-subState([(state) => state.mapEditor.toolOptions.paint.size], (size) => {
-  // Update preview container to show a size x size grid of the placable sprite.
-  if (!g.initialized) return;
-  // If we don't currently have a base sprite (no object selected), nothing to
-  // do.
-  if (!g.placableSprite) return;
+// subState([(state) => state.mapEditor.toolOptions.paint.size], (size) => {
+//   // Update preview container to show a size x size grid of the placable sprite.
+//   if (!g.initialized) return;
+//   // If we don't currently have a base sprite (no object selected), nothing to
+//   // do.
+//   if (!g.placableSprite) return;
 
-  return; // TODO
+//   return; // TODO
 
-  // Remove all children; we'll rebuild the grid. Keep reference to original
-  // texture.
-  const baseTex = g.placableSprite.texture;
-  g.placableContainer.removeChildren();
+//   // Remove all children; we'll rebuild the grid. Keep reference to original
+//   // texture.
+//   const baseTex = g.placableSprite.texture;
+//   g.placableContainer.removeChildren();
 
-  // We want a flush grid where each cell is exactly the width/height of the base sprite.
-  const cellW = g.placableSprite.width; // width already accounts for frame
-  const cellH = g.placableSprite.height;
+//   // We want a flush grid where each cell is exactly the width/height of the base sprite.
+//   const cellW = g.placableSprite.width; // width already accounts for frame
+//   const cellH = g.placableSprite.height;
 
-  // Anchor handling: existing single sprite used anchor (0.5, 0.5) and was
-  // positioned at (w/2, h/2) For a multi-cell brush we center the whole grid
-  // around (0,0) like before so placement math still works. Compute total
-  // extents and offset so that (0,0) corresponds to top-left of first cell then
-  // shift as before. We'll position each sprite with anchor (0.5,0.5) like the
-  // original; position = cell origin + half size.
-  const offsetX = 0; // We'll later translate container so its registration mimics previous single-sprite layout.
-  const offsetY = 0;
+//   // Anchor handling: existing single sprite used anchor (0.5, 0.5) and was
+//   // positioned at (w/2, h/2) For a multi-cell brush we center the whole grid
+//   // around (0,0) like before so placement math still works. Compute total
+//   // extents and offset so that (0,0) corresponds to top-left of first cell then
+//   // shift as before. We'll position each sprite with anchor (0.5,0.5) like the
+//   // original; position = cell origin + half size.
+//   const offsetX = 0; // We'll later translate container so its registration mimics previous single-sprite layout.
+//   const offsetY = 0;
 
-  for (let gy = 0; gy < size; gy++) {
-    for (let gx = 0; gx < size; gx++) {
-      const sprite = new P.Sprite(baseTex);
-      sprite.anchor.set(0.5);
-      sprite.position.set(
-        offsetX + gx * cellW + cellW / 2,
-        offsetY + gy * cellH + cellH / 2
-      );
-      g.placableContainer.addChild(sprite);
-    }
-  }
+//   for (let gy = 0; gy < size; gy++) {
+//     for (let gx = 0; gx < size; gx++) {
+//       const sprite = new P.Sprite(baseTex);
+//       sprite.anchor.set(0.5);
+//       sprite.position.set(
+//         offsetX + gx * cellW + cellW / 2,
+//         offsetY + gy * cellH + cellH / 2
+//       );
+//       g.placableContainer.addChild(sprite);
+//     }
+//   }
 
-  // Adjust outline: reuse existing outline container but redraw if we have rect
-  // info. We don't have direct access to place.obj here; derive from existing
-  // single frame dimensions. The outline was previously drawn in the other
-  // subState when place.obj changes, so here we'll just scale the outline
-  // container. Simplest: scale outline to size in both directions if it
-  // currently matches one cell.
-  const outlineChild = g.placableOutline.children[0];
-  if (outlineChild) {
-    // Reset any previous scaling then apply new
-    outlineChild.scale.set(size, size);
-  }
-});
+//   // Adjust outline: reuse existing outline container but redraw if we have rect
+//   // info. We don't have direct access to place.obj here; derive from existing
+//   // single frame dimensions. The outline was previously drawn in the other
+//   // subState when place.obj changes, so here we'll just scale the outline
+//   // container. Simplest: scale outline to size in both directions if it
+//   // currently matches one cell.
+//   const outlineChild = g.placableOutline.children[0];
+//   if (outlineChild) {
+//     // Reset any previous scaling then apply new
+//     outlineChild.scale.set(size, size);
+//   }
+// });

@@ -1,9 +1,4 @@
-import { Mode as EditorMode } from "@/types/editor";
-import { Mode as TilesetMode } from "@/types/tileset";
-
-export function getCursorForMode(
-  mode: EditorMode | TilesetMode | null
-): string {
+export function getCursorForMode(mode: string): string {
   let cursor = "default";
   if (mode === "pan") {
     cursor = "grabbing";

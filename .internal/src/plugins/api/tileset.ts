@@ -1,3 +1,4 @@
+import { atomicWriteFileSync } from "@/utils/file";
 import express from "express";
 import formidable from "formidable";
 import * as fs from "fs";
@@ -115,7 +116,7 @@ router.put("/:id", (req, res) => {
       const outPath = resolve(texturesDir, `${id}.cbor`);
 
       const buf = fs.readFileSync(incoming.filepath);
-      fs.writeFileSync(outPath, buf);
+      atomicWriteFileSync(outPath, buf);
 
       res.sendStatus(204);
     } catch (error) {

@@ -1,12 +1,14 @@
 import * as constants from "@/constants";
-import { setReconciler } from "@/slices/map";
+import { globals as gApp } from "@/globals";
+import { selectors as mapSelectors } from "@/slices/map";
 import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { getObjects, SpatialIndex } from "@/types/spatial";
+import { MapLayerName } from "@/types/layer";
+import { SpatialIndex } from "@/types/spatial";
+import { subState } from "@/utils/redux";
+import { onVisible } from "@/utils/visible";
 import { Vector } from "@/vec";
 import * as P from "pixi.js";
-import { subState } from "../../utils/redux";
-import { onVisible } from "../../utils/visible";
 import { makeBackground } from "../common/bg";
 import { getCursorForMode } from "../common/cursor";
 import { ClickDragger } from "../common/drag";
@@ -16,7 +18,6 @@ import { drawBounds } from "./bounds";
 import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
 import { initLayerVisibility } from "./layers";
-import { ReduxReconciler } from "./reconciler";
 import { setupMagicPainter } from "./tools/magicPaint";
 import { setupMover } from "./tools/move";
 import { setupPlacer } from "./tools/place";
@@ -46,7 +47,13 @@ export async function init(): Promise<P.Application> {
   g.gridSnap = 16;
   stage.interactive = true;
 
-  const spatialIndex = new SpatialIndex();
+  const spatialIndex = new SpatialIndex({
+    selectById: mapSelectors.selectById,
+    filterLayer: (state, layer) => {
+      const ms = state.mapEditor;
+      return !ms.layers.lockInactive || layer === ms.layers.active;
+    },
+  });
 
   // Background container with checkerboard pattern (conventional transparent-bg look)
   g.backgroundContainer = new P.Container();
@@ -64,8 +71,7 @@ export async function init(): Promise<P.Application> {
 
     const localPos = e.getLocalPosition(g.mapContainer);
 
-    const hits = getObjects({
-      index: spatialIndex,
+    const hits = spatialIndex.getObjects({
       pos: localPos,
     });
     const isOverObject = hits.length > 0;
@@ -111,29 +117,29 @@ export async function init(): Promise<P.Application> {
   g.mapContainer.addChild(g.boundsMask);
   drawBounds();
 
-  g.layerContainers.ground = new P.Container();
-  g.layerContainers.ground.sortableChildren = false;
-  g.mapContainer.addChild(g.layerContainers.ground);
-  g.layerContainers.world = new P.Container();
-  g.mapContainer.addChild(g.layerContainers.world);
+  const groundLayer = new P.Container();
+  groundLayer.sortableChildren = false;
+  g.layerContainers[MapLayerName.Ground] = groundLayer;
+  g.mapContainer.addChild(groundLayer);
+
+  const worldLayer = new P.Container();
+  g.layerContainers[MapLayerName.World] = worldLayer;
+  g.mapContainer.addChild(worldLayer);
 
   g.metaContainer = new P.Container();
   g.mapContainer.addChild(g.metaContainer);
 
-  const reconciler = new ReduxReconciler({
+  gApp.mapEditorReconciler.attachCanvas({
     layerContainers: g.layerContainers,
-    tilesetCache: g.tilesetCache,
     spatialIndex,
   });
-  setReconciler(reconciler);
 
   const cd = new ClickDragger({
     app,
     container: stage,
     coordsRelativeTo: g.mapContainer,
     checkPointerOver: (localPos: Vector): string[] => {
-      const hits = getObjects({
-        index: spatialIndex,
+      const hits = spatialIndex.getObjects({
         pos: localPos,
       });
       return hits.map((h) => h.id);

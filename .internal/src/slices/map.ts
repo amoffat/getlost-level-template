@@ -1,5 +1,4 @@
-import { ReduxReconciler } from "@/editor/map/reconciler";
-import { MapObj, TileGroupInstance } from "@/types/editor";
+import { MapObj, TileGroupInstance } from "@/types/reconciler";
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 
 const objects = createEntityAdapter<MapObj | TileGroupInstance>({
@@ -7,17 +6,6 @@ const objects = createEntityAdapter<MapObj | TileGroupInstance>({
     return a.id.localeCompare(b.id);
   },
 });
-
-let reconciler: ReduxReconciler | null = null;
-
-export function getReconciler(): ReduxReconciler {
-  if (!reconciler) throw new Error("Reconciler not set");
-  return reconciler;
-}
-
-export function setReconciler(r: ReduxReconciler) {
-  reconciler = r;
-}
 
 interface MapState extends ReturnType<typeof objects.getInitialState> {
   loading: boolean;
@@ -31,7 +19,7 @@ const initialState: MapState = Object.assign(objects.getInitialState(), {
   error: null,
 });
 
-export const objectsSlice = createSlice({
+export const slice = createSlice({
   name: "objects",
   initialState,
   reducers: {
@@ -74,5 +62,4 @@ export const selectors = objects.getSelectors<{
   map: typeof initialState;
 }>((s) => s.map);
 
-export const actions = objectsSlice.actions;
-export default objectsSlice.reducer;
+export const actions = slice.actions;

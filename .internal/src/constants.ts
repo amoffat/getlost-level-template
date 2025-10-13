@@ -9,3 +9,8 @@ export const gameUrl = localDev
 
 export const mapEditorContainerId = "map-editor-container";
 export const tilesetEditorContainerId = "tileset-editor-container";
+
+export const overlayProps = {
+  backgroundOpacity: 0.55,
+  blur: 3,
+};

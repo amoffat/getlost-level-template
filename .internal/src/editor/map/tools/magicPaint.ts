@@ -10,11 +10,12 @@ import { globals as appG } from "@/globals";
 import { selectors as mapSelectors } from "@/slices/map";
 import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { isTileGroupInstance, TileGroupInstance } from "@/types/editor";
+import { isTileGroupInstance, TileGroupInstance } from "@/types/reconciler";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroup } from "@/types/tilegroup";
 import { createRafThrottled } from "@/utils/throttle";
 import { Vector } from "@/vec";
+import { MapLayerName } from "../../../types/layer";
 import { ClickDragger, PointerEventData } from "../../common/drag";
 import { globals as g } from "../globals";
 import { Placer } from "./place";
@@ -105,7 +106,7 @@ class Painter extends Placer {
     for (const hit of this.spatialIndex.search(searchBounds)) {
       const obj = mapSelectors.selectById(state, hit.id);
       if (!obj) continue;
-      if (obj.layer !== "ground") continue;
+      if (obj.layer !== MapLayerName.Ground) continue;
       if (!isTileGroupInstance(obj)) continue;
 
       const key = `${obj.x},${obj.y}`;

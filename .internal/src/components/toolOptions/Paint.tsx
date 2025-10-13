@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
+import { MapLayerName } from "@/types/layer";
 import { PaintOpts } from "@/types/tools";
 import { Fieldset, Radio, Stack, Tooltip } from "@mantine/core";
 import { useCallback } from "react";
@@ -49,7 +50,7 @@ export default function Paint() {
     [dispatch]
   );
 
-  const isGround = activeLayer !== "ground";
+  const isGround = activeLayer !== MapLayerName.Ground;
 
   return (
     <Stack p={0}>

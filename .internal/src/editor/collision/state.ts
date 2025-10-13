@@ -1,9 +1,7 @@
-import { Mode } from "@/types/editor";
-import { MapLayerName } from "@/types/layer";
-import { TileGroupInstance } from "@/types/reconciler";
-import { Rect } from "@/types/rect";
+import { Mode } from "@/types/editors/collision";
+import { MapObj, TileGroupInstance } from "@/types/reconciler";
 import { TileGroup } from "@/types/tilegroup";
-import { MagicPaintOpts, PaintOpts } from "@/types/tools";
+import { PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
 import {
@@ -13,25 +11,27 @@ import {
   EntityState,
   PayloadAction,
 } from "@reduxjs/toolkit";
+import { MapLayerName } from "../../types/layer";
+import { createObjectsSlice } from "../common/redux";
 
-export const selectedAdapter = createEntityAdapter<TileGroupInstance>();
+export const selectedAdapter = createEntityAdapter<MapObj>();
+
+export const objectSlice = createObjectsSlice<MapObj>("collisionEditorObjects");
 
 type ToolOptMapping = {
   paint: PaintOpts;
-  "magic-paint": MagicPaintOpts;
 };
 
 // Derive the tool names with options directly from the mapping type.
 type ToolWithOptions = keyof ToolOptMapping;
 
-interface MapEditorState {
+interface CollisionEditorState {
   grid: {
     size: number;
     visible: boolean;
     snap: boolean;
     curPos: Vector | null;
   };
-  bounds: Rect;
   zoomPan: ZoomPan;
   selectedTool: Mode | null;
   toolOptions: {
@@ -42,24 +42,22 @@ interface MapEditorState {
     obj: TileGroup | null;
     flipX: boolean;
   };
-  selectedObjs: EntityState<TileGroupInstance, string>;
+  selectedObjs: EntityState<MapObj, string>;
   proposedSelection: {
     objects: TileGroupInstance[];
     pos: Vector;
   } | null;
   layers: {
-    active: number;
-    lockInactive: boolean;
-    dimInactive: boolean;
+    active: MapLayerName;
   };
 }
 
 const tgiSelectors = selectedAdapter.getSelectors(
-  (state: MapEditorState) => state.selectedObjs
+  (state: CollisionEditorState) => state.selectedObjs
 );
 
 export const slice = createSlice({
-  name: "mapEditor",
+  name: "collisionEditor",
   initialState: {
     grid: {
       size: 16,
@@ -67,7 +65,6 @@ export const slice = createSlice({
       snap: true,
       curPos: null,
     },
-    bounds: { ul: { x: 0, y: 0 }, br: { x: 5000, y: 5000 } },
     zoomPan: { zoom: 1, pan: { x: 0, y: 0 } },
     place: {
       obj: null,
@@ -78,15 +75,14 @@ export const slice = createSlice({
     selectedTool: null,
     toolOptions: {
       paint: { mode: "place-once", size: 1, snap: "object" },
-      "magic-paint": { candidates: [], gridPosFreeze: null },
     },
     modeStack: [],
     layers: {
-      active: 0,
+      active: MapLayerName.Ground,
       lockInactive: true,
       dimInactive: false,
     },
-  } as MapEditorState,
+  } as CollisionEditorState,
   reducers: {
     setZoomPan(state, action: PayloadAction<ZoomPan>) {
       state.zoomPan = action.payload;
@@ -101,22 +97,6 @@ export const slice = createSlice({
       state.layers.active = newLayer;
 
       selectedAdapter.removeAll(state.selectedObjs);
-
-      if (
-        state.selectedTool === "magic-paint" &&
-        newLayer !== MapLayerName.Ground
-      ) {
-        state.selectedTool = null;
-        state.modeStack = [];
-      }
-    },
-
-    setLockInactiveLayer(state, action: { payload: boolean }) {
-      state.layers.lockInactive = action.payload;
-    },
-
-    setDimInactiveLayer(state, action: { payload: boolean }) {
-      state.layers.dimInactive = action.payload;
     },
 
     setPlace(state, action: PayloadAction<TileGroup | null>) {
@@ -168,7 +148,7 @@ export const slice = createSlice({
 
     setProposedSelection(
       state,
-      action: PayloadAction<MapEditorState["proposedSelection"]>
+      action: PayloadAction<CollisionEditorState["proposedSelection"]>
     ) {
       state.proposedSelection = action.payload;
     },
@@ -200,7 +180,7 @@ export const slice = createSlice({
     },
 
     setToolOptions<K extends ToolWithOptions>(
-      state: MapEditorState,
+      state: CollisionEditorState,
       action: PayloadAction<{ tool: K; options: Partial<ToolOptMapping[K]> }>
     ) {
       const { tool, options } = action.payload;
@@ -208,7 +188,7 @@ export const slice = createSlice({
     },
   },
   selectors: {
-    selectMode: createSelector.withTypes<MapEditorState>()(
+    selectMode: createSelector.withTypes<CollisionEditorState>()(
       [(state) => state.modeStack],
       (modeStack): Mode => modeStack.at(-1) ?? "select"
     ),

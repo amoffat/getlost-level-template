@@ -1,38 +1,13 @@
 // store.ts
-import { ReduxReconciler } from "@/editor/map/reconciler";
-import {
-  createEntityAdapter,
-  createListenerMiddleware,
-  createSlice,
-  isAnyOf,
-  SliceCaseReducers,
-} from "@reduxjs/toolkit";
+import { ReduxReconciler } from "@/editor/common/reconciler";
+import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
 
-type EntityAdapter<T = { id: string }> = ReturnType<
-  typeof createEntityAdapter<T & { id: string }>
->;
-type AdapterReducerNames =
-  | "addMany"
-  | "addOne"
-  | "upsertMany"
-  | "updateOne"
-  | "updateMany"
-  | "removeOne"
-  | "removeMany"
-  | "setAll";
+type ActionsMap = Partial<Record<string, { type: string }>>;
 
-type Reducers<T = { id: string }> = SliceCaseReducers<unknown> & {
-  [K in AdapterReducerNames]: EntityAdapter<T>[K];
-};
-
-type SliceActions<T = { id: string }> = ReturnType<
-  typeof createSlice<unknown, Reducers<T>, string, any>
->["actions"];
-
-export function makeMiddleware<T = { id: string }>(
-  actions: SliceActions<T>,
-  getReconciler: () => ReduxReconciler
+export function makeEditorSyncMiddleware(
+  actions: ActionsMap,
+  reconciler: ReduxReconciler
 ) {
   const listener = createListenerMiddleware();
   const startAppListening = listener.startListening.withTypes<
@@ -42,9 +17,15 @@ export function makeMiddleware<T = { id: string }>(
 
   // Add
   startAppListening({
-    matcher: isAnyOf(actions.addOne, actions.addMany, actions.upsertMany),
-    effect: async (action, _api) => {
-      const reconciler = getReconciler();
+    predicate: (action) => {
+      const t = action.type;
+      return (
+        t === actions.addOne?.type ||
+        t === actions.addMany?.type ||
+        t === actions.upsertMany?.type
+      );
+    },
+    effect: async (action: any, _api) => {
       const payload = Array.isArray(action.payload)
         ? action.payload
         : [action.payload];
@@ -54,9 +35,11 @@ export function makeMiddleware<T = { id: string }>(
 
   // Update
   startAppListening({
-    matcher: isAnyOf(actions.updateOne, actions.updateMany),
-    effect: async (action, _api) => {
-      const reconciler = getReconciler();
+    predicate: (action) => {
+      const t = action.type;
+      return t === actions.updateOne?.type || t === actions.updateMany?.type;
+    },
+    effect: async (action: any, _api) => {
       const updates = Array.isArray(action.payload)
         ? action.payload
         : [action.payload];
@@ -69,9 +52,11 @@ export function makeMiddleware<T = { id: string }>(
 
   // Remove
   startAppListening({
-    matcher: isAnyOf(actions.removeOne, actions.removeMany),
-    effect: async (action, _api) => {
-      const reconciler = getReconciler();
+    predicate: (action) => {
+      const t = action.type;
+      return t === actions.removeOne?.type || t === actions.removeMany?.type;
+    },
+    effect: async (action: any, _api) => {
       const ids = Array.isArray(action.payload)
         ? action.payload
         : [action.payload];
@@ -81,11 +66,10 @@ export function makeMiddleware<T = { id: string }>(
 
   // Optional: if you sometimes `setAll`, use one-shot diff (still O(#diff)):
   startAppListening({
-    actionCreator: actions.setAll,
-    effect: async (action, _api) => {
-      const reconciler = getReconciler();
+    predicate: (action) => action.type === actions.setAll?.type,
+    effect: async (action: any, _api) => {
       // `action.payload` is the full array; you can use that directly:
-      reconciler.enqueueDiff(action.payload);
+      reconciler.enqueueDiff(action.payload as any[]);
     },
   });
 

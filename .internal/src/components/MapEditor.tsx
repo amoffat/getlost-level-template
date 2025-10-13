@@ -1,11 +1,12 @@
 import * as constants from "@/constants";
+import { LayerName } from "@/editor/collision/types/layer";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
 import { setToolThunk } from "@/thunks/map";
 import { Mode } from "@/types/editor";
-import { LayerName } from "@/types/layer";
+import { MapLayerName } from "@/types/layer";
 import {
   Fieldset,
   Flex,
@@ -54,6 +55,7 @@ export default function MapEditorTab({
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // This waits for our tileset and map to load from the shell.
   use(initPromise);
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export default function MapEditorTab({
 
   const changeActiveLayer = useCallback(
     (id: string) => {
-      dispatch(actions.setActiveLayer(id as LayerName));
+      dispatch(actions.setActiveLayer(Number.parseInt(id) as MapLayerName));
       dispatch(actions.setLockInactiveLayer(true));
     },
     [dispatch]
@@ -101,7 +103,7 @@ export default function MapEditorTab({
         name: "Magic paint",
         icon: <IconWand size={16} />,
         canActivate: true,
-        disabled: layers.active !== "ground",
+        disabled: layers.active !== MapLayerName.Ground,
       },
       {
         slug: "set-waypoint",
@@ -190,7 +192,10 @@ export default function MapEditorTab({
       <Flex h="100dvh" style={{ flex: 1 }}>
         <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
           <Fieldset legend="Active layer">
-            <Radio.Group onChange={changeActiveLayer} value={layers.active}>
+            <Radio.Group
+              onChange={changeActiveLayer}
+              value={layers.active.toString()}
+            >
               <Stack p={0}>
                 <Tooltip
                   multiline
@@ -201,7 +206,7 @@ export default function MapEditorTab({
                   label="World tiles can appear in front of and behind characters"
                   refProp="rootRef"
                 >
-                  <Radio value="world" label="World" />
+                  <Radio value={LayerName.World} label="World" />
                 </Tooltip>
                 <Tooltip
                   multiline
@@ -212,7 +217,7 @@ export default function MapEditorTab({
                   label="Ground tiles always appear underneath characters"
                   refProp="rootRef"
                 >
-                  <Radio value="ground" label="Ground" />
+                  <Radio value={LayerName.Ground} label="Ground" />
                 </Tooltip>
                 <Switch
                   label="Lock inactive layer"

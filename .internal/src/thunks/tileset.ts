@@ -1,7 +1,6 @@
-import { globals as gMap } from "@/editor/map/globals";
 import { computeEdgeSignatures } from "@/editor/tileset/autotile";
 import { setCanvasTileset } from "@/editor/tileset/loader";
-import { globals as g } from "@/globals";
+import { globals as g, globals as gApp } from "@/globals";
 import { loadTileset, loadTilesets } from "@/persist/tileset/api";
 import {
   TilesetEditorState,
@@ -60,13 +59,13 @@ export const loadTilesetThunk = createAsyncThunk(
     const ts = await loadTileset(tsId);
     dispatch(tsActions.addTileset({ tsId, ts }));
 
-    if (!gMap.tilesetCache.has(tsId)) {
+    if (!gApp.tilesetCache.has(tsId)) {
       const tex = await P.Assets.load<P.Texture>({
         src: ts.objectUrl,
         parser: "loadTextures",
       });
       tex.source.scaleMode = "nearest";
-      gMap.tilesetCache.set(tsId, tex);
+      gApp.tilesetCache.set(tsId, tex);
     }
 
     // Start edge signature indexing

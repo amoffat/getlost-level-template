@@ -1,5 +1,5 @@
 import { log } from "@/log";
-import { TileGroupInstance } from "@/types/editor";
+import { TileGroupInstance } from "@/types/reconciler";
 import { Rect } from "@/types/rect";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { TileGroup } from "@/types/tilegroup";
@@ -12,7 +12,10 @@ const DEFAULT_ZOOMPAN: ZoomPan = { zoom: 1, pan: { x: 0, y: 0 } };
 
 export function getTileIndex(id: string): SpatialIndex {
   if (!tileIndices[id]) {
-    tileIndices[id] = new SpatialIndex();
+    tileIndices[id] = new SpatialIndex({
+      selectById: (_state, _id) => undefined, // Not needed
+      filterLayer: () => true, // Not needed
+    });
   }
   return tileIndices[id];
 }
@@ -47,7 +50,7 @@ export interface TilesetEditorState {
   tilesetsError: string | null;
 }
 
-const slice = createSlice({
+export const slice = createSlice({
   name: "tilesetEditor",
   initialState: {
     grid: {
@@ -343,4 +346,3 @@ const slice = createSlice({
 
 export const selectors = slice.selectors;
 export const actions = slice.actions;
-export default slice.reducer;

@@ -1,3 +1,4 @@
+import { atomicWriteFileSync } from "@/utils/file";
 import express from "express";
 import * as fs from "fs";
 import { resolve } from "path";
@@ -39,7 +40,8 @@ router.put(
     try {
       fs.mkdirSync(levelDir, { recursive: true });
       const buf = Buffer.from(req.body as any);
-      fs.writeFileSync(mapFile, buf);
+      atomicWriteFileSync(mapFile, buf);
+
       res.sendStatus(204);
     } catch (error) {
       console.error("Error saving map:", error);

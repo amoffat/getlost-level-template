@@ -7,7 +7,7 @@ interface DialogueState {
   edges: Edge[];
 }
 
-const slice = createSlice({
+export const slice = createSlice({
   name: "dialogue",
   initialState: {
     nodes: [],
@@ -34,4 +34,3 @@ const slice = createSlice({
 });
 
 export const { setNodes, setEdges, setNodeData } = slice.actions;
-export default slice.reducer;

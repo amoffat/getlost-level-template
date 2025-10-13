@@ -1,8 +1,10 @@
 import { actions, selectors as mapEdSelectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { isTileGroupInstance, Mode, TileGroupInstance } from "@/types/editor";
+import { Mode } from "@/types/editor";
+import { MapLayerName } from "@/types/layer";
+import { isTileGroupInstance, TileGroupInstance } from "@/types/reconciler";
 import { Rect } from "@/types/rect";
-import { getObjects, SpatialIndex } from "@/types/spatial";
+import { SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
 import {
@@ -33,7 +35,7 @@ class Selector implements ClickDragListener {
     const mode = mapEdSelectors.selectMode(state);
     if (!isSelectionMode(mode)) return;
 
-    const isGroundLayer = state.mapEditor.layers.active === "ground";
+    const isGroundLayer = state.mapEditor.layers.active === MapLayerName.Ground;
 
     // If we're over something, it means we want to select it directly, not
     // start a marquee. This will always be true if we're on the ground layer,
@@ -102,10 +104,11 @@ class Selector implements ClickDragListener {
       maxY: e.hitbox.br.y,
     };
 
-    const hits = getObjects({
-      index: this.spatialIndex,
-      pos: searchBounds,
-    }).filter((obj) => isTileGroupInstance(obj));
+    const hits = this.spatialIndex
+      .getObjects({
+        pos: searchBounds,
+      })
+      .filter((obj) => isTileGroupInstance(obj));
 
     // Nothing selected? Clear either the proposed selection (if any) (first
     // click), or the actual selection (second click).

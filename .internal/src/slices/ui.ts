@@ -26,7 +26,7 @@ const initialState: UIState = {
   loadingPalette: false,
 };
 
-const slice = createSlice({
+export const slice = createSlice({
   name: "ui",
   initialState,
   reducers: {
@@ -78,4 +78,3 @@ const slice = createSlice({
 
 export const selectors = slice.selectors;
 export const actions = slice.actions;
-export default slice.reducer;

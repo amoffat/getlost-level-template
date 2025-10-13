@@ -104,7 +104,7 @@ export function ShellApp() {
     // the map reconciler existing.
     try {
       await dispatch(loadMapThunk()).unwrap();
-    } catch (e) {
+    } catch {
       log.error("Failed to load map");
     }
     return app;
