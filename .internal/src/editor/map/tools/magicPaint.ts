@@ -71,7 +71,7 @@ class Painter extends Placer {
     if (mode !== "magic-paint") return;
 
     // Determine the snapped center tile position from the cursor using gridSnap
-    const step = g.gridSnap;
+    const step = state.mapEditor.grid.size;
     const baseX = Math.floor(e.localPos.x / step) * step;
     const baseY = Math.floor(e.localPos.y / step) * step;
 

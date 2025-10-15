@@ -8,6 +8,7 @@ import { SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";
 import { onVisible } from "@/utils/visible";
 import { Vector } from "@/vec";
+import { DropShadowFilter } from "pixi-filters";
 import * as P from "pixi.js";
 import { makeBackground } from "../common/bg";
 import { getCursorForMode } from "../common/cursor";
@@ -18,6 +19,7 @@ import { drawBounds } from "./bounds";
 import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
 import { initLayerVisibility } from "./layers";
+import { setupGateway } from "./tools/gateway";
 import { setupMagicPainter } from "./tools/magicPaint";
 import { setupMover } from "./tools/move";
 import { setupPlacer } from "./tools/place";
@@ -29,7 +31,11 @@ export async function init(): Promise<P.Application> {
   g.app = app;
 
   // Initialize the application
-  await app.init({ backgroundAlpha: 0 });
+  await app.init({
+    backgroundAlpha: 0,
+    resolution: 1, // Handle high DPI screens
+    autoDensity: true, // Automatically adjust for high resolution
+  });
   const stage = app.stage;
 
   // Tweak canvas interaction to avoid browser scroll/selection during drag
@@ -44,7 +50,6 @@ export async function init(): Promise<P.Application> {
     e.preventDefault();
   });
 
-  g.gridSnap = 16;
   stage.interactive = true;
 
   const spatialIndex = new SpatialIndex({
@@ -126,8 +131,10 @@ export async function init(): Promise<P.Application> {
   g.layerContainers[MapLayerName.World] = worldLayer;
   g.mapContainer.addChild(worldLayer);
 
-  g.metaContainer = new P.Container();
-  g.mapContainer.addChild(g.metaContainer);
+  const metaContainer = new P.Container();
+  metaContainer.filters = [new DropShadowFilter()];
+  g.layerContainers[MapLayerName.Meta] = metaContainer;
+  g.mapContainer.addChild(metaContainer);
 
   gApp.mapEditorReconciler.attachCanvas({
     layerContainers: g.layerContainers,
@@ -146,10 +153,11 @@ export async function init(): Promise<P.Application> {
     },
   });
 
-  setupSelector(cd, spatialIndex);
+  setupSelector({ cd, spatialIndex });
   g.mover = setupMover(cd);
   setupPlacer({ cd, spatialIndex });
   setupMagicPainter({ cd, spatialIndex });
+  setupGateway({ cd, spatialIndex });
   setupWheelZoom({
     canvas,
     stage,

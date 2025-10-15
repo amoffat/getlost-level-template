@@ -10,7 +10,6 @@ import {
   ClickDragListener,
   PointerEventData,
 } from "../../common/drag";
-import { globals as g } from "../globals";
 
 export class Mover implements ClickDragListener {
   private _moveEnabled = false;
@@ -83,7 +82,7 @@ export class Mover implements ClickDragListener {
     }
 
     const snap = state.mapEditor.grid.snap;
-    const gridSnap = g.gridSnap;
+    const gridSnap = state.mapEditor.grid.size;
 
     const startOffset = e.localMoveVector;
     const sel = state.mapEditor.selectedObjs;

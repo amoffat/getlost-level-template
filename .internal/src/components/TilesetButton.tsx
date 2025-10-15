@@ -2,8 +2,8 @@ import { useAppDispatch } from "@/hooks/redux";
 import { removeTilesetThunk } from "@/thunks/tileset";
 import { DisplayableImage } from "@/types/image";
 import { Image, Menu, UnstyledButton } from "@mantine/core";
-import { IconTrash } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { IconCopy, IconTrash } from "@tabler/icons-react";
+import { useCallback, useEffect, useState } from "react";
 
 interface TilesetButtonProps {
   onClick: () => void;
@@ -35,6 +35,11 @@ export default function TilesetButton({
     dispatch(removeTilesetThunk(ts.id));
   };
 
+  const onCopyId = useCallback(() => {
+    navigator.clipboard.writeText(ts.id);
+    setOpened(false);
+  }, [ts]);
+
   return (
     <Menu shadow="md" width={200} opened={opened} position="right" withArrow>
       <Menu.Target>
@@ -58,6 +63,9 @@ export default function TilesetButton({
       </Menu.Target>
 
       <Menu.Dropdown>
+        <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
+          Copy tileset id
+        </Menu.Item>
         <Menu.Item
           color="red"
           leftSection={<IconTrash size={14} />}

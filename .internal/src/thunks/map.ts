@@ -1,3 +1,4 @@
+import { lightIcon, metaIconTsId, startIcon } from "@/constants";
 import { loadMap } from "@/persist/map/api";
 import { actions as mapActions } from "@/slices/map";
 import {
@@ -6,7 +7,9 @@ import {
 } from "@/slices/mapEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
-import { MapObj, Mode, TileGroupInstance } from "@/types/editor";
+import { Mode } from "@/types/editor";
+import { MapObj, TileGroupInstance } from "@/types/reconciler";
+import { loadTileGroup } from "@/utils/tileset";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const loadMapThunk = createAsyncThunk(
@@ -55,6 +58,19 @@ export const setToolThunk = createAsyncThunk(
     if (tool === null) {
       dispatch(mapEdActions.setMode("select"));
     } else {
+      if (tool === "set-gateway") {
+        const tg = loadTileGroup({
+          id: startIcon,
+          tilesetId: metaIconTsId,
+        });
+        dispatch(mapEdActions.setPlace(tg));
+      } else if (tool === "add-light") {
+        const tg = loadTileGroup({
+          id: lightIcon,
+          tilesetId: metaIconTsId,
+        });
+        dispatch(mapEdActions.setPlace(tg));
+      }
       dispatch(mapEdActions.pushMode(tool));
     }
   }

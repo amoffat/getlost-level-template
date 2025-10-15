@@ -1,9 +1,22 @@
-import type { SliceCaseReducers, SliceSelectors } from "@reduxjs/toolkit";
+import type {
+  CaseReducerActions,
+  EntitySelectors,
+  EntityState,
+  Reducer,
+  SliceCaseReducers,
+  SliceSelectors,
+} from "@reduxjs/toolkit";
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 
-export function createObjectsSlice<Objects extends { id: string }>(
+type State<Objects> = EntityState<Objects, string>;
+
+export function createObjectsState<Objects extends { id: string }>(
   name: string
-) {
+): {
+  reducer: Reducer<State<Objects>>;
+  selectors: EntitySelectors<Objects, any, string>;
+  actions: CaseReducerActions<SliceCaseReducers<State<Objects>>, string>;
+} {
   const objects = createEntityAdapter<Objects>({
     sortComparer: (a, b) => {
       return a.id.localeCompare(b.id);
@@ -32,5 +45,14 @@ export function createObjectsSlice<Objects extends { id: string }>(
       setAll: objects.setAll,
     } as SliceCaseReducers<EntityState>,
   });
-  return slice;
+
+  const selectors = objects.getSelectors<{
+    [name]: ReturnType<typeof slice.getInitialState>;
+  }>((s) => s[name]);
+
+  return {
+    reducer: slice.reducer,
+    selectors,
+    actions: slice.actions,
+  };
 }

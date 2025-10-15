@@ -50,7 +50,7 @@ export default function Paint() {
     [dispatch]
   );
 
-  const isGround = activeLayer !== MapLayerName.Ground;
+  const isGround = activeLayer === MapLayerName.Ground;
 
   return (
     <Stack p={0}>

@@ -179,7 +179,13 @@ class Selector implements ClickDragListener {
   }
 }
 
-export function setupSelector(cd: ClickDragger, spatialIndex: SpatialIndex) {
+export function setupSelector({
+  cd,
+  spatialIndex,
+}: {
+  cd: ClickDragger;
+  spatialIndex: SpatialIndex;
+}) {
   cd.addListener(new Selector(spatialIndex));
 }
 

@@ -7,7 +7,7 @@ import { Tileset } from "@/types/tileset";
 import { schedulerYield } from "@/utils/async";
 import { getImageDataFromBitmap, isRectTransparent } from "@/utils/image";
 import { subState } from "@/utils/redux";
-import { genGroupId } from "@/utils/tileset";
+import { genGroupId, loadTilesetTex } from "@/utils/tileset";
 import * as P from "pixi.js";
 import { globals as g } from "./globals";
 
@@ -20,13 +20,9 @@ export async function setCanvasTileset(ts: Tileset | null) {
   g.groupSelContainer.setSize(0);
 
   if (ts) {
-    const texture = await P.Assets.load<P.Texture>({
-      src: ts.objectUrl,
-      parser: "loadTextures",
-    });
-    texture.source.scaleMode = "nearest";
+    const tex = await loadTilesetTex(ts.id, ts.objectUrl);
 
-    const sprite = new P.Sprite(texture);
+    const sprite = new P.Sprite(tex);
     sprite.x = 0;
     sprite.y = 0;
     sprite.roundPixels = true;

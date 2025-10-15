@@ -9,8 +9,6 @@ interface Globals {
   // For the grid overlay
   gridContainer: P.Container;
   mapContainer: P.Container;
-  // For sensors, sound zones, zoom zones, sink zones, lights, etc.
-  metaContainer: P.Container;
   // For ground-level stuff: tiles, decorations, etc.
   layerContainers: Record<MapLayerName, P.Container>;
   // For the checkerboard background
@@ -26,7 +24,6 @@ interface Globals {
   boundsContainer: P.Graphics;
   boundsMask: P.Graphics;
   grid: P.Container;
-  gridSnap: number;
   initialized: boolean;
 }
 

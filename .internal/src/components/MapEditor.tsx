@@ -23,6 +23,7 @@ import {
   IconBulb,
   IconCameraSearch,
   IconCircle,
+  IconDoorExit,
   IconEar,
   IconInputSpark,
   IconMapPin,
@@ -106,21 +107,31 @@ export default function MapEditorTab({
         disabled: layers.active !== MapLayerName.Ground,
       },
       {
+        slug: "set-gateway",
+        name: "Set gateway",
+        icon: <IconDoorExit size={16} />,
+        switchToLayer: MapLayerName.Meta,
+        canActivate: true,
+      },
+      {
         slug: "set-waypoint",
         name: "Set waypoint",
         icon: <IconMapPin size={16} />,
+        switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
       {
         slug: "circle-collision",
         name: "Circle collider",
         icon: <IconCircle size={16} />,
+        switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
       {
         slug: "rect-collision",
         name: "Rectangle collider",
         icon: <IconRectangle size={16} />,
+        switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
       // {
@@ -133,30 +144,35 @@ export default function MapEditorTab({
         slug: "set-sensor-zone",
         name: "Sensor zone",
         icon: <IconInputSpark size={16} />,
+        switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
       {
         slug: "set-sink-zone",
         name: "Sink zone",
         icon: <IconRipple size={16} />,
+        switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
       {
         slug: "set-sound-zone",
         name: "Sound zone",
         icon: <IconEar size={16} />,
+        switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
       {
         slug: "set-zoom-zone",
         name: "Zoom zone",
         icon: <IconCameraSearch size={16} />,
+        switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
       {
         slug: "add-light",
         name: "Add light",
         icon: <IconBulb size={16} />,
+        switchToLayer: MapLayerName.Meta,
         canActivate: false,
       },
     ],
@@ -203,10 +219,10 @@ export default function MapEditorTab({
                   position="left"
                   w={200}
                   openDelay={500}
-                  label="World tiles can appear in front of and behind characters"
+                  label="The meta layer is reserved for special map features like sensors, sound zones, and lights"
                   refProp="rootRef"
                 >
-                  <Radio value={LayerName.World} label="World" />
+                  <Radio value={LayerName.Meta.toString()} label="Meta" />
                 </Tooltip>
                 <Tooltip
                   multiline
@@ -214,10 +230,21 @@ export default function MapEditorTab({
                   position="left"
                   w={200}
                   openDelay={500}
-                  label="Ground tiles always appear underneath characters"
+                  label="World objects can appear in front of and behind a character, as the character moves around it"
                   refProp="rootRef"
                 >
-                  <Radio value={LayerName.Ground} label="Ground" />
+                  <Radio value={LayerName.World.toString()} label="World" />
+                </Tooltip>
+                <Tooltip
+                  multiline
+                  withArrow
+                  position="left"
+                  w={200}
+                  openDelay={500}
+                  label="Ground tiles always appear underneath a character"
+                  refProp="rootRef"
+                >
+                  <Radio value={LayerName.Ground.toString()} label="Ground" />
                 </Tooltip>
                 <Switch
                   label="Lock inactive layer"

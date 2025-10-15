@@ -1,3 +1,6 @@
+import { useAppDispatch } from "@/hooks/redux";
+import { actions } from "@/slices/mapEditor";
+import { MapLayerName } from "@/types/layer";
 import { ActionIcon, Fieldset, SimpleGrid, Tooltip } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
 import { ReactNode, useMemo } from "react";
@@ -10,6 +13,7 @@ export interface ToolDescriptor<T extends string> {
   onClick?: () => void;
   // allow disabled state in future
   disabled?: boolean;
+  switchToLayer?: MapLayerName;
 }
 
 interface ToolPaletteProps<T extends string> {
@@ -35,6 +39,7 @@ export default function ToolPalette<T extends string>({
   onToolDeactivated,
 }: ToolPaletteProps<T>) {
   const { ref, width } = useElementSize();
+  const dispatch = useAppDispatch();
 
   const cols = useMemo(() => {
     return Math.max(1, Math.floor((width + gap) / (iconSize + gap)));
@@ -53,6 +58,9 @@ export default function ToolPalette<T extends string>({
 
       if (t.disabled) return;
       if (t.canActivate) {
+        if (t.switchToLayer) {
+          dispatch(actions.setActiveLayer(t.switchToLayer));
+        }
         onToolActivated?.(t.slug);
       }
       t.onClick?.();

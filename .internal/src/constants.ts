@@ -14,3 +14,10 @@ export const overlayProps = {
   backgroundOpacity: 0.55,
   blur: 3,
 };
+
+export const metaIconTsId = "579debe9-728a-5394-8a26-e423ba8e1c97";
+export const startIcon = "c9b4462d-4e7c-55f6-a0ec-815ab1a723cf";
+export const exitIcon = "586794d8-d094-5451-b47d-2de73e1a13ea";
+export const lightIcon = "673699bc-746a-5d83-929e-9b739784cb9d";
+export const waypointIcon = "082812ec-8053-5712-b782-ca1c13f23c96";
+export const soundIcon = "cb83a1b7-3e73-5f92-9888-a71c8e3c3ee8";

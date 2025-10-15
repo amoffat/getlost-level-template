@@ -121,6 +121,9 @@ export const slice = createSlice({
 
     setPlace(state, action: PayloadAction<TileGroup | null>) {
       state.place.obj = action.payload;
+      if (state.layers.active === MapLayerName.Ground && action.payload) {
+        state.grid.size = action.payload.gridSize;
+      }
     },
 
     setGridPos(state, action: PayloadAction<Vector>) {

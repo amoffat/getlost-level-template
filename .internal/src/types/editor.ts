@@ -14,4 +14,5 @@ export type Mode =
   | "set-zoom-zone"
   | "set-sink-zone"
   | "add-light"
+  | "set-gateway"
   | "duplicate";

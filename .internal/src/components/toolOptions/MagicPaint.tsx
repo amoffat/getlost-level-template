@@ -72,15 +72,13 @@ export default function MagicPaint() {
     };
   }, [cands.length, onSelect]);
 
-  if (cands.length > 9) return null;
+  if (cands.length > 9 || cands.length === 0) return null;
 
   return (
     <Stack p={0} gap="sm" aria-label="Magic paint tile candidates">
-      {cands.length > 0 && (
-        <Text size="xs" c="dimmed">
-          Press number keys to choose a tile
-        </Text>
-      )}
+      <Text size="xs" c="dimmed">
+        Press number keys to choose a tile
+      </Text>
       {cands.map((cand, idx) => {
         const displayNumber = idx + 1; // 1-based label
         const pressHint = `Press ${displayNumber}`;

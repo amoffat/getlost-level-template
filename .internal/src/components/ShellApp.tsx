@@ -104,8 +104,8 @@ export function ShellApp() {
     // the map reconciler existing.
     try {
       await dispatch(loadMapThunk()).unwrap();
-    } catch {
-      log.error("Failed to load map");
+    } catch (e) {
+      log.error({ error: e }, "Failed to load map");
     }
     return app;
   }, [tilesetInitPromise, dispatch]);

@@ -1,8 +1,8 @@
-import { atomicWriteFileSync } from "@/utils/file";
 import express from "express";
 import formidable from "formidable";
 import * as fs from "fs";
 import { resolve } from "path";
+import { atomicWriteFileSync } from "../../utils/file";
 
 const internalDir = process.cwd();
 const repoDir = resolve(internalDir, "..");

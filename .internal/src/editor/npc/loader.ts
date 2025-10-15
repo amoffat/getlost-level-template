@@ -1,3 +1,4 @@
+import { loadTilesetTex } from "@/utils/tileset";
 import * as P from "pixi.js";
 import { Tileset } from "../../types/tileset";
 import { subState } from "../../utils/redux";
@@ -11,13 +12,9 @@ export async function setCanvasTileset(ts: Tileset) {
   g.tilesetContainer.scale.set(1);
   g.groupSelContainer.setSize(0);
 
-  const texture = await P.Assets.load<P.Texture>({
-    src: ts.objectUrl,
-    parser: "loadTextures",
-  });
-  texture.source.scaleMode = "nearest";
+  const tex = await loadTilesetTex(ts.id, ts.objectUrl);
 
-  const sprite = new P.Sprite(texture);
+  const sprite = new P.Sprite(tex);
   sprite.x = 0;
   sprite.y = 0;
   sprite.roundPixels = true;

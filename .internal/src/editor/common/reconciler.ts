@@ -147,11 +147,15 @@ export class ReduxReconciler {
     if (isTileGroupInstance(obj)) {
       const tsTex = this.tilesetCache.get(obj.tilesetId);
       const frame = obj.frame;
+
+      const padding = 0.001; // avoid bleeding
+      const width = frame.br.x - frame.ul.x;
+      const height = frame.br.y - frame.ul.y;
       const texFrame = new P.Rectangle(
-        frame.ul.x,
-        frame.ul.y,
-        frame.br.x - frame.ul.x,
-        frame.br.y - frame.ul.y
+        frame.ul.x + padding,
+        frame.ul.y + padding,
+        width - 2 * padding,
+        height - 2 * padding
       );
       const tileTex = new P.Texture({
         source: tsTex!.source,
@@ -162,7 +166,10 @@ export class ReduxReconciler {
       // center anchor, while the container can have its anchor at top-left for
       // easier positioning.
       const sprite = new P.Sprite(tileTex);
-      sprite.position.set(sprite.width / 2, sprite.height / 2);
+      sprite.position.set(
+        sprite.width / 2 + padding,
+        sprite.height / 2 + padding
+      );
       sprite.interactive = false;
       sprite.anchor.set(0.5);
       sprite.scale.x = obj.flipX ? -1 : 1;
@@ -173,6 +180,7 @@ export class ReduxReconciler {
       spriteContainer.zIndex = obj.z;
       spriteContainer.addChild(sprite);
       spriteContainer.interactive = true;
+      spriteContainer.scale.set(1 + padding); // avoid bleeding
 
       return spriteContainer;
     } else {

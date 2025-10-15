@@ -1,5 +1,6 @@
 import {
-  objectSlice as collisionObjectSlice,
+  objectsActions as collisionObjectsActions,
+  objectsReducer as collisionObjectsReducer,
   slice as collisionSlice,
 } from "@/editor/collision/state";
 import { globals as g } from "@/globals";
@@ -23,6 +24,7 @@ export const rootReducer = combineReducers({
   collisionEditor: collisionSlice.reducer,
   map: mapSlice.reducer,
   ui: uiSlice.reducer,
+  collisionObjects: collisionObjectsReducer,
 });
 
 const mapMiddleware = makeEditorSyncMiddleware(
@@ -31,7 +33,7 @@ const mapMiddleware = makeEditorSyncMiddleware(
 );
 
 const collisionMiddleware = makeEditorSyncMiddleware(
-  collisionObjectSlice.actions,
+  collisionObjectsActions,
   g.collisionEditorReconciler
 );
 

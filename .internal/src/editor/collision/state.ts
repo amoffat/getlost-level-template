@@ -12,11 +12,11 @@ import {
   PayloadAction,
 } from "@reduxjs/toolkit";
 import { MapLayerName } from "../../types/layer";
-import { createObjectsSlice } from "../common/redux";
+import { createObjectsState } from "../common/redux";
 
 export const selectedAdapter = createEntityAdapter<MapObj>();
 
-export const objectSlice = createObjectsSlice<MapObj>("collisionEditorObjects");
+export const objects = createObjectsState<MapObj>("collisionObjects");
 
 type ToolOptMapping = {
   paint: PaintOpts;
@@ -198,5 +198,8 @@ export const slice = createSlice({
 export const selectors = {
   ...slice.selectors,
   selection: tgiSelectors,
+  objects: objects.selectors,
 };
 export const actions = slice.actions;
+export const objectsActions = objects.actions;
+export const objectsReducer = objects.reducer;

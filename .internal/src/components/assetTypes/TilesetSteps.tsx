@@ -1,10 +1,6 @@
-import { unpackActiveTileset } from "@/editor/tileset/loader";
 import { useAppDispatch } from "@/hooks/redux";
-import { actions as tsActions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
-import { selectTilesetThunk } from "@/thunks/tileset";
-import { Tileset } from "@/types/tileset";
-import { genTilesetId } from "@/utils/tileset";
+import { uploadTilesetThunk } from "@/thunks/tileset";
 import { Button, Group, Radio, Stack, Stepper, Text } from "@mantine/core";
 import { FileWithPath } from "@mantine/dropzone";
 import { useForm } from "@mantine/form";
@@ -41,18 +37,7 @@ export default function TilesetSteps({ files, closeModal }: StepProps) {
     async (files: FileWithPath[]) => {
       if (!files.length) return;
       for (const file of files) {
-        const objectUrl = URL.createObjectURL(file);
-        const tsId = await genTilesetId(file);
-        const ts: Tileset = {
-          id: tsId,
-          objectUrl,
-          palette: {},
-          paletteIds: [],
-          saved: false,
-        };
-        dispatch(tsActions.addTileset({ tsId, ts }));
-        await dispatch(selectTilesetThunk(ts));
-        await unpackActiveTileset();
+        dispatch(uploadTilesetThunk(file));
       }
     },
     [dispatch]

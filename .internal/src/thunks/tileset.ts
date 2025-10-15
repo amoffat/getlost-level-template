@@ -1,6 +1,6 @@
 import { computeEdgeSignatures } from "@/editor/tileset/autotile";
-import { setCanvasTileset } from "@/editor/tileset/loader";
-import { globals as g, globals as gApp } from "@/globals";
+import { setCanvasTileset, unpackActiveTileset } from "@/editor/tileset/loader";
+import { globals as g } from "@/globals";
 import { loadTileset, loadTilesets } from "@/persist/tileset/api";
 import {
   TilesetEditorState,
@@ -13,8 +13,8 @@ import {
   hasSolidEdges,
   subImageData,
 } from "@/utils/image";
+import { genTilesetId, loadTilesetTex } from "@/utils/tileset";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import * as P from "pixi.js";
 
 export const selectTilesetThunk = createAsyncThunk(
   "tilesetEditor/selectTilesetThunk",
@@ -44,6 +44,27 @@ export const loadTilesetsThunk = createAsyncThunk(
   }
 );
 
+export const uploadTilesetThunk = createAsyncThunk(
+  "tilesetEditor/uploadTilesetThunk",
+  async (file: File, { dispatch }) => {
+    const objectUrl = URL.createObjectURL(file);
+    const tsId = await genTilesetId(file);
+    const ts: Tileset = {
+      id: tsId,
+      objectUrl,
+      palette: {},
+      paletteIds: [],
+      saved: false,
+    };
+
+    await loadTilesetTex(tsId, ts.objectUrl);
+
+    dispatch(tsActions.addTileset({ tsId, ts }));
+    await dispatch(selectTilesetThunk(ts)).unwrap();
+    await unpackActiveTileset();
+  }
+);
+
 // New thunk that loads a single tileset and performs all related side effects
 export const loadTilesetThunk = createAsyncThunk(
   "tilesetEditor/loadTilesetThunk",
@@ -59,14 +80,8 @@ export const loadTilesetThunk = createAsyncThunk(
     const ts = await loadTileset(tsId);
     dispatch(tsActions.addTileset({ tsId, ts }));
 
-    if (!gApp.tilesetCache.has(tsId)) {
-      const tex = await P.Assets.load<P.Texture>({
-        src: ts.objectUrl,
-        parser: "loadTextures",
-      });
-      tex.source.scaleMode = "nearest";
-      gApp.tilesetCache.set(tsId, tex);
-    }
+    // Preload its texture
+    await loadTilesetTex(tsId, ts.objectUrl);
 
     // Start edge signature indexing
     dispatch(
