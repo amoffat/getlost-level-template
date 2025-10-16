@@ -5,8 +5,7 @@ import { ActionIcon, Fieldset, SimpleGrid, Tooltip } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
 import { ReactNode, useMemo } from "react";
 
-export interface ToolDescriptor<T extends string> {
-  slug: T;
+export interface ToolDescriptor {
   name: string;
   icon: ReactNode;
   canActivate: boolean;
@@ -14,10 +13,11 @@ export interface ToolDescriptor<T extends string> {
   // allow disabled state in future
   disabled?: boolean;
   switchToLayer?: MapLayerName;
+  options?: ReactNode;
 }
 
 interface ToolPaletteProps<T extends string> {
-  tools: ToolDescriptor<T>[];
+  tools: Partial<Record<T, ToolDescriptor>>;
   activeTool: T | null;
   legend?: string;
   iconSize?: number; // px square side; default 32
@@ -46,13 +46,13 @@ export default function ToolPalette<T extends string>({
   }, [width, gap, iconSize]);
 
   const toolComponents = [];
-  for (const t of tools) {
-    const isActive = activeTool === t.slug;
+  for (const [slug, t] of Object.entries(tools) as [T, ToolDescriptor][]) {
+    const isActive = activeTool === slug;
 
     const onClick = () => {
       // Deactivate if already active
-      if (activeTool === t.slug) {
-        onToolDeactivated?.(t.slug);
+      if (activeTool === slug) {
+        onToolDeactivated?.(slug);
         return;
       }
 
@@ -61,14 +61,14 @@ export default function ToolPalette<T extends string>({
         if (t.switchToLayer) {
           dispatch(actions.setActiveLayer(t.switchToLayer));
         }
-        onToolActivated?.(t.slug);
+        onToolActivated?.(slug);
       }
       t.onClick?.();
     };
 
     toolComponents.push(
       <Tooltip
-        key={t.slug}
+        key={slug}
         label={t.name}
         position="left-start"
         withArrow

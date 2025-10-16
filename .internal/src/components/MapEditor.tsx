@@ -22,13 +22,12 @@ import {
 import {
   IconBulb,
   IconCameraSearch,
-  IconCircle,
+  IconCarCrash,
   IconDoorExit,
   IconEar,
   IconInputSpark,
   IconMapPin,
   IconPaint,
-  IconRectangle,
   IconRipple,
   IconWand,
 } from "@tabler/icons-react";
@@ -45,7 +44,7 @@ export default function MapEditorTab({
 }: {
   initPromise: Promise<unknown>;
 }) {
-  const selectedTool = useAppSelector(
+  const selectedToolName = useAppSelector(
     (state: RootState) => state.mapEditor.selectedTool
   );
   const layers = useAppSelector((state: RootState) => state.mapEditor.layers);
@@ -94,107 +93,77 @@ export default function MapEditorTab({
     dispatch(setToolThunk(null));
   }, [dispatch]);
 
-  const toolPalette: ToolDescriptor<Mode>[] = useMemo(
-    () => [
-      {
-        slug: "paint",
+  const toolPalette: Partial<Record<Mode, ToolDescriptor>> = useMemo(
+    () => ({
+      paint: {
         name: "Paint area",
         icon: <IconPaint size={16} />,
         canActivate: true,
         disabled: place === null,
+        options: <Paint />,
       },
-      {
-        slug: "magic-paint",
+      "magic-paint": {
         name: "Magic paint",
         icon: <IconWand size={16} />,
         canActivate: true,
         disabled: layers.active !== MapLayerName.Ground,
+        options: <MagicPaint />,
       },
-      {
-        slug: "set-gateway",
+      "set-gateway": {
         name: "Set gateway",
         icon: <IconDoorExit size={16} />,
         switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
-      {
-        slug: "set-waypoint",
+      "set-waypoint": {
         name: "Set waypoint",
         icon: <IconMapPin size={16} />,
         switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
-      {
-        slug: "circle-collision",
-        name: "Circle collider",
-        icon: <IconCircle size={16} />,
+      "add-collider": {
+        name: "Add collider",
+        icon: <IconCarCrash size={16} />,
         switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
-      {
-        slug: "rect-collision",
-        name: "Rectangle collider",
-        icon: <IconRectangle size={16} />,
-        switchToLayer: MapLayerName.Meta,
-        canActivate: true,
-      },
-      // {
-      //   slug: "set-bounds",
-      //   name: "Set map bounds",
-      //   icon: <IconCrop size={16} />,
-      //   canActivate: true,
-      // },
-      {
-        slug: "set-sensor-zone",
+
+      "set-sensor-zone": {
         name: "Sensor zone",
         icon: <IconInputSpark size={16} />,
         switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
-      {
-        slug: "set-sink-zone",
+      "set-sink-zone": {
         name: "Sink zone",
         icon: <IconRipple size={16} />,
         switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
-      {
-        slug: "set-sound-zone",
+      "set-sound-zone": {
         name: "Sound zone",
         icon: <IconEar size={16} />,
         switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
-      {
-        slug: "set-zoom-zone",
+      "set-zoom-zone": {
         name: "Zoom zone",
         icon: <IconCameraSearch size={16} />,
         switchToLayer: MapLayerName.Meta,
         canActivate: true,
       },
-      {
-        slug: "add-light",
+      "add-light": {
         name: "Add light",
         icon: <IconBulb size={16} />,
         switchToLayer: MapLayerName.Meta,
         canActivate: false,
       },
-    ],
+    }),
     [layers.active, place]
   );
-  const toolName = useMemo(() => {
-    const tool = toolPalette.find((t) => t.slug === selectedTool);
-    return tool ? tool.name : null;
-  }, [selectedTool, toolPalette]);
 
-  const allToolOptions: Partial<Record<Mode, React.ReactNode>> = useMemo(
-    () => ({
-      paint: <Paint />,
-      "magic-paint": <MagicPaint />,
-    }),
-    []
-  );
-  const toolOptions = selectedTool ? allToolOptions[selectedTool] : null;
+  const tool = selectedToolName && toolPalette[selectedToolName];
+  const toolOptions = tool?.options;
 
   const onToolActivated = useCallback(
     (slug: string) => {
@@ -342,13 +311,13 @@ export default function MapEditorTab({
         <Stack miw={200} style={{ flex: 1 }}>
           <ToolPalette
             tools={toolPalette}
-            activeTool={selectedTool}
+            activeTool={selectedToolName}
             onToolActivated={onToolActivated}
             onToolDeactivated={onToolDeactivated}
           />
 
           {toolOptions && (
-            <Fieldset legend={`${toolName} options`} p="xs">
+            <Fieldset legend={`${tool.name} options`} p="xs">
               {toolOptions}
             </Fieldset>
           )}

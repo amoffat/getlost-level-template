@@ -71,35 +71,30 @@ export default function TilesetEditorTab({
     />
   ));
 
-  const toolPalette: ToolDescriptor<Mode | "reslice-tiles">[] = useMemo(
-    () => [
-      {
-        slug: "replace-group",
+  const toolPalette: Partial<Record<Mode, ToolDescriptor>> = useMemo(
+    () => ({
+      "replace-group": {
         name: "Replace group",
         icon: <IconReplace size={16} />,
         canActivate: true,
       },
-      {
-        slug: "add-group",
+      "add-group": {
         name: "Add group",
         icon: <IconCut size={16} />,
         canActivate: true,
       },
-
-      {
-        slug: "delete-group",
+      "delete-group": {
         name: "Delete group",
         icon: <IconTrash size={16} />,
         canActivate: true,
       },
-      {
-        slug: "reslice-tiles",
+      "reslice-tiles": {
         name: "Re-slice tiles",
         icon: <IconGrid4x4 size={16} />,
         onClick: resliceTiles,
         canActivate: false,
       },
-    ],
+    }),
     [resliceTiles]
   );
 
