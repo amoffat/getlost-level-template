@@ -1,6 +1,6 @@
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { TileGroupInstance } from "@/types/reconciler";
+import { MapObj } from "@/types/reconciler";
 import { Rect } from "@/types/rect";
 import { TileGroup } from "@/types/tilegroup";
 import { MagicPaintOpts, PaintOpts } from "@/types/tools";
@@ -14,7 +14,7 @@ import {
   PayloadAction,
 } from "@reduxjs/toolkit";
 
-export const selectedAdapter = createEntityAdapter<TileGroupInstance>();
+export const selectedAdapter = createEntityAdapter<MapObj>();
 
 type ToolOptMapping = {
   paint: PaintOpts;
@@ -42,9 +42,9 @@ interface MapEditorState {
     obj: TileGroup | null;
     flipX: boolean;
   };
-  selectedObjs: EntityState<TileGroupInstance, string>;
+  selectedObjs: EntityState<MapObj, string>;
   proposedSelection: {
-    objects: TileGroupInstance[];
+    objects: MapObj[];
     pos: Vector;
   } | null;
   layers: {
@@ -134,34 +134,32 @@ export const slice = createSlice({
       state.place.flipX = !state.place.flipX;
     },
 
-    setOneSelected: (state, action: PayloadAction<TileGroupInstance>) => {
+    setOneSelected: (state, action: PayloadAction<MapObj>) => {
       selectedAdapter.removeAll(state.selectedObjs);
       selectedAdapter.setOne(state.selectedObjs, action.payload);
     },
 
-    addOneSelected: (state, action: PayloadAction<TileGroupInstance>) => {
+    addOneSelected: (state, action: PayloadAction<MapObj>) => {
       selectedAdapter.setOne(state.selectedObjs, action.payload);
     },
 
-    setManySelected: (state, action: PayloadAction<TileGroupInstance[]>) => {
+    setManySelected: (state, action: PayloadAction<MapObj[]>) => {
       selectedAdapter.removeAll(state.selectedObjs);
       selectedAdapter.setMany(state.selectedObjs, action.payload);
     },
 
-    addManySelected: (state, action: PayloadAction<TileGroupInstance[]>) => {
+    addManySelected: (state, action: PayloadAction<MapObj[]>) => {
       selectedAdapter.setMany(state.selectedObjs, action.payload);
     },
 
     updateManySelected: (
       state,
-      action: PayloadAction<
-        { id: string; changes: Partial<TileGroupInstance> }[]
-      >
+      action: PayloadAction<{ id: string; changes: Partial<MapObj> }[]>
     ) => {
       selectedAdapter.updateMany(state.selectedObjs, action.payload);
     },
 
-    removeOneSelected: (state, action: PayloadAction<TileGroupInstance>) => {
+    removeOneSelected: (state, action: PayloadAction<MapObj>) => {
       selectedAdapter.removeOne(state.selectedObjs, action.payload.id);
     },
 

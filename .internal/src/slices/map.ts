@@ -1,7 +1,7 @@
-import { MapObj, TileGroupInstance } from "@/types/reconciler";
+import { BaseMapObj, TileGroupInstance } from "@/types/reconciler";
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 
-const objects = createEntityAdapter<MapObj | TileGroupInstance>({
+const objects = createEntityAdapter<BaseMapObj | TileGroupInstance>({
   sortComparer: (a, b) => {
     return a.id.localeCompare(b.id);
   },

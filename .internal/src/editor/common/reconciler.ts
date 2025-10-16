@@ -1,8 +1,9 @@
 // pixiReconciler.ts
 import {
+  BaseMapObj,
   isTileGroupInstance,
-  MapObj,
   TileGroupInstance,
+  UpdatableParams,
 } from "@/types/reconciler";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
@@ -36,10 +37,10 @@ export class ReduxReconciler {
   private layerLookup = new Map<string, P.Container>();
 
   // coalesced ops for this frame
-  private pendingAdds: MapObj[] = [];
+  private pendingAdds: BaseMapObj[] = [];
   private pendingUpdates: Array<{
     id: string;
-    changes: Partial<MapObj & TileGroupInstance>;
+    changes: UpdatableParams;
   }> = [];
   private pendingRemoves: string[] = [];
   private rafScheduled = false;
@@ -59,11 +60,11 @@ export class ReduxReconciler {
     this.spatialIndex = spatialIndex;
   }
 
-  enqueueAdd(obj: MapObj) {
+  enqueueAdd(obj: BaseMapObj) {
     this.pendingAdds.push(obj);
     this.scheduleFlush();
   }
-  enqueueUpdate(id: string, changes: Partial<MapObj>) {
+  enqueueUpdate(id: string, changes: Partial<UpdatableParams>) {
     this.pendingUpdates.push({ id, changes });
     this.scheduleFlush();
   }
@@ -73,7 +74,7 @@ export class ReduxReconciler {
   }
 
   // If you sometimes dispatch setAll, use this diffing helper:
-  enqueueDiff(fullList: MapObj[]) {
+  enqueueDiff(fullList: BaseMapObj[]) {
     const nextIds = new Set(fullList.map((o) => o.id));
     for (const id of this.nodes.keys())
       if (!nextIds.has(id)) this.pendingRemoves.push(id);
@@ -143,7 +144,7 @@ export class ReduxReconciler {
     this.pendingUpdates.length = 0;
   }
 
-  private createNode(obj: MapObj): P.Container {
+  private createNode(obj: BaseMapObj): P.Container {
     if (isTileGroupInstance(obj)) {
       const tsTex = this.tilesetCache.get(obj.tilesetId);
       const frame = obj.frame;
@@ -190,7 +191,7 @@ export class ReduxReconciler {
 
   private applyProps(
     node: P.Container,
-    p: Partial<MapObj & TileGroupInstance>
+    p: Partial<BaseMapObj & TileGroupInstance>
   ) {
     if (!this.layerContainers || !this.spatialIndex) return;
 

@@ -8,7 +8,7 @@ import {
 import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
-import { MapObj, TileGroupInstance } from "@/types/reconciler";
+import { BaseMapObj, MapObj, TileGroupInstance } from "@/types/reconciler";
 import { loadTileGroup } from "@/utils/tileset";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
@@ -17,7 +17,7 @@ export const loadMapThunk = createAsyncThunk(
   async (_: void, { dispatch }) => {
     dispatch(uiActions.setLoadingMessage(`Loading map...`));
     const persisted = await loadMap();
-    const objs: (MapObj | TileGroupInstance)[] = [];
+    const objs: (BaseMapObj | TileGroupInstance)[] = [];
     for (const id of persisted.ids) {
       const obj = persisted.entities[id];
       if (obj) objs.push(obj);
@@ -30,9 +30,9 @@ export const duplicateSelectionThunk = createAsyncThunk(
   "mapEditor/duplicateSelectionThunk",
   async (_, { dispatch, getState }) => {
     const state = getState() as RootState;
-    const newObjs: TileGroupInstance[] = [];
+    const newObjs: MapObj[] = [];
     mapEdSelectors.selection.selectAll(state.mapEditor).forEach((obj) => {
-      const newObj: TileGroupInstance = {
+      const newObj: MapObj = {
         ...obj,
         id: crypto.randomUUID(),
         x: obj.x + 16,
