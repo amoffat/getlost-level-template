@@ -2,6 +2,7 @@ import express from "express";
 import formidable from "formidable";
 import * as fs from "fs";
 import { resolve } from "path";
+import { gzipSync } from "zlib";
 import { atomicWriteFileSync } from "../../utils/file";
 
 const internalDir = process.cwd();
@@ -17,7 +18,7 @@ function sanitizeId(raw: unknown): string {
   return (typeof raw === "string" ? raw : "").replace(/[^a-zA-Z0-9._-]/g, "");
 }
 
-// GET "/" — list all tileset IDs (derived from *.cbor files in level/textures)
+// GET "/" — list all tileset IDs (derived from *.cbor.gz files)
 router.get("/", (_req, res) => {
   try {
     if (!fs.existsSync(texturesDir)) {
@@ -26,8 +27,8 @@ router.get("/", (_req, res) => {
     }
     const entries = fs.readdirSync(texturesDir, { withFileTypes: true });
     const ids = entries
-      .filter((e) => e.isFile() && e.name.endsWith(".cbor"))
-      .map((e) => e.name.replace(/\.cbor$/i, ""));
+      .filter((e) => e.isFile() && e.name.endsWith(".cbor.gz"))
+      .map((e) => e.name.replace(/\.cbor\.gz$/i, ""));
     res.json({ ids });
   } catch (error) {
     console.error("Error listing tilesets:", error);
@@ -44,18 +45,28 @@ router.get("/:id", (req, res) => {
       return;
     }
 
-    const outPath = resolve(texturesDir, `${id}.cbor`);
-    if (!fs.existsSync(outPath)) {
+    const gzPath = resolve(texturesDir, `${id}.cbor.gz`);
+    if (!fs.existsSync(gzPath)) {
       res.sendStatus(404);
       return;
     }
-
-    res.type("application/cbor").sendFile(outPath, (err) => {
-      if (err) {
-        console.error("Error sending tileset:", err);
-        if (!res.headersSent) res.sendStatus(500);
+    res.sendFile(
+      gzPath,
+      {
+        headers: {
+          "Content-Type": "application/cbor",
+          "Content-Encoding": "gzip",
+          Vary: "Accept-Encoding",
+        },
+      },
+      (err) => {
+        if (err) {
+          console.error("Error sending gzipped tileset:", err);
+          if (!res.headersSent) res.sendStatus(500);
+        }
       }
-    });
+    );
+    return;
   } catch (error) {
     console.error("Error handling tileset get:", error);
     res.sendStatus(500);
@@ -70,10 +81,8 @@ router.delete("/:id", (req, res) => {
       return;
     }
 
-    const outPath = resolve(texturesDir, `${id}.cbor`);
-    if (fs.existsSync(outPath)) {
-      fs.unlinkSync(outPath);
-    }
+    const gzPath = resolve(texturesDir, `${id}.cbor.gz`);
+    if (fs.existsSync(gzPath)) fs.unlinkSync(gzPath);
 
     res.sendStatus(204);
   } catch (error) {
@@ -112,11 +121,12 @@ router.put("/:id", (req, res) => {
         return;
       }
 
-      // Ignore multipart filename. Always write to <id>.cbor
-      const outPath = resolve(texturesDir, `${id}.cbor`);
+      // Ignore multipart filename. Always write to <id>.cbor.gz
+      const outPath = resolve(texturesDir, `${id}.cbor.gz`);
 
       const buf = fs.readFileSync(incoming.filepath);
-      atomicWriteFileSync(outPath, buf);
+      const gz = gzipSync(buf);
+      atomicWriteFileSync(outPath, gz);
 
       res.sendStatus(204);
     } catch (error) {

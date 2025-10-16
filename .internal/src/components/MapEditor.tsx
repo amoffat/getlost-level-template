@@ -3,7 +3,7 @@ import { LayerName } from "@/editor/collision/types/layer";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
-import { RootState } from "@/store/store";
+import { RootState, store } from "@/store/store";
 import { setToolThunk } from "@/thunks/map";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
@@ -79,6 +79,10 @@ export default function MapEditorTab({
   const onSelectObject = useCallback(
     (obj: any, e: React.MouseEvent) => {
       e.preventDefault();
+      const state = store.getState();
+      if (state.mapEditor.layers.active === LayerName.Meta) {
+        dispatch(actions.setActiveLayer(MapLayerName.World));
+      }
       dispatch(actions.setPlace(obj));
       dispatch(setToolThunk("paint"));
     },
