@@ -3,7 +3,7 @@ import { MapLayerName } from "@/types/layer";
 import { MapObj } from "@/types/reconciler";
 import { Rect } from "@/types/rect";
 import { TileGroup } from "@/types/tilegroup";
-import { MagicPaintOpts, PaintOpts } from "@/types/tools";
+import { ColliderOpts, MagicPaintOpts, PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
 import {
@@ -19,6 +19,7 @@ export const selectedAdapter = createEntityAdapter<MapObj>();
 type ToolOptMapping = {
   paint: PaintOpts;
   "magic-paint": MagicPaintOpts;
+  "add-collider": ColliderOpts;
 };
 
 // Derive the tool names with options directly from the mapping type.
@@ -79,6 +80,7 @@ export const slice = createSlice({
     toolOptions: {
       paint: { mode: "place-once", size: 1, snap: "object" },
       "magic-paint": { candidates: [], gridPosFreeze: null },
+      "add-collider": { type: "box" },
     },
     modeStack: [],
     layers: {

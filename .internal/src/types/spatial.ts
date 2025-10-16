@@ -1,7 +1,7 @@
 import { RootState, store } from "@/store/store";
 import { isVector, Vector } from "@/vec";
 import RBush, { BBox } from "rbush";
-import { BaseMapObj, TileGroupInstance } from "./reconciler";
+import { MapObj } from "./reconciler";
 
 export interface IndexItem {
   id: string;
@@ -13,20 +13,14 @@ export interface IndexItem {
 
 export class SpatialIndex extends RBush<IndexItem> {
   private indexItems = new Map<string, IndexItem>();
-  private selectById: (
-    state: RootState,
-    id: string
-  ) => BaseMapObj | TileGroupInstance | undefined;
+  private selectById: (state: RootState, id: string) => MapObj | undefined;
   private filterLayer: (state: RootState, layer: number) => boolean;
 
   constructor({
     selectById,
     filterLayer,
   }: {
-    selectById: (
-      state: RootState,
-      id: string
-    ) => BaseMapObj | TileGroupInstance | undefined;
+    selectById: (state: RootState, id: string) => MapObj | undefined;
     filterLayer: (state: RootState, layer: number) => boolean;
   }) {
     super();
@@ -63,11 +57,7 @@ export class SpatialIndex extends RBush<IndexItem> {
     return this;
   }
 
-  public getObjects({
-    pos,
-  }: {
-    pos: Vector | BBox;
-  }): (BaseMapObj | TileGroupInstance)[] {
+  public getObjects({ pos }: { pos: Vector | BBox }): MapObj[] {
     let firstPass: IndexItem[];
     if (isVector(pos)) {
       firstPass = this.searchByPos(pos);

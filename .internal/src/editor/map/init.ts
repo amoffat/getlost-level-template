@@ -19,6 +19,7 @@ import { drawBounds } from "./bounds";
 import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
 import { initLayerVisibility } from "./layers";
+import { setupCollider } from "./tools/collider";
 import { setupGateway } from "./tools/gateway";
 import { setupMagicPainter } from "./tools/magicPaint";
 import { setupMover } from "./tools/move";
@@ -132,7 +133,7 @@ export async function init(): Promise<P.Application> {
   g.mapContainer.addChild(worldLayer);
 
   const metaContainer = new P.Container();
-  metaContainer.filters = [new DropShadowFilter()];
+  metaContainer.filters = [new DropShadowFilter({ offset: { x: 0, y: 0 } })];
   g.layerContainers[MapLayerName.Meta] = metaContainer;
   g.mapContainer.addChild(metaContainer);
 
@@ -153,6 +154,7 @@ export async function init(): Promise<P.Application> {
     },
   });
 
+  setupCollider({ cd, spatialIndex });
   setupSelector({ cd, spatialIndex });
   g.mover = setupMover(cd);
   setupPlacer({ cd, spatialIndex });

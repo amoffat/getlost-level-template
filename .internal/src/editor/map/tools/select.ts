@@ -2,7 +2,7 @@ import { actions, selectors as mapEdSelectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { isTileGroupInstance, TileGroupInstance } from "@/types/reconciler";
+import { isColliderBox, isTileGroupInstance, MapObj } from "@/types/reconciler";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";
@@ -104,11 +104,9 @@ class Selector implements ClickDragListener {
       maxY: e.hitbox.br.y,
     };
 
-    const hits = this.spatialIndex
-      .getObjects({
-        pos: searchBounds,
-      })
-      .filter((obj) => isTileGroupInstance(obj));
+    const hits = this.spatialIndex.getObjects({
+      pos: searchBounds,
+    });
 
     // Nothing selected? Clear either the proposed selection (if any) (first
     // click), or the actual selection (second click).
@@ -217,23 +215,32 @@ function clearRectSelect() {
 
 /**
  * Outlines the given objects.
- * @param obs Objects to outline
+ * @param objs Objects to outline
  */
-export function outlineObjects(obs: TileGroupInstance[], zoom: number) {
+export function outlineObjects(objs: MapObj[], zoom: number) {
   clearObjectOutlines();
 
   const stroke = { ...selectStroke, width: (selectStroke.width ?? 1) / zoom };
 
-  for (const obj of obs) {
+  for (const obj of objs) {
     const container = new P.Container();
     g.selectionOutlines.addChild(container);
     container.position.set(obj.x, obj.y);
 
-    drawMaskedOutline({
-      container,
-      frame: obj.frame,
-      stroke,
-    });
+    if (isTileGroupInstance(obj)) {
+      drawMaskedOutline({
+        container,
+        frame: obj.frame,
+        stroke,
+      });
+    } else if (isColliderBox(obj)) {
+      const rect = { ul: { x: 0, y: 0 }, br: { x: obj.width, y: obj.height } };
+      drawMaskedOutline({
+        container,
+        frame: rect,
+        stroke,
+      });
+    }
   }
 }
 
@@ -253,11 +260,7 @@ subState(
     (state) => state.mapEditor.zoomPan.zoom,
   ],
   (selectedObjs, zoom) => {
-    if (selectedObjs) {
-      const objs = selectedObjs.ids.map((id) => selectedObjs.entities[id]);
-      outlineObjects(objs, zoom);
-    } else {
-      clearObjectOutlines();
-    }
+    const objs = selectedObjs.ids.map((id) => selectedObjs.entities[id]);
+    outlineObjects(objs, zoom);
   }
 );

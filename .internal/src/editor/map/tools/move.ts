@@ -4,6 +4,7 @@ import {
   selectors as mapEdSelectors,
 } from "@/slices/mapEditor";
 import { store } from "@/store/store";
+import { isTileGroupInstance } from "@/types/reconciler";
 import { Vector } from "@/vec";
 import {
   ClickDragger,
@@ -105,8 +106,12 @@ export class Mover implements ClickDragListener {
         newPos.x = Math.floor(newPos.x / gridSnap) * gridSnap;
         newPos.y = Math.floor(newPos.y / gridSnap) * gridSnap;
       }
-      const height = obj.frame.br.y - obj.frame.ul.y;
-      const z = newPos.y + height;
+
+      let z = newPos.y;
+      if (isTileGroupInstance(obj)) {
+        const height = obj.frame.br.y - obj.frame.ul.y;
+        z = newPos.y + height;
+      }
 
       updates.push({
         id: objId,

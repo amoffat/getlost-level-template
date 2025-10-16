@@ -4,7 +4,8 @@
   "version": "4.0.0",
   "type": "module",
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
     "@mantine/core": "^8.2.8",

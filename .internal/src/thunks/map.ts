@@ -8,7 +8,7 @@ import {
 import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
-import { BaseMapObj, MapObj, TileGroupInstance } from "@/types/reconciler";
+import { MapObj } from "@/types/reconciler";
 import { loadTileGroup } from "@/utils/tileset";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
@@ -17,7 +17,7 @@ export const loadMapThunk = createAsyncThunk(
   async (_: void, { dispatch }) => {
     dispatch(uiActions.setLoadingMessage(`Loading map...`));
     const persisted = await loadMap();
-    const objs: (BaseMapObj | TileGroupInstance)[] = [];
+    const objs: MapObj[] = [];
     for (const id of persisted.ids) {
       const obj = persisted.entities[id];
       if (obj) objs.push(obj);

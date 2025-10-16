@@ -7,6 +7,10 @@ export interface PaintOpts {
   snap: "grid" | "object" | "free";
 }
 
+export interface ColliderOpts {
+  type: "box" | "ellipse" | "polygon";
+}
+
 export interface MagicPaintOpts {
   candidates: TileGroup[];
   gridPosFreeze: Vector | null;

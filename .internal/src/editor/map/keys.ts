@@ -2,6 +2,7 @@ import { actions as mapActions } from "@/slices/map";
 import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { duplicateSelectionThunk } from "@/thunks/map";
+import { isTileGroupInstance } from "@/types/reconciler";
 import { trackKeyPresses } from "../common/keypress";
 
 export const pressedKeys: Record<string, boolean> = {};
@@ -55,7 +56,9 @@ export function setupKeys(canvas: HTMLCanvasElement) {
           const sel = state.mapEditor.selectedObjs;
           const updates = [];
           for (const obj of Object.values(sel.entities)) {
-            updates.push({ id: obj.id, changes: { flipX: !obj.flipX } });
+            if (isTileGroupInstance(obj)) {
+              updates.push({ id: obj.id, changes: { flipX: !obj.flipX } });
+            }
           }
           store.dispatch(mapEdActions.updateManySelected(updates));
           store.dispatch(mapActions.updateMany(updates));

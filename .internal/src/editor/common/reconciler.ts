@@ -1,12 +1,15 @@
 // pixiReconciler.ts
 import {
   BaseMapObj,
+  isColliderBox,
+  isColliderEllipse,
   isTileGroupInstance,
   TileGroupInstance,
   UpdatableParams,
 } from "@/types/reconciler";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
+import { colliderFill } from "./strokes";
 
 // Create an RBush index item from a node's world-space bounds
 function makeIndexItem(id: string, node: P.Container): IndexItem {
@@ -184,6 +187,28 @@ export class ReduxReconciler {
       spriteContainer.scale.set(1 + padding); // avoid bleeding
 
       return spriteContainer;
+    } else if (isColliderEllipse(obj)) {
+      const gfx = new P.Graphics();
+      gfx.interactive = false;
+      gfx.ellipse(0, 0, obj.radiusX, obj.radiusY);
+      const container = new P.Container();
+      container.label = obj.id;
+      container.position.set(obj.x, obj.y);
+      container.zIndex = obj.z;
+      container.addChild(gfx);
+      container.interactive = true;
+      return container;
+    } else if (isColliderBox(obj)) {
+      const gfx = new P.Graphics();
+      gfx.interactive = false;
+      gfx.rect(0, 0, obj.width, obj.height).fill(colliderFill);
+      const container = new P.Container();
+      container.label = obj.id;
+      container.position.set(obj.x, obj.y);
+      container.zIndex = obj.z;
+      container.addChild(gfx);
+      container.interactive = true;
+      return container;
     } else {
       throw new Error("Unsupported MapObj type");
     }

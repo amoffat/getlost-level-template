@@ -40,3 +40,15 @@ export function isTileGroupInstance(
 ): obj is TileGroupInstance {
   return (obj as TileGroupInstance).tileId !== undefined;
 }
+
+export function isColliderEllipse(obj: Partial<BaseMapObj>): obj is EllipseObj {
+  return (obj as EllipseObj).radiusX !== undefined;
+}
+
+export function isColliderPoly(obj: Partial<BaseMapObj>): obj is PolyObj {
+  return (obj as PolyObj).points !== undefined;
+}
+
+export function isColliderBox(obj: Partial<BaseMapObj>): obj is BoxObj {
+  return (obj as BoxObj).width !== undefined;
+}

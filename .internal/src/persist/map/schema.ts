@@ -2,7 +2,7 @@
 // (see `.internal/src/slices/map.ts`). Versioning allows future structural
 // changes (e.g. spatial index, layering metadata, etc.) to be migrated.
 
-import { BaseMapObj, TileGroupInstance } from "@/types/reconciler";
+import { MapObj } from "@/types/reconciler";
 
 export interface BaseMapDoc {
   version: number;
@@ -11,7 +11,7 @@ export interface BaseMapDoc {
 export interface MapEntitiesState {
   ids: string[];
   // A mix of MapObj and TileGroupInstance (TileGroupInstance extends MapObj)
-  entities: Record<string, BaseMapObj | TileGroupInstance>;
+  entities: Record<string, MapObj>;
 }
 
 export interface MapDocV1 extends BaseMapDoc {

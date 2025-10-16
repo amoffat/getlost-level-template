@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
-import { TileGroupInstance } from "@/types/editor";
+import { isTileGroupInstance, TileGroupInstance } from "@/types/reconciler";
 import { Checkbox, Group, Stack } from "@mantine/core";
 import { useCallback } from "react";
 import { DynamicHoverCard } from "./DynamicHoverCard";
@@ -30,6 +30,8 @@ export default function ObjSelHover() {
 
   const items = [];
   for (const obj of proposed.objects) {
+    if (!isTileGroupInstance(obj)) continue;
+
     const group = tilesets[obj.tilesetId].palette[obj.tileId];
     const entry = (
       <Checkbox.Card

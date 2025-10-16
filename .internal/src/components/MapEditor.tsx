@@ -35,6 +35,7 @@ import { use, useCallback, useEffect, useMemo, useRef } from "react";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
+import AddCollider from "./toolOptions/AddCollider";
 import MagicPaint from "./toolOptions/MagicPaint";
 import Paint from "./toolOptions/Paint";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
@@ -126,6 +127,7 @@ export default function MapEditorTab({
         icon: <IconCarCrash size={16} />,
         switchToLayer: MapLayerName.Meta,
         canActivate: true,
+        options: <AddCollider />,
       },
 
       "set-sensor-zone": {

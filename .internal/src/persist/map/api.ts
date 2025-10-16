@@ -1,12 +1,12 @@
 import { log } from "@/log";
-import { BaseMapObj, TileGroupInstance } from "@/types/reconciler";
+import { MapObj } from "@/types/reconciler";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
 import { BaseMapDoc, LatestMapDoc, latestVersion } from "./schema";
 
 export interface PersistedObjectsState {
   ids: string[];
-  entities: Record<string, BaseMapObj | TileGroupInstance>;
+  entities: Record<string, MapObj>;
 }
 
 export async function loadMap(): Promise<PersistedObjectsState> {

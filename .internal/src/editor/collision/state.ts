@@ -1,5 +1,5 @@
 import { Mode } from "@/types/editors/collision";
-import { BaseMapObj, TileGroupInstance } from "@/types/reconciler";
+import { MapObj, TileGroupInstance } from "@/types/reconciler";
 import { TileGroup } from "@/types/tilegroup";
 import { PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
@@ -14,9 +14,9 @@ import {
 import { MapLayerName } from "../../types/layer";
 import { createObjectsState } from "../common/redux";
 
-export const selectedAdapter = createEntityAdapter<BaseMapObj>();
+export const selectedAdapter = createEntityAdapter<MapObj>();
 
-export const objects = createObjectsState<BaseMapObj>("collisionObjects");
+export const objects = createObjectsState<MapObj>("collisionObjects");
 
 type ToolOptMapping = {
   paint: PaintOpts;
@@ -42,7 +42,7 @@ interface CollisionEditorState {
     obj: TileGroup | null;
     flipX: boolean;
   };
-  selectedObjs: EntityState<BaseMapObj, string>;
+  selectedObjs: EntityState<MapObj, string>;
   proposedSelection: {
     objects: TileGroupInstance[];
     pos: Vector;
