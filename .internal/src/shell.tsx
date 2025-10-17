@@ -2,6 +2,7 @@ import { MantineProvider, MantineThemeOverride } from "@mantine/core";
 import "@mantine/core/styles.css";
 import { createRoot } from "react-dom/client";
 import { Provider as ReduxProvider } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
 import { ShellApp } from "./components/ShellApp";
 import { CommsProvider } from "./components/providers/CommsProvider";
 import { store } from "./store/store";
@@ -29,7 +30,9 @@ export default function App() {
     <ReduxProvider store={store}>
       <MantineProvider defaultColorScheme="dark" theme={theme}>
         <CommsProvider>
-          <ShellApp />
+          <BrowserRouter>
+            <ShellApp />
+          </BrowserRouter>
         </CommsProvider>
       </MantineProvider>
     </ReduxProvider>

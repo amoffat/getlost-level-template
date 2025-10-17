@@ -206,7 +206,7 @@ export default function MapEditorTab({
   return (
     <>
       <Flex h="100dvh" style={{ flex: 1 }}>
-        <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
+        <Stack miw={300} h="100%" style={{ flex: 1, overflow: "hidden" }}>
           <Fieldset legend="Layers">
             <Stack p={0}>
               <LayerList
@@ -302,7 +302,7 @@ export default function MapEditorTab({
           </Stack>
         </Flex>
 
-        <Stack miw={200} style={{ flex: 1 }}>
+        <Stack miw={300} style={{ flex: 1 }}>
           <ToolPalette
             tools={toolPalette}
             activeTool={selectedToolName}

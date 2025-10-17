@@ -2,6 +2,7 @@ import { init as mapInit } from "@/editor/map/init";
 import { init as tsInit } from "@/editor/tileset/init";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { tabToPath } from "@/routes/tabs";
 import { actions as uiActions } from "@/slices/ui";
 import { loadMapThunk } from "@/thunks/map";
 import { loadTilesetsThunk } from "@/thunks/tileset";
@@ -15,6 +16,7 @@ import { IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 import { log } from "../log";
 import DialogueTab from "./Dialogue";
 import MapEditorTab from "./MapEditor";
@@ -43,6 +45,8 @@ declare global {
 
 export function ShellApp() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [draggedFiles, setDraggedFiles] = useState<File[] | null>(null);
   const [assetTypeOpened, { open: openAssetType, close: closeAssetType }] =
     useDisclosure(false);
@@ -57,8 +61,6 @@ export function ShellApp() {
     shallowEqual
   );
 
-  // Initial data loading now handled via Suspense boundaries below.
-
   const handleTabChange = (value: TabName | null) => {
     if (!value) return;
 
@@ -66,6 +68,15 @@ export function ShellApp() {
     dispatch(uiActions.setTab(value));
     dispatch(uiActions.mountTab(value));
   };
+
+  // Sync URL path to active tab
+  useEffect(() => {
+    const canonical = tabToPath(activeTab);
+    if (location.pathname !== canonical) {
+      navigate(canonical, { replace: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   useEffect(() => {
     if (import.meta.hot) {
