@@ -19,6 +19,6 @@ export const colliderStroke: P.StrokeStyle = {
 };
 
 export const colliderFill: P.FillStyle = {
-  color: 0xffffff,
+  color: 0x000000,
   alpha: 0.5,
 };

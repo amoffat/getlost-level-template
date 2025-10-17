@@ -12,12 +12,10 @@ import {
   Flex,
   Group,
   Portal,
-  Radio,
   Stack,
   Switch,
   Tabs,
   Text,
-  Tooltip,
 } from "@mantine/core";
 import {
   IconBulb,
@@ -33,6 +31,7 @@ import {
 } from "@tabler/icons-react";
 import { use, useCallback, useEffect, useMemo, useRef } from "react";
 import HelpHoverCard from "./HelpHoverCard";
+import LayerList, { Layer } from "./LayerList";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
 import AddCollider from "./toolOptions/AddCollider";
@@ -69,8 +68,8 @@ export default function MapEditorTab({
   }, []);
 
   const changeActiveLayer = useCallback(
-    (id: string) => {
-      dispatch(actions.setActiveLayer(Number.parseInt(id) as MapLayerName));
+    (id: number) => {
+      dispatch(actions.setActiveLayer(id as MapLayerName));
       dispatch(actions.setLockInactiveLayer(true));
     },
     [dispatch]
@@ -113,19 +112,19 @@ export default function MapEditorTab({
       "set-gateway": {
         name: "Set gateway",
         icon: <IconDoorExit size={16} />,
-        switchToLayer: MapLayerName.Meta,
+        switchToLayer: MapLayerName.Places,
         canActivate: true,
       },
       "set-waypoint": {
         name: "Set waypoint",
         icon: <IconMapPin size={16} />,
-        switchToLayer: MapLayerName.Meta,
+        switchToLayer: MapLayerName.Places,
         canActivate: true,
       },
       "add-collider": {
         name: "Add collider",
         icon: <IconCarCrash size={16} />,
-        switchToLayer: MapLayerName.Meta,
+        switchToLayer: MapLayerName.Colliders,
         canActivate: true,
         options: <AddCollider />,
       },
@@ -133,31 +132,31 @@ export default function MapEditorTab({
       "set-sensor-zone": {
         name: "Sensor zone",
         icon: <IconInputSpark size={16} />,
-        switchToLayer: MapLayerName.Meta,
+        switchToLayer: MapLayerName.Colliders,
         canActivate: true,
       },
       "set-sink-zone": {
         name: "Sink zone",
         icon: <IconRipple size={16} />,
-        switchToLayer: MapLayerName.Meta,
+        switchToLayer: MapLayerName.Colliders,
         canActivate: true,
       },
       "set-sound-zone": {
         name: "Sound zone",
         icon: <IconEar size={16} />,
-        switchToLayer: MapLayerName.Meta,
+        switchToLayer: MapLayerName.Colliders,
         canActivate: true,
       },
       "set-zoom-zone": {
         name: "Zoom zone",
         icon: <IconCameraSearch size={16} />,
-        switchToLayer: MapLayerName.Meta,
+        switchToLayer: MapLayerName.Colliders,
         canActivate: true,
       },
       "add-light": {
         name: "Add light",
         icon: <IconBulb size={16} />,
-        switchToLayer: MapLayerName.Meta,
+        switchToLayer: MapLayerName.Colliders,
         canActivate: false,
       },
     }),
@@ -178,69 +177,62 @@ export default function MapEditorTab({
     dispatch(setToolThunk(null));
   }, [dispatch]);
 
+  const layerList: Layer[] = useMemo(() => {
+    return [
+      {
+        id: MapLayerName.Colliders,
+        name: "Colliders",
+        description: "Objects that stop character movement",
+      },
+      {
+        id: MapLayerName.World,
+        name: "World",
+        description:
+          "Objects that can appear in front of and behind a character",
+      },
+      {
+        id: MapLayerName.Ground,
+        name: "Ground",
+        description: "Ground objects are always rendered beneath the character",
+      },
+      {
+        id: MapLayerName.Places,
+        name: "Places",
+        description: "Special locations like gateways and waypoints",
+      },
+    ];
+  }, []);
+
   return (
     <>
       <Flex h="100dvh" style={{ flex: 1 }}>
         <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
-          <Fieldset legend="Active layer">
-            <Radio.Group
-              onChange={changeActiveLayer}
-              value={layers.active.toString()}
-            >
-              <Stack p={0}>
-                <Tooltip
-                  multiline
-                  withArrow
-                  position="left"
-                  w={200}
-                  openDelay={500}
-                  label="The meta layer is reserved for special map features like sensors, sound zones, and lights"
-                  refProp="rootRef"
-                >
-                  <Radio value={LayerName.Meta.toString()} label="Meta" />
-                </Tooltip>
-                <Tooltip
-                  multiline
-                  withArrow
-                  position="left"
-                  w={200}
-                  openDelay={500}
-                  label="World objects can appear in front of and behind a character, as the character moves around it"
-                  refProp="rootRef"
-                >
-                  <Radio value={LayerName.World.toString()} label="World" />
-                </Tooltip>
-                <Tooltip
-                  multiline
-                  withArrow
-                  position="left"
-                  w={200}
-                  openDelay={500}
-                  label="Ground tiles always appear underneath a character"
-                  refProp="rootRef"
-                >
-                  <Radio value={LayerName.Ground.toString()} label="Ground" />
-                </Tooltip>
-                <Switch
-                  label="Lock inactive layer"
-                  checked={layers.lockInactive}
-                  onChange={(event) => {
-                    dispatch(
-                      actions.setLockInactiveLayer(event.currentTarget.checked)
-                    );
-                  }}
-                />
-                <Switch
-                  label="Dim inactive layer"
-                  checked={layers.dimInactive}
-                  onChange={(event) => {
-                    dispatch(
-                      actions.setDimInactiveLayer(event.currentTarget.checked)
-                    );
-                  }}
-                />
-              </Stack>
-            </Radio.Group>
+          <Fieldset legend="Layers">
+            <Stack p={0}>
+              <LayerList
+                layers={layerList}
+                selected={layers.active}
+                onChange={changeActiveLayer}
+              />
+              <Switch
+                label="Lock inactive layer"
+                checked={layers.lockInactive}
+                onChange={(event) => {
+                  dispatch(
+                    actions.setLockInactiveLayer(event.currentTarget.checked)
+                  );
+                }}
+              />
+              <Switch
+                label="Dim inactive layer"
+                checked={layers.dimInactive}
+                onChange={(event) => {
+                  dispatch(
+                    actions.setDimInactiveLayer(event.currentTarget.checked)
+                  );
+                }}
+              />
+            </Stack>
           </Fieldset>
 
           <Fieldset legend="Grid">

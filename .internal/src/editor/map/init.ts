@@ -132,10 +132,14 @@ export async function init(): Promise<P.Application> {
   g.layerContainers[MapLayerName.World] = worldLayer;
   g.mapContainer.addChild(worldLayer);
 
-  const metaContainer = new P.Container();
-  metaContainer.filters = [new DropShadowFilter({ offset: { x: 0, y: 0 } })];
-  g.layerContainers[MapLayerName.Meta] = metaContainer;
-  g.mapContainer.addChild(metaContainer);
+  const colliderLayer = new P.Container();
+  g.layerContainers[MapLayerName.Colliders] = colliderLayer;
+  g.mapContainer.addChild(colliderLayer);
+
+  const placesLayer = new P.Container();
+  placesLayer.filters = [new DropShadowFilter({ offset: { x: 0, y: 0 } })];
+  g.layerContainers[MapLayerName.Places] = placesLayer;
+  g.mapContainer.addChild(placesLayer);
 
   gApp.mapEditorReconciler.attachCanvas({
     layerContainers: g.layerContainers,

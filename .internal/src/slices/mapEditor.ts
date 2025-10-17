@@ -50,6 +50,7 @@ interface MapEditorState {
   } | null;
   layers: {
     active: number;
+    visible: number[];
     lockInactive: boolean;
     dimInactive: boolean;
   };
@@ -84,7 +85,12 @@ export const slice = createSlice({
     },
     modeStack: [],
     layers: {
-      active: 0,
+      active: MapLayerName.Ground,
+      visible: [
+        MapLayerName.Ground,
+        MapLayerName.World,
+        MapLayerName.Colliders,
+      ],
       lockInactive: true,
       dimInactive: false,
     },

@@ -8,16 +8,19 @@ import { slice as dialogueSlice } from "@/slices/dialogue";
 import { slice as mapSlice } from "@/slices/map";
 import { slice as mapEditorSlice } from "@/slices/mapEditor";
 import { slice as npcEditorSlice } from "@/slices/npcEditor";
+import { slice as storySlice } from "@/slices/story";
 import { slice as tilesetEditorSlice } from "@/slices/tilesetEditor";
 import { slice as uiSlice } from "@/slices/ui";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { makeEditorSyncMiddleware } from "./middleware/map";
 import autosaveMapMiddleware from "./middleware/map/autosave";
+import autosaveStoryMiddleware from "./middleware/story/autosave";
 import autosaveTilesetMiddleware from "./middleware/tileset/autosave";
 
 export const rootReducer = combineReducers({
   dialogue: dialogueSlice.reducer,
+  story: storySlice.reducer,
   tilesetEditor: tilesetEditorSlice.reducer,
   mapEditor: mapEditorSlice.reducer,
   npcEditor: npcEditorSlice.reducer,
@@ -45,6 +48,7 @@ export const store = configureStore({
     getDefaultMiddleware().prepend(
       autosaveTilesetMiddleware,
       autosaveMapMiddleware,
+      autosaveStoryMiddleware,
       mapMiddleware,
       collisionMiddleware
     ),

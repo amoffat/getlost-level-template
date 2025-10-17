@@ -1,5 +1,6 @@
 import { log } from "@/log";
 import { MapObj } from "@/types/reconciler";
+import { applyMigrations } from "@/utils/migrations";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
 import { BaseMapDoc, LatestMapDoc, latestVersion } from "./schema";
@@ -18,19 +19,8 @@ export async function loadMap(): Promise<PersistedObjectsState> {
   if (!res.ok) throw new Error(`loadMap failed: ${res.status}`);
 
   const migrations = await getMigrations();
-  const maxVersion = migrations.reduce((max, m) => Math.max(max, m.to), 1);
-
   const baseDecoded = decode<BaseMapDoc>(await res.bytes());
-  const startVersion = baseDecoded.version;
-  let migrated = false;
-  for (const migration of migrations) {
-    if (migration.from >= startVersion && migration.to <= maxVersion) {
-      log.info(`Applying map migration: ${migration.from} -> ${migration.to}`);
-      await migration.migrate(baseDecoded);
-      baseDecoded.version = migration.to;
-      migrated = true;
-    }
-  }
+  const migrated = await applyMigrations(baseDecoded, migrations);
 
   const decoded = baseDecoded as LatestMapDoc;
   const objects = decoded.objects;

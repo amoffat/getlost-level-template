@@ -1,6 +1,6 @@
 import { log } from "@/log";
-import { saveMap as persistMap } from "@/persist/map/api";
-import { slice } from "@/slices/map";
+import { saveStory } from "@/persist/story/api";
+import { slice } from "@/slices/story";
 import { type RootState } from "@/store/store";
 import { AppStartListening } from "@/types/redux";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
@@ -9,25 +9,23 @@ import { catchError, concatMap, debounceTime, tap } from "rxjs/operators";
 
 const listenerMiddleware = createListenerMiddleware();
 
-// Persistence function (wrap real API and swallow large payload logging)
-async function saveMap(mapState: any) {
-  await persistMap(mapState);
-  log.info("[autosave] Map saved (objects: %d)", mapState.ids?.length ?? 0);
-}
-
-// Stream of save requests for the single map
-const saveRequests$ = new Subject<{ map: RootState["map"] }>();
+// Stream of save requests for the single story
+const saveRequests$ = new Subject<{ story: RootState["story"] }>();
 
 saveRequests$
   .pipe(
     debounceTime(500), // collapse rapid bursts of actions
-    concatMap(({ map }) =>
-      from(saveMap(map)).pipe(
+    concatMap(({ story }) =>
+      from(saveStory(story.nodes, story.edges)).pipe(
         tap(() => {
-          // If a future 'markSaved' action is added to the map slice, dispatch it here.
+          log.info(
+            "[autosave] Story saved (nodes: %d, edges: %d)",
+            story.nodes.length,
+            story.edges.length
+          );
         }),
         catchError((e) => {
-          log.error({ e }, "Map autosave failed");
+          log.error({ e }, "Story autosave failed");
           return EMPTY;
         })
       )
@@ -39,11 +37,10 @@ const startAppListening =
   listenerMiddleware.startListening as AppStartListening;
 
 startAppListening({
-  // Any action from the map slice
   predicate: (action) => action.type.startsWith(slice.name),
   effect: async (_action, { getState }) => {
     const state = getState();
-    saveRequests$.next({ map: state.map });
+    saveRequests$.next({ story: state.story });
   },
 });
 

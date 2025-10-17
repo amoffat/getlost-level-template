@@ -28,3 +28,30 @@ export function buildMigrations<TBaseDoc>(
   migrations.sort((a, b) => a.from - b.from);
   return migrations;
 }
+
+// Apply a sequence of migrations to a mutable document in-place.
+// Runs migrations where the current doc.version exactly matches `from`,
+// chaining them forward until no further migration applies. Returns true
+// if at least one migration was applied.
+export async function applyMigrations<TDoc extends { version: number }>(
+  doc: TDoc,
+  migrations: GenericMigration<TDoc>[]
+): Promise<boolean> {
+  if (!migrations.length) return false;
+
+  // Ensure deterministic order (by `from`).
+  const ordered = [...migrations].sort((a, b) => a.from - b.from);
+
+  let applied = false;
+  // Keep trying to advance as long as there is a migration whose `from`
+  // equals the current document version.
+  while (true) {
+    const next = ordered.find((m) => m.from === doc.version);
+    if (!next) break;
+    await next.migrate(doc);
+    doc.version = next.to;
+    applied = true;
+  }
+
+  return applied;
+}

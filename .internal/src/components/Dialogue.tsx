@@ -13,6 +13,7 @@ import {
   Background,
   BackgroundVariant,
   Controls,
+  MiniMap,
   OnConnect,
   OnEdgesChange,
   OnNodesChange,
@@ -117,9 +118,11 @@ export default function DialogueTab() {
     <Flex style={{ height: "100dvh" }}>
       <div ref={flowContainerRef} style={{ flex: 4 }}>
         <ReactFlow
+          id="dialogue-flow"
           colorMode="dark"
           //   snapToGrid={true}
           snapGrid={[20, 20]}
+          panOnDrag={[2]}
           nodes={nodes}
           edges={edges}
           onNodeClick={onSelectNode}
@@ -130,6 +133,7 @@ export default function DialogueTab() {
           onPaneClick={() => setNodeId(null)}
           fitView
         >
+          <MiniMap pannable zoomable />
           <Background color="#505050ff" variant={BackgroundVariant.Dots} />
           <Controls position="top-left"></Controls>
           <Panel position="top-center">

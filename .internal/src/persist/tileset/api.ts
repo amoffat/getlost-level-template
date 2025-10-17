@@ -1,5 +1,6 @@
 import { log } from "@/log";
 import { Tileset } from "@/types/tileset";
+import { applyMigrations } from "@/utils/migrations";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
 import { BaseTilesetDoc, LatestTilesetDoc, latestVersion } from "./schema";
@@ -25,20 +26,8 @@ export async function loadTileset(id: string): Promise<Tileset> {
 
   // Apply all applicable migrations to bring the doc up to the latest version
   const migrations = await getMigrations();
-  const latestVersion = migrations.reduce((max, m) => Math.max(max, m.to), 0);
-
   const baseDecoded = decode<BaseTilesetDoc>(await res.bytes());
-  const startVersion = baseDecoded.version;
-  let migrated = false;
-
-  for (const migration of migrations) {
-    if (migration.from >= startVersion && migration.to <= latestVersion) {
-      log.info(`Applying migration: ${migration.from} -> ${migration.to}`);
-      await migration.migrate(baseDecoded);
-      baseDecoded.version = migration.to;
-      migrated = true;
-    }
-  }
+  const migrated = await applyMigrations(baseDecoded, migrations);
 
   const decoded = baseDecoded as LatestTilesetDoc;
   const ts = decoded.tileset;

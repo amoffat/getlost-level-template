@@ -21,6 +21,7 @@ import MapEditorTab from "./MapEditor";
 import NpcEditorTab from "./NpcEditor";
 import PanelLoader from "./PanelLoader";
 import PreviewTab from "./Preview";
+import StoryTab from "./StoryTab";
 import TilesetEditorTab from "./TilesetEditor";
 import UploadAssetModal from "./UploadAssetModal";
 
@@ -158,6 +159,7 @@ export function ShellApp() {
               <Tabs.Tab value="map-editor">Map</Tabs.Tab>
               <Tabs.Tab value="tileset-editor">Tilesets</Tabs.Tab>
               <Tabs.Tab value="npc-editor">NPCs</Tabs.Tab>
+              <Tabs.Tab value="story-editor">Story</Tabs.Tab>
               <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
               <Tabs.Tab value="preview">Level Preview</Tabs.Tab>
             </Tabs.List>
@@ -194,6 +196,14 @@ export function ShellApp() {
               <Tabs.Panel value="dialogue-editor">
                 <ReactFlowProvider>
                   <DialogueTab />
+                </ReactFlowProvider>
+              </Tabs.Panel>
+            )}
+
+            {mountedTabs["story-editor"] && (
+              <Tabs.Panel value="story-editor">
+                <ReactFlowProvider>
+                  <StoryTab />
                 </ReactFlowProvider>
               </Tabs.Panel>
             )}

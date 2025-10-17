@@ -1,8 +1,8 @@
-import { LayerName } from "@/editor/collision/types/layer";
 import { actions } from "@/slices/map";
 import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Mode } from "@/types/editor";
+import { MapLayerName } from "@/types/layer";
 import { TileGroupInstance } from "@/types/reconciler";
 import { SpatialIndex } from "@/types/spatial";
 import { Vector } from "@/vec";
@@ -64,7 +64,7 @@ export class Gateway implements ClickDragListener {
     const ms = state.mapEditor;
 
     const pos = g.placableContainer.position;
-    const layer = LayerName.Meta;
+    const layer = MapLayerName.Places;
 
     const place = ms.place;
     const obj = place.obj!;
