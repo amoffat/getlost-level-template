@@ -78,21 +78,6 @@ export function ShellApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
-  useEffect(() => {
-    if (import.meta.hot) {
-      const fn = () => {
-        log.info({ dev: true, color: "green" }, "Reloading level");
-        // FIXME lift state
-        // setReloadCount((c) => c + 1);
-      };
-      import.meta.hot.on("gl:level-reload", fn);
-
-      return () => {
-        import.meta.hot!.off("gl:level-reload", fn);
-      };
-    }
-  }, []);
-
   const onDrop = useCallback(
     (files: FileWithPath[]) => {
       setDraggedFiles(files);

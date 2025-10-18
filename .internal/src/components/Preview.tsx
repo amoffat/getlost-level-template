@@ -11,6 +11,20 @@ export default function PreviewTab() {
   const [reloadCount, setReloadCount] = useState(0);
 
   useEffect(() => {
+    if (import.meta.hot) {
+      const fn = () => {
+        log.info({ dev: true, color: "green" }, "Reloading level");
+        setReloadCount((c) => c + 1);
+      };
+      import.meta.hot.on("gl:level-reload", fn);
+
+      return () => {
+        import.meta.hot!.off("gl:level-reload", fn);
+      };
+    }
+  }, []);
+
+  useEffect(() => {
     if (!comms) return;
 
     comms.addMessageListener<SavePathGraphRequest>({

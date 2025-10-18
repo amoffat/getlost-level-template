@@ -25,6 +25,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../hooks/redux";
 import type { RootState } from "../store/store";
+import StoryNode from "./StoryNode";
 
 export default function StoryTab() {
   const [_nodeId, setNodeId] = useState<string | null>(null);
@@ -84,6 +85,7 @@ export default function StoryTab() {
           //   snapToGrid={true}
           snapGrid={[20, 20]}
           panOnDrag={[2]}
+          nodeTypes={{ default: StoryNode }}
           nodes={nodes}
           edges={edges}
           onNodeClick={onSelectNode}
