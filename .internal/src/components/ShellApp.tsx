@@ -2,17 +2,17 @@ import { init as mapInit } from "@/editor/map/init";
 import { init as tsInit } from "@/editor/tileset/init";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { tabToPath } from "@/routes/tabs";
+import { pathToTab, tabToPath } from "@/routes/tabs";
 import { actions as uiActions } from "@/slices/ui";
 import { loadMapThunk } from "@/thunks/map";
 import { loadTilesetsThunk } from "@/thunks/tileset";
 import { TabName } from "@/types/tab";
-import { AppShell, Group, Tabs, Text } from "@mantine/core";
+import { AppShell, Box, Button, Group, Modal, Tabs, Text } from "@mantine/core";
 import "@mantine/core/styles.css";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import "@mantine/dropzone/styles.css";
 import { useDisclosure } from "@mantine/hooks";
-import { IconUpload, IconX } from "@tabler/icons-react";
+import { IconHelp, IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual } from "react-redux";
@@ -50,8 +50,9 @@ export function ShellApp() {
   const [draggedFiles, setDraggedFiles] = useState<File[] | null>(null);
   const [assetTypeOpened, { open: openAssetType, close: closeAssetType }] =
     useDisclosure(false);
-  // Select only the fields we need and use shallowEqual so unrelated ui changes
-  // don't cause ShellApp to re-render.
+  const [helpOpened, { open: openHelp, close: closeHelp }] =
+    useDisclosure(false);
+
   const { activeTab, mountedTabs, loadingMessage } = useAppSelector(
     (state) => ({
       activeTab: state.ui.activeTab,
@@ -61,22 +62,29 @@ export function ShellApp() {
     shallowEqual
   );
 
-  const handleTabChange = (value: TabName | null) => {
-    if (!value) return;
+  const handleTabChange = useCallback(
+    (value: TabName | null) => {
+      if (!value) return;
 
-    dispatch(uiActions.setLoadingMessage(null));
-    dispatch(uiActions.setTab(value));
-    dispatch(uiActions.mountTab(value));
-  };
+      // Navigate to the canonical URL for the selected tab; the URL change
+      // will be observed below and will dispatch Redux updates.
+      const canonical = tabToPath(value);
+      if (location.pathname !== canonical) {
+        navigate(canonical);
+      }
+    },
+    [navigate, location.pathname]
+  );
 
-  // Sync URL path to active tab
+  // When the URL path changes, update Redux tab state to match
   useEffect(() => {
-    const canonical = tabToPath(activeTab);
-    if (location.pathname !== canonical) {
-      navigate(canonical, { replace: false });
+    const nextTab = pathToTab(location.pathname);
+    if (nextTab !== activeTab) {
+      dispatch(uiActions.setLoadingMessage(null));
+      dispatch(uiActions.setTab(nextTab));
+      dispatch(uiActions.mountTab(nextTab));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, [location.pathname, activeTab, dispatch]);
 
   const onDrop = useCallback(
     (files: FileWithPath[]) => {
@@ -117,6 +125,19 @@ export function ShellApp() {
         />
       )}
 
+      <Modal
+        opened={helpOpened}
+        onClose={closeHelp}
+        title="Help"
+        size="xl"
+        centered
+      >
+        <Text>
+          This is placeholder help content. Add quick tips, links to docs, and
+          onboarding steps here.
+        </Text>
+      </Modal>
+
       <Dropzone.FullScreen onDrop={onDrop} multiple>
         <Group
           justify="center"
@@ -151,13 +172,28 @@ export function ShellApp() {
             value={activeTab}
             onChange={(tab) => handleTabChange(tab as TabName)}
           >
-            <Tabs.List>
+            <Tabs.List style={{ alignItems: "center" }}>
               <Tabs.Tab value="map-editor">Map</Tabs.Tab>
               <Tabs.Tab value="tileset-editor">Tilesets</Tabs.Tab>
               <Tabs.Tab value="npc-editor">NPCs</Tabs.Tab>
               <Tabs.Tab value="story-editor">Story</Tabs.Tab>
               <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
               <Tabs.Tab value="preview">Level Preview</Tabs.Tab>
+              <Box
+                mr="sm"
+                ml="auto"
+                style={{ display: "flex", alignItems: "center" }}
+              >
+                <Button
+                  size="compact-xs"
+                  leftSection={<IconHelp size={18} />}
+                  color="orange"
+                  variant="filled"
+                  onClick={openHelp}
+                >
+                  Help
+                </Button>
+              </Box>
             </Tabs.List>
 
             {mountedTabs["preview"] && (
