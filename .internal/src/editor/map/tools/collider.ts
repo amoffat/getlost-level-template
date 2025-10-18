@@ -29,7 +29,7 @@ export class Collider implements ClickDragListener {
 
     this.paint = false;
 
-    const rect = e.hitbox;
+    const rect = e.snappedHitbox;
     const pos = {
       x: rect.ul.x,
       y: rect.ul.y,
@@ -76,10 +76,10 @@ export class Collider implements ClickDragListener {
 
       this.gfx.clear();
 
-      const width = e.hitbox.br.x - e.hitbox.ul.x;
-      const height = e.hitbox.br.y - e.hitbox.ul.y;
+      const width = e.snappedHitbox.br.x - e.snappedHitbox.ul.x;
+      const height = e.snappedHitbox.br.y - e.snappedHitbox.ul.y;
       this.gfx
-        .rect(e.hitbox.ul.x, e.hitbox.ul.y, width, height)
+        .rect(e.snappedHitbox.ul.x, e.snappedHitbox.ul.y, width, height)
         .fill(colliderFill);
       // .stroke(colliderStroke);
     }

@@ -146,6 +146,8 @@ export async function init(): Promise<P.Application> {
     spatialIndex,
   });
 
+  const keyPresses = setupKeys(canvas);
+
   const cd = new ClickDragger({
     app,
     container: stage,
@@ -155,6 +157,11 @@ export async function init(): Promise<P.Application> {
         pos: localPos,
       });
       return hits.map((h) => h.id);
+    },
+    getGridSnap: () => {
+      if (!keyPresses["Control"]) return null;
+      const state = store.getState();
+      return state.mapEditor.grid.size;
     },
   });
 
@@ -194,8 +201,6 @@ export async function init(): Promise<P.Application> {
   canvas.addEventListener("mouseout", () => {
     canvas.blur();
   });
-
-  setupKeys(canvas);
 
   function redrawLayout() {
     const parent = document.getElementById(constants.mapEditorContainerId)!;

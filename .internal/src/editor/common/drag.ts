@@ -9,6 +9,7 @@ export interface PointerEventData {
   button?: "left" | "right";
   pagePos: Vector;
   hitbox: Rect;
+  snappedHitbox: Rect;
   hoverIds: string[];
   moved: boolean;
   globalMoveVector: Vec2;
@@ -21,16 +22,6 @@ export interface ClickDragListener {
   pointerUp?: (e: PointerEventData) => void;
   pointerDrag?: (e: PointerEventData) => void;
   pointerMove?: (e: PointerEventData) => void;
-}
-
-function maybeSnap(pos: Vector, gridSnap: number | null): Vector {
-  return pos;
-  // TODO
-  if (!gridSnap) return pos;
-  return {
-    x: Math.floor(pos.x / gridSnap) * gridSnap,
-    y: Math.floor(pos.y / gridSnap) * gridSnap,
-  };
 }
 
 export class ClickDragger {
@@ -65,12 +56,11 @@ export class ClickDragger {
     this.getGridSnap = getGridSnap;
 
     container.addEventListener("pointermove", (e) => {
-      this.dragEnd = Vec2.fromPoint(
-        maybeSnap(e.getLocalPosition(this.coordsRelativeTo), this.getGridSnap())
-      );
+      this.dragEnd = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
       const ev: PointerEventData = {
         localPos: this.dragEnd,
         hitbox: this.makeHitbox(),
+        snappedHitbox: this.makeHitbox(true),
         hoverIds: this.hoverObject(e),
         moved: this.moved,
         globalMoveVector: this.globalMoveVector,
@@ -117,6 +107,7 @@ export class ClickDragger {
         localPos: Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo)),
         button: e.button === 0 ? "left" : e.button === 2 ? "right" : undefined,
         hitbox: this.makeHitbox(),
+        snappedHitbox: this.makeHitbox(true),
         hoverIds: hoveredIds,
         moved: this.moved,
         globalMoveVector: this.globalMoveVector,
@@ -138,6 +129,7 @@ export class ClickDragger {
         localPos,
         button: e.button === 0 ? "left" : e.button === 2 ? "right" : undefined,
         hitbox: this.makeHitbox(),
+        snappedHitbox: this.makeHitbox(true),
         hoverIds: this.hoverObject(e),
         moved: this.moved,
         globalMoveVector: this.globalMoveVector,
@@ -202,16 +194,27 @@ export class ClickDragger {
     return globalEnd.subbed(globalStart);
   }
 
-  public makeHitbox(): Rect {
+  public makeHitbox(snap: boolean = false): Rect {
     if (!this.dragStart || !this.dragEnd) {
       return { ul: { x: 0, y: 0 }, br: { x: 0, y: 0 } };
     }
 
     // This logic ensures that our rect select hitbox can go "negative" correctly
-    const left = Math.min(this.dragStart.x, this.dragEnd.x);
-    const top = Math.min(this.dragStart.y, this.dragEnd.y);
-    const right = Math.max(this.dragStart.x, this.dragEnd.x);
-    const bottom = Math.max(this.dragStart.y, this.dragEnd.y);
+    let left = Math.min(this.dragStart.x, this.dragEnd.x);
+    let top = Math.min(this.dragStart.y, this.dragEnd.y);
+    let right = Math.max(this.dragStart.x, this.dragEnd.x);
+    let bottom = Math.max(this.dragStart.y, this.dragEnd.y);
+
+    if (snap) {
+      const gridSize = this.getGridSnap();
+      if (gridSize) {
+        left = Math.floor(left / gridSize) * gridSize;
+        top = Math.floor(top / gridSize) * gridSize;
+        right = Math.ceil(right / gridSize) * gridSize;
+        bottom = Math.ceil(bottom / gridSize) * gridSize;
+      }
+    }
+
     const minPos = { x: left, y: top };
     const maxPos = { x: right, y: bottom };
     return { ul: minPos, br: maxPos };
