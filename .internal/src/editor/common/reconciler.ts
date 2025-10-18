@@ -1,15 +1,6 @@
-// pixiReconciler.ts
-import {
-  BaseMapObj,
-  isColliderBox,
-  isColliderEllipse,
-  isTileGroupInstance,
-  TileGroupInstance,
-  UpdatableParams,
-} from "@/types/reconciler";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
+import { AllPropsLoose } from "@/types/union";
 import * as P from "pixi.js";
-import { colliderFill } from "./strokes";
 
 // Create an RBush index item from a node's world-space bounds
 function makeIndexItem(id: string, node: P.Container): IndexItem {
@@ -24,26 +15,33 @@ function makeIndexItem(id: string, node: P.Container): IndexItem {
   };
 }
 
+interface CanvasPlacable {
+  id: string;
+  layer: number;
+}
+
 /**
  * A reconciler that applies changes from Redux to a Pixi.js scene graph.
  * It batches changes and applies them on the next animation frame.
  */
-export class ReduxReconciler {
-  private layerContainers?: Record<number, P.Container>;
-  private tilesetCache: Map<string, P.Texture>;
-  // Axis-aligned bbox entry for RBush
-  private spatialIndex?: SpatialIndex;
+export abstract class ReduxReconciler<
+  ObjType extends CanvasPlacable,
+  ObjParams extends Partial<ObjType> = AllPropsLoose<ObjType>,
+> {
+  protected layerContainers?: Record<number, P.Container>;
+  protected tilesetCache: Map<string, P.Texture>;
+  protected spatialIndex?: SpatialIndex;
 
   // id -> DisplayObject
   private nodes = new Map<string, P.Container>();
   // Object id -> layer container
-  private layerLookup = new Map<string, P.Container>();
+  protected layerLookup = new Map<string, P.Container>();
 
   // coalesced ops for this frame
-  private pendingAdds: BaseMapObj[] = [];
+  private pendingAdds: ObjType[] = [];
   private pendingUpdates: Array<{
     id: string;
-    changes: UpdatableParams;
+    changes: Partial<ObjType>;
   }> = [];
   private pendingRemoves: string[] = [];
   private rafScheduled = false;
@@ -63,11 +61,11 @@ export class ReduxReconciler {
     this.spatialIndex = spatialIndex;
   }
 
-  enqueueAdd(obj: BaseMapObj) {
+  enqueueAdd(obj: ObjType) {
     this.pendingAdds.push(obj);
     this.scheduleFlush();
   }
-  enqueueUpdate(id: string, changes: Partial<UpdatableParams>) {
+  enqueueUpdate(id: string, changes: ObjParams) {
     this.pendingUpdates.push({ id, changes });
     this.scheduleFlush();
   }
@@ -77,7 +75,7 @@ export class ReduxReconciler {
   }
 
   // If you sometimes dispatch setAll, use this diffing helper:
-  enqueueDiff(fullList: BaseMapObj[]) {
+  enqueueDiff(fullList: ObjType[]) {
     const nextIds = new Set(fullList.map((o) => o.id));
     for (const id of this.nodes.keys())
       if (!nextIds.has(id)) this.pendingRemoves.push(id);
@@ -122,7 +120,7 @@ export class ReduxReconciler {
       const layer = this.layerContainers[obj.layer]!;
       this.layerLookup.set(obj.id, layer);
       layer.addChild(node);
-      this.applyProps(node, obj); // position/angle/z, etc.
+      this.applyProps(node, obj);
 
       // Index in spatial structure
       const item = makeIndexItem(obj.id, node);
@@ -147,95 +145,7 @@ export class ReduxReconciler {
     this.pendingUpdates.length = 0;
   }
 
-  private createNode(obj: BaseMapObj): P.Container {
-    if (isTileGroupInstance(obj)) {
-      const tsTex = this.tilesetCache.get(obj.tilesetId);
-      const frame = obj.frame;
+  protected abstract createNode(obj: ObjType): P.Container;
 
-      const padding = 0.001; // avoid bleeding
-      const width = frame.br.x - frame.ul.x;
-      const height = frame.br.y - frame.ul.y;
-      const texFrame = new P.Rectangle(
-        frame.ul.x + padding,
-        frame.ul.y + padding,
-        width - 2 * padding,
-        height - 2 * padding
-      );
-      const tileTex = new P.Texture({
-        source: tsTex!.source,
-        frame: texFrame,
-      });
-
-      // We apply the x-flip on the child sprite so that it can happen about the
-      // center anchor, while the container can have its anchor at top-left for
-      // easier positioning.
-      const sprite = new P.Sprite(tileTex);
-      sprite.position.set(
-        sprite.width / 2 + padding,
-        sprite.height / 2 + padding
-      );
-      sprite.interactive = false;
-      sprite.anchor.set(0.5);
-      sprite.scale.x = obj.flipX ? -1 : 1;
-
-      const spriteContainer = new P.Container();
-      spriteContainer.label = obj.id;
-      spriteContainer.position.set(obj.x, obj.y);
-      spriteContainer.zIndex = obj.z;
-      spriteContainer.addChild(sprite);
-      spriteContainer.interactive = true;
-      spriteContainer.scale.set(1 + padding); // avoid bleeding
-
-      return spriteContainer;
-    } else if (isColliderEllipse(obj)) {
-      const gfx = new P.Graphics();
-      gfx.interactive = false;
-      gfx.ellipse(0, 0, obj.radiusX, obj.radiusY);
-      const container = new P.Container();
-      container.label = obj.id;
-      container.position.set(obj.x, obj.y);
-      container.zIndex = obj.z;
-      container.addChild(gfx);
-      container.interactive = true;
-      return container;
-    } else if (isColliderBox(obj)) {
-      const gfx = new P.Graphics();
-      gfx.interactive = false;
-      gfx.rect(0, 0, obj.width, obj.height).fill(colliderFill);
-      const container = new P.Container();
-      container.label = obj.id;
-      container.position.set(obj.x, obj.y);
-      container.zIndex = obj.z;
-      container.addChild(gfx);
-      container.interactive = true;
-      return container;
-    } else {
-      throw new Error("Unsupported MapObj type");
-    }
-  }
-
-  private applyProps(
-    node: P.Container,
-    p: Partial<BaseMapObj & TileGroupInstance>
-  ) {
-    if (!this.layerContainers || !this.spatialIndex) return;
-
-    if (p.x !== undefined) node.x = p.x;
-    if (p.y !== undefined) {
-      node.y = p.y;
-    }
-    if (p.z !== undefined) node.zIndex = p.z;
-    if (p.flipX !== undefined) {
-      node.children[0].scale.x = p.flipX ? -1 : 1;
-    }
-    if (p.layer !== undefined) {
-      const oldLayer = this.layerLookup.get(node.label)!;
-      const newLayer = this.layerContainers[p.layer]!;
-      if (oldLayer !== newLayer) {
-        oldLayer.removeChild(node);
-        newLayer.addChild(node);
-        this.layerLookup.set(node.label, newLayer);
-      }
-    }
-  }
+  protected abstract applyProps(node: P.Container, p: Partial<ObjType>): void;
 }

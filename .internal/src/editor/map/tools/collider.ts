@@ -3,7 +3,7 @@ import { colliderFill } from "@/editor/common/strokes";
 import { actions } from "@/slices/map";
 import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { BoxObj } from "@/types/reconciler";
+import { BoxObj } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
 import {

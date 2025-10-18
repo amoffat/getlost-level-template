@@ -1,5 +1,5 @@
 import { Mode } from "@/types/editors/collision";
-import { MapObj, TileGroupInstance } from "@/types/reconciler";
+import { MapObj, TileGroupInstance } from "@/types/map";
 import { TileGroup } from "@/types/tilegroup";
 import { PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";

@@ -2,7 +2,9 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { Edge, Node } from "@xyflow/react";
 
 export interface StoryNodeData extends Record<string, unknown> {
+  id: string;
   label: string;
+  npcs: string[];
 }
 
 export type StoryNode = Node<StoryNodeData>;

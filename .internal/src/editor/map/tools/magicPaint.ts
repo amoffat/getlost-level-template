@@ -10,7 +10,7 @@ import { globals as appG } from "@/globals";
 import { selectors as mapSelectors } from "@/slices/map";
 import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { isTileGroupInstance, TileGroupInstance } from "@/types/reconciler";
+import { isTileGroupInstance, TileGroupInstance } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroup } from "@/types/tilegroup";
 import { createRafThrottled } from "@/utils/throttle";

@@ -3,7 +3,7 @@ import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { TileGroupInstance } from "@/types/reconciler";
+import { TileGroupInstance } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import { Vector } from "@/vec";
 import {

@@ -2,7 +2,7 @@ import { actions, selectors as mapEdSelectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { isColliderBox, isTileGroupInstance, MapObj } from "@/types/reconciler";
+import { isColliderBox, isTileGroupInstance, MapObj } from "@/types/map";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";

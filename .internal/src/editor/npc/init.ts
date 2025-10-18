@@ -83,7 +83,7 @@ export async function init(
     },
     onPanningEnd: (panPos) => {
       store.dispatch(actions.setPan(panPos));
-      store.dispatch(actions.pushMode(null));
+      store.dispatch(actions.popMode());
     },
   });
   // setupGrouper();

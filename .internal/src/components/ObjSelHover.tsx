@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
-import { isTileGroupInstance, TileGroupInstance } from "@/types/reconciler";
+import { isTileGroupInstance, TileGroupInstance } from "@/types/map";
 import { Checkbox, Group, Stack } from "@mantine/core";
 import { useCallback } from "react";
 import { DynamicHoverCard } from "./DynamicHoverCard";

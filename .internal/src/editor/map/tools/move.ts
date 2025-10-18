@@ -4,7 +4,7 @@ import {
   selectors as mapEdSelectors,
 } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { isTileGroupInstance } from "@/types/reconciler";
+import { isTileGroupInstance } from "@/types/map";
 import { Vector } from "@/vec";
 import {
   ClickDragger,

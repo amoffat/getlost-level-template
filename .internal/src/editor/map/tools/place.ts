@@ -6,7 +6,7 @@ import { actions } from "@/slices/map";
 import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
-import { isTileGroupInstance, TileGroupInstance } from "@/types/reconciler";
+import { isTileGroupInstance, TileGroupInstance } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import { PaintOpts } from "@/types/tools";
 import { subState } from "@/utils/redux";

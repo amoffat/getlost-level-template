@@ -2,7 +2,7 @@
 // (see `.internal/src/slices/map.ts`). Versioning allows future structural
 // changes (e.g. spatial index, layering metadata, etc.) to be migrated.
 
-import { MapObj } from "@/types/reconciler";
+import { MapObj } from "@/types/map";
 
 export interface BaseMapDoc {
   version: number;

@@ -1,5 +1,5 @@
 import { log } from "@/log";
-import { MapObj } from "@/types/reconciler";
+import { MapObj } from "@/types/map";
 import { applyMigrations } from "@/utils/migrations";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";

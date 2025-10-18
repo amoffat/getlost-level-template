@@ -8,7 +8,7 @@ import {
 import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
-import { MapObj } from "@/types/reconciler";
+import { MapObj } from "@/types/map";
 import { loadTileGroup } from "@/utils/tileset";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 

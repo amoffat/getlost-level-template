@@ -115,7 +115,7 @@ export default function TilesetEditorTab({
         disabled: !activeTilesetId,
       },
     }),
-    [resliceTiles]
+    [activeTilesetId, resliceTiles]
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName];

@@ -1,9 +1,7 @@
-import { NpcSpritesheet } from "@/types/npc";
+import { Mode, NpcSpritesheet } from "@/types/npc";
+import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Tileset } from "../types/tileset";
-import { Pan, Zoom, ZoomPan } from "../types/zoompan";
 
-type Mode = null | "pan" | "group" | "add";
 export interface NpcEditorState {
   grid: {
     size: number;
@@ -57,20 +55,20 @@ export const slice = createSlice({
       state.activeTilesetId = ts.id;
       state.activeZoomPan = state.tilesetZoomPans[ts.id];
     },
-    addTileset: (
-      state,
-      action: PayloadAction<{
-        tsId: string;
-        ts: Tileset;
-      }>
-    ) => {
-      const { ts } = action.payload;
-      state.tilesets[ts.id] = ts;
-      state.tilesetZoomPans[ts.id] ??= { zoom: 1, pan: { x: 0, y: 0 } };
-      if (!state.tilesetIds.includes(ts.id)) {
-        state.tilesetIds.push(ts.id);
-      }
-    },
+    // addTileset: (
+    //   state,
+    //   action: PayloadAction<{
+    //     tsId: string;
+    //     ts: Tileset;
+    //   }>
+    // ) => {
+    //   const { ts } = action.payload;
+    //   state.tilesets[ts.id] = ts;
+    //   state.tilesetZoomPans[ts.id] ??= { zoom: 1, pan: { x: 0, y: 0 } };
+    //   if (!state.tilesetIds.includes(ts.id)) {
+    //     state.tilesetIds.push(ts.id);
+    //   }
+    // },
     setZoom: (state, action: PayloadAction<Zoom>) => {
       const zoom = action.payload;
       const tsId = state.activeTilesetId;

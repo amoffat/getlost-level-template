@@ -1,4 +1,4 @@
-import { MapObj } from "@/types/reconciler";
+import { MapObj } from "@/types/map";
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 
 const objects = createEntityAdapter<MapObj>({

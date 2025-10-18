@@ -1,6 +1,6 @@
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { MapObj } from "@/types/reconciler";
+import { MapObj } from "@/types/map";
 import { Rect } from "@/types/rect";
 import { TileGroup } from "@/types/tilegroup";
 import { ColliderOpts, MagicPaintOpts, PaintOpts } from "@/types/tools";

@@ -1,7 +1,7 @@
 import { RootState, store } from "@/store/store";
 import { isVector, Vector } from "@/vec";
 import RBush, { BBox } from "rbush";
-import { MapObj } from "./reconciler";
+import { MapObj } from "./map";
 
 export interface IndexItem {
   id: string;

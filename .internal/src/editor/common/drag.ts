@@ -23,11 +23,22 @@ export interface ClickDragListener {
   pointerMove?: (e: PointerEventData) => void;
 }
 
+function maybeSnap(pos: Vector, gridSnap: number | null): Vector {
+  return pos;
+  // TODO
+  if (!gridSnap) return pos;
+  return {
+    x: Math.floor(pos.x / gridSnap) * gridSnap,
+    y: Math.floor(pos.y / gridSnap) * gridSnap,
+  };
+}
+
 export class ClickDragger {
   private readonly app: P.Application;
   public readonly container: P.Container;
   private readonly coordsRelativeTo: P.Container;
   private readonly checkPointerOver?: (pos: Vector) => string[];
+  private readonly getGridSnap: () => number | null;
 
   private dragStart: Vec2 | null = null;
   private dragEnd: Vec2 | null = null;
@@ -39,19 +50,24 @@ export class ClickDragger {
     container,
     coordsRelativeTo,
     checkPointerOver,
+    getGridSnap = () => null,
   }: {
     app: P.Application;
     container: P.Container;
     coordsRelativeTo?: P.Container;
     checkPointerOver?: (pos: Vector) => string[];
+    getGridSnap?: () => number | null;
   }) {
     this.app = app;
     this.container = container;
     this.coordsRelativeTo = coordsRelativeTo ?? container;
     this.checkPointerOver = checkPointerOver;
+    this.getGridSnap = getGridSnap;
 
     container.addEventListener("pointermove", (e) => {
-      this.dragEnd = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
+      this.dragEnd = Vec2.fromPoint(
+        maybeSnap(e.getLocalPosition(this.coordsRelativeTo), this.getGridSnap())
+      );
       const ev: PointerEventData = {
         localPos: this.dragEnd,
         hitbox: this.makeHitbox(),

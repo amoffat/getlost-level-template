@@ -1,11 +1,17 @@
 import { log } from "@/log";
-import { TileGroupInstance } from "@/types/reconciler";
+import { TileGroupInstance } from "@/types/map";
 import { Rect } from "@/types/rect";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { TileGroup } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createEntityAdapter,
+  createSelector,
+  createSlice,
+  EntityState,
+  PayloadAction,
+} from "@reduxjs/toolkit";
 
 const tileIndices: Record<string, SpatialIndex> = {};
 const DEFAULT_ZOOMPAN: ZoomPan = { zoom: 1, pan: { x: 0, y: 0 } };
@@ -31,6 +37,8 @@ export function groupToBBox(group: TileGroup, pad: number = 0.1): IndexItem {
   };
 }
 
+export const selectedAdapter = createEntityAdapter<TileGroup>();
+
 export interface TilesetEditorState {
   grid: {
     size: number;
@@ -48,6 +56,7 @@ export interface TilesetEditorState {
   loadingTilesets: boolean;
   tilesetsLoaded: boolean;
   tilesetsError: string | null;
+  selectedTiles: EntityState<TileGroup, string>;
 }
 
 export const slice = createSlice({
@@ -68,6 +77,7 @@ export const slice = createSlice({
     loadingTilesets: false,
     tilesetsLoaded: false,
     tilesetsError: null,
+    selectedTiles: selectedAdapter.getInitialState(),
   } as TilesetEditorState,
   reducers: {
     setGridVisible(state, action: PayloadAction<boolean>) {
