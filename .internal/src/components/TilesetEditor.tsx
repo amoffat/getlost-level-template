@@ -1,6 +1,9 @@
 import * as constants from "@/constants";
 import { unpackActiveTileset } from "@/editor/tileset/loader";
 import { globals as g } from "@/globals";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { actions, selectors } from "@/slices/tilesetEditor";
+import { selectTilesetThunk } from "@/thunks/tileset";
 import { Mode } from "@/types/tileset";
 import {
   Fieldset,
@@ -14,18 +17,17 @@ import {
 import {
   IconCut,
   IconGrid4x4,
+  IconKeyframes,
   IconReplace,
   IconTrash,
 } from "@tabler/icons-react";
 import { use, useCallback, useEffect, useMemo, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "../hooks/redux";
-import { actions, selectors } from "../slices/tilesetEditor";
-import { selectTilesetThunk } from "../thunks/tileset";
 import GridSizeInput from "./GridSizeInput";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
 import TilesetButton from "./TilesetButton";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
+import TileAnimationOptions from "./toolOptions/TileAnimationOptions";
 
 export default function TilesetEditorTab({
   initPromise,
@@ -33,7 +35,14 @@ export default function TilesetEditorTab({
   initPromise: Promise<unknown>;
 }) {
   const dispatch = useAppDispatch();
-  const s = useAppSelector((state) => state.tilesetEditor);
+  const selectedToolName = useAppSelector(
+    (state) => state.tilesetEditor.selectedTool
+  );
+  const activeTilesetId = useAppSelector(
+    (state) => state.tilesetEditor.activeTilesetId
+  );
+  const grid = useAppSelector((state) => state.tilesetEditor.grid);
+  const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const containerRef = useRef<HTMLDivElement>(null);
 
   use(initPromise);
@@ -56,10 +65,10 @@ export default function TilesetEditorTab({
   );
 
   const resliceTiles = useCallback(() => {
-    if (!s.activeTilesetId) return;
-    dispatch(actions.clearPalette(s.activeTilesetId));
+    if (!activeTilesetId) return;
+    dispatch(actions.clearPalette(activeTilesetId));
     unpackActiveTileset();
-  }, [dispatch, s.activeTilesetId]);
+  }, [dispatch, activeTilesetId]);
 
   const loadedTilesets = useAppSelector(selectors.selectTilesets);
   const tilesetImages = loadedTilesets.map((ts) => (
@@ -67,7 +76,7 @@ export default function TilesetEditorTab({
       key={ts.id}
       ts={ts}
       onClick={() => dispatch(selectTilesetThunk(ts))}
-      isActive={ts.id === s.activeTilesetId}
+      isActive={ts.id === activeTilesetId}
     />
   ));
 
@@ -77,26 +86,40 @@ export default function TilesetEditorTab({
         name: "Replace group",
         icon: <IconReplace size={16} />,
         canActivate: true,
+        disabled: !activeTilesetId,
       },
       "add-group": {
         name: "Add group",
         icon: <IconCut size={16} />,
         canActivate: true,
+        disabled: !activeTilesetId,
       },
       "delete-group": {
         name: "Delete group",
         icon: <IconTrash size={16} />,
         canActivate: true,
+        disabled: !activeTilesetId,
       },
       "reslice-tiles": {
         name: "Re-slice tiles",
         icon: <IconGrid4x4 size={16} />,
         onClick: resliceTiles,
         canActivate: false,
+        disabled: !activeTilesetId,
+      },
+      animate: {
+        name: "Animate",
+        icon: <IconKeyframes size={16} />,
+        canActivate: true,
+        options: <TileAnimationOptions />,
+        disabled: !activeTilesetId,
       },
     }),
     [resliceTiles]
   );
+
+  const tool = selectedToolName && toolPalette[selectedToolName];
+  const toolOptions = tool?.options;
 
   const onToolActivated = useCallback(
     (slug: string) => {
@@ -108,7 +131,7 @@ export default function TilesetEditorTab({
   return (
     <>
       <Flex h="100dvh" style={{ flex: 1 }}>
-        <Stack miw={200} h="100%" style={{ flex: 1, overflow: "hidden" }}>
+        <Stack miw={300} h="100%" style={{ flex: 1, overflow: "hidden" }}>
           <ScrollArea type="hover" offsetScrollbars="y" style={{ flex: 1 }}>
             <Stack pb={50}>{tilesetImages}</Stack>
           </ScrollArea>
@@ -148,24 +171,29 @@ export default function TilesetEditorTab({
               >
                 <ObjectPalette
                   allowSelect={false}
-                  tileset={
-                    s.activeTilesetId ? s.tilesets[s.activeTilesetId] : null
-                  }
+                  tileset={activeTilesetId ? tilesets[activeTilesetId] : null}
                 />
               </Tabs.Panel>
             </Tabs>
           </Stack>
         </Flex>
-        <Stack miw={200} style={{ flex: 1 }}>
+        <Stack miw={300} style={{ flex: 1 }}>
           <ToolPalette
-            activeTool={s.selectedTool}
+            activeTool={selectedToolName}
             tools={toolPalette}
             onToolActivated={onToolActivated}
           />
+
+          {toolOptions && (
+            <Fieldset legend={`${tool.name} options`} p="xs">
+              {toolOptions}
+            </Fieldset>
+          )}
+
           <Fieldset p={"xs"} legend="Grid settings">
             <Stack p={0}>
               <GridSizeInput
-                defaultValue={s.grid.size}
+                defaultValue={grid.size}
                 onChange={changeGridSize}
               />
             </Stack>

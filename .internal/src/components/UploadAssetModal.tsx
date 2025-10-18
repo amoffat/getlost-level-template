@@ -1,5 +1,5 @@
 import { overlayProps } from "@/constants";
-import { Modal, Portal } from "@mantine/core";
+import { Modal } from "@mantine/core";
 import TilesetSteps from "./assetTypes/TilesetSteps";
 
 interface TileAssetTypeModalProps {
@@ -16,17 +16,15 @@ export default function UploadAssetModal({
   const steps = <TilesetSteps files={files} closeModal={closeModal} />;
 
   return (
-    <Portal>
-      <Modal
-        size="lg"
-        centered
-        opened={opened}
-        onClose={() => closeModal()}
-        title="Asset upload"
-        overlayProps={overlayProps}
-      >
-        {steps}
-      </Modal>
-    </Portal>
+    <Modal
+      size="lg"
+      centered
+      opened={opened}
+      onClose={() => closeModal()}
+      title="Asset upload"
+      overlayProps={overlayProps}
+    >
+      {steps}
+    </Modal>
   );
 }

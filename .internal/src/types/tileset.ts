@@ -5,6 +5,7 @@ export type Mode =
   | "pan"
   | "add-group"
   | "delete-group"
+  | "animate"
   | "replace-group";
 
 export interface Tileset {

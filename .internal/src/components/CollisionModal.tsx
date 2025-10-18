@@ -1,14 +1,6 @@
 import { overlayProps } from "@/constants";
 import { init } from "@/editor/collision/init";
-import {
-  Button,
-  Group,
-  Modal,
-  Portal,
-  Stack,
-  Stepper,
-  Text,
-} from "@mantine/core";
+import { Button, Group, Modal, Stack, Stepper, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import * as P from "pixi.js";
 import { ReactNode, useLayoutEffect, useRef, useState } from "react";
@@ -129,38 +121,36 @@ export default function CollisionModal({
     );
 
   return (
-    <Portal>
-      <Modal
-        size="lg"
-        centered
-        opened={opened}
-        onClose={() => closeModal()}
-        title="Colliders"
-        overlayProps={overlayProps}
-      >
-        <form onSubmit={formSubmit}>
-          <Stepper active={step} allowNextStepsSelect={false}>
-            {steps}
-            <Stepper.Completed>
-              Completed, click back button to get to previous step
-            </Stepper.Completed>
-          </Stepper>
+    <Modal
+      size="lg"
+      centered
+      opened={opened}
+      onClose={() => closeModal()}
+      title="Colliders"
+      overlayProps={overlayProps}
+    >
+      <form onSubmit={formSubmit}>
+        <Stepper active={step} allowNextStepsSelect={false}>
+          {steps}
+          <Stepper.Completed>
+            Completed, click back button to get to previous step
+          </Stepper.Completed>
+        </Stepper>
 
-          <Group mt="lg" justify="flex-end">
-            <Button
-              variant="default"
-              type="button"
-              radius="md"
-              disabled={step === 0}
-              onClick={() => setStep((s) => s - 1)}
-            >
-              Back
-            </Button>
+        <Group mt="lg" justify="flex-end">
+          <Button
+            variant="default"
+            type="button"
+            radius="md"
+            disabled={step === 0}
+            onClick={() => setStep((s) => s - 1)}
+          >
+            Back
+          </Button>
 
-            {actionButton}
-          </Group>
-        </form>
-      </Modal>
-    </Portal>
+          {actionButton}
+        </Group>
+      </form>
+    </Modal>
   );
 }

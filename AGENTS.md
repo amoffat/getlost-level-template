@@ -26,6 +26,10 @@ TODO
 
 As previously mentioned, the UI is React + Typescript + Redux RTK + Mantine. We use React Router for url path handling, and it should continue to be used for new paths and assets going forward, where it makes sense. We prefer Tabler icons for icon components.
 
+### Tools
+
+Tool buttons are defined in...
+
 ### Layout
 
 The `ShellApp` component contains the main tabbed interface. It also contains a global, fullscreen Mantine `Dropzone` component to handle all asset uploads from any tab. Tab content is deferred until the tab is mounted, but then it persists across tab changes.
@@ -66,6 +70,14 @@ All `npm` commands will need to use the prefix `--prefix /workspaces/getlost-lev
 
 `npm --prefix /workspaces/getlost-level-template/.internal install react-router`
 
+Assume all npm and npx commands below use that prefix.
+
+## Restarting vite
+
 We use `pm2` to manage the `vite` process. Restarting vite involves running:
 
-`npx --prefix /workspaces/getlost-level-template/.internal pm2 restart preview`
+`npx pm2 restart preview`
+
+## Checking types
+
+`npm run typecheck`

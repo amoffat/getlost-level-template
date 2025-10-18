@@ -58,7 +58,13 @@ export default function TilesetButton({
             },
           })}
         >
-          <Image src={ts.objectUrl} draggable={false} />
+          <Image
+            src={ts.objectUrl}
+            draggable={false}
+            style={{
+              imageRendering: "pixelated",
+            }}
+          />
         </UnstyledButton>
       </Menu.Target>
 

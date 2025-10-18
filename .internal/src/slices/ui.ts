@@ -1,3 +1,4 @@
+import { pathToTab } from "@/routes/tabs";
 import { TabName } from "@/types/tab";
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
@@ -12,7 +13,8 @@ interface UIState {
   loadingPalette: boolean;
 }
 
-const defaultTab: TabName = "map-editor";
+// Derive default tab from current URL path when in the browser; fallback to map-editor in non-DOM contexts
+const defaultTab: TabName = pathToTab(window.location?.pathname ?? "/");
 
 const initialState: UIState = {
   activeTab: defaultTab,
