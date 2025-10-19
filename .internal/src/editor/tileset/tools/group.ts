@@ -1,17 +1,17 @@
+import { selectors, actions as tsActions } from "@/slices/tilesetEditor";
+import { store } from "@/store/store";
+import { TileGroup } from "@/types/tilegroup";
+import { subState } from "@/utils/redux";
 import { genGroupId } from "@/utils/tileset";
 import * as P from "pixi.js";
-import { selectors, actions as tsActions } from "../../slices/tilesetEditor";
-import { store } from "../../store/store";
-import { TileGroup } from "../../types/tilegroup";
-import { subState } from "../../utils/redux";
 import {
   ClickDragger,
   ClickDragListener,
   PointerEventData,
-} from "../common/drag";
-import { groupStroke } from "../common/strokes";
-import { globals as g } from "./globals";
-import { shouldOutline } from "./utils/outline";
+} from "../../common/drag";
+import { groupStroke } from "../../common/strokes";
+import { globals as g } from "../globals";
+import { shouldOutline } from "../utils/outline";
 
 function getGridSize(): number {
   return store.getState().tilesetEditor.grid.size;

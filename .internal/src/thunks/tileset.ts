@@ -1,5 +1,5 @@
-import { computeEdgeSignatures } from "@/editor/tileset/autotile";
 import { setCanvasTileset, unpackActiveTileset } from "@/editor/tileset/loader";
+import { computeEdgeSignatures } from "@/editor/tileset/tools/autotile";
 import { globals as g } from "@/globals";
 import { loadTileset, loadTilesets } from "@/persist/tileset/api";
 import {

@@ -5,7 +5,7 @@ import {
   MatchQuery,
   matchTile,
   pickDirectionWeights,
-} from "@/editor/tileset/autotile";
+} from "@/editor/tileset/tools/autotile";
 import { globals as appG } from "@/globals";
 import { selectors as mapSelectors } from "@/slices/map";
 import { actions as mapEdActions, selectors } from "@/slices/mapEditor";

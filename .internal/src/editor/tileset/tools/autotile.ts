@@ -1,6 +1,6 @@
+import { Vector } from "@/vec";
 import { converter } from "culori";
 import Heap from "heap";
-import { Vector } from "../../vec";
 
 export type EdgeName = "top" | "right" | "bottom" | "left";
 

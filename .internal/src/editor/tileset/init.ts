@@ -14,8 +14,8 @@ import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
 import { globals as g } from "./globals";
 import { drawGridMask } from "./grid";
-import { setupGrouper } from "./group";
 import { setupKeys } from "./keys";
+import { setupGrouper } from "./tools/group";
 
 export async function init(): Promise<P.Application> {
   // Create a new application

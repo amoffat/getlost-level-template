@@ -1,4 +1,4 @@
-import type { SignatureIndex } from "@/editor/tileset/autotile";
+import type { SignatureIndex } from "@/editor/tileset/tools/autotile";
 import type { TileGroup } from "@/types/tilegroup";
 import * as P from "pixi.js";
 import { MapObjReconciler } from "./editor/common/mapReconciler";
