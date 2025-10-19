@@ -125,7 +125,7 @@ export async function init(): Promise<P.Application> {
     spatialIndex,
   });
 
-  const cd = new ClickDragger({
+  new ClickDragger({
     app,
     container: stage,
     coordsRelativeTo: g.mapContainer,

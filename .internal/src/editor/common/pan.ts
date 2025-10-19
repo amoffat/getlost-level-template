@@ -40,7 +40,7 @@ export function setupPanControls({
     panContainer.position.set(pos.x, pos.y);
   });
 
-  const endPan = (e: P.FederatedPointerEvent) => {
+  const endPan = (_e: P.FederatedPointerEvent) => {
     if (!panning) return;
     panning = false;
 

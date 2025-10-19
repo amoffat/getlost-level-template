@@ -1,4 +1,3 @@
-import { loadTileset, loadTilesets } from "@/persist/tileset/api";
 import { NpcEditorState } from "@/slices/npcEditor";
 import { NpcSpritesheet } from "@/types/npc";
 import { createAsyncThunk } from "@reduxjs/toolkit";
@@ -21,13 +20,13 @@ export const selectTilesetThunk = createAsyncThunk(
   }
 );
 
-export const loadTilesetsThunk = createAsyncThunk(
-  "npcEditor/loadTilesetsThunk",
-  async (_, { dispatch }) => {
-    const tilesetIds = await loadTilesets();
-    for (const tsId of tilesetIds) {
-      const ts = await loadTileset(tsId);
-      dispatch(actions.addTileset({ tsId, ts }));
-    }
-  }
-);
+// export const loadTilesetsThunk = createAsyncThunk(
+//   "npcEditor/loadTilesetsThunk",
+//   async (_, { dispatch }) => {
+//     const tilesetIds = await loadTilesets();
+//     for (const tsId of tilesetIds) {
+//       const ts = await loadTileset(tsId);
+//       dispatch(actions.addTileset({ tsId, ts }));
+//     }
+//   }
+// );

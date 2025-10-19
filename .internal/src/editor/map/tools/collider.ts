@@ -59,7 +59,7 @@ export class Collider implements ClickDragListener {
     this.paint = true;
   }
 
-  public pointerMove(e: PointerEventData): void {
+  public pointerMove(_e: PointerEventData): void {
     const state = store.getState();
     const mode = selectors.selectMode(state);
 
@@ -70,10 +70,6 @@ export class Collider implements ClickDragListener {
 
   public pointerDrag(e: PointerEventData): void {
     if (this.paint) {
-      const state = store.getState();
-      const ms = state.mapEditor;
-      const paintMode = ms.toolOptions.paint.mode;
-
       this.gfx.clear();
 
       const width = e.snappedHitbox.br.x - e.snappedHitbox.ul.x;

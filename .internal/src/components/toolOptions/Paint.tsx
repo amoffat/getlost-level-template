@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
 import { MapLayerName } from "@/types/layer";
 import { PaintOpts } from "@/types/tools";
-import { Fieldset, Radio, Stack, Tooltip } from "@mantine/core";
+import { Fieldset, NumberInput, Radio, Stack, Tooltip } from "@mantine/core";
 import { useCallback } from "react";
 import Tip from "../Tip";
 
@@ -25,19 +25,6 @@ export default function Paint() {
     [dispatch]
   );
 
-  const onChangeSize = useCallback(
-    (value: number | string) => {
-      if (typeof value !== "number") return;
-      dispatch(
-        actions.setToolOptions({
-          tool: "paint",
-          options: { size: value },
-        })
-      );
-    },
-    [dispatch]
-  );
-
   const onChangeSnap = useCallback(
     (value: string) => {
       const snap = value as PaintOpts["snap"];
@@ -45,6 +32,19 @@ export default function Paint() {
         actions.setToolOptions({
           tool: "paint",
           options: { snap },
+        })
+      );
+    },
+    [dispatch]
+  );
+
+  const onChangeSize = useCallback(
+    (value: number | string) => {
+      if (typeof value !== "number") return;
+      dispatch(
+        actions.setToolOptions({
+          tool: "paint",
+          options: { size: value },
         })
       );
     },
@@ -95,14 +95,15 @@ export default function Paint() {
                   >
                     <Radio value="stack" label="Stack" />
                   </Tooltip>
-                  {/* <NumberInput
-            label="Brush size"
-            value={opts.size}
-            min={1}
-            max={10}
-            step={1}
-            onChange={onChangeSize}
-          /> */}
+                  <NumberInput
+                    label="Brush size"
+                    value={opts.size}
+                    min={1}
+                    max={10}
+                    step={1}
+                    disabled
+                    onChange={onChangeSize}
+                  />
                 </Stack>
               </Radio.Group>
             </Fieldset>

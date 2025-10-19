@@ -32,6 +32,6 @@ export function redrawBounds() {
     .fill({ color: 0x000000, alpha: 1 });
 }
 
-subState([(state) => state.mapEditor.bounds], (bounds) => {
+subState([(state) => state.mapEditor.bounds], (_bounds) => {
   redrawBounds();
 });

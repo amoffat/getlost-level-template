@@ -17,7 +17,6 @@ import { init } from "../editor/npc/init";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { actions, selectors } from "../slices/npcEditor";
 import { selectTilesetThunk } from "../thunks/npc";
-import { TileGroup } from "../types/tilegroup";
 import GridSizeInput from "./GridSizeInput";
 import HelpHoverCard from "./HelpHoverCard";
 import TilesetButton from "./TilesetButton";
@@ -46,15 +45,13 @@ export default function NpcEditorTab() {
     })();
   }, [getContainer]);
 
-  const uploadNPCFrames = useCallback(
-    async (files: FileWithPath[]) => {
-      if (!files.length) return;
-      if (files.length > 1) {
-        const merged = await mergeFrames(files);
-      }
-    },
-    [dispatch]
-  );
+  useCallback(async (files: FileWithPath[]) => {
+    if (!files.length) return;
+    if (files.length > 1) {
+      const merged = await mergeFrames(files);
+      void merged;
+    }
+  }, []);
 
   const changeGridSize = useCallback(
     async (size: number | string) => {
@@ -73,14 +70,6 @@ export default function NpcEditorTab() {
       isActive={ts.id === s.activeTilesetId}
     />
   ));
-
-  const selectObject = (obj: TileGroup) => {
-    // dispatch(mapActions.setPlace(obj));
-  };
-
-  const onAssetTypeSubmit = useCallback((assetType: string) => {
-    console.log(assetType);
-  }, []);
 
   return (
     <>
