@@ -2,8 +2,9 @@ import TilesetGroup from "@/components/TilesetGroup";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as mapEdActions } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { Group, Kbd, Stack, Text } from "@mantine/core";
+import { Fieldset, Group, Kbd, Stack, Text } from "@mantine/core";
 import { useCallback, useEffect, useRef, useState } from "react";
+import Tip from "../Tip";
 import classes from "./MagicPaint.module.css";
 
 export default function MagicPaint() {
@@ -72,32 +73,45 @@ export default function MagicPaint() {
     };
   }, [cands.length, onSelect]);
 
-  if (cands.length > 9 || cands.length === 0) return null;
+  const showCands = cands.length > 0;
 
   return (
-    <Stack p={0} gap="sm" aria-label="Magic paint tile candidates">
-      <Text size="xs" c="dimmed">
-        Press number keys to choose a tile
-      </Text>
-      {cands.map((cand, idx) => {
-        const displayNumber = idx + 1; // 1-based label
-        const pressHint = `Press ${displayNumber}`;
-        const isPressed = pressedKey === displayNumber;
-        return (
-          <Group key={cand.id} align="center" gap="sm" wrap="nowrap">
-            <TilesetGroup group={cand} scale={3} />
-            <Kbd
-              className={`${classes.kbd} ${isPressed ? classes.kbdPressed : ""}`}
-              size="xl"
-              title={`${pressHint} to select`}
-              aria-label={`Key ${displayNumber}`}
-              aria-pressed={isPressed}
-            >
-              {displayNumber}
-            </Kbd>
-          </Group>
-        );
-      })}
-    </Stack>
+    <>
+      <Tip
+        tips={[
+          "The autotiler lets you quickly place ground tiles that adapt to their surroundings.",
+          "If you don't like the selected tile, press number keys to choose a different candidate.",
+          "Moving the cursor slightly within a grid cell will result in candidates that allow more change in that direction.",
+        ]}
+      />
+      {showCands && (
+        <Fieldset legend="Autotiler candidates" p="xs">
+          <Stack p={0} gap="sm" aria-label="Autotiler candidates">
+            <Text size="xs" c="dimmed">
+              Press number keys to choose a different tile
+            </Text>
+            {cands.map((cand, idx) => {
+              const displayNumber = idx + 1; // 1-based label
+              const pressHint = `Press ${displayNumber}`;
+              const isPressed = pressedKey === displayNumber;
+              return (
+                <Group key={cand.id} align="center" gap="sm" wrap="nowrap">
+                  <TilesetGroup group={cand} scale={3} />
+                  <Kbd
+                    className={`${classes.kbd} ${isPressed ? classes.kbdPressed : ""}`}
+                    size="xl"
+                    title={`${pressHint} to select`}
+                    aria-label={`Key ${displayNumber}`}
+                    aria-pressed={isPressed}
+                  >
+                    {displayNumber}
+                  </Kbd>
+                </Group>
+              );
+            })}
+          </Stack>
+        </Fieldset>
+      )}
+    </>
   );
 }

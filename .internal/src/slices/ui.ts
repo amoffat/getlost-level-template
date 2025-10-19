@@ -11,6 +11,8 @@ interface UIState {
   };
   loadingMessage: string | null;
   loadingPalette: boolean;
+  // Whether the Tip component is collapsed (hides text/buttons but keeps alert visible)
+  tipCollapsed: boolean;
 }
 
 // Derive default tab from current URL path when in the browser; fallback to map-editor in non-DOM contexts
@@ -26,6 +28,7 @@ const initialState: UIState = {
   },
   loadingMessage: null,
   loadingPalette: false,
+  tipCollapsed: false,
 };
 
 export const slice = createSlice({
@@ -62,6 +65,9 @@ export const slice = createSlice({
           }
         }
       });
+    },
+    setTipCollapsed(state, action: PayloadAction<boolean>) {
+      state.tipCollapsed = action.payload;
     },
   },
   selectors: {

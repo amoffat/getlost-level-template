@@ -1,3 +1,89 @@
+/**
+ * Random utilities for sampling elements and indices with optional avoidance.
+ */
+
+// NOTE: int(min,max) is defined later; functions below delegate to it to avoid duplication.
+/**
+ * Returns a random index in [0, count). If count <= 0, returns 0.
+ */
+export function randIndex(count: number): number {
+  if (count <= 0) return 0;
+  return randInt(0, count - 1);
+}
+
+/**
+ * Returns a random index in [0, count) that is NOT equal to avoidIndex.
+ * If count <= 1, returns 0. If avoidIndex is out of range, behaves like randomIndex.
+ */
+export function randIndexAvoid(
+  count: number,
+  avoidIndex?: number | null
+): number {
+  if (count <= 1) return 0;
+  const avoid =
+    typeof avoidIndex === "number" && avoidIndex >= 0 && avoidIndex < count
+      ? avoidIndex
+      : null;
+  let idx = randInt(0, count - 1);
+  if (avoid !== null && idx === avoid) {
+    idx = (idx + 1) % count;
+  }
+  return idx;
+}
+
+/**
+ * Returns a random index in [0, count) that is NOT contained in the avoid set/array.
+ * - If avoid contains all indices (size >= count), returns -1 to indicate none available.
+ * - Selection is uniform among remaining indices without allocating a full candidates array.
+ */
+export function randIndexAvoidMany(
+  count: number,
+  avoid: ReadonlySet<number> | ReadonlyArray<number>
+): number {
+  if (count <= 0) return -1;
+  let avoidSet: ReadonlySet<number>;
+  if (Array.isArray(avoid)) {
+    avoidSet = new Set<number>(avoid as ReadonlyArray<number>);
+  } else {
+    avoidSet = avoid as ReadonlySet<number>;
+  }
+  if (avoidSet.size >= count) return -1;
+
+  const remaining = count - avoidSet.size;
+  const pick = randInt(0, remaining - 1);
+  let seen = 0;
+  for (let i = 0; i < count; i++) {
+    if (!avoidSet.has(i)) {
+      if (seen === pick) return i;
+      seen++;
+    }
+  }
+  return -1; // should not happen
+}
+
+/**
+ * Pick a random element from an array. Returns undefined if the array is empty.
+ */
+export function sample<T>(arr: readonly T[]): T | undefined {
+  if (!arr.length) return undefined;
+  return arr[randInt(0, arr.length - 1)];
+}
+
+/**
+ * Pick a random element from an array that is NOT equal to `avoid`.
+ * If no such element exists, returns undefined.
+ * Equality can be customized via `eq`, which defaults to strict equality (===).
+ */
+export function sampleAvoid<T>(
+  arr: readonly T[],
+  avoid: T,
+  eq: (a: T, b: T) => boolean = (a, b) => a === b
+): T | undefined {
+  if (!arr.length) return undefined;
+  const candidates = arr.filter((x) => !eq(x, avoid));
+  if (!candidates.length) return undefined;
+  return candidates[randInt(0, candidates.length - 1)];
+}
 // Random utilities (TypeScript port of AssemblyScript utils/rand)
 // Notes:
 // - All ranges match the original semantics
@@ -21,7 +107,7 @@ export function float01(): number {
  * Uniform float in [min, max).
  * Useful for: random speeds, cooldown offsets, spawn positions along a span.
  */
-export function float(min = 0, max = 1): number {
+export function randFloat(min = 0, max = 1): number {
   return min + (max - min) * float01();
 }
 
@@ -29,7 +115,7 @@ export function float(min = 0, max = 1): number {
  * Uniform integer in [min, max] (inclusive).
  * Useful for: discrete choices like tile indices, loot counts, frame IDs.
  */
-export function int(min: number, max: number): number {
+export function randInt(min: number, max: number): number {
   if (max < min) {
     const t = min;
     min = max;
@@ -211,7 +297,7 @@ export function weightedIndex(weights: ReadonlyArray<number>): number {
   let total = 0;
   for (let i = 0; i < weights.length; i++) total += weights[i];
   if (total <= 0) return -1;
-  const r = float(0, total);
+  const r = randFloat(0, total);
   let acc = 0;
   for (let i = 0; i < weights.length; i++) {
     acc += weights[i];
@@ -232,7 +318,10 @@ export const weightedIndexS = weightedIndex;
  */
 export function choose<T>(arr: ReadonlyArray<T>): T {
   if (arr.length === 0) throw new Error("choose() on empty array");
-  return arr[int(0, arr.length - 1)];
+  // Delegate to sample to keep a single selection logic
+  const v = sample(arr);
+  // sample on non-empty array always returns a value
+  return v as T;
 }
 
 /**
@@ -248,7 +337,7 @@ export const chooseS = choose as <T>(arr: ReadonlyArray<T>) => T;
  */
 export function shuffle<T>(arr: T[]): void {
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = int(0, i);
+    const j = randInt(0, i);
     if (j !== i) {
       const tmp = arr[i];
       arr[i] = arr[j];

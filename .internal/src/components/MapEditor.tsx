@@ -207,7 +207,7 @@ export default function MapEditorTab({
     <>
       <Flex h="100dvh" style={{ flex: 1 }}>
         <Stack miw={300} h="100%" style={{ flex: 1, overflow: "hidden" }}>
-          <Fieldset legend="Layers">
+          <Fieldset legend="Layers" p="xs">
             <Stack p={0}>
               <LayerList
                 layers={layerList}
@@ -310,11 +310,7 @@ export default function MapEditorTab({
             onToolDeactivated={onToolDeactivated}
           />
 
-          {toolOptions && (
-            <Fieldset legend={`${tool.name} options`} p="xs">
-              {toolOptions}
-            </Fieldset>
-          )}
+          {toolOptions}
         </Stack>
       </Flex>
 
