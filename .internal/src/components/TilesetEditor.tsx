@@ -3,7 +3,7 @@ import { unpackActiveTileset } from "@/editor/tileset/loader";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
-import { selectTilesetThunk } from "@/thunks/tileset";
+import { loadTilesetThunk, selectTilesetThunk } from "@/thunks/tileset";
 import { Mode } from "@/types/tileset";
 import {
   Fieldset,
@@ -22,6 +22,7 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { use, useCallback, useEffect, useMemo, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import GridSizeInput from "./GridSizeInput";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
@@ -35,6 +36,8 @@ export default function TilesetEditorTab({
   initPromise: Promise<unknown>;
 }) {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { tsid } = useParams<{ tsid?: string }>();
   const selectedToolName = useAppSelector(
     (state) => state.tilesetEditor.selectedTool
   );
@@ -75,7 +78,7 @@ export default function TilesetEditorTab({
     <TilesetButton
       key={ts.id}
       ts={ts}
-      onClick={() => dispatch(selectTilesetThunk(ts))}
+      onClick={() => navigate(`/tilesets/${ts.id}`)}
       isActive={ts.id === activeTilesetId}
     />
   ));
@@ -127,6 +130,23 @@ export default function TilesetEditorTab({
     },
     [dispatch]
   );
+
+  // Ensure the tileset for the current URL is loaded
+  useEffect(() => {
+    if (!tsid) return;
+    if (!tilesets[tsid]) {
+      dispatch(loadTilesetThunk(tsid));
+    }
+  }, [tsid, tilesets, dispatch]);
+
+  // Select the tileset once it's available and not already active
+  useEffect(() => {
+    if (!tsid) return;
+    const ts = tilesets[tsid];
+    if (ts && activeTilesetId !== tsid) {
+      dispatch(selectTilesetThunk(ts));
+    }
+  }, [tsid, tilesets, activeTilesetId, dispatch]);
 
   return (
     <>

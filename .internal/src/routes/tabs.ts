@@ -37,6 +37,8 @@ export const pathToTab = (path: string): TabName => {
     case "/preview":
       return "preview";
     default:
+      // Treat any nested tilesets path (e.g., /tilesets/:tsid) as the tileset editor tab
+      if (clean.startsWith("/tilesets/")) return "tileset-editor";
       return DEFAULT_TAB;
   }
 };
