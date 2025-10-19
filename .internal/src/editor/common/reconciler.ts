@@ -29,7 +29,6 @@ export abstract class ReduxReconciler<
   ObjParams extends Partial<ObjType> = AllPropsLoose<ObjType>,
 > {
   protected layerContainers?: Record<number, P.Container>;
-  protected tilesetCache: Map<string, P.Texture>;
   protected spatialIndex?: SpatialIndex;
 
   // id -> DisplayObject
@@ -45,10 +44,6 @@ export abstract class ReduxReconciler<
   }> = [];
   private pendingRemoves: string[] = [];
   private rafScheduled = false;
-
-  constructor(tilesetCache: Map<string, P.Texture>) {
-    this.tilesetCache = tilesetCache;
-  }
 
   attachCanvas({
     layerContainers,

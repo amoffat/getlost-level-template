@@ -11,3 +11,13 @@ export interface TileGroup {
   name: string;
   tags: string[];
 }
+
+interface AnimatedFrame {
+  duration: number;
+  tileGroup: TileGroup;
+}
+
+export interface ObjectAnimation {
+  id: string;
+  frames: AnimatedFrame[];
+}

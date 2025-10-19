@@ -1,4 +1,5 @@
 import {
+  isAnimatedInstance,
   isColliderBox,
   isColliderEllipse,
   isTileGroupInstance,
@@ -10,6 +11,13 @@ import { ReduxReconciler } from "./reconciler";
 import { colliderFill } from "./strokes";
 
 export class MapObjReconciler extends ReduxReconciler<MapObj, MapObjProps> {
+  private tilesetCache: Map<string, P.Texture>;
+
+  constructor(tilesetCache: Map<string, P.Texture>) {
+    super();
+    this.tilesetCache = tilesetCache;
+  }
+
   protected override applyProps(node: P.Container, p: MapObjProps) {
     if (!this.layerContainers || !this.spatialIndex) return;
 
@@ -74,6 +82,8 @@ export class MapObjReconciler extends ReduxReconciler<MapObj, MapObjProps> {
       spriteContainer.scale.set(1 + padding); // avoid bleeding
 
       return spriteContainer;
+    } else if (isAnimatedInstance(obj)) {
+      throw new Error("AnimatedInstance rendering not implemented");
     } else if (isColliderEllipse(obj)) {
       const gfx = new P.Graphics();
       gfx.interactive = false;

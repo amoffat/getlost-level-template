@@ -7,7 +7,9 @@ const objects = createEntityAdapter<MapObj>({
   },
 });
 
-interface MapState extends ReturnType<typeof objects.getInitialState> {
+type MapObjState = ReturnType<typeof objects.getInitialState>;
+
+interface MapState extends MapObjState {
   loading: boolean;
   loaded: boolean;
   error: string | null;

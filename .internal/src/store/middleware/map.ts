@@ -1,5 +1,5 @@
 // store.ts
-import { MapObjReconciler } from "@/editor/common/mapReconciler";
+import { ReduxReconciler } from "@/editor/common/reconciler";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
 
@@ -7,7 +7,7 @@ type ActionsMap = Partial<Record<string, { type: string }>>;
 
 export function makeEditorSyncMiddleware(
   actions: ActionsMap,
-  reconciler: MapObjReconciler
+  reconciler: ReduxReconciler<any, any>
 ) {
   const listener = createListenerMiddleware();
   const startAppListening = listener.startListening.withTypes<

@@ -15,6 +15,7 @@ import { setupWheelZoom } from "../common/zoom";
 import { globals as g } from "./globals";
 import { drawGridMask } from "./grid";
 import { setupKeys } from "./keys";
+import { setupFrameSelector } from "./tools/animator";
 import { setupGrouper } from "./tools/group";
 
 export async function init(): Promise<P.Application> {
@@ -116,6 +117,7 @@ export async function init(): Promise<P.Application> {
   });
 
   setupGrouper(cd);
+  setupFrameSelector({ cd, spatialIndex });
 
   canvas.addEventListener("mouseover", () => {
     canvas.focus();

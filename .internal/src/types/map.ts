@@ -14,6 +14,12 @@ export interface TileGroupInstance extends BaseMapObj {
   frame: Rect;
   flipX: boolean;
 }
+
+export interface AnimatedInstance extends BaseMapObj {
+  animId: string;
+  tilesetId: string;
+}
+
 export interface EllipseObj extends BaseMapObj {
   radiusX: number;
   radiusY: number;
@@ -25,7 +31,12 @@ export interface BoxObj extends BaseMapObj {
   width: number;
   height: number;
 }
-export type MapObj = TileGroupInstance | EllipseObj | PolyObj | BoxObj;
+export type MapObj =
+  | TileGroupInstance
+  | AnimatedInstance
+  | EllipseObj
+  | PolyObj
+  | BoxObj;
 export type MapObjProps = AllPropsLoose<MapObj>;
 
 export function isTileGroupInstance(
@@ -41,4 +52,10 @@ export function isColliderPoly(obj: Partial<BaseMapObj>): obj is PolyObj {
 }
 export function isColliderBox(obj: Partial<BaseMapObj>): obj is BoxObj {
   return (obj as BoxObj).width !== undefined;
+}
+
+export function isAnimatedInstance(
+  obj: Partial<BaseMapObj>
+): obj is AnimatedInstance {
+  return (obj as AnimatedInstance).animId !== undefined;
 }

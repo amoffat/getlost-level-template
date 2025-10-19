@@ -1,8 +1,4 @@
-import {
-  objectsActions as collisionObjectsActions,
-  objectsReducer as collisionObjectsReducer,
-  slice as collisionSlice,
-} from "@/editor/collision/state";
+import { slice as collisionSlice } from "@/editor/collision/state";
 import { globals as g } from "@/globals";
 import { slice as dialogueSlice } from "@/slices/dialogue";
 import { slice as mapSlice } from "@/slices/map";
@@ -27,7 +23,6 @@ export const rootReducer = combineReducers({
   collisionEditor: collisionSlice.reducer,
   map: mapSlice.reducer,
   ui: uiSlice.reducer,
-  collisionObjects: collisionObjectsReducer,
 });
 
 const mapMiddleware = makeEditorSyncMiddleware(
@@ -35,10 +30,10 @@ const mapMiddleware = makeEditorSyncMiddleware(
   g.mapEditorReconciler
 );
 
-const collisionMiddleware = makeEditorSyncMiddleware(
-  collisionObjectsActions,
-  g.collisionEditorReconciler
-);
+// const collisionMiddleware = makeEditorSyncMiddleware(
+//   collisionObjectsActions,
+//   g.collisionEditorReconciler
+// );
 
 export const store = configureStore({
   reducer: rootReducer,
@@ -49,8 +44,8 @@ export const store = configureStore({
       autosaveTilesetMiddleware,
       autosaveMapMiddleware,
       autosaveStoryMiddleware,
-      mapMiddleware,
-      collisionMiddleware
+      mapMiddleware
+      // collisionMiddleware
     ),
 });
 
