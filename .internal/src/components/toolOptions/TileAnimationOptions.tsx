@@ -1,3 +1,5 @@
+import { Fieldset } from "@mantine/core";
+
 export default function TileAnimationOptions() {
-  return <div></div>;
+  return <Fieldset legend="Animation options" p="xs"></Fieldset>;
 }

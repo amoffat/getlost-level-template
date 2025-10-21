@@ -98,14 +98,12 @@ export default function MapEditorTab({
       paint: {
         name: "Paint area",
         icon: <IconPaint size={16} />,
-        canActivate: true,
         disabled: place === null,
         options: <Paint />,
       },
       "magic-paint": {
         name: "Magic paint",
         icon: <IconWand size={16} />,
-        canActivate: true,
         disabled: layers.active !== MapLayerName.Ground,
         options: <MagicPaint />,
       },
@@ -113,19 +111,16 @@ export default function MapEditorTab({
         name: "Set gateway",
         icon: <IconDoorExit size={16} />,
         switchToLayer: MapLayerName.Places,
-        canActivate: true,
       },
       "set-waypoint": {
         name: "Set waypoint",
         icon: <IconMapPin size={16} />,
         switchToLayer: MapLayerName.Places,
-        canActivate: true,
       },
       "add-collider": {
         name: "Add collider",
         icon: <IconCarCrash size={16} />,
         switchToLayer: MapLayerName.Colliders,
-        canActivate: true,
         options: <AddCollider />,
       },
 
@@ -133,31 +128,26 @@ export default function MapEditorTab({
         name: "Sensor zone",
         icon: <IconInputSpark size={16} />,
         switchToLayer: MapLayerName.Colliders,
-        canActivate: true,
       },
       "set-sink-zone": {
         name: "Sink zone",
         icon: <IconRipple size={16} />,
         switchToLayer: MapLayerName.Colliders,
-        canActivate: true,
       },
       "set-sound-zone": {
         name: "Sound zone",
         icon: <IconEar size={16} />,
         switchToLayer: MapLayerName.Colliders,
-        canActivate: true,
       },
       "set-zoom-zone": {
         name: "Zoom zone",
         icon: <IconCameraSearch size={16} />,
         switchToLayer: MapLayerName.Colliders,
-        canActivate: true,
       },
       "add-light": {
         name: "Add light",
         icon: <IconBulb size={16} />,
         switchToLayer: MapLayerName.Colliders,
-        canActivate: false,
       },
     }),
     [layers.active, place]

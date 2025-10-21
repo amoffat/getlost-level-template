@@ -92,6 +92,7 @@ export const loadTilesetThunk = createAsyncThunk(
       await fetch(ts.objectUrl).then((r) => r.blob())
     );
     const imageData = getImageDataFromBitmap(bitmap);
+    g.tilesetImageDataCache.set(tsId, imageData);
 
     const objs = new Map<string, ImageData>();
     for (const obj of Object.values(ts.tiles.entities)) {

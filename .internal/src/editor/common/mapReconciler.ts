@@ -6,6 +6,7 @@ import {
   MapObj,
 } from "@/types/map";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
+import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
 import { ReduxReconciler } from "./reconciler";
 import { colliderFill } from "./strokes";
@@ -104,6 +105,18 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
   protected override createNode(obj: MapObj): P.Container {
     if (isTileGroupInstance(obj)) {
       const tsTex = this.tilesetCache.get(obj.tilesetId);
+      if (!tsTex) {
+        notifications.show({
+          title: "Missing tileset",
+          message: `Tileset with id ${obj.tilesetId} not found.`,
+          color: "red",
+          autoClose: false,
+        });
+        throw new Error(
+          `Tileset texture not found for tilesetId ${obj.tilesetId}`
+        );
+      }
+
       const frame = obj.frame;
 
       const padding = 0.001; // avoid bleeding
@@ -116,7 +129,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         height - 2 * padding
       );
       const tileTex = new P.Texture({
-        source: tsTex!.source,
+        source: tsTex.source,
         frame: texFrame,
       });
 

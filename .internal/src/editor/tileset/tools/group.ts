@@ -1,9 +1,10 @@
+import { globals as gApp } from "@/globals";
 import { selectors, actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroup, TilesetObject } from "@/types/tilegroup";
+import { hashOfImageData, subImageData } from "@/utils/image";
 import { subState } from "@/utils/redux";
-import { genGroupId } from "@/utils/tileset";
 import * as P from "pixi.js";
 import {
   ClickDragger,
@@ -52,22 +53,18 @@ class Grouper implements ClickDragListener {
     }
   }
 
-  pointerUp(_e: PointerEventData) {
+  async pointerUp(e: PointerEventData) {
     const state = store.getState();
     const tsState = state.tilesetEditor;
     const mode = selectors.selectMode(state);
 
-    const c = g.groupSelContainer;
-    const coords = {
-      ul: { x: c.x, y: c.y },
-      br: { x: c.x + c.width, y: c.y + c.height },
-    };
+    const coords = e.snappedHitbox;
 
     let finishMode = false;
     if (mode === "delete-group" || mode === "replace-group") {
       const tsId = tsState.activeTilesetId!;
 
-      const innerPadding = 0.1;
+      const innerPadding = 1;
       const searchBounds = {
         minX: coords.ul.x + innerPadding,
         minY: coords.ul.y + innerPadding,
@@ -84,7 +81,13 @@ class Grouper implements ClickDragListener {
       const tsId = tsState.activeTilesetId!;
       const gridSize = tsState.grid.size;
 
-      const id = genGroupId({ coords, tsId });
+      // The tile group id is a hash of the image data for it. This way a tile
+      // can appear anywhere in any tileset, which makes it easier to fix maps
+      // if a tileset gets deleted or renamed.
+      const tsImageData = gApp.tilesetImageDataCache.get(tsId)!;
+      const objData = subImageData(tsImageData, coords);
+      const id = await hashOfImageData(objData);
+
       const group: TileGroup = {
         id,
         tilesetId: tsId,

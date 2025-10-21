@@ -1,11 +1,14 @@
-import { MantineProvider, MantineThemeOverride } from "@mantine/core";
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
+
+import { CommsProvider } from "@/components/providers/CommsProvider";
+import { router } from "@/router";
+import { store } from "@/store/store";
+import { MantineProvider, MantineThemeOverride } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import { createRoot } from "react-dom/client";
 import { Provider as ReduxProvider } from "react-redux";
 import { RouterProvider } from "react-router-dom";
-import { CommsProvider } from "./components/providers/CommsProvider";
-import { router } from "./router";
-import { store } from "./store/store";
 
 const theme: MantineThemeOverride = {
   components: {
@@ -29,6 +32,7 @@ export default function App() {
   return (
     <ReduxProvider store={store}>
       <MantineProvider defaultColorScheme="dark" theme={theme}>
+        <Notifications />
         <CommsProvider>
           <RouterProvider router={router} />
         </CommsProvider>

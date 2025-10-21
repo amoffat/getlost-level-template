@@ -5,9 +5,14 @@ import { Rect } from "@/types/rect";
 import { TileGroup } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
 import { schedulerYield } from "@/utils/async";
-import { getImageDataFromBitmap, isRectTransparent } from "@/utils/image";
+import {
+  getImageDataFromBitmap,
+  hashOfImageData,
+  isTransparent,
+  subImageData,
+} from "@/utils/image";
 import { subState } from "@/utils/redux";
-import { genGroupId, loadTilesetTex } from "@/utils/tileset";
+import { loadTilesetTex } from "@/utils/tileset";
 import * as P from "pixi.js";
 import { BBox } from "rbush";
 import { globals as g } from "./globals";
@@ -59,7 +64,7 @@ export async function unpackActiveTileset() {
         br: { x: (x + 1) * gridSize, y: (y + 1) * gridSize },
       };
 
-      const innerPadding = 0.1;
+      const innerPadding = 1;
       const searchCoords: BBox = {
         minX: coords.ul.x + innerPadding,
         minY: coords.ul.y + innerPadding,
@@ -76,10 +81,12 @@ export async function unpackActiveTileset() {
         continue;
       }
 
-      // Skip empty tiles (all pixels fully transparent)
-      if (isRectTransparent(imageData, coords)) continue;
+      const tileImageData = subImageData(imageData, coords);
 
-      const id = genGroupId({ coords, tsId });
+      // Skip empty tiles (all pixels fully transparent)
+      if (isTransparent(tileImageData)) continue;
+
+      const id = await hashOfImageData(tileImageData);
       chunk.push({
         id,
         pos: coords,

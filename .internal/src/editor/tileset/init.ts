@@ -126,6 +126,10 @@ export async function init(): Promise<P.Application> {
   const cd = new ClickDragger({
     app,
     container: g.tilesetContainer,
+    getGridSnap: () => {
+      const state = store.getState();
+      return state.tilesetEditor.grid.size;
+    },
   });
 
   setupGrouper({ cd, spatialIndex });

@@ -1,3 +1,6 @@
+import "@mantine/core/styles.css";
+import "@mantine/dropzone/styles.css";
+
 import { init as mapInit } from "@/editor/map/init";
 import { init as tsInit } from "@/editor/tileset/init";
 import { globals as g } from "@/globals";
@@ -8,9 +11,7 @@ import { loadMapThunk } from "@/thunks/map";
 import { loadTilesetsThunk } from "@/thunks/tileset";
 import { TabName } from "@/types/tab";
 import { AppShell, Box, Button, Group, Modal, Tabs, Text } from "@mantine/core";
-import "@mantine/core/styles.css";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
-import "@mantine/dropzone/styles.css";
 import { useDisclosure } from "@mantine/hooks";
 import { IconHelp, IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";

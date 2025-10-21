@@ -1,36 +1,21 @@
 import { globals as gApp } from "@/globals";
 import { store } from "@/store/store";
-import { Rect } from "@/types/rect";
 import { TileGroup } from "@/types/tilegroup";
 import * as P from "pixi.js";
-import { v5 } from "uuid";
-
-const GL_NS = "21296fbd-0328-4b58-9424-bc73b5f0e2f7";
-
-export function genGroupId({
-  coords,
-  tsId,
-}: {
-  coords: Rect;
-  tsId: string;
-}): string {
-  return v5(
-    `${tsId}:${coords.ul.x},${coords.ul.y},${coords.br.x},${coords.br.y}`,
-    GL_NS
-  );
-}
 
 export async function genTilesetId(source: File): Promise<string> {
   const data = await source.arrayBuffer();
   const hash = await window.crypto.subtle.digest("SHA-1", data);
-  return v5(new Uint8Array(hash), GL_NS);
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export async function loadTilesetTex(
   tsId: string,
   objectUrl: string
 ): Promise<P.Texture> {
-  const maybeTex = gApp.tilesetCache.get(tsId);
+  const maybeTex = gApp.tilesetTextureCache.get(tsId);
   if (maybeTex) return maybeTex;
 
   const tex = await P.Assets.load<P.Texture>({
@@ -38,7 +23,7 @@ export async function loadTilesetTex(
     parser: "loadTextures",
   });
   tex.source.scaleMode = "nearest";
-  gApp.tilesetCache.set(tsId, tex);
+  gApp.tilesetTextureCache.set(tsId, tex);
   return tex;
 }
 

@@ -2,36 +2,25 @@ import * as constants from "@/constants";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
-import {
-  loadTilesetThunk,
-  retileThunk,
-  selectTilesetThunk,
-} from "@/thunks/tileset";
+import { loadTilesetThunk, selectTilesetThunk } from "@/thunks/tileset";
 import { Mode } from "@/types/tileset";
+import { Flex, Group, ScrollArea, Stack, Tabs, Text } from "@mantine/core";
 import {
-  Fieldset,
-  Flex,
-  Group,
-  ScrollArea,
-  Stack,
-  Tabs,
-  Text,
-} from "@mantine/core";
-import {
-  IconCut,
   IconGrid4x4,
   IconKeyframes,
   IconReplace,
+  IconSquarePlus,
   IconTrash,
 } from "@tabler/icons-react";
 import { use, useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import GridSizeInput from "./GridSizeInput";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
 import TilesetButton from "./TilesetButton";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
 import TileAnimationOptions from "./toolOptions/TileAnimationOptions";
+import TileReplaceOptions from "./toolOptions/TileReplaceOptions";
+import TileReslicer from "./toolOptions/TileReslicer";
 
 export default function TilesetEditorTab({
   initPromise,
@@ -47,7 +36,6 @@ export default function TilesetEditorTab({
   const activeTilesetId = useAppSelector(
     (state) => state.tilesetEditor.activeTilesetId
   );
-  const grid = useAppSelector((state) => state.tilesetEditor.grid);
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -61,19 +49,6 @@ export default function TilesetEditorTab({
       container.appendChild(canvas);
     }
   }, []);
-
-  const changeGridSize = useCallback(
-    async (size: number | string) => {
-      if (typeof size === "string") return;
-      dispatch(actions.setGridSize(size));
-    },
-    [dispatch]
-  );
-
-  const resliceTiles = useCallback(() => {
-    if (!activeTilesetId) return;
-    dispatch(retileThunk(activeTilesetId));
-  }, [dispatch, activeTilesetId]);
 
   const loadedTilesets = useAppSelector(selectors.selectTilesets);
   const tilesetImages = loadedTilesets.map((ts) => (
@@ -90,37 +65,33 @@ export default function TilesetEditorTab({
       "replace-group": {
         name: "Replace group",
         icon: <IconReplace size={16} />,
-        canActivate: true,
+        options: <TileReplaceOptions />,
         disabled: !activeTilesetId,
       },
       "add-group": {
         name: "Add group",
-        icon: <IconCut size={16} />,
-        canActivate: true,
+        icon: <IconSquarePlus size={16} />,
         disabled: !activeTilesetId,
       },
       "delete-group": {
         name: "Delete group",
         icon: <IconTrash size={16} />,
-        canActivate: true,
         disabled: !activeTilesetId,
       },
       "reslice-tiles": {
-        name: "Re-slice tiles",
+        name: "Reslicer",
         icon: <IconGrid4x4 size={16} />,
-        onClick: resliceTiles,
-        canActivate: false,
+        options: <TileReslicer />,
         disabled: !activeTilesetId,
       },
       animate: {
         name: "Animate",
         icon: <IconKeyframes size={16} />,
-        canActivate: true,
         options: <TileAnimationOptions />,
         disabled: !activeTilesetId,
       },
     }),
-    [activeTilesetId, resliceTiles]
+    [activeTilesetId]
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName];
@@ -206,20 +177,7 @@ export default function TilesetEditorTab({
             onToolActivated={onToolActivated}
           />
 
-          {toolOptions && (
-            <Fieldset legend={`${tool.name} options`} p="xs">
-              {toolOptions}
-            </Fieldset>
-          )}
-
-          <Fieldset p={"xs"} legend="Grid settings">
-            <Stack p={0}>
-              <GridSizeInput
-                defaultValue={grid.size}
-                onChange={changeGridSize}
-              />
-            </Stack>
-          </Fieldset>
+          {toolOptions}
         </Stack>
       </Flex>
     </>

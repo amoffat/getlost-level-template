@@ -8,8 +8,6 @@ import { ReactNode, useMemo } from "react";
 export interface ToolDescriptor {
   name: string;
   icon: ReactNode;
-  canActivate: boolean;
-  onClick?: () => void;
   // allow disabled state in future
   disabled?: boolean;
   switchToLayer?: MapLayerName;
@@ -57,13 +55,10 @@ export default function ToolPalette<T extends string>({
       }
 
       if (t.disabled) return;
-      if (t.canActivate) {
-        if (t.switchToLayer) {
-          dispatch(actions.setActiveLayer(t.switchToLayer));
-        }
-        onToolActivated?.(slug);
+      if (t.switchToLayer) {
+        dispatch(actions.setActiveLayer(t.switchToLayer));
       }
-      t.onClick?.();
+      onToolActivated?.(slug);
     };
 
     toolComponents.push(

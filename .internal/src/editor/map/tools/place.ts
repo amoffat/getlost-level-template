@@ -99,7 +99,7 @@ export class Placer implements ClickDragListener {
     const posKey = `${pos.x},${pos.y}`;
     const placedThisSession = this.dragSessionIndex.has(posKey);
 
-    const innerPadding = 0.1;
+    const innerPadding = 1;
     // We check a slightly smaller area than the actual object size to allow
     // for some small gaps between objects.
     const searchBounds = {
@@ -196,7 +196,7 @@ subState(
         rect.br.x - rect.ul.x,
         rect.br.y - rect.ul.y
       );
-      const tsTex = gApp.tilesetCache.get(placeObj.tilesetId);
+      const tsTex = gApp.tilesetTextureCache.get(placeObj.tilesetId);
       if (!tsTex) {
         log.error("Tileset texture not found for placer");
         return;
