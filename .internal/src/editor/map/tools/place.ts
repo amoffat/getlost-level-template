@@ -6,7 +6,7 @@ import { actions } from "@/slices/map";
 import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
-import { isTileGroupInstance, TileGroupInstance } from "@/types/map";
+import { isTileGroupInstance, MapObj, TileGroupInstance } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import { PaintOpts } from "@/types/tools";
 import { subState } from "@/utils/redux";
@@ -29,7 +29,7 @@ export class Placer implements ClickDragListener {
   protected tempSpatialIndex: Set<string> = new Set();
   protected dragSessionIndex: Set<string> = new Set();
 
-  constructor(protected spatialIndex: SpatialIndex) {}
+  constructor(protected spatialIndex: SpatialIndex<MapObj>) {}
 
   public pointerUp(_e: PointerEventData): void {
     const state = store.getState();
@@ -174,7 +174,7 @@ export function setupPlacer({
   spatialIndex,
 }: {
   cd: ClickDragger;
-  spatialIndex: SpatialIndex;
+  spatialIndex: SpatialIndex<MapObj>;
 }) {
   cd.addListener(new Placer(spatialIndex));
 }

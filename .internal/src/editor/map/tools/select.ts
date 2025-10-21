@@ -24,7 +24,7 @@ function isSelectionMode(mode: Mode): boolean {
 class Selector implements ClickDragListener {
   private marqueeEnabled = false;
 
-  constructor(private spatialIndex: SpatialIndex) {}
+  constructor(private spatialIndex: SpatialIndex<MapObj>) {}
 
   private get addToSelection(): boolean {
     return pressedKeys["Control"] ?? false;
@@ -182,7 +182,7 @@ export function setupSelector({
   spatialIndex,
 }: {
   cd: ClickDragger;
-  spatialIndex: SpatialIndex;
+  spatialIndex: SpatialIndex<MapObj>;
 }) {
   cd.addListener(new Selector(spatialIndex));
 }

@@ -1,12 +1,14 @@
+import { computeEdgeSignatures } from "@/editor/map/utils/autotile";
 import { setCanvasTileset, unpackActiveTileset } from "@/editor/tileset/loader";
-import { computeEdgeSignatures } from "@/editor/tileset/tools/autotile";
 import { globals as g } from "@/globals";
 import { loadTileset, loadTilesets } from "@/persist/tileset/api";
+import { router } from "@/router";
 import {
   TilesetEditorState,
   actions as tsActions,
 } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
+import { store } from "@/store/store";
 import { Tileset } from "@/types/tileset";
 import {
   getImageDataFromBitmap,
@@ -52,9 +54,8 @@ export const uploadTilesetThunk = createAsyncThunk(
     const ts: Tileset = {
       id: tsId,
       objectUrl,
-      palette: {},
-      paletteIds: [],
       saved: false,
+      tiles: { ids: [], entities: {} },
     };
 
     await loadTilesetTex(tsId, ts.objectUrl);
@@ -93,7 +94,7 @@ export const loadTilesetThunk = createAsyncThunk(
     const imageData = getImageDataFromBitmap(bitmap);
 
     const objs = new Map<string, ImageData>();
-    for (const obj of Object.values(ts.palette)) {
+    for (const obj of Object.values(ts.tiles.entities)) {
       // Skip tiles with transparent edges
       if (!hasSolidEdges(imageData, obj.pos)) {
         continue;
@@ -108,7 +109,7 @@ export const loadTilesetThunk = createAsyncThunk(
     }
     // End edge signature indexing
 
-    for (const obj of Object.values(ts.palette)) {
+    for (const obj of Object.values(ts.tiles.entities)) {
       if (obj.tags.length > 0) {
         dispatch(uiActions.addTilesetGroupTags(obj.tags));
       }
@@ -125,12 +126,28 @@ export const removeTilesetThunk = createAsyncThunk(
     const ts = state.tilesetEditor.tilesets[tsId];
     if (!ts) return;
 
-    dispatch(tsActions.removeTileset(tsId));
-
     // If it's the active tileset, clear the canvas
     if (state.tilesetEditor.activeTilesetId === tsId) {
       await setCanvasTileset(null);
       dispatch(tsActions.setActiveTileset(null));
     }
+
+    dispatch(tsActions.removeTileset(tsId));
+    router.navigate("/tilesets");
+  }
+);
+
+export const retileThunk = createAsyncThunk(
+  "tilesetEditor/retileThunk",
+  async (tsId: string, { dispatch }) => {
+    const state = store.getState();
+    const ts = state.tilesetEditor.tilesets[tsId];
+    if (!ts) return;
+
+    const ids = Object.values(ts.tiles.entities)
+      .filter((obj) => !obj.pinned)
+      .map((obj) => obj.id);
+    dispatch(tsActions.deletePaletteObjects({ tsId, ids }));
+    await unpackActiveTileset();
   }
 );

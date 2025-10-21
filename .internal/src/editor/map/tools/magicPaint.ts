@@ -5,12 +5,12 @@ import {
   MatchQuery,
   matchTile,
   pickDirectionWeights,
-} from "@/editor/tileset/tools/autotile";
+} from "@/editor/map/utils/autotile";
 import { globals as appG } from "@/globals";
 import { selectors as mapSelectors } from "@/slices/map";
 import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { isTileGroupInstance, TileGroupInstance } from "@/types/map";
+import { isTileGroupInstance, MapObj, TileGroupInstance } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroup } from "@/types/tilegroup";
 import { createRafThrottled } from "@/utils/throttle";
@@ -25,7 +25,7 @@ class Painter extends Placer {
   posDispatcher: ReturnType<typeof createRafThrottled>;
   candidateDispatcher: ReturnType<typeof createRafThrottled>;
 
-  constructor(spatialIndex: SpatialIndex) {
+  constructor(spatialIndex: SpatialIndex<MapObj>) {
     super(spatialIndex);
 
     this.placeDispatcher = createRafThrottled((obj: TileGroup | null) => {
@@ -211,7 +211,7 @@ export function setupMagicPainter({
   spatialIndex,
 }: {
   cd: ClickDragger;
-  spatialIndex: SpatialIndex;
+  spatialIndex: SpatialIndex<MapObj>;
 }) {
   cd.addListener(new Painter(spatialIndex));
 }

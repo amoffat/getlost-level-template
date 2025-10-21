@@ -1,5 +1,4 @@
 import { Rect } from "./rect";
-import { AllPropsLoose } from "./union";
 
 export interface BaseMapObj {
   id: string;
@@ -37,7 +36,6 @@ export type MapObj =
   | EllipseObj
   | PolyObj
   | BoxObj;
-export type MapObjProps = AllPropsLoose<MapObj>;
 
 export function isTileGroupInstance(
   obj: Partial<BaseMapObj>

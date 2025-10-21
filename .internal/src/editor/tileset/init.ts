@@ -1,5 +1,8 @@
 import * as constants from "@/constants";
-import { selectors } from "@/slices/tilesetEditor";
+import { globals as gApp } from "@/globals";
+import { selectors, tileAdapter } from "@/slices/tilesetEditor";
+import { SpatialIndex } from "@/types/spatial";
+import { TilesetObject } from "@/types/tilegroup";
 import debounce from "debounce";
 import * as P from "pixi.js";
 import { actions } from "../../slices/tilesetEditor";
@@ -15,13 +18,22 @@ import { setupWheelZoom } from "../common/zoom";
 import { globals as g } from "./globals";
 import { drawGridMask } from "./grid";
 import { setupKeys } from "./keys";
-import { setupFrameSelector } from "./tools/animator";
 import { setupGrouper } from "./tools/group";
 
 export async function init(): Promise<P.Application> {
   // Create a new application
   const app = new P.Application();
   g.app = app;
+
+  const spatialIndex = new SpatialIndex<TilesetObject>({
+    selectById: (state, id) => {
+      const ts = selectors.activeTileset(state);
+      if (!ts) return undefined;
+      return tileAdapter.getSelectors().selectById(ts.tiles, id);
+    },
+    filterLayer: () => true,
+  });
+  g.spatialIndex = spatialIndex;
 
   // Initialize the application
   await app.init({ backgroundAlpha: 0 });
@@ -116,8 +128,13 @@ export async function init(): Promise<P.Application> {
     container: g.tilesetContainer,
   });
 
-  setupGrouper(cd);
-  setupFrameSelector({ cd, spatialIndex });
+  setupGrouper({ cd, spatialIndex });
+  // setupFrameSelector({ cd, spatialIndex });
+
+  gApp.tilesetEditorReconciler.attachCanvas({
+    spatialIndex,
+    container: g.tilesetContainer,
+  });
 
   canvas.addEventListener("mouseover", () => {
     canvas.focus();

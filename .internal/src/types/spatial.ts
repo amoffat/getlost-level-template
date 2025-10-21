@@ -1,7 +1,6 @@
 import { RootState, store } from "@/store/store";
 import { isVector, Vector } from "@/vec";
 import RBush, { BBox } from "rbush";
-import { MapObj } from "./map";
 
 export interface IndexItem {
   id: string;
@@ -11,16 +10,16 @@ export interface IndexItem {
   maxY: number;
 }
 
-export class SpatialIndex extends RBush<IndexItem> {
+export class SpatialIndex<Obj> extends RBush<IndexItem> {
   private indexItems = new Map<string, IndexItem>();
-  private selectById: (state: RootState, id: string) => MapObj | undefined;
+  private selectById: (state: RootState, id: string) => Obj | undefined;
   private filterLayer: (state: RootState, layer: number) => boolean;
 
   constructor({
     selectById,
     filterLayer,
   }: {
-    selectById: (state: RootState, id: string) => MapObj | undefined;
+    selectById: (state: RootState, id: string) => Obj | undefined;
     filterLayer: (state: RootState, layer: number) => boolean;
   }) {
     super();
@@ -45,19 +44,19 @@ export class SpatialIndex extends RBush<IndexItem> {
     }
   }
 
-  public insert(item: IndexItem): SpatialIndex {
+  public insert(item: IndexItem): SpatialIndex<Obj> {
     super.insert(item);
     this.indexItems.set(item.id, item);
     return this;
   }
 
-  public update(item: IndexItem): SpatialIndex {
+  public update(item: IndexItem): SpatialIndex<Obj> {
     this.removeById(item.id);
     this.insert(item);
     return this;
   }
 
-  public getObjects({ pos }: { pos: Vector | BBox }): MapObj[] {
+  public getObjects({ pos }: { pos: Vector | BBox }): Obj[] {
     let firstPass: IndexItem[];
     if (isVector(pos)) {
       firstPass = this.searchByPos(pos);
@@ -76,8 +75,12 @@ export class SpatialIndex extends RBush<IndexItem> {
       // the object might no longer exist in the state, but still temporarily
       // exist in the spatial index. It's temporary but we need to check for it.
       .filter((obj) => obj !== undefined)
-      .filter((obj) => this.filterLayer(state, obj.layer))
-      .sort((a, b) => b.z - a.z);
+      .filter(
+        (obj) =>
+          (obj as any).layer === undefined ||
+          this.filterLayer(state, (obj as any).layer)
+      )
+      .sort((a, b) => ((a as any).z ?? 0) - ((b as any).z ?? 0));
     return objs;
   }
 }

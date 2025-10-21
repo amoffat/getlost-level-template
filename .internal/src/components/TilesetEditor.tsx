@@ -1,9 +1,12 @@
 import * as constants from "@/constants";
-import { unpackActiveTileset } from "@/editor/tileset/loader";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
-import { loadTilesetThunk, selectTilesetThunk } from "@/thunks/tileset";
+import {
+  loadTilesetThunk,
+  retileThunk,
+  selectTilesetThunk,
+} from "@/thunks/tileset";
 import { Mode } from "@/types/tileset";
 import {
   Fieldset,
@@ -69,8 +72,7 @@ export default function TilesetEditorTab({
 
   const resliceTiles = useCallback(() => {
     if (!activeTilesetId) return;
-    dispatch(actions.clearPalette(activeTilesetId));
-    unpackActiveTileset();
+    dispatch(retileThunk(activeTilesetId));
   }, [dispatch, activeTilesetId]);
 
   const loadedTilesets = useAppSelector(selectors.selectTilesets);

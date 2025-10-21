@@ -21,3 +21,9 @@ export interface ObjectAnimation {
   id: string;
   frames: AnimatedFrame[];
 }
+
+export type TilesetObject = TileGroup;
+
+export function isTileGroup(obj: TilesetObject): obj is TileGroup {
+  return (obj as TileGroup).pinned !== undefined;
+}

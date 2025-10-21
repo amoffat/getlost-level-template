@@ -3,7 +3,7 @@ import { colliderFill } from "@/editor/common/strokes";
 import { actions } from "@/slices/map";
 import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { BoxObj } from "@/types/map";
+import { BoxObj, MapObj } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
 import {
@@ -17,7 +17,7 @@ export class Collider implements ClickDragListener {
   protected paint = false;
   private gfx: P.Graphics;
 
-  constructor(protected spatialIndex: SpatialIndex) {
+  constructor(protected spatialIndex: SpatialIndex<MapObj>) {
     this.gfx = new P.Graphics();
     g.layerContainers[LayerName.Meta].addChild(this.gfx);
   }
@@ -87,7 +87,7 @@ export function setupCollider({
   spatialIndex,
 }: {
   cd: ClickDragger;
-  spatialIndex: SpatialIndex;
+  spatialIndex: SpatialIndex<MapObj>;
 }) {
   cd.addListener(new Collider(spatialIndex));
 }

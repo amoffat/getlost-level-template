@@ -22,6 +22,24 @@ interface ObjectPaletteProps {
   onDeselectObject?: () => void;
 }
 
+function sortBySizeDescending(a: TileGroup, b: TileGroup): number {
+  const aWidth = a.pos.br.x - a.pos.ul.x;
+  const aHeight = a.pos.br.y - a.pos.ul.y;
+  const bWidth = b.pos.br.x - b.pos.ul.x;
+  const bHeight = b.pos.br.y - b.pos.ul.y;
+  const aArea = aWidth * aHeight;
+  const bArea = bWidth * bHeight;
+  if (aArea !== bArea) return bArea - aArea;
+
+  // if areas are equal, sort by tileset id
+  if (a.tilesetId !== b.tilesetId) {
+    return a.tilesetId.localeCompare(b.tilesetId);
+  }
+
+  // otherwise sort by id to ensure consistent order
+  return a.id.localeCompare(b.id);
+}
+
 export default function ObjectPalette({
   onSelectObject,
   onDeselectObject,
@@ -49,21 +67,20 @@ export default function ObjectPalette({
       }
     });
 
-    for (const ts of filteredTilesets) {
-      const num = ts.paletteIds.length;
-      for (let i = num - 1; i >= 0; i--) {
-        const objId = ts.paletteIds[i];
-        const group = ts.palette[objId];
-        const key = `${ts.id}-${group.id}`;
-        objs.push(
-          <TilesetGroup
-            scale={scale}
-            key={key}
-            group={group}
-            selected={selectedObject?.id === group.id && allowSelect}
-          />
-        );
-      }
+    const objectsBySize = Object.values(filteredTilesets)
+      .flatMap((ts) => Object.values(ts.tiles.entities))
+      .sort(sortBySizeDescending);
+
+    for (const group of objectsBySize) {
+      const key = `${group.tilesetId}-${group.id}`;
+      objs.push(
+        <TilesetGroup
+          scale={scale}
+          key={key}
+          group={group}
+          selected={selectedObject?.id === group.id && allowSelect}
+        />
+      );
     }
 
     return objs;
@@ -107,7 +124,7 @@ export default function ObjectPalette({
         return;
       }
 
-      const obj = tilesets[tsId].palette[objId];
+      const obj = tilesets[tsId].tiles.entities[objId];
       if (e.button === 0) {
         if (objId === selectedObject?.id) {
           deselectObject();

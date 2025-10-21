@@ -25,9 +25,14 @@ export const rootReducer = combineReducers({
   ui: uiSlice.reducer,
 });
 
-const mapMiddleware = makeEditorSyncMiddleware(
-  mapSlice.actions,
+const mapSyncMiddleware = makeEditorSyncMiddleware(
+  "map",
   g.mapEditorReconciler
+);
+
+const tileSyncMiddleware = makeEditorSyncMiddleware(
+  "tilesetEditor",
+  g.tilesetEditorReconciler
 );
 
 // const collisionMiddleware = makeEditorSyncMiddleware(
@@ -44,7 +49,9 @@ export const store = configureStore({
       autosaveTilesetMiddleware,
       autosaveMapMiddleware,
       autosaveStoryMiddleware,
-      mapMiddleware
+      mapSyncMiddleware,
+      tileSyncMiddleware
+
       // collisionMiddleware
     ),
 });

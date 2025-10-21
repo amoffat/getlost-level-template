@@ -1,3 +1,5 @@
+import { SpatialIndex } from "@/types/spatial";
+import { TilesetObject } from "@/types/tilegroup";
 import * as P from "pixi.js";
 
 interface Globals {
@@ -12,6 +14,7 @@ interface Globals {
   grid: P.Container;
   currentTileset?: P.Sprite;
   scanPos: P.Container;
+  spatialIndex: SpatialIndex<TilesetObject>;
 }
 
 export const globals: Globals = {} as Globals;

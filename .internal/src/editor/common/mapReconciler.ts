@@ -4,21 +4,78 @@ import {
   isColliderEllipse,
   isTileGroupInstance,
   MapObj,
-  MapObjProps,
 } from "@/types/map";
+import { IndexItem, SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
 import { ReduxReconciler } from "./reconciler";
 import { colliderFill } from "./strokes";
 
-export class MapObjReconciler extends ReduxReconciler<MapObj, MapObjProps> {
+export class MapObjReconciler extends ReduxReconciler<MapObj> {
+  private layerContainers?: Record<number, P.Container>;
   private tilesetCache: Map<string, P.Texture>;
+  // Object id -> layer container
+  private layerLookup = new Map<string, P.Container>();
+
+  protected spatialIndex?: SpatialIndex<MapObj>;
+  private connected = false;
 
   constructor(tilesetCache: Map<string, P.Texture>) {
     super();
     this.tilesetCache = tilesetCache;
   }
 
-  protected override applyProps(node: P.Container, p: MapObjProps) {
+  public attachCanvas({
+    layerContainers,
+    spatialIndex,
+  }: {
+    layerContainers: Record<number, P.Container>;
+    spatialIndex: SpatialIndex<MapObj>;
+  }) {
+    this.layerContainers = layerContainers;
+    this.spatialIndex = spatialIndex;
+    this.connected = true;
+  }
+
+  protected override assertConnected() {
+    if (!this.connected) {
+      throw new Error("MapObjReconciler operation called before attachCanvas");
+    }
+  }
+
+  protected override containerByObj(obj: MapObj): P.Container {
+    return this.layerContainers![obj.layer]!;
+  }
+
+  protected override containerById(id: string): P.Container {
+    const layer = this.layerLookup.get(id)!;
+    return layer;
+  }
+
+  protected override removeById(id: string): void {
+    this.spatialIndex!.removeById(id);
+    this.layerLookup.delete(id);
+  }
+
+  protected override insertItem(item: IndexItem): void {
+    this.spatialIndex!.insert(item);
+  }
+
+  protected override updateItem(
+    item: IndexItem,
+    changes: ReduxReconciler<MapObj>["ObjParamsType"]
+  ): void {
+    // If position-affecting props are changing, update spatial index.
+    const willAffectPos =
+      "x" in changes || "y" in changes || "frame" in (changes as any);
+    if (willAffectPos) {
+      this.spatialIndex!.update(item);
+    }
+  }
+
+  protected override applyProps(
+    node: P.Container,
+    p: ReduxReconciler<MapObj>["ObjParamsType"]
+  ) {
     if (!this.layerContainers || !this.spatialIndex) return;
 
     if (p.x !== undefined) node.x = p.x;
@@ -35,7 +92,9 @@ export class MapObjReconciler extends ReduxReconciler<MapObj, MapObjProps> {
       const oldLayer = this.layerLookup.get(node.label)!;
       const newLayer = this.layerContainers[p.layer]!;
       if (oldLayer !== newLayer) {
-        oldLayer.removeChild(node);
+        if (oldLayer) {
+          oldLayer.removeChild(node);
+        }
         newLayer.addChild(node);
         this.layerLookup.set(node.label, newLayer);
       }

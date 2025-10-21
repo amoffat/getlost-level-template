@@ -1,9 +1,12 @@
+import type { TileGroup } from "@/types/tilegroup";
 import type { TilesetDocV1 } from "../schema";
 
 export function migrate(doc: TilesetDocV1) {
-  for (const tile of Object.values(doc.tileset.palette)) {
-    tile.zIndices = [];
-    tile.tags = [];
-    tile.name = "";
+  const ts = doc.tileset as any;
+  for (const obj of Object.values(ts.palette)) {
+    const tg = obj as TileGroup;
+    tg.zIndices = [];
+    tg.tags = [];
+    tg.name = "";
   }
 }

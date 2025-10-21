@@ -32,7 +32,7 @@ export default function ObjSelHover() {
   for (const obj of proposed.objects) {
     if (!isTileGroupInstance(obj)) continue;
 
-    const group = tilesets[obj.tilesetId].palette[obj.tileId];
+    const group = tilesets[obj.tilesetId].tiles.entities[obj.tileId];
     const entry = (
       <Checkbox.Card
         className={classes.root}

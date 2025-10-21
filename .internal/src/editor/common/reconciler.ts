@@ -1,4 +1,4 @@
-import { IndexItem, SpatialIndex } from "@/types/spatial";
+import { IndexItem } from "@/types/spatial";
 import { AllPropsLoose } from "@/types/union";
 import * as P from "pixi.js";
 
@@ -17,7 +17,6 @@ function makeIndexItem(id: string, node: P.Container): IndexItem {
 
 interface CanvasPlacable {
   id: string;
-  layer: number;
 }
 
 /**
@@ -28,13 +27,11 @@ export abstract class ReduxReconciler<
   ObjType extends CanvasPlacable,
   ObjParams extends Partial<ObjType> = AllPropsLoose<ObjType>,
 > {
-  protected layerContainers?: Record<number, P.Container>;
-  protected spatialIndex?: SpatialIndex;
+  // phantom type for subclasses
+  protected readonly ObjParamsType!: ObjParams;
 
   // id -> DisplayObject
   private nodes = new Map<string, P.Container>();
-  // Object id -> layer container
-  protected layerLookup = new Map<string, P.Container>();
 
   // coalesced ops for this frame
   private pendingAdds: ObjType[] = [];
@@ -44,17 +41,6 @@ export abstract class ReduxReconciler<
   }> = [];
   private pendingRemoves: string[] = [];
   private rafScheduled = false;
-
-  attachCanvas({
-    layerContainers,
-    spatialIndex,
-  }: {
-    layerContainers: Record<number, P.Container>;
-    spatialIndex: SpatialIndex;
-  }) {
-    this.layerContainers = layerContainers;
-    this.spatialIndex = spatialIndex;
-  }
 
   enqueueAdd(obj: ObjType) {
     this.pendingAdds.push(obj);
@@ -72,13 +58,18 @@ export abstract class ReduxReconciler<
   // If you sometimes dispatch setAll, use this diffing helper:
   enqueueDiff(fullList: ObjType[]) {
     const nextIds = new Set(fullList.map((o) => o.id));
-    for (const id of this.nodes.keys())
-      if (!nextIds.has(id)) this.pendingRemoves.push(id);
+    for (const id of this.nodes.keys()) {
+      if (!nextIds.has(id)) {
+        this.pendingRemoves.push(id);
+      }
+    }
     // add/upsert (cheap path: treat as upserts)
     for (const o of fullList) {
-      if (this.nodes.has(o.id))
+      if (this.nodes.has(o.id)) {
         this.pendingUpdates.push({ id: o.id, changes: o });
-      else this.pendingAdds.push(o);
+      } else {
+        this.pendingAdds.push(o);
+      }
     }
     this.scheduleFlush();
   }
@@ -93,17 +84,16 @@ export abstract class ReduxReconciler<
   }
 
   private flush() {
-    if (!this.layerContainers || !this.spatialIndex) return;
+    this.assertConnected();
 
     // removes first so re-add in same frame won’t conflict
     for (const id of this.pendingRemoves) {
       const node = this.nodes.get(id);
       if (node) {
-        this.spatialIndex.removeById(id);
         node.destroy({ children: true });
-        const layer = this.layerLookup.get(id)!;
-        this.layerLookup.delete(id);
-        layer.removeChild(node);
+        const container = this.containerById(id);
+        container.removeChild(node);
+        this.removeById(id);
         this.nodes.delete(id);
       }
     }
@@ -112,30 +102,22 @@ export abstract class ReduxReconciler<
     for (const obj of this.pendingAdds) {
       const node = this.createNode(obj);
       this.nodes.set(obj.id, node);
-      const layer = this.layerContainers[obj.layer]!;
-      this.layerLookup.set(obj.id, layer);
-      layer.addChild(node);
+      const container = this.containerByObj(obj);
+      container.addChild(node);
       this.applyProps(node, obj);
 
       // Index in spatial structure
       const item = makeIndexItem(obj.id, node);
-      this.spatialIndex.insert(item);
+      this.insertItem(item);
     }
     this.pendingAdds.length = 0;
 
     for (const { id, changes } of this.pendingUpdates) {
       const node = this.nodes.get(id);
       if (!node) continue;
-      // If position-affecting props are changing, update spatial index.
-      const willAffectPos =
-        "x" in changes || "y" in changes || "frame" in (changes as any);
 
       this.applyProps(node, changes);
-
-      if (willAffectPos) {
-        const nextItem = makeIndexItem(id, node);
-        this.spatialIndex.update(nextItem);
-      }
+      this.updateItem(makeIndexItem(id, node), changes);
     }
     this.pendingUpdates.length = 0;
   }
@@ -143,4 +125,16 @@ export abstract class ReduxReconciler<
   protected abstract createNode(obj: ObjType): P.Container;
 
   protected abstract applyProps(node: P.Container, p: Partial<ObjType>): void;
+
+  protected abstract containerByObj(obj: ObjType): P.Container;
+
+  protected abstract containerById(id: string): P.Container;
+
+  protected abstract assertConnected(): void;
+
+  protected removeById(_id: string): void {}
+
+  protected insertItem(_item: IndexItem): void {}
+
+  protected updateItem(_item: IndexItem, _changes: Partial<ObjType>): void {}
 }

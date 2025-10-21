@@ -1,7 +1,7 @@
 import { log } from "@/log";
 import { TileGroupInstance } from "@/types/map";
 import { Rect } from "@/types/rect";
-import { IndexItem, SpatialIndex } from "@/types/spatial";
+import { IndexItem } from "@/types/spatial";
 import { TileGroup } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
@@ -13,18 +13,7 @@ import {
   PayloadAction,
 } from "@reduxjs/toolkit";
 
-const tileIndices: Record<string, SpatialIndex> = {};
 const DEFAULT_ZOOMPAN: ZoomPan = { zoom: 1, pan: { x: 0, y: 0 } };
-
-export function getTileIndex(id: string): SpatialIndex {
-  if (!tileIndices[id]) {
-    tileIndices[id] = new SpatialIndex({
-      selectById: (_state, _id) => undefined, // Not needed
-      filterLayer: () => true, // Not needed
-    });
-  }
-  return tileIndices[id];
-}
 
 // The padding prevents RBush false positives when tiles are adjacent
 export function groupToBBox(group: TileGroup, pad: number = 0.1): IndexItem {
@@ -37,7 +26,9 @@ export function groupToBBox(group: TileGroup, pad: number = 0.1): IndexItem {
   };
 }
 
+const reconcilePrefix = "tilesetEditor";
 export const selectedAdapter = createEntityAdapter<TileGroup>();
+export const tileAdapter = createEntityAdapter<TileGroup>();
 
 export interface TilesetEditorState {
   grid: {
@@ -99,35 +90,58 @@ export const slice = createSlice({
       state.activeModeStack.pop();
     },
 
-    updateTileGroup(
-      state,
-      action: PayloadAction<{
+    updateTileGroup: {
+      prepare: (payload: {
         tsId: string;
         group: TileGroup;
         changes: Partial<TileGroup>;
-      }>
-    ) {
-      const { group, changes } = action.payload;
-      const ts = state.tilesets[group.tilesetId];
-      if (!ts || !ts.palette[group.id]) return;
-
-      const tg = ts.palette[group.id];
-      const changed = { ...tg, ...changes };
-      ts.palette[group.id] = changed;
-
-      const spatialIdx = getTileIndex(ts.id);
-      spatialIdx.removeById(group.id);
-      spatialIdx.insert(groupToBBox(ts.palette[group.id]));
+      }) => ({
+        meta: {
+          reconcilePrefix,
+          reconcileType: "update" as const,
+          reconcile: { id: payload.group.id, changes: payload.changes },
+        },
+        payload,
+      }),
+      reducer(
+        state,
+        action: PayloadAction<{
+          tsId: string;
+          group: TileGroup;
+          changes: Partial<TileGroup>;
+        }>
+      ) {
+        const { group, changes } = action.payload;
+        const ts = state.tilesets[group.tilesetId];
+        if (!ts) return;
+        tileAdapter.updateOne(ts.tiles, { id: group.id, changes: changes });
+      },
     },
 
     setMode(state, action: PayloadAction<Mode | null>) {
       const mode = action.payload;
       state.activeModeStack = mode === null ? [] : [mode];
     },
-    setActiveTileset: (state, action: PayloadAction<Tileset | null>) => {
-      const ts = action.payload;
-      state.activeTilesetId = ts?.id ?? null;
-      state.activeZoomPan = ts ? state.tilesetZoomPans[ts.id] : DEFAULT_ZOOMPAN;
+    setActiveTileset: {
+      prepare: (payload: Tileset | null) => ({
+        meta: {
+          reconcilePrefix,
+          reconcileType: "setAll" as const,
+          reconcile: payload ? Object.values(payload.tiles.entities) : [],
+        },
+        payload,
+      }),
+      reducer: (state, action: PayloadAction<Tileset | null>) => {
+        const ts = action.payload;
+        state.activeTilesetId = ts?.id ?? null;
+        state.activeZoomPan = ts
+          ? state.tilesetZoomPans[ts.id]
+          : DEFAULT_ZOOMPAN;
+
+        if (ts) {
+          // tileAdapter.setAll(ts?.tiles, Object.values(ts.tiles.entities));
+        }
+      },
     },
     addTileset: (
       state,
@@ -142,11 +156,6 @@ export const slice = createSlice({
       if (!state.tilesetIds.includes(ts.id)) {
         state.tilesetIds.push(ts.id);
       }
-
-      const idx = getTileIndex(ts.id);
-      for (const group of Object.values(ts.palette)) {
-        idx.insert(groupToBBox(group));
-      }
     },
 
     removeTileset: (state, action: PayloadAction<string>) => {
@@ -158,7 +167,6 @@ export const slice = createSlice({
         state.activeZoomPan = DEFAULT_ZOOMPAN;
       }
       delete state.tilesetZoomPans[tsId];
-      delete tileIndices[tsId];
     },
 
     setScanPos: (state, action: PayloadAction<Rect | null>) => {
@@ -182,108 +190,80 @@ export const slice = createSlice({
     markSaved(state, action: PayloadAction<{ tsId: string; saved: boolean }>) {
       const { tsId, saved } = action.payload;
       const ts = state.tilesets[tsId];
-      if (ts) {
-        ts.saved = saved;
-      }
+      ts.saved = saved;
     },
 
-    clearPalette(state, action: PayloadAction<string>) {
-      const tsId = action.payload;
-      const ts = state.tilesets[tsId];
-      if (ts) {
-        const idsToDelete = new Set<string>();
-        const spatialIdx = getTileIndex(ts.id);
-        for (const obj of Object.values(ts.palette)) {
-          // Single tile objects can be deleted outright
-          if (!obj.pinned) {
-            delete ts.palette[obj.id];
-            idsToDelete.add(obj.id);
-            spatialIdx.removeById(obj.id);
-          }
-        }
-        ts.paletteIds = ts.paletteIds.filter((id) => !idsToDelete.has(id));
-      }
+    bulkAddSinglePaletteTiles: {
+      prepare: (payload: { tsId: string; groups: TileGroup[] }) => ({
+        meta: {
+          reconcilePrefix,
+          reconcileType: "add" as const,
+          reconcile: payload.groups,
+        },
+        payload,
+      }),
+      reducer(
+        state,
+        action: PayloadAction<{ tsId: string; groups: TileGroup[] }>
+      ) {
+        const { tsId, groups } = action.payload;
+        const ts = state.tilesets[tsId];
+        tileAdapter.addMany(ts.tiles, groups);
+      },
     },
 
-    bulkAddSinglePaletteTiles(
-      state,
-      action: PayloadAction<{ tsId: string; groups: TileGroup[] }>
-    ) {
-      const { tsId, groups } = action.payload;
-      const ts = state.tilesets[tsId];
-      const newPaletteIds: string[] = [];
-      const newPalette: Record<string, TileGroup> = { ...ts.palette };
-      const idx = getTileIndex(ts.id);
-
-      for (const group of groups) {
-        if (group.id in newPalette) continue;
-        newPaletteIds.push(group.id);
-        newPalette[group.id] = group;
-        // Keep external cache in sync
-        idx.insert(groupToBBox(group));
-      }
-
-      ts.paletteIds = [...ts.paletteIds, ...newPaletteIds];
-      ts.palette = newPalette;
+    addSinglePaletteTile: {
+      prepare: (payload: { tsId: string; group: TileGroup }) => ({
+        meta: {
+          reconcilePrefix,
+          reconcileType: "add" as const,
+          reconcile: payload.group,
+        },
+        payload,
+      }),
+      reducer(
+        state,
+        action: PayloadAction<{ tsId: string; group: TileGroup }>
+      ) {
+        const { tsId, group } = action.payload;
+        const ts = state.tilesets[tsId];
+        tileAdapter.addOne(ts.tiles, group);
+      },
     },
 
-    addSinglePaletteTile(
-      state,
-      action: PayloadAction<{ tsId: string; group: TileGroup }>
-    ) {
-      const { tsId, group } = action.payload;
-      const ts = state.tilesets[tsId];
-      if (group.id in ts.palette) return;
-      ts.paletteIds.push(group.id);
-      ts.palette[group.id] = group;
-      // Keep external cache in sync
-      getTileIndex(ts.id).insert(groupToBBox(group));
+    addPaletteObject: {
+      prepare: (payload: { tsId: string; group: TileGroup }) => ({
+        meta: {
+          reconcilePrefix,
+          reconcileType: "add" as const,
+          reconcile: payload.group,
+        },
+        payload,
+      }),
+      reducer(
+        state,
+        action: PayloadAction<{ tsId: string; group: TileGroup }>
+      ) {
+        const { tsId, group } = action.payload;
+        const ts = state.tilesets[tsId];
+        tileAdapter.addOne(ts.tiles, group);
+      },
     },
 
-    deletePaletteObject(
-      state,
-      action: PayloadAction<{ tsId: string; coords: Rect }>
-    ) {
-      const { tsId, coords } = action.payload;
-      const ts = state.tilesets[tsId];
-      if (!ts) return;
-
-      const bbox = {
-        minX: coords.ul.x,
-        minY: coords.ul.y,
-        maxX: coords.br.x,
-        maxY: coords.br.y,
-      };
-
-      const overlaps = getTileIndex(ts.id).search(bbox);
-      for (const item of overlaps) {
-        delete ts.palette[item.id];
-        ts.paletteIds = ts.paletteIds.filter((pid) => pid !== item.id);
-      }
-    },
-
-    addPaletteObject(
-      state,
-      action: PayloadAction<{ tsId: string; group: TileGroup }>
-    ) {
-      const { tsId, group } = action.payload;
-      const ts = state.tilesets[tsId];
-      const tileIndex = getTileIndex(ts.id);
-      const bbox = groupToBBox(group);
-
-      // If an item with the same id already exists anywhere, ensure it's
-      // removed and spatial index updated. The purpose of this is to ensure
-      // that the group isn't double-added to the paletteIds and the spatial
-      // index. It could probably be simplified.
-      if (ts.palette[group.id]) {
-        tileIndex.removeById(group.id);
-        delete ts.palette[group.id];
-        ts.paletteIds = ts.paletteIds.filter((id) => id !== group.id);
-      }
-      // Now that we're sure we won't double-add it, add the new group
-      ts.paletteIds.push(group.id);
-      ts.palette[group.id] = group;
-      tileIndex.insert(bbox);
+    deletePaletteObjects: {
+      prepare: (payload: { tsId: string; ids: string[] }) => ({
+        meta: {
+          reconcilePrefix,
+          reconcileType: "remove" as const,
+          reconcile: payload.ids,
+        },
+        payload,
+      }),
+      reducer(state, action: PayloadAction<{ tsId: string; ids: string[] }>) {
+        const { tsId, ids } = action.payload;
+        const ts = state.tilesets[tsId];
+        tileAdapter.removeMany(ts.tiles, ids);
+      },
     },
   },
   extraReducers: (builder) => {
@@ -331,12 +311,12 @@ export const slice = createSlice({
       (tsId, tilesets): TileGroup[] => {
         if (!tsId) return [];
         const ts = tilesets[tsId];
-        const objs = ts.paletteIds.map((id) => ts.palette[id]);
-        const broken = ts.paletteIds.filter(
-          (id) => ts.palette[id] === undefined
+        const objs = ts.tiles.ids.map((id) => ts.tiles.entities[id]);
+        const broken = ts.tiles.ids.filter(
+          (id) => ts.tiles.entities[id] === undefined
         );
         if (broken.length) {
-          log.warn({ broken }, "Broken palette ids detected");
+          log.warn({ broken }, "Broken tile ids detected");
         }
         return objs;
       }
@@ -348,7 +328,7 @@ export const slice = createSlice({
     selectTileGroupByInstanceId: createSelector.withTypes<TilesetEditorState>()(
       [(state) => state.tilesets, (_, inst: TileGroupInstance) => inst],
       (tilesets, inst): TileGroup => {
-        return tilesets[inst.tilesetId].palette[inst.tileId];
+        return tilesets[inst.tilesetId].tiles.entities[inst.tileId];
       }
     ),
   },

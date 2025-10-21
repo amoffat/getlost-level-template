@@ -2,9 +2,9 @@ import { MantineProvider, MantineThemeOverride } from "@mantine/core";
 import "@mantine/core/styles.css";
 import { createRoot } from "react-dom/client";
 import { Provider as ReduxProvider } from "react-redux";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { ShellApp } from "./components/ShellApp";
+import { RouterProvider } from "react-router-dom";
 import { CommsProvider } from "./components/providers/CommsProvider";
+import { router } from "./router";
 import { store } from "./store/store";
 
 const theme: MantineThemeOverride = {
@@ -25,27 +25,12 @@ const theme: MantineThemeOverride = {
   },
 };
 
-const Router = () => (
-  <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<ShellApp />} />
-      <Route path="/map" element={<ShellApp />} />
-      <Route path="/tilesets" element={<ShellApp />} />
-      <Route path="/tilesets/:tsid" element={<ShellApp />} />
-      <Route path="/npcs" element={<ShellApp />} />
-      <Route path="/story" element={<ShellApp />} />
-      <Route path="/dialogue" element={<ShellApp />} />
-      <Route path="/preview" element={<ShellApp />} />
-    </Routes>
-  </BrowserRouter>
-);
-
 export default function App() {
   return (
     <ReduxProvider store={store}>
       <MantineProvider defaultColorScheme="dark" theme={theme}>
         <CommsProvider>
-          <Router />
+          <RouterProvider router={router} />
         </CommsProvider>
       </MantineProvider>
     </ReduxProvider>

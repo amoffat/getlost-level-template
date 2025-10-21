@@ -1,7 +1,8 @@
-import type { SignatureIndex } from "@/editor/tileset/tools/autotile";
+import type { SignatureIndex } from "@/editor/map/utils/autotile";
 import type { TileGroup } from "@/types/tilegroup";
 import * as P from "pixi.js";
 import { MapObjReconciler } from "./editor/common/mapReconciler";
+import { TileReconciler } from "./editor/common/tileReconciler";
 
 interface Globals {
   mapEditorApp: P.Application | null;
@@ -15,6 +16,7 @@ interface Globals {
   tilesetCache: Map<string, P.Texture>;
   mapEditorReconciler: MapObjReconciler;
   collisionEditorReconciler: MapObjReconciler;
+  tilesetEditorReconciler: TileReconciler;
 }
 
 const tilesetCache = new Map<string, P.Texture>();
@@ -27,4 +29,5 @@ export const globals: Globals = {
   tilesetCache,
   mapEditorReconciler: new MapObjReconciler(tilesetCache),
   collisionEditorReconciler: new MapObjReconciler(tilesetCache),
+  tilesetEditorReconciler: new TileReconciler(),
 };

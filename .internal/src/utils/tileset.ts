@@ -52,7 +52,7 @@ export function loadTileGroup({
   const state = store.getState();
   const ts = state.tilesetEditor.tilesets[tilesetId];
   if (!ts) throw new Error("Tileset not found for tile group");
-  const tg = ts.palette[id];
+  const tg = ts.tiles.entities[id];
   if (!tg) throw new Error("Tile group not found in tileset palette");
   return tg;
 }

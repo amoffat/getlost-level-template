@@ -1,6 +1,7 @@
 import { selectors, actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
-import { TileGroup } from "@/types/tilegroup";
+import { SpatialIndex } from "@/types/spatial";
+import { TileGroup, TilesetObject } from "@/types/tilegroup";
 import { subState } from "@/utils/redux";
 import { genGroupId } from "@/utils/tileset";
 import * as P from "pixi.js";
@@ -32,6 +33,12 @@ function isGroupActionMode(mode: string | null): boolean {
 }
 
 class Grouper implements ClickDragListener {
+  private spatialIndex: SpatialIndex<TilesetObject>;
+
+  constructor(spatialIndex: SpatialIndex<TilesetObject>) {
+    this.spatialIndex = spatialIndex;
+  }
+
   pointerDown(_e: PointerEventData) {
     const state = store.getState();
     if (!state.tilesetEditor.activeTilesetId) return;
@@ -59,7 +66,17 @@ class Grouper implements ClickDragListener {
     let finishMode = false;
     if (mode === "delete-group" || mode === "replace-group") {
       const tsId = tsState.activeTilesetId!;
-      store.dispatch(tsActions.deletePaletteObject({ tsId, coords }));
+
+      const innerPadding = 0.1;
+      const searchBounds = {
+        minX: coords.ul.x + innerPadding,
+        minY: coords.ul.y + innerPadding,
+        maxX: coords.br.x - innerPadding,
+        maxY: coords.br.y - innerPadding,
+      };
+      const hitIds = this.spatialIndex.search(searchBounds).map((h) => h.id);
+
+      store.dispatch(tsActions.deletePaletteObjects({ tsId, ids: hitIds }));
       finishMode = true;
     }
 
@@ -117,8 +134,14 @@ class Grouper implements ClickDragListener {
   }
 }
 
-export function setupGrouper(cd: ClickDragger) {
-  cd.addListener(new Grouper());
+export function setupGrouper({
+  cd,
+  spatialIndex,
+}: {
+  cd: ClickDragger;
+  spatialIndex: SpatialIndex<TilesetObject>;
+}) {
+  cd.addListener(new Grouper(spatialIndex));
 }
 
 async function drawGroups(groups: TileGroup[], zoom: number) {

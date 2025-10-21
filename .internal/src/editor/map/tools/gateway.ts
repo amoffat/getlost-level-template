@@ -3,7 +3,7 @@ import { selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { TileGroupInstance } from "@/types/map";
+import { MapObj, TileGroupInstance } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import { Vector } from "@/vec";
 import {
@@ -91,7 +91,7 @@ export function setupGateway({
   spatialIndex,
 }: {
   cd: ClickDragger;
-  spatialIndex: SpatialIndex;
+  spatialIndex: SpatialIndex<MapObj>;
 }) {
   cd.addListener(new Gateway(spatialIndex));
 }

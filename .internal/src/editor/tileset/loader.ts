@@ -9,6 +9,7 @@ import { getImageDataFromBitmap, isRectTransparent } from "@/utils/image";
 import { subState } from "@/utils/redux";
 import { genGroupId, loadTilesetTex } from "@/utils/tileset";
 import * as P from "pixi.js";
+import { BBox } from "rbush";
 import { globals as g } from "./globals";
 
 export async function setCanvasTileset(ts: Tileset | null) {
@@ -57,6 +58,24 @@ export async function unpackActiveTileset() {
         ul: { x: x * gridSize, y: y * gridSize },
         br: { x: (x + 1) * gridSize, y: (y + 1) * gridSize },
       };
+
+      const innerPadding = 0.1;
+      const searchCoords: BBox = {
+        minX: coords.ul.x + innerPadding,
+        minY: coords.ul.y + innerPadding,
+        maxX: coords.br.x - innerPadding,
+        maxY: coords.br.y - innerPadding,
+      };
+
+      // Don't re-tile over pinned groups
+      const hits = g.spatialIndex
+        .getObjects({ pos: searchCoords })
+        .filter((obj) => obj.pinned);
+      if (hits.length > 0) {
+        // Skip tiles that are already part of a pinned group
+        continue;
+      }
+
       // Skip empty tiles (all pixels fully transparent)
       if (isRectTransparent(imageData, coords)) continue;
 

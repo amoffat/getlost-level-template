@@ -21,18 +21,68 @@ const initialState: MapState = Object.assign(objects.getInitialState(), {
   error: null,
 });
 
+const reconcilePrefix = "map";
+
 export const slice = createSlice({
   name: "objects",
   initialState,
   reducers: {
-    addOne: objects.addOne,
-    addMany: objects.addMany,
-    upsertMany: objects.upsertMany,
-    updateOne: objects.updateOne, // {id, changes}
-    updateMany: objects.updateMany,
-    removeOne: objects.removeOne,
-    removeMany: objects.removeMany,
-    setAll: objects.setAll,
+    addOne: {
+      prepare: (payload: MapObj) => ({
+        meta: { reconcilePrefix, reconcileType: "add" as const },
+        payload,
+      }),
+      reducer: objects.addOne,
+    },
+    addMany: {
+      prepare: (payload: MapObj[]) => ({
+        meta: { reconcilePrefix, reconcileType: "add" as const },
+        payload,
+      }),
+      reducer: objects.addMany,
+    },
+    upsertMany: {
+      prepare: (payload: MapObj[]) => ({
+        meta: { reconcilePrefix, reconcileType: "add" as const },
+        payload,
+      }),
+      reducer: objects.upsertMany,
+    },
+    updateOne: {
+      prepare: (payload: { id: string; changes: Partial<MapObj> }) => ({
+        meta: { reconcilePrefix, reconcileType: "update" as const },
+        payload,
+      }),
+      reducer: objects.updateOne,
+    },
+    updateMany: {
+      prepare: (payload: Array<{ id: string; changes: Partial<MapObj> }>) => ({
+        meta: { reconcilePrefix, reconcileType: "update" as const },
+        payload,
+      }),
+      reducer: objects.updateMany,
+    },
+    removeOne: {
+      prepare: (payload: string) => ({
+        meta: { reconcilePrefix, reconcileType: "remove" as const },
+        payload,
+      }),
+      reducer: objects.removeOne,
+    },
+    removeMany: {
+      prepare: (payload: string[]) => ({
+        meta: { reconcilePrefix, reconcileType: "remove" as const },
+        payload,
+      }),
+      reducer: objects.removeMany,
+    },
+    setAll: {
+      prepare: (payload: MapObj[]) => ({
+        meta: { reconcilePrefix, reconcileType: "setAll" as const },
+        payload,
+      }),
+      reducer: objects.setAll,
+    },
   },
   extraReducers: (builder) => {
     builder
