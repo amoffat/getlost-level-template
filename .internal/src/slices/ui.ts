@@ -9,7 +9,7 @@ interface UIState {
   tags: {
     tilesetGroups: Record<string, number>;
   };
-  loadingMessage: string | null;
+  loadingMessages: string[];
   loadingPalette: boolean;
   // Whether the Tip component is collapsed (hides text/buttons but keeps alert visible)
   tipCollapsed: boolean;
@@ -26,7 +26,7 @@ const initialState: UIState = {
   tags: {
     tilesetGroups: {},
   },
-  loadingMessage: null,
+  loadingMessages: [],
   loadingPalette: false,
   tipCollapsed: false,
 };
@@ -42,8 +42,14 @@ export const slice = createSlice({
     loadingPalette(state, action: PayloadAction<boolean>) {
       state.loadingPalette = action.payload;
     },
-    setLoadingMessage(state, action: PayloadAction<string | null>) {
-      state.loadingMessage = action.payload;
+    pushLoadingMessage(state, action: PayloadAction<string>) {
+      state.loadingMessages.push(action.payload);
+    },
+    popLoadingMessage(state) {
+      state.loadingMessages.pop();
+    },
+    clearLoadingMessages(state) {
+      state.loadingMessages = [];
     },
     mountTab: (state, action: PayloadAction<TabName>) => {
       state.mountedTabs[action.payload] = true;

@@ -17,6 +17,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
 import TilesetButton from "./TilesetButton";
+import Tip from "./Tip";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
 import TileAnimationOptions from "./toolOptions/TileAnimationOptions";
 import TileReplaceOptions from "./toolOptions/TileReplaceOptions";
@@ -40,6 +41,11 @@ export default function TilesetEditorTab({
   const containerRef = useRef<HTMLDivElement>(null);
 
   use(initPromise);
+
+  const activeTileset = useMemo(() => {
+    if (!activeTilesetId) return null;
+    return tilesets[activeTilesetId] || null;
+  }, [activeTilesetId, tilesets]);
 
   useEffect(() => {
     const container = containerRef.current!;
@@ -94,7 +100,7 @@ export default function TilesetEditorTab({
     [activeTilesetId]
   );
 
-  const tool = selectedToolName && toolPalette[selectedToolName];
+  const tool = selectedToolName && toolPalette[selectedToolName]!;
   const toolOptions = tool?.options;
 
   const onToolActivated = useCallback(
@@ -103,6 +109,44 @@ export default function TilesetEditorTab({
     },
     [dispatch]
   );
+
+  const onToolDeactivated = useCallback(() => {
+    dispatch(actions.setActiveTool(null));
+  }, [dispatch]);
+
+  const tips: string[] = useMemo(() => {
+    const tips: string[] = [];
+
+    if (!tool) {
+      if (activeTileset) {
+        const hasTiles = activeTileset.tiles.ids.length > 0;
+        const hasPinned = Object.values(activeTileset.tiles.entities).some(
+          (obj) => obj.pinned
+        );
+
+        if (hasTiles) {
+          if (hasPinned) {
+            tips.push(
+              "Select a tool above to add or delete tile groups from the tileset."
+            );
+          } else {
+            tips.push(
+              "Add new tile groups by creating them with the tools above."
+            );
+          }
+        } else {
+          tips.push("Using the re-slice tool to create initial tiles.");
+        }
+      } else {
+        if (tilesetImages.length === 0) {
+          tips.push("Upload a tileset to get started.");
+        } else {
+          tips.push("Select a tileset from the left to work on it.");
+        }
+      }
+    }
+    return tips;
+  }, [activeTileset, tilesetImages.length, tool]);
 
   // Ensure the tileset for the current URL is loaded
   useEffect(() => {
@@ -117,7 +161,7 @@ export default function TilesetEditorTab({
     if (!tsid) return;
     const ts = tilesets[tsid];
     if (ts && activeTilesetId !== tsid) {
-      dispatch(selectTilesetThunk(ts));
+      dispatch(selectTilesetThunk(ts)).unwrap();
     }
   }, [tsid, tilesets, activeTilesetId, dispatch]);
 
@@ -175,7 +219,10 @@ export default function TilesetEditorTab({
             activeTool={selectedToolName}
             tools={toolPalette}
             onToolActivated={onToolActivated}
+            onToolDeactivated={onToolDeactivated}
           />
+
+          <Tip tips={tips} />
 
           {toolOptions}
         </Stack>

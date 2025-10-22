@@ -112,6 +112,18 @@ export function isTransparent(imageData: ImageData): boolean {
   return true;
 }
 
+export function amountOpaquePixels(imageData: ImageData): number {
+  const { data } = imageData;
+  const total = data.length / 4;
+
+  let opaque = 0;
+  // Check alpha channel of every pixel (A at index 3, step by 4)
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] !== 0) opaque++;
+  }
+  return opaque / total;
+}
+
 // Sha1 hash of the raw pixel data in the ImageData
 export async function hashOfImageData(imageData: ImageData): Promise<string> {
   const { data } = imageData;

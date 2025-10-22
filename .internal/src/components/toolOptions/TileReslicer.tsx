@@ -29,7 +29,11 @@ export default function TileReslicer() {
   return (
     <>
       <Tip
-        tips={["Reslice will create new tiles based on the current grid size."]}
+        tips={[
+          "Reslice will create new tiles based on the current grid size.",
+          "Only unique tiles will be created, and empty tiles will be skipped.",
+          "Adjust the grid size to see a preview of how the tiles will be sliced.",
+        ]}
       />
       <Fieldset legend="Reslicer" p="xs">
         <Stack p={0}>

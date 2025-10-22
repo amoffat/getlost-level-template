@@ -1,3 +1,4 @@
+import { globals as gApp } from "@/globals";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
@@ -6,13 +7,14 @@ import { TileGroup } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
 import { schedulerYield } from "@/utils/async";
 import {
+  amountOpaquePixels,
   getImageDataFromBitmap,
   hashOfImageData,
   isTransparent,
   subImageData,
 } from "@/utils/image";
 import { subState } from "@/utils/redux";
-import { loadTilesetTex } from "@/utils/tileset";
+import { loadTilesetImage } from "@/utils/tileset";
 import * as P from "pixi.js";
 import { BBox } from "rbush";
 import { globals as g } from "./globals";
@@ -26,7 +28,7 @@ export async function setCanvasTileset(ts: Tileset | null) {
   g.groupSelContainer.setSize(0);
 
   if (ts) {
-    const tex = await loadTilesetTex(ts.id, ts.objectUrl);
+    const tex = await loadTilesetImage(ts.id, ts.objectUrl);
 
     const sprite = new P.Sprite(tex);
     sprite.x = 0;
@@ -38,20 +40,17 @@ export async function setCanvasTileset(ts: Tileset | null) {
   }
 }
 
-export async function unpackActiveTileset() {
+export async function unpackTileset(tsId: string) {
   const state = store.getState();
   const gridSize = state.tilesetEditor.grid.size;
-  const tsId = state.tilesetEditor.activeTilesetId!;
-
-  const sprite = g.currentTileset!;
-  const texture = sprite.texture;
+  const texture = gApp.tilesetTextureCache.get(tsId)!;
 
   const canvas = g.app.renderer.extract.canvas(texture) as HTMLCanvasElement;
   const bitmap = await createImageBitmap(canvas);
 
   // Add all single-tile groups by default
-  const cols = Math.floor(sprite.width / gridSize);
-  const rows = Math.floor(sprite.height / gridSize);
+  const cols = Math.floor(texture.width / gridSize);
+  const rows = Math.floor(texture.height / gridSize);
   // Build a single ImageData snapshot so we can quickly test transparency per tile
   const imageData = getImageDataFromBitmap(bitmap);
 
@@ -84,7 +83,9 @@ export async function unpackActiveTileset() {
       const tileImageData = subImageData(imageData, coords);
 
       // Skip empty tiles (all pixels fully transparent)
-      if (isTransparent(tileImageData)) continue;
+      if (isTransparent(tileImageData)) {
+        continue;
+      }
 
       const id = await hashOfImageData(tileImageData);
       chunk.push({
@@ -96,6 +97,7 @@ export async function unpackActiveTileset() {
         name: "",
         tags: [],
         pinned: false,
+        coverage: amountOpaquePixels(tileImageData),
       });
       if (chunk.length > 10) {
         store.dispatch(

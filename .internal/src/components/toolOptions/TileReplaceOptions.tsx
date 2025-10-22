@@ -5,7 +5,8 @@ export default function TileReplaceOptions() {
     <>
       <Tip
         tips={[
-          "Click and drag to create a new group, deleting any groups under it.",
+          "Click and drag to create a new group, replacing any groups under it.",
+          "If you make a mistake, just re-drag the area until it's right.",
         ]}
       />
     </>

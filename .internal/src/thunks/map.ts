@@ -1,4 +1,4 @@
-import { lightIcon, metaIconTsId, startIcon } from "@/constants";
+import { iconTsId, lightIcon, startIcon } from "@/constants";
 import { loadMap } from "@/persist/map/api";
 import { actions as mapActions } from "@/slices/map";
 import {
@@ -15,7 +15,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 export const loadMapThunk = createAsyncThunk(
   "map/loadMapThunk",
   async (_: void, { dispatch }) => {
-    dispatch(uiActions.setLoadingMessage(`Loading map...`));
+    dispatch(uiActions.pushLoadingMessage(`Loading map...`));
     const persisted = await loadMap();
     const objs: MapObj[] = [];
     for (const id of persisted.ids) {
@@ -23,6 +23,7 @@ export const loadMapThunk = createAsyncThunk(
       if (obj) objs.push(obj);
     }
     dispatch(mapActions.setAll(objs));
+    dispatch(uiActions.popLoadingMessage());
   }
 );
 
@@ -61,13 +62,13 @@ export const setToolThunk = createAsyncThunk(
       if (tool === "set-gateway") {
         const tg = loadTileGroup({
           id: startIcon,
-          tilesetId: metaIconTsId,
+          tilesetId: iconTsId,
         });
         dispatch(mapEdActions.setPlace(tg));
       } else if (tool === "add-light") {
         const tg = loadTileGroup({
           id: lightIcon,
-          tilesetId: metaIconTsId,
+          tilesetId: iconTsId,
         });
         dispatch(mapEdActions.setPlace(tg));
       }

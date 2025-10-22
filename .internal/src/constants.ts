@@ -15,7 +15,8 @@ export const overlayProps = {
   blur: 3,
 };
 
-export const metaIconTsId = "579debe9-728a-5394-8a26-e423ba8e1c97";
+export const iconTsId = "709959c8b2a2c2d74ccb807c9e19d0e67378e4b7";
+
 export const startIcon = "c9b4462d-4e7c-55f6-a0ec-815ab1a723cf";
 export const exitIcon = "586794d8-d094-5451-b47d-2de73e1a13ea";
 export const lightIcon = "673699bc-746a-5d83-929e-9b739784cb9d";

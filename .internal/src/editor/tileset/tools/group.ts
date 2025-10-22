@@ -3,7 +3,11 @@ import { selectors, actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroup, TilesetObject } from "@/types/tilegroup";
-import { hashOfImageData, subImageData } from "@/utils/image";
+import {
+  amountOpaquePixels,
+  hashOfImageData,
+  subImageData,
+} from "@/utils/image";
 import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
 import {
@@ -97,6 +101,7 @@ class Grouper implements ClickDragListener {
         name: "",
         tags: [],
         pinned: true,
+        coverage: amountOpaquePixels(objData),
       };
 
       store.dispatch(tsActions.addPaletteObject({ tsId, group }));

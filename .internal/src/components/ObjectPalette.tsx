@@ -31,6 +31,10 @@ function sortBySizeDescending(a: TileGroup, b: TileGroup): number {
   const bArea = bWidth * bHeight;
   if (aArea !== bArea) return bArea - aArea;
 
+  if (a.coverage !== b.coverage) {
+    return b.coverage - a.coverage;
+  }
+
   // if areas are equal, sort by tileset id
   if (a.tilesetId !== b.tilesetId) {
     return a.tilesetId.localeCompare(b.tilesetId);

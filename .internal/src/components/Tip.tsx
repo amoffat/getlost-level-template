@@ -3,7 +3,6 @@ import { actions as uiActions } from "@/slices/ui";
 import { Alert, Button, Group, Text, Transition } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
-import { randIndex, randIndexAvoid, randIndexAvoidMany } from "../utils/rand";
 
 export interface TipProps {
   /**
@@ -30,14 +29,13 @@ export default function Tip({
   intervalSeconds = 10,
   className,
 }: TipProps) {
-  // Pick a random starting tip on first mount
   const count = tips.length;
-  const [index, setIndex] = useState(() => (count > 0 ? randIndex(count) : 0));
+  // Start from the first tip and iterate predictably
+  const [index, setIndex] = useState(0);
   const collapsed = useAppSelector((state) => state.ui.tipCollapsed);
   const dispatch = useAppDispatch();
   const [mounted, setMounted] = useState(true);
   const intervalMs = intervalSeconds * 1000;
-  const seenRef = useRef<Set<number>>(new Set());
 
   // Keep a stable duration used for in/out transitions
   const fadeDuration = 200;
@@ -48,37 +46,16 @@ export default function Tip({
     if (count === 0) {
       setIndex(0);
     } else if (index >= count) {
-      setIndex(count - 1);
-    }
-    // prune seen indices that are now out of range
-    const seen = seenRef.current;
-    for (const v of Array.from(seen)) {
-      if (v < 0 || v >= count) seen.delete(v);
+      // Wrap to the beginning if current index is out of range
+      setIndex(0);
     }
   }, [count, index]);
 
-  // Ensure initial index is considered seen
-  useEffect(() => {
-    if (count > 0 && index >= 0 && index < count) {
-      const seen = seenRef.current;
-      if (!seen.has(index)) seen.add(index);
-    }
-  }, [count, index]);
-
-  // Pick next index such that we randomly cycle through all items before repeating
+  // Pick next index sequentially and wrap to the start
   const pickNext = useCallback(
     (prev: number) => {
       if (count <= 1) return 0;
-      const seen = seenRef.current;
-      // If we've seen everything, start a new cycle but avoid immediate repeat of prev
-      if (seen.size >= count) {
-        seen.clear();
-        if (prev >= 0 && prev < count) seen.add(prev);
-      }
-      const next = randIndexAvoidMany(count, seen);
-      if (next !== -1) return next;
-      // Fallback: avoid only the previous index
-      return randIndexAvoid(count, prev);
+      return (prev + 1) % count;
     },
     [count]
   );
@@ -91,8 +68,6 @@ export default function Tip({
       const prev = index;
       const next = pickNext(prev);
       setIndex(next);
-      // mark seen
-      seenRef.current.add(next);
       setMounted(true);
     }, fadeDuration);
   }, [count, index, pickNext, collapsed]);
@@ -169,9 +144,6 @@ export default function Tip({
                 Next tip
               </Button>
             )}
-            <Button variant="light" size="compact-xs" aria-label="Help button">
-              Help
-            </Button>
           </Group>
         </>
       )}

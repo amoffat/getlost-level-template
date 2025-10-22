@@ -10,6 +10,8 @@ export interface TileGroup {
   zIndices: number[];
   name: string;
   tags: string[];
+  // From 0-1 representing how much of the tile is opaque. Used in sorting.
+  coverage: number;
 }
 
 interface AnimatedFrame {

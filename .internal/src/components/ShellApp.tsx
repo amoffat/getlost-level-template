@@ -54,11 +54,11 @@ export function ShellApp() {
   const [helpOpened, { open: openHelp, close: closeHelp }] =
     useDisclosure(false);
 
-  const { activeTab, mountedTabs, loadingMessage } = useAppSelector(
+  const { activeTab, mountedTabs, loadingMessages } = useAppSelector(
     (state) => ({
       activeTab: state.ui.activeTab,
       mountedTabs: state.ui.mountedTabs,
-      loadingMessage: state.ui.loadingMessage,
+      loadingMessages: state.ui.loadingMessages,
     }),
     shallowEqual
   );
@@ -81,7 +81,7 @@ export function ShellApp() {
   useEffect(() => {
     const nextTab = pathToTab(location.pathname);
     if (nextTab !== activeTab) {
-      dispatch(uiActions.setLoadingMessage(null));
+      dispatch(uiActions.clearLoadingMessages());
       dispatch(uiActions.setTab(nextTab));
       dispatch(uiActions.mountTab(nextTab));
     }
@@ -205,7 +205,9 @@ export function ShellApp() {
 
             {mountedTabs["map-editor"] && (
               <Tabs.Panel value="map-editor">
-                <Suspense fallback={<PanelLoader message={loadingMessage} />}>
+                <Suspense
+                  fallback={<PanelLoader message={loadingMessages.at(-1)} />}
+                >
                   <MapEditorTab initPromise={mapInitPromise} />
                 </Suspense>
               </Tabs.Panel>
@@ -213,7 +215,9 @@ export function ShellApp() {
 
             {mountedTabs["tileset-editor"] && (
               <Tabs.Panel value="tileset-editor">
-                <Suspense fallback={<PanelLoader message={loadingMessage} />}>
+                <Suspense
+                  fallback={<PanelLoader message={loadingMessages.at(-1)} />}
+                >
                   <TilesetEditorTab initPromise={tilesetInitPromise} />
                 </Suspense>
               </Tabs.Panel>
