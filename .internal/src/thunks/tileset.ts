@@ -26,6 +26,8 @@ export const selectTilesetThunk = createAsyncThunk(
       return true;
     }
 
+    dispatch(tsActions.clearSelection());
+
     // Add it to pixi.js
     await setCanvasTileset(ts);
     // Set it as active, which loads its zoom/pan state

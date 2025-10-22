@@ -2,7 +2,7 @@ import { log } from "@/log";
 import { TileGroupInstance } from "@/types/map";
 import { Rect } from "@/types/rect";
 import { IndexItem } from "@/types/spatial";
-import { TileGroup } from "@/types/tilegroup";
+import { TileGroup, TilesetObject } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
 import {
@@ -27,7 +27,7 @@ export function groupToBBox(group: TileGroup, pad: number = 0.1): IndexItem {
 }
 
 const reconcilePrefix = "tilesetEditor";
-export const selectedAdapter = createEntityAdapter<TileGroup>();
+export const selectedAdapter = createEntityAdapter<TilesetObject>();
 export const tileAdapter = createEntityAdapter<TileGroup>();
 
 export interface TilesetEditorState {
@@ -47,7 +47,7 @@ export interface TilesetEditorState {
   loadingTilesets: boolean;
   tilesetsLoaded: boolean;
   tilesetsError: string | null;
-  selectedTiles: EntityState<TileGroup, string>;
+  selectedTiles: EntityState<TilesetObject, string>;
 }
 
 export const slice = createSlice({
@@ -264,6 +264,39 @@ export const slice = createSlice({
         const ts = state.tilesets[tsId];
         tileAdapter.removeMany(ts.tiles, ids);
       },
+    },
+
+    setOneSelected: (state, action: PayloadAction<TilesetObject>) => {
+      selectedAdapter.removeAll(state.selectedTiles);
+      selectedAdapter.setOne(state.selectedTiles, action.payload);
+    },
+
+    addOneSelected: (state, action: PayloadAction<TilesetObject>) => {
+      selectedAdapter.setOne(state.selectedTiles, action.payload);
+    },
+
+    setManySelected: (state, action: PayloadAction<TilesetObject[]>) => {
+      selectedAdapter.removeAll(state.selectedTiles);
+      selectedAdapter.setMany(state.selectedTiles, action.payload);
+    },
+
+    addManySelected: (state, action: PayloadAction<TilesetObject[]>) => {
+      selectedAdapter.setMany(state.selectedTiles, action.payload);
+    },
+
+    updateManySelected: (
+      state,
+      action: PayloadAction<{ id: string; changes: Partial<TilesetObject> }[]>
+    ) => {
+      selectedAdapter.updateMany(state.selectedTiles, action.payload);
+    },
+
+    removeOneSelected: (state, action: PayloadAction<TilesetObject>) => {
+      selectedAdapter.removeOne(state.selectedTiles, action.payload.id);
+    },
+
+    clearSelection: (state) => {
+      selectedAdapter.removeAll(state.selectedTiles);
     },
   },
   extraReducers: (builder) => {

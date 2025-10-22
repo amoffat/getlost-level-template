@@ -7,7 +7,7 @@ function setLayerVisibility(layers: RootState["mapEditor"]["layers"]) {
   const lc = g.layerContainers;
   if (layers.dimInactive) {
     for (const layer of Object.values(lc)) {
-      layer.alpha = 0.5;
+      layer.alpha = 0.3;
       layer.eventMode = "none";
     }
     const active = lc[layers.active as MapLayerName];

@@ -1,9 +1,8 @@
-import { actions, selectors as mapEdSelectors } from "@/slices/mapEditor";
+import { actions, selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
-import { MapLayerName } from "@/types/layer";
-import { isColliderBox, isTileGroupInstance, MapObj } from "@/types/map";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
+import { isTileGroup, TilesetObject } from "@/types/tilegroup";
 import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
 import {
@@ -19,7 +18,7 @@ import { pressedKeys } from "../keys";
 class Selector implements ClickDragListener {
   private marqueeEnabled = false;
 
-  constructor(private spatialIndex: SpatialIndex<MapObj>) {}
+  constructor(private spatialIndex: SpatialIndex<TilesetObject>) {}
 
   private get addToSelection(): boolean {
     return pressedKeys["Control"] ?? false;
@@ -27,17 +26,15 @@ class Selector implements ClickDragListener {
 
   pointerDown(e: PointerEventData) {
     const state = store.getState();
-    const mode = mapEdSelectors.selectMode(state);
+    const mode = selectors.selectMode(state);
     if (mode !== "select") return;
-
-    const isGroundLayer = state.mapEditor.layers.active === MapLayerName.Ground;
 
     // If we're over something, it means we want to select it directly, not
     // start a marquee. This will always be true if we're on the ground layer,
     // so we'll do some extra checks related to the ground layer in this block.
     if (e.hoverIds.length > 0) {
       store.dispatch(actions.setActiveTool("select"));
-      const sel = state.mapEditor.selectedObjs;
+      const sel = state.tilesetEditor.selectedTiles;
       const selIds = new Set(sel.ids);
 
       // If we're clicking down on an object that's already selected, and we're
@@ -46,10 +43,7 @@ class Selector implements ClickDragListener {
       const isOverSelected = e.hoverIds.some((id) => selIds.has(id));
       if (isOverSelected && !this.addToSelection) return;
 
-      // The ground layer is special because it is dense with objects, so we
-      // should always allow marquee selection, unless we're directly over a
-      // selected object.
-      if (isGroundLayer && !isOverSelected) {
+      if (!isOverSelected) {
         this.marqueeEnabled = true;
       } else {
         this.marqueeEnabled = false;
@@ -62,7 +56,7 @@ class Selector implements ClickDragListener {
 
   pointerUp(e: PointerEventData) {
     const state = store.getState();
-    const mode = mapEdSelectors.selectMode(state);
+    const mode = selectors.selectMode(state);
     if (mode !== "select") return;
 
     // In pointerDown, we may have deferred to our mover if we clicked "over" an
@@ -90,7 +84,6 @@ class Selector implements ClickDragListener {
   private doSelection(e: PointerEventData) {
     clearRectSelect();
     const state = store.getState();
-    const ms = state.mapEditor;
 
     const searchBounds = {
       minX: e.hitbox.ul.x,
@@ -106,12 +99,7 @@ class Selector implements ClickDragListener {
     // Nothing selected? Clear either the proposed selection (if any) (first
     // click), or the actual selection (second click).
     if (hits.length === 0) {
-      const hasProposed = ms.proposedSelection;
-      if (hasProposed) {
-        store.dispatch(actions.setProposedSelection(null));
-      } else if (!this.addToSelection) {
-        store.dispatch(actions.clearSelection());
-      }
+      store.dispatch(actions.clearSelection());
     }
     // Group select means we shouldn't use proposed selection at all. Just add
     // everything in the rect to the selection.
@@ -124,11 +112,10 @@ class Selector implements ClickDragListener {
     // We'll use proposed selection if there's more than one object under the
     // cursor. If there's just one, select it directly.
     else {
-      store.dispatch(actions.setProposedSelection(null));
       if (hits.length === 1) {
         const obj = hits[0];
 
-        const curSelected = ms.selectedObjs;
+        const curSelected = state.tilesetEditor.selectedTiles;
         const alreadySelected = curSelected.ids.includes(obj.id);
 
         if (alreadySelected && this.addToSelection) {
@@ -145,12 +132,6 @@ class Selector implements ClickDragListener {
         if (!this.addToSelection) {
           store.dispatch(actions.clearSelection());
         }
-        store.dispatch(
-          actions.setProposedSelection({
-            objects: hits,
-            pos: e.pagePos,
-          })
-        );
       }
     }
   }
@@ -159,12 +140,12 @@ class Selector implements ClickDragListener {
     if (!this.marqueeEnabled) return;
 
     const state = store.getState();
-    const mode = mapEdSelectors.selectMode(state);
+    const mode = selectors.selectMode(state);
     if (mode !== "select") return;
 
     if (this.marqueeEnabled) {
-      drawRectSelect(e.hitbox, state.mapEditor.zoomPan.zoom);
-      if (state.mapEditor.selectedTool !== "select") {
+      drawRectSelect(e.hitbox, state.tilesetEditor.activeZoomPan.zoom);
+      if (state.tilesetEditor.selectedTool !== "select") {
         store.dispatch(actions.setActiveTool("select"));
       }
     }
@@ -176,7 +157,7 @@ export function setupSelector({
   spatialIndex,
 }: {
   cd: ClickDragger;
-  spatialIndex: SpatialIndex<MapObj>;
+  spatialIndex: SpatialIndex<TilesetObject>;
 }) {
   cd.addListener(new Selector(spatialIndex));
 }
@@ -197,8 +178,8 @@ function drawRectSelect(rect: Rect, zoom: number) {
 
   g.rectSelect
     .rect(left, top, width, height)
-    .stroke({ ...selectStroke, width: (selectStroke.width ?? 1) / zoom })
-    .fill(tileSelectFill);
+    .fill(tileSelectFill)
+    .stroke({ ...selectStroke, width: (selectStroke.width ?? 1) / zoom });
 }
 
 function clearRectSelect() {
@@ -209,7 +190,7 @@ function clearRectSelect() {
  * Outlines the given objects.
  * @param objs Objects to outline
  */
-export function outlineObjects(objs: MapObj[], zoom: number) {
+export function outlineObjects(objs: TilesetObject[], zoom: number) {
   clearObjectOutlines();
 
   const stroke = { ...selectStroke, width: (selectStroke.width ?? 1) / zoom };
@@ -217,20 +198,12 @@ export function outlineObjects(objs: MapObj[], zoom: number) {
   for (const obj of objs) {
     const container = new P.Container();
     g.selectionOutlines.addChild(container);
-    container.position.set(obj.x, obj.y);
+    container.position.set(obj.pos.ul.x, obj.pos.ul.y);
 
-    if (isTileGroupInstance(obj)) {
+    if (isTileGroup(obj)) {
       drawOutline({
         container,
-        frame: obj.frame,
-        stroke,
-        fill: tileSelectFill,
-      });
-    } else if (isColliderBox(obj)) {
-      const rect = { ul: { x: 0, y: 0 }, br: { x: obj.width, y: obj.height } };
-      drawOutline({
-        container,
-        frame: rect,
+        frame: obj.pos,
         stroke,
         fill: tileSelectFill,
       });
@@ -250,8 +223,8 @@ export function clearObjectOutlines() {
  */
 subState(
   [
-    (state) => state.mapEditor.selectedObjs,
-    (state) => state.mapEditor.zoomPan.zoom,
+    (state) => state.tilesetEditor.selectedTiles,
+    (state) => state.tilesetEditor.activeZoomPan.zoom,
   ],
   (selectedObjs, zoom) => {
     const objs = selectedObjs.ids.map((id) => selectedObjs.entities[id]);

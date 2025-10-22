@@ -9,6 +9,7 @@ import {
   IconGrid4x4,
   IconKeyframes,
   IconReplace,
+  IconSelectAll,
   IconSquarePlus,
   IconTrash,
 } from "@tabler/icons-react";
@@ -56,6 +57,23 @@ export default function TilesetEditorTab({
     }
   }, []);
 
+  // Ensure the tileset for the current URL is loaded
+  useEffect(() => {
+    if (!tsid) return;
+    if (!tilesets[tsid]) {
+      dispatch(loadTilesetThunk(tsid));
+    }
+  }, [tsid, tilesets, dispatch]);
+
+  // Select the tileset once it's available and not already active
+  useEffect(() => {
+    if (!tsid) return;
+    const ts = tilesets[tsid];
+    if (ts && activeTilesetId !== tsid) {
+      dispatch(selectTilesetThunk(ts)).unwrap();
+    }
+  }, [tsid, tilesets, activeTilesetId, dispatch]);
+
   const loadedTilesets = useAppSelector(selectors.selectTilesets);
   const tilesetImages = loadedTilesets.map((ts) => (
     <TilesetButton
@@ -68,6 +86,11 @@ export default function TilesetEditorTab({
 
   const toolPalette: Partial<Record<Mode, ToolDescriptor>> = useMemo(
     () => ({
+      select: {
+        name: "Select/move",
+        icon: <IconSelectAll size={16} />,
+        enabled: !!activeTilesetId,
+      },
       "replace-group": {
         name: "Replace group",
         icon: <IconReplace size={16} />,
@@ -84,6 +107,7 @@ export default function TilesetEditorTab({
         icon: <IconTrash size={16} />,
         enabled: !!activeTilesetId,
       },
+
       "reslice-tiles": {
         name: "Reslicer",
         icon: <IconGrid4x4 size={16} />,
@@ -150,23 +174,6 @@ export default function TilesetEditorTab({
     }
     return tips;
   }, [activeTileset, tilesetImages.length, tool]);
-
-  // Ensure the tileset for the current URL is loaded
-  useEffect(() => {
-    if (!tsid) return;
-    if (!tilesets[tsid]) {
-      dispatch(loadTilesetThunk(tsid));
-    }
-  }, [tsid, tilesets, dispatch]);
-
-  // Select the tileset once it's available and not already active
-  useEffect(() => {
-    if (!tsid) return;
-    const ts = tilesets[tsid];
-    if (ts && activeTilesetId !== tsid) {
-      dispatch(selectTilesetThunk(ts)).unwrap();
-    }
-  }, [tsid, tilesets, activeTilesetId, dispatch]);
 
   return (
     <>

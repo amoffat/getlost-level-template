@@ -97,7 +97,7 @@ export async function init(): Promise<P.Application> {
 
   // Our selection outline must be on top of everything
   g.placableOutline = new P.Container();
-  g.placableOutline.zIndex = Infinity;
+  g.placableOutline.zIndex = Number.MAX_SAFE_INTEGER;
   g.mapContainer.addChild(g.placableOutline);
 
   // This stores the tileset object that we're about to place with the mouse
@@ -109,12 +109,14 @@ export async function init(): Promise<P.Application> {
   g.selectionOutlines = new P.Container();
   g.selectionOutlines.eventMode = "none";
   g.selectionOutlines.interactiveChildren = false;
-  g.selectionOutlines.zIndex = Infinity - 1;
+  g.selectionOutlines.zIndex = Number.MAX_SAFE_INTEGER - 1;
   g.mapContainer.addChild(g.selectionOutlines);
 
   g.rectSelectOutline = new P.Container();
-  g.rectSelectOutline.zIndex = Infinity - 2;
+  g.rectSelectOutline.zIndex = Number.MAX_SAFE_INTEGER - 2;
   g.mapContainer.addChild(g.rectSelectOutline);
+  g.rectSelect = new P.Graphics();
+  g.rectSelectOutline.addChild(g.rectSelect);
 
   g.boundsContainer = new P.Graphics();
   stage.addChild(g.boundsContainer);

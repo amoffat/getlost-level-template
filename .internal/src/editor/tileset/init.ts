@@ -3,6 +3,7 @@ import { globals as gApp } from "@/globals";
 import { selectors, tileAdapter } from "@/slices/tilesetEditor";
 import { SpatialIndex } from "@/types/spatial";
 import { TilesetObject } from "@/types/tilegroup";
+import { Vector } from "@/vec";
 import debounce from "debounce";
 import * as P from "pixi.js";
 import { actions } from "../../slices/tilesetEditor";
@@ -19,6 +20,7 @@ import { globals as g } from "./globals";
 import { drawGridMask } from "./grid";
 import { setupKeys } from "./keys";
 import { setupGrouper } from "./tools/group";
+import { setupSelector } from "./tools/select";
 
 export async function init(): Promise<P.Application> {
   // Create a new application
@@ -60,12 +62,23 @@ export async function init(): Promise<P.Application> {
   g.tilesetContainer.interactive = true;
   stage.addChild(g.tilesetContainer);
 
+  g.selectionOutlines = new P.Container();
+  g.selectionOutlines.zIndex = Number.MAX_SAFE_INTEGER;
+  g.tilesetContainer.addChild(g.selectionOutlines);
+
+  g.rectSelectOutline = new P.Container();
+  g.rectSelectOutline.zIndex = Number.MAX_SAFE_INTEGER - 1;
+  g.tilesetContainer.addChild(g.rectSelectOutline);
+
+  g.rectSelect = new P.Graphics();
+  g.rectSelectOutline.addChild(g.rectSelect);
+
   g.groupSelContainer = new P.Container();
-  g.groupSelContainer.zIndex = 100;
+  g.groupSelContainer.zIndex = Number.MAX_SAFE_INTEGER - 2;
   g.tilesetContainer.addChild(g.groupSelContainer);
 
   const allGroupsOverlay = new P.Container();
-  allGroupsOverlay.zIndex = 100;
+  allGroupsOverlay.zIndex = Number.MAX_SAFE_INTEGER - 3;
   g.tilesetContainer.addChild(allGroupsOverlay);
   g.allGroupsOverlay = allGroupsOverlay;
 
@@ -130,10 +143,16 @@ export async function init(): Promise<P.Application> {
       const state = store.getState();
       return state.tilesetEditor.grid.size;
     },
+    checkPointerOver: (localPos: Vector): string[] => {
+      const hits = spatialIndex.getObjects({
+        pos: localPos,
+      });
+      return hits.map((h) => h.id);
+    },
   });
 
   setupGrouper({ cd, spatialIndex });
-  // setupFrameSelector({ cd, spatialIndex });
+  setupSelector({ cd, spatialIndex });
 
   gApp.tilesetEditorReconciler.attachCanvas({
     spatialIndex,

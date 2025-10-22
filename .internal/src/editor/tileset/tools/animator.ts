@@ -3,6 +3,7 @@ import { store } from "@/store/store";
 import { isColliderBox, isTileGroupInstance, MapObj } from "@/types/map";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
+import { TilesetObject } from "@/types/tilegroup";
 import * as P from "pixi.js";
 import {
   ClickDragger,
@@ -14,7 +15,7 @@ import { selectStroke } from "../../common/strokes";
 import { globals as g } from "../globals";
 
 class FrameSelector implements ClickDragListener {
-  constructor(private spatialIndex: SpatialIndex) {}
+  constructor(private spatialIndex: SpatialIndex<TilesetObject>) {}
 
   pointerDown(e: PointerEventData) {
     const state = store.getState();

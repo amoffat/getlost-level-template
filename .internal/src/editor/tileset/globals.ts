@@ -15,6 +15,9 @@ interface Globals {
   currentTileset?: P.Sprite;
   scanPos: P.Container;
   spatialIndex: SpatialIndex<TilesetObject>;
+  selectionOutlines: P.Container;
+  rectSelectOutline: P.Container;
+  rectSelect: P.Graphics;
 }
 
 export const globals: Globals = {} as Globals;

@@ -20,6 +20,7 @@ interface Globals {
   // For the outlines of selected objects
   selectionOutlines: P.Container;
   rectSelectOutline: P.Container;
+  rectSelect: P.Graphics;
   // For drawing the map bounds
   boundsContainer: P.Graphics;
   boundsMask: P.Graphics;

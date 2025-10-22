@@ -7,7 +7,7 @@ export const invisibleStroke: P.StrokeStyle = {
 };
 
 export const groupStroke: P.StrokeStyle = {
-  color: 0x00ff00,
+  color: 0xff0000,
   width: 2,
   alpha: 0.75,
 };
@@ -27,4 +27,9 @@ export const colliderStroke: P.StrokeStyle = {
 export const colliderFill: P.FillStyle = {
   color: 0x000000,
   alpha: 0.5,
+};
+
+export const tileSelectFill: P.FillStyle = {
+  color: 0x00ff00,
+  alpha: 0.25,
 };
