@@ -17,7 +17,7 @@ export function setupKeys(canvas: HTMLCanvasElement): Record<string, boolean> {
 
         const state = store.getState();
         const mode = selectors.selectMode(state);
-        if (mode === "select" || mode === "rect-select") {
+        if (mode === "select") {
           store.dispatch(mapEdActions.setPlace(null));
           store.dispatch(mapEdActions.clearSelection());
         }
@@ -37,7 +37,7 @@ export function setupKeys(canvas: HTMLCanvasElement): Record<string, boolean> {
         const state = store.getState();
         const mode = selectors.selectMode(state);
 
-        if (mode === "select" || mode === "rect-select") {
+        if (mode === "select") {
           const selection = state.mapEditor.selectedObjs.ids;
           store.dispatch(mapActions.removeMany(selection));
           store.dispatch(mapEdActions.clearSelection());
@@ -52,7 +52,7 @@ export function setupKeys(canvas: HTMLCanvasElement): Record<string, boolean> {
         const state = store.getState();
         const mode = selectors.selectMode(state);
 
-        if (mode === "select" || mode === "rect-select") {
+        if (mode === "select") {
           const sel = state.mapEditor.selectedObjs;
           const updates = [];
           for (const obj of Object.values(sel.entities)) {

@@ -10,10 +10,10 @@ import { actions as uiActions } from "@/slices/ui";
 import { loadMapThunk } from "@/thunks/map";
 import { loadTilesetsThunk } from "@/thunks/tileset";
 import { TabName } from "@/types/tab";
-import { AppShell, Box, Button, Group, Modal, Tabs, Text } from "@mantine/core";
+import { AppShell, Group, Tabs, Text } from "@mantine/core";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import { useDisclosure } from "@mantine/hooks";
-import { IconHelp, IconUpload, IconX } from "@tabler/icons-react";
+import { IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual } from "react-redux";
@@ -50,8 +50,6 @@ export function ShellApp() {
   const location = useLocation();
   const [draggedFiles, setDraggedFiles] = useState<File[] | null>(null);
   const [assetTypeOpened, { open: openAssetType, close: closeAssetType }] =
-    useDisclosure(false);
-  const [helpOpened, { open: openHelp, close: closeHelp }] =
     useDisclosure(false);
 
   const { activeTab, mountedTabs, loadingMessages } = useAppSelector(
@@ -126,19 +124,6 @@ export function ShellApp() {
         />
       )}
 
-      <Modal
-        opened={helpOpened}
-        onClose={closeHelp}
-        title="Help"
-        size="xl"
-        centered
-      >
-        <Text>
-          This is placeholder help content. Add quick tips, links to docs, and
-          onboarding steps here.
-        </Text>
-      </Modal>
-
       <Dropzone.FullScreen onDrop={onDrop} multiple>
         <Group
           justify="center"
@@ -180,21 +165,6 @@ export function ShellApp() {
               <Tabs.Tab value="story-editor">Story</Tabs.Tab>
               <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
               <Tabs.Tab value="preview">Level Preview</Tabs.Tab>
-              <Box
-                mr="sm"
-                ml="auto"
-                style={{ display: "flex", alignItems: "center" }}
-              >
-                <Button
-                  size="compact-xs"
-                  leftSection={<IconHelp size={18} />}
-                  color="orange"
-                  variant="filled"
-                  onClick={openHelp}
-                >
-                  Help
-                </Button>
-              </Box>
             </Tabs.List>
 
             {mountedTabs["preview"] && (

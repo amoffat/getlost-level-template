@@ -2,7 +2,6 @@ export type Mode =
   | "pan"
   | "select"
   | "move"
-  | "rect-select"
   | "set-waypoint"
   | "add-collider"
   | "paint"

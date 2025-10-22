@@ -189,7 +189,6 @@ export const slice = createSlice({
 
     popMode(state) {
       state.modeStack.pop();
-      state.selectedTool = state.modeStack.at(-1) ?? null;
     },
 
     setMode(state, action: PayloadAction<Mode>) {
@@ -198,9 +197,10 @@ export const slice = createSlice({
       if (mode === "select") {
         state.place.obj = null;
         state.place.flipX = false;
-        state.selectedTool = null;
       }
+
       state.modeStack = [mode];
+      state.selectedTool = null;
     },
 
     setActiveTool(state, action: PayloadAction<Mode | null>) {

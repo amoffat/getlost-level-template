@@ -100,7 +100,7 @@ export default function Tip({
       withCloseButton={!collapsed}
       onClose={() => dispatch(uiActions.setTipCollapsed(true))}
       className={className}
-      color="orange"
+      color="green"
       icon={icon}
       variant="light"
       p="xs"

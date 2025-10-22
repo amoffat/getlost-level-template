@@ -1,10 +1,9 @@
 import * as constants from "@/constants";
-import { LayerName } from "@/editor/collision/types/layer";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
-import { RootState, store } from "@/store/store";
-import { setToolThunk } from "@/thunks/map";
+import { RootState } from "@/store/store";
+import { setActiveLayerThunk, setToolThunk } from "@/thunks/map";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import {
@@ -27,6 +26,7 @@ import {
   IconMapPin,
   IconPaint,
   IconRipple,
+  IconSelectAll,
   IconWand,
 } from "@tabler/icons-react";
 import { use, useCallback, useEffect, useMemo, useRef } from "react";
@@ -34,9 +34,11 @@ import HelpHoverCard from "./HelpHoverCard";
 import LayerList, { Layer } from "./LayerList";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
+import Tip from "./Tip";
 import AddCollider from "./toolOptions/AddCollider";
 import MagicPaint from "./toolOptions/MagicPaint";
 import Paint from "./toolOptions/Paint";
+import SelectTool from "./toolOptions/SelectTool";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
 
 export default function MapEditorTab({
@@ -69,7 +71,7 @@ export default function MapEditorTab({
 
   const changeActiveLayer = useCallback(
     (id: number) => {
-      dispatch(actions.setActiveLayer(id as MapLayerName));
+      dispatch(setActiveLayerThunk({ layer: id as MapLayerName }));
       dispatch(actions.setLockInactiveLayer(true));
     },
     [dispatch]
@@ -78,10 +80,6 @@ export default function MapEditorTab({
   const onSelectObject = useCallback(
     (obj: any, e: React.MouseEvent) => {
       e.preventDefault();
-      const state = store.getState();
-      if (state.mapEditor.layers.active === LayerName.Meta) {
-        dispatch(actions.setActiveLayer(MapLayerName.World));
-      }
       dispatch(actions.setPlace(obj));
       dispatch(setToolThunk("paint"));
     },
@@ -95,16 +93,21 @@ export default function MapEditorTab({
 
   const toolPalette: Partial<Record<Mode, ToolDescriptor>> = useMemo(
     () => ({
+      select: {
+        name: "Select/move",
+        icon: <IconSelectAll size={16} />,
+        options: <SelectTool />,
+      },
       paint: {
         name: "Paint area",
         icon: <IconPaint size={16} />,
-        disabled: place === null,
+        enabled: place !== null,
         options: <Paint />,
       },
       "magic-paint": {
-        name: "Magic paint",
+        name: "Autotiler",
         icon: <IconWand size={16} />,
-        disabled: layers.active !== MapLayerName.Ground,
+        switchToLayer: MapLayerName.Ground,
         options: <MagicPaint />,
       },
       "set-gateway": {
@@ -150,7 +153,7 @@ export default function MapEditorTab({
         switchToLayer: MapLayerName.Colliders,
       },
     }),
-    [layers.active, place]
+    [place]
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName];
@@ -171,27 +174,32 @@ export default function MapEditorTab({
     return [
       {
         id: MapLayerName.Colliders,
-        name: "Colliders",
         description: "Objects that stop character movement",
       },
       {
         id: MapLayerName.World,
-        name: "World",
         description:
           "Objects that can appear in front of and behind a character",
       },
       {
         id: MapLayerName.Ground,
-        name: "Ground",
         description: "Ground objects are always rendered beneath the character",
       },
       {
         id: MapLayerName.Places,
-        name: "Places",
         description: "Special locations like gateways and waypoints",
       },
     ];
   }, []);
+
+  const tips: string[] = useMemo(() => {
+    const tips: string[] = [];
+
+    if (!tool) {
+      tips.push("Select a tool above to start editing the map.");
+    }
+    return tips;
+  }, [tool]);
 
   return (
     <>
@@ -299,6 +307,8 @@ export default function MapEditorTab({
             onToolActivated={onToolActivated}
             onToolDeactivated={onToolDeactivated}
           />
+
+          <Tip tips={tips} />
 
           {toolOptions}
         </Stack>

@@ -8,9 +8,30 @@ import {
 import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
+import { MapLayerName } from "@/types/layer";
 import { MapObj } from "@/types/map";
+import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
+import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+
+export const setActiveLayerThunk = createAsyncThunk(
+  "mapEditor/setActiveLayerThunk",
+  async (
+    { layer, notify }: { layer: MapLayerName; notify?: boolean },
+    { dispatch }
+  ) => {
+    dispatch(mapEdActions.setActiveLayer(layer));
+    const name = mapLayerToName(layer);
+    if (notify) {
+      notifications.show({
+        title: "Layer switched",
+        message: `You're now editing the "${name}" layer.`,
+        autoClose: 3000,
+      });
+    }
+  }
+);
 
 export const loadMapThunk = createAsyncThunk(
   "map/loadMapThunk",
@@ -53,8 +74,8 @@ export const duplicateSelectionThunk = createAsyncThunk(
 
 export const setToolThunk = createAsyncThunk(
   "mapEditor/setToolThunk",
-  async (tool: Mode | null, { dispatch }) => {
-    dispatch(mapEdActions.setActiveTool(tool));
+  async (tool: Mode | null, { dispatch, getState }) => {
+    const state = getState() as RootState;
 
     if (tool === null) {
       dispatch(mapEdActions.setMode("select"));
@@ -71,8 +92,17 @@ export const setToolThunk = createAsyncThunk(
           tilesetId: iconTsId,
         });
         dispatch(mapEdActions.setPlace(tg));
+      } else if (tool === "paint") {
+        const layer = state.mapEditor.layers.active;
+        if (![MapLayerName.Ground, MapLayerName.World].includes(layer)) {
+          dispatch(
+            setActiveLayerThunk({ layer: MapLayerName.World, notify: true })
+          );
+        }
       }
       dispatch(mapEdActions.pushMode(tool));
     }
+
+    dispatch(mapEdActions.setActiveTool(tool));
   }
 );

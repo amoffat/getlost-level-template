@@ -8,8 +8,6 @@ export function getCursorForMode(mode: string): string {
     cursor = "default";
   } else if (mode === "move") {
     cursor = "move";
-  } else if (mode === "rect-select") {
-    cursor = "crosshair";
   }
   return cursor;
 }

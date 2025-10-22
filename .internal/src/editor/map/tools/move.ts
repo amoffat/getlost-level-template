@@ -69,7 +69,7 @@ export class Mover implements ClickDragListener {
       });
     }
     store.dispatch(mapEdActions.updateManySelected(updates));
-    store.dispatch(mapEdActions.setMode("select"));
+    store.dispatch(mapEdActions.popMode());
   }
 
   public pointerDrag(e: PointerEventData): void {
@@ -78,7 +78,7 @@ export class Mover implements ClickDragListener {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
     if (mode !== "move") {
-      store.dispatch(mapEdActions.setMode("move"));
+      store.dispatch(mapEdActions.pushMode("move"));
       store.dispatch(mapEdActions.setProposedSelection(null));
     }
 

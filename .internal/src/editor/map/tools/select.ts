@@ -1,6 +1,5 @@
 import { actions, selectors as mapEdSelectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { isColliderBox, isTileGroupInstance, MapObj } from "@/types/map";
 import { Rect } from "@/types/rect";
@@ -17,10 +16,6 @@ import { selectStroke } from "../../common/strokes";
 import { globals as g } from "../globals";
 import { pressedKeys } from "../keys";
 
-function isSelectionMode(mode: Mode): boolean {
-  return mode === "select" || mode === "rect-select";
-}
-
 class Selector implements ClickDragListener {
   private marqueeEnabled = false;
 
@@ -33,7 +28,7 @@ class Selector implements ClickDragListener {
   pointerDown(e: PointerEventData) {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
-    if (!isSelectionMode(mode)) return;
+    if (mode !== "select") return;
 
     const isGroundLayer = state.mapEditor.layers.active === MapLayerName.Ground;
 
@@ -41,6 +36,7 @@ class Selector implements ClickDragListener {
     // start a marquee. This will always be true if we're on the ground layer,
     // so we'll do some extra checks related to the ground layer in this block.
     if (e.hoverIds.length > 0) {
+      store.dispatch(actions.setActiveTool("select"));
       const sel = state.mapEditor.selectedObjs;
       const selIds = new Set(sel.ids);
 
@@ -67,7 +63,7 @@ class Selector implements ClickDragListener {
   pointerUp(e: PointerEventData) {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
-    if (!isSelectionMode(mode)) return;
+    if (mode !== "select") return;
 
     // In pointerDown, we may have deferred to our mover if we clicked "over" an
     // element. However, if we've now determined that we never moved, we should
@@ -83,7 +79,6 @@ class Selector implements ClickDragListener {
 
     this.doSelection(e);
     this.marqueeEnabled = false;
-    store.dispatch(actions.setMode("select"));
   }
 
   /**
@@ -165,14 +160,13 @@ class Selector implements ClickDragListener {
 
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
-    if (!isSelectionMode(mode)) return;
+    if (mode !== "select") return;
 
-    if (mode !== "rect-select") {
-      store.dispatch(actions.setMode("rect-select"));
-    }
-
-    if (mode === "rect-select") {
+    if (this.marqueeEnabled) {
       drawRectSelect(e.hitbox, state.mapEditor.zoomPan.zoom);
+      if (state.mapEditor.selectedTool !== "select") {
+        store.dispatch(actions.setActiveTool("select"));
+      }
     }
   }
 }

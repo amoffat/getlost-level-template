@@ -72,29 +72,29 @@ export default function TilesetEditorTab({
         name: "Replace group",
         icon: <IconReplace size={16} />,
         options: <TileReplaceOptions />,
-        disabled: !activeTilesetId,
+        enabled: !!activeTilesetId,
       },
       "add-group": {
         name: "Add group",
         icon: <IconSquarePlus size={16} />,
-        disabled: !activeTilesetId,
+        enabled: !!activeTilesetId,
       },
       "delete-group": {
         name: "Delete group",
         icon: <IconTrash size={16} />,
-        disabled: !activeTilesetId,
+        enabled: !!activeTilesetId,
       },
       "reslice-tiles": {
         name: "Reslicer",
         icon: <IconGrid4x4 size={16} />,
         options: <TileReslicer />,
-        disabled: !activeTilesetId,
+        enabled: !!activeTilesetId,
       },
       animate: {
         name: "Animate",
         icon: <IconKeyframes size={16} />,
         options: <TileAnimationOptions />,
-        disabled: !activeTilesetId,
+        enabled: !!activeTilesetId,
       },
     }),
     [activeTilesetId]
@@ -144,6 +144,9 @@ export default function TilesetEditorTab({
           tips.push("Select a tileset from the left to work on it.");
         }
       }
+      tips.push(
+        "Drag and drop an image file onto the tileset area to upload it."
+      );
     }
     return tips;
   }, [activeTileset, tilesetImages.length, tool]);

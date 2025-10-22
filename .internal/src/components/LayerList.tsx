@@ -1,9 +1,9 @@
+import { mapLayerToName } from "@/utils/layer";
 import { Group, Radio, Stack, Text } from "@mantine/core";
 import classes from "./styles/LayerList.module.css";
 
 export interface Layer {
   id: number;
-  name: string;
   description: string;
 }
 
@@ -33,12 +33,14 @@ export default function LayerList({
             className={classes.root}
             radius="md"
             value={layer.id.toString()}
-            key={layer.name}
+            key={mapLayerToName(layer.id)}
           >
             <Group wrap="nowrap" align="flex-start">
               <Radio.Indicator />
               <div>
-                <Text className={classes.label}>{layer.name}</Text>
+                <Text className={classes.label}>
+                  {mapLayerToName(layer.id)}
+                </Text>
                 <Text className={classes.description}>{layer.description}</Text>
               </div>
             </Group>
