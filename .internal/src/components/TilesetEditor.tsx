@@ -71,6 +71,7 @@ export default function TilesetEditorTab({
     const ts = tilesets[tsid];
     if (ts && activeTilesetId !== tsid) {
       dispatch(selectTilesetThunk(ts)).unwrap();
+      dispatch(actions.setActiveTool(null));
     }
   }, [tsid, tilesets, activeTilesetId, dispatch]);
 

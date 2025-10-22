@@ -3,6 +3,8 @@ import { selectors, actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroup, TilesetObject } from "@/types/tilegroup";
+import { averageOklab } from "@/utils/color";
+import { oklabHilbertIndex } from "@/utils/hilbert";
 import {
   amountOpaquePixels,
   hashOfImageData,
@@ -91,6 +93,7 @@ class Grouper implements ClickDragListener {
       const tsImageData = gApp.tilesetImageDataCache.get(tsId)!;
       const objData = subImageData(tsImageData, coords);
       const id = await hashOfImageData(objData);
+      const avgColor = averageOklab(objData);
 
       const group: TileGroup = {
         id,
@@ -102,6 +105,8 @@ class Grouper implements ClickDragListener {
         tags: [],
         pinned: true,
         coverage: amountOpaquePixels(objData),
+        avgColor,
+        hilbertIndex: oklabHilbertIndex(avgColor),
       };
 
       store.dispatch(tsActions.addPaletteObject({ tsId, group }));

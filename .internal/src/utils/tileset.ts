@@ -1,6 +1,7 @@
 import { globals as gApp } from "@/globals";
 import { store } from "@/store/store";
 import { TileGroup } from "@/types/tilegroup";
+import { Tileset } from "@/types/tileset";
 import * as P from "pixi.js";
 import { getImageDataFromBitmap } from "./image";
 
@@ -12,25 +13,23 @@ export async function genTilesetId(source: File): Promise<string> {
     .join("");
 }
 
-export async function loadTilesetImage(
-  tsId: string,
-  objectUrl: string
-): Promise<P.Texture> {
-  const maybeTex = gApp.tilesetTextureCache.get(tsId);
+export async function loadTilesetImage(ts: Tileset): Promise<P.Texture> {
+  const maybeTex = gApp.tilesetTextureCache.get(ts.id);
   if (maybeTex) return maybeTex;
 
   const tex = await P.Assets.load<P.Texture>({
-    src: objectUrl,
+    src: ts.objectUrl,
     parser: "loadTextures",
   });
   tex.source.scaleMode = "nearest";
-  gApp.tilesetTextureCache.set(tsId, tex);
+  gApp.tilesetTextureCache.set(ts.id, tex);
 
   const bitmap = await createImageBitmap(
-    await fetch(objectUrl).then((r) => r.blob())
+    await fetch(ts.objectUrl).then((r) => r.blob())
   );
   const imageData = getImageDataFromBitmap(bitmap);
-  gApp.tilesetImageDataCache.set(tsId, imageData);
+  gApp.tilesetImageDataCache.set(ts.id, imageData);
+
   return tex;
 }
 

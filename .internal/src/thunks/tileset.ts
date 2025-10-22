@@ -73,7 +73,7 @@ export const loadTilesetThunk = createAsyncThunk(
     dispatch(tsActions.addTileset({ tsId, ts }));
 
     // Preload its texture
-    await loadTilesetImage(tsId, ts.objectUrl);
+    await loadTilesetImage(ts);
     await dispatch(loadEdgeSignaturesThunk(tsId)).unwrap();
     await dispatch(populateTilesetTagsThunk(tsId)).unwrap();
 

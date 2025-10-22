@@ -6,6 +6,8 @@ import { Rect } from "@/types/rect";
 import { TileGroup } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
 import { schedulerYield } from "@/utils/async";
+import { averageOklab } from "@/utils/color";
+import { oklabHilbertIndex } from "@/utils/hilbert";
 import {
   amountOpaquePixels,
   getImageDataFromBitmap,
@@ -28,7 +30,7 @@ export async function setCanvasTileset(ts: Tileset | null) {
   g.groupSelContainer.setSize(0);
 
   if (ts) {
-    const tex = await loadTilesetImage(ts.id, ts.objectUrl);
+    const tex = await loadTilesetImage(ts);
 
     const sprite = new P.Sprite(tex);
     sprite.x = 0;
@@ -88,6 +90,7 @@ export async function unpackTileset(tsId: string) {
       }
 
       const id = await hashOfImageData(tileImageData);
+      const avgColor = averageOklab(tileImageData);
       chunk.push({
         id,
         pos: coords,
@@ -98,6 +101,8 @@ export async function unpackTileset(tsId: string) {
         tags: [],
         pinned: false,
         coverage: amountOpaquePixels(tileImageData),
+        avgColor,
+        hilbertIndex: oklabHilbertIndex(avgColor),
       });
       if (chunk.length > 10) {
         store.dispatch(

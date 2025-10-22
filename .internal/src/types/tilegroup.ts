@@ -1,3 +1,4 @@
+import { OklabColor } from "@/types/color";
 import type { Rect } from "./rect";
 
 export interface TileGroup {
@@ -12,6 +13,8 @@ export interface TileGroup {
   tags: string[];
   // From 0-1 representing how much of the tile is opaque. Used in sorting.
   coverage: number;
+  avgColor: OklabColor;
+  hilbertIndex: number;
 }
 
 interface AnimatedFrame {

@@ -32,7 +32,7 @@ export default function App() {
   return (
     <ReduxProvider store={store}>
       <MantineProvider defaultColorScheme="dark" theme={theme}>
-        <Notifications />
+        <Notifications position="top-center" />
         <CommsProvider>
           <RouterProvider router={router} />
         </CommsProvider>
