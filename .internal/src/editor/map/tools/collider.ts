@@ -1,7 +1,6 @@
 import { LayerName } from "@/editor/collision/types/layer";
 import { colliderFill } from "@/editor/common/strokes";
-import { actions } from "@/slices/map";
-import { selectors } from "@/slices/mapEditor";
+import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { BoxObj, MapObj } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";

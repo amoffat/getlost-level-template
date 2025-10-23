@@ -10,11 +10,8 @@ import {
   createEntityAdapter,
   createSelector,
   createSlice,
-  EntityState,
   PayloadAction,
 } from "@reduxjs/toolkit";
-
-export const selectedAdapter = createEntityAdapter<MapObj>();
 
 type ToolOptMapping = {
   paint: PaintOpts;
@@ -24,6 +21,14 @@ type ToolOptMapping = {
 
 // Derive the tool names with options directly from the mapping type.
 type ToolWithOptions = keyof ToolOptMapping;
+
+const objectsAdapter = createEntityAdapter<MapObj>({
+  sortComparer: (a, b) => {
+    return a.id.localeCompare(b.id);
+  },
+});
+
+const reconcilePrefix = "map";
 
 interface MapEditorState {
   grid: {
@@ -43,7 +48,8 @@ interface MapEditorState {
     obj: TileGroup | null;
     flipX: boolean;
   };
-  selectedObjs: EntityState<MapObj, string>;
+  objects: ReturnType<typeof objectsAdapter.getInitialState>;
+  selectedIds: string[];
   proposedSelection: {
     objects: MapObj[];
     pos: Vector;
@@ -55,10 +61,6 @@ interface MapEditorState {
     dimInactive: boolean;
   };
 }
-
-const tgiSelectors = selectedAdapter.getSelectors(
-  (state: MapEditorState) => state.selectedObjs
-);
 
 export const slice = createSlice({
   name: "mapEditor",
@@ -75,7 +77,8 @@ export const slice = createSlice({
       obj: null,
       flipX: false,
     },
-    selectedObjs: selectedAdapter.getInitialState(),
+    objects: objectsAdapter.getInitialState(),
+    selectedIds: [],
     proposedSelection: null,
     selectedTool: null,
     toolOptions: {
@@ -107,8 +110,7 @@ export const slice = createSlice({
     setActiveLayer(state, action: { payload: MapLayerName }) {
       const newLayer = action.payload;
       state.layers.active = newLayer;
-
-      selectedAdapter.removeAll(state.selectedObjs);
+      state.selectedIds = [];
 
       if (
         state.selectedTool === "magic-paint" &&
@@ -142,37 +144,30 @@ export const slice = createSlice({
       state.place.flipX = !state.place.flipX;
     },
 
-    setOneSelected: (state, action: PayloadAction<MapObj>) => {
-      selectedAdapter.removeAll(state.selectedObjs);
-      selectedAdapter.setOne(state.selectedObjs, action.payload);
+    setOneSelected: (state, action: PayloadAction<string>) => {
+      state.selectedIds = [action.payload];
     },
 
-    addOneSelected: (state, action: PayloadAction<MapObj>) => {
-      selectedAdapter.setOne(state.selectedObjs, action.payload);
+    addOneSelected: (state, action: PayloadAction<string>) => {
+      state.selectedIds.push(action.payload);
     },
 
-    setManySelected: (state, action: PayloadAction<MapObj[]>) => {
-      selectedAdapter.removeAll(state.selectedObjs);
-      selectedAdapter.setMany(state.selectedObjs, action.payload);
+    setManySelected: (state, action: PayloadAction<string[]>) => {
+      state.selectedIds = action.payload;
     },
 
-    addManySelected: (state, action: PayloadAction<MapObj[]>) => {
-      selectedAdapter.setMany(state.selectedObjs, action.payload);
+    addManySelected: (state, action: PayloadAction<string[]>) => {
+      state.selectedIds.push(...action.payload);
     },
 
-    updateManySelected: (
-      state,
-      action: PayloadAction<{ id: string; changes: Partial<MapObj> }[]>
-    ) => {
-      selectedAdapter.updateMany(state.selectedObjs, action.payload);
-    },
-
-    removeOneSelected: (state, action: PayloadAction<MapObj>) => {
-      selectedAdapter.removeOne(state.selectedObjs, action.payload.id);
+    removeOneSelected: (state, action: PayloadAction<string>) => {
+      state.selectedIds = state.selectedIds.filter(
+        (id) => id !== action.payload
+      );
     },
 
     clearSelection: (state) => {
-      selectedAdapter.removeAll(state.selectedObjs);
+      state.selectedIds = [];
     },
 
     setProposedSelection(
@@ -215,17 +210,100 @@ export const slice = createSlice({
       const { tool, options } = action.payload;
       state.toolOptions[tool] = { ...state.toolOptions[tool], ...options };
     },
+
+    //
+
+    addOne: {
+      prepare: (payload: MapObj) => ({
+        meta: { reconcilePrefix, reconcileType: "add" as const },
+        payload,
+      }),
+      reducer: (state, action: PayloadAction<MapObj>) => {
+        objectsAdapter.addOne(state.objects, action.payload);
+      },
+    },
+    addMany: {
+      prepare: (payload: MapObj[]) => ({
+        meta: { reconcilePrefix, reconcileType: "add" as const },
+        payload,
+      }),
+      reducer: (state, action: PayloadAction<MapObj[]>) => {
+        objectsAdapter.addMany(state.objects, action.payload);
+      },
+    },
+    upsertMany: {
+      prepare: (payload: MapObj[]) => ({
+        meta: { reconcilePrefix, reconcileType: "add" as const },
+        payload,
+      }),
+      reducer: (state, action: PayloadAction<MapObj[]>) => {
+        objectsAdapter.upsertMany(state.objects, action.payload);
+      },
+    },
+    updateOne: {
+      prepare: (payload: { id: string; changes: Partial<MapObj> }) => ({
+        meta: { reconcilePrefix, reconcileType: "update" as const },
+        payload,
+      }),
+      reducer: (
+        state,
+        action: PayloadAction<{ id: string; changes: Partial<MapObj> }>
+      ) => {
+        objectsAdapter.updateOne(state.objects, action.payload);
+      },
+    },
+    updateMany: {
+      prepare: (payload: Array<{ id: string; changes: Partial<MapObj> }>) => ({
+        meta: { reconcilePrefix, reconcileType: "update" as const },
+        payload,
+      }),
+      reducer: (
+        state,
+        action: PayloadAction<Array<{ id: string; changes: Partial<MapObj> }>>
+      ) => {
+        objectsAdapter.updateMany(state.objects, action.payload);
+      },
+    },
+    removeOne: {
+      prepare: (payload: string) => ({
+        meta: { reconcilePrefix, reconcileType: "remove" as const },
+        payload,
+      }),
+      reducer: (state, action: PayloadAction<string>) => {
+        objectsAdapter.removeOne(state.objects, action.payload);
+      },
+    },
+    removeMany: {
+      prepare: (payload: string[]) => ({
+        meta: { reconcilePrefix, reconcileType: "remove" as const },
+        payload,
+      }),
+      reducer: (state, action: PayloadAction<string[]>) => {
+        objectsAdapter.removeMany(state.objects, action.payload);
+      },
+    },
+    setAll: {
+      prepare: (payload: MapObj[]) => ({
+        meta: { reconcilePrefix, reconcileType: "setAll" as const },
+        payload,
+      }),
+      reducer: (state, action: PayloadAction<MapObj[]>) => {
+        objectsAdapter.setAll(state.objects, action.payload);
+      },
+    },
   },
   selectors: {
     selectMode: createSelector.withTypes<MapEditorState>()(
       [(state) => state.modeStack],
       (modeStack): Mode => modeStack.at(-1) ?? "select"
     ),
+    selectedObjs: createSelector.withTypes<MapEditorState>()(
+      [(state) => state.selectedIds, (state) => state.objects.entities],
+      (selectedIds, entities): MapObj[] => selectedIds.map((id) => entities[id])
+    ),
   },
 });
 
-export const selectors = {
-  ...slice.selectors,
-  selection: tgiSelectors,
-};
+export const selectors = slice.selectors;
+export const mapSelectors = objectsAdapter.getSelectors();
 export const actions = slice.actions;

@@ -1,11 +1,7 @@
 import { iconTsId, lightIcon, startIcon } from "@/constants";
 import { globals as gApp } from "@/globals";
 import { loadMap } from "@/persist/map/api";
-import { actions as mapActions } from "@/slices/map";
-import {
-  actions as mapEdActions,
-  selectors as mapEdSelectors,
-} from "@/slices/mapEditor";
+import { actions as mapActions, selectors } from "@/slices/mapEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
@@ -23,7 +19,7 @@ export const setActiveLayerThunk = createAsyncThunk(
     { layer, notify }: { layer: MapLayerName; notify?: boolean },
     { dispatch }
   ) => {
-    dispatch(mapEdActions.setActiveLayer(layer));
+    dispatch(mapActions.setActiveLayer(layer));
     const name = mapLayerToName(layer);
     if (notify) {
       notifications.show({
@@ -55,7 +51,7 @@ export const duplicateSelectionThunk = createAsyncThunk(
   async (_, { dispatch, getState }) => {
     const state = getState() as RootState;
     const newObjs: MapObj[] = [];
-    mapEdSelectors.selection.selectAll(state.mapEditor).forEach((obj) => {
+    selectors.selectedObjs(state).forEach((obj) => {
       const newObj: MapObj = {
         ...obj,
         id: crypto.randomUUID(),
@@ -68,9 +64,9 @@ export const duplicateSelectionThunk = createAsyncThunk(
     // Duplicate the objects
     dispatch(mapActions.addMany(newObjs));
     // Select the new objects
-    dispatch(mapEdActions.setManySelected(newObjs));
+    dispatch(mapActions.setManySelected(newObjs.map((o) => o.id)));
     // Switch to "duplicate" mode which will allow immediate moving
-    dispatch(mapEdActions.setMode("duplicate"));
+    dispatch(mapActions.setMode("duplicate"));
   }
 );
 
@@ -80,20 +76,20 @@ export const setToolThunk = createAsyncThunk(
     const state = getState() as RootState;
 
     if (tool === null) {
-      dispatch(mapEdActions.setMode("select"));
+      dispatch(mapActions.setMode("select"));
     } else {
       if (tool === "set-gateway") {
         const tg = loadTileGroup({
           id: startIcon,
           tilesetId: iconTsId,
         });
-        dispatch(mapEdActions.setPlace(tg));
+        dispatch(mapActions.setPlace(tg));
       } else if (tool === "add-light") {
         const tg = loadTileGroup({
           id: lightIcon,
           tilesetId: iconTsId,
         });
-        dispatch(mapEdActions.setPlace(tg));
+        dispatch(mapActions.setPlace(tg));
       } else if (tool === "paint") {
         const layer = state.mapEditor.layers.active;
         if (![MapLayerName.Ground, MapLayerName.World].includes(layer)) {
@@ -102,10 +98,10 @@ export const setToolThunk = createAsyncThunk(
           );
         }
       }
-      dispatch(mapEdActions.pushMode(tool));
+      dispatch(mapActions.pushMode(tool));
     }
 
-    dispatch(mapEdActions.setActiveTool(tool));
+    dispatch(mapActions.setActiveTool(tool));
   }
 );
 

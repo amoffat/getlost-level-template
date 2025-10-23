@@ -1,4 +1,3 @@
-import { actions as mapActions } from "@/slices/map";
 import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { duplicateSelectionThunk } from "@/thunks/map";
@@ -18,8 +17,8 @@ export function setupKeys(canvas: HTMLCanvasElement): Record<string, boolean> {
         const state = store.getState();
         const mode = selectors.selectMode(state);
         if (mode === "select") {
-          store.dispatch(mapEdActions.setPlace(null));
           store.dispatch(mapEdActions.clearSelection());
+          store.dispatch(mapEdActions.setPlace(null));
         }
 
         store.dispatch(mapEdActions.setMode("select"));
@@ -38,9 +37,9 @@ export function setupKeys(canvas: HTMLCanvasElement): Record<string, boolean> {
         const mode = selectors.selectMode(state);
 
         if (mode === "select") {
-          const selection = state.mapEditor.selectedObjs.ids;
-          store.dispatch(mapActions.removeMany(selection));
+          const selection = state.mapEditor.selectedIds;
           store.dispatch(mapEdActions.clearSelection());
+          store.dispatch(mapEdActions.removeMany(selection));
         }
       },
       g: (keydown: boolean) => {
@@ -53,15 +52,13 @@ export function setupKeys(canvas: HTMLCanvasElement): Record<string, boolean> {
         const mode = selectors.selectMode(state);
 
         if (mode === "select") {
-          const sel = state.mapEditor.selectedObjs;
           const updates = [];
-          for (const obj of Object.values(sel.entities)) {
+          for (const obj of selectors.selectedObjs(state)) {
             if (isTileGroupInstance(obj)) {
               updates.push({ id: obj.id, changes: { flipX: !obj.flipX } });
             }
           }
-          store.dispatch(mapEdActions.updateManySelected(updates));
-          store.dispatch(mapActions.updateMany(updates));
+          store.dispatch(mapEdActions.updateMany(updates));
         } else if (mode === "paint") {
           store.dispatch(mapEdActions.toggleFlipX());
         }

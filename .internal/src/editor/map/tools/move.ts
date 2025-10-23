@@ -1,4 +1,3 @@
-import { actions as mapActions, selectors as mapSelectors } from "@/slices/map";
 import {
   actions as mapEdActions,
   selectors as mapEdSelectors,
@@ -16,6 +15,7 @@ import {
 export class Mover implements ClickDragListener {
   private _moveEnabled = false;
   private _cd: ClickDragger;
+  private startPositions: Map<string, Vector> = new Map();
 
   constructor(cd: ClickDragger) {
     this._cd = cd;
@@ -40,8 +40,7 @@ export class Mover implements ClickDragListener {
     const mode = mapEdSelectors.selectMode(state);
     if (!(mode === "select" || mode === "move")) return;
 
-    const sel = state.mapEditor.selectedObjs;
-    const selIds = new Set(sel.ids);
+    const selIds = new Set(state.mapEditor.selectedIds);
     const shouldMove = e.hoverIds.some((id) => selIds.has(id));
 
     if (shouldMove || mode === "move") {
@@ -55,22 +54,8 @@ export class Mover implements ClickDragListener {
     if (!this._moveEnabled) return;
 
     this._moveEnabled = false;
-    const state = store.getState();
-    const sel = state.mapEditor.selectedObjs;
-
-    // Here we're finalizing the positions of all selected objects, to ensure
-    // that our selectedObjs.entities data is correct and in sync with the map
-    // objects from the `map` slice.
-    const updates = [];
-    for (const objId of sel.ids) {
-      const obj = mapSelectors.selectById(state, objId);
-      updates.push({
-        id: objId,
-        changes: { x: obj.x, y: obj.y, z: obj.z },
-      });
-    }
-    store.dispatch(mapEdActions.updateManySelected(updates));
     store.dispatch(mapEdActions.popMode());
+    this.startPositions.clear();
   }
 
   public pointerDrag(e: PointerEventData): void {
@@ -87,21 +72,17 @@ export class Mover implements ClickDragListener {
     const gridSnap = state.mapEditor.grid.size;
 
     const startOffset = e.localMoveVector;
-    const sel = state.mapEditor.selectedObjs;
     const updates = [];
-    for (const objId of sel.ids) {
-      // It is technically wrong to use sel.entities here instead of
-      // mapSelectors.selectById, because the position of `obj` is going to be
-      // stale, since we're only updating the entities in the `map` slice. But
-      // it works, because we're only using the starting position as a base
-      // offset.
-      //
-      // To make the whole thing correct, we sync our selected object positions
-      // on "pointerup"
-      const obj = sel.entities[objId];
+    for (const obj of mapEdSelectors.selectedObjs(state)) {
+      let startPos = this.startPositions.get(obj.id);
+      if (!startPos) {
+        startPos = { x: obj.x, y: obj.y };
+        this.startPositions.set(obj.id, startPos);
+      }
+
       const newPos: Vector = {
-        x: Math.round(obj.x + startOffset.x),
-        y: Math.round(obj.y + startOffset.y),
+        x: Math.round(startPos.x + startOffset.x),
+        y: Math.round(startPos.y + startOffset.y),
       };
       if (snap) {
         newPos.x = Math.floor(newPos.x / gridSnap) * gridSnap;
@@ -118,7 +99,7 @@ export class Mover implements ClickDragListener {
       }
 
       updates.push({
-        id: objId,
+        id: obj.id,
         changes: {
           x: newPos.x,
           y: newPos.y,
@@ -126,7 +107,7 @@ export class Mover implements ClickDragListener {
         },
       });
     }
-    store.dispatch(mapActions.updateMany(updates));
+    store.dispatch(mapEdActions.updateMany(updates));
   }
 }
 

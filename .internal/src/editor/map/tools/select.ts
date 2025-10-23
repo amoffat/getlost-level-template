@@ -1,4 +1,8 @@
-import { actions, selectors as mapEdSelectors } from "@/slices/mapEditor";
+import {
+  actions,
+  selectors as mapEdSelectors,
+  selectors,
+} from "@/slices/mapEditor";
 import { RootState, store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { isColliderBox, isTileGroupInstance, MapObj } from "@/types/map";
@@ -37,14 +41,17 @@ class Selector implements ClickDragListener {
     // so we'll do some extra checks related to the ground layer in this block.
     if (e.hoverIds.length > 0) {
       store.dispatch(actions.setActiveTool("select"));
-      const sel = state.mapEditor.selectedObjs;
-      const selIds = new Set(sel.ids);
+      const sel = state.mapEditor.selectedIds;
+      const selIds = new Set(sel);
 
       // If we're clicking down on an object that's already selected, and we're
       // not deselecting it, abort our select logic so that the Mover can handle
       // what to do.
       const isOverSelected = e.hoverIds.some((id) => selIds.has(id));
-      if (isOverSelected && !this.addToSelection) return;
+      if (isOverSelected && !this.addToSelection) {
+        this.marqueeEnabled = false;
+        return;
+      }
 
       // The ground layer is special because it is dense with objects, so we
       // should always allow marquee selection, unless we're directly over a
@@ -63,7 +70,10 @@ class Selector implements ClickDragListener {
   pointerUp(e: PointerEventData) {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
-    if (mode !== "select") return;
+    if (mode !== "select") {
+      this.marqueeEnabled = false;
+      return;
+    }
 
     if (this.selectionMenuWasOpen(state)) return;
 
@@ -135,7 +145,7 @@ class Selector implements ClickDragListener {
       const action = this.addToSelection
         ? actions.addManySelected
         : actions.setManySelected;
-      store.dispatch(action(hits));
+      store.dispatch(action(hits.map((o) => o.id)));
     }
     // We'll use proposed selection if there's more than one object under the
     // cursor. If there's just one, select it directly.
@@ -144,18 +154,18 @@ class Selector implements ClickDragListener {
       if (hits.length === 1) {
         const obj = hits[0];
 
-        const curSelected = ms.selectedObjs;
-        const alreadySelected = curSelected.ids.includes(obj.id);
+        const curSelected = ms.selectedIds;
+        const alreadySelected = curSelected.includes(obj.id);
 
         if (alreadySelected && this.addToSelection) {
           // If the object is already selected, and we're adding to selection,
           // just deselect it.
-          store.dispatch(actions.removeOneSelected(obj));
+          store.dispatch(actions.removeOneSelected(obj.id));
         } else {
           const action = this.addToSelection
             ? actions.addOneSelected
             : actions.setOneSelected;
-          store.dispatch(action(obj));
+          store.dispatch(action(obj.id));
         }
       } else {
         if (!this.addToSelection) {
@@ -269,12 +279,8 @@ export function clearObjectOutlines() {
  * When the selected objects change, we need to update the outlines.
  */
 subState(
-  [
-    (state) => state.mapEditor.selectedObjs,
-    (state) => state.mapEditor.zoomPan.zoom,
-  ],
+  [selectors.selectedObjs, (state) => state.mapEditor.zoomPan.zoom],
   (selectedObjs, zoom) => {
-    const objs = selectedObjs.ids.map((id) => selectedObjs.entities[id]);
-    outlineObjects(objs, zoom);
+    outlineObjects(selectedObjs, zoom);
   }
 );

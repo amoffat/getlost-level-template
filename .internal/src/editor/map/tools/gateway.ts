@@ -1,5 +1,4 @@
-import { actions } from "@/slices/map";
-import { selectors } from "@/slices/mapEditor";
+import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
@@ -16,7 +15,7 @@ import { globals as g } from "../globals";
 const desiredMode: Mode = "set-gateway";
 
 export class Gateway implements ClickDragListener {
-  constructor(protected spatialIndex: SpatialIndex) {}
+  constructor(protected spatialIndex: SpatialIndex<MapObj>) {}
 
   public pointerUp(_e: PointerEventData): void {
     const state = store.getState();

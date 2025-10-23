@@ -9,18 +9,16 @@ import TilesetGroup from "./TilesetGroup";
 
 export default function ObjSelHover() {
   const proposed = useAppSelector((state) => state.mapEditor.proposedSelection);
-  const curSelected = useAppSelector(
-    (state) => state.mapEditor.selectedObjs.ids
-  );
+  const curSelected = useAppSelector((state) => state.mapEditor.selectedIds);
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const dispatch = useAppDispatch();
 
   const onChange = useCallback(
     (obj: TileGroupInstance, checked: boolean) => {
       if (checked) {
-        dispatch(actions.addOneSelected(obj));
+        dispatch(actions.addOneSelected(obj.id));
       } else {
-        dispatch(actions.removeOneSelected(obj));
+        dispatch(actions.removeOneSelected(obj.id));
       }
     },
     [dispatch]

@@ -1,4 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { selectors } from "@/slices/mapEditor";
 import { bringToTopThunk, sendToBottomThunk } from "@/thunks/map";
 import { MapLayerName } from "@/types/layer";
 import { isTileGroupInstance, TileGroupInstance } from "@/types/map";
@@ -8,11 +9,17 @@ import { ReactNode, useMemo } from "react";
 import Tip from "../Tip";
 
 export default function SelectTool() {
-  const selected = useAppSelector((state) => state.mapEditor.selectedObjs);
+  const selected = useAppSelector(selectors.selectedObjs);
   const dispatch = useAppDispatch();
   const groundLayer = useAppSelector(
     (state) => state.mapEditor.layers.active === MapLayerName.Ground
   );
+
+  const selectedTiles: TileGroupInstance[] = useMemo(() => {
+    return selected.filter(isTileGroupInstance);
+  }, [selected]);
+
+  const hasSelection = selectedTiles.length > 0;
 
   const tips: ReactNode[] = useMemo(() => {
     return [
@@ -25,12 +32,6 @@ export default function SelectTool() {
       "If you can't select an object, make sure the correct layer is active.",
     ];
   }, []);
-
-  const selectedTiles: TileGroupInstance[] = useMemo(() => {
-    return Object.values(selected.entities).filter(isTileGroupInstance);
-  }, [selected]);
-
-  const hasSelection = selectedTiles.length > 0;
 
   const onBringToTop = () => {
     dispatch(bringToTopThunk(selectedTiles));

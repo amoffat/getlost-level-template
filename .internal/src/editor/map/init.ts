@@ -1,9 +1,9 @@
 import * as constants from "@/constants";
 import { globals as gApp } from "@/globals";
-import { selectors as mapSelectors } from "@/slices/map";
-import { actions, selectors } from "@/slices/mapEditor";
+import { actions, mapSelectors, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
+import { MapObj } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";
 import { onVisible } from "@/utils/visible";
@@ -53,8 +53,9 @@ export async function init(): Promise<P.Application> {
 
   stage.interactive = true;
 
-  const spatialIndex = new SpatialIndex({
-    selectById: mapSelectors.selectById,
+  const spatialIndex = new SpatialIndex<MapObj>({
+    selectById: (state, id) =>
+      mapSelectors.selectById(state.mapEditor.objects, id),
     filterLayer: (state, layer) => {
       const ms = state.mapEditor;
       return !ms.layers.lockInactive || layer === ms.layers.active;

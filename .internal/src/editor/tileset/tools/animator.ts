@@ -40,7 +40,7 @@ export function setupFrameSelector({
   spatialIndex,
 }: {
   cd: ClickDragger;
-  spatialIndex: SpatialIndex;
+  spatialIndex: SpatialIndex<TilesetObject>;
 }) {
   cd.addListener(new FrameSelector(spatialIndex));
 }

@@ -7,7 +7,6 @@ import {
   pickDirectionWeights,
 } from "@/editor/map/utils/autotile";
 import { globals as appG } from "@/globals";
-import { selectors as mapSelectors } from "@/slices/map";
 import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { isTileGroupInstance, MapObj, TileGroupInstance } from "@/types/map";
@@ -103,9 +102,7 @@ class Painter extends Placer {
     // Collect all overlapping ground tile group instances, but for each (x,y) stack
     // keep only the topmost (highest z). This preserves one representative per tile position.
     const topByPos = new Map<string, TileGroupInstance>();
-    for (const hit of this.spatialIndex.search(searchBounds)) {
-      const obj = mapSelectors.selectById(state, hit.id);
-      if (!obj) continue;
+    for (const obj of this.spatialIndex.getObjects({ pos: searchBounds })) {
       if (obj.layer !== MapLayerName.Ground) continue;
       if (!isTileGroupInstance(obj)) continue;
 

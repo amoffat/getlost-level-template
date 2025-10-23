@@ -1,6 +1,6 @@
 import { log } from "@/log";
 import { saveMap as persistMap } from "@/persist/map/api";
-import { slice } from "@/slices/map";
+import { slice } from "@/slices/mapEditor";
 import { type RootState } from "@/store/store";
 import { AppStartListening } from "@/types/redux";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
@@ -16,7 +16,7 @@ async function saveMap(mapState: any) {
 }
 
 // Stream of save requests for the single map
-const saveRequests$ = new Subject<{ map: RootState["map"] }>();
+const saveRequests$ = new Subject<{ map: RootState["mapEditor"]["objects"] }>();
 
 saveRequests$
   .pipe(
@@ -43,7 +43,7 @@ startAppListening({
   predicate: (action) => action.type.startsWith(slice.name),
   effect: async (_action, { getState }) => {
     const state = getState();
-    saveRequests$.next({ map: state.map });
+    saveRequests$.next({ map: state.mapEditor.objects });
   },
 });
 
