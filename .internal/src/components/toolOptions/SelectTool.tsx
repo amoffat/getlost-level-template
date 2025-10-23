@@ -1,8 +1,19 @@
-import { Kbd } from "@mantine/core";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { bringToTopThunk, sendToBottomThunk } from "@/thunks/map";
+import { MapLayerName } from "@/types/layer";
+import { isTileGroupInstance, TileGroupInstance } from "@/types/map";
+import { Button, Fieldset, Kbd, Stack } from "@mantine/core";
+import { IconArrowBarToDown, IconArrowBarToUp } from "@tabler/icons-react";
 import { ReactNode, useMemo } from "react";
 import Tip from "../Tip";
 
 export default function SelectTool() {
+  const selected = useAppSelector((state) => state.mapEditor.selectedObjs);
+  const dispatch = useAppDispatch();
+  const groundLayer = useAppSelector(
+    (state) => state.mapEditor.layers.active === MapLayerName.Ground
+  );
+
   const tips: ReactNode[] = useMemo(() => {
     return [
       "Use click and drag to select multiple objects.",
@@ -14,9 +25,48 @@ export default function SelectTool() {
       "If you can't select an object, make sure the correct layer is active.",
     ];
   }, []);
+
+  const selectedTiles: TileGroupInstance[] = useMemo(() => {
+    return Object.values(selected.entities).filter(isTileGroupInstance);
+  }, [selected]);
+
+  const hasSelection = selectedTiles.length > 0;
+
+  const onBringToTop = () => {
+    dispatch(bringToTopThunk(selectedTiles));
+  };
+
+  const onSendToBottom = () => {
+    dispatch(sendToBottomThunk(selectedTiles));
+  };
+
   return (
     <>
       <Tip tips={tips} />
+      {groundLayer && (
+        <Fieldset legend="Ordering" p="xs">
+          <Stack p={0}>
+            <>
+              <Button
+                onClick={onBringToTop}
+                variant="light"
+                disabled={!hasSelection}
+                leftSection={<IconArrowBarToUp size={14} />}
+              >
+                Bring to top
+              </Button>
+              <Button
+                onClick={onSendToBottom}
+                variant="light"
+                disabled={!hasSelection}
+                leftSection={<IconArrowBarToDown size={14} />}
+              >
+                Send to bottom
+              </Button>
+            </>
+          </Stack>
+        </Fieldset>
+      )}
     </>
   );
 }

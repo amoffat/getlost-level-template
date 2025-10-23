@@ -100,13 +100,12 @@ export const loadEdgeSignaturesThunk = createAsyncThunk(
     const imageData = g.tilesetImageDataCache.get(tsId)!;
     const objs = new Map<string, ImageData>();
     for (const obj of Object.values(ts.tiles.entities)) {
-      // Skip tiles with transparent edges
-      if (!hasSolidEdges(imageData, obj.pos)) {
-        continue;
+      // Don't need to compute edges for non-solid tiles
+      if (hasSolidEdges(imageData, obj.pos)) {
+        const cropped = subImageData(imageData, obj.pos);
+        objs.set(obj.id, cropped);
       }
 
-      const cropped = subImageData(imageData, obj.pos);
-      objs.set(obj.id, cropped);
       g.tileIdToTileGroup.set(obj.id, obj);
     }
 

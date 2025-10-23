@@ -8,7 +8,8 @@ import { atomicWriteFileSync } from "../../utils/file";
 const internalDir = process.cwd();
 const repoDir = resolve(internalDir, "..");
 const levelDir = resolve(repoDir, "level");
-const texturesDir = resolve(levelDir, "textures");
+const levelTexDir = resolve(levelDir, "textures");
+const systemTexDir = resolve(internalDir, "assets", "textures");
 
 export const router = express.Router({ mergeParams: true });
 
@@ -18,17 +19,18 @@ function sanitizeId(raw: unknown): string {
   return (typeof raw === "string" ? raw : "").replace(/[^a-zA-Z0-9._-]/g, "");
 }
 
+function readDir(path: string): string[] {
+  const entries = fs.readdirSync(path, { withFileTypes: true });
+  const ids = entries
+    .filter((e) => e.isFile() && e.name.endsWith(".cbor.gz"))
+    .map((e) => e.name.replace(/\.cbor\.gz$/i, ""));
+  return ids;
+}
+
 // GET "/" — list all tileset IDs (derived from *.cbor.gz files)
 router.get("/", (_req, res) => {
   try {
-    if (!fs.existsSync(texturesDir)) {
-      res.json({ ids: [] });
-      return;
-    }
-    const entries = fs.readdirSync(texturesDir, { withFileTypes: true });
-    const ids = entries
-      .filter((e) => e.isFile() && e.name.endsWith(".cbor.gz"))
-      .map((e) => e.name.replace(/\.cbor\.gz$/i, ""));
+    const ids = readDir(levelTexDir);
     res.json({ ids });
   } catch (error) {
     console.error("Error listing tilesets:", error);
@@ -45,7 +47,7 @@ router.get("/:id", (req, res) => {
       return;
     }
 
-    const gzPath = resolve(texturesDir, `${id}.cbor.gz`);
+    const gzPath = resolve(levelTexDir, `${id}.cbor.gz`);
     if (!fs.existsSync(gzPath)) {
       res.sendStatus(404);
       return;
@@ -81,7 +83,7 @@ router.delete("/:id", (req, res) => {
       return;
     }
 
-    const gzPath = resolve(texturesDir, `${id}.cbor.gz`);
+    const gzPath = resolve(levelTexDir, `${id}.cbor.gz`);
     if (fs.existsSync(gzPath)) fs.unlinkSync(gzPath);
 
     res.sendStatus(204);
@@ -111,7 +113,7 @@ router.put("/:id", (req, res) => {
         return;
       }
 
-      fs.mkdirSync(texturesDir, { recursive: true });
+      fs.mkdirSync(levelTexDir, { recursive: true });
 
       // Expect a single file under the explicit field name 'tileset'
       const pickFirst = (v: any) => (Array.isArray(v) ? v[0] : v);
@@ -122,7 +124,7 @@ router.put("/:id", (req, res) => {
       }
 
       // Ignore multipart filename. Always write to <id>.cbor.gz
-      const outPath = resolve(texturesDir, `${id}.cbor.gz`);
+      const outPath = resolve(levelTexDir, `${id}.cbor.gz`);
 
       const buf = fs.readFileSync(incoming.filepath);
       const gz = gzipSync(buf);

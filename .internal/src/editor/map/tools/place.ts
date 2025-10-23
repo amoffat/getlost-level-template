@@ -98,6 +98,7 @@ export class Placer implements ClickDragListener {
     const { width, height } = g.placableSprite;
     const posKey = `${pos.x},${pos.y}`;
     const placedThisSession = this.dragSessionIndex.has(posKey);
+    if (placedThisSession) return;
 
     const innerPadding = 1;
     // We check a slightly smaller area than the actual object size to allow
@@ -113,6 +114,8 @@ export class Placer implements ClickDragListener {
     let z = pos.y + g.placableSprite.height;
 
     if (layer === MapLayerName.Ground) {
+      z = 0;
+
       // This is the authoritative spatial index, but it might be out of sync
       // with the map, since it updates async.
       const hits = this.spatialIndex
@@ -127,7 +130,10 @@ export class Placer implements ClickDragListener {
       const occupied = hits.length > 0 || this.tempSpatialIndex.has(posKey);
 
       // Get the max z-index of any existing objects here
-      const maxZ = hits.reduce((max, obj) => (obj.z > max ? obj.z : max), 0);
+      const maxZ = hits.reduce(
+        (max, obj) => (obj.z > max ? obj.z : max),
+        -Infinity
+      );
 
       // Don't place if there's already something here
       if (paintMode === "place-once") {
@@ -135,15 +141,11 @@ export class Placer implements ClickDragListener {
           return;
         }
       } else if (paintMode === "stack") {
-        if (placedThisSession) return;
         // Stack just above the highest object here
-        z = maxZ + 0.01;
+        z = maxZ + 1;
       } else if (paintMode === "overwrite") {
-        if (placedThisSession) return;
         store.dispatch(actions.removeMany(hits.map((h) => h.id)));
       }
-    } else {
-      if (placedThisSession) return;
     }
 
     this.tempSpatialIndex.add(posKey);

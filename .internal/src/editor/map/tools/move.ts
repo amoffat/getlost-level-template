@@ -4,6 +4,7 @@ import {
   selectors as mapEdSelectors,
 } from "@/slices/mapEditor";
 import { store } from "@/store/store";
+import { MapLayerName } from "@/types/layer";
 import { isTileGroupInstance } from "@/types/map";
 import { Vector } from "@/vec";
 import {
@@ -65,7 +66,7 @@ export class Mover implements ClickDragListener {
       const obj = mapSelectors.selectById(state, objId);
       updates.push({
         id: objId,
-        changes: { x: obj.x, y: obj.y },
+        changes: { x: obj.x, y: obj.y, z: obj.z },
       });
     }
     store.dispatch(mapEdActions.updateManySelected(updates));
@@ -107,10 +108,13 @@ export class Mover implements ClickDragListener {
         newPos.y = Math.floor(newPos.y / gridSnap) * gridSnap;
       }
 
-      let z = newPos.y;
-      if (isTileGroupInstance(obj)) {
-        const height = obj.frame.br.y - obj.frame.ul.y;
-        z = newPos.y + height;
+      let z = obj.z;
+      if (obj.layer === MapLayerName.World) {
+        z = newPos.y;
+        if (isTileGroupInstance(obj)) {
+          const height = obj.frame.br.y - obj.frame.ul.y;
+          z = newPos.y + height;
+        }
       }
 
       updates.push({

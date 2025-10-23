@@ -1,4 +1,5 @@
 import { iconTsId, lightIcon, startIcon } from "@/constants";
+import { globals as gApp } from "@/globals";
 import { loadMap } from "@/persist/map/api";
 import { actions as mapActions } from "@/slices/map";
 import {
@@ -9,11 +10,12 @@ import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { MapObj } from "@/types/map";
+import { MapObj, TileGroupInstance } from "@/types/map";
 import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { globals as g } from "../editor/map/globals";
 
 export const setActiveLayerThunk = createAsyncThunk(
   "mapEditor/setActiveLayerThunk",
@@ -104,5 +106,69 @@ export const setToolThunk = createAsyncThunk(
     }
 
     dispatch(mapEdActions.setActiveTool(tool));
+  }
+);
+
+export const bringToTopThunk = createAsyncThunk(
+  "mapEditor/bringToTopThunk",
+  async (objs: TileGroupInstance[], { dispatch }) => {
+    const changeList = [];
+
+    for (const obj of objs) {
+      const tg = gApp.tileIdToTileGroup.get(obj.tileId)!;
+      const width = tg.pos.br.x - tg.pos.ul.x;
+      const height = tg.pos.br.y - tg.pos.ul.y;
+      const bounds = {
+        minX: obj.x,
+        minY: obj.y,
+        maxX: obj.x + width,
+        maxY: obj.y + height,
+      };
+
+      const hits = g.spatialIndex.getObjects({ pos: bounds });
+      const maxZ = hits
+        .filter((o) => o.id !== obj.id)
+        .map((o) => o.z)
+        .reduce((max, z) => Math.max(max, z), -Infinity);
+
+      changeList.push({
+        id: obj.id,
+        changes: { z: maxZ + 1 },
+      });
+    }
+
+    dispatch(mapActions.updateMany(changeList));
+  }
+);
+
+export const sendToBottomThunk = createAsyncThunk(
+  "mapEditor/sendToBottomThunk",
+  async (objs: TileGroupInstance[], { dispatch }) => {
+    const changeList = [];
+
+    for (const obj of objs) {
+      const tg = gApp.tileIdToTileGroup.get(obj.tileId)!;
+      const width = tg.pos.br.x - tg.pos.ul.x;
+      const height = tg.pos.br.y - tg.pos.ul.y;
+      const bounds = {
+        minX: obj.x,
+        minY: obj.y,
+        maxX: obj.x + width,
+        maxY: obj.y + height,
+      };
+
+      const hits = g.spatialIndex.getObjects({ pos: bounds });
+      const minZ = hits
+        .filter((o) => o.id !== obj.id)
+        .map((o) => o.z)
+        .reduce((min, z) => Math.min(min, z), Infinity);
+
+      changeList.push({
+        id: obj.id,
+        changes: { z: minZ - 1 },
+      });
+    }
+
+    dispatch(mapActions.updateMany(changeList));
   }
 );

@@ -1,4 +1,6 @@
 import { MapLayerName } from "@/types/layer";
+import type { MapObj } from "@/types/map";
+import type { SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
 import { Mover } from "./tools/move";
 
@@ -26,6 +28,8 @@ interface Globals {
   boundsMask: P.Graphics;
   grid: P.Container;
   initialized: boolean;
+
+  spatialIndex: SpatialIndex<MapObj>;
 }
 
 export const globals: Globals = {

@@ -60,6 +60,7 @@ export async function init(): Promise<P.Application> {
       return !ms.layers.lockInactive || layer === ms.layers.active;
     },
   });
+  g.spatialIndex = spatialIndex;
 
   // Background container with checkerboard pattern (conventional transparent-bg look)
   g.backgroundContainer = new P.Container();

@@ -1,5 +1,5 @@
 import { actions, selectors as mapEdSelectors } from "@/slices/mapEditor";
-import { store } from "@/store/store";
+import { RootState, store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { isColliderBox, isTileGroupInstance, MapObj } from "@/types/map";
 import { Rect } from "@/types/rect";
@@ -65,6 +65,8 @@ class Selector implements ClickDragListener {
     const mode = mapEdSelectors.selectMode(state);
     if (mode !== "select") return;
 
+    if (this.selectionMenuWasOpen(state)) return;
+
     // In pointerDown, we may have deferred to our mover if we clicked "over" an
     // element. However, if we've now determined that we never moved, we should
     // handle the click selection here. We should be able to trigger this branch
@@ -79,6 +81,20 @@ class Selector implements ClickDragListener {
 
     this.doSelection(e);
     this.marqueeEnabled = false;
+  }
+
+  /**
+   * If we have a proposed selection menu open, close it. This is a convenience
+   * method because this is needed in multiple places.
+   * @returns
+   */
+  private selectionMenuWasOpen(state: RootState): boolean {
+    const hasProposed = state.mapEditor.proposedSelection;
+    if (hasProposed) {
+      store.dispatch(actions.setProposedSelection(null));
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -161,6 +177,10 @@ class Selector implements ClickDragListener {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
     if (mode !== "select") return;
+
+    // Just for the side-effect of closing the proposed selection menu if it's
+    // open
+    this.selectionMenuWasOpen(state);
 
     if (this.marqueeEnabled) {
       drawRectSelect(e.hitbox, state.mapEditor.zoomPan.zoom);
