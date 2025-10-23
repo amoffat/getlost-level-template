@@ -93,9 +93,10 @@ export const setToolThunk = createAsyncThunk(
       } else if (tool === "paint") {
         const layer = state.mapEditor.layers.active;
         if (![MapLayerName.Ground, MapLayerName.World].includes(layer)) {
-          dispatch(
-            setActiveLayerThunk({ layer: MapLayerName.World, notify: true })
-          );
+          const isTile = state.mapEditor.place.obj?.coverage === 1.0;
+          const switchTo = isTile ? MapLayerName.Ground : MapLayerName.World;
+
+          dispatch(setActiveLayerThunk({ layer: switchTo, notify: true }));
         }
       }
       dispatch(mapActions.pushMode(tool));

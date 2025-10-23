@@ -1,4 +1,4 @@
-import { drawMaskedOutline } from "@/editor/common/outline";
+import { drawOutline } from "@/editor/common/outline";
 import { selectStroke } from "@/editor/common/strokes";
 import { globals as gApp } from "@/globals";
 import { log } from "@/log";
@@ -216,7 +216,7 @@ subState(
         width: (selectStroke.width ?? 1) / zoomPan.zoom,
       };
 
-      drawMaskedOutline({
+      drawOutline({
         container: g.placableOutline,
         frame: rect,
         stroke,

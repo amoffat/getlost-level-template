@@ -1,3 +1,4 @@
+import { area } from "@/types/rect";
 import { Vector } from "@/vec";
 import {
   ActionIcon,
@@ -23,12 +24,8 @@ interface ObjectPaletteProps {
 }
 
 function sortBySizeDescending(a: TileGroup, b: TileGroup): number {
-  const aWidth = a.pos.br.x - a.pos.ul.x;
-  const aHeight = a.pos.br.y - a.pos.ul.y;
-  const bWidth = b.pos.br.x - b.pos.ul.x;
-  const bHeight = b.pos.br.y - b.pos.ul.y;
-  const aArea = aWidth * aHeight;
-  const bArea = bWidth * bHeight;
+  const aArea = area(a.pos);
+  const bArea = area(b.pos);
   if (aArea !== bArea) return bArea - aArea;
 
   // if areas are equal, sort by tileset id
@@ -71,11 +68,18 @@ export default function ObjectPalette({
       }
     });
 
-    const objectsBySize = Object.values(filteredTilesets)
+    const sorted = Object.values(filteredTilesets)
       .flatMap((ts) => Object.values(ts.tiles.entities))
       .sort(sortBySizeDescending);
 
-    for (const group of objectsBySize) {
+    // It is possible for multiple tilesets to contain the same tile group
+    // (having the same id), because the id is a hash of the image data.
+    const seen = new Set<string>();
+
+    for (const group of sorted) {
+      if (seen.has(group.id)) continue;
+      seen.add(group.id);
+
       const key = `${group.tilesetId}-${group.id}`;
       objs.push(
         <TilesetGroup

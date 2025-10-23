@@ -16,7 +16,8 @@ export function drawOutline({
   const height = frame.br.y - frame.ul.y;
 
   const gfx = new P.Graphics();
-  gfx.rect(0, 0, width, height).stroke(stroke).fill(fill);
+  gfx.rect(0, 0, width, height).stroke(stroke);
+  if (fill) gfx.fill(fill);
   container.addChild(gfx);
 }
 
