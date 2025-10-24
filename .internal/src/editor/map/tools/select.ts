@@ -22,6 +22,7 @@ import { pressedKeys } from "../keys";
 
 class Selector implements ClickDragListener {
   private marqueeEnabled = false;
+  private recentlyClosedMenu = false;
 
   constructor(private spatialIndex: SpatialIndex<MapObj>) {}
 
@@ -53,6 +54,10 @@ class Selector implements ClickDragListener {
         return;
       }
 
+      // If we're clicking down while a proposed selection menu is open, close
+      // the menu and don't do anything else (preserve the current selection).
+      if (this.selectionMenuWasOpen(state)) return;
+
       // The ground layer is special because it is dense with objects, so we
       // should always allow marquee selection, unless we're directly over a
       // selected object.
@@ -75,7 +80,10 @@ class Selector implements ClickDragListener {
       return;
     }
 
-    if (this.selectionMenuWasOpen(state)) return;
+    // If we just closed the proposed selection menu (in pointerDown), don't do
+    // any additional selection logic, since we want to preserve what was
+    // selected.
+    if (this.recentlyClosedMenu) return;
 
     // In pointerDown, we may have deferred to our mover if we clicked "over" an
     // element. However, if we've now determined that we never moved, we should
@@ -102,8 +110,10 @@ class Selector implements ClickDragListener {
     const hasProposed = state.mapEditor.proposedSelection;
     if (hasProposed) {
       store.dispatch(actions.setProposedSelection(null));
+      this.recentlyClosedMenu = true;
       return true;
     }
+    this.recentlyClosedMenu = false;
     return false;
   }
 
