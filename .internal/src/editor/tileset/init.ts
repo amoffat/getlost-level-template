@@ -19,6 +19,7 @@ import { setupWheelZoom } from "../common/zoom";
 import { globals as g } from "./globals";
 import { drawGridMask } from "./grid";
 import { setupKeys } from "./keys";
+import { setupFrameSelector } from "./tools/animator";
 import { setupGrouper } from "./tools/group";
 import { setupSelector } from "./tools/select";
 
@@ -154,6 +155,7 @@ export async function init(): Promise<P.Application> {
 
   setupGrouper({ cd, spatialIndex });
   setupSelector({ cd, spatialIndex });
+  setupFrameSelector({ cd, spatialIndex });
 
   gApp.tilesetEditorReconciler.attachCanvas({
     spatialIndex,

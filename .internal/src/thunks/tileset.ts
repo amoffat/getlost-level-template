@@ -9,8 +9,8 @@ import {
   actions as tsActions,
 } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
-import { store } from "@/store/store";
-import { Tileset } from "@/types/tileset";
+import { RootState, store } from "@/store/store";
+import { Mode, Tileset } from "@/types/tileset";
 import { schedulerYield } from "@/utils/async";
 import { hasSolidEdges, subImageData } from "@/utils/image";
 import { genTilesetId, loadTilesetImage } from "@/utils/tileset";
@@ -175,5 +175,20 @@ export const retileThunk = createAsyncThunk(
       .map((obj) => obj.id);
     dispatch(tsActions.deletePaletteObjects({ tsId, ids }));
     await unpackTileset(tsId);
+  }
+);
+
+export const setToolThunk = createAsyncThunk(
+  "mapEditor/setToolThunk",
+  async (tool: Mode | null, { dispatch, getState }) => {
+    const state = getState() as RootState;
+
+    if (tool === null) {
+      dispatch(tsActions.setMode("select"));
+    } else {
+      dispatch(tsActions.pushMode(tool));
+    }
+
+    dispatch(tsActions.setActiveTool(tool));
   }
 );

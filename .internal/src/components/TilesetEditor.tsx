@@ -2,7 +2,11 @@ import * as constants from "@/constants";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
-import { loadTilesetThunk, selectTilesetThunk } from "@/thunks/tileset";
+import {
+  loadTilesetThunk,
+  selectTilesetThunk,
+  setToolThunk,
+} from "@/thunks/tileset";
 import { Mode } from "@/types/tileset";
 import { Flex, Group, ScrollArea, Stack, Tabs, Text } from "@mantine/core";
 import {
@@ -131,13 +135,13 @@ export default function TilesetEditorTab({
 
   const onToolActivated = useCallback(
     (slug: string) => {
-      dispatch(actions.setActiveTool(slug as Mode));
+      dispatch(setToolThunk(slug as Mode));
     },
     [dispatch]
   );
 
   const onToolDeactivated = useCallback(() => {
-    dispatch(actions.setActiveTool(null));
+    dispatch(setToolThunk(null));
   }, [dispatch]);
 
   const tips: string[] = useMemo(() => {

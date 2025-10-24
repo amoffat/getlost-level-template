@@ -22,7 +22,8 @@ type TsAction =
   | ReturnType<typeof tsActions.bulkAddSinglePaletteTiles>
   | ReturnType<typeof tsActions.addPaletteObject>
   | ReturnType<typeof tsActions.addSinglePaletteTile>
-  | ReturnType<typeof tsActions.updateTileGroup>;
+  | ReturnType<typeof tsActions.updateTileGroup>
+  | ReturnType<typeof tsActions.deletePaletteObjects>;
 
 // Stream of save requests; we group by tileset id to debounce per key
 const saveRequests$ = new Subject<{ ts: Tileset; dispatch: AppDispatch }>();
@@ -60,7 +61,8 @@ startAppListening({
     tsActions.bulkAddSinglePaletteTiles,
     tsActions.addPaletteObject,
     tsActions.addSinglePaletteTile,
-    tsActions.updateTileGroup
+    tsActions.updateTileGroup,
+    tsActions.deletePaletteObjects
   ),
 
   effect: async (action: TsAction, { dispatch, getState }) => {

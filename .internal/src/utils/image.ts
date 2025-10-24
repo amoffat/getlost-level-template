@@ -75,6 +75,19 @@ export async function mergeFrames(files: File[]): Promise<MergeFramesResult> {
   };
 }
 
+/**
+ * Returns true if the integer extent of rect (floor ul, ceil br) lies entirely
+ * within the bounds of the given ImageData. Does not evaluate degeneracy; a
+ * zero- or negative-sized rect can still return true if its extents are in-bounds.
+ */
+export function isRectWithinImageData(image: ImageData, rect: Rect): boolean {
+  const x0 = Math.floor(rect.ul.x);
+  const y0 = Math.floor(rect.ul.y);
+  const x1 = Math.ceil(rect.br.x);
+  const y1 = Math.ceil(rect.br.y);
+  return x0 >= 0 && y0 >= 0 && x1 <= image.width && y1 <= image.height;
+}
+
 export function getImageDataFromBitmap(bitmap: ImageBitmap): ImageData {
   const width = bitmap.width;
   const height = bitmap.height;
@@ -90,6 +103,14 @@ export function subImageData(source: ImageData, rect: Rect): ImageData {
   const { ul, br } = rect;
   const w = Math.ceil(br.x) - Math.floor(ul.x);
   const h = Math.ceil(br.y) - Math.floor(ul.y);
+
+  // Enforce strict in-bounds access
+  if (!isRectWithinImageData(source, rect)) {
+    throw new Error(
+      `subImageData: requested rect is out of ImageData bounds (${source.width}x${source.height})`
+    );
+  }
+
   const out = new Uint8ClampedArray(w * h * 4);
 
   for (let row = 0; row < h; row++) {

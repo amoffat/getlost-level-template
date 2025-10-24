@@ -11,6 +11,7 @@ import {
   subImageData,
 } from "@/utils/image";
 import { subState } from "@/utils/redux";
+import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
 import {
   ClickDragger,
@@ -91,26 +92,40 @@ class Grouper implements ClickDragListener {
       // can appear anywhere in any tileset, which makes it easier to fix maps
       // if a tileset gets deleted or renamed.
       const tsImageData = gApp.tilesetImageDataCache.get(tsId)!;
-      const objData = subImageData(tsImageData, coords);
-      const id = await hashOfImageData(objData);
-      const avgColor = averageOklab(objData);
+      let objData: ImageData | undefined;
+      try {
+        objData = subImageData(tsImageData, coords);
+      } catch {
+        notifications.show({
+          title: "Grouping error",
+          message: "The selected area must only contain tiles.",
+          color: "red",
+        });
+        finishMode = true;
+      }
 
-      const group: TileGroup = {
-        id,
-        tilesetId: tsId,
-        pos: coords,
-        gridSize,
-        zIndices: [],
-        name: "",
-        tags: [],
-        pinned: true,
-        coverage: amountOpaquePixels(objData),
-        avgColor,
-        hilbertIndex: oklabHilbertIndex(avgColor),
-      };
+      if (objData) {
+        const coverage = amountOpaquePixels(objData);
+        const id = await hashOfImageData(objData);
+        const avgColor = averageOklab(objData);
 
-      store.dispatch(tsActions.addPaletteObject({ tsId, group }));
-      finishMode = true;
+        const group: TileGroup = {
+          id,
+          tilesetId: tsId,
+          pos: coords,
+          gridSize,
+          zIndices: [],
+          name: "",
+          tags: [],
+          pinned: true,
+          coverage,
+          avgColor,
+          hilbertIndex: oklabHilbertIndex(avgColor),
+        };
+
+        store.dispatch(tsActions.addPaletteObject({ tsId, group }));
+        finishMode = true;
+      }
     }
 
     if (finishMode) {

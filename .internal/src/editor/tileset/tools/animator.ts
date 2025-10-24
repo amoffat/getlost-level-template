@@ -1,4 +1,4 @@
-import { selectors as tilesetSelectors } from "@/slices/tilesetEditor";
+import { actions, selectors as tilesetSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { isColliderBox, isTileGroupInstance, MapObj } from "@/types/map";
 import { Rect } from "@/types/rect";
@@ -13,6 +13,7 @@ import {
 import { drawMaskedOutline } from "../../common/outline";
 import { selectStroke } from "../../common/strokes";
 import { globals as g } from "../globals";
+import { pressedKeys } from "../keys";
 
 class FrameSelector implements ClickDragListener {
   constructor(private spatialIndex: SpatialIndex<TilesetObject>) {}
@@ -32,6 +33,16 @@ class FrameSelector implements ClickDragListener {
     const hits = this.spatialIndex.getObjects({
       pos: searchBounds,
     });
+
+    if (hits.length === 0) {
+      store.dispatch(actions.clearSelection());
+    } else {
+      store.dispatch(actions.addManySelected(hits));
+    }
+  }
+
+  private get addToSelection(): boolean {
+    return pressedKeys["Control"] ?? false;
   }
 }
 
