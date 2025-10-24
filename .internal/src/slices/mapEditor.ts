@@ -1,6 +1,6 @@
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { MapObj } from "@/types/map";
+import { isTileGroupInstance, MapObj } from "@/types/map";
 import { Rect } from "@/types/rect";
 import { TileGroup } from "@/types/tilegroup";
 import { ColliderOpts, MagicPaintOpts, PaintOpts } from "@/types/tools";
@@ -300,6 +300,23 @@ export const slice = createSlice({
     selectedObjs: createSelector.withTypes<MapEditorState>()(
       [(state) => state.selectedIds, (state) => state.objects.entities],
       (selectedIds, entities): MapObj[] => selectedIds.map((id) => entities[id])
+    ),
+    paletteSelectedTgIds: createSelector.withTypes<MapEditorState>()(
+      [
+        (state) => state.selectedIds,
+        (state) => state.objects.entities,
+        (state) => state.place.obj,
+      ],
+      (selectedIds, entities, placeObj): Set<string> => {
+        const s = new Set(
+          selectedIds
+            .map((id) => entities[id])
+            .filter(isTileGroupInstance)
+            .map((inst) => inst.tileId)
+        );
+        if (placeObj) s.add(placeObj.id);
+        return s;
+      }
     ),
   },
 });

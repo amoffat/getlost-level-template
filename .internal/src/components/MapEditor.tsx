@@ -1,7 +1,7 @@
 import * as constants from "@/constants";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { actions } from "@/slices/mapEditor";
+import { actions, selectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
 import { setActiveLayerThunk, setToolThunk } from "@/thunks/map";
 import { Mode } from "@/types/editor";
@@ -49,6 +49,7 @@ export default function MapEditorTab({
   const selectedToolName = useAppSelector(
     (state: RootState) => state.mapEditor.selectedTool
   );
+  const paletteSelection = useAppSelector(selectors.paletteSelectedTgIds);
   const layers = useAppSelector((state: RootState) => state.mapEditor.layers);
   const gridPos = useAppSelector(
     (state: RootState) => state.mapEditor.grid.curPos
@@ -294,6 +295,7 @@ export default function MapEditorTab({
                 <ObjectPalette
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
+                  selectedObjects={paletteSelection}
                 />
               </Tabs.Panel>
             </Tabs>

@@ -27,7 +27,6 @@ const TilesetGroup = ({
   const width = Math.max(0, group.pos.br.x - group.pos.ul.x);
   const height = Math.max(0, group.pos.br.y - group.pos.ul.y);
   const bgPos = `-${group.pos.ul.x}px -${group.pos.ul.y}px`;
-  const border = selected ? "1px solid rgba(0, 255, 0, 1)" : undefined;
 
   return (
     <div
@@ -37,13 +36,14 @@ const TilesetGroup = ({
       <div
         data-tsid={group.tilesetId}
         data-objid={group.id}
-        className={classNames(styles.crop, className)}
+        className={classNames(styles.crop, className, {
+          [styles.selected]: selected,
+        })}
         style={{
           width,
           height,
           backgroundImage: `url(${ts.objectUrl})`,
           backgroundPosition: bgPos,
-          border,
           transform: `scale(${scale})`,
           transformOrigin: "top left",
           imageRendering: "pixelated",

@@ -121,6 +121,7 @@ export class ClickDragger {
     });
 
     container.addEventListener("pointerup", (e) => {
+      if (e.button !== 0) return;
       const localPos = Vec2.fromPoint(
         e.getLocalPosition(this.coordsRelativeTo)
       );

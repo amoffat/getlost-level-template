@@ -138,7 +138,8 @@ export async function init(): Promise<P.Application> {
 
   const cd = new ClickDragger({
     app,
-    container: g.tilesetContainer,
+    container: stage,
+    coordsRelativeTo: g.tilesetContainer,
     getGridSnap: () => {
       const state = store.getState();
       return state.tilesetEditor.grid.size;

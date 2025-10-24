@@ -35,6 +35,7 @@ export default function TilesetEditorTab({
   const selectedToolName = useAppSelector(
     (state) => state.tilesetEditor.selectedTool
   );
+  const paletteSelection = useAppSelector(selectors.paletteSelectedIds);
   const activeTilesetId = useAppSelector(
     (state) => state.tilesetEditor.activeTilesetId
   );
@@ -218,8 +219,8 @@ export default function TilesetEditorTab({
                 }}
               >
                 <ObjectPalette
-                  allowSelect={false}
                   tileset={activeTilesetId ? tilesets[activeTilesetId] : null}
+                  selectedObjects={paletteSelection}
                 />
               </Tabs.Panel>
             </Tabs>

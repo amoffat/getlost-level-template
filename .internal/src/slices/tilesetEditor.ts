@@ -364,6 +364,10 @@ export const slice = createSlice({
         return tilesets[inst.tilesetId].tiles.entities[inst.tileId];
       }
     ),
+    paletteSelectedIds: createSelector.withTypes<TilesetEditorState>()(
+      [(state) => state.selectedTiles.ids],
+      (selectedIds): Set<string> => new Set(selectedIds as string[])
+    ),
   },
 });
 

@@ -18,9 +18,9 @@ import TilesetGroup from "./TilesetGroup";
 
 interface ObjectPaletteProps {
   tileset?: Tileset | null;
-  allowSelect?: boolean;
   onSelectObject?: (obj: TileGroup, e: React.MouseEvent) => void;
   onDeselectObject?: () => void;
+  selectedObjects?: Set<string>;
 }
 
 function sortBySizeDescending(a: TileGroup, b: TileGroup): number {
@@ -45,14 +45,13 @@ export default function ObjectPalette({
   onSelectObject,
   onDeselectObject,
   tileset: showTileset,
-  allowSelect = true,
+  selectedObjects,
 }: ObjectPaletteProps) {
   const [objMenuPos, setObjMenuPos] = useState<Vector | null>(null);
   const [clickedPaletteObject, setClickedPaletteObject] =
     useState<TileGroup | null>(null);
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const loadingPalette = useAppSelector((state) => state.ui.loadingPalette);
-  const [selectedObject, setSelectedObject] = useState<TileGroup | null>(null);
   const [scale, setScale] = useState(1);
 
   const objects: JSX.Element[] = useMemo(() => {
@@ -86,18 +85,17 @@ export default function ObjectPalette({
           scale={scale}
           key={key}
           group={group}
-          selected={selectedObject?.id === group.id && allowSelect}
+          selected={selectedObjects?.has(group.id)}
         />
       );
     }
 
     return objs;
-  }, [tilesets, showTileset, selectedObject, allowSelect, scale]);
+  }, [tilesets, showTileset, selectedObjects, scale]);
 
   const deselectObject = useCallback(() => {
     setObjMenuPos(null);
     onDeselectObject?.();
-    setSelectedObject(null);
   }, [onDeselectObject]);
 
   useEffect(() => {
@@ -134,10 +132,9 @@ export default function ObjectPalette({
 
       const obj = tilesets[tsId].tiles.entities[objId];
       if (e.button === 0) {
-        if (objId === selectedObject?.id) {
+        if (selectedObjects?.has(objId)) {
           deselectObject();
         } else {
-          setSelectedObject(obj);
           onSelectObject?.(obj, e);
         }
       } else if (e.button === 2) {
@@ -147,9 +144,12 @@ export default function ObjectPalette({
         const y = rect.top + rect.height / 4;
         setObjMenuPos({ x, y });
         setClickedPaletteObject(obj);
+
+        // Also select the object
+        onSelectObject?.(obj, e);
       }
     },
-    [tilesets, deselectObject, selectedObject?.id, onSelectObject]
+    [tilesets, deselectObject, selectedObjects, onSelectObject]
   );
 
   const zoomInClick = useCallback(() => {

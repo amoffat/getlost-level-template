@@ -16,3 +16,40 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges; /* fallback */
 }
+
+.selected {
+  /* Keep existing visible selection border */
+  border: 1px solid rgba(0, 255, 0, 1);
+  /* Ensure pseudo-element overlay positions correctly */
+  position: relative;
+}
+
+/* Green overlay with initial flash to full green, then fade to 0.25 alpha */
+.selected::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(0, 255, 0, 0.25);
+  /* Looping brief flash to full green, then fade back to 0.25 */
+  animation: selectedFlash 1500ms ease-in-out infinite;
+  mix-blend-mode: difference;
+}
+
+@keyframes selectedFlash {
+  /* Brief full-green flash */
+  0% {
+    background: rgba(0, 255, 0, 1);
+  }
+  10% {
+    background: rgba(0, 255, 0, 1);
+  }
+  /* Fade down to overlay */
+  40% {
+    background: rgba(0, 255, 0, 0.25);
+  }
+  /* Stay mostly at 0.25 until next cycle */
+  100% {
+    background: rgba(0, 255, 0, 0.25);
+  }
+}
