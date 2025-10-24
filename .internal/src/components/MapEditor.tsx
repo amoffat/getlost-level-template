@@ -82,7 +82,9 @@ export default function MapEditorTab({
     (obj: any, e: React.MouseEvent) => {
       e.preventDefault();
       dispatch(actions.setPlace(obj));
-      dispatch(setToolThunk("paint"));
+      if (e.button === 0) {
+        dispatch(setToolThunk("paint"));
+      }
     },
     [dispatch]
   );

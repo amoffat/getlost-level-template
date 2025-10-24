@@ -79,6 +79,11 @@ export default function ObjectPalette({
       if (seen.has(group.id)) continue;
       seen.add(group.id);
 
+      const shouldDim =
+        !selectedObjects?.has(group.id) &&
+        selectedObjects &&
+        selectedObjects.size > 0;
+
       const key = `${group.tilesetId}-${group.id}`;
       objs.push(
         <TilesetGroup
@@ -86,6 +91,7 @@ export default function ObjectPalette({
           key={key}
           group={group}
           selected={selectedObjects?.has(group.id)}
+          dimmed={shouldDim}
         />
       );
     }

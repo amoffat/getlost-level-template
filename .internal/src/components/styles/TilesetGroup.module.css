@@ -15,6 +15,8 @@
   /* Keep pixels crisp when scaled */
   image-rendering: pixelated;
   image-rendering: crisp-edges; /* fallback */
+  /* Smoothly animate filter changes (e.g., saturation) */
+  transition: filter 300ms ease-in-out;
 }
 
 .selected {
@@ -34,6 +36,10 @@
   /* Looping brief flash to full green, then fade back to 0.25 */
   animation: selectedFlash 1500ms ease-in-out infinite;
   mix-blend-mode: difference;
+}
+
+.notSelected {
+  filter: saturate(0);
 }
 
 @keyframes selectedFlash {

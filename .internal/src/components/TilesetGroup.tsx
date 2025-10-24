@@ -11,6 +11,7 @@ export interface TilesetCropProps extends React.HTMLAttributes<HTMLDivElement> {
   style?: React.CSSProperties;
   title?: string;
   selected?: boolean;
+  dimmed?: boolean;
 }
 
 const TilesetGroup = ({
@@ -19,7 +20,7 @@ const TilesetGroup = ({
   style,
   scale = 1,
   selected,
-  ...others
+  dimmed,
 }: TilesetCropProps) => {
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const ts = tilesets[group.tilesetId];
@@ -38,6 +39,7 @@ const TilesetGroup = ({
         data-objid={group.id}
         className={classNames(styles.crop, className, {
           [styles.selected]: selected,
+          [styles.notSelected]: dimmed,
         })}
         style={{
           width,
@@ -49,7 +51,6 @@ const TilesetGroup = ({
           imageRendering: "pixelated",
           ...(style ?? {}),
         }}
-        {...others}
       />
     </div>
   );
