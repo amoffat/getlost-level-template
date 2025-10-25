@@ -1,7 +1,7 @@
 import { log } from "@/log";
 import { deleteTileset, saveTileset } from "@/persist/tileset/api";
 import { actions as tsActions } from "@/slices/tilesetEditor";
-import { AppDispatch, type RootState } from "@/store/store";
+import { AppDispatch } from "@/store/store";
 import { AppStartListening } from "@/types/redux";
 import { Tileset } from "@/types/tileset";
 import { createListenerMiddleware, isAnyOf } from "@reduxjs/toolkit";
@@ -79,15 +79,5 @@ startAppListening({
     await deleteTileset(action.payload);
   },
 });
-
-// Manual "Save Now" action (callable from UI)
-export const saveNow =
-  () => async (dispatch: any, getState: () => RootState) => {
-    const state = getState();
-    const tsId = state.tilesetEditor.activeTilesetId!;
-    const ts = state.tilesetEditor.tilesets[tsId];
-    await saveTileset(ts);
-    dispatch(tsActions.markSaved({ tsId, saved: true }));
-  };
 
 export default listenerMiddleware.middleware;

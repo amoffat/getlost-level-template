@@ -129,9 +129,10 @@ class Selector implements ClickDragListener {
           store.dispatch(action(obj));
         }
       } else {
-        if (!this.addToSelection) {
-          store.dispatch(actions.clearSelection());
-        }
+        const action = this.addToSelection
+          ? actions.addManySelected
+          : actions.setManySelected;
+        store.dispatch(action(hits));
       }
     }
   }

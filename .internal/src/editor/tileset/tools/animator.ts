@@ -34,9 +34,7 @@ class FrameSelector implements ClickDragListener {
       pos: searchBounds,
     });
 
-    if (hits.length === 0) {
-      store.dispatch(actions.clearSelection());
-    } else {
+    if (hits.length > 0) {
       store.dispatch(actions.addManySelected(hits));
     }
   }

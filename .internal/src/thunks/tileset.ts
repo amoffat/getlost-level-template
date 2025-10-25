@@ -9,7 +9,7 @@ import {
   actions as tsActions,
 } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
-import { RootState, store } from "@/store/store";
+import { store } from "@/store/store";
 import { Mode, Tileset } from "@/types/tileset";
 import { schedulerYield } from "@/utils/async";
 import { hasSolidEdges, subImageData } from "@/utils/image";
@@ -180,9 +180,7 @@ export const retileThunk = createAsyncThunk(
 
 export const setToolThunk = createAsyncThunk(
   "mapEditor/setToolThunk",
-  async (tool: Mode | null, { dispatch, getState }) => {
-    const state = getState() as RootState;
-
+  async (tool: Mode | null, { dispatch }) => {
     if (tool === null) {
       dispatch(tsActions.setMode("select"));
     } else {

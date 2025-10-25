@@ -131,7 +131,7 @@ export class Placer implements ClickDragListener {
       // Get the max z-index of any existing objects here
       const maxZ = hits.reduce(
         (max, obj) => (obj.z > max ? obj.z : max),
-        -Infinity
+        Number.NEGATIVE_INFINITY
       );
 
       // Don't place if there's already something here

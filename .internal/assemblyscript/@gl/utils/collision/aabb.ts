@@ -46,7 +46,7 @@ export function polygonCollision(
   polygon2: Polygon
 ): CollisionResult {
   const edges: Vec2[] = [];
-  let minOverlap = Infinity;
+  let minOverlap = Number.POSITIVE_INFINITY;
   let collisionNormal: Vec2 | null = null;
 
   // Gather all edges of both polygons

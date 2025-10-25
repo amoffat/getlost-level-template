@@ -174,7 +174,7 @@ export class Character {
         this._pos.toVector(),
         targetPos.toVector(),
         nearestIsOk,
-        Infinity
+        Number.POSITIVE_INFINITY
       )
       .map<Vec2>((v) => Vec2.fromVector(v));
     this._targetPathLen = this._pathProgress();

@@ -126,7 +126,7 @@ export const bringToTopThunk = createAsyncThunk(
       const maxZ = hits
         .filter((o) => o.id !== obj.id)
         .map((o) => o.z)
-        .reduce((max, z) => Math.max(max, z), -Infinity);
+        .reduce((max, z) => Math.max(max, z), Number.NEGATIVE_INFINITY);
 
       changeList.push({
         id: obj.id,
@@ -158,7 +158,7 @@ export const sendToBottomThunk = createAsyncThunk(
       const minZ = hits
         .filter((o) => o.id !== obj.id)
         .map((o) => o.z)
-        .reduce((min, z) => Math.min(min, z), Infinity);
+        .reduce((min, z) => Math.min(min, z), Number.POSITIVE_INFINITY);
 
       changeList.push({
         id: obj.id,

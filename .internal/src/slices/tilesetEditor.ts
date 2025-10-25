@@ -368,6 +368,10 @@ export const slice = createSlice({
       [(state) => state.selectedTiles.ids],
       (selectedIds): Set<string> => new Set(selectedIds as string[])
     ),
+    selectedTiles: createSelector.withTypes<TilesetEditorState>()(
+      [(state) => state.selectedTiles],
+      (tiles): TilesetObject[] => tiles.ids.map((id) => tiles.entities[id])
+    ),
   },
 });
 

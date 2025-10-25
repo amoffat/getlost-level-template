@@ -58,6 +58,20 @@ export async function unpackTileset(tsId: string) {
 
   store.dispatch(uiActions.loadingPalette(true));
   let chunk: TileGroup[] = [];
+  const chunkIds = new Set<string>();
+
+  const flushChunk = async (coords: Rect | null = null) => {
+    if (chunk.length > 0) {
+      store.dispatch(
+        tsActions.bulkAddSinglePaletteTiles({ tsId, groups: chunk })
+      );
+      store.dispatch(tsActions.setScanPos(coords));
+      chunk = [];
+      chunkIds.clear();
+      await schedulerYield();
+    }
+  };
+
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       const coords: Rect = {
@@ -90,6 +104,14 @@ export async function unpackTileset(tsId: string) {
       }
 
       const id = await hashOfImageData(tileImageData);
+
+      // This fixes a bug where tiles with the same id, but different positions,
+      // are being added in the same chunk, causing only one of them to be added
+      // to the spatial index in the tileReconciler.
+      if (chunkIds.has(id)) {
+        await flushChunk(coords);
+      }
+
       const avgColor = averageOklab(tileImageData);
       chunk.push({
         id,
@@ -104,23 +126,15 @@ export async function unpackTileset(tsId: string) {
         avgColor,
         hilbertIndex: oklabHilbertIndex(avgColor),
       });
+      chunkIds.add(id);
+
       if (chunk.length > 10) {
-        store.dispatch(
-          tsActions.bulkAddSinglePaletteTiles({ tsId, groups: chunk })
-        );
-        store.dispatch(tsActions.setScanPos(coords));
-        await schedulerYield();
-        chunk = [];
+        await flushChunk(coords);
       }
     }
   }
 
-  if (chunk.length > 0) {
-    store.dispatch(
-      tsActions.bulkAddSinglePaletteTiles({ tsId, groups: chunk })
-    );
-  }
-  store.dispatch(tsActions.setScanPos(null));
+  await flushChunk();
   store.dispatch(uiActions.loadingPalette(false));
 }
 

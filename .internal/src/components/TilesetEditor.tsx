@@ -185,7 +185,7 @@ export default function TilesetEditorTab({
     <>
       <Flex h="100dvh" style={{ flex: 1 }}>
         <Stack miw={300} h="100%" style={{ flex: 1, overflow: "hidden" }}>
-          <ScrollArea type="hover" offsetScrollbars="y" style={{ flex: 1 }}>
+          <ScrollArea type="never" style={{ flex: 1 }}>
             <Stack pb={50}>{tilesetImages}</Stack>
           </ScrollArea>
         </Stack>
@@ -230,7 +230,7 @@ export default function TilesetEditorTab({
             </Tabs>
           </Stack>
         </Flex>
-        <Stack miw={300} style={{ flex: 1 }}>
+        <Stack miw={300} h="100%" style={{ flex: 1, overflow: "hidden" }}>
           <ToolPalette
             activeTool={selectedToolName}
             tools={toolPalette}
@@ -240,7 +240,11 @@ export default function TilesetEditorTab({
 
           <Tip tips={tips} />
 
-          {toolOptions}
+          <ScrollArea type="never" style={{ flex: 1 }}>
+            <Stack p={0} pb={50}>
+              {toolOptions}
+            </Stack>
+          </ScrollArea>
         </Stack>
       </Flex>
     </>
