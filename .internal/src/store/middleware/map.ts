@@ -24,6 +24,13 @@ export function makeEditorSyncMiddleware(
     return metaPrefix === prefix;
   };
 
+  // startAppListening({
+  //   predicate: (action) => true,
+  //   effect: async (action: any, _api) => {
+  //     log.info(`[Reconciler:${prefix}] action: ${action.type}`);
+  //   },
+  // });
+
   // Add
   startAppListening({
     predicate: (action) =>

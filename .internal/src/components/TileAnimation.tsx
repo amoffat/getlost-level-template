@@ -1,11 +1,6 @@
-import { TileGroup } from "@/types/tilegroup";
+import { TileAnimationFrame } from "@/types/animation";
 import { useEffect, useState } from "react";
 import TilesetGroup from "./TilesetGroup";
-
-export type TileAnimationFrame = {
-  tg: TileGroup;
-  time: number; // ms to display this frame
-};
 
 export interface TileAnimationProps {
   frames: TileAnimationFrame[];

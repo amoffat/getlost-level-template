@@ -1,7 +1,6 @@
 import { log } from "@/log";
 import { TileGroupInstance } from "@/types/map";
 import { Rect } from "@/types/rect";
-import { IndexItem } from "@/types/spatial";
 import { TileGroup, TilesetObject } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
@@ -15,22 +14,12 @@ import {
 
 const DEFAULT_ZOOMPAN: ZoomPan = { zoom: 1, pan: { x: 0, y: 0 } };
 
-// The padding prevents RBush false positives when tiles are adjacent
-export function groupToBBox(group: TileGroup, pad: number = 0.1): IndexItem {
-  return {
-    minX: group.pos.ul.x + pad,
-    minY: group.pos.ul.y + pad,
-    maxX: group.pos.br.x - pad,
-    maxY: group.pos.br.y - pad,
-    id: group.id,
-  };
-}
+type ToolOptMapping = object;
+type ToolWithOptions = keyof ToolOptMapping;
 
 const reconcilePrefix = "tilesetEditor";
-export const selectedAdapter = createEntityAdapter<TilesetObject>();
-export const tileAdapter = createEntityAdapter<TileGroup, string>({
-  selectId: (tg) => tg.uniqueId,
-});
+export const selectedAdapter = createEntityAdapter<TileGroup>();
+export const tileAdapter = createEntityAdapter<TileGroup>();
 
 export interface TilesetEditorState {
   grid: {
@@ -50,6 +39,10 @@ export interface TilesetEditorState {
   tilesetsLoaded: boolean;
   tilesetsError: string | null;
   selectedTiles: EntityState<TilesetObject, string>;
+  toolOptions: {
+    [K in ToolWithOptions]: ToolOptMapping[K];
+  };
+  candAnimFrames: TileGroup[];
 }
 
 export const slice = createSlice({
@@ -71,6 +64,12 @@ export const slice = createSlice({
     tilesetsLoaded: false,
     tilesetsError: null,
     selectedTiles: selectedAdapter.getInitialState(),
+    toolOptions: {
+      animator: {
+        frames: [],
+      },
+    },
+    candAnimFrames: [],
   } as TilesetEditorState,
   reducers: {
     setGridVisible(state, action: PayloadAction<boolean>) {
@@ -82,6 +81,23 @@ export const slice = createSlice({
 
     setActiveTool(state, action: PayloadAction<Mode | null>) {
       state.selectedTool = action.payload;
+    },
+
+    setToolOptions<K extends ToolWithOptions>(
+      state: TilesetEditorState,
+      action: PayloadAction<{ tool: K; options: Partial<ToolOptMapping[K]> }>
+    ) {
+      // const { tool, options } = action.payload;
+      // state.toolOptions[tool] = { ...state.toolOptions[tool], ...options };
+    },
+
+    addCandAnimFrame(state, action: PayloadAction<TileGroup>) {
+      state.candAnimFrames.push(action.payload);
+    },
+
+    removeCandAnimIdx(state, action: PayloadAction<number>) {
+      const idx = action.payload;
+      state.candAnimFrames.splice(idx, 1);
     },
 
     pushMode(state, action: PayloadAction<Mode>) {
@@ -293,8 +309,8 @@ export const slice = createSlice({
       selectedAdapter.updateMany(state.selectedTiles, action.payload);
     },
 
-    removeOneSelected: (state, action: PayloadAction<TilesetObject>) => {
-      selectedAdapter.removeOne(state.selectedTiles, action.payload.id);
+    removeOneSelected: (state, action: PayloadAction<string>) => {
+      selectedAdapter.removeOne(state.selectedTiles, action.payload);
     },
 
     clearSelection: (state) => {

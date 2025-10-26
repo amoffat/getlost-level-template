@@ -7,7 +7,7 @@ import { averageOklab } from "@/utils/color";
 import { oklabHilbertIndex } from "@/utils/hilbert";
 import { amountOpaquePixels, subImageData } from "@/utils/image";
 import { subState } from "@/utils/redux";
-import { genTileId, tsDependentTileId } from "@/utils/tileset";
+import { genImageId, genTileId } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
 import {
@@ -103,9 +103,8 @@ class Grouper implements ClickDragListener {
 
       if (objData) {
         const coverage = amountOpaquePixels(objData);
-        const id = await genTileId(objData);
-        const uniqueId = await tsDependentTileId({
-          tileId: id,
+        const imageId = await genImageId(objData);
+        const id = await genTileId({
           tsId,
           pos: coords,
         });
@@ -113,7 +112,7 @@ class Grouper implements ClickDragListener {
 
         const group: TileGroup = {
           id,
-          uniqueId,
+          imageId,
           tilesetId: tsId,
           pos: coords,
           gridSize,

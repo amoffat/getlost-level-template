@@ -12,24 +12,22 @@ export async function genTilesetId(source: File): Promise<string> {
   return sha1Hash(data);
 }
 
-export async function genTileId(imageData: ImageData): Promise<string> {
+export async function genImageId(imageData: ImageData): Promise<string> {
   const { data } = imageData;
   return sha1Hash(data.buffer);
 }
 
-export async function tsDependentTileId({
-  tileId,
+export async function genTileId({
   tsId,
   pos,
 }: {
-  tileId: string;
   tsId: string;
   pos: Rect;
 }): Promise<string> {
   const tsHash = await sha1Hash(
     `${tsId}:${pos.ul.x},${pos.ul.y}:${pos.br.x},${pos.br.y}`
   );
-  return `${tileId}:${tsHash}`;
+  return tsHash;
 }
 
 export async function loadTilesetImage(ts: Tileset): Promise<P.Texture> {

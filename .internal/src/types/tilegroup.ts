@@ -2,10 +2,10 @@ import { OklabColor } from "@/types/color";
 import type { Rect } from "./rect";
 
 export interface TileGroup {
-  // The image data hash id
-  id: string;
   // The unique id, which uses the image data hash plus tileset and position
-  uniqueId: string;
+  id: string;
+  // The image-hash based id
+  imageId: string;
   // The grid size this object is aligned to
   gridSize: number;
   tilesetId: string;

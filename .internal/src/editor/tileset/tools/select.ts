@@ -121,7 +121,7 @@ class Selector implements ClickDragListener {
         if (alreadySelected && this.addToSelection) {
           // If the object is already selected, and we're adding to selection,
           // just deselect it.
-          store.dispatch(actions.removeOneSelected(obj));
+          store.dispatch(actions.removeOneSelected(obj.id));
         } else {
           const action = this.addToSelection
             ? actions.addOneSelected

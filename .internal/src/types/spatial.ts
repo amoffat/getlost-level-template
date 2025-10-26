@@ -63,6 +63,7 @@ export class SpatialIndex<Obj> extends RBush<IndexItem> {
     } else {
       hits = this.search(pos);
     }
+    if (hits.length === 0) return [];
 
     const state = store.getState();
 

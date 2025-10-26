@@ -30,7 +30,7 @@ export default function ObjSelHover() {
   for (const obj of proposed.objects) {
     if (!isTileGroupInstance(obj)) continue;
 
-    const group = g.tileIdToTileGroup.get(obj.tileId);
+    const group = g.tileIdToTileGroup.get(obj.tileId)!;
     const entry = (
       <Checkbox.Card
         className={classes.root}

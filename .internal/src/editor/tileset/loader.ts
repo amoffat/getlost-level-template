@@ -15,11 +15,7 @@ import {
   subImageData,
 } from "@/utils/image";
 import { subState } from "@/utils/redux";
-import {
-  genTileId,
-  loadTilesetImage,
-  tsDependentTileId,
-} from "@/utils/tileset";
+import { genImageId, genTileId, loadTilesetImage } from "@/utils/tileset";
 import * as P from "pixi.js";
 import { BBox } from "rbush";
 import { globals as g } from "./globals";
@@ -106,9 +102,8 @@ export async function unpackTileset(tsId: string) {
         continue;
       }
 
-      const id = await genTileId(tileImageData);
-      const uniqueId = await tsDependentTileId({
-        tileId: id,
+      const imageId = await genImageId(tileImageData);
+      const id = await genTileId({
         tsId,
         pos: coords,
       });
@@ -123,7 +118,7 @@ export async function unpackTileset(tsId: string) {
       const avgColor = averageOklab(tileImageData);
       const tg: TileGroup = {
         id,
-        uniqueId,
+        imageId,
         pos: coords,
         tilesetId: tsId,
         gridSize,

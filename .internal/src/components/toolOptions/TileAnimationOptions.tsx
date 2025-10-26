@@ -1,5 +1,5 @@
-import { useAppSelector } from "@/hooks/redux";
-import { selectors } from "@/slices/tilesetEditor";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { actions } from "@/slices/tilesetEditor";
 import {
   Button,
   CloseButton,
@@ -18,51 +18,49 @@ import Tip from "../Tip";
 const DEFAULT_TOTAL_TIME = 1000; // ms
 const MIN_FRAME_MS_60FPS = Math.ceil(1000 / 60); // ~16.7ms
 
-// Types
-type Weights = Record<string, number>;
-type FrameMsMap = Record<string, number>;
+// Types (index-keyed to support duplicate ids)
+type Weights = number[]; // length === number of frames; values sum to 1
+type FrameMsMap = number[]; // per-frame time in ms by index
 
 // Helpers
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
-function normalizeWeights(weights: Weights, ids: string[]): Weights {
-  let sum = 0;
-  for (const id of ids) sum += weights[id] ?? 0;
+function normalizeWeights(weights: Weights): Weights {
+  const n = weights.length;
+  if (n === 0) return [];
+  const sum = weights.reduce((a, b) => a + (b ?? 0), 0);
   if (sum <= 0) {
-    if (ids.length === 0) return {};
-    const even = 1 / ids.length;
-    const next: Weights = {};
-    for (const id of ids) next[id] = even;
-    return next;
+    const even = 1 / n;
+    return Array(n).fill(even);
   }
-  const next: Weights = {};
-  for (const id of ids) next[id] = (weights[id] ?? 0) / sum;
-  return next;
+  return weights.map((w) => (w ?? 0) / sum);
 }
 
 function rebalanceAfterChange(
   current: Weights,
-  id: string,
+  idx: number,
   target: number
 ): Weights {
-  const keys = Object.keys(current);
-  if (keys.length <= 1) return { [id]: 1 };
+  const n = current.length;
+  if (n <= 1) return n === 1 ? [1] : [];
   const t = clamp01(target);
-  const result: Weights = { ...current, [id]: t };
+  const result: Weights = current.slice();
+  result[idx] = t;
   let sumOthers = 0;
-  for (const k of keys) if (k !== id) sumOthers += result[k] ?? 0;
+  for (let i = 0; i < n; i++) if (i !== idx) sumOthers += result[i] ?? 0;
   const remaining = 1 - t;
   if (remaining <= 0) {
-    for (const k of keys) if (k !== id) result[k] = 0;
+    for (let i = 0; i < n; i++) if (i !== idx) result[i] = 0;
     return result;
   }
   if (sumOthers <= 0) {
-    const per = remaining / (keys.length - 1);
-    for (const k of keys) if (k !== id) result[k] = per;
+    const per = remaining / (n - 1);
+    for (let i = 0; i < n; i++) if (i !== idx) result[i] = per;
     return result;
   }
   const scale = remaining / sumOthers;
-  for (const k of keys) if (k !== id) result[k] = (result[k] ?? 0) * scale;
+  for (let i = 0; i < n; i++)
+    if (i !== idx) result[i] = (result[i] ?? 0) * scale;
   return result;
 }
 
@@ -73,23 +71,24 @@ function getMinPer(totalTime: number, activeCount: number, minFrameMs: number) {
 
 // Largest remainder rounding while honoring minPer per active frame
 function computeFrameTimes(
-  ids: string[],
+  count: number,
   weights: Weights,
   totalTime: number,
   minFrameMs: number
-): { frames: { id: string; time: number }[]; byId: FrameMsMap } {
+): { frames: { idx: number; time: number }[]; byIdx: FrameMsMap } {
   const eps = 1e-9;
-  const active = ids.filter((id) => (weights[id] ?? 0) > eps);
+  const indices = Array.from({ length: count }, (_, i) => i);
+  const active = indices.filter((i) => (weights[i] ?? 0) > eps);
   const k = active.length;
 
-  const byId: FrameMsMap = {};
-  const frames: { id: string; time: number }[] = [];
+  const byIdx: FrameMsMap = Array(count).fill(0);
+  const frames: { idx: number; time: number }[] = [];
 
-  if (ids.length === 0 || totalTime <= 0) return { frames, byId };
+  if (count === 0 || totalTime <= 0) return { frames, byIdx };
   if (k === 0) {
-    for (const id of ids) byId[id] = 0;
-    for (const id of ids) frames.push({ id, time: 0 });
-    return { frames, byId };
+    for (let i = 0; i < count; i++) byIdx[i] = 0;
+    for (let i = 0; i < count; i++) frames.push({ idx: i, time: 0 });
+    return { frames, byIdx };
   }
 
   const minPer = getMinPer(totalTime, k, minFrameMs);
@@ -97,49 +96,50 @@ function computeFrameTimes(
   const remaining = Math.max(0, totalTime - totalMin);
 
   let sumActiveW = 0;
-  for (const id of active) sumActiveW += weights[id] ?? 0;
+  for (const i of active) sumActiveW += weights[i] ?? 0;
 
   // Exact values before rounding
-  const exacts: Record<string, number> = {};
+  const exacts: number[] = Array(count).fill(0);
   if (remaining <= 0) {
-    for (const id of ids) exacts[id] = active.includes(id) ? minPer : 0;
+    for (let i = 0; i < count; i++) exacts[i] = active.includes(i) ? minPer : 0;
   } else if (sumActiveW <= eps) {
     const extra = remaining / k;
-    for (const id of ids) exacts[id] = active.includes(id) ? minPer + extra : 0;
+    for (let i = 0; i < count; i++)
+      exacts[i] = active.includes(i) ? minPer + extra : 0;
   } else {
-    for (const id of ids) {
-      const w = weights[id] ?? 0;
-      exacts[id] = w > eps ? minPer + (w / sumActiveW) * remaining : 0;
+    for (let i = 0; i < count; i++) {
+      const w = weights[i] ?? 0;
+      exacts[i] = w > eps ? minPer + (w / sumActiveW) * remaining : 0;
     }
   }
 
   // Largest remainder method
   let sumFloor = 0;
-  const floors: Record<string, number> = {};
-  const fracs: { id: string; frac: number }[] = [];
-  for (const id of ids) {
-    const exact = exacts[id] ?? 0;
+  const floors: number[] = Array(count).fill(0);
+  const fracs: { idx: number; frac: number }[] = [];
+  for (let i = 0; i < count; i++) {
+    const exact = exacts[i] ?? 0;
     const f = Math.floor(exact);
-    floors[id] = f;
+    floors[i] = f;
     sumFloor += f;
-    fracs.push({ id, frac: exact - f });
+    fracs.push({ idx: i, frac: exact - f });
   }
   let diff = totalTime - sumFloor;
   if (diff > 0) {
     fracs.sort((a, b) => b.frac - a.frac);
-    for (let i = 0; i < fracs.length && diff > 0; i++) {
-      const { id } = fracs[i];
+    for (let j = 0; j < fracs.length && diff > 0; j++) {
+      const { idx } = fracs[j];
       // Only add to active frames (inactive get 0)
-      if ((weights[id] ?? 0) > eps) {
-        floors[id] = (floors[id] ?? 0) + 1;
+      if ((weights[idx] ?? 0) > eps) {
+        floors[idx] = (floors[idx] ?? 0) + 1;
         diff -= 1;
       }
     }
   }
 
-  for (const id of ids) byId[id] = Math.max(0, floors[id] ?? 0);
-  for (const id of ids) frames.push({ id, time: byId[id] });
-  return { frames, byId };
+  for (let i = 0; i < count; i++) byIdx[i] = Math.max(0, floors[i] ?? 0);
+  for (let i = 0; i < count; i++) frames.push({ idx: i, time: byIdx[i] });
+  return { frames, byIdx };
 }
 
 // Simpler non-linearity: power curve so that 0.5^gamma = 1/n
@@ -154,14 +154,14 @@ function mapWeightToUi(t: number, n: number) {
 }
 
 export default function TileAnimationOptions() {
-  const cands = useAppSelector(selectors.selectedTiles);
+  const cands = useAppSelector((state) => state.tilesetEditor.candAnimFrames);
+  const dispatch = useAppDispatch();
   // Store fractional weights per frame (0..1), always normalized so sum == 1
-  const [weights, setWeights] = useState<Record<string, number>>({});
+  const [weights, setWeights] = useState<Weights>([]);
   // Total animation time in ms
   const [totalTime, setTotalTime] = useState<number>(DEFAULT_TOTAL_TIME);
 
   const n = cands.length;
-  const ids = useMemo(() => cands.map((c) => c.id), [cands]);
   const scaleFn = useCallback(
     (v: number) => {
       const g = gammaForCount(n);
@@ -171,84 +171,84 @@ export default function TileAnimationOptions() {
   );
   const uiFromWeight = useCallback((t: number) => mapWeightToUi(t, n), [n]);
 
-  const { frames, frameTimeById } = useMemo(() => {
-    const result = computeFrameTimes(
-      ids,
-      weights,
-      totalTime,
-      MIN_FRAME_MS_60FPS
-    );
+  const { frames, frameTimeByIdx } = useMemo(() => {
+    const result = computeFrameTimes(n, weights, totalTime, MIN_FRAME_MS_60FPS);
     // Adapt to TileAnimation shape
-    const framesForAnim = cands.map((cand) => ({
+    const framesForAnim = cands.map((cand, idx) => ({
       tg: cand,
-      time: result.byId[cand.id] ?? 0,
+      time: result.byIdx[idx] ?? 0,
     }));
-    return { frames: framesForAnim, frameTimeById: result.byId };
-  }, [ids, cands, weights, totalTime]);
+    return { frames: framesForAnim, frameTimeByIdx: result.byIdx };
+  }, [n, cands, weights, totalTime]);
 
   const createAnimation = () => {};
 
-  // Keep weights in sync with selected candidates. Preserve existing weights
-  // for retained frames; assign a small fair share to new frames; then normalize.
+  // Keep weights in sync with candidate count (index-based). Preserve existing
+  // prefix, assign a small fair share to new frames, then normalize.
   useEffect(() => {
     setWeights((prev) => {
-      const next: Weights = {};
-      for (const cand of cands)
-        if (prev[cand.id] != null) next[cand.id] = prev[cand.id]!;
-      const missing = cands.filter((c) => next[c.id] == null).map((c) => c.id);
-      if (missing.length > 0) {
-        const tentative = 1 / Math.max(1, cands.length);
-        for (const id of missing) next[id] = tentative;
+      const nextLen = cands.length;
+      if (nextLen === prev.length) return prev;
+      if (nextLen === 0) return [];
+      const next: Weights = Array(nextLen).fill(0);
+      const m = Math.min(prev.length, nextLen);
+      for (let i = 0; i < m; i++) next[i] = prev[i];
+      if (nextLen > prev.length) {
+        const tentative = 1 / Math.max(1, nextLen);
+        for (let i = prev.length; i < nextLen; i++) next[i] = tentative;
       }
-      if (cands.length === 0) return {};
-      return normalizeWeights(
-        next,
-        cands.map((c) => c.id)
-      );
+      return normalizeWeights(next);
     });
-  }, [cands]);
+  }, [cands.length]);
 
   // Rebalance all weights when a single slider is changed so that the sum
   // across frames remains exactly 1.0. We preserve other frames' relative
   // proportions by scaling them uniformly.
-  const updateWeight = (id: string, target: number) => {
+  const updateWeight = (idx: number, target: number) => {
     setWeights((prev) => {
-      if (Object.keys(prev).length === 0) return { [id]: 1 } as Weights;
-      const current: Weights = { ...prev };
-      return rebalanceAfterChange(current, id, target);
+      if (prev.length === 0) return [1];
+      const current: Weights = prev.slice();
+      return rebalanceAfterChange(current, idx, target);
     });
   };
 
-  // Non-linear slider mapping handled by scaleFn (power curve). The inverse mapping
-  // for positioning the thumb is provided by uiFromWeight above.
+  const removeFrame = (idx: number) => {
+    setWeights((prev) => {
+      const next: Weights = prev.slice();
+      next.splice(idx, 1);
+      return normalizeWeights(next);
+    });
+    const id = cands[idx].id;
+    const numIdsInFrames = cands.reduce((acc, cand) => {
+      return acc + (cand.id === id ? 1 : 0);
+    }, 0);
+    if (numIdsInFrames <= 1) {
+      dispatch(actions.removeOneSelected(id));
+    }
+    dispatch(actions.removeCandAnimIdx(idx));
+  };
+
+  const tips: string[] = [];
+  if (cands.length === 0) {
+    tips.push("Select tiles that you want to see in your animation.");
+    tips.push("You may only select objects that are the same size.");
+  } else {
+    tips.push(
+      "Adjust the sliders to set how long each frame appears in the animation."
+    );
+    tips.push("Drag the frame to reorder it in the animation sequence.");
+    tips.push("When you're done, name the animation and click Save.");
+  }
 
   return (
     <>
-      <Tip
-        tips={[
-          "Select tiles that you want to see in your animation.",
-          "You may only select objects that are the same size.",
-        ]}
-      />
+      <Tip tips={tips} />
       <Fieldset legend="Animation" p="xs">
         <Stack p={0} gap="xs">
           <TileAnimation frames={frames} scale={5} />
 
-          <NumberInput
-            label="Total time"
-            description="The total time of 1 animation cycle."
-            placeholder="1000"
-            min={1}
-            step={50}
-            value={totalTime}
-            suffix="ms"
-            onChange={(v) =>
-              setTotalTime((typeof v === "number" ? v : Number(v)) || 0)
-            }
-          />
-
-          {cands.map((cand) => {
-            const w = weights[cand.id] ?? 0;
+          {cands.map((cand, idx) => {
+            const w = weights[idx] ?? 0;
             const uiValue = uiFromWeight(w);
             return (
               <Group key={cand.id} align="center" gap="xs" wrap="nowrap">
@@ -263,11 +263,11 @@ export default function TileAnimationOptions() {
                   value={uiValue}
                   onChange={(v) => {
                     const targetWeight = scaleFn(v);
-                    updateWeight(cand.id, targetWeight);
+                    updateWeight(idx, targetWeight);
                   }}
                   label={(scaledWeight) => {
                     const clamped = clamp01(scaledWeight);
-                    const ms = frameTimeById[cand.id];
+                    const ms = frameTimeByIdx[idx];
                     const showMs =
                       typeof ms === "number"
                         ? ms
@@ -276,17 +276,26 @@ export default function TileAnimationOptions() {
                   }}
                   disabled={cands.length <= 1}
                 />
-                <CloseButton size="xs" />
+                <CloseButton size="xs" onClick={() => removeFrame(idx)} />
               </Group>
             );
           })}
 
-          <TextInput
-            label="Animation name"
-            description="Enter a name for your animation"
+          <NumberInput
+            label="Total time"
+            placeholder="1000"
+            min={1}
+            step={50}
+            value={totalTime}
+            suffix="ms"
+            onChange={(v) =>
+              setTotalTime((typeof v === "number" ? v : Number(v)) || 0)
+            }
           />
 
-          <Button variant="filled" fullWidth onClick={createAnimation}>
+          <TextInput label="Animation name" placeholder="MyAnimation" />
+
+          <Button variant="filled" fullWidth onClick={createAnimation} disabled>
             Save animation
           </Button>
         </Stack>
