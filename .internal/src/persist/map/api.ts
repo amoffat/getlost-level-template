@@ -20,7 +20,11 @@ export async function loadMap(): Promise<PersistedObjectsState> {
 
   const migrations = await getMigrations();
   const baseDecoded = decode<BaseMapDoc>(await res.bytes());
-  const migrated = await applyMigrations(baseDecoded, migrations);
+  const migrated = await applyMigrations(
+    baseDecoded,
+    migrations,
+    latestVersion
+  );
 
   const decoded = baseDecoded as LatestMapDoc;
   const objects = decoded.objects;

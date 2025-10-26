@@ -57,16 +57,16 @@ export class SpatialIndex<Obj> extends RBush<IndexItem> {
   }
 
   public getObjects({ pos }: { pos: Vector | BBox }): Obj[] {
-    let firstPass: IndexItem[];
+    let hits: IndexItem[];
     if (isVector(pos)) {
-      firstPass = this.searchByPos(pos);
+      hits = this.searchByPos(pos);
     } else {
-      firstPass = this.search(pos);
+      hits = this.search(pos);
     }
 
     const state = store.getState();
 
-    const objs = firstPass
+    const objs = hits
       .map((it) => it.id)
       .map((hit) => this.selectById(state, hit))
       // This is because the removed objects (like from removeMany in place.ts)

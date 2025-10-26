@@ -3,7 +3,7 @@ import { AllPropsLoose } from "@/types/union";
 import * as P from "pixi.js";
 
 // Create an RBush index item from a node's world-space bounds
-function makeIndexItem(id: string, node: P.Container): IndexItem {
+export function makeIndexItem(id: string, node: P.Container): IndexItem {
   const r = node.getLocalBounds();
   const pos = node.position;
   return {
@@ -57,7 +57,7 @@ export abstract class ReduxReconciler<
 
   // If you sometimes dispatch setAll, use this diffing helper:
   enqueueDiff(fullList: ObjType[]) {
-    const nextIds = new Set(fullList.map((o) => o.id));
+    const nextIds = new Set(fullList.map(this.selectId));
     for (const id of this.nodes.keys()) {
       if (!nextIds.has(id)) {
         this.pendingRemoves.push(id);
@@ -65,8 +65,8 @@ export abstract class ReduxReconciler<
     }
     // add/upsert (cheap path: treat as upserts)
     for (const o of fullList) {
-      if (this.nodes.has(o.id)) {
-        this.pendingUpdates.push({ id: o.id, changes: o });
+      if (this.nodes.has(this.selectId(o))) {
+        this.pendingUpdates.push({ id: this.selectId(o), changes: o });
       } else {
         this.pendingAdds.push(o);
       }
@@ -101,13 +101,13 @@ export abstract class ReduxReconciler<
 
     for (const obj of this.pendingAdds) {
       const node = this.createNode(obj);
-      this.nodes.set(obj.id, node);
+      this.nodes.set(this.selectId(obj), node);
       const container = this.containerByObj(obj);
       container.addChild(node);
       this.applyProps(node, obj);
 
       // Index in spatial structure
-      const item = makeIndexItem(obj.id, node);
+      const item = makeIndexItem(this.selectId(obj), node);
       this.insertItem(item);
     }
     this.pendingAdds.length = 0;
@@ -137,4 +137,8 @@ export abstract class ReduxReconciler<
   protected insertItem(_item: IndexItem): void {}
 
   protected updateItem(_item: IndexItem, _changes: Partial<ObjType>): void {}
+
+  protected selectId(obj: ObjType): string {
+    return obj.id;
+  }
 }

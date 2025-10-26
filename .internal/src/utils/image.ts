@@ -145,16 +145,6 @@ export function amountOpaquePixels(imageData: ImageData): number {
   return opaque / total;
 }
 
-// Sha1 hash of the raw pixel data in the ImageData
-export async function hashOfImageData(imageData: ImageData): Promise<string> {
-  const { data } = imageData;
-  const hashBuffer = await crypto.subtle.digest("SHA-1", data);
-  // Convert hash buffer to hex string
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 /**
  * Returns true if all four edges (top, bottom, left, right) of the given rect
  * are completely opaque (alpha == 255) within the provided ImageData. The rect

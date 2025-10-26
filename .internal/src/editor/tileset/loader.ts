@@ -11,12 +11,15 @@ import { oklabHilbertIndex } from "@/utils/hilbert";
 import {
   amountOpaquePixels,
   getImageDataFromBitmap,
-  hashOfImageData,
   isTransparent,
   subImageData,
 } from "@/utils/image";
 import { subState } from "@/utils/redux";
-import { loadTilesetImage } from "@/utils/tileset";
+import {
+  genTileId,
+  loadTilesetImage,
+  tsDependentTileId,
+} from "@/utils/tileset";
 import * as P from "pixi.js";
 import { BBox } from "rbush";
 import { globals as g } from "./globals";
@@ -103,7 +106,12 @@ export async function unpackTileset(tsId: string) {
         continue;
       }
 
-      const id = await hashOfImageData(tileImageData);
+      const id = await genTileId(tileImageData);
+      const uniqueId = await tsDependentTileId({
+        tileId: id,
+        tsId,
+        pos: coords,
+      });
 
       // This fixes a bug where tiles with the same id, but different positions,
       // are being added in the same chunk, causing only one of them to be added
@@ -113,8 +121,9 @@ export async function unpackTileset(tsId: string) {
       }
 
       const avgColor = averageOklab(tileImageData);
-      chunk.push({
+      const tg: TileGroup = {
         id,
+        uniqueId,
         pos: coords,
         tilesetId: tsId,
         gridSize,
@@ -125,7 +134,9 @@ export async function unpackTileset(tsId: string) {
         coverage: amountOpaquePixels(tileImageData),
         avgColor,
         hilbertIndex: oklabHilbertIndex(avgColor),
-      });
+      };
+
+      chunk.push(tg);
       chunkIds.add(id);
 
       if (chunk.length > 10) {

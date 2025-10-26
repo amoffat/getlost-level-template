@@ -27,7 +27,11 @@ export async function loadTileset(id: string): Promise<Tileset> {
   // Apply all applicable migrations to bring the doc up to the latest version
   const migrations = await getMigrations();
   const baseDecoded = decode<BaseTilesetDoc>(await res.bytes());
-  const migrated = await applyMigrations(baseDecoded, migrations);
+  const migrated = await applyMigrations(
+    baseDecoded,
+    migrations,
+    latestVersion
+  );
 
   const decoded = baseDecoded as LatestTilesetDoc;
   const ts = decoded.tileset;

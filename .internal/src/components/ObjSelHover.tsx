@@ -1,3 +1,4 @@
+import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
 import { isTileGroupInstance, TileGroupInstance } from "@/types/map";
@@ -10,7 +11,6 @@ import TilesetGroup from "./TilesetGroup";
 export default function ObjSelHover() {
   const proposed = useAppSelector((state) => state.mapEditor.proposedSelection);
   const curSelected = useAppSelector((state) => state.mapEditor.selectedIds);
-  const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const dispatch = useAppDispatch();
 
   const onChange = useCallback(
@@ -30,7 +30,7 @@ export default function ObjSelHover() {
   for (const obj of proposed.objects) {
     if (!isTileGroupInstance(obj)) continue;
 
-    const group = tilesets[obj.tilesetId].tiles.entities[obj.tileId];
+    const group = g.tileIdToTileGroup.get(obj.tileId);
     const entry = (
       <Checkbox.Card
         className={classes.root}

@@ -28,7 +28,9 @@ export function groupToBBox(group: TileGroup, pad: number = 0.1): IndexItem {
 
 const reconcilePrefix = "tilesetEditor";
 export const selectedAdapter = createEntityAdapter<TilesetObject>();
-export const tileAdapter = createEntityAdapter<TileGroup>();
+export const tileAdapter = createEntityAdapter<TileGroup, string>({
+  selectId: (tg) => tg.uniqueId,
+});
 
 export interface TilesetEditorState {
   grid: {

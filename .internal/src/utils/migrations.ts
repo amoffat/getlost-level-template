@@ -35,7 +35,8 @@ export function buildMigrations<TBaseDoc>(
 // if at least one migration was applied.
 export async function applyMigrations<TDoc extends { version: number }>(
   doc: TDoc,
-  migrations: GenericMigration<TDoc>[]
+  migrations: GenericMigration<TDoc>[],
+  latestVersion: number
 ): Promise<boolean> {
   if (!migrations.length) return false;
 
@@ -46,7 +47,9 @@ export async function applyMigrations<TDoc extends { version: number }>(
   // Keep trying to advance as long as there is a migration whose `from`
   // equals the current document version.
   while (true) {
-    const next = ordered.find((m) => m.from === doc.version);
+    const next = ordered.find(
+      (m) => m.from === doc.version && m.to <= latestVersion
+    );
     if (!next) break;
     await next.migrate(doc);
     doc.version = next.to;

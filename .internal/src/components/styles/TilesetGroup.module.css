@@ -16,7 +16,7 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges; /* fallback */
   /* Smoothly animate filter changes (e.g., saturation) */
-  transition: filter 300ms ease-in-out;
+  /* transition: filter 200ms ease-in-out; */
 }
 
 .selected {
@@ -33,29 +33,9 @@
   inset: 0;
   pointer-events: none;
   background: rgba(0, 255, 0, 0.25);
-  /* Looping brief flash to full green, then fade back to 0.25 */
-  animation: selectedFlash 1500ms ease-in-out infinite;
   mix-blend-mode: difference;
 }
 
 .notSelected {
   filter: saturate(0);
-}
-
-@keyframes selectedFlash {
-  /* Brief full-green flash */
-  0% {
-    background: rgba(0, 255, 0, 1);
-  }
-  10% {
-    background: rgba(0, 255, 0, 1);
-  }
-  /* Fade down to overlay */
-  40% {
-    background: rgba(0, 255, 0, 0.25);
-  }
-  /* Stay mostly at 0.25 until next cycle */
-  100% {
-    background: rgba(0, 255, 0, 0.25);
-  }
 }

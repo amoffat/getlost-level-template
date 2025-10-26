@@ -1,16 +1,35 @@
 import { globals as gApp } from "@/globals";
 import { store } from "@/store/store";
+import { Rect } from "@/types/rect";
 import { TileGroup } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
 import * as P from "pixi.js";
+import { sha1Hash } from "./hash";
 import { getImageDataFromBitmap } from "./image";
 
 export async function genTilesetId(source: File): Promise<string> {
   const data = await source.arrayBuffer();
-  const hash = await window.crypto.subtle.digest("SHA-1", data);
-  return Array.from(new Uint8Array(hash))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  return sha1Hash(data);
+}
+
+export async function genTileId(imageData: ImageData): Promise<string> {
+  const { data } = imageData;
+  return sha1Hash(data.buffer);
+}
+
+export async function tsDependentTileId({
+  tileId,
+  tsId,
+  pos,
+}: {
+  tileId: string;
+  tsId: string;
+  pos: Rect;
+}): Promise<string> {
+  const tsHash = await sha1Hash(
+    `${tsId}:${pos.ul.x},${pos.ul.y}:${pos.br.x},${pos.br.y}`
+  );
+  return `${tileId}:${tsHash}`;
 }
 
 export async function loadTilesetImage(ts: Tileset): Promise<P.Texture> {
