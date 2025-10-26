@@ -18,6 +18,11 @@ export interface TipProps {
    * Optional className for the root Alert.
    */
   className?: string;
+  /**
+   * Number of lines to reserve for the tip text when collapsed. The tip area will be exactly this tall.
+   * Defaults to 3.
+   */
+  lines?: number;
 }
 
 /**
@@ -28,6 +33,7 @@ export default function Tip({
   tips,
   intervalSeconds = 10,
   className,
+  lines = 3,
 }: TipProps) {
   const count = tips.length;
   // Start from the first tip and iterate predictably
@@ -36,6 +42,14 @@ export default function Tip({
   const dispatch = useAppDispatch();
   const [mounted, setMounted] = useState(true);
   const intervalMs = intervalSeconds * 1000;
+  const [expanded, setExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const [reservedHeight, setReservedHeight] = useState<string | undefined>(
+    undefined
+  );
+
+  // Measure text metrics to compute exact N-line height and whether content is truncated
+  const textRef = useRef<HTMLDivElement | null>(null);
 
   // Keep a stable duration used for in/out transitions
   const fadeDuration = 200;
@@ -90,6 +104,51 @@ export default function Tip({
     };
   }, [advance, intervalMs, count, index, collapsed]);
 
+  // Recalculate reserved height based on actual computed styles
+  useEffect(() => {
+    if (!textRef.current) return;
+    const el = textRef.current;
+    const styles = getComputedStyle(el);
+    // Mantine applies line-height as unitless or in px; parse both
+    const fontSizePx = parseFloat(styles.fontSize || "14");
+    const lineHeightRaw = styles.lineHeight;
+    let lineHeightPx: number;
+    if (lineHeightRaw.endsWith("px")) {
+      lineHeightPx = parseFloat(lineHeightRaw);
+    } else {
+      // unitless multiplier
+      const multiplier = parseFloat(lineHeightRaw || "1.55");
+      lineHeightPx = multiplier * fontSizePx;
+    }
+    const target = Math.ceil(lineHeightPx * lines);
+    setReservedHeight(`${target}px`);
+  }, [lines, index, mounted]);
+
+  // Detect truncation when not expanded
+  useEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+    if (expanded) {
+      setIsTruncated(false);
+      return;
+    }
+    // Give layout a tick after transitions
+    const id = window.setTimeout(() => {
+      try {
+        const truncated = el.scrollHeight - 1 > el.clientHeight; // tolerance
+        setIsTruncated(truncated);
+      } catch {
+        setIsTruncated(false);
+      }
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [index, tips, expanded, reservedHeight, mounted]);
+
+  // Reset expansion when changing tip
+  useEffect(() => {
+    setExpanded(false);
+  }, [index]);
+
   if (count === 0) {
     return null;
   }
@@ -126,14 +185,40 @@ export default function Tip({
               timingFunction="ease-out"
             >
               {(styles) => (
-                <Text size="sm" style={styles}>
-                  {tips[index]}
-                </Text>
+                <div
+                  style={{
+                    ...styles,
+                    height: expanded
+                      ? undefined
+                      : (reservedHeight ??
+                        `calc(var(--mantine-font-size, 14px) * var(--mantine-line-height, 1.55) * ${lines})`),
+                    overflow: expanded ? undefined : "hidden",
+                  }}
+                >
+                  <Text
+                    ref={textRef as any}
+                    size="sm"
+                    // Use lineClamp to provide proper ellipsis when collapsed
+                    lineClamp={expanded ? undefined : lines}
+                  >
+                    {tips[index]}
+                  </Text>
+                </div>
               )}
             </Transition>
           </div>
 
           <Group justify="flex-end" gap="xs" wrap="nowrap" mt="xs">
+            {!expanded && isTruncated && (
+              <Button
+                variant="subtle"
+                size="compact-xs"
+                onClick={() => setExpanded(true)}
+                aria-label="Expand tip"
+              >
+                Expand
+              </Button>
+            )}
             {count > 1 && (
               <Button
                 variant="subtle"

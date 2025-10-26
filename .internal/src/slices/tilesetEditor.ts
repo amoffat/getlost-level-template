@@ -100,6 +100,25 @@ export const slice = createSlice({
       state.candAnimFrames.splice(idx, 1);
     },
 
+    reorderCandAnimFrames(
+      state,
+      action: PayloadAction<{ from: number; to: number }>
+    ) {
+      const { from, to } = action.payload;
+      if (
+        from === to ||
+        from < 0 ||
+        to < 0 ||
+        from >= state.candAnimFrames.length ||
+        to >= state.candAnimFrames.length
+      ) {
+        return;
+      }
+      const arr = state.candAnimFrames;
+      const [moved] = arr.splice(from, 1);
+      arr.splice(to, 0, moved);
+    },
+
     pushMode(state, action: PayloadAction<Mode>) {
       if (state.activeModeStack.at(-1) === action.payload) return;
       state.activeModeStack.push(action.payload);

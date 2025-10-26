@@ -1,5 +1,12 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
+import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   Button,
   CloseButton,
@@ -247,39 +254,62 @@ export default function TileAnimationOptions() {
         <Stack p={0} gap="xs">
           <TileAnimation frames={frames} scale={5} />
 
-          {cands.map((cand, idx) => {
-            const w = weights[idx] ?? 0;
-            const uiValue = uiFromWeight(w);
-            return (
-              <Group key={cand.id} align="center" gap="xs" wrap="nowrap">
-                <TilesetGroup group={cand} scale={2} />
-                <Slider
-                  size="sm"
-                  flex={1}
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  scale={scaleFn}
-                  value={uiValue}
-                  onChange={(v) => {
-                    const targetWeight = scaleFn(v);
-                    updateWeight(idx, targetWeight);
-                  }}
-                  label={(scaledWeight) => {
-                    const clamped = clamp01(scaledWeight);
-                    const ms = frameTimeByIdx[idx];
-                    const showMs =
-                      typeof ms === "number"
-                        ? ms
-                        : Math.round(clamped * totalTime);
-                    return `${Math.round(clamped * 100)}% (${showMs}ms)`;
-                  }}
-                  disabled={cands.length <= 1}
-                />
-                <CloseButton size="xs" onClick={() => removeFrame(idx)} />
-              </Group>
-            );
-          })}
+          <DndContext
+            collisionDetection={closestCenter}
+            onDragEnd={(event: DragEndEvent) => {
+              const { active, over } = event;
+              if (!over || active.id === over.id) return;
+              const from = Number(active.id);
+              const to = Number(over.id);
+              if (!Number.isInteger(from) || !Number.isInteger(to)) return;
+              // Update redux frames
+              dispatch(actions.reorderCandAnimFrames({ from, to }));
+              // Keep weights in sync
+              setWeights((prev) => {
+                const next = prev.slice();
+                if (
+                  from < 0 ||
+                  to < 0 ||
+                  from >= next.length ||
+                  to >= next.length
+                )
+                  return prev;
+                const [moved] = next.splice(from, 1);
+                next.splice(to, 0, moved);
+                return next;
+              });
+            }}
+          >
+            <SortableContext
+              // Use indices as item ids to support duplicate TileGroup ids
+              items={cands.map((_, i) => String(i))}
+              strategy={verticalListSortingStrategy}
+            >
+              {cands.map((cand, idx) => {
+                const w = weights[idx] ?? 0;
+                const uiValue = uiFromWeight(w);
+
+                return (
+                  <SortableFrame
+                    key={`${cand.id}-${idx}`}
+                    id={String(idx)}
+                    idx={idx}
+                    cand={cand}
+                    uiValue={uiValue}
+                    onChange={(v) => {
+                      const targetWeight = scaleFn(v);
+                      updateWeight(idx, targetWeight);
+                    }}
+                    labelMs={frameTimeByIdx[idx]}
+                    totalTime={totalTime}
+                    scaleFn={scaleFn}
+                    removeFrame={removeFrame}
+                    disabled={cands.length <= 1}
+                  />
+                );
+              })}
+            </SortableContext>
+          </DndContext>
 
           <NumberInput
             label="Total time"
@@ -301,5 +331,70 @@ export default function TileAnimationOptions() {
         </Stack>
       </Fieldset>
     </>
+  );
+}
+
+type SortableFrameProps = {
+  id: string; // sortable id (index as string)
+  idx: number; // current index into weights/time arrays
+  cand: any; // TileGroup (avoid import cycles in this file)
+  uiValue: number;
+  onChange: (v: number) => void;
+  labelMs: number | undefined;
+  totalTime: number;
+  scaleFn: (v: number) => number;
+  removeFrame: (idx: number) => void;
+  disabled: boolean;
+};
+
+function SortableFrame({
+  id,
+  idx,
+  cand,
+  uiValue,
+  onChange,
+  labelMs,
+  totalTime,
+  scaleFn,
+  removeFrame,
+  disabled,
+}: SortableFrameProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <Group ref={setNodeRef} align="center" gap="xs" wrap="nowrap" style={style}>
+      {/* Make the TilesetGroup the drag handle */}
+      <TilesetGroup
+        group={cand}
+        scale={2}
+        style={{ cursor: "grab" }}
+        {...attributes}
+        {...listeners}
+      />
+      <Slider
+        size="sm"
+        flex={1}
+        min={0}
+        max={1}
+        step={0.01}
+        scale={scaleFn}
+        value={uiValue}
+        onChange={onChange}
+        label={(scaledWeight) => {
+          const clamped = clamp01(scaledWeight);
+          const ms = labelMs;
+          const showMs =
+            typeof ms === "number" ? ms : Math.round(clamped * totalTime);
+          return `${Math.round(clamped * 100)}% (${showMs}ms)`;
+        }}
+        disabled={disabled}
+      />
+      <CloseButton size="xs" onClick={() => removeFrame(idx)} />
+    </Group>
   );
 }

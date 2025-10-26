@@ -21,6 +21,7 @@ const TilesetGroup = ({
   scale = Number.POSITIVE_INFINITY,
   selected,
   dimmed,
+  ...divProps
 }: TilesetCropProps) => {
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const ts = tilesets[group.tilesetId];
@@ -83,6 +84,7 @@ const TilesetGroup = ({
       ref={wrapperRef}
       className={styles.wrapper}
       style={{ width: width * effectiveScale, height: height * effectiveScale }}
+      {...divProps}
     >
       <div
         data-tsid={group.tilesetId}
