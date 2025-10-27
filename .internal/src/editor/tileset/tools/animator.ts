@@ -1,5 +1,9 @@
-import { actions, selectors as tilesetSelectors } from "@/slices/tilesetEditor";
+import { selectors as tilesetSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
+import {
+  addAnimationFrameThunk,
+  clearCandAnimFramesThunk,
+} from "@/thunks/tileset";
 import { SpatialIndex } from "@/types/spatial";
 import { TilesetObject } from "@/types/tilegroup";
 import {
@@ -29,8 +33,9 @@ class FrameSelector implements ClickDragListener {
     });
 
     if (hits.length > 0) {
-      store.dispatch(actions.addManySelected(hits));
-      store.dispatch(actions.addCandAnimFrame(hits[0]));
+      store.dispatch(addAnimationFrameThunk(hits[0]));
+    } else {
+      store.dispatch(clearCandAnimFramesThunk());
     }
   }
 

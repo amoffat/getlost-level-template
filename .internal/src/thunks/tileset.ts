@@ -10,10 +10,12 @@ import {
 } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
+import { TileGroup } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { schedulerYield } from "@/utils/async";
 import { hasSolidEdges, subImageData } from "@/utils/image";
 import { genTilesetId, loadTilesetImage } from "@/utils/tileset";
+import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const selectTilesetThunk = createAsyncThunk(
@@ -187,6 +189,48 @@ export const setToolThunk = createAsyncThunk(
       dispatch(tsActions.pushMode(tool));
     }
 
+    dispatch(tsActions.clearCandAnimFrames());
+    dispatch(tsActions.clearSelection());
     dispatch(tsActions.setActiveTool(tool));
+  }
+);
+
+/**
+ * Ensures that the candidate animation frame is the same size as the previous
+ * animation frame. Otherwise shows an error.
+ */
+export const addAnimationFrameThunk = createAsyncThunk(
+  "tilesetEditor/addAnimationFrameThunk",
+  async (tg: TileGroup, { dispatch, getState }) => {
+    const state = getState() as { tilesetEditor: TilesetEditorState };
+
+    const curFrames = state.tilesetEditor.candAnimFrames;
+    if (curFrames.length > 0) {
+      const firstFrame = curFrames[0];
+      const firstWidth = firstFrame.pos.br.x - firstFrame.pos.ul.x;
+      const firstHeight = firstFrame.pos.br.y - firstFrame.pos.ul.y;
+      const newWidth = tg.pos.br.x - tg.pos.ul.x;
+      const newHeight = tg.pos.br.y - tg.pos.ul.y;
+
+      if (firstWidth !== newWidth || firstHeight !== newHeight) {
+        notifications.show({
+          title: "Animation frame size mismatch",
+          message: `The new frame is ${newWidth}x${newHeight}, but the first frame is ${firstWidth}x${firstHeight}. All frames must be the same size.`,
+          color: "red",
+        });
+        return;
+      }
+    }
+
+    dispatch(tsActions.addCandAnimFrame(tg));
+    store.dispatch(tsActions.addOneSelected(tg));
+  }
+);
+
+export const clearCandAnimFramesThunk = createAsyncThunk(
+  "tilesetEditor/clearCandAnimFramesThunk",
+  async (_, { dispatch }) => {
+    dispatch(tsActions.clearCandAnimFrames());
+    dispatch(tsActions.clearSelection());
   }
 );

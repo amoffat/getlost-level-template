@@ -1,3 +1,4 @@
+import { overlayProps } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
 import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
@@ -8,15 +9,20 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  Alert,
   Button,
   CloseButton,
   Fieldset,
   Group,
+  Modal,
   NumberInput,
   Slider,
   Stack,
-  TextInput,
+  TagsInput,
 } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { useDisclosure } from "@mantine/hooks";
+import { IconInfoCircle } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
@@ -160,6 +166,10 @@ function mapWeightToUi(t: number, n: number) {
   return n <= 1 ? 0.5 : Math.pow(clamp01(t), 1 / g);
 }
 
+interface FormValues {
+  names: string[];
+}
+
 export default function TileAnimationOptions() {
   const cands = useAppSelector((state) => state.tilesetEditor.candAnimFrames);
   const dispatch = useAppDispatch();
@@ -167,8 +177,29 @@ export default function TileAnimationOptions() {
   const [weights, setWeights] = useState<Weights>([]);
   // Total animation time in ms
   const [totalTime, setTotalTime] = useState<number>(DEFAULT_TOTAL_TIME);
+  const [saveModalOpened, { open: openSaveModal, close: closeSaveModal }] =
+    useDisclosure(false);
+
+  const form = useForm<FormValues>({
+    name: "animation",
+    mode: "uncontrolled",
+    onSubmitPreventDefault: "always",
+    initialValues: {
+      names: [],
+    },
+    validate: {
+      names: (value) =>
+        value.length === 0 ? "Please enter at least one animation name." : null,
+    },
+  });
+
+  const formSubmit = form.onSubmit((values) => {
+    closeSaveModal();
+  });
 
   const n = cands.length;
+  const hasFrames = n > 0;
+
   const scaleFn = useCallback(
     (v: number) => {
       const g = gammaForCount(n);
@@ -188,7 +219,9 @@ export default function TileAnimationOptions() {
     return { frames: framesForAnim, frameTimeByIdx: result.byIdx };
   }, [n, cands, weights, totalTime]);
 
-  const createAnimation = () => {};
+  const saveAnimation = () => {
+    openSaveModal();
+  };
 
   // Keep weights in sync with candidate count (index-based). Preserve existing
   // prefix, assign a small fair share to new frames, then normalize.
@@ -235,23 +268,31 @@ export default function TileAnimationOptions() {
     dispatch(actions.removeCandAnimIdx(idx));
   };
 
-  const tips: string[] = [];
-  if (cands.length === 0) {
-    tips.push("Select tiles that you want to see in your animation.");
-    tips.push("You may only select objects that are the same size.");
-  } else {
-    tips.push(
-      "Adjust the sliders to set how long each frame appears in the animation."
-    );
-    tips.push("Drag the frame to reorder it in the animation sequence.");
-    tips.push("When you're done, name the animation and click Save.");
-  }
+  const tips: string[] = useMemo(() => {
+    const t = [];
+    if (cands.length === 0) {
+      t.push("Select tiles that you want to see in your animation.");
+      t.push("You may only select objects that are the same size.");
+    } else {
+      t.push(
+        "Adjust the sliders to set how long each frame appears in the animation."
+      );
+      t.push("Drag the frame to reorder it in the animation sequence.");
+      t.push("You can duplicates by clicking the same tile again.");
+    }
+    return t;
+  }, [cands.length]);
 
   return (
     <>
       <Tip tips={tips} />
-      <Fieldset legend="Animation" p="xs">
+      <Fieldset legend="Animation preview" p="xs">
         <Stack p={0} gap="xs">
+          {!hasFrames && (
+            <Alert title="No preview" variant="light" icon={<IconInfoCircle />}>
+              Please select tiles from the tileset.
+            </Alert>
+          )}
           <TileAnimation frames={frames} scale={5} />
 
           <DndContext
@@ -321,15 +362,59 @@ export default function TileAnimationOptions() {
             onChange={(v) =>
               setTotalTime((typeof v === "number" ? v : Number(v)) || 0)
             }
+            disabled={!hasFrames}
           />
 
-          <TextInput label="Animation name" placeholder="MyAnimation" />
-
-          <Button variant="filled" fullWidth onClick={createAnimation} disabled>
+          <Button
+            variant="filled"
+            fullWidth
+            onClick={saveAnimation}
+            disabled={!hasFrames}
+          >
             Save animation
           </Button>
         </Stack>
       </Fieldset>
+
+      <Modal
+        centered={true}
+        opened={saveModalOpened}
+        onClose={closeSaveModal}
+        title="Save animation"
+        overlayProps={overlayProps}
+      >
+        <form onSubmit={formSubmit}>
+          <Stack p={0}>
+            <TileAnimation frames={frames} scale={8} />
+            <TagsInput
+              label="Animation names"
+              description="Enter one or more names for this animation."
+              placeholder="MyAnimation"
+              splitChars={[",", " ", "|"]}
+              limit={5}
+              data={[
+                {
+                  group: "NPC",
+                  items: [
+                    "Idle",
+                    "WalkUp",
+                    "WalkDown",
+                    "WalkLeft",
+                    "WalkRight",
+                  ],
+                },
+              ]}
+              disabled={!hasFrames}
+              {...form.getInputProps("names")}
+            />
+            <Group mt="lg" justify="flex-end">
+              <Button color="blue" type="submit">
+                Save
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+      </Modal>
     </>
   );
 }

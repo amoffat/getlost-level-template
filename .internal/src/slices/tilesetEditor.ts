@@ -100,6 +100,10 @@ export const slice = createSlice({
       state.candAnimFrames.splice(idx, 1);
     },
 
+    clearCandAnimFrames(state) {
+      state.candAnimFrames = [];
+    },
+
     reorderCandAnimFrames(
       state,
       action: PayloadAction<{ from: number; to: number }>
