@@ -1,5 +1,5 @@
 import { EntityState } from "@reduxjs/toolkit";
-import { TileGroup } from "./tilegroup";
+import { TilesetObject } from "./tilegroup";
 
 export type Mode =
   | "select"
@@ -9,7 +9,7 @@ export type Mode =
   | "animate"
   | "replace-group";
 
-type TilesBucket = EntityState<TileGroup, string>;
+type TilesBucket = EntityState<TilesetObject, string>;
 
 export interface Tileset {
   id: string;

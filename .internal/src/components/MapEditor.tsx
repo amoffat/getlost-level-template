@@ -34,6 +34,8 @@ import HelpHoverCard from "./HelpHoverCard";
 import LayerList, { Layer } from "./LayerList";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
+import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
+import { renderTileGroup } from "./paletteObjects/TileGroup";
 import Tip from "./Tip";
 import AddCollider from "./toolOptions/AddCollider";
 import MagicPaint from "./toolOptions/MagicPaint";
@@ -176,18 +178,19 @@ export default function MapEditorTab({
   const layerList: Layer[] = useMemo(() => {
     return [
       {
-        id: MapLayerName.Colliders,
-        description: "Objects that stop character movement",
-      },
-      {
-        id: MapLayerName.World,
+        id: MapLayerName.Exterior,
         description:
-          "Objects that can appear in front of and behind a character",
+          "Outdoor objects that can appear in front of and behind a character",
       },
       {
         id: MapLayerName.Ground,
         description: "Ground objects are always rendered beneath the character",
       },
+      {
+        id: MapLayerName.Colliders,
+        description: "Objects that stop character movement",
+      },
+
       {
         id: MapLayerName.Places,
         description: "Special locations like gateways and waypoints",
@@ -262,9 +265,9 @@ export default function MapEditorTab({
           ></div>
 
           <Stack style={{ flex: 2, minHeight: 0 }} h="100%" p={0}>
-            <Tabs defaultValue={"palette"} className="flex-overflow">
+            <Tabs defaultValue={"objects"} className="flex-overflow">
               <Tabs.List>
-                <Tabs.Tab value="palette">
+                <Tabs.Tab value="objects">
                   <Group gap="xs">
                     Object Palette
                     <HelpHoverCard>
@@ -274,19 +277,20 @@ export default function MapEditorTab({
                     </HelpHoverCard>
                   </Group>
                 </Tabs.Tab>
-                <Tabs.Tab value="npcs">
+                <Tabs.Tab value="animations">
                   <Group gap="xs">
-                    NPCs
+                    Animations
                     <HelpHoverCard>
                       <Text size="sm">
-                        Place an NPC from the palette onto the map.
+                        Animations are sequences of frames composed of tiles or
+                        tile groups.
                       </Text>
                     </HelpHoverCard>
                   </Group>
                 </Tabs.Tab>
               </Tabs.List>
               <Tabs.Panel
-                value="palette"
+                value="objects"
                 style={{
                   flex: 1,
                   minHeight: 0,
@@ -298,6 +302,23 @@ export default function MapEditorTab({
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
                   selectedObjects={paletteSelection}
+                  renderObject={renderTileGroup}
+                />
+              </Tabs.Panel>
+              <Tabs.Panel
+                value="animations"
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  height: "100%",
+                  display: "flex",
+                }}
+              >
+                <ObjectPalette
+                  onSelectObject={onSelectObject}
+                  onDeselectObject={onDeselectObject}
+                  selectedObjects={paletteSelection}
+                  renderObject={renderObjectAnimation}
                 />
               </Tabs.Panel>
             </Tabs>

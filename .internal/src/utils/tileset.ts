@@ -1,7 +1,8 @@
 import { globals as gApp } from "@/globals";
 import { store } from "@/store/store";
+import type { TileAnimationFrame } from "@/types/animation";
 import { Rect } from "@/types/rect";
-import { TileGroup } from "@/types/tilegroup";
+import { isTileGroup, TileGroup } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
 import * as P from "pixi.js";
 import { sha1Hash } from "./hash";
@@ -28,6 +29,13 @@ export async function genTileId({
     `${tsId}:${pos.ul.x},${pos.ul.y}:${pos.br.x},${pos.br.y}`
   );
   return tsHash;
+}
+
+export async function genAnimId(frames: TileAnimationFrame[]): Promise<string> {
+  const frameStrings = frames.map((f) => `${f.tg.id}:${f.time}`);
+  const data = frameStrings.join("|");
+  const hash = await sha1Hash(data);
+  return hash;
 }
 
 export async function loadTilesetImage(ts: Tileset): Promise<P.Texture> {
@@ -62,5 +70,6 @@ export function loadTileGroup({
   if (!ts) throw new Error("Tileset not found for tile group");
   const tg = ts.tiles.entities[id];
   if (!tg) throw new Error("Tile group not found in tileset palette");
+  if (!isTileGroup(tg)) throw new Error("Palette object is not a tile group");
   return tg;
 }

@@ -1,5 +1,12 @@
+import { log } from "@/log";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
-import { isTileGroup, TilesetObject } from "@/types/tilegroup";
+import {
+  isObjectAnimation,
+  isTileGroup,
+  TileGroup,
+  TilesetObject,
+} from "@/types/tilegroup";
+import { AllPropsLoose } from "@/types/union";
 import * as P from "pixi.js";
 import { ReduxReconciler } from "./reconciler";
 import { invisibleStroke } from "./strokes";
@@ -21,17 +28,23 @@ export class TileReconciler extends ReduxReconciler<TilesetObject> {
     this.connected = true;
   }
 
-  protected override applyProps(node: P.Container, p: Partial<TilesetObject>) {
+  protected override applyProps(
+    node: P.Container,
+    p: AllPropsLoose<TilesetObject>
+  ) {
     if (p.pos !== undefined) {
       node.position.set(p.pos.ul.x, p.pos.ul.y);
     }
   }
 
-  protected override createNode(obj: TilesetObject): P.Container {
+  protected override createNode(obj: TilesetObject): P.Container | null {
     if (isTileGroup(obj)) {
       return this.createTileGroupNode(obj);
+    } else if (isObjectAnimation(obj)) {
+      return null;
     } else {
-      throw new Error("Unsupported TilesetObject type");
+      log.error("Unsupported TilesetObject type");
+      return null;
     }
   }
 
@@ -46,7 +59,7 @@ export class TileReconciler extends ReduxReconciler<TilesetObject> {
    * @param obj
    * @returns
    */
-  private createTileGroupNode(obj: TilesetObject): P.Container {
+  private createTileGroupNode(obj: TileGroup): P.Container {
     const gfx = new P.Graphics();
     gfx.interactive = false;
 

@@ -1,5 +1,5 @@
 import { SpatialIndex } from "@/types/spatial";
-import { TilesetObject } from "@/types/tilegroup";
+import { TileGroup } from "@/types/tilegroup";
 import * as P from "pixi.js";
 
 interface Globals {
@@ -14,7 +14,7 @@ interface Globals {
   grid: P.Container;
   currentTileset?: P.Sprite;
   scanPos: P.Container;
-  spatialIndex: SpatialIndex<TilesetObject>;
+  spatialIndex: SpatialIndex<TileGroup>;
   selectionOutlines: P.Container;
   rectSelectOutline: P.Container;
   rectSelect: P.Graphics;

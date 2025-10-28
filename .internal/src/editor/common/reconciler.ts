@@ -101,6 +101,8 @@ export abstract class ReduxReconciler<
 
     for (const obj of this.pendingAdds) {
       const node = this.createNode(obj);
+      if (!node) continue;
+
       this.nodes.set(this.selectId(obj), node);
       const container = this.containerByObj(obj);
       container.addChild(node);
@@ -122,7 +124,7 @@ export abstract class ReduxReconciler<
     this.pendingUpdates.length = 0;
   }
 
-  protected abstract createNode(obj: ObjType): P.Container;
+  protected abstract createNode(obj: ObjType): P.Container | null;
 
   protected abstract applyProps(node: P.Container, p: Partial<ObjType>): void;
 

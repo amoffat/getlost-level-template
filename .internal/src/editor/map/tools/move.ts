@@ -90,7 +90,7 @@ export class Mover implements ClickDragListener {
       }
 
       let z = obj.z;
-      if (obj.layer === MapLayerName.World) {
+      if (obj.layer === MapLayerName.Exterior) {
         z = newPos.y;
         if (isTileGroupInstance(obj)) {
           const height = obj.frame.br.y - obj.frame.ul.y;

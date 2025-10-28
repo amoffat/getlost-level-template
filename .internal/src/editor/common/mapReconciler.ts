@@ -106,7 +106,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     }
   }
 
-  protected override createNode(obj: MapObj): P.Container {
+  protected override createNode(obj: MapObj): P.Container | null {
     if (isTileGroupInstance(obj)) {
       const tsTex = this.tilesetCache.get(obj.tilesetId);
       if (!tsTex) {

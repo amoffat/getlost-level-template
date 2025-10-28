@@ -21,7 +21,6 @@ type TsAction =
   | ReturnType<typeof tsActions.addTileset>
   | ReturnType<typeof tsActions.bulkAddSinglePaletteTiles>
   | ReturnType<typeof tsActions.addPaletteObject>
-  | ReturnType<typeof tsActions.addSinglePaletteTile>
   | ReturnType<typeof tsActions.updateTileGroup>
   | ReturnType<typeof tsActions.deletePaletteObjects>;
 
@@ -60,7 +59,6 @@ startAppListening({
     tsActions.addTileset,
     tsActions.bulkAddSinglePaletteTiles,
     tsActions.addPaletteObject,
-    tsActions.addSinglePaletteTile,
     tsActions.updateTileGroup,
     tsActions.deletePaletteObjects
   ),

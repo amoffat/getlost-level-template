@@ -1,7 +1,6 @@
 import { log } from "@/log";
-import { TileGroupInstance } from "@/types/map";
 import { Rect } from "@/types/rect";
-import { TileGroup, TilesetObject } from "@/types/tilegroup";
+import { isTileGroup, TileGroup, TilesetObject } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
 import {
@@ -18,8 +17,8 @@ type ToolOptMapping = object;
 type ToolWithOptions = keyof ToolOptMapping;
 
 const reconcilePrefix = "tilesetEditor";
-export const selectedAdapter = createEntityAdapter<TileGroup>();
-export const tileAdapter = createEntityAdapter<TileGroup>();
+export const selectedAdapter = createEntityAdapter<TilesetObject>();
+export const tileAdapter = createEntityAdapter<TilesetObject>();
 
 export interface TilesetEditorState {
   grid: {
@@ -253,27 +252,8 @@ export const slice = createSlice({
       },
     },
 
-    addSinglePaletteTile: {
-      prepare: (payload: { tsId: string; group: TileGroup }) => ({
-        meta: {
-          reconcilePrefix,
-          reconcileType: "add" as const,
-          reconcile: payload.group,
-        },
-        payload,
-      }),
-      reducer(
-        state,
-        action: PayloadAction<{ tsId: string; group: TileGroup }>
-      ) {
-        const { tsId, group } = action.payload;
-        const ts = state.tilesets[tsId];
-        tileAdapter.addOne(ts.tiles, group);
-      },
-    },
-
     addPaletteObject: {
-      prepare: (payload: { tsId: string; group: TileGroup }) => ({
+      prepare: (payload: { tsId: string; group: TilesetObject }) => ({
         meta: {
           reconcilePrefix,
           reconcileType: "add" as const,
@@ -283,7 +263,7 @@ export const slice = createSlice({
       }),
       reducer(
         state,
-        action: PayloadAction<{ tsId: string; group: TileGroup }>
+        action: PayloadAction<{ tsId: string; group: TilesetObject }>
       ) {
         const { tsId, group } = action.payload;
         const ts = state.tilesets[tsId];
@@ -385,7 +365,9 @@ export const slice = createSlice({
       (tsId, tilesets): TileGroup[] => {
         if (!tsId) return [];
         const ts = tilesets[tsId];
-        const objs = ts.tiles.ids.map((id) => ts.tiles.entities[id]);
+        const objs = ts.tiles.ids
+          .map((id) => ts.tiles.entities[id])
+          .filter(isTileGroup);
         const broken = ts.tiles.ids.filter(
           (id) => ts.tiles.entities[id] === undefined
         );
@@ -398,12 +380,6 @@ export const slice = createSlice({
     selectMode: createSelector.withTypes<TilesetEditorState>()(
       [(state) => state.activeModeStack],
       (activeModeStack): Mode => activeModeStack.at(-1) ?? "select"
-    ),
-    selectTileGroupByInstanceId: createSelector.withTypes<TilesetEditorState>()(
-      [(state) => state.tilesets, (_, inst: TileGroupInstance) => inst],
-      (tilesets, inst): TileGroup => {
-        return tilesets[inst.tilesetId].tiles.entities[inst.tileId];
-      }
     ),
     paletteSelectedIds: createSelector.withTypes<TilesetEditorState>()(
       [(state) => state.selectedTiles.ids],

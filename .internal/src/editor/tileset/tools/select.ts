@@ -197,6 +197,8 @@ export function outlineObjects(objs: TilesetObject[], zoom: number) {
   const stroke = { ...selectStroke, width: (selectStroke.width ?? 1) / zoom };
 
   for (const obj of objs) {
+    if (!isTileGroup(obj)) continue;
+
     const container = new P.Container();
     g.selectionOutlines.addChild(container);
     container.position.set(obj.pos.ul.x, obj.pos.ul.y);

@@ -7,6 +7,7 @@ import {
   selectTilesetThunk,
   setToolThunk,
 } from "@/thunks/tileset";
+import { isTileGroup } from "@/types/tilegroup";
 import { Mode } from "@/types/tileset";
 import { Flex, Group, ScrollArea, Stack, Tabs, Text } from "@mantine/core";
 import {
@@ -24,6 +25,8 @@ import ObjectPalette from "./ObjectPalette";
 import TilesetButton from "./TilesetButton";
 import Tip from "./Tip";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
+import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
+import { renderTileGroup } from "./paletteObjects/TileGroup";
 import TileAnimationOptions from "./toolOptions/TileAnimationOptions";
 import TileReplaceOptions from "./toolOptions/TileReplaceOptions";
 import TileReslicer from "./toolOptions/TileReslicer";
@@ -152,9 +155,9 @@ export default function TilesetEditorTab({
     if (!tool) {
       if (activeTileset) {
         const hasTiles = activeTileset.tiles.ids.length > 0;
-        const hasPinned = Object.values(activeTileset.tiles.entities).some(
-          (obj) => obj.pinned
-        );
+        const hasPinned = Object.values(activeTileset.tiles.entities)
+          .filter(isTileGroup)
+          .some((obj) => obj.pinned);
 
         if (hasTiles) {
           if (hasPinned) {
@@ -236,6 +239,7 @@ export default function TilesetEditorTab({
                 <ObjectPalette
                   tileset={activeTilesetId ? tilesets[activeTilesetId] : null}
                   selectedObjects={paletteSelection}
+                  renderObject={renderTileGroup}
                 />
               </Tabs.Panel>
               <Tabs.Panel
@@ -247,7 +251,11 @@ export default function TilesetEditorTab({
                   display: "flex",
                 }}
               >
-                hello
+                <ObjectPalette
+                  tileset={activeTilesetId ? tilesets[activeTilesetId] : null}
+                  selectedObjects={paletteSelection}
+                  renderObject={renderObjectAnimation}
+                />
               </Tabs.Panel>
             </Tabs>
           </Stack>

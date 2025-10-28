@@ -44,7 +44,7 @@ export default function ObjSelHover() {
       >
         <Group wrap="nowrap" align="flex-start">
           <Checkbox.Indicator />
-          <TilesetGroup group={group} />
+          <TilesetGroup group={group} scale={1} bounded />
         </Group>
       </Checkbox.Card>
     );

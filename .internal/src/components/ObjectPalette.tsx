@@ -1,29 +1,53 @@
+import { PaletteObjectProps } from "@/types/palette";
 import { area } from "@/types/rect";
 import { Vector } from "@/vec";
 import {
-  ActionIcon,
   Group,
   LoadingOverlay,
   Portal,
   ScrollArea,
+  Slider,
   TextInput,
 } from "@mantine/core";
-import { IconSearch, IconZoomIn, IconZoomOut } from "@tabler/icons-react";
-import React, { JSX, useCallback, useEffect, useMemo, useState } from "react";
+import { IconSearch } from "@tabler/icons-react";
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useAppSelector } from "../hooks/redux";
-import { TileGroup } from "../types/tilegroup";
+import {
+  isObjectAnimation,
+  isTileGroup,
+  TileGroup,
+  TilesetObject,
+} from "../types/tilegroup";
 import { Tileset } from "../types/tileset";
 import TileGroupMenu from "./TileGroupMenu";
-import TilesetGroup from "./TilesetGroup";
 
 interface ObjectPaletteProps {
   tileset?: Tileset | null;
-  onSelectObject?: (obj: TileGroup, e: React.MouseEvent) => void;
+  onSelectObject?: (obj: TilesetObject, e: React.MouseEvent) => void;
   onDeselectObject?: () => void;
   selectedObjects?: Set<string>;
+  renderObject: (props: PaletteObjectProps) => React.ReactNode | null;
 }
 
-function sortBySizeDescending(a: TileGroup, b: TileGroup): number {
+function sortBySizeDescending(a: TilesetObject, b: TilesetObject): number {
+  let aIsAnimation = false;
+  let bIsAnimation = false;
+
+  if (isObjectAnimation(a)) {
+    a = a.frames[0]!.tg;
+    aIsAnimation = true;
+  }
+  if (isObjectAnimation(b)) {
+    b = b.frames[0]!.tg;
+    bIsAnimation = true;
+  }
+
   const aArea = area(a.pos);
   const bArea = area(b.pos);
   if (aArea !== bArea) return bArea - aArea;
@@ -31,6 +55,11 @@ function sortBySizeDescending(a: TileGroup, b: TileGroup): number {
   // if areas are equal, sort by tileset id
   if (a.tilesetId !== b.tilesetId) {
     return a.tilesetId.localeCompare(b.tilesetId);
+  }
+
+  // Animations should come after static tile groups
+  if (aIsAnimation !== bIsAnimation) {
+    return aIsAnimation ? 1 : -1;
   }
 
   if (a.hilbertIndex !== b.hilbertIndex) {
@@ -46,16 +75,17 @@ export default function ObjectPalette({
   onDeselectObject,
   tileset: showTileset,
   selectedObjects,
+  renderObject,
 }: ObjectPaletteProps) {
   const [objMenuPos, setObjMenuPos] = useState<Vector | null>(null);
   const [clickedPaletteObject, setClickedPaletteObject] =
     useState<TileGroup | null>(null);
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const loadingPalette = useAppSelector((state) => state.ui.loadingPalette);
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(2);
 
-  const objects: JSX.Element[] = useMemo(() => {
-    const objs: JSX.Element[] = [];
+  const objects: ReactNode[] = useMemo(() => {
+    const objs: ReactNode[] = [];
 
     const filteredTilesets: Tileset[] = Object.values(tilesets).filter((t) => {
       if (showTileset) {
@@ -75,29 +105,28 @@ export default function ObjectPalette({
     // (having the same id), because the id is a hash of the image data.
     const seen = new Set<string>();
 
-    for (const group of sorted) {
-      if (seen.has(group.id)) continue;
-      seen.add(group.id);
+    for (const obj of sorted) {
+      if (seen.has(obj.id)) continue;
+      seen.add(obj.id);
 
       const shouldDim =
-        !selectedObjects?.has(group.id) &&
+        !selectedObjects?.has(obj.id) &&
         selectedObjects &&
         selectedObjects.size > 0;
 
-      const key = `${group.tilesetId}-${group.id}`;
-      objs.push(
-        <TilesetGroup
-          scale={scale}
-          key={key}
-          group={group}
-          selected={selectedObjects?.has(group.id)}
-          dimmed={shouldDim}
-        />
-      );
+      const rendered = renderObject({
+        scale,
+        obj,
+        selected: selectedObjects?.has(obj.id) ?? false,
+        dimmed: shouldDim,
+      });
+      if (rendered) {
+        objs.push(rendered);
+      }
     }
 
     return objs;
-  }, [tilesets, showTileset, selectedObjects, scale]);
+  }, [tilesets, showTileset, selectedObjects, renderObject, scale]);
 
   const deselectObject = useCallback(() => {
     setObjMenuPos(null);
@@ -149,7 +178,12 @@ export default function ObjectPalette({
         const x = rect.left + rect.width / 2;
         const y = rect.top + rect.height / 4;
         setObjMenuPos({ x, y });
-        setClickedPaletteObject(obj);
+
+        if (isTileGroup(obj)) {
+          setClickedPaletteObject(obj);
+        } else {
+          setClickedPaletteObject(null);
+        }
 
         // Also select the object
         onSelectObject?.(obj, e);
@@ -157,14 +191,6 @@ export default function ObjectPalette({
     },
     [tilesets, deselectObject, selectedObjects, onSelectObject]
   );
-
-  const zoomInClick = useCallback(() => {
-    setScale((s) => Math.min(4, s + 0.25));
-  }, []);
-
-  const zoomOutClick = useCallback(() => {
-    setScale((s) => Math.max(0.25, s - 0.25));
-  }, []);
 
   return (
     <>
@@ -178,26 +204,24 @@ export default function ObjectPalette({
         {objects.length > 0 && (
           <Group mb="sm" me="sm">
             <TextInput
-              flex="1"
+              flex="3"
               placeholder="Filter objects"
               leftSection={<IconSearch size={16} />}
             />
-            <Group gap="xs">
-              <ActionIcon
-                size="input-sm"
-                variant="default"
-                onClick={zoomInClick}
-              >
-                <IconZoomIn />
-              </ActionIcon>
-              <ActionIcon
-                size="input-sm"
-                variant="default"
-                onClick={zoomOutClick}
-              >
-                <IconZoomOut />
-              </ActionIcon>
-            </Group>
+            <Slider
+              flex="1"
+              min={0.5}
+              max={4}
+              step={0.25}
+              value={scale}
+              onChange={setScale}
+              marks={[
+                { value: 1, label: "1x" },
+                { value: 2, label: "2x" },
+                { value: 4, label: "4x" },
+              ]}
+              label={null}
+            />
           </Group>
         )}
 

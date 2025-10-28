@@ -1,6 +1,10 @@
 import { overlayProps } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
+import { clearCandAnimFramesThunk } from "@/thunks/tileset";
+import { TileAnimationFrame } from "@/types/animation";
+import { ObjectAnimation } from "@/types/tilegroup";
+import { genAnimId } from "@/utils/tileset";
 import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -171,6 +175,7 @@ interface FormValues {
 }
 
 export default function TileAnimationOptions() {
+  const tsId = useAppSelector((state) => state.tilesetEditor.activeTilesetId)!;
   const cands = useAppSelector((state) => state.tilesetEditor.candAnimFrames);
   const dispatch = useAppDispatch();
   // Store fractional weights per frame (0..1), always normalized so sum == 1
@@ -193,10 +198,6 @@ export default function TileAnimationOptions() {
     },
   });
 
-  const formSubmit = form.onSubmit((values) => {
-    closeSaveModal();
-  });
-
   const n = cands.length;
   const hasFrames = n > 0;
 
@@ -212,12 +213,26 @@ export default function TileAnimationOptions() {
   const { frames, frameTimeByIdx } = useMemo(() => {
     const result = computeFrameTimes(n, weights, totalTime, MIN_FRAME_MS_60FPS);
     // Adapt to TileAnimation shape
-    const framesForAnim = cands.map((cand, idx) => ({
+    const framesForAnim: TileAnimationFrame[] = cands.map((cand, idx) => ({
       tg: cand,
       time: result.byIdx[idx] ?? 0,
     }));
     return { frames: framesForAnim, frameTimeByIdx: result.byIdx };
   }, [n, cands, weights, totalTime]);
+
+  const formSubmit = form.onSubmit(async (values) => {
+    closeSaveModal();
+
+    const id = await genAnimId(frames);
+    const anim: ObjectAnimation = {
+      id,
+      frames,
+      names: values.names,
+    };
+    dispatch(actions.addPaletteObject({ tsId, group: anim }));
+    dispatch(clearCandAnimFramesThunk());
+    form.reset();
+  });
 
   const saveAnimation = () => {
     openSaveModal();
@@ -278,7 +293,9 @@ export default function TileAnimationOptions() {
         "Adjust the sliders to set how long each frame appears in the animation."
       );
       t.push("Drag the frame to reorder it in the animation sequence.");
-      t.push("You can duplicates by clicking the same tile again.");
+      t.push(
+        "You can duplicate a frame by clicking the same tile again in the tile editor."
+      );
     }
     return t;
   }, [cands.length]);

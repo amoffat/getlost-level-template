@@ -1,4 +1,5 @@
 import { OklabColor } from "@/types/color";
+import type { TileAnimationFrame } from "./animation";
 import type { Rect } from "./rect";
 
 export interface TileGroup {
@@ -20,18 +21,18 @@ export interface TileGroup {
   hilbertIndex: number;
 }
 
-interface AnimatedFrame {
-  duration: number;
-  tileGroup: TileGroup;
-}
-
 export interface ObjectAnimation {
   id: string;
-  frames: AnimatedFrame[];
+  frames: TileAnimationFrame[];
+  names: string[];
 }
 
-export type TilesetObject = TileGroup;
+export type TilesetObject = TileGroup | ObjectAnimation;
 
 export function isTileGroup(obj: TilesetObject): obj is TileGroup {
   return (obj as TileGroup).pinned !== undefined;
+}
+
+export function isObjectAnimation(obj: TilesetObject): obj is ObjectAnimation {
+  return (obj as ObjectAnimation).frames !== undefined;
 }

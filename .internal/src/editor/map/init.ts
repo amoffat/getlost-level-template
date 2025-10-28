@@ -133,7 +133,7 @@ export async function init(): Promise<P.Application> {
   g.mapContainer.addChild(groundLayer);
 
   const worldLayer = new P.Container();
-  g.layerContainers[MapLayerName.World] = worldLayer;
+  g.layerContainers[MapLayerName.Exterior] = worldLayer;
   g.mapContainer.addChild(worldLayer);
 
   const colliderLayer = new P.Container();

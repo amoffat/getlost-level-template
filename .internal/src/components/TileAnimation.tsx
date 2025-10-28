@@ -5,7 +5,7 @@ import TilesetGroup from "./TilesetGroup";
 export interface TileAnimationProps {
   frames: TileAnimationFrame[];
   // Visual props forwarded to TilesetGroup
-  scale?: number;
+  scale: number;
   className?: string;
   style?: React.CSSProperties;
   // Playback controls
@@ -15,6 +15,7 @@ export interface TileAnimationProps {
   // Callbacks
   onFrameChange?: (index: number) => void;
   onEnd?: () => void; // called when a non-looping animation reaches the end
+  bounded?: boolean;
 }
 
 const TileAnimation = ({
@@ -27,6 +28,7 @@ const TileAnimation = ({
   startIndex = 0,
   onFrameChange,
   onEnd,
+  bounded = false,
 }: TileAnimationProps) => {
   const [index, setIndex] = useState<number>(() =>
     Math.min(Math.max(startIndex, 0), Math.max(frames.length - 1, 0))
@@ -83,6 +85,7 @@ const TileAnimation = ({
       scale={scale}
       className={className}
       style={style}
+      bounded={bounded}
     />
   );
 };

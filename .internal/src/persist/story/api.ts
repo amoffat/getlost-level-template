@@ -18,7 +18,11 @@ export async function loadStory(): Promise<{
 
   const migrations = await getMigrations();
   const baseDecoded = decode<BaseStoryDoc>(await res.bytes());
-  const migrated = await applyMigrations(baseDecoded, migrations);
+  const migrated = await applyMigrations(
+    baseDecoded,
+    migrations,
+    latestVersion
+  );
 
   const decoded = baseDecoded as LatestStoryDoc;
   const nodes = (decoded as any).nodes ?? [];

@@ -7,7 +7,7 @@ export function migrate(doc: MapDocV1) {
     if (oldLayer === "ground") {
       obj.layer = MapLayerName.Ground;
     } else if (oldLayer === "world") {
-      obj.layer = MapLayerName.World;
+      obj.layer = MapLayerName.Exterior;
     }
   }
 }

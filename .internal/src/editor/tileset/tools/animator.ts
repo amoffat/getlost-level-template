@@ -5,7 +5,7 @@ import {
   clearCandAnimFramesThunk,
 } from "@/thunks/tileset";
 import { SpatialIndex } from "@/types/spatial";
-import { TilesetObject } from "@/types/tilegroup";
+import { isTileGroup, TilesetObject } from "@/types/tilegroup";
 import {
   ClickDragger,
   ClickDragListener,
@@ -28,9 +28,11 @@ class FrameSelector implements ClickDragListener {
       maxY: e.hitbox.br.y,
     };
 
-    const hits = this.spatialIndex.getObjects({
-      pos: searchBounds,
-    });
+    const hits = this.spatialIndex
+      .getObjects({
+        pos: searchBounds,
+      })
+      .filter(isTileGroup);
 
     if (hits.length > 0) {
       store.dispatch(addAnimationFrameThunk(hits[0]));

@@ -91,7 +91,7 @@ export const slice = createSlice({
       active: MapLayerName.Ground,
       visible: [
         MapLayerName.Ground,
-        MapLayerName.World,
+        MapLayerName.Exterior,
         MapLayerName.Colliders,
       ],
       lockInactive: true,

@@ -1,6 +1,6 @@
 export enum MapLayerName {
   Ground,
-  World,
+  Exterior,
   Colliders,
   Places,
 }

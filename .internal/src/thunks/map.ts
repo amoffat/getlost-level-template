@@ -92,9 +92,9 @@ export const setToolThunk = createAsyncThunk(
         dispatch(mapActions.setPlace(tg));
       } else if (tool === "paint") {
         const layer = state.mapEditor.layers.active;
-        if (![MapLayerName.Ground, MapLayerName.World].includes(layer)) {
+        if (![MapLayerName.Ground, MapLayerName.Exterior].includes(layer)) {
           const isTile = state.mapEditor.place.obj?.coverage === 1.0;
-          const switchTo = isTile ? MapLayerName.Ground : MapLayerName.World;
+          const switchTo = isTile ? MapLayerName.Ground : MapLayerName.Exterior;
 
           dispatch(setActiveLayerThunk({ layer: switchTo, notify: true }));
         }

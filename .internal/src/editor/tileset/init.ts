@@ -2,7 +2,7 @@ import * as constants from "@/constants";
 import { globals as gApp } from "@/globals";
 import { selectors, tileAdapter } from "@/slices/tilesetEditor";
 import { SpatialIndex } from "@/types/spatial";
-import { TilesetObject } from "@/types/tilegroup";
+import { TileGroup } from "@/types/tilegroup";
 import { Vector } from "@/vec";
 import debounce from "debounce";
 import * as P from "pixi.js";
@@ -28,11 +28,11 @@ export async function init(): Promise<P.Application> {
   const app = new P.Application();
   g.app = app;
 
-  const spatialIndex = new SpatialIndex<TilesetObject>({
+  const spatialIndex = new SpatialIndex<TileGroup>({
     selectById: (state, id) => {
       const ts = selectors.activeTileset(state);
       if (!ts) return undefined;
-      return tileAdapter.getSelectors().selectById(ts.tiles, id);
+      return tileAdapter.getSelectors().selectById(ts.tiles, id) as TileGroup;
     },
     filterLayer: () => true,
   });
