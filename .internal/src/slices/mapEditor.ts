@@ -88,7 +88,7 @@ export const slice = createSlice({
     },
     modeStack: [],
     layers: {
-      active: MapLayerName.Ground,
+      active: MapLayerName.Exterior,
       visible: [
         MapLayerName.Ground,
         MapLayerName.Exterior,

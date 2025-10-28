@@ -310,7 +310,7 @@ export default function TileAnimationOptions() {
               Please select tiles from the tileset.
             </Alert>
           )}
-          <TileAnimation frames={frames} scale={5} />
+          <TileAnimation frames={frames} scale={5} bounded />
 
           <DndContext
             collisionDetection={closestCenter}
@@ -402,7 +402,7 @@ export default function TileAnimationOptions() {
       >
         <form onSubmit={formSubmit}>
           <Stack p={0}>
-            <TileAnimation frames={frames} scale={8} />
+            <TileAnimation frames={frames} scale={8} bounded />
             <TagsInput
               label="Animation names"
               description="Enter one or more names for this animation."

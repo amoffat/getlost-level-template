@@ -10,5 +10,12 @@ export function renderObjectAnimation({
 }: PaletteObjectProps): React.ReactNode | null {
   if (!isObjectAnimation(obj)) return null;
 
-  return <TileAnimation frames={obj.frames} scale={scale} />;
+  return (
+    <TileAnimation
+      frames={obj.frames}
+      scale={scale}
+      selected={selected}
+      dimmed={dimmed}
+    />
+  );
 }

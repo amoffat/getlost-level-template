@@ -1,6 +1,6 @@
 import { TileAnimationFrame } from "@/types/animation";
 import { useEffect, useState } from "react";
-import TilesetGroup from "./TilesetGroup";
+import TilesetGroup, { TilesetCropProps } from "./TilesetGroup";
 
 export interface TileAnimationProps {
   frames: TileAnimationFrame[];
@@ -15,8 +15,9 @@ export interface TileAnimationProps {
   // Callbacks
   onFrameChange?: (index: number) => void;
   onEnd?: () => void; // called when a non-looping animation reaches the end
-  bounded?: boolean;
 }
+
+type TgProps = Pick<TilesetCropProps, "bounded" | "selected" | "dimmed">;
 
 const TileAnimation = ({
   frames,
@@ -28,8 +29,8 @@ const TileAnimation = ({
   startIndex = 0,
   onFrameChange,
   onEnd,
-  bounded = false,
-}: TileAnimationProps) => {
+  ...tgOpts
+}: TileAnimationProps & TgProps) => {
   const [index, setIndex] = useState<number>(() =>
     Math.min(Math.max(startIndex, 0), Math.max(frames.length - 1, 0))
   );
@@ -85,7 +86,7 @@ const TileAnimation = ({
       scale={scale}
       className={className}
       style={style}
-      bounded={bounded}
+      {...tgOpts}
     />
   );
 };
