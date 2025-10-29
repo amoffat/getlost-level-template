@@ -83,8 +83,8 @@ export const slice = createSlice({
     },
 
     setToolOptions<K extends ToolWithOptions>(
-      state: TilesetEditorState,
-      action: PayloadAction<{ tool: K; options: Partial<ToolOptMapping[K]> }>
+      _state: TilesetEditorState,
+      _action: PayloadAction<{ tool: K; options: Partial<ToolOptMapping[K]> }>
     ) {
       // const { tool, options } = action.payload;
       // state.toolOptions[tool] = { ...state.toolOptions[tool], ...options };
@@ -130,31 +130,30 @@ export const slice = createSlice({
       state.activeModeStack.pop();
     },
 
-    updateTileGroup: {
+    updateTilesetObject: {
       prepare: (payload: {
         tsId: string;
-        group: TileGroup;
-        changes: Partial<TileGroup>;
+        obj: TilesetObject;
+        changes: Partial<TilesetObject>;
       }) => ({
         meta: {
           reconcilePrefix,
           reconcileType: "update" as const,
-          reconcile: { id: payload.group.id, changes: payload.changes },
+          reconcile: { id: payload.obj.id, changes: payload.changes },
         },
         payload,
       }),
       reducer(
         state,
         action: PayloadAction<{
-          tsId: string;
-          group: TileGroup;
-          changes: Partial<TileGroup>;
+          obj: TilesetObject;
+          changes: Partial<TilesetObject>;
         }>
       ) {
-        const { group, changes } = action.payload;
-        const ts = state.tilesets[group.tilesetId];
+        const { obj, changes } = action.payload;
+        const ts = state.tilesets[obj.tilesetId];
         if (!ts) return;
-        tileAdapter.updateOne(ts.tiles, { id: group.id, changes: changes });
+        tileAdapter.updateOne(ts.tiles, { id: obj.id, changes: changes });
       },
     },
 
@@ -234,7 +233,7 @@ export const slice = createSlice({
     },
 
     bulkAddSinglePaletteTiles: {
-      prepare: (payload: { tsId: string; groups: TileGroup[] }) => ({
+      prepare: (payload: { tsId: string; groups: TilesetObject[] }) => ({
         meta: {
           reconcilePrefix,
           reconcileType: "add" as const,
@@ -244,7 +243,7 @@ export const slice = createSlice({
       }),
       reducer(
         state,
-        action: PayloadAction<{ tsId: string; groups: TileGroup[] }>
+        action: PayloadAction<{ tsId: string; groups: TilesetObject[] }>
       ) {
         const { tsId, groups } = action.payload;
         const ts = state.tilesets[tsId];

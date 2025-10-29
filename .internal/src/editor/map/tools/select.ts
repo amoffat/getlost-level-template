@@ -5,7 +5,12 @@ import {
 } from "@/slices/mapEditor";
 import { RootState, store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
-import { isColliderBox, isTileGroupInstance, MapObj } from "@/types/map";
+import {
+  isAnimatedInstance,
+  isColliderBox,
+  isTileGroupInstance,
+  MapObj,
+} from "@/types/map";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";
@@ -263,6 +268,13 @@ export function outlineObjects(objs: MapObj[], zoom: number) {
       drawOutline({
         container,
         frame: obj.frame,
+        stroke,
+        fill: tileSelectFill,
+      });
+    } else if (isAnimatedInstance(obj)) {
+      drawOutline({
+        container,
+        frame: obj.frames[0].frame,
         stroke,
         fill: tileSelectFill,
       });

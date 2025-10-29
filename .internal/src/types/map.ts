@@ -15,8 +15,9 @@ export interface TileGroupInstance extends BaseMapObj {
 }
 
 export interface AnimatedInstance extends BaseMapObj {
-  animId: string;
   tilesetId: string;
+  frames: { frame: Rect; time: number }[];
+  flipX: boolean;
 }
 
 export interface EllipseObj extends BaseMapObj {
@@ -55,5 +56,5 @@ export function isColliderBox(obj: Partial<BaseMapObj>): obj is BoxObj {
 export function isAnimatedInstance(
   obj: Partial<BaseMapObj>
 ): obj is AnimatedInstance {
-  return (obj as AnimatedInstance).animId !== undefined;
+  return (obj as AnimatedInstance).frames !== undefined;
 }

@@ -11,11 +11,18 @@ export function renderObjectAnimation({
   if (!isObjectAnimation(obj)) return null;
 
   return (
-    <TileAnimation
-      frames={obj.frames}
-      scale={scale}
-      selected={selected}
-      dimmed={dimmed}
-    />
+    <div
+      data-objid={obj.id}
+      data-tsid={obj.frames[0]!.tg.tilesetId}
+      style={{ display: "contents" }}
+      key={`${obj.id}`}
+    >
+      <TileAnimation
+        frames={obj.frames}
+        scale={scale}
+        selected={selected}
+        dimmed={dimmed}
+      />
+    </div>
   );
 }

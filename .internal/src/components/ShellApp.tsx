@@ -3,17 +3,18 @@ import "@mantine/dropzone/styles.css";
 
 import { init as mapInit } from "@/editor/map/init";
 import { init as tsInit } from "@/editor/tileset/init";
-import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { pathToTab, tabToPath } from "@/routes/tabs";
 import { actions as uiActions } from "@/slices/ui";
-import { loadMapThunk } from "@/thunks/map";
+import { loadMapThunk, resetMapThunk } from "@/thunks/map";
 import { loadTilesetsThunk } from "@/thunks/tileset";
-import { TabName } from "@/types/tab";
+import { MainTabName } from "@/types/tab";
 import { AppShell, Group, Tabs, Text } from "@mantine/core";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import { useDisclosure } from "@mantine/hooks";
-import { IconUpload, IconX } from "@tabler/icons-react";
+import { modals } from "@mantine/modals";
+import { Spotlight, SpotlightActionData } from "@mantine/spotlight";
+import { IconSearch, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual } from "react-redux";
@@ -52,6 +53,34 @@ export function ShellApp() {
   const [assetTypeOpened, { open: openAssetType, close: closeAssetType }] =
     useDisclosure(false);
 
+  const actions: SpotlightActionData[] = useMemo(
+    () => [
+      {
+        id: "reset-map",
+        label: "Reset map",
+        description: "Delete and re-create the map",
+        onClick: () => {
+          modals.openConfirmModal({
+            title: "Reset map?",
+            children: (
+              <Text size="sm">
+                This will delete and re-create the current map. This action
+                cannot be undone.
+              </Text>
+            ),
+            labels: { confirm: "Reset map", cancel: "Cancel" },
+            confirmProps: { color: "red" },
+            centered: true,
+            withCloseButton: false,
+            onConfirm: () => dispatch(resetMapThunk()),
+          });
+        },
+        leftSection: <IconTrash size={24} stroke={1.5} />,
+      },
+    ],
+    [dispatch]
+  );
+
   const { activeTab, mountedTabs, loadingMessages } = useAppSelector(
     (state) => ({
       activeTab: state.ui.activeTab,
@@ -62,7 +91,7 @@ export function ShellApp() {
   );
 
   const handleTabChange = useCallback(
-    (value: TabName | null) => {
+    (value: MainTabName | null) => {
       if (!value) return;
 
       // Navigate to the canonical URL for the selected tab; the URL change
@@ -93,25 +122,27 @@ export function ShellApp() {
     [openAssetType]
   );
 
-  const tilesetInitPromise = useMemo(async () => {
-    await dispatch(loadTilesetsThunk()).unwrap();
-    const app = await tsInit();
-    g.tilesetEditorApp = app;
-    return app;
+  const tilesetInitPromise = useMemo(() => {
+    return (async () => {
+      await dispatch(loadTilesetsThunk()).unwrap();
+      const app = await tsInit();
+      return app;
+    })();
   }, [dispatch]);
 
-  const mapInitPromise = useMemo(async () => {
-    await tilesetInitPromise;
-    const app = await mapInit();
-    g.mapEditorApp = app;
-    // This has to happen after the app is initialized, because it depends on
-    // the map reconciler existing.
-    try {
-      await dispatch(loadMapThunk()).unwrap();
-    } catch (e) {
-      log.error({ error: e }, "Failed to load map");
-    }
-    return app;
+  const mapInitPromise = useMemo(() => {
+    return (async () => {
+      await tilesetInitPromise;
+      const app = await mapInit();
+      // This has to happen after the app is initialized, because it depends on
+      // the map reconciler existing.
+      try {
+        await dispatch(loadMapThunk()).unwrap();
+      } catch (e) {
+        log.error({ error: e }, "Failed to load map");
+      }
+      return app;
+    })();
   }, [tilesetInitPromise, dispatch]);
 
   return (
@@ -156,7 +187,7 @@ export function ShellApp() {
         <AppShell.Main>
           <Tabs
             value={activeTab}
-            onChange={(tab) => handleTabChange(tab as TabName)}
+            onChange={(tab) => handleTabChange(tab as MainTabName)}
           >
             <Tabs.List style={{ alignItems: "center" }}>
               <Tabs.Tab value="map-editor">Map</Tabs.Tab>
@@ -217,6 +248,16 @@ export function ShellApp() {
           </Tabs>
         </AppShell.Main>
       </AppShell>
+
+      <Spotlight
+        actions={actions}
+        nothingFound="Nothing found..."
+        highlightQuery
+        searchProps={{
+          leftSection: <IconSearch size={20} stroke={1.5} />,
+          placeholder: "Search...",
+        }}
+      />
     </>
   );
 }

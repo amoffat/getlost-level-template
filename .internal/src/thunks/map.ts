@@ -7,6 +7,7 @@ import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { MapObj, TileGroupInstance } from "@/types/map";
+import { isTileGroup } from "@/types/tilegroup";
 import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
@@ -43,6 +44,20 @@ export const loadMapThunk = createAsyncThunk(
     }
     dispatch(mapActions.setAll(objs));
     dispatch(uiActions.popLoadingMessage());
+  }
+);
+
+export const resetMapThunk = createAsyncThunk(
+  "mapEditor/resetMapThunk",
+  async (_, { dispatch }) => {
+    dispatch(uiActions.pushLoadingMessage("Resetting map..."));
+    dispatch(mapActions.setAll([]));
+    dispatch(uiActions.popLoadingMessage());
+    notifications.show({
+      title: "Map reset",
+      message: "The map has been cleared.",
+      autoClose: 3000,
+    });
   }
 );
 
@@ -93,10 +108,15 @@ export const setToolThunk = createAsyncThunk(
       } else if (tool === "paint") {
         const layer = state.mapEditor.layers.active;
         if (![MapLayerName.Ground, MapLayerName.Exterior].includes(layer)) {
-          const isTile = state.mapEditor.place.obj?.coverage === 1.0;
-          const switchTo = isTile ? MapLayerName.Ground : MapLayerName.Exterior;
+          const obj = state.mapEditor.place.obj;
+          if (obj && isTileGroup(obj)) {
+            const isSolidTile = obj.coverage === 1.0;
+            const switchTo = isSolidTile
+              ? MapLayerName.Ground
+              : MapLayerName.Exterior;
 
-          dispatch(setActiveLayerThunk({ layer: switchTo, notify: true }));
+            dispatch(setActiveLayerThunk({ layer: switchTo, notify: true }));
+          }
         }
       }
       dispatch(mapActions.pushMode(tool));

@@ -219,6 +219,7 @@ export async function init(): Promise<P.Application> {
   window.addEventListener("resize", redrawLayout);
   onVisible(canvas, redrawLayout);
 
+  gApp.mapEditorApp = app;
   g.initialized = true;
   return app;
 }

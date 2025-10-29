@@ -23,7 +23,9 @@ export interface TileGroup {
 
 export interface ObjectAnimation {
   id: string;
+  tilesetId: string;
   frames: TileAnimationFrame[];
+  tags: string[];
   names: string[];
 }
 

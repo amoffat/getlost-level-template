@@ -1,3 +1,5 @@
+import { texAtlasPadding } from "@/constants";
+import { log } from "@/log";
 import {
   isAnimatedInstance,
   isColliderBox,
@@ -5,6 +7,7 @@ import {
   isTileGroupInstance,
   MapObj,
 } from "@/types/map";
+import { toPixiRect } from "@/types/rect";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
@@ -123,14 +126,13 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
       const frame = obj.frame;
 
-      const padding = 0.001; // avoid bleeding
       const width = frame.br.x - frame.ul.x;
       const height = frame.br.y - frame.ul.y;
       const texFrame = new P.Rectangle(
-        frame.ul.x + padding,
-        frame.ul.y + padding,
-        width - 2 * padding,
-        height - 2 * padding
+        frame.ul.x + texAtlasPadding,
+        frame.ul.y + texAtlasPadding,
+        width - 2 * texAtlasPadding,
+        height - 2 * texAtlasPadding
       );
       const tileTex = new P.Texture({
         source: tsTex.source,
@@ -142,8 +144,8 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       // easier positioning.
       const sprite = new P.Sprite(tileTex);
       sprite.position.set(
-        sprite.width / 2 + padding,
-        sprite.height / 2 + padding
+        sprite.width / 2 + texAtlasPadding,
+        sprite.height / 2 + texAtlasPadding
       );
       sprite.interactive = false;
       sprite.anchor.set(0.5);
@@ -155,11 +157,56 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       spriteContainer.zIndex = obj.z;
       spriteContainer.addChild(sprite);
       spriteContainer.interactive = true;
-      spriteContainer.scale.set(1 + padding); // avoid bleeding
+      spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
 
       return spriteContainer;
     } else if (isAnimatedInstance(obj)) {
-      throw new Error("AnimatedInstance rendering not implemented");
+      const pixiFrames: P.FrameObject[] = [];
+      const tsTex = this.tilesetCache.get(obj.tilesetId);
+      if (!tsTex) {
+        notifications.show({
+          title: "Missing tileset",
+          message: `Tileset with id ${obj.tilesetId} not found.`,
+          color: "red",
+          autoClose: false,
+        });
+        throw new Error(
+          `Tileset texture not found for tilesetId ${obj.tilesetId}`
+        );
+      }
+
+      for (const animFrame of obj.frames) {
+        const rect = animFrame.frame;
+
+        const texture = new P.Texture({
+          source: tsTex.source,
+          frame: toPixiRect(rect),
+        });
+        pixiFrames.push({
+          texture,
+          time: animFrame.time,
+        });
+      }
+      const sprite = new P.AnimatedSprite(pixiFrames, true);
+      sprite.play();
+
+      sprite.position.set(
+        sprite.width / 2 + texAtlasPadding,
+        sprite.height / 2 + texAtlasPadding
+      );
+      sprite.interactive = false;
+      sprite.anchor.set(0.5);
+      sprite.scale.x = obj.flipX ? -1 : 1;
+
+      const spriteContainer = new P.Container();
+      spriteContainer.label = obj.id;
+      spriteContainer.position.set(obj.x, obj.y);
+      spriteContainer.zIndex = obj.z;
+      spriteContainer.addChild(sprite);
+      spriteContainer.interactive = true;
+      spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
+
+      return spriteContainer;
     } else if (isColliderEllipse(obj)) {
       const gfx = new P.Graphics();
       gfx.interactive = false;
@@ -183,7 +230,8 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       container.interactive = true;
       return container;
     } else {
-      throw new Error("Unsupported MapObj type");
+      log.error("Unsupported MapObj type");
+      return null;
     }
   }
 }

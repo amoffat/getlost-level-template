@@ -5,8 +5,15 @@ import { log } from "@/log";
 import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
-import { isTileGroupInstance, MapObj, TileGroupInstance } from "@/types/map";
+import {
+  AnimatedInstance,
+  isTileGroupInstance,
+  MapObj,
+  TileGroupInstance,
+} from "@/types/map";
+import { Rect, toPixiRect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
+import { isObjectAnimation, isTileGroup } from "@/types/tilegroup";
 import { PaintOpts } from "@/types/tools";
 import { subState } from "@/utils/redux";
 import { Vector } from "@/vec";
@@ -154,19 +161,37 @@ export class Placer implements ClickDragListener {
     const obj = place.obj!;
     const id = crypto.randomUUID();
 
-    const tgi: TileGroupInstance = {
-      id,
-      x: pos.x,
-      y: pos.y,
-      tileId: obj.id,
-      tilesetId: obj.tilesetId,
-      frame: obj.pos,
-      flipX: place.flipX,
-      z,
-      layer,
-    };
+    if (isTileGroup(obj)) {
+      const inst: TileGroupInstance = {
+        id,
+        x: pos.x,
+        y: pos.y,
+        tileId: obj.id,
+        tilesetId: obj.tilesetId,
+        frame: obj.pos,
+        flipX: place.flipX,
+        z,
+        layer,
+      };
 
-    store.dispatch(actions.addOne(tgi));
+      store.dispatch(actions.addOne(inst));
+    } else if (isObjectAnimation(obj)) {
+      const inst: AnimatedInstance = {
+        id,
+        tilesetId: obj.frames[0]!.tg.tilesetId,
+        frames: obj.frames.map((f) => ({
+          frame: f.tg.pos,
+          time: f.time,
+        })),
+        x: pos.x,
+        y: pos.y,
+        z,
+        layer,
+        flipX: place.flipX,
+      };
+
+      store.dispatch(actions.addOne(inst));
+    }
   }
 }
 
@@ -189,21 +214,49 @@ subState(
     g.placableContainer.removeChildren();
 
     if (placeObj) {
-      const rect = placeObj.pos;
+      let sprite: P.Sprite;
+      let outlineFrame!: Rect;
 
-      const frame = new P.Rectangle(
-        rect.ul.x,
-        rect.ul.y,
-        rect.br.x - rect.ul.x,
-        rect.br.y - rect.ul.y
-      );
-      const tsTex = gApp.tilesetTextureCache.get(placeObj.tilesetId);
-      if (!tsTex) {
-        log.error("Tileset texture not found for placer");
+      if (isTileGroup(placeObj)) {
+        const rect = placeObj.pos;
+        outlineFrame = rect;
+        const tsTex = gApp.tilesetTextureCache.get(placeObj.tilesetId);
+        if (!tsTex) {
+          log.error("Tileset texture not found for placer");
+          return;
+        }
+        const texture = new P.Texture({
+          source: tsTex.source,
+          frame: toPixiRect(rect),
+        });
+        sprite = new P.Sprite(texture);
+      } else if (isObjectAnimation(placeObj)) {
+        const pixiFrames: P.FrameObject[] = [];
+        for (const frame of placeObj.frames) {
+          const rect = frame.tg.pos;
+          outlineFrame = rect;
+          const tsTex = gApp.tilesetTextureCache.get(frame.tg.tilesetId);
+          if (!tsTex) {
+            log.error("Tileset texture not found for placer");
+            return;
+          }
+          const texture = new P.Texture({
+            source: tsTex.source,
+            frame: toPixiRect(rect),
+          });
+          pixiFrames.push({
+            texture,
+            time: frame.time,
+          });
+        }
+
+        const anim = new P.AnimatedSprite(pixiFrames, true);
+        anim.play();
+        sprite = anim;
+      } else {
         return;
       }
-      const texture = new P.Texture({ source: tsTex.source, frame });
-      const sprite = new P.Sprite(texture);
+
       sprite.anchor.set(0.5);
       sprite.position.set(sprite.width / 2, sprite.height / 2);
 
@@ -218,7 +271,7 @@ subState(
 
       drawOutline({
         container: g.placableOutline,
-        frame: rect,
+        frame: outlineFrame,
         stroke,
       });
     } else {

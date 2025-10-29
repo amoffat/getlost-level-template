@@ -180,6 +180,7 @@ export async function init(): Promise<P.Application> {
   window.addEventListener("resize", redrawLayout);
   onVisible(canvas, redrawLayout);
 
+  gApp.tilesetEditorApp = app;
   return app;
 }
 

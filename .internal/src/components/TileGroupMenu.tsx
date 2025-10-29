@@ -1,7 +1,11 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { actions as uiActions, selectors as uiSelectors } from "@/slices/ui";
-import { TileGroup } from "@/types/tilegroup";
+import {
+  isObjectAnimation,
+  isTileGroup,
+  TilesetObject,
+} from "@/types/tilegroup";
 import { Vector } from "@/vec";
 import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
 import {
@@ -11,14 +15,15 @@ import {
   IconTag,
   IconTrash,
 } from "@tabler/icons-react";
-import { useCallback, useState } from "react";
+import { ReactNode, useCallback, useState } from "react";
 import CollisionModal from "./CollisionModal";
 import ObjectMenu from "./ObjectMenu";
+import TileAnimation from "./TileAnimation";
 import TilesetGroup from "./TilesetGroup";
 
 interface TileGroupMenuProps {
   pos: Vector | null;
-  obj: TileGroup | null;
+  obj: TilesetObject | null;
   onTagsModalOpened?: VoidFunction;
   closeMenu: () => void;
 }
@@ -64,9 +69,9 @@ export default function TileGroupMenu({
 
       const allTags = Array.from(new Set(obj.tags).add(tag));
       dispatch(
-        tsActions.updateTileGroup({
+        tsActions.updateTilesetObject({
           tsId: obj.tilesetId,
-          group: obj,
+          obj,
           changes: { tags: allTags },
         })
       );
@@ -80,9 +85,9 @@ export default function TileGroupMenu({
       if (!obj) return;
       const allTags = obj.tags.filter((t) => t !== tag);
       dispatch(
-        tsActions.updateTileGroup({
+        tsActions.updateTilesetObject({
           tsId: obj.tilesetId,
-          group: obj,
+          obj,
           changes: { tags: allTags },
         })
       );
@@ -97,8 +102,21 @@ export default function TileGroupMenu({
     closeMenu();
   }, [obj, closeMenu]);
 
+  const deleteObject = useCallback(() => {
+    if (!obj) return;
+    closeMenu();
+  }, [dispatch, obj, closeMenu]);
+
   // const mapEd = tab === "map-editor";
   const tilesetEd = tab === "tileset-editor";
+  if (!obj) return null;
+
+  let preview: ReactNode;
+  if (isTileGroup(obj)) {
+    preview = <TilesetGroup group={obj} scale={4} />;
+  } else if (isObjectAnimation(obj)) {
+    preview = <TileAnimation frames={obj.frames} scale={4} />;
+  }
 
   return (
     <>
@@ -129,7 +147,11 @@ export default function TileGroupMenu({
             <Menu.Divider />
 
             <Menu.Label>Danger zone</Menu.Label>
-            <Menu.Item color="red" leftSection={<IconTrash size={14} />}>
+            <Menu.Item
+              color="red"
+              leftSection={<IconTrash size={14} />}
+              onClick={deleteObject}
+            >
               Delete
             </Menu.Item>
           </>
@@ -143,7 +165,7 @@ export default function TileGroupMenu({
         title="Set tags"
       >
         <Stack p={0} align="stretch">
-          {obj && <TilesetGroup group={obj} scale={4} />}
+          {preview}
           <TagsInput
             placeholder="Enter tag"
             splitChars={[",", " ", "|"]}

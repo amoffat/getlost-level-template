@@ -1,6 +1,7 @@
 import { overlayProps } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
+import { actions as uiActions } from "@/slices/ui";
 import { clearCandAnimFramesThunk } from "@/thunks/tileset";
 import { TileAnimationFrame } from "@/types/animation";
 import { ObjectAnimation } from "@/types/tilegroup";
@@ -26,6 +27,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import TileAnimation from "../TileAnimation";
@@ -227,10 +229,18 @@ export default function TileAnimationOptions() {
     const anim: ObjectAnimation = {
       id,
       frames,
+      tilesetId: tsId,
       names: values.names,
+      tags: [],
     };
     dispatch(actions.addPaletteObject({ tsId, group: anim }));
     dispatch(clearCandAnimFramesThunk());
+    dispatch(uiActions.setTilesetTab("animations"));
+    notifications.show({
+      title: "Animation saved",
+      message: `Saved animation "${values.names.join(", ")}".`,
+      autoClose: 3000,
+    });
     form.reset();
   });
 

@@ -21,7 +21,6 @@ import { useAppSelector } from "../hooks/redux";
 import {
   isObjectAnimation,
   isTileGroup,
-  TileGroup,
   TilesetObject,
 } from "../types/tilegroup";
 import { Tileset } from "../types/tileset";
@@ -70,6 +69,18 @@ function sortBySizeDescending(a: TilesetObject, b: TilesetObject): number {
   return a.id.localeCompare(b.id);
 }
 
+function findHighestWithAttr(start: HTMLElement, attr: string) {
+  let current: HTMLElement | null = start.closest(`[${attr}]`);
+  let last: HTMLElement | null = null;
+
+  while (current) {
+    last = current;
+    current = current.parentElement?.closest(`[${attr}]`) ?? null;
+  }
+
+  return last;
+}
+
 export default function ObjectPalette({
   onSelectObject,
   onDeselectObject,
@@ -79,7 +90,7 @@ export default function ObjectPalette({
 }: ObjectPaletteProps) {
   const [objMenuPos, setObjMenuPos] = useState<Vector | null>(null);
   const [clickedPaletteObject, setClickedPaletteObject] =
-    useState<TileGroup | null>(null);
+    useState<TilesetObject | null>(null);
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const loadingPalette = useAppSelector((state) => state.ui.loadingPalette);
   const [scale, setScale] = useState(2);
@@ -153,17 +164,15 @@ export default function ObjectPalette({
 
   const onPointerDown = useCallback(
     (e: React.MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName !== "DIV") return;
-
-      e.stopPropagation();
-      const objId = target.dataset.objid;
-      const tsId = target.dataset.tsid;
-
-      if (!objId || !tsId) {
+      const target = findHighestWithAttr(e.target as HTMLElement, "data-objid");
+      if (!target) {
         deselectObject();
         return;
       }
+
+      e.stopPropagation();
+      const objId = target.dataset.objid!;
+      const tsId = target.dataset.tsid!;
 
       const obj = tilesets[tsId].tiles.entities[objId];
       if (e.button === 0) {

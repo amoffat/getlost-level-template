@@ -1,10 +1,12 @@
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
+import "@mantine/spotlight/styles.css";
 
 import { CommsProvider } from "@/components/providers/CommsProvider";
 import { router } from "@/router";
 import { store } from "@/store/store";
 import { MantineProvider, MantineThemeOverride } from "@mantine/core";
+import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
 import { createRoot } from "react-dom/client";
 import { Provider as ReduxProvider } from "react-redux";
@@ -33,9 +35,11 @@ export default function App() {
     <ReduxProvider store={store}>
       <MantineProvider defaultColorScheme="dark" theme={theme}>
         <Notifications position="top-center" />
-        <CommsProvider>
-          <RouterProvider router={router} />
-        </CommsProvider>
+        <ModalsProvider>
+          <CommsProvider>
+            <RouterProvider router={router} />
+          </CommsProvider>
+        </ModalsProvider>
       </MantineProvider>
     </ReduxProvider>
   );

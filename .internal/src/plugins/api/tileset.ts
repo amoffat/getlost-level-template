@@ -9,7 +9,7 @@ const internalDir = process.cwd();
 const repoDir = resolve(internalDir, "..");
 const levelDir = resolve(repoDir, "level");
 const levelTexDir = resolve(levelDir, "textures");
-const systemTexDir = resolve(internalDir, "assets", "textures");
+// const systemTexDir = resolve(internalDir, "assets", "textures");
 
 export const router = express.Router({ mergeParams: true });
 

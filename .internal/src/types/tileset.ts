@@ -7,6 +7,8 @@ export type Mode =
   | "add-group"
   | "delete-group"
   | "animate"
+  | "reslice-tiles"
+  | "make-npc"
   | "replace-group";
 
 type TilesBucket = EntityState<TilesetObject, string>;

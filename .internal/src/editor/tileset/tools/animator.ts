@@ -11,7 +11,6 @@ import {
   ClickDragListener,
   PointerEventData,
 } from "../../common/drag";
-import { pressedKeys } from "../keys";
 
 class FrameSelector implements ClickDragListener {
   constructor(private spatialIndex: SpatialIndex<TilesetObject>) {}
@@ -39,10 +38,6 @@ class FrameSelector implements ClickDragListener {
     } else {
       store.dispatch(clearCandAnimFramesThunk());
     }
-  }
-
-  private get addToSelection(): boolean {
-    return pressedKeys["Control"] ?? false;
   }
 }
 

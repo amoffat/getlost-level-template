@@ -12,7 +12,7 @@ export async function setCanvasTileset(ts: Tileset) {
   g.tilesetContainer.scale.set(1);
   g.groupSelContainer.setSize(0);
 
-  const tex = await loadTilesetImage(ts.id, ts.objectUrl);
+  const tex = await loadTilesetImage(ts);
 
   const sprite = new P.Sprite(tex);
   sprite.x = 0;

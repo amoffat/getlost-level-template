@@ -2,7 +2,7 @@ import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { isTileGroupInstance, MapObj } from "@/types/map";
 import { Rect } from "@/types/rect";
-import { TileGroup } from "@/types/tilegroup";
+import { TileGroup, TilesetObject } from "@/types/tilegroup";
 import { ColliderOpts, MagicPaintOpts, PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
@@ -45,7 +45,7 @@ interface MapEditorState {
   };
   modeStack: Mode[];
   place: {
-    obj: TileGroup | null;
+    obj: TilesetObject | null;
     flipX: boolean;
   };
   objects: ReturnType<typeof objectsAdapter.getInitialState>;

@@ -1,8 +1,8 @@
-import { TabName } from "@/types/tab";
+import { MainTabName } from "@/types/tab";
 
-export const DEFAULT_TAB: TabName = "map-editor";
+export const DEFAULT_TAB: MainTabName = "map-editor";
 
-export const tabToPath = (tab: TabName): string => {
+export const tabToPath = (tab: MainTabName): string => {
   switch (tab) {
     case "map-editor":
       return "/map";
@@ -19,7 +19,7 @@ export const tabToPath = (tab: TabName): string => {
   }
 };
 
-export const pathToTab = (path: string): TabName => {
+export const pathToTab = (path: string): MainTabName => {
   const clean = path.replace(/\/+$/, "");
   switch (clean) {
     case "":

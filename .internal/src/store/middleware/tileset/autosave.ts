@@ -21,7 +21,7 @@ type TsAction =
   | ReturnType<typeof tsActions.addTileset>
   | ReturnType<typeof tsActions.bulkAddSinglePaletteTiles>
   | ReturnType<typeof tsActions.addPaletteObject>
-  | ReturnType<typeof tsActions.updateTileGroup>
+  | ReturnType<typeof tsActions.updateTilesetObject>
   | ReturnType<typeof tsActions.deletePaletteObjects>;
 
 // Stream of save requests; we group by tileset id to debounce per key
@@ -59,7 +59,7 @@ startAppListening({
     tsActions.addTileset,
     tsActions.bulkAddSinglePaletteTiles,
     tsActions.addPaletteObject,
-    tsActions.updateTileGroup,
+    tsActions.updateTilesetObject,
     tsActions.deletePaletteObjects
   ),
 

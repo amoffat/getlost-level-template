@@ -1,11 +1,11 @@
 import { pathToTab } from "@/routes/tabs";
-import { TabName } from "@/types/tab";
+import { MainTabName, TilesetTabName } from "@/types/tab";
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface UIState {
-  activeTab: TabName;
+  activeTab: MainTabName;
   // Track active tab and which tabs have been mounted at least once
-  mountedTabs: Partial<Record<TabName, boolean>>;
+  mountedTabs: Partial<Record<MainTabName, boolean>>;
   tags: {
     tilesetGroups: Record<string, number>;
   };
@@ -13,10 +13,11 @@ interface UIState {
   loadingPalette: boolean;
   // Whether the Tip component is collapsed (hides text/buttons but keeps alert visible)
   tipCollapsed: boolean;
+  tilesetTab: TilesetTabName;
 }
 
 // Derive default tab from current URL path when in the browser; fallback to map-editor in non-DOM contexts
-const defaultTab: TabName = pathToTab(window.location?.pathname ?? "/");
+const defaultTab: MainTabName = pathToTab(window.location?.pathname ?? "/");
 
 const initialState: UIState = {
   activeTab: defaultTab,
@@ -29,13 +30,14 @@ const initialState: UIState = {
   loadingMessages: [],
   loadingPalette: false,
   tipCollapsed: false,
+  tilesetTab: "objects",
 };
 
 export const slice = createSlice({
   name: "ui",
   initialState,
   reducers: {
-    setTab: (state, action: PayloadAction<TabName>) => {
+    setTab: (state, action: PayloadAction<MainTabName>) => {
       state.activeTab = action.payload;
       state.mountedTabs[action.payload] = true;
     },
@@ -51,7 +53,7 @@ export const slice = createSlice({
     clearLoadingMessages(state) {
       state.loadingMessages = [];
     },
-    mountTab: (state, action: PayloadAction<TabName>) => {
+    mountTab: (state, action: PayloadAction<MainTabName>) => {
       state.mountedTabs[action.payload] = true;
     },
     addTilesetGroupTags(state, action: PayloadAction<string[]>) {
@@ -74,6 +76,9 @@ export const slice = createSlice({
     },
     setTipCollapsed(state, action: PayloadAction<boolean>) {
       state.tipCollapsed = action.payload;
+    },
+    setTilesetTab(state, action: PayloadAction<TilesetTabName>) {
+      state.tilesetTab = action.payload;
     },
   },
   selectors: {

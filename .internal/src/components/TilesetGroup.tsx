@@ -106,8 +106,6 @@ const TilesetGroup = ({
       {...divProps}
     >
       <div
-        data-tsid={group.tilesetId}
-        data-objid={group.id}
         className={classNames(styles.crop, className, {
           [styles.selected]: selected,
           [styles.notSelected]: dimmed,

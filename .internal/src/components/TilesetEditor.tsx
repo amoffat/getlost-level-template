@@ -2,14 +2,24 @@ import * as constants from "@/constants";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
+import { actions as uiActions } from "@/slices/ui";
 import {
   loadTilesetThunk,
   selectTilesetThunk,
   setToolThunk,
 } from "@/thunks/tileset";
+import { TilesetTabName } from "@/types/tab";
 import { isTileGroup } from "@/types/tilegroup";
 import { Mode } from "@/types/tileset";
-import { Flex, Group, ScrollArea, Stack, Tabs, Text } from "@mantine/core";
+import {
+  Anchor,
+  Flex,
+  Group,
+  ScrollArea,
+  Stack,
+  Tabs,
+  Text,
+} from "@mantine/core";
 import {
   IconGrid4x4,
   IconKeyframes,
@@ -17,8 +27,9 @@ import {
   IconSelectAll,
   IconSquarePlus,
   IconTrash,
+  IconUser,
 } from "@tabler/icons-react";
-import { use, useCallback, useEffect, useMemo, useRef } from "react";
+import { ReactNode, use, useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
@@ -30,8 +41,6 @@ import { renderTileGroup } from "./paletteObjects/TileGroup";
 import TileAnimationOptions from "./toolOptions/TileAnimationOptions";
 import TileReplaceOptions from "./toolOptions/TileReplaceOptions";
 import TileReslicer from "./toolOptions/TileReslicer";
-
-const DEFAULT_TAB = "objects";
 
 export default function TilesetEditorTab({
   initPromise,
@@ -50,6 +59,7 @@ export default function TilesetEditorTab({
   );
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const containerRef = useRef<HTMLDivElement>(null);
+  const curTab = useAppSelector((state) => state.ui.tilesetTab);
 
   use(initPromise);
 
@@ -57,6 +67,14 @@ export default function TilesetEditorTab({
     if (!activeTilesetId) return null;
     return tilesets[activeTilesetId] || null;
   }, [activeTilesetId, tilesets]);
+
+  const setActiveTab = useCallback(
+    (tab: string | null) => {
+      if (!tab) return;
+      dispatch(uiActions.setTilesetTab(tab as TilesetTabName));
+    },
+    [dispatch]
+  );
 
   useEffect(() => {
     const container = containerRef.current!;
@@ -125,10 +143,16 @@ export default function TilesetEditorTab({
         options: <TileReslicer />,
         enabled: !!activeTilesetId,
       },
+
       animate: {
         name: "Animate",
         icon: <IconKeyframes size={16} />,
         options: <TileAnimationOptions />,
+        enabled: !!activeTilesetId,
+      },
+      "make-npc": {
+        name: "Make NPC",
+        icon: <IconUser size={16} />,
         enabled: !!activeTilesetId,
       },
     }),
@@ -149,8 +173,12 @@ export default function TilesetEditorTab({
     dispatch(setToolThunk(null));
   }, [dispatch]);
 
-  const tips: string[] = useMemo(() => {
-    const tips: string[] = [];
+  const tips: ReactNode[] = useMemo(() => {
+    const tips: ReactNode[] = [];
+
+    const onActivateReslicer = () => {
+      dispatch(setToolThunk("reslice-tiles"));
+    };
 
     if (!tool) {
       if (activeTileset) {
@@ -170,7 +198,14 @@ export default function TilesetEditorTab({
             );
           }
         } else {
-          tips.push("Using the re-slice tool to create initial tiles.");
+          tips.push(
+            <>
+              Use the re-slice tool to create initial tiles.{" "}
+              <Anchor underline="hover" onClick={onActivateReslicer}>
+                Activate reslicer
+              </Anchor>
+            </>
+          );
         }
       } else {
         if (tilesetImages.length === 0) {
@@ -184,7 +219,7 @@ export default function TilesetEditorTab({
       );
     }
     return tips;
-  }, [activeTileset, tilesetImages.length, tool]);
+  }, [activeTileset, dispatch, tilesetImages.length, tool]);
 
   return (
     <>
@@ -202,7 +237,11 @@ export default function TilesetEditorTab({
           ></div>
 
           <Stack style={{ flex: 2, minHeight: 0 }} p={0}>
-            <Tabs defaultValue={DEFAULT_TAB} className="flex-overflow">
+            <Tabs
+              value={curTab}
+              onChange={setActiveTab}
+              className="flex-overflow"
+            >
               <Tabs.List>
                 <Tabs.Tab value={"objects"}>
                   <Group gap="xs">

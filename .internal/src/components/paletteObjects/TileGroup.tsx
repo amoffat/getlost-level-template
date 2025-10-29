@@ -11,12 +11,18 @@ export function renderTileGroup({
   if (!isTileGroup(obj)) return null;
 
   return (
-    <TilesetGroup
-      scale={scale}
+    <div
+      data-tsid={obj.tilesetId}
+      data-objid={obj.id}
+      style={{ display: "contents" }}
       key={`${obj.tilesetId}-${obj.id}`}
-      group={obj}
-      selected={selected}
-      dimmed={dimmed}
-    />
+    >
+      <TilesetGroup
+        scale={scale}
+        group={obj}
+        selected={selected}
+        dimmed={dimmed}
+      />
+    </div>
   );
 }
