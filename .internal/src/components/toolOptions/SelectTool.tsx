@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors } from "@/slices/mapEditor";
+import { store } from "@/store/store";
 import { bringToTopThunk, sendToBottomThunk } from "@/thunks/map";
 import { MapLayerName } from "@/types/layer";
 import { isTileGroupInstance, TileGroupInstance } from "@/types/map";
@@ -9,17 +10,11 @@ import { ReactNode, useMemo } from "react";
 import Tip from "../Tip";
 
 export default function SelectTool() {
-  const selected = useAppSelector(selectors.selectedObjs);
+  const hasSelection = useAppSelector(selectors.numSelectedTgInstances) > 0;
   const dispatch = useAppDispatch();
   const groundLayer = useAppSelector(
     (state) => state.mapEditor.layers.active === MapLayerName.Ground
   );
-
-  const selectedTiles: TileGroupInstance[] = useMemo(() => {
-    return selected.filter(isTileGroupInstance);
-  }, [selected]);
-
-  const hasSelection = selectedTiles.length > 0;
 
   const tips: ReactNode[] = useMemo(() => {
     return [
@@ -33,12 +28,19 @@ export default function SelectTool() {
     ];
   }, []);
 
+  const getCurSelectedTgInstances = (): TileGroupInstance[] => {
+    const state = store.getState();
+    const selectedObjs = selectors.selectedObjs(state);
+    const selectedTgInstances = selectedObjs.filter(isTileGroupInstance);
+    return selectedTgInstances;
+  };
+
   const onBringToTop = () => {
-    dispatch(bringToTopThunk(selectedTiles));
+    dispatch(bringToTopThunk(getCurSelectedTgInstances()));
   };
 
   const onSendToBottom = () => {
-    dispatch(sendToBottomThunk(selectedTiles));
+    dispatch(sendToBottomThunk(getCurSelectedTgInstances()));
   };
 
   return (

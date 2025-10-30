@@ -301,6 +301,19 @@ export const slice = createSlice({
       [(state) => state.selectedIds, (state) => state.objects.entities],
       (selectedIds, entities): MapObj[] => selectedIds.map((id) => entities[id])
     ),
+    numSelectedTgInstances: createSelector.withTypes<MapEditorState>()(
+      [(state) => state.selectedIds, (state) => state.objects.entities],
+      (selectedIds, entities): number => {
+        let count = 0;
+        for (const id of selectedIds) {
+          const obj = entities[id];
+          if (obj && isTileGroupInstance(obj)) {
+            count++;
+          }
+        }
+        return count;
+      }
+    ),
     paletteSelectedTgIds: createSelector.withTypes<MapEditorState>()(
       [
         (state) => state.selectedIds,

@@ -28,7 +28,14 @@ import {
   IconSelectAll,
   IconWand,
 } from "@tabler/icons-react";
-import { use, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  use,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import HelpHoverCard from "./HelpHoverCard";
 import LayerList from "./LayerList";
 import ObjectPalette from "./ObjectPalette";
@@ -51,6 +58,9 @@ export default function MapEditorTab({
     (state: RootState) => state.mapEditor.selectedTool
   );
   const paletteSelection = useAppSelector(selectors.paletteSelectedTgIds);
+
+  // Defer visual updates to palette selection to keep interactions responsive
+  const deferredPaletteSelection = useDeferredValue(paletteSelection);
 
   // const gridPos = useAppSelector(
   //   (state: RootState) => state.mapEditor.grid.curPos,
@@ -244,7 +254,7 @@ export default function MapEditorTab({
                 <ObjectPalette
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
-                  selectedObjects={paletteSelection}
+                  selectedObjects={deferredPaletteSelection}
                   renderObject={renderTileGroup}
                 />
               </Tabs.Panel>
@@ -260,7 +270,7 @@ export default function MapEditorTab({
                 <ObjectPalette
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
-                  selectedObjects={paletteSelection}
+                  selectedObjects={deferredPaletteSelection}
                   renderObject={renderObjectAnimation}
                 />
               </Tabs.Panel>

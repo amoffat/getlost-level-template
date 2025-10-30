@@ -29,7 +29,15 @@ import {
   IconTrash,
   IconUser,
 } from "@tabler/icons-react";
-import { ReactNode, use, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  ReactNode,
+  use,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
@@ -54,6 +62,10 @@ export default function TilesetEditorTab({
     (state) => state.tilesetEditor.selectedTool
   );
   const paletteSelection = useAppSelector(selectors.paletteSelectedIds);
+
+  // Defer visual updates to palette selection to keep interactions responsive
+  const deferredPaletteSelection = useDeferredValue(paletteSelection);
+
   const activeTilesetId = useAppSelector(
     (state) => state.tilesetEditor.activeTilesetId
   );
@@ -277,7 +289,7 @@ export default function TilesetEditorTab({
               >
                 <ObjectPalette
                   tileset={activeTilesetId ? tilesets[activeTilesetId] : null}
-                  selectedObjects={paletteSelection}
+                  selectedObjects={deferredPaletteSelection}
                   renderObject={renderTileGroup}
                 />
               </Tabs.Panel>
@@ -292,7 +304,7 @@ export default function TilesetEditorTab({
               >
                 <ObjectPalette
                   tileset={activeTilesetId ? tilesets[activeTilesetId] : null}
-                  selectedObjects={paletteSelection}
+                  selectedObjects={deferredPaletteSelection}
                   renderObject={renderObjectAnimation}
                 />
               </Tabs.Panel>
