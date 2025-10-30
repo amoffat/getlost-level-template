@@ -23,6 +23,7 @@ export default function UploadAssetModal({
       onClose={() => closeModal()}
       title="Asset upload"
       overlayProps={overlayProps}
+      closeOnClickOutside={false}
     >
       {steps}
     </Modal>

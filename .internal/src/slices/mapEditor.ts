@@ -308,14 +308,34 @@ export const slice = createSlice({
         (state) => state.place.obj,
       ],
       (selectedIds, entities, placeObj): Set<string> => {
-        const s = new Set(
-          selectedIds
-            .map((id) => entities[id])
-            .filter(isTileGroupInstance)
-            .map((inst) => inst.tileId)
-        );
-        if (placeObj) s.add(placeObj.id);
-        return s;
+        const result = new Set<string>();
+
+        // Single loop through selectedIds
+        for (const id of selectedIds) {
+          const obj = entities[id];
+          if (obj && isTileGroupInstance(obj)) {
+            result.add(obj.tileId);
+          }
+        }
+
+        // Add placeObj if present
+        if (placeObj) {
+          result.add(placeObj.id);
+        }
+
+        return result;
+      },
+      {
+        memoizeOptions: {
+          // Only return new Set if contents actually changed
+          resultEqualityCheck: (a, b) => {
+            if (a.size !== b.size) return false;
+            for (const item of a) {
+              if (!b.has(item)) return false;
+            }
+            return true;
+          },
+        },
       }
     ),
   },

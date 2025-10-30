@@ -4,7 +4,7 @@ import {
 } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
-import { isTileGroupInstance } from "@/types/map";
+import { isAnimatedInstance, isTileGroupInstance } from "@/types/map";
 import { Vector } from "@/vec";
 import {
   ClickDragger,
@@ -94,6 +94,9 @@ export class Mover implements ClickDragListener {
         z = newPos.y;
         if (isTileGroupInstance(obj)) {
           const height = obj.frame.br.y - obj.frame.ul.y;
+          z = newPos.y + height;
+        } else if (isAnimatedInstance(obj)) {
+          const height = obj.frames[0].frame.br.y - obj.frames[0].frame.ul.y;
           z = newPos.y + height;
         }
       }

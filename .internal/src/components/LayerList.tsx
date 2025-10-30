@@ -1,5 +1,11 @@
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { actions } from "@/slices/mapEditor";
+import { RootState } from "@/store/store";
+import { setActiveLayerThunk } from "@/thunks/map";
+import { MapLayerName } from "@/types/layer";
 import { mapLayerToName } from "@/utils/layer";
-import { Group, Radio, Stack, Text } from "@mantine/core";
+import { Fieldset, Group, Radio, Stack, Switch, Text } from "@mantine/core";
+import { useCallback, useMemo } from "react";
 import classes from "./styles/LayerList.module.css";
 
 export interface Layer {
@@ -7,46 +13,87 @@ export interface Layer {
   description: string;
 }
 
-interface LayerListProps {
-  layers: Layer[];
-  selected: number;
-  //   visible: number[];
-  onChange: (id: number) => void;
-  //   onToggleVisible: (id: number) => void;
-}
+export default function LayerList() {
+  const layerState = useAppSelector(
+    (state: RootState) => state.mapEditor.layers
+  );
+  const dispatch = useAppDispatch();
 
-export default function LayerList({
-  layers,
-  selected,
-  //   visible,
-  onChange,
-  //   onToggleVisible,
-}: LayerListProps) {
+  const changeActiveLayer = useCallback(
+    (id: number) => {
+      dispatch(setActiveLayerThunk({ layer: id as MapLayerName }));
+    },
+    [dispatch]
+  );
+
+  const layers: Layer[] = useMemo(() => {
+    return [
+      {
+        id: MapLayerName.Exterior,
+        description:
+          "Outdoor objects that can appear in front of and behind a character",
+      },
+      {
+        id: MapLayerName.Ground,
+        description: "Ground objects are always rendered beneath the character",
+      },
+      {
+        id: MapLayerName.Colliders,
+        description: "Objects that stop character movement",
+      },
+
+      {
+        id: MapLayerName.Places,
+        description: "Special locations like gateways and waypoints",
+      },
+    ];
+  }, []);
+
   return (
-    <Radio.Group
-      value={selected.toString()}
-      onChange={(value) => onChange(Number(value))}
-    >
-      <Stack p={0} gap="xs">
-        {layers.map((layer) => (
-          <Radio.Card
-            className={classes.root}
-            radius="md"
-            value={layer.id.toString()}
-            key={mapLayerToName(layer.id)}
-          >
-            <Group wrap="nowrap" align="flex-start">
-              <Radio.Indicator />
-              <div>
-                <Text className={classes.label}>
-                  {mapLayerToName(layer.id)}
-                </Text>
-                <Text className={classes.description}>{layer.description}</Text>
-              </div>
-            </Group>
-          </Radio.Card>
-        ))}
+    <Fieldset legend="Layers" p="xs">
+      <Stack p={0}>
+        <Radio.Group
+          value={layerState.active.toString()}
+          onChange={(value) => changeActiveLayer(Number(value))}
+        >
+          <Stack p={0} gap="xs">
+            {layers.map((layer) => (
+              <Radio.Card
+                className={classes.root}
+                radius="md"
+                value={layer.id.toString()}
+                key={layer.id}
+              >
+                <Group wrap="nowrap" align="flex-start">
+                  <Radio.Indicator />
+                  <div>
+                    <Text className={classes.label}>
+                      {mapLayerToName(layer.id)}
+                    </Text>
+                    <Text className={classes.description}>
+                      {layer.description}
+                    </Text>
+                  </div>
+                </Group>
+              </Radio.Card>
+            ))}
+          </Stack>
+        </Radio.Group>
+        <Switch
+          label="Lock inactive layer"
+          checked={layerState.lockInactive}
+          onChange={(event) => {
+            dispatch(actions.setLockInactiveLayer(event.currentTarget.checked));
+          }}
+        />
+        <Switch
+          label="Dim inactive layer"
+          checked={layerState.dimInactive}
+          onChange={(event) => {
+            dispatch(actions.setDimInactiveLayer(event.currentTarget.checked));
+          }}
+        />
       </Stack>
-    </Radio.Group>
+    </Fieldset>
   );
 }

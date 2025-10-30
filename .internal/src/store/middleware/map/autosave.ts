@@ -40,7 +40,9 @@ const startAppListening =
 
 startAppListening({
   // Any action from the map slice
-  predicate: (action) => action.type.startsWith(slice.name),
+  predicate: (action) =>
+    action.type.startsWith(slice.name) &&
+    (action.meta as any)?.reconcileType !== undefined,
   effect: async (_action, { getState }) => {
     const state = getState();
     saveRequests$.next({ map: state.mapEditor.objects });

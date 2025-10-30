@@ -41,7 +41,9 @@ const TileAnimation = ({
       Math.max(startIndex, 0),
       Math.max(frames.length - 1, 0)
     );
-    setIndex(next);
+    queueMicrotask(() => {
+      setIndex(next);
+    });
   }, [frames, startIndex]);
 
   // Drive the frame timer

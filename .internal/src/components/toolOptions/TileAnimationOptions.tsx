@@ -251,18 +251,20 @@ export default function TileAnimationOptions() {
   // Keep weights in sync with candidate count (index-based). Preserve existing
   // prefix, assign a small fair share to new frames, then normalize.
   useEffect(() => {
-    setWeights((prev) => {
-      const nextLen = cands.length;
-      if (nextLen === prev.length) return prev;
-      if (nextLen === 0) return [];
-      const next: Weights = Array(nextLen).fill(0);
-      const m = Math.min(prev.length, nextLen);
-      for (let i = 0; i < m; i++) next[i] = prev[i];
-      if (nextLen > prev.length) {
-        const tentative = 1 / Math.max(1, nextLen);
-        for (let i = prev.length; i < nextLen; i++) next[i] = tentative;
-      }
-      return normalizeWeights(next);
+    queueMicrotask(() => {
+      setWeights((prev) => {
+        const nextLen = cands.length;
+        if (nextLen === prev.length) return prev;
+        if (nextLen === 0) return [];
+        const next: Weights = Array(nextLen).fill(0);
+        const m = Math.min(prev.length, nextLen);
+        for (let i = 0; i < m; i++) next[i] = prev[i];
+        if (nextLen > prev.length) {
+          const tentative = 1 / Math.max(1, nextLen);
+          for (let i = prev.length; i < nextLen; i++) next[i] = tentative;
+        }
+        return normalizeWeights(next);
+      });
     });
   }, [cands.length]);
 

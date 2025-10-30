@@ -251,6 +251,7 @@ export function ShellApp() {
 
       <Spotlight
         actions={actions}
+        centered
         nothingFound="Nothing found..."
         highlightQuery
         searchProps={{

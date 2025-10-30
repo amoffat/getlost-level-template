@@ -45,10 +45,12 @@ const TilesetGroup = ({
   useEffect(() => {
     if (!bounded) {
       // When unbounded, ignore parent size completely
-      setContainerSize({
-        w: Number.POSITIVE_INFINITY,
-        h: Number.POSITIVE_INFINITY,
-      });
+      queueMicrotask(() =>
+        setContainerSize({
+          w: Number.POSITIVE_INFINITY,
+          h: Number.POSITIVE_INFINITY,
+        })
+      );
       return;
     }
 
@@ -58,7 +60,7 @@ const TilesetGroup = ({
 
     // Initial measure
     const rect = parent.getBoundingClientRect();
-    setContainerSize({ w: rect.width, h: rect.height });
+    queueMicrotask(() => setContainerSize({ w: rect.width, h: rect.height }));
 
     // Observe parent size changes
     const ro = new ResizeObserver((entries) => {

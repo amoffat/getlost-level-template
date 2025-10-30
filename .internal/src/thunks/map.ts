@@ -21,6 +21,7 @@ export const setActiveLayerThunk = createAsyncThunk(
     { dispatch }
   ) => {
     dispatch(mapActions.setActiveLayer(layer));
+    dispatch(mapActions.setLockInactiveLayer(true));
     const name = mapLayerToName(layer);
     if (notify) {
       notifications.show({
@@ -107,6 +108,7 @@ export const setToolThunk = createAsyncThunk(
         dispatch(mapActions.setPlace(tg));
       } else if (tool === "paint") {
         const layer = state.mapEditor.layers.active;
+        dispatch(mapActions.clearSelection());
         if (![MapLayerName.Ground, MapLayerName.Exterior].includes(layer)) {
           const obj = state.mapEditor.place.obj;
           if (obj && isTileGroup(obj)) {

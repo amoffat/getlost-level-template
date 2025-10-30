@@ -180,6 +180,7 @@ export class Placer implements ClickDragListener {
         id,
         tilesetId: obj.frames[0]!.tg.tilesetId,
         frames: obj.frames.map((f) => ({
+          tileId: f.tg.id,
           frame: f.tg.pos,
           time: f.time,
         })),

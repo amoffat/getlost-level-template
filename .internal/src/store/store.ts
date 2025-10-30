@@ -7,7 +7,6 @@ import { slice as storySlice } from "@/slices/story";
 import { slice as tilesetEditorSlice } from "@/slices/tilesetEditor";
 import { slice as uiSlice } from "@/slices/ui";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import { setupListeners } from "@reduxjs/toolkit/query";
 import { makeEditorSyncMiddleware } from "./middleware/map";
 import autosaveMapMiddleware from "./middleware/map/autosave";
 import autosaveStoryMiddleware from "./middleware/story/autosave";
@@ -43,7 +42,10 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     // We also add our middleware for the RTK Query API slices here, which
     // handle things like async thunks.
-    getDefaultMiddleware().prepend(
+    getDefaultMiddleware({
+      // immutableCheck: false,
+      // serializableCheck: false,
+    }).prepend(
       autosaveTilesetMiddleware,
       autosaveMapMiddleware,
       autosaveStoryMiddleware,
@@ -56,7 +58,7 @@ export const store = configureStore({
 
 // Connects the store to page listeners, so that we can respond to the page
 // being focused if we want to.
-setupListeners(store.dispatch);
+// setupListeners(store.dispatch);
 
 export type RootState = ReturnType<typeof rootReducer>;
 export type StoreType = typeof store;

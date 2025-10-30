@@ -3,7 +3,7 @@ import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
-import { setActiveLayerThunk, setToolThunk } from "@/thunks/map";
+import { setToolThunk } from "@/thunks/map";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import {
@@ -12,7 +12,6 @@ import {
   Group,
   Portal,
   Stack,
-  Switch,
   Tabs,
   Text,
 } from "@mantine/core";
@@ -31,7 +30,7 @@ import {
 } from "@tabler/icons-react";
 import { use, useCallback, useEffect, useMemo, useRef } from "react";
 import HelpHoverCard from "./HelpHoverCard";
-import LayerList, { Layer } from "./LayerList";
+import LayerList from "./LayerList";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
 import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
@@ -52,10 +51,11 @@ export default function MapEditorTab({
     (state: RootState) => state.mapEditor.selectedTool
   );
   const paletteSelection = useAppSelector(selectors.paletteSelectedTgIds);
-  const layers = useAppSelector((state: RootState) => state.mapEditor.layers);
-  const gridPos = useAppSelector(
-    (state: RootState) => state.mapEditor.grid.curPos
-  );
+
+  // const gridPos = useAppSelector(
+  //   (state: RootState) => state.mapEditor.grid.curPos,
+  //   shallowEqual
+  // );
   const place = useAppSelector((state: RootState) => state.mapEditor.place.obj);
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -71,14 +71,6 @@ export default function MapEditorTab({
       container.appendChild(canvas);
     }
   }, []);
-
-  const changeActiveLayer = useCallback(
-    (id: number) => {
-      dispatch(setActiveLayerThunk({ layer: id as MapLayerName }));
-      dispatch(actions.setLockInactiveLayer(true));
-    },
-    [dispatch]
-  );
 
   const onSelectObject = useCallback(
     (obj: any, e: React.MouseEvent) => {
@@ -175,29 +167,6 @@ export default function MapEditorTab({
     dispatch(setToolThunk(null));
   }, [dispatch]);
 
-  const layerList: Layer[] = useMemo(() => {
-    return [
-      {
-        id: MapLayerName.Exterior,
-        description:
-          "Outdoor objects that can appear in front of and behind a character",
-      },
-      {
-        id: MapLayerName.Ground,
-        description: "Ground objects are always rendered beneath the character",
-      },
-      {
-        id: MapLayerName.Colliders,
-        description: "Objects that stop character movement",
-      },
-
-      {
-        id: MapLayerName.Places,
-        description: "Special locations like gateways and waypoints",
-      },
-    ];
-  }, []);
-
   const tips: string[] = useMemo(() => {
     const tips: string[] = [];
 
@@ -211,41 +180,15 @@ export default function MapEditorTab({
     <>
       <Flex h="100dvh" style={{ flex: 1 }}>
         <Stack miw={300} h="100%" style={{ flex: 1, overflow: "hidden" }}>
-          <Fieldset legend="Layers" p="xs">
-            <Stack p={0}>
-              <LayerList
-                layers={layerList}
-                selected={layers.active}
-                onChange={changeActiveLayer}
-              />
-              <Switch
-                label="Lock inactive layer"
-                checked={layers.lockInactive}
-                onChange={(event) => {
-                  dispatch(
-                    actions.setLockInactiveLayer(event.currentTarget.checked)
-                  );
-                }}
-              />
-              <Switch
-                label="Dim inactive layer"
-                checked={layers.dimInactive}
-                onChange={(event) => {
-                  dispatch(
-                    actions.setDimInactiveLayer(event.currentTarget.checked)
-                  );
-                }}
-              />
-            </Stack>
-          </Fieldset>
+          <LayerList />
 
           <Fieldset legend="Grid">
             <Stack p={0}>
-              {gridPos && (
+              {/* {gridPos && (
                 <Text size="sm" variant="text">
                   Position: {gridPos.x}, {gridPos.y}
                 </Text>
-              )}
+              )} */}
             </Stack>
           </Fieldset>
         </Stack>

@@ -105,7 +105,7 @@ export default function TileGroupMenu({
   const deleteObject = useCallback(() => {
     if (!obj) return;
     closeMenu();
-  }, [dispatch, obj, closeMenu]);
+  }, [obj, closeMenu]);
 
   // const mapEd = tab === "map-editor";
   const tilesetEd = tab === "tileset-editor";
