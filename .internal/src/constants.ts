@@ -30,8 +30,8 @@ export const texAtlasPadding = 0.001; // avoid bleeding
 
 export const requiredNpcAnimations: NpcRequiredAnimation[] = [
   "Idle",
-  "WalkUp",
   "WalkDown",
   "WalkLeft",
+  "WalkUp",
   "WalkRight",
 ];

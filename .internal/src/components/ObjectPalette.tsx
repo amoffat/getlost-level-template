@@ -188,7 +188,7 @@ export default function ObjectPalette({
         const y = rect.top + rect.height / 4;
         setObjMenuPos({ x, y });
 
-        if (isTileGroup(obj)) {
+        if (isTileGroup(obj) || isObjectAnimation(obj)) {
           setClickedPaletteObject(obj);
         } else {
           setClickedPaletteObject(null);

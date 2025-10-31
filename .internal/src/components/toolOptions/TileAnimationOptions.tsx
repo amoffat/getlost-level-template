@@ -462,7 +462,6 @@ export default function TileAnimationOptions() {
                   items: [...requiredNpcAnimations],
                 },
               ]}
-              disabled={!hasFrames}
               renderOption={(item) => {
                 const label = item.option.value;
                 const isNpcAnim = requiredNpcAnimations.includes(
