@@ -46,6 +46,7 @@ import Tip from "./Tip";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
 import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
 import { renderTileGroup } from "./paletteObjects/TileGroup";
+import NpcOptions from "./toolOptions/NpcOptions";
 import TileAnimationOptions from "./toolOptions/TileAnimationOptions";
 import TileReplaceOptions from "./toolOptions/TileReplaceOptions";
 import TileReslicer from "./toolOptions/TileReslicer";
@@ -165,6 +166,7 @@ export default function TilesetEditorTab({
       "make-npc": {
         name: "Make NPC",
         icon: <IconUser size={16} />,
+        options: <NpcOptions />,
         enabled: !!activeTilesetId,
       },
     }),
@@ -176,7 +178,8 @@ export default function TilesetEditorTab({
 
   const onToolActivated = useCallback(
     (slug: string) => {
-      dispatch(setToolThunk(slug as Mode));
+      const toolName = slug as Mode;
+      dispatch(setToolThunk(toolName));
     },
     [dispatch]
   );

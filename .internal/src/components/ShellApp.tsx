@@ -1,13 +1,11 @@
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
 
-import { init as mapInit } from "@/editor/map/init";
-import { init as tsInit } from "@/editor/tileset/init";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { getMapInitPromise, getTilesetInitPromise } from "@/init/editorInit";
 import { pathToTab, tabToPath } from "@/routes/tabs";
 import { actions as uiActions } from "@/slices/ui";
-import { loadMapThunk, resetMapThunk } from "@/thunks/map";
-import { loadTilesetsThunk } from "@/thunks/tileset";
+import { resetMapThunk } from "@/thunks/map";
 import { MainTabName } from "@/types/tab";
 import { AppShell, Group, Tabs, Text } from "@mantine/core";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
@@ -19,7 +17,6 @@ import { ReactFlowProvider } from "@xyflow/react";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { log } from "../log";
 import DialogueTab from "./Dialogue";
 import MapEditorTab from "./MapEditor";
 import NpcEditorTab from "./NpcEditor";
@@ -122,28 +119,9 @@ export function ShellApp() {
     [openAssetType]
   );
 
-  const tilesetInitPromise = useMemo(() => {
-    return (async () => {
-      await dispatch(loadTilesetsThunk()).unwrap();
-      const app = await tsInit();
-      return app;
-    })();
-  }, [dispatch]);
-
-  const mapInitPromise = useMemo(() => {
-    return (async () => {
-      await tilesetInitPromise;
-      const app = await mapInit();
-      // This has to happen after the app is initialized, because it depends on
-      // the map reconciler existing.
-      try {
-        await dispatch(loadMapThunk()).unwrap();
-      } catch (e) {
-        log.error({ error: e }, "Failed to load map");
-      }
-      return app;
-    })();
-  }, [tilesetInitPromise, dispatch]);
+  // Get the cached init promises that persist across HMR
+  const tilesetInitPromise = useMemo(() => getTilesetInitPromise(), []);
+  const mapInitPromise = useMemo(() => getMapInitPromise(), []);
 
   return (
     <>
@@ -261,4 +239,9 @@ export function ShellApp() {
       />
     </>
   );
+}
+
+// Enable HMR for this component
+if (import.meta.hot) {
+  import.meta.hot.accept();
 }

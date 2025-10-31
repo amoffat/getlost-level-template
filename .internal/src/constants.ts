@@ -1,4 +1,7 @@
 // If you're running the engine locally (only private beta testers can do this),
+
+import type { NpcRequiredAnimation } from "./types/npc";
+
 // set this to true. Otherwise, set it to false.
 const localDev = true;
 
@@ -24,3 +27,11 @@ export const waypointIcon = "082812ec-8053-5712-b782-ca1c13f23c96";
 export const soundIcon = "cb83a1b7-3e73-5f92-9888-a71c8e3c3ee8";
 
 export const texAtlasPadding = 0.001; // avoid bleeding
+
+export const requiredNpcAnimations: NpcRequiredAnimation[] = [
+  "Idle",
+  "WalkUp",
+  "WalkDown",
+  "WalkLeft",
+  "WalkRight",
+];

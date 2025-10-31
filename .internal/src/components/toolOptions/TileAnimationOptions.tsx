@@ -1,12 +1,13 @@
-import { overlayProps } from "@/constants";
+import { overlayProps, requiredNpcAnimations } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { clearCandAnimFramesThunk } from "@/thunks/tileset";
 import { TileAnimationFrame } from "@/types/animation";
-import { ObjectAnimation } from "@/types/tilegroup";
+import { NpcRequiredAnimation } from "@/types/npc";
+import { isObjectAnimation, ObjectAnimation } from "@/types/tilegroup";
 import { genAnimId } from "@/utils/tileset";
-import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
+import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
   SortableContext,
   useSortable,
@@ -28,7 +29,11 @@ import {
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconInfoCircle } from "@tabler/icons-react";
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconInfoCircle,
+} from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
@@ -179,6 +184,9 @@ interface FormValues {
 export default function TileAnimationOptions() {
   const tsId = useAppSelector((state) => state.tilesetEditor.activeTilesetId)!;
   const cands = useAppSelector((state) => state.tilesetEditor.candAnimFrames);
+  const activeTileset = useAppSelector(
+    (state) => state.tilesetEditor.tilesets[tsId]
+  );
   const dispatch = useAppDispatch();
   // Store fractional weights per frame (0..1), always normalized so sum == 1
   const [weights, setWeights] = useState<Weights>([]);
@@ -199,6 +207,33 @@ export default function TileAnimationOptions() {
         value.length === 0 ? "Please enter at least one animation name." : null,
     },
   });
+
+  // Count how many times each required NPC animation name is used in the tileset
+  const animationUseCounts = useMemo(() => {
+    if (!activeTileset) return new Map<string, number>();
+
+    const counts = new Map<string, number>();
+
+    // Initialize counts for all required NPC animations
+    for (const animName of requiredNpcAnimations) {
+      counts.set(animName, 0);
+    }
+
+    // Count occurrences in all animations
+    const allObjects = Object.values(activeTileset.tiles.entities);
+    for (const obj of allObjects) {
+      if (obj && isObjectAnimation(obj)) {
+        const anim = obj as ObjectAnimation;
+        for (const name of anim.names) {
+          if (counts.has(name)) {
+            counts.set(name, counts.get(name)! + 1);
+          }
+        }
+      }
+    }
+
+    return counts;
+  }, [activeTileset]);
 
   const n = cands.length;
   const hasFrames = n > 0;
@@ -423,17 +458,31 @@ export default function TileAnimationOptions() {
               limit={5}
               data={[
                 {
-                  group: "NPC",
-                  items: [
-                    "Idle",
-                    "WalkUp",
-                    "WalkDown",
-                    "WalkLeft",
-                    "WalkRight",
-                  ],
+                  group: "Required for NPCs",
+                  items: [...requiredNpcAnimations],
                 },
               ]}
               disabled={!hasFrames}
+              renderOption={(item) => {
+                const label = item.option.value;
+                const isNpcAnim = requiredNpcAnimations.includes(
+                  label as NpcRequiredAnimation
+                );
+                if (!isNpcAnim) {
+                  return label;
+                }
+                const count = animationUseCounts.get(label) ?? 0;
+                return (
+                  <Group gap="xs" wrap="nowrap">
+                    {count > 0 ? (
+                      <IconCheck size={14} color="green" />
+                    ) : (
+                      <IconAlertTriangle size={16} color="orange" />
+                    )}
+                    <span>{label}</span>
+                  </Group>
+                );
+              }}
               {...form.getInputProps("names")}
             />
             <Group mt="lg" justify="flex-end">

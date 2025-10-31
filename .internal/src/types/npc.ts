@@ -1,5 +1,12 @@
 export type Mode = "pan" | "group" | "add";
 
+export type NpcRequiredAnimation =
+  | "Idle"
+  | "WalkUp"
+  | "WalkDown"
+  | "WalkLeft"
+  | "WalkRight";
+
 export interface Npc {
   id: string;
   name: string;
