@@ -225,7 +225,8 @@ export default function MapEditorTab({
                     Object Palette
                     <HelpHoverCard>
                       <Text size="sm">
-                        Place an object from the palette onto the map.
+                        Objects are tiles or tile groups that can be placed in
+                        the map.
                       </Text>
                     </HelpHoverCard>
                   </Group>
@@ -235,8 +236,18 @@ export default function MapEditorTab({
                     Animations
                     <HelpHoverCard>
                       <Text size="sm">
-                        Animations are sequences of frames composed of tiles or
-                        tile groups.
+                        Animations are sequences of tiles or tile groups that
+                        can be placed in the map.
+                      </Text>
+                    </HelpHoverCard>
+                  </Group>
+                </Tabs.Tab>
+                <Tabs.Tab value="npcs">
+                  <Group gap="xs">
+                    NPCs
+                    <HelpHoverCard>
+                      <Text size="sm">
+                        NPCs are characters that can be placed in the map.
                       </Text>
                     </HelpHoverCard>
                   </Group>
@@ -260,6 +271,23 @@ export default function MapEditorTab({
               </Tabs.Panel>
               <Tabs.Panel
                 value="animations"
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  height: "100%",
+                  display: "flex",
+                }}
+              >
+                <ObjectPalette
+                  onSelectObject={onSelectObject}
+                  onDeselectObject={onDeselectObject}
+                  selectedObjects={deferredPaletteSelection}
+                  renderObject={renderObjectAnimation}
+                />
+              </Tabs.Panel>
+
+              <Tabs.Panel
+                value="npcs"
                 style={{
                   flex: 1,
                   minHeight: 0,

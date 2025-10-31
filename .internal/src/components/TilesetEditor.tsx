@@ -280,7 +280,20 @@ export default function TilesetEditorTab({
                     </HelpHoverCard>
                   </Group>
                 </Tabs.Tab>
+
+                <Tabs.Tab value="npcs">
+                  <Group gap="xs">
+                    NPCs
+                    <HelpHoverCard>
+                      <Text size="sm">
+                        Animations are sequences of frames composed of tiles or
+                        tile groups.
+                      </Text>
+                    </HelpHoverCard>
+                  </Group>
+                </Tabs.Tab>
               </Tabs.List>
+
               <Tabs.Panel
                 value="objects"
                 style={{
@@ -291,7 +304,7 @@ export default function TilesetEditorTab({
                 }}
               >
                 <ObjectPalette
-                  tileset={activeTilesetId ? tilesets[activeTilesetId] : null}
+                  tileset={activeTileset}
                   selectedObjects={deferredPaletteSelection}
                   renderObject={renderTileGroup}
                 />
@@ -306,7 +319,22 @@ export default function TilesetEditorTab({
                 }}
               >
                 <ObjectPalette
-                  tileset={activeTilesetId ? tilesets[activeTilesetId] : null}
+                  tileset={activeTileset}
+                  selectedObjects={deferredPaletteSelection}
+                  renderObject={renderObjectAnimation}
+                />
+              </Tabs.Panel>
+              <Tabs.Panel
+                value="npcs"
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  height: "100%",
+                  display: "flex",
+                }}
+              >
+                <ObjectPalette
+                  tileset={activeTileset}
                   selectedObjects={deferredPaletteSelection}
                   renderObject={renderObjectAnimation}
                 />

@@ -50,8 +50,6 @@ export default function TilesetSteps({ files, closeModal }: StepProps) {
     if (values.assetType === "tileset") {
       uploadTileset(files);
       dispatch(uiActions.setTab("tileset-editor"));
-    } else if (values.assetType === "npc") {
-      dispatch(uiActions.setTab("npc-editor"));
     }
   });
 

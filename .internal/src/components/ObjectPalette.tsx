@@ -216,6 +216,7 @@ export default function ObjectPalette({
               flex="3"
               placeholder="Filter objects"
               leftSection={<IconSearch size={16} />}
+              disabled
             />
             <Slider
               flex="1"

@@ -13,13 +13,12 @@ const routes = [
   { path: "/preview", element: <ShellApp /> },
 ];
 
-// Create router with future flags for better HMR support
 export const router = createBrowserRouter(routes);
 
-// // Accept HMR updates without recreating the router
-// if (import.meta.hot) {
-//   import.meta.hot.accept("./components/ShellApp.tsx", () => {
-//     // When ShellApp changes, React Router will automatically pick up the new component
-//     // without needing to recreate the router instance
-//   });
-// }
+// Accept HMR updates without recreating the router. I don't really understand
+// why this fixes the issues with hotreloading, specifically the cached init
+// promises in .internal/src/init/editorInit.ts becoming invalidated, but it
+// does.
+if (import.meta.hot) {
+  import.meta.hot.accept("./components/ShellApp.tsx", () => {});
+}

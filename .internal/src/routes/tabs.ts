@@ -8,8 +8,6 @@ export const tabToPath = (tab: MainTabName): string => {
       return "/map";
     case "tileset-editor":
       return "/tilesets";
-    case "npc-editor":
-      return "/npcs";
     case "story-editor":
       return "/story";
     case "dialogue-editor":
@@ -28,8 +26,6 @@ export const pathToTab = (path: string): MainTabName => {
       return "map-editor";
     case "/tilesets":
       return "tileset-editor";
-    case "/npcs":
-      return "npc-editor";
     case "/story":
       return "story-editor";
     case "/dialogue":

@@ -19,7 +19,6 @@ import { shallowEqual } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import DialogueTab from "./Dialogue";
 import MapEditorTab from "./MapEditor";
-import NpcEditorTab from "./NpcEditor";
 import PanelLoader from "./PanelLoader";
 import PreviewTab from "./Preview";
 import StoryTab from "./StoryTab";
@@ -170,7 +169,6 @@ export function ShellApp() {
             <Tabs.List style={{ alignItems: "center" }}>
               <Tabs.Tab value="map-editor">Map</Tabs.Tab>
               <Tabs.Tab value="tileset-editor">Tilesets</Tabs.Tab>
-              <Tabs.Tab value="npc-editor">NPCs</Tabs.Tab>
               <Tabs.Tab value="story-editor">Story</Tabs.Tab>
               <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
               <Tabs.Tab value="preview">Level Preview</Tabs.Tab>
@@ -199,12 +197,6 @@ export function ShellApp() {
                 >
                   <TilesetEditorTab initPromise={tilesetInitPromise} />
                 </Suspense>
-              </Tabs.Panel>
-            )}
-
-            {mountedTabs["npc-editor"] && (
-              <Tabs.Panel value="npc-editor">
-                <NpcEditorTab />
               </Tabs.Panel>
             )}
 
@@ -239,9 +231,4 @@ export function ShellApp() {
       />
     </>
   );
-}
-
-// Enable HMR for this component
-if (import.meta.hot) {
-  import.meta.hot.accept();
 }
