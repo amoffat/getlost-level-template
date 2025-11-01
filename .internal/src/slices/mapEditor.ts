@@ -2,7 +2,7 @@ import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { isTileGroupInstance, MapObj } from "@/types/map";
 import { Rect } from "@/types/rect";
-import { TileGroup, TilesetObject } from "@/types/tilegroup";
+import { isTileGroup, TilesetObject } from "@/types/tilegroup";
 import { ColliderOpts, MagicPaintOpts, PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
@@ -129,10 +129,15 @@ export const slice = createSlice({
       state.layers.dimInactive = action.payload;
     },
 
-    setPlace(state, action: PayloadAction<TileGroup | null>) {
-      state.place.obj = action.payload;
-      if (state.layers.active === MapLayerName.Ground && action.payload) {
-        state.grid.size = action.payload.gridSize;
+    setPlace(state, action: PayloadAction<TilesetObject | null>) {
+      const obj = action.payload;
+      state.place.obj = obj;
+      if (
+        state.layers.active === MapLayerName.Ground &&
+        obj &&
+        isTileGroup(obj)
+      ) {
+        state.grid.size = obj.gridSize;
       }
     },
 

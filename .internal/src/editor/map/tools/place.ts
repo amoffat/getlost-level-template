@@ -207,14 +207,21 @@ export function setupPlacer({
 }
 
 subState(
-  [(state) => state.mapEditor.place.obj, (state) => state.mapEditor.zoomPan],
-  (placeObj, zoomPan) => {
+  [
+    (state) => state.mapEditor.place.obj,
+    (state) => state.mapEditor.zoomPan,
+    selectors.selectMode,
+  ],
+  (placeObj, zoom, mode) => {
     if (!g.initialized) return;
+
+    // No change necessary
+    if (placeObj && g.placableSprite?.label === placeObj.id) return;
 
     g.placableOutline.removeChildren();
     g.placableContainer.removeChildren();
 
-    if (placeObj) {
+    if (placeObj && mode === "paint") {
       let sprite: P.Sprite;
       let outlineFrame!: Rect;
 
@@ -258,6 +265,7 @@ subState(
         return;
       }
 
+      sprite.label = placeObj.id;
       sprite.anchor.set(0.5);
       sprite.position.set(sprite.width / 2, sprite.height / 2);
 
@@ -267,7 +275,7 @@ subState(
 
       const stroke = {
         ...selectStroke,
-        width: (selectStroke.width ?? 1) / zoomPan.zoom,
+        width: (selectStroke.width ?? 1) / zoom,
       };
 
       drawOutline({

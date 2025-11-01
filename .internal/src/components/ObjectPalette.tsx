@@ -24,7 +24,8 @@ import {
   TilesetObject,
 } from "../types/tilegroup";
 import { Tileset } from "../types/tileset";
-import TileGroupMenu from "./TileGroupMenu";
+import ObjectAnimationMenu from "./paletteMenus/ObjectAnimationMenu";
+import TileGroupMenu from "./paletteMenus/TileGroupMenu";
 
 interface ObjectPaletteProps {
   tileset?: Tileset | null;
@@ -89,8 +90,7 @@ export default function ObjectPalette({
   renderObject,
 }: ObjectPaletteProps) {
   const [objMenuPos, setObjMenuPos] = useState<Vector | null>(null);
-  const [clickedPaletteObject, setClickedPaletteObject] =
-    useState<TilesetObject | null>(null);
+  const [clicked, setClicked] = useState<TilesetObject | null>(null);
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const loadingPalette = useAppSelector((state) => state.ui.loadingPalette);
   const [scale, setScale] = useState(2);
@@ -189,12 +189,11 @@ export default function ObjectPalette({
         setObjMenuPos({ x, y });
 
         if (isTileGroup(obj) || isObjectAnimation(obj)) {
-          setClickedPaletteObject(obj);
+          setClicked(obj);
         } else {
-          setClickedPaletteObject(null);
+          setClicked(null);
         }
 
-        // Also select the object
         onSelectObject?.(obj, e);
       }
     },
@@ -251,9 +250,14 @@ export default function ObjectPalette({
       <Portal>
         <TileGroupMenu
           pos={objMenuPos}
-          obj={clickedPaletteObject}
+          obj={clicked && isTileGroup(clicked) ? clicked : null}
           closeMenu={() => setObjMenuPos(null)}
           onTagsModalOpened={deselectObject}
+        />
+        <ObjectAnimationMenu
+          pos={objMenuPos}
+          obj={clicked && isObjectAnimation(clicked) ? clicked : null}
+          closeMenu={() => setObjMenuPos(null)}
         />
       </Portal>
     </>

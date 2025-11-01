@@ -6,6 +6,7 @@ import { RootState } from "@/store/store";
 import { setToolThunk } from "@/thunks/map";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
+import { TilesetObject } from "@/types/tilegroup";
 import {
   Fieldset,
   Flex,
@@ -83,8 +84,9 @@ export default function MapEditorTab({
   }, []);
 
   const onSelectObject = useCallback(
-    (obj: any, e: React.MouseEvent) => {
+    (obj: TilesetObject, e: React.MouseEvent) => {
       e.preventDefault();
+
       dispatch(actions.setPlace(obj));
       if (e.button === 0) {
         dispatch(setToolThunk("paint"));

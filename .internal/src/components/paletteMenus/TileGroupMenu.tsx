@@ -1,11 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { actions as uiActions, selectors as uiSelectors } from "@/slices/ui";
-import {
-  isObjectAnimation,
-  isTileGroup,
-  TilesetObject,
-} from "@/types/tilegroup";
+import { TileGroup } from "@/types/tilegroup";
 import { Vector } from "@/vec";
 import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
 import {
@@ -15,15 +11,14 @@ import {
   IconTag,
   IconTrash,
 } from "@tabler/icons-react";
-import { ReactNode, useCallback, useState } from "react";
-import CollisionModal from "./CollisionModal";
-import ObjectMenu from "./ObjectMenu";
-import TileAnimation from "./TileAnimation";
-import TilesetGroup from "./TilesetGroup";
+import { useCallback, useState } from "react";
+import CollisionModal from "../CollisionModal";
+import ObjectMenu from "../ObjectMenu";
+import TilesetGroup from "../TilesetGroup";
 
 interface TileGroupMenuProps {
   pos: Vector | null;
-  obj: TilesetObject | null;
+  obj: TileGroup | null;
   onTagsModalOpened?: VoidFunction;
   closeMenu: () => void;
 }
@@ -111,13 +106,6 @@ export default function TileGroupMenu({
   const tilesetEd = tab === "tileset-editor";
   if (!obj) return null;
 
-  let preview: ReactNode;
-  if (isTileGroup(obj)) {
-    preview = <TilesetGroup group={obj} scale={4} />;
-  } else if (isObjectAnimation(obj)) {
-    preview = <TileAnimation frames={obj.frames} scale={4} />;
-  }
-
   return (
     <>
       <ObjectMenu pos={pos} opened={pos !== null}>
@@ -165,7 +153,7 @@ export default function TileGroupMenu({
         title="Set tags"
       >
         <Stack p={0} align="stretch">
-          {preview}
+          <TilesetGroup group={obj} scale={4} />
           <TagsInput
             placeholder="Enter tag"
             splitChars={[",", " ", "|"]}
