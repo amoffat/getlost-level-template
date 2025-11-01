@@ -6,7 +6,6 @@ export function renderObjectAnimation({
   scale,
   obj,
   selected,
-  dimmed,
 }: PaletteObjectProps): React.ReactNode | null {
   if (!isObjectAnimation(obj)) return null;
 
@@ -17,12 +16,7 @@ export function renderObjectAnimation({
       style={{ display: "contents" }}
       key={`${obj.id}`}
     >
-      <TileAnimation
-        frames={obj.frames}
-        scale={scale}
-        selected={selected}
-        dimmed={dimmed}
-      />
+      <TileAnimation frames={obj.frames} scale={scale} selected={selected} />
     </div>
   );
 }

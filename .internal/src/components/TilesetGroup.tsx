@@ -15,7 +15,6 @@ export interface TilesetCropProps extends React.HTMLAttributes<HTMLDivElement> {
   style?: React.CSSProperties;
   title?: string;
   selected?: boolean;
-  dimmed?: boolean;
 }
 
 const TilesetGroup = ({
@@ -25,7 +24,6 @@ const TilesetGroup = ({
   scale,
   bounded = false,
   selected,
-  dimmed,
   ...divProps
 }: TilesetCropProps) => {
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
@@ -110,7 +108,6 @@ const TilesetGroup = ({
       <div
         className={classNames(styles.crop, className, {
           [styles.selected]: selected,
-          [styles.notSelected]: dimmed,
         })}
         style={{
           width,

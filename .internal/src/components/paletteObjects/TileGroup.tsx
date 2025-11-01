@@ -6,7 +6,6 @@ export function renderTileGroup({
   scale,
   obj,
   selected,
-  dimmed,
 }: PaletteObjectProps): React.ReactNode | null {
   if (!isTileGroup(obj)) return null;
 
@@ -17,12 +16,7 @@ export function renderTileGroup({
       style={{ display: "contents" }}
       key={`${obj.tilesetId}-${obj.id}`}
     >
-      <TilesetGroup
-        scale={scale}
-        group={obj}
-        selected={selected}
-        dimmed={dimmed}
-      />
+      <TilesetGroup scale={scale} group={obj} selected={selected} />
     </div>
   );
 }

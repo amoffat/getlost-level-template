@@ -49,11 +49,9 @@ export default function TilesetButton({
           onClick={onClick}
           style={(theme) => ({
             overflow: "hidden",
-            border: isActive
-              ? `2px solid ${theme.colors.blue[6]}`
-              : "2px solid transparent",
+            outline: isActive ? `2px solid rgb(0, 255, 0)` : null,
             "&:hover": {
-              borderColor: theme.colors.gray[4],
+              outlineColor: theme.colors.gray[4],
               cursor: "pointer",
             },
           })}

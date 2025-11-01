@@ -17,7 +17,7 @@ export interface TileAnimationProps {
   onEnd?: () => void; // called when a non-looping animation reaches the end
 }
 
-type TgProps = Pick<TilesetCropProps, "bounded" | "selected" | "dimmed">;
+type TgProps = Pick<TilesetCropProps, "bounded" | "selected">;
 
 const TileAnimation = ({
   frames,
