@@ -14,7 +14,15 @@ import { modals } from "@mantine/modals";
 import { Spotlight, SpotlightActionData } from "@mantine/spotlight";
 import { IconSearch, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Suspense,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { shallowEqual } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import DialogueTab from "./Dialogue";
@@ -39,12 +47,52 @@ declare global {
   }
 }
 
-// PanelLoader moved to its own component file.
-
 export function ShellApp() {
   const dispatch = useAppDispatch();
+  const activeTab = useAppSelector((state) => state.ui.activeTab);
   const navigate = useNavigate();
-  const location = useLocation();
+  const { pathname } = useLocation();
+  const pathnameRef = useRef(pathname);
+
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  }, [pathname]);
+
+  // Sync tab changes with URL path
+  useEffect(() => {
+    const nextTab = pathToTab(pathname);
+    if (nextTab !== activeTab) {
+      dispatch(uiActions.clearLoadingMessages());
+      dispatch(uiActions.setTab(nextTab));
+      dispatch(uiActions.mountTab(nextTab));
+    }
+  }, [pathname, activeTab, dispatch]);
+
+  // Handle tab changes by updating the URL path
+  const handleTabChange = useCallback(
+    (value: MainTabName | null) => {
+      if (!value) return;
+      const canonical = tabToPath(value);
+      if (pathnameRef.current !== canonical) {
+        navigate(canonical);
+      }
+    },
+    [navigate]
+  );
+
+  // Using memo on this allows us to not have to re-render the entire ShellApp
+  // when a tab changes.
+  return <ShellAppContent onTabChange={handleTabChange} />;
+}
+
+type ShellAppContentProps = {
+  onTabChange: (value: MainTabName | null) => void;
+};
+
+const ShellAppContent = memo(function ShellAppContent({
+  onTabChange,
+}: ShellAppContentProps) {
+  const dispatch = useAppDispatch();
   const [draggedFiles, setDraggedFiles] = useState<File[] | null>(null);
   const [assetTypeOpened, { open: openAssetType, close: closeAssetType }] =
     useDisclosure(false);
@@ -85,30 +133,6 @@ export function ShellApp() {
     }),
     shallowEqual
   );
-
-  const handleTabChange = useCallback(
-    (value: MainTabName | null) => {
-      if (!value) return;
-
-      // Navigate to the canonical URL for the selected tab; the URL change
-      // will be observed below and will dispatch Redux updates.
-      const canonical = tabToPath(value);
-      if (location.pathname !== canonical) {
-        navigate(canonical);
-      }
-    },
-    [navigate, location.pathname]
-  );
-
-  // When the URL path changes, update Redux tab state to match
-  useEffect(() => {
-    const nextTab = pathToTab(location.pathname);
-    if (nextTab !== activeTab) {
-      dispatch(uiActions.clearLoadingMessages());
-      dispatch(uiActions.setTab(nextTab));
-      dispatch(uiActions.mountTab(nextTab));
-    }
-  }, [location.pathname, activeTab, dispatch]);
 
   const onDrop = useCallback(
     (files: FileWithPath[]) => {
@@ -164,7 +188,7 @@ export function ShellApp() {
         <AppShell.Main>
           <Tabs
             value={activeTab}
-            onChange={(tab) => handleTabChange(tab as MainTabName)}
+            onChange={(tab) => onTabChange(tab as MainTabName | null)}
           >
             <Tabs.List style={{ alignItems: "center" }}>
               <Tabs.Tab value="map-editor">Map</Tabs.Tab>
@@ -231,4 +255,4 @@ export function ShellApp() {
       />
     </>
   );
-}
+});

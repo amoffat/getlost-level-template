@@ -81,6 +81,8 @@ export default function TilesetEditorTab({
     return tilesets[activeTilesetId] || null;
   }, [activeTilesetId, tilesets]);
 
+  const deferredActiveTileset = useDeferredValue(activeTileset);
+
   const setActiveTab = useCallback(
     (tab: string | null) => {
       if (!tab) return;
@@ -196,9 +198,9 @@ export default function TilesetEditorTab({
     };
 
     if (!tool) {
-      if (activeTileset) {
-        const hasTiles = activeTileset.tiles.ids.length > 0;
-        const hasPinned = Object.values(activeTileset.tiles.entities)
+      if (deferredActiveTileset) {
+        const hasTiles = deferredActiveTileset.tiles.ids.length > 0;
+        const hasPinned = Object.values(deferredActiveTileset.tiles.entities)
           .filter(isTileGroup)
           .some((obj) => obj.pinned);
 
@@ -234,7 +236,7 @@ export default function TilesetEditorTab({
       );
     }
     return tips;
-  }, [activeTileset, dispatch, tilesetImages.length, tool]);
+  }, [deferredActiveTileset, dispatch, tilesetImages.length, tool]);
 
   return (
     <>
@@ -304,7 +306,7 @@ export default function TilesetEditorTab({
                 }}
               >
                 <ObjectPalette
-                  tileset={activeTileset}
+                  tileset={deferredActiveTileset}
                   selectedObjects={deferredPaletteSelection}
                   renderObject={renderTileGroup}
                 />
@@ -319,7 +321,7 @@ export default function TilesetEditorTab({
                 }}
               >
                 <ObjectPalette
-                  tileset={activeTileset}
+                  tileset={deferredActiveTileset}
                   selectedObjects={deferredPaletteSelection}
                   renderObject={renderObjectAnimation}
                 />
@@ -334,7 +336,7 @@ export default function TilesetEditorTab({
                 }}
               >
                 <ObjectPalette
-                  tileset={activeTileset}
+                  tileset={deferredActiveTileset}
                   selectedObjects={deferredPaletteSelection}
                   renderObject={renderObjectAnimation}
                 />
