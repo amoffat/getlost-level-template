@@ -209,7 +209,7 @@ export function setupPlacer({
 subState(
   [
     (state) => state.mapEditor.place.obj,
-    (state) => state.mapEditor.zoomPan,
+    (state) => state.mapEditor.zoomPan.zoom,
     selectors.selectMode,
   ],
   (placeObj, zoom, mode) => {
