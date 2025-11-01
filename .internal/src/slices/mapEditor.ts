@@ -1,8 +1,9 @@
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { isTileGroupInstance, MapObj } from "@/types/map";
+import { isAnimatedInstance, isTileGroupInstance, MapObj } from "@/types/map";
 import { Rect } from "@/types/rect";
-import { isTileGroup, TilesetObject } from "@/types/tilegroup";
+import { isTileGroup } from "@/types/tilegroup";
+import { TilesetObject } from "@/types/tilesetobject";
 import { ColliderOpts, MagicPaintOpts, PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
@@ -330,9 +331,13 @@ export const slice = createSlice({
 
         // Single loop through selectedIds
         for (const id of selectedIds) {
-          const obj = entities[id];
-          if (obj && isTileGroupInstance(obj)) {
-            result.add(obj.tileId);
+          const instance = entities[id];
+          if (instance) {
+            if (isTileGroupInstance(instance)) {
+              result.add(instance.tileId);
+            } else if (isAnimatedInstance(instance)) {
+              result.add(instance.animId);
+            }
           }
         }
 

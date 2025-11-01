@@ -185,7 +185,7 @@ export default function TileAnimationOptions() {
   const tsId = useAppSelector((state) => state.tilesetEditor.activeTilesetId)!;
   const cands = useAppSelector((state) => state.tilesetEditor.candAnimFrames);
   const activeTileset = useAppSelector(
-    (state) => state.tilesetEditor.tilesets[tsId]
+    (state) => state.tilesetEditor.tilesets[tsId]!
   );
   const dispatch = useAppDispatch();
   // Store fractional weights per frame (0..1), always normalized so sum == 1

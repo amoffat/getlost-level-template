@@ -1,4 +1,5 @@
-export type Mode = "pan" | "group" | "add";
+import type { ObjectAnimation } from "./tilegroup";
+import type { TilesetObject } from "./tilesetobject";
 
 export type NpcRequiredAnimation =
   | "Idle"
@@ -7,21 +8,18 @@ export type NpcRequiredAnimation =
   | "WalkLeft"
   | "WalkRight";
 
+export type NpcAnimationRecord = Record<NpcRequiredAnimation, ObjectAnimation> &
+  Record<string, ObjectAnimation>;
+
 export interface Npc {
+  // A random id
   id: string;
+  tilesetId: string;
+  tags: string[];
   name: string;
-  spritesheetId: string;
-  position: { x: number; y: number };
+  animations: NpcAnimationRecord;
 }
 
-export interface NpcSpritesheet {
-  id: string;
-  objectUrl: string;
-  saved: boolean;
-  // The ids of the objects in the palette, in order. This controls what is
-  // actually rendered. This contains ids for single and multi-tile objects.
-  paletteIds: string[];
-  // All objects in the palette, keyed by id. This will always contain *ALL*
-  // single-tiled objects, but multi-tiled objects may be added/removed.
-  palette: Record<string, Npc>;
+export function isNpc(obj: TilesetObject): obj is Npc {
+  return (obj as Npc).animations !== undefined;
 }

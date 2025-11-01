@@ -8,9 +8,15 @@ import {
   selectTilesetThunk,
   setToolThunk,
 } from "@/thunks/tileset";
+import { isNpc } from "@/types/npc";
 import { TilesetTabName } from "@/types/tab";
-import { isTileGroup } from "@/types/tilegroup";
+import { isObjectAnimation, isTileGroup } from "@/types/tilegroup";
 import { Mode } from "@/types/tileset";
+import {
+  npcSort,
+  objectAnimationSort,
+  tileGroupSort,
+} from "@/utils/palette/sort";
 import {
   Anchor,
   Flex,
@@ -44,6 +50,7 @@ import ObjectPalette from "./ObjectPalette";
 import TilesetButton from "./TilesetButton";
 import Tip from "./Tip";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
+import { renderNpc } from "./paletteObjects/Npc";
 import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
 import { renderTileGroup } from "./paletteObjects/TileGroup";
 import NpcOptions from "./toolOptions/NpcOptions";
@@ -308,7 +315,9 @@ export default function TilesetEditorTab({
                 <ObjectPalette
                   tileset={deferredActiveTileset}
                   selectedObjects={deferredPaletteSelection}
+                  filter={isTileGroup}
                   renderObject={renderTileGroup}
+                  sort={tileGroupSort}
                 />
               </Tabs.Panel>
               <Tabs.Panel
@@ -323,7 +332,9 @@ export default function TilesetEditorTab({
                 <ObjectPalette
                   tileset={deferredActiveTileset}
                   selectedObjects={deferredPaletteSelection}
+                  filter={isObjectAnimation}
                   renderObject={renderObjectAnimation}
+                  sort={objectAnimationSort}
                 />
               </Tabs.Panel>
               <Tabs.Panel
@@ -338,7 +349,9 @@ export default function TilesetEditorTab({
                 <ObjectPalette
                   tileset={deferredActiveTileset}
                   selectedObjects={deferredPaletteSelection}
-                  renderObject={renderObjectAnimation}
+                  filter={isNpc}
+                  renderObject={renderNpc}
+                  sort={npcSort}
                 />
               </Tabs.Panel>
             </Tabs>

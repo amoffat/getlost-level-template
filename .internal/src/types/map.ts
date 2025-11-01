@@ -15,6 +15,7 @@ export interface TileGroupInstance extends BaseMapObj {
 }
 
 export interface AnimatedInstance extends BaseMapObj {
+  animId: string;
   tilesetId: string;
   frames: { tileId: string; frame: Rect; time: number }[];
   flipX: boolean;

@@ -1,7 +1,8 @@
 import { log } from "@/log";
 import { Rect } from "@/types/rect";
-import { isTileGroup, TileGroup, TilesetObject } from "@/types/tilegroup";
+import { isTileGroup, TileGroup } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
+import { TilesetObject } from "@/types/tilesetobject";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
 import {
   createEntityAdapter,

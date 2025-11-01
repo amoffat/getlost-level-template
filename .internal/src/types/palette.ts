@@ -1,8 +1,7 @@
-import { TilesetObject } from "@/types/tilegroup";
+import { TilesetObject } from "./tilesetobject";
 
-export interface PaletteObjectProps {
-  obj: TilesetObject;
+export interface PaletteObjectProps<ObjType extends TilesetObject> {
+  obj: ObjType;
   scale: number;
   selected: boolean | undefined;
-  dimmed: boolean | undefined;
 }

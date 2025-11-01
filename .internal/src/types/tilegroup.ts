@@ -1,9 +1,11 @@
 import { OklabColor } from "@/types/color";
 import type { TileAnimationFrame } from "./animation";
 import type { Rect } from "./rect";
+import type { TilesetObject } from "./tilesetobject";
 
 export interface TileGroup {
-  // The unique id, which uses the image data hash plus tileset and position
+  // The unique, stable id, which uses the image data hash plus tileset and
+  // position
   id: string;
   // The image-hash based id
   imageId: string;
@@ -22,14 +24,13 @@ export interface TileGroup {
 }
 
 export interface ObjectAnimation {
+  // The unique, stable id which is based on a hash of the frame ids and times
   id: string;
   tilesetId: string;
   frames: TileAnimationFrame[];
   tags: string[];
   names: string[];
 }
-
-export type TilesetObject = TileGroup | ObjectAnimation;
 
 export function isTileGroup(obj: TilesetObject): obj is TileGroup {
   return (obj as TileGroup).pinned !== undefined;

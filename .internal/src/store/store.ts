@@ -2,7 +2,6 @@ import { slice as collisionSlice } from "@/editor/collision/state";
 import { globals as g } from "@/globals";
 import { slice as dialogueSlice } from "@/slices/dialogue";
 import { slice as mapEditorSlice } from "@/slices/mapEditor";
-import { slice as npcEditorSlice } from "@/slices/npcEditor";
 import { slice as storySlice } from "@/slices/story";
 import { slice as tilesetEditorSlice } from "@/slices/tilesetEditor";
 import { slice as uiSlice } from "@/slices/ui";
@@ -17,7 +16,6 @@ export const rootReducer = combineReducers({
   story: storySlice.reducer,
   tilesetEditor: tilesetEditorSlice.reducer,
   mapEditor: mapEditorSlice.reducer,
-  npcEditor: npcEditorSlice.reducer,
   collisionEditor: collisionSlice.reducer,
   ui: uiSlice.reducer,
 });

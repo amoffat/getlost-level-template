@@ -178,6 +178,7 @@ export class Placer implements ClickDragListener {
     } else if (isObjectAnimation(obj)) {
       const inst: AnimatedInstance = {
         id,
+        animId: obj.id,
         tilesetId: obj.frames[0]!.tg.tilesetId,
         frames: obj.frames.map((f) => ({
           tileId: f.tg.id,
@@ -221,7 +222,7 @@ subState(
     g.placableOutline.removeChildren();
     g.placableContainer.removeChildren();
 
-    if (placeObj && mode === "paint") {
+    if (placeObj && ["paint", "magic-paint"].includes(mode)) {
       let sprite: P.Sprite;
       let outlineFrame!: Rect;
 

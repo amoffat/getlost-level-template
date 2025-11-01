@@ -1,12 +1,14 @@
+import { Npc } from "@/types/npc";
 import { PaletteObjectProps } from "@/types/palette";
-import { TileGroup } from "@/types/tilegroup";
 import TilesetGroup from "../TilesetGroup";
 
-export function renderTileGroup({
+export function renderNpc({
   scale,
   obj,
   selected,
-}: PaletteObjectProps<TileGroup>): React.ReactNode | null {
+}: PaletteObjectProps<Npc>): React.ReactNode | null {
+  const tg = obj.animations.Idle.frames[0]!.tg;
+
   return (
     <div
       data-tsid={obj.tilesetId}
@@ -14,7 +16,7 @@ export function renderTileGroup({
       style={{ display: "contents" }}
       key={`${obj.tilesetId}-${obj.id}`}
     >
-      <TilesetGroup scale={scale} group={obj} selected={selected} />
+      <TilesetGroup scale={scale} group={tg} selected={selected} />
     </div>
   );
 }

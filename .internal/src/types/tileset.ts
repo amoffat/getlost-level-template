@@ -1,5 +1,5 @@
 import { EntityState } from "@reduxjs/toolkit";
-import { TilesetObject } from "./tilegroup";
+import { TilesetObject } from "./tilesetobject";
 
 export type Mode =
   | "select"

@@ -2,7 +2,8 @@ import { actions, selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
-import { isTileGroup, TilesetObject } from "@/types/tilegroup";
+import { isTileGroup } from "@/types/tilegroup";
+import { TilesetObject } from "@/types/tilesetobject";
 import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
 import {

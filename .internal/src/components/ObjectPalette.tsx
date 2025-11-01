@@ -1,5 +1,8 @@
+import { useAppSelector } from "@/hooks/redux";
 import { PaletteObjectProps } from "@/types/palette";
-import { area } from "@/types/rect";
+import { isObjectAnimation, isTileGroup } from "@/types/tilegroup";
+import { Tileset } from "@/types/tileset";
+import { TilesetObject } from "@/types/tilesetobject";
 import { Vector } from "@/vec";
 import {
   Group,
@@ -17,57 +20,17 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { useAppSelector } from "../hooks/redux";
-import {
-  isObjectAnimation,
-  isTileGroup,
-  TilesetObject,
-} from "../types/tilegroup";
-import { Tileset } from "../types/tileset";
 import ObjectAnimationMenu from "./paletteMenus/ObjectAnimationMenu";
 import TileGroupMenu from "./paletteMenus/TileGroupMenu";
 
-interface ObjectPaletteProps {
+interface ObjectPaletteProps<ObjType extends TilesetObject> {
   tileset?: Tileset | null;
-  onSelectObject?: (obj: TilesetObject, e: React.MouseEvent) => void;
+  onSelectObject?: (obj: ObjType, e: React.MouseEvent) => void;
   onDeselectObject?: () => void;
   selectedObjects?: Set<string>;
-  renderObject: (props: PaletteObjectProps) => React.ReactNode | null;
-}
-
-function sortBySizeDescending(a: TilesetObject, b: TilesetObject): number {
-  let aIsAnimation = false;
-  let bIsAnimation = false;
-
-  if (isObjectAnimation(a)) {
-    a = a.frames[0]!.tg;
-    aIsAnimation = true;
-  }
-  if (isObjectAnimation(b)) {
-    b = b.frames[0]!.tg;
-    bIsAnimation = true;
-  }
-
-  const aArea = area(a.pos);
-  const bArea = area(b.pos);
-  if (aArea !== bArea) return bArea - aArea;
-
-  // if areas are equal, sort by tileset id
-  if (a.tilesetId !== b.tilesetId) {
-    return a.tilesetId.localeCompare(b.tilesetId);
-  }
-
-  // Animations should come after static tile groups
-  if (aIsAnimation !== bIsAnimation) {
-    return aIsAnimation ? 1 : -1;
-  }
-
-  if (a.hilbertIndex !== b.hilbertIndex) {
-    return b.hilbertIndex - a.hilbertIndex;
-  }
-
-  // otherwise sort by id to ensure consistent order
-  return a.id.localeCompare(b.id);
+  renderObject: (props: PaletteObjectProps<ObjType>) => React.ReactNode | null;
+  sort: (a: ObjType, b: ObjType) => number;
+  filter: (obj: ObjType) => boolean;
 }
 
 function findHighestWithAttr(start: HTMLElement, attr: string) {
@@ -82,15 +45,17 @@ function findHighestWithAttr(start: HTMLElement, attr: string) {
   return last;
 }
 
-export default function ObjectPalette({
+export default function ObjectPalette<ObjType extends TilesetObject>({
   onSelectObject,
   onDeselectObject,
   tileset: showTileset,
   selectedObjects,
   renderObject,
-}: ObjectPaletteProps) {
+  sort,
+  filter,
+}: ObjectPaletteProps<ObjType>) {
   const [objMenuPos, setObjMenuPos] = useState<Vector | null>(null);
-  const [clicked, setClicked] = useState<TilesetObject | null>(null);
+  const [clicked, setClicked] = useState<ObjType | null>(null);
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const loadingPalette = useAppSelector((state) => state.ui.loadingPalette);
   const [scale, setScale] = useState(2);
@@ -110,7 +75,9 @@ export default function ObjectPalette({
 
     const sorted = Object.values(filteredTilesets)
       .flatMap((ts) => Object.values(ts.tiles.entities))
-      .sort(sortBySizeDescending);
+      .map((obj) => obj as ObjType)
+      .filter(filter)
+      .sort(sort);
 
     // It is possible for multiple tilesets to contain the same tile group
     // (having the same id), because the id is a hash of the image data.
@@ -120,16 +87,11 @@ export default function ObjectPalette({
       if (seen.has(obj.id)) continue;
       seen.add(obj.id);
 
-      const shouldDim =
-        !selectedObjects?.has(obj.id) &&
-        selectedObjects &&
-        selectedObjects.size > 0;
-
+      const selected = selectedObjects?.has(obj.id) ?? false;
       const rendered = renderObject({
         scale,
-        obj,
-        selected: selectedObjects?.has(obj.id) ?? false,
-        dimmed: shouldDim,
+        obj: obj as ObjType,
+        selected,
       });
       if (rendered) {
         objs.push(rendered);
@@ -137,7 +99,15 @@ export default function ObjectPalette({
     }
 
     return objs;
-  }, [tilesets, showTileset, selectedObjects, renderObject, scale]);
+  }, [
+    tilesets,
+    showTileset,
+    selectedObjects,
+    renderObject,
+    scale,
+    sort,
+    filter,
+  ]);
 
   const deselectObject = useCallback(() => {
     setObjMenuPos(null);
@@ -179,7 +149,7 @@ export default function ObjectPalette({
         if (selectedObjects?.has(objId)) {
           deselectObject();
         } else {
-          onSelectObject?.(obj, e);
+          onSelectObject?.(obj as ObjType, e);
         }
       } else if (e.button === 2) {
         const el = e.target as HTMLElement;
@@ -189,12 +159,12 @@ export default function ObjectPalette({
         setObjMenuPos({ x, y });
 
         if (isTileGroup(obj) || isObjectAnimation(obj)) {
-          setClicked(obj);
+          setClicked(obj as ObjType);
         } else {
           setClicked(null);
         }
 
-        onSelectObject?.(obj, e);
+        onSelectObject?.(obj as ObjType, e);
       }
     },
     [tilesets, deselectObject, selectedObjects, onSelectObject]

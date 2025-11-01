@@ -6,7 +6,14 @@ import { RootState } from "@/store/store";
 import { setToolThunk } from "@/thunks/map";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { TilesetObject } from "@/types/tilegroup";
+import { isNpc } from "@/types/npc";
+import { isObjectAnimation, isTileGroup } from "@/types/tilegroup";
+import { TilesetObject } from "@/types/tilesetobject";
+import {
+  npcSort,
+  objectAnimationSort,
+  tileGroupSort,
+} from "@/utils/palette/sort";
 import {
   Fieldset,
   Flex,
@@ -41,6 +48,7 @@ import HelpHoverCard from "./HelpHoverCard";
 import LayerList from "./LayerList";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
+import { renderNpc } from "./paletteObjects/Npc";
 import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
 import { renderTileGroup } from "./paletteObjects/TileGroup";
 import Tip from "./Tip";
@@ -268,7 +276,9 @@ export default function MapEditorTab({
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
                   selectedObjects={deferredPaletteSelection}
+                  filter={isTileGroup}
                   renderObject={renderTileGroup}
+                  sort={tileGroupSort}
                 />
               </Tabs.Panel>
               <Tabs.Panel
@@ -284,7 +294,9 @@ export default function MapEditorTab({
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
                   selectedObjects={deferredPaletteSelection}
+                  filter={isObjectAnimation}
                   renderObject={renderObjectAnimation}
+                  sort={objectAnimationSort}
                 />
               </Tabs.Panel>
 
@@ -301,7 +313,9 @@ export default function MapEditorTab({
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
                   selectedObjects={deferredPaletteSelection}
-                  renderObject={renderObjectAnimation}
+                  filter={isNpc}
+                  renderObject={renderNpc}
+                  sort={npcSort}
                 />
               </Tabs.Panel>
             </Tabs>

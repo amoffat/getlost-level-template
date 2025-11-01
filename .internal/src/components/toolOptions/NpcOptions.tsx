@@ -61,13 +61,21 @@ export default function NpcOptions() {
   const formSubmit = form.onSubmit(async (values) => {
     closeSaveModal();
 
-    // const id = await genAnimId(frames);
-    // const anim: ObjectAnimation = {
+    // const animations: NpcAnimationRecord = {
+    //   Idle: animationMatches["Idle"]!,
+    //   WalkUp: animationMatches["WalkUp"]!,
+    //   WalkDown: animationMatches["WalkDown"]!,
+    //   WalkLeft: animationMatches["WalkLeft"]!,
+    //   WalkRight: animationMatches["WalkRight"]!,
+    // };
+
+    // const id = crypto.randomUUID();
+    // const anim: Npc = {
     //   id,
-    //   frames,
+    //   animations,
     //   tilesetId: tsId,
-    //   names: values.names,
-    //   tags: [],
+    //   name: values.name,
+    //   tags: values.tags,
     // };
     // dispatch(actions.addPaletteObject({ tsId, group: anim }));
     // dispatch(clearCandAnimFramesThunk());
