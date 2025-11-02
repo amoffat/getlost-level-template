@@ -14,15 +14,7 @@ import {
   objectAnimationSort,
   tileGroupSort,
 } from "@/utils/palette/sort";
-import {
-  Fieldset,
-  Flex,
-  Group,
-  Portal,
-  Stack,
-  Tabs,
-  Text,
-} from "@mantine/core";
+import { Fieldset, Flex, Group, Portal, Stack, Tabs } from "@mantine/core";
 import {
   IconBulb,
   IconCameraSearch,
@@ -44,7 +36,6 @@ import {
   useMemo,
   useRef,
 } from "react";
-import HelpHoverCard from "./HelpHoverCard";
 import LayerList from "./LayerList";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
@@ -66,7 +57,7 @@ export default function MapEditorTab({
   const selectedToolName = useAppSelector(
     (state: RootState) => state.mapEditor.selectedTool
   );
-  const paletteSelection = useAppSelector(selectors.paletteSelectedTgIds);
+  const paletteSelection = useAppSelector(selectors.paletteSelectedTsObjIds);
 
   // Defer visual updates to palette selection to keep interactions responsive
   const deferredPaletteSelection = useDeferredValue(paletteSelection);
@@ -232,34 +223,20 @@ export default function MapEditorTab({
               <Tabs.List>
                 <Tabs.Tab value="objects">
                   <Group gap="xs">
-                    Object Palette
-                    <HelpHoverCard>
-                      <Text size="sm">
-                        Objects are tiles or tile groups that can be placed in
-                        the map.
-                      </Text>
-                    </HelpHoverCard>
+                    Objects
+                    {/* {objectsBadge} */}
                   </Group>
                 </Tabs.Tab>
                 <Tabs.Tab value="animations">
                   <Group gap="xs">
                     Animations
-                    <HelpHoverCard>
-                      <Text size="sm">
-                        Animations are sequences of tiles or tile groups that
-                        can be placed in the map.
-                      </Text>
-                    </HelpHoverCard>
+                    {/* {animationsBadge} */}
                   </Group>
                 </Tabs.Tab>
                 <Tabs.Tab value="npcs">
                   <Group gap="xs">
                     NPCs
-                    <HelpHoverCard>
-                      <Text size="sm">
-                        NPCs are characters that can be placed in the map.
-                      </Text>
-                    </HelpHoverCard>
+                    {/* {npcsBadge} */}
                   </Group>
                 </Tabs.Tab>
               </Tabs.List>

@@ -2,7 +2,7 @@ import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { MapObj, TileGroupInstance } from "@/types/map";
+import { MapObj, MapObjType, TileGroupInstance } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroup } from "@/types/tilegroup";
 import { Vector } from "@/vec";
@@ -72,6 +72,7 @@ export class Gateway implements ClickDragListener {
 
     const tgi: TileGroupInstance = {
       id,
+      type: MapObjType.TileGroupInstance,
       x: pos.x,
       y: pos.y,
       tileId: obj.id,

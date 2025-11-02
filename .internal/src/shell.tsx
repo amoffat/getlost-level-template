@@ -34,7 +34,7 @@ export default function App() {
   return (
     <ReduxProvider store={store}>
       <MantineProvider defaultColorScheme="dark" theme={theme}>
-        <Notifications position="top-center" />
+        <Notifications position="top-center" containerWidth={"40%"} />
         <ModalsProvider>
           <CommsProvider>
             <RouterProvider router={router} />

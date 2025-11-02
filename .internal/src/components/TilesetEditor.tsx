@@ -137,6 +137,13 @@ export default function TilesetEditorTab({
 
   const toolPalette: Partial<Record<Mode, ToolDescriptor>> = useMemo(
     () => ({
+      "reslice-tiles": {
+        name: "Reslicer",
+        icon: <IconGrid4x4 size={16} />,
+        options: <TileReslicer />,
+        enabled: !!activeTilesetId,
+      },
+
       select: {
         name: "Select/move",
         icon: <IconSelectAll size={16} />,
@@ -156,13 +163,6 @@ export default function TilesetEditorTab({
       "delete-group": {
         name: "Delete group",
         icon: <IconTrash size={16} />,
-        enabled: !!activeTilesetId,
-      },
-
-      "reslice-tiles": {
-        name: "Reslicer",
-        icon: <IconGrid4x4 size={16} />,
-        options: <TileReslicer />,
         enabled: !!activeTilesetId,
       },
 

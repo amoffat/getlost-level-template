@@ -1,7 +1,9 @@
 import { useAppDispatch } from "@/hooks/redux";
+import { store } from "@/store/store";
 import { removeTilesetThunk } from "@/thunks/tileset";
 import { DisplayableImage } from "@/types/image";
-import { Image, Menu, UnstyledButton } from "@mantine/core";
+import { Image, Menu, Text, UnstyledButton } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { IconCopy, IconTrash } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -31,8 +33,33 @@ export default function TilesetButton({
   }, []);
 
   const onDelete = () => {
+    const state = store.getState();
+    const objs = state.mapEditor.objects;
+    const usedCount = objs.ids.reduce((acc, objId) => {
+      const obj = objs.entities[objId];
+      if ((obj as any).tilesetId === ts.id) {
+        acc++;
+      }
+      return acc;
+    }, 0);
+
+    modals.openConfirmModal({
+      title: "Delete tileset?",
+      children: (
+        <Text size="sm">
+          Are you sure you want to delete this tileset? This action cannot be
+          undone. <strong>{usedCount} objects are using this tileset.</strong>
+        </Text>
+      ),
+      labels: { confirm: "Delete", cancel: "Cancel" },
+      confirmProps: { color: "red" },
+      centered: true,
+      withCloseButton: false,
+      onConfirm: () => {
+        dispatch(removeTilesetThunk(ts.id));
+      },
+    });
     setOpened(false);
-    dispatch(removeTilesetThunk(ts.id));
   };
 
   const onCopyId = useCallback(() => {

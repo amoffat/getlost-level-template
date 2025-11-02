@@ -1,11 +1,7 @@
 import { log } from "@/log";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
-import {
-  isObjectAnimation,
-  isTileGroup,
-  TileGroup,
-  TilesetObject,
-} from "@/types/tilegroup";
+import { isObjectAnimation, isTileGroup, TileGroup } from "@/types/tilegroup";
+import { TilesetObject } from "@/types/tilesetobject";
 import { AllPropsLoose } from "@/types/union";
 import * as P from "pixi.js";
 import { ReduxReconciler } from "./reconciler";

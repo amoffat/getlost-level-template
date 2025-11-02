@@ -6,11 +6,14 @@ import {
   isColliderEllipse,
   isTileGroupInstance,
   MapObj,
+  MapObjsFromTileset,
 } from "@/types/map";
 import { toPixiRect } from "@/types/rect";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
+import { makeGroupedDebouncer } from "@/utils/debounce";
 import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
+import { EMPTY } from "rxjs";
 import { ReduxReconciler } from "./reconciler";
 import { colliderFill } from "./strokes";
 
@@ -22,10 +25,27 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
   protected spatialIndex?: SpatialIndex<MapObj>;
   private connected = false;
+  private debounceNodeError: ReturnType<
+    typeof makeGroupedDebouncer<MapObjsFromTileset>
+  >;
 
   constructor(tilesetCache: Map<string, P.Texture>) {
     super();
     this.tilesetCache = tilesetCache;
+
+    this.debounceNodeError = makeGroupedDebouncer({
+      getKey: (obj: MapObjsFromTileset) => obj.tilesetId,
+      fn: (obj: MapObjsFromTileset) => {
+        notifications.show({
+          title: "Missing tileset",
+          message: `Tileset with SHA-1 hash ${obj.tilesetId} not found. Map objects are replaced with a placeholder. Re-upload the tileset to fix this.`,
+          color: "red",
+          autoClose: false,
+        });
+        log.error(`Tileset texture not found for tilesetId ${obj.tilesetId}.`);
+        return EMPTY;
+      },
+    });
   }
 
   public attachCanvas({
@@ -113,15 +133,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     if (isTileGroupInstance(obj)) {
       const tsTex = this.tilesetCache.get(obj.tilesetId);
       if (!tsTex) {
-        notifications.show({
-          title: "Missing tileset",
-          message: `Tileset with id ${obj.tilesetId} not found.`,
-          color: "red",
-          autoClose: false,
-        });
-        throw new Error(
-          `Tileset texture not found for tilesetId ${obj.tilesetId}`
-        );
+        return this.makeErrorNode(obj);
       }
 
       const frame = obj.frame;
@@ -164,15 +176,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       const pixiFrames: P.FrameObject[] = [];
       const tsTex = this.tilesetCache.get(obj.tilesetId);
       if (!tsTex) {
-        notifications.show({
-          title: "Missing tileset",
-          message: `Tileset with id ${obj.tilesetId} not found.`,
-          color: "red",
-          autoClose: false,
-        });
-        throw new Error(
-          `Tileset texture not found for tilesetId ${obj.tilesetId}`
-        );
+        return this.makeErrorNode(obj);
       }
 
       for (const animFrame of obj.frames) {
@@ -233,5 +237,45 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       log.error("Unsupported MapObj type");
       return null;
     }
+  }
+
+  /**
+   * Renders a placeholder error node for when a tileset is missing. It has a
+   * big red X going from corner to corner and is the size of the object's
+   * frame.
+   *
+   * @returns A placeholder error container
+   */
+  private makeErrorNode(obj: MapObjsFromTileset): P.Container {
+    this.debounceNodeError(obj);
+
+    const container = new P.Container();
+
+    let width: number;
+    let height: number;
+    if (isTileGroupInstance(obj)) {
+      width = obj.frame.br.x - obj.frame.ul.x;
+      height = obj.frame.br.y - obj.frame.ul.y;
+    } else if (isAnimatedInstance(obj)) {
+      const firstFrame = obj.frames[0];
+      width = firstFrame.frame.br.x - firstFrame.frame.ul.x;
+      height = firstFrame.frame.br.y - firstFrame.frame.ul.y;
+    } else {
+      // For NPCs, just make a default size
+      // FIXME
+      width = 32;
+      height = 48;
+    }
+
+    const gfx = new P.Graphics();
+    gfx.moveTo(0, 0);
+    gfx.lineTo(width, height);
+    gfx.moveTo(width, 0);
+    gfx.lineTo(0, height);
+    gfx.rect(0, 0, width, height);
+    gfx.stroke({ color: 0xff0000, width: 4, cap: "round" });
+
+    container.addChild(gfx);
+    return container;
   }
 }

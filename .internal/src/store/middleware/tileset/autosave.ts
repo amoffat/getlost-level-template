@@ -4,16 +4,10 @@ import { actions as tsActions } from "@/slices/tilesetEditor";
 import { AppDispatch } from "@/store/store";
 import { AppStartListening } from "@/types/redux";
 import { Tileset } from "@/types/tileset";
+import { makeGroupedDebouncer } from "@/utils/debounce";
 import { createListenerMiddleware, isAnyOf } from "@reduxjs/toolkit";
-import { EMPTY, Subject, from } from "rxjs";
-import {
-  catchError,
-  concatMap,
-  debounceTime,
-  groupBy,
-  mergeMap,
-  tap,
-} from "rxjs/operators";
+import { EMPTY, from } from "rxjs";
+import { catchError, tap } from "rxjs/operators";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -24,32 +18,21 @@ type TsAction =
   | ReturnType<typeof tsActions.updateTilesetObject>
   | ReturnType<typeof tsActions.deletePaletteObjects>;
 
-// Stream of save requests; we group by tileset id to debounce per key
-const saveRequests$ = new Subject<{ ts: Tileset; dispatch: AppDispatch }>();
-
-saveRequests$
-  .pipe(
-    // group per tileset id
-    groupBy(({ ts }) => ts.id),
-    // for each group, debounce events and perform saves sequentially
-    mergeMap((group$) =>
-      group$.pipe(
-        debounceTime(200),
-        concatMap(({ ts, dispatch }) =>
-          from(saveTileset(ts)).pipe(
-            tap(() =>
-              dispatch(tsActions.markSaved({ tsId: ts.id, saved: true }))
-            ),
-            catchError((e) => {
-              log.error({ e }, "Autosave failed");
-              return EMPTY;
-            })
-          )
-        )
-      )
-    )
-  )
-  .subscribe();
+const debounceSaves = makeGroupedDebouncer<{
+  ts: Tileset;
+  dispatch: AppDispatch;
+}>({
+  getKey: ({ ts }) => ts.id,
+  fn: ({ ts, dispatch }) => {
+    return from(saveTileset(ts)).pipe(
+      tap(() => dispatch(tsActions.markSaved({ tsId: ts.id, saved: true }))),
+      catchError((e) => {
+        log.error({ e }, "Autosave failed");
+        return EMPTY;
+      })
+    );
+  },
+});
 
 const startAppListening =
   listenerMiddleware.startListening as AppStartListening;
@@ -67,7 +50,7 @@ startAppListening({
     // All matched actions carry a { ts: Tileset } payload
     const { tsId } = action.payload;
     const ts = getState().tilesetEditor.tilesets[tsId];
-    saveRequests$.next({ ts, dispatch });
+    debounceSaves({ ts, dispatch });
   },
 });
 

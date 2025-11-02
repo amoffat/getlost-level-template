@@ -2,7 +2,7 @@ import { LayerName } from "@/editor/collision/types/layer";
 import { colliderFill } from "@/editor/common/strokes";
 import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { BoxObj, MapObj } from "@/types/map";
+import { BoxObj, MapObj, MapObjType } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import * as P from "pixi.js";
 import {
@@ -38,6 +38,7 @@ export class Collider implements ClickDragListener {
 
     const obj: BoxObj = {
       id: crypto.randomUUID(),
+      type: MapObjType.BoxCollider,
       x: pos.x,
       y: pos.y,
       z: 0,

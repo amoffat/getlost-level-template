@@ -5,7 +5,8 @@ import {
   clearCandAnimFramesThunk,
 } from "@/thunks/tileset";
 import { SpatialIndex } from "@/types/spatial";
-import { isTileGroup, TilesetObject } from "@/types/tilegroup";
+import { isTileGroup } from "@/types/tilegroup";
+import { TilesetObject } from "@/types/tilesetobject";
 import {
   ClickDragger,
   ClickDragListener,

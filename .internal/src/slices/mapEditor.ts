@@ -1,6 +1,11 @@
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { isAnimatedInstance, isTileGroupInstance, MapObj } from "@/types/map";
+import {
+  isAnimatedInstance,
+  isNpcInstance,
+  isTileGroupInstance,
+  MapObj,
+} from "@/types/map";
 import { Rect } from "@/types/rect";
 import { isTileGroup } from "@/types/tilegroup";
 import { TilesetObject } from "@/types/tilesetobject";
@@ -320,7 +325,7 @@ export const slice = createSlice({
         return count;
       }
     ),
-    paletteSelectedTgIds: createSelector.withTypes<MapEditorState>()(
+    paletteSelectedTsObjIds: createSelector.withTypes<MapEditorState>()(
       [
         (state) => state.selectedIds,
         (state) => state.objects.entities,
@@ -328,15 +333,31 @@ export const slice = createSlice({
       ],
       (selectedIds, entities, placeObj): Set<string> => {
         const result = new Set<string>();
+        const counts = {
+          objects: 0,
+          animations: 0,
+          npcs: 0,
+        };
 
         // Single loop through selectedIds
         for (const id of selectedIds) {
           const instance = entities[id];
           if (instance) {
             if (isTileGroupInstance(instance)) {
-              result.add(instance.tileId);
+              if (!result.has(instance.tileId)) {
+                counts.objects++;
+                result.add(instance.tileId);
+              }
             } else if (isAnimatedInstance(instance)) {
-              result.add(instance.animId);
+              if (!result.has(instance.animId)) {
+                counts.animations++;
+                result.add(instance.animId);
+              }
+            } else if (isNpcInstance(instance)) {
+              if (!result.has(instance.npcId)) {
+                counts.npcs++;
+                result.add(instance.npcId);
+              }
             }
           }
         }
@@ -344,6 +365,13 @@ export const slice = createSlice({
         // Add placeObj if present
         if (placeObj) {
           result.add(placeObj.id);
+          if (isTileGroup(placeObj)) {
+            counts.objects++;
+          } else if (isAnimatedInstance(placeObj)) {
+            counts.animations++;
+          } else if (isNpcInstance(placeObj)) {
+            counts.npcs++;
+          }
         }
 
         return result;

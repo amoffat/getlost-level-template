@@ -9,6 +9,7 @@ import {
   AnimatedInstance,
   isTileGroupInstance,
   MapObj,
+  MapObjType,
   TileGroupInstance,
 } from "@/types/map";
 import { Rect, toPixiRect } from "@/types/rect";
@@ -164,6 +165,7 @@ export class Placer implements ClickDragListener {
     if (isTileGroup(obj)) {
       const inst: TileGroupInstance = {
         id,
+        type: MapObjType.TileGroupInstance,
         x: pos.x,
         y: pos.y,
         tileId: obj.id,
@@ -178,6 +180,7 @@ export class Placer implements ClickDragListener {
     } else if (isObjectAnimation(obj)) {
       const inst: AnimatedInstance = {
         id,
+        type: MapObjType.AnimatedInstance,
         animId: obj.id,
         tilesetId: obj.frames[0]!.tg.tilesetId,
         frames: obj.frames.map((f) => ({
