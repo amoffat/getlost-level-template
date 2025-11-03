@@ -1,12 +1,13 @@
 import { OklabColor } from "@/types/color";
-import type { TileAnimationFrame } from "./animation";
 import type { Rect } from "./rect";
+import { TilesetObjType } from "./tileset";
 import type { TilesetObject } from "./tilesetobject";
 
-export interface TileGroup {
+export interface TileGroupTemplate {
   // The unique, stable id, which uses the image data hash plus tileset and
   // position
   id: string;
+  type: TilesetObjType.TileGroupTemplate;
   // The image-hash based id
   imageId: string;
   // The grid size this object is aligned to
@@ -23,19 +24,8 @@ export interface TileGroup {
   hilbertIndex: number;
 }
 
-export interface ObjectAnimation {
-  // The unique, stable id which is based on a hash of the frame ids and times
-  id: string;
-  tilesetId: string;
-  frames: TileAnimationFrame[];
-  tags: string[];
-  names: string[];
-}
-
-export function isTileGroup(obj: TilesetObject): obj is TileGroup {
-  return (obj as TileGroup).pinned !== undefined;
-}
-
-export function isObjectAnimation(obj: TilesetObject): obj is ObjectAnimation {
-  return (obj as ObjectAnimation).frames !== undefined;
+export function isTileGroupTemplate(
+  obj: TilesetObject
+): obj is TileGroupTemplate {
+  return obj.type === TilesetObjType.TileGroupTemplate;
 }

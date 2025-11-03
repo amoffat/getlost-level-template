@@ -4,6 +4,7 @@ import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
+import { isObjectAnimationTemplate } from "@/types/animation";
 import { MapLayerName } from "@/types/layer";
 import {
   AnimatedInstance,
@@ -14,7 +15,7 @@ import {
 } from "@/types/map";
 import { Rect, toPixiRect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
-import { isObjectAnimation, isTileGroup } from "@/types/tilegroup";
+import { isTileGroupTemplate } from "@/types/tilegroup";
 import { PaintOpts } from "@/types/tools";
 import { subState } from "@/utils/redux";
 import { Vector } from "@/vec";
@@ -162,7 +163,7 @@ export class Placer implements ClickDragListener {
     const obj = place.obj!;
     const id = crypto.randomUUID();
 
-    if (isTileGroup(obj)) {
+    if (isTileGroupTemplate(obj)) {
       const inst: TileGroupInstance = {
         id,
         type: MapObjType.TileGroupInstance,
@@ -177,7 +178,7 @@ export class Placer implements ClickDragListener {
       };
 
       store.dispatch(actions.addOne(inst));
-    } else if (isObjectAnimation(obj)) {
+    } else if (isObjectAnimationTemplate(obj)) {
       const inst: AnimatedInstance = {
         id,
         type: MapObjType.AnimatedInstance,
@@ -229,7 +230,7 @@ subState(
       let sprite: P.Sprite;
       let outlineFrame!: Rect;
 
-      if (isTileGroup(placeObj)) {
+      if (isTileGroupTemplate(placeObj)) {
         const rect = placeObj.pos;
         outlineFrame = rect;
         const tsTex = gApp.tilesetTextureCache.get(placeObj.tilesetId);
@@ -242,7 +243,7 @@ subState(
           frame: toPixiRect(rect),
         });
         sprite = new P.Sprite(texture);
-      } else if (isObjectAnimation(placeObj)) {
+      } else if (isObjectAnimationTemplate(placeObj)) {
         const pixiFrames: P.FrameObject[] = [];
         for (const frame of placeObj.frames) {
           const rect = frame.tg.pos;

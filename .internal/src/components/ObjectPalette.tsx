@@ -1,6 +1,7 @@
 import { useAppSelector } from "@/hooks/redux";
+import { isObjectAnimationTemplate } from "@/types/animation";
 import { PaletteObjectProps } from "@/types/palette";
-import { isObjectAnimation, isTileGroup } from "@/types/tilegroup";
+import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
 import { TilesetObject } from "@/types/tilesetobject";
 import { Vector } from "@/vec";
@@ -158,7 +159,7 @@ export default function ObjectPalette<ObjType extends TilesetObject>({
         const y = rect.top + rect.height / 4;
         setObjMenuPos({ x, y });
 
-        if (isTileGroup(obj) || isObjectAnimation(obj)) {
+        if (isTileGroupTemplate(obj) || isObjectAnimationTemplate(obj)) {
           setClicked(obj as ObjType);
         } else {
           setClicked(null);
@@ -220,13 +221,13 @@ export default function ObjectPalette<ObjType extends TilesetObject>({
       <Portal>
         <TileGroupMenu
           pos={objMenuPos}
-          obj={clicked && isTileGroup(clicked) ? clicked : null}
+          obj={clicked && isTileGroupTemplate(clicked) ? clicked : null}
           closeMenu={() => setObjMenuPos(null)}
           onTagsModalOpened={deselectObject}
         />
         <ObjectAnimationMenu
           pos={objMenuPos}
-          obj={clicked && isObjectAnimation(clicked) ? clicked : null}
+          obj={clicked && isObjectAnimationTemplate(clicked) ? clicked : null}
           closeMenu={() => setObjMenuPos(null)}
         />
       </Portal>

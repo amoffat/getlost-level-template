@@ -4,7 +4,7 @@ import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { MapObj, MapObjType, TileGroupInstance } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
-import { TileGroup } from "@/types/tilegroup";
+import { TileGroupTemplate } from "@/types/tilegroup";
 import { Vector } from "@/vec";
 import {
   ClickDragger,
@@ -67,7 +67,7 @@ export class Gateway implements ClickDragListener {
     const layer = MapLayerName.Places;
 
     const place = ms.place;
-    const obj = place.obj! as TileGroup;
+    const obj = place.obj! as TileGroupTemplate;
     const id = crypto.randomUUID();
 
     const tgi: TileGroupInstance = {

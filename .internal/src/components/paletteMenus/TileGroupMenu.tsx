@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { actions as uiActions, selectors as uiSelectors } from "@/slices/ui";
-import { TileGroup } from "@/types/tilegroup";
+import { TileGroupTemplate } from "@/types/tilegroup";
 import { Vector } from "@/vec";
 import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
 import {
@@ -18,7 +18,7 @@ import TilesetGroup from "../TilesetGroup";
 
 interface TileGroupMenuProps {
   pos: Vector | null;
-  obj: TileGroup | null;
+  obj: TileGroupTemplate | null;
   onTagsModalOpened?: VoidFunction;
   closeMenu: () => void;
 }

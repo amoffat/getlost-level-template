@@ -11,7 +11,7 @@ import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { isTileGroupInstance, MapObj, TileGroupInstance } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
-import { TileGroup } from "@/types/tilegroup";
+import { TileGroupTemplate } from "@/types/tilegroup";
 import { createRafThrottled } from "@/utils/throttle";
 import { Vector } from "@/vec";
 import { MapLayerName } from "../../../types/layer";
@@ -27,22 +27,26 @@ class Painter extends Placer {
   constructor(spatialIndex: SpatialIndex<MapObj>) {
     super(spatialIndex);
 
-    this.placeDispatcher = createRafThrottled((obj: TileGroup | null) => {
-      store.dispatch(mapEdActions.setPlace(obj));
-    });
+    this.placeDispatcher = createRafThrottled(
+      (obj: TileGroupTemplate | null) => {
+        store.dispatch(mapEdActions.setPlace(obj));
+      }
+    );
 
     this.posDispatcher = createRafThrottled((pos: Vector) => {
       store.dispatch(mapEdActions.setGridPos(pos));
     });
 
-    this.candidateDispatcher = createRafThrottled((cands: TileGroup[]) => {
-      store.dispatch(
-        mapEdActions.setToolOptions({
-          tool: "magic-paint",
-          options: { candidates: cands },
-        })
-      );
-    });
+    this.candidateDispatcher = createRafThrottled(
+      (cands: TileGroupTemplate[]) => {
+        store.dispatch(
+          mapEdActions.setToolOptions({
+            tool: "magic-paint",
+            options: { candidates: cands },
+          })
+        );
+      }
+    );
   }
   public pointerUp(_e: PointerEventData): void {
     const state = store.getState();
@@ -170,7 +174,7 @@ class Painter extends Placer {
     if (match) {
       const obj = appG.tileIdToTileGroup.get(match.id)!;
 
-      let orderedCandidates: TileGroup[] = [];
+      let orderedCandidates: TileGroupTemplate[] = [];
       if (excludedUnder) {
         // If we excluded the tile under the cursor, then include it at the end
         // of the candidates list

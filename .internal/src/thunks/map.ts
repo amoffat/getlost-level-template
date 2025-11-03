@@ -7,7 +7,7 @@ import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { MapObj, TileGroupInstance } from "@/types/map";
-import { isTileGroup } from "@/types/tilegroup";
+import { isTileGroupTemplate } from "@/types/tilegroup";
 import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
@@ -111,7 +111,7 @@ export const setToolThunk = createAsyncThunk(
         dispatch(mapActions.clearSelection());
         if (![MapLayerName.Ground, MapLayerName.Exterior].includes(layer)) {
           const obj = state.mapEditor.place.obj;
-          if (obj && isTileGroup(obj)) {
+          if (obj && isTileGroupTemplate(obj)) {
             const isSolidTile = obj.coverage === 1.0;
             const switchTo = isSolidTile
               ? MapLayerName.Ground

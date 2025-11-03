@@ -10,7 +10,7 @@ import {
 } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
-import { isTileGroup, TileGroup } from "@/types/tilegroup";
+import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { schedulerYield } from "@/utils/async";
 import { hasSolidEdges, subImageData } from "@/utils/image";
@@ -102,7 +102,7 @@ export const loadEdgeSignaturesThunk = createAsyncThunk(
     const imageData = g.tilesetImageDataCache.get(tsId)!;
     const objs = new Map<string, ImageData>();
     for (const obj of Object.values(ts.tiles.entities)) {
-      if (!isTileGroup(obj)) continue;
+      if (!isTileGroupTemplate(obj)) continue;
 
       // Don't need to compute edges for non-solid tiles
       if (hasSolidEdges(imageData, obj.pos)) {
@@ -139,7 +139,7 @@ export const populateTilesetTagsThunk = createAsyncThunk(
     }
 
     for (const obj of Object.values(ts.tiles.entities)) {
-      if (isTileGroup(obj) && obj.tags.length > 0) {
+      if (isTileGroupTemplate(obj) && obj.tags.length > 0) {
         dispatch(uiActions.addTilesetGroupTags(obj.tags));
       }
     }
@@ -175,7 +175,7 @@ export const retileThunk = createAsyncThunk(
     }
 
     const ids = Object.values(ts.tiles.entities)
-      .filter(isTileGroup)
+      .filter(isTileGroupTemplate)
       .filter((obj) => !obj.pinned)
       .map((obj) => obj.id);
     dispatch(tsActions.deletePaletteObjects({ tsId, ids }));
@@ -204,7 +204,7 @@ export const setToolThunk = createAsyncThunk(
  */
 export const addAnimationFrameThunk = createAsyncThunk(
   "tilesetEditor/addAnimationFrameThunk",
-  async (tg: TileGroup, { dispatch, getState }) => {
+  async (tg: TileGroupTemplate, { dispatch, getState }) => {
     const state = getState() as { tilesetEditor: TilesetEditorState };
 
     const curFrames = state.tilesetEditor.candAnimFrames;

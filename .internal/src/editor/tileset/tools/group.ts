@@ -2,7 +2,8 @@ import { globals as gApp } from "@/globals";
 import { selectors, actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { SpatialIndex } from "@/types/spatial";
-import { TileGroup } from "@/types/tilegroup";
+import { TileGroupTemplate } from "@/types/tilegroup";
+import { TilesetObjType } from "@/types/tileset";
 import { TilesetObject } from "@/types/tilesetobject";
 import { averageOklab } from "@/utils/color";
 import { oklabHilbertIndex } from "@/utils/hilbert";
@@ -111,8 +112,9 @@ class Grouper implements ClickDragListener {
         });
         const avgColor = averageOklab(objData);
 
-        const group: TileGroup = {
+        const group: TileGroupTemplate = {
           id,
+          type: TilesetObjType.TileGroupTemplate,
           imageId,
           tilesetId: tsId,
           pos: coords,
@@ -175,7 +177,7 @@ export function setupGrouper({
   cd.addListener(new Grouper(spatialIndex));
 }
 
-async function drawGroups(groups: TileGroup[], zoom: number) {
+async function drawGroups(groups: TileGroupTemplate[], zoom: number) {
   if (!g.allGroupsOverlay) return;
 
   g.allGroupsOverlay.removeChildren();

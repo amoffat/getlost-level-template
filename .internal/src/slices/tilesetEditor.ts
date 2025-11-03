@@ -1,6 +1,6 @@
 import { log } from "@/log";
 import { Rect } from "@/types/rect";
-import { isTileGroup, TileGroup } from "@/types/tilegroup";
+import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { TilesetObject } from "@/types/tilesetobject";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
@@ -42,7 +42,7 @@ export interface TilesetEditorState {
   toolOptions: {
     [K in ToolWithOptions]: ToolOptMapping[K];
   };
-  candAnimFrames: TileGroup[];
+  candAnimFrames: TileGroupTemplate[];
 }
 
 export const slice = createSlice({
@@ -91,7 +91,7 @@ export const slice = createSlice({
       // state.toolOptions[tool] = { ...state.toolOptions[tool], ...options };
     },
 
-    addCandAnimFrame(state, action: PayloadAction<TileGroup>) {
+    addCandAnimFrame(state, action: PayloadAction<TileGroupTemplate>) {
       state.candAnimFrames.push(action.payload);
     },
 
@@ -362,12 +362,12 @@ export const slice = createSlice({
     ),
     activeTilesetGroups: createSelector.withTypes<TilesetEditorState>()(
       [(state) => state.activeTilesetId, (state) => state.tilesets],
-      (tsId, tilesets): TileGroup[] => {
+      (tsId, tilesets): TileGroupTemplate[] => {
         if (!tsId) return [];
         const ts = tilesets[tsId];
         const objs = ts.tiles.ids
           .map((id) => ts.tiles.entities[id])
-          .filter(isTileGroup);
+          .filter(isTileGroupTemplate);
         const broken = ts.tiles.ids.filter(
           (id) => ts.tiles.entities[id] === undefined
         );

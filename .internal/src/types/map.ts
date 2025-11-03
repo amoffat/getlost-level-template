@@ -22,7 +22,11 @@ export interface TileGroupInstance extends BaseMapObj {
   tileId: string;
   tilesetId: string;
   frame: Rect;
+
+  // Properties that can vary per-instance
   flipX: boolean;
+  name?: string;
+  tags?: string[];
 }
 
 export interface AnimatedInstance extends BaseMapObj {
@@ -30,14 +34,22 @@ export interface AnimatedInstance extends BaseMapObj {
   animId: string;
   tilesetId: string;
   frames: { tileId: string; frame: Rect; time: number }[];
+
+  // Properties that can vary per-instance
   flipX: boolean;
+  name?: string;
+  tags?: string[];
 }
 
 export interface NpcInstance extends BaseMapObj {
   type: MapObjType.NpcInstance;
   npcId: string;
   tilesetId: string;
-  name: string;
+
+  // Properties that can vary per-instance
+  flipX: boolean;
+  name?: string;
+  tags?: string[];
 }
 
 export interface EllipseObj extends BaseMapObj {

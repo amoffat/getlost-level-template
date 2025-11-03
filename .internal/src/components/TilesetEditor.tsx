@@ -8,24 +8,17 @@ import {
   selectTilesetThunk,
   setToolThunk,
 } from "@/thunks/tileset";
-import { isNpc } from "@/types/npc";
+import { isObjectAnimationTemplate } from "@/types/animation";
+import { isNpcTemplate } from "@/types/npc";
 import { TilesetTabName } from "@/types/tab";
-import { isObjectAnimation, isTileGroup } from "@/types/tilegroup";
+import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Mode } from "@/types/tileset";
 import {
   npcSort,
   objectAnimationSort,
   tileGroupSort,
 } from "@/utils/palette/sort";
-import {
-  Anchor,
-  Flex,
-  Group,
-  ScrollArea,
-  Stack,
-  Tabs,
-  Text,
-} from "@mantine/core";
+import { Anchor, Flex, Group, ScrollArea, Stack, Tabs } from "@mantine/core";
 import {
   IconGrid4x4,
   IconKeyframes,
@@ -45,7 +38,6 @@ import {
   useRef,
 } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import HelpHoverCard from "./HelpHoverCard";
 import ObjectPalette from "./ObjectPalette";
 import TilesetButton from "./TilesetButton";
 import Tip from "./Tip";
@@ -208,7 +200,7 @@ export default function TilesetEditorTab({
       if (deferredActiveTileset) {
         const hasTiles = deferredActiveTileset.tiles.ids.length > 0;
         const hasPinned = Object.values(deferredActiveTileset.tiles.entities)
-          .filter(isTileGroup)
+          .filter(isTileGroupTemplate)
           .some((obj) => obj.pinned);
 
         if (hasTiles) {
@@ -268,38 +260,14 @@ export default function TilesetEditorTab({
             >
               <Tabs.List>
                 <Tabs.Tab value={"objects"}>
-                  <Group gap="xs">
-                    Objects
-                    <HelpHoverCard>
-                      <Text size="sm">
-                        Objects are tiles or groups of tiles that can be placed
-                        in the map.
-                      </Text>
-                    </HelpHoverCard>
-                  </Group>
+                  <Group gap="xs">Objects</Group>
                 </Tabs.Tab>
                 <Tabs.Tab value="animations">
-                  <Group gap="xs">
-                    Animations
-                    <HelpHoverCard>
-                      <Text size="sm">
-                        Animations are sequences of frames composed of tiles or
-                        tile groups.
-                      </Text>
-                    </HelpHoverCard>
-                  </Group>
+                  <Group gap="xs">Animations</Group>
                 </Tabs.Tab>
 
                 <Tabs.Tab value="npcs">
-                  <Group gap="xs">
-                    NPCs
-                    <HelpHoverCard>
-                      <Text size="sm">
-                        Animations are sequences of frames composed of tiles or
-                        tile groups.
-                      </Text>
-                    </HelpHoverCard>
-                  </Group>
+                  <Group gap="xs">NPCs</Group>
                 </Tabs.Tab>
               </Tabs.List>
 
@@ -315,7 +283,7 @@ export default function TilesetEditorTab({
                 <ObjectPalette
                   tileset={deferredActiveTileset}
                   selectedObjects={deferredPaletteSelection}
-                  filter={isTileGroup}
+                  filter={isTileGroupTemplate}
                   renderObject={renderTileGroup}
                   sort={tileGroupSort}
                 />
@@ -332,7 +300,7 @@ export default function TilesetEditorTab({
                 <ObjectPalette
                   tileset={deferredActiveTileset}
                   selectedObjects={deferredPaletteSelection}
-                  filter={isObjectAnimation}
+                  filter={isObjectAnimationTemplate}
                   renderObject={renderObjectAnimation}
                   sort={objectAnimationSort}
                 />
@@ -349,7 +317,7 @@ export default function TilesetEditorTab({
                 <ObjectPalette
                   tileset={deferredActiveTileset}
                   selectedObjects={deferredPaletteSelection}
-                  filter={isNpc}
+                  filter={isNpcTemplate}
                   renderObject={renderNpc}
                   sort={npcSort}
                 />

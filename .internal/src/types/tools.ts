@@ -1,5 +1,5 @@
 import { Vector } from "@/vec";
-import type { TileGroup } from "./tilegroup";
+import type { TileGroupTemplate } from "./tilegroup";
 
 export interface PaintOpts {
   mode: "place-once" | "overwrite" | "stack";
@@ -12,6 +12,6 @@ export interface ColliderOpts {
 }
 
 export interface MagicPaintOpts {
-  candidates: TileGroup[];
+  candidates: TileGroupTemplate[];
   gridPosFreeze: Vector | null;
 }

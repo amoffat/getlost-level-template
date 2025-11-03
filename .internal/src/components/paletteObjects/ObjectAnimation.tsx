@@ -1,12 +1,12 @@
+import { ObjectAnimationTemplate } from "@/types/animation";
 import { PaletteObjectProps } from "@/types/palette";
-import { ObjectAnimation } from "@/types/tilegroup";
 import TileAnimation from "../TileAnimation";
 
 export function renderObjectAnimation({
   scale,
   obj,
   selected,
-}: PaletteObjectProps<ObjectAnimation>): React.ReactNode | null {
+}: PaletteObjectProps<ObjectAnimationTemplate>): React.ReactNode | null {
   return (
     <div
       data-objid={obj.id}

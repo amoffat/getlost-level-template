@@ -5,7 +5,6 @@ import { Button, Group, Radio, Stack, Stepper, Text } from "@mantine/core";
 import { FileWithPath } from "@mantine/dropzone";
 import { useForm } from "@mantine/form";
 import { ReactNode, useCallback, useState } from "react";
-import NpcCreateOrSelect from "../NpcCreateOrSelect";
 import RadioCard from "./RadioCard";
 
 interface StepProps {
@@ -14,7 +13,6 @@ interface StepProps {
 }
 
 interface FormValues {
-  assetType: "tileset" | "npc";
   tilesetType: "tileset" | "object" | "tileset-composite";
   npcType: "npc-spritesheet" | "npc-animation";
 }
@@ -28,7 +26,6 @@ export default function TilesetSteps({ files, closeModal }: StepProps) {
     mode: "uncontrolled",
     onSubmitPreventDefault: "always",
     initialValues: {
-      assetType: "tileset",
       tilesetType: "tileset",
       npcType: "npc-spritesheet",
     },
@@ -47,7 +44,7 @@ export default function TilesetSteps({ files, closeModal }: StepProps) {
   const formSubmit = form.onSubmit((values) => {
     closeModal();
 
-    if (values.assetType === "tileset") {
+    if (values.tilesetType === "tileset") {
       uploadTileset(files);
       dispatch(uiActions.setTab("tileset-editor"));
     }
@@ -58,59 +55,7 @@ export default function TilesetSteps({ files, closeModal }: StepProps) {
   // Build steps array preserving conditional inclusion logic
   const steps: ReactNode[] = [];
 
-  if (files.length === 1) {
-    steps.push(
-      <Stepper.Step label="Asset type" key="step-asset-type">
-        <Stack>
-          <Text>Are you uploading a tileset asset or an NPC asset?</Text>
-          <Radio.Group
-            {...form.getInputProps("assetType")}
-            key={form.key("assetType")}
-          >
-            <Stack>
-              <RadioCard
-                value="tileset"
-                label="Tileset"
-                description="A spritesheet containing tiles or objects to be used in the map editor."
-              />
-              <RadioCard
-                value="npc"
-                label="NPC"
-                description="A single NPC animation frame or a spritesheet containing NPC frames."
-              />
-            </Stack>
-          </Radio.Group>
-        </Stack>
-      </Stepper.Step>
-    );
-  } else {
-    steps.push(
-      <Stepper.Step label="Asset type" key="step-asset-type">
-        <Stack>
-          <Text>Are you uploading tileset assets or NPC assets?</Text>
-          <Radio.Group
-            {...form.getInputProps("assetType")}
-            key={form.key("assetType")}
-          >
-            <Stack>
-              <RadioCard
-                value="tileset"
-                label="Tileset"
-                description="Images containing tilesets or objects to be used in the map editor."
-              />
-              <RadioCard
-                value="npc"
-                label="NPC"
-                description="Images containing NPC spritesheets or animation frames."
-              />
-            </Stack>
-          </Radio.Group>
-        </Stack>
-      </Stepper.Step>
-    );
-  }
-
-  if (values.assetType === "tileset") {
+  if (values.tilesetType === "tileset") {
     if (files.length === 1) {
       steps.push(
         <Stepper.Step label="Tileset type" key="step-tileset-single">
@@ -162,72 +107,6 @@ export default function TilesetSteps({ files, closeModal }: StepProps) {
         </Stepper.Step>
       );
     }
-  }
-
-  if (values.assetType === "npc") {
-    if (files.length === 1) {
-      steps.push(
-        <Stepper.Step label="NPC type" key="step-npc-single">
-          <Stack>
-            <Text>What type of NPC asset is this?</Text>
-            <Radio.Group
-              {...form.getInputProps("npcType")}
-              key={form.key("npcType")}
-            >
-              <Stack>
-                <RadioCard
-                  value="npc-spritesheet"
-                  label="NPC animation spritesheet"
-                  description="The image is a spritesheet of NPC animation frames."
-                />
-                <RadioCard
-                  value="npc-animation"
-                  label="NPC animation frame"
-                  description="The image is a single frame in an NPC animation."
-                />
-              </Stack>
-            </Radio.Group>
-          </Stack>
-        </Stepper.Step>
-      );
-    } else {
-      steps.push(
-        <Stepper.Step label="NPC type" key="step-npc-multi">
-          <Stack>
-            <Text>What type of NPC assets are these?</Text>
-            <Radio.Group
-              {...form.getInputProps("npcType")}
-              key={form.key("npcType")}
-            >
-              <Stack>
-                <RadioCard
-                  value="npc-spritesheet"
-                  label="NPC spritesheets"
-                  description="Each image is a separate NPC spritesheet of animations."
-                />
-                <RadioCard
-                  value="npc-animation"
-                  label="NPC animation frames"
-                  description="Each image is a separate animation frame in a single NPC animation."
-                />
-              </Stack>
-            </Radio.Group>
-          </Stack>
-        </Stepper.Step>
-      );
-    }
-
-    steps.push(
-      <Stepper.Step label="NPC configuration" key="step-npc-config">
-        <Stack>
-          <Text>
-            Please create or select the NPC that these assets will be associated
-            with.
-          </Text>
-          <NpcCreateOrSelect />
-        </Stack>
-      </Stepper.Step>
-    );
   }
 
   const actionButton =

@@ -1,3 +1,4 @@
+import { isObjectAnimationTemplate } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import {
@@ -6,9 +7,10 @@ import {
   isTileGroupInstance,
   MapObj,
 } from "@/types/map";
+import { isNpcTemplate } from "@/types/npc";
 import { Rect } from "@/types/rect";
-import { isTileGroup } from "@/types/tilegroup";
-import { TilesetObject } from "@/types/tilesetobject";
+import { isTileGroupTemplate } from "@/types/tilegroup";
+import { TilesetObject, TsObjCounts } from "@/types/tilesetobject";
 import { ColliderOpts, MagicPaintOpts, PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
@@ -141,7 +143,7 @@ export const slice = createSlice({
       if (
         state.layers.active === MapLayerName.Ground &&
         obj &&
-        isTileGroup(obj)
+        isTileGroupTemplate(obj)
       ) {
         state.grid.size = obj.gridSize;
       }
@@ -331,7 +333,7 @@ export const slice = createSlice({
         (state) => state.objects.entities,
         (state) => state.place.obj,
       ],
-      (selectedIds, entities, placeObj): Set<string> => {
+      (selectedIds, entities, placeObj): [Set<string>, TsObjCounts] => {
         const result = new Set<string>();
         const counts = {
           objects: 0,
@@ -365,21 +367,24 @@ export const slice = createSlice({
         // Add placeObj if present
         if (placeObj) {
           result.add(placeObj.id);
-          if (isTileGroup(placeObj)) {
+          if (isTileGroupTemplate(placeObj)) {
             counts.objects++;
-          } else if (isAnimatedInstance(placeObj)) {
+          } else if (isObjectAnimationTemplate(placeObj)) {
             counts.animations++;
-          } else if (isNpcInstance(placeObj)) {
+          } else if (isNpcTemplate(placeObj)) {
             counts.npcs++;
           }
         }
 
-        return result;
+        return [result, counts];
       },
       {
         memoizeOptions: {
           // Only return new Set if contents actually changed
-          resultEqualityCheck: (a, b) => {
+          resultEqualityCheck: (aRes, bRes) => {
+            const [a, _] = aRes;
+            const [b, __] = bRes;
+
             if (a.size !== b.size) return false;
             for (const item of a) {
               if (!b.has(item)) return false;

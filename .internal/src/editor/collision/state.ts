@@ -1,6 +1,6 @@
 import { Mode } from "@/types/editors/collision";
 import { MapObj, TileGroupInstance } from "@/types/map";
-import { TileGroup } from "@/types/tilegroup";
+import { TileGroupTemplate } from "@/types/tilegroup";
 import { PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
@@ -36,7 +36,7 @@ interface CollisionEditorState {
   };
   modeStack: Mode[];
   place: {
-    obj: TileGroup | null;
+    obj: TileGroupTemplate | null;
     flipX: boolean;
   };
   selectedObjs: EntityState<MapObj, string>;
@@ -96,7 +96,7 @@ export const slice = createSlice({
       selectedAdapter.removeAll(state.selectedObjs);
     },
 
-    setPlace(state, action: PayloadAction<TileGroup | null>) {
+    setPlace(state, action: PayloadAction<TileGroupTemplate | null>) {
       state.place.obj = action.payload;
     },
 

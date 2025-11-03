@@ -1,5 +1,5 @@
 import type { SignatureIndex } from "@/editor/map/utils/autotile";
-import type { TileGroup } from "@/types/tilegroup";
+import type { TileGroupTemplate } from "@/types/tilegroup";
 import * as P from "pixi.js";
 import { MapObjReconciler } from "./editor/common/mapReconciler";
 import { TileReconciler } from "./editor/common/tileReconciler";
@@ -11,7 +11,7 @@ interface Globals {
   tileEdgeSigs: SignatureIndex;
   // This lets us quickly find the TileGroup that a tile ID belongs to, so we
   // can look up its tileset, etc
-  tileIdToTileGroup: Map<string, TileGroup>;
+  tileIdToTileGroup: Map<string, TileGroupTemplate>;
   // Tileset texture cache, keyed by tileset ID
   tilesetTextureCache: Map<string, P.Texture>;
   tilesetImageDataCache: Map<string, ImageData>;

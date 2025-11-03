@@ -1,4 +1,5 @@
-import type { ObjectAnimation } from "./tilegroup";
+import type { ObjectAnimationTemplate } from "./animation";
+import { TilesetObjType } from "./tileset";
 import type { TilesetObject } from "./tilesetobject";
 
 export type NpcRequiredAnimation =
@@ -8,18 +9,22 @@ export type NpcRequiredAnimation =
   | "WalkLeft"
   | "WalkRight";
 
-export type NpcAnimationRecord = Record<NpcRequiredAnimation, ObjectAnimation> &
-  Record<string, ObjectAnimation>;
+export type NpcAnimationRecord = Record<
+  NpcRequiredAnimation,
+  ObjectAnimationTemplate
+> &
+  Record<string, ObjectAnimationTemplate>;
 
-export interface Npc {
+export interface NpcTemplate {
   // A random id
   id: string;
+  type: TilesetObjType.NpcTemplate;
   tilesetId: string;
   tags: string[];
   name: string;
   animations: NpcAnimationRecord;
 }
 
-export function isNpc(obj: TilesetObject): obj is Npc {
-  return (obj as Npc).animations !== undefined;
+export function isNpcTemplate(obj: TilesetObject): obj is NpcTemplate {
+  return obj.type === TilesetObjType.NpcTemplate;
 }

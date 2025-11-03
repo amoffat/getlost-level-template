@@ -1,12 +1,12 @@
 import { PaletteObjectProps } from "@/types/palette";
-import { TileGroup } from "@/types/tilegroup";
+import { TileGroupTemplate } from "@/types/tilegroup";
 import TilesetGroup from "../TilesetGroup";
 
 export function renderTileGroup({
   scale,
   obj,
   selected,
-}: PaletteObjectProps<TileGroup>): React.ReactNode | null {
+}: PaletteObjectProps<TileGroupTemplate>): React.ReactNode | null {
   return (
     <div
       data-tsid={obj.tilesetId}

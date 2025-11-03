@@ -1,11 +1,11 @@
 import { useAppSelector } from "@/hooks/redux";
-import { TileGroup } from "@/types/tilegroup";
+import { TileGroupTemplate } from "@/types/tilegroup";
 import classNames from "classnames";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./styles/TilesetGroup.module.css";
 
 export interface TilesetCropProps extends React.HTMLAttributes<HTMLDivElement> {
-  group: TileGroup;
+  group: TileGroupTemplate;
   className?: string;
   scale: number;
   // If true (default), autoscaling will be bounded by the parent container's

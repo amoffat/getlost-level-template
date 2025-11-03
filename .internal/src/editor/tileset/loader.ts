@@ -3,8 +3,8 @@ import { actions as tsActions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
 import { Rect } from "@/types/rect";
-import { TileGroup } from "@/types/tilegroup";
-import { Tileset } from "@/types/tileset";
+import { TileGroupTemplate } from "@/types/tilegroup";
+import { Tileset, TilesetObjType } from "@/types/tileset";
 import { schedulerYield } from "@/utils/async";
 import { averageOklab } from "@/utils/color";
 import { oklabHilbertIndex } from "@/utils/hilbert";
@@ -56,7 +56,7 @@ export async function unpackTileset(tsId: string) {
   const imageData = getImageDataFromBitmap(bitmap);
 
   store.dispatch(uiActions.loadingPalette(true));
-  let chunk: TileGroup[] = [];
+  let chunk: TileGroupTemplate[] = [];
   const chunkIds = new Set<string>();
 
   const flushChunk = async (coords: Rect | null = null) => {
@@ -116,8 +116,9 @@ export async function unpackTileset(tsId: string) {
       }
 
       const avgColor = averageOklab(tileImageData);
-      const tg: TileGroup = {
+      const tg: TileGroupTemplate = {
         id,
+        type: TilesetObjType.TileGroupTemplate,
         imageId,
         pos: coords,
         tilesetId: tsId,

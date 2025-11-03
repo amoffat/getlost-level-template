@@ -2,7 +2,7 @@ import { globals as gApp } from "@/globals";
 import { store } from "@/store/store";
 import type { TileAnimationFrame } from "@/types/animation";
 import { Rect } from "@/types/rect";
-import { isTileGroup, TileGroup } from "@/types/tilegroup";
+import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
 import * as P from "pixi.js";
 import { sha1Hash } from "./hash";
@@ -64,12 +64,13 @@ export function loadTileGroup({
 }: {
   id: string;
   tilesetId: string;
-}): TileGroup {
+}): TileGroupTemplate {
   const state = store.getState();
   const ts = state.tilesetEditor.tilesets[tilesetId];
   if (!ts) throw new Error("Tileset not found for tile group");
   const tg = ts.tiles.entities[id];
   if (!tg) throw new Error("Tile group not found in tileset palette");
-  if (!isTileGroup(tg)) throw new Error("Palette object is not a tile group");
+  if (!isTileGroupTemplate(tg))
+    throw new Error("Palette object is not a tile group");
   return tg;
 }

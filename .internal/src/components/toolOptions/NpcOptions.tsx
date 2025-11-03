@@ -2,8 +2,11 @@ import { overlayProps, requiredNpcAnimations } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as uiActions } from "@/slices/ui";
 import { setToolThunk } from "@/thunks/tileset";
+import {
+  isObjectAnimationTemplate,
+  type ObjectAnimationTemplate,
+} from "@/types/animation";
 import type { NpcRequiredAnimation } from "@/types/npc";
-import { isObjectAnimation, type ObjectAnimation } from "@/types/tilegroup";
 import {
   Anchor,
   Button,
@@ -20,7 +23,7 @@ import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconAlertTriangle, IconCheck } from "@tabler/icons-react";
-import { ReactNode, useEffect, useMemo } from "react";
+import { ReactNode, useCallback, useEffect, useMemo } from "react";
 import TileAnimation from "../TileAnimation";
 import Tip from "../Tip";
 
@@ -90,12 +93,14 @@ export default function NpcOptions() {
 
   // Match each NPC animation name with animations from the tileset
   const animationMatches = useMemo<
-    Partial<Record<NpcRequiredAnimation, ObjectAnimation>>
+    Partial<Record<NpcRequiredAnimation, ObjectAnimationTemplate>>
   >(() => {
     const allAnimations = Object.values(ts.tiles.entities).filter(
-      isObjectAnimation
+      isObjectAnimationTemplate
     );
-    const matches: Partial<Record<NpcRequiredAnimation, ObjectAnimation>> = {};
+    const matches: Partial<
+      Record<NpcRequiredAnimation, ObjectAnimationTemplate>
+    > = {};
     for (const requiredName of requiredNpcAnimations) {
       const match = allAnimations.find((anim) =>
         anim.names.includes(requiredName)
@@ -122,10 +127,11 @@ export default function NpcOptions() {
     return [hasAll, hasSome, hasNone];
   }, [animationMatches]);
 
+  const activateAnimationTool = useCallback(() => {
+    dispatch(setToolThunk("animate"));
+  }, [dispatch]);
+
   const tips: ReactNode[] = useMemo(() => {
-    const activateAnimationTool = () => {
-      dispatch(setToolThunk("animate"));
-    };
     const t = [];
 
     if (hasAll) {
@@ -144,7 +150,7 @@ export default function NpcOptions() {
       );
     }
     return t;
-  }, [dispatch, hasAll, hasSome, hasNone]);
+  }, [activateAnimationTool, hasAll, hasSome, hasNone]);
 
   const _handlePickAnimation = (animationName: string) => {
     // TODO: Implement animation picker
@@ -197,12 +203,20 @@ export default function NpcOptions() {
                       </Text>
                     </Table.Td>
                     <Table.Td>
-                      {animation && (
+                      {animation ? (
                         <TileAnimation
                           frames={animation.frames}
                           scale={2}
                           bounded
                         />
+                      ) : (
+                        <Anchor
+                          underline="hover"
+                          size="xs"
+                          onClick={activateAnimationTool}
+                        >
+                          Create
+                        </Anchor>
                       )}
                     </Table.Td>
                   </Table.Tr>

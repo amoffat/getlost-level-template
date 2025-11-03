@@ -19,3 +19,9 @@ export interface Tileset {
   saved: boolean;
   tiles: TilesBucket;
 }
+
+export enum TilesetObjType {
+  TileGroupTemplate = 0,
+  ObjectAnimationTemplate = 1,
+  NpcTemplate = 2,
+}

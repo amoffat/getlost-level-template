@@ -1,4 +1,4 @@
-import { Npc } from "@/types/npc";
+import { NpcTemplate } from "@/types/npc";
 import { PaletteObjectProps } from "@/types/palette";
 import TilesetGroup from "../TilesetGroup";
 
@@ -6,7 +6,7 @@ export function renderNpc({
   scale,
   obj,
   selected,
-}: PaletteObjectProps<Npc>): React.ReactNode | null {
+}: PaletteObjectProps<NpcTemplate>): React.ReactNode | null {
   const tg = obj.animations.Idle.frames[0]!.tg;
 
   return (

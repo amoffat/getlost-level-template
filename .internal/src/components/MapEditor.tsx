@@ -4,17 +4,26 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
 import { setToolThunk } from "@/thunks/map";
+import { isObjectAnimationTemplate } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { isNpc } from "@/types/npc";
-import { isObjectAnimation, isTileGroup } from "@/types/tilegroup";
+import { isNpcTemplate } from "@/types/npc";
+import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObject } from "@/types/tilesetobject";
 import {
   npcSort,
   objectAnimationSort,
   tileGroupSort,
 } from "@/utils/palette/sort";
-import { Fieldset, Flex, Group, Portal, Stack, Tabs } from "@mantine/core";
+import {
+  Badge,
+  Fieldset,
+  Flex,
+  Group,
+  Portal,
+  Stack,
+  Tabs,
+} from "@mantine/core";
 import {
   IconBulb,
   IconCameraSearch,
@@ -57,7 +66,9 @@ export default function MapEditorTab({
   const selectedToolName = useAppSelector(
     (state: RootState) => state.mapEditor.selectedTool
   );
-  const paletteSelection = useAppSelector(selectors.paletteSelectedTsObjIds);
+  const [paletteSelection, selCounts] = useAppSelector(
+    selectors.paletteSelectedTsObjIds
+  );
 
   // Defer visual updates to palette selection to keep interactions responsive
   const deferredPaletteSelection = useDeferredValue(paletteSelection);
@@ -187,6 +198,36 @@ export default function MapEditorTab({
     return tips;
   }, [tool]);
 
+  const objectsBadge = (
+    <Badge
+      size="xs"
+      circle
+      style={{ visibility: selCounts.objects > 0 ? "visible" : "hidden" }}
+    >
+      {selCounts.objects}
+    </Badge>
+  );
+
+  const animationsBadge = (
+    <Badge
+      size="xs"
+      circle
+      style={{ visibility: selCounts.animations > 0 ? "visible" : "hidden" }}
+    >
+      {selCounts.animations}
+    </Badge>
+  );
+
+  const npcsBadge = (
+    <Badge
+      size="xs"
+      circle
+      style={{ visibility: selCounts.npcs > 0 ? "visible" : "hidden" }}
+    >
+      {selCounts.npcs}
+    </Badge>
+  );
+
   return (
     <>
       <Flex h="100dvh" style={{ flex: 1 }}>
@@ -224,19 +265,19 @@ export default function MapEditorTab({
                 <Tabs.Tab value="objects">
                   <Group gap="xs">
                     Objects
-                    {/* {objectsBadge} */}
+                    {objectsBadge}
                   </Group>
                 </Tabs.Tab>
                 <Tabs.Tab value="animations">
                   <Group gap="xs">
                     Animations
-                    {/* {animationsBadge} */}
+                    {animationsBadge}
                   </Group>
                 </Tabs.Tab>
                 <Tabs.Tab value="npcs">
                   <Group gap="xs">
                     NPCs
-                    {/* {npcsBadge} */}
+                    {npcsBadge}
                   </Group>
                 </Tabs.Tab>
               </Tabs.List>
@@ -253,7 +294,7 @@ export default function MapEditorTab({
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
                   selectedObjects={deferredPaletteSelection}
-                  filter={isTileGroup}
+                  filter={isTileGroupTemplate}
                   renderObject={renderTileGroup}
                   sort={tileGroupSort}
                 />
@@ -271,7 +312,7 @@ export default function MapEditorTab({
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
                   selectedObjects={deferredPaletteSelection}
-                  filter={isObjectAnimation}
+                  filter={isObjectAnimationTemplate}
                   renderObject={renderObjectAnimation}
                   sort={objectAnimationSort}
                 />
@@ -290,7 +331,7 @@ export default function MapEditorTab({
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
                   selectedObjects={deferredPaletteSelection}
-                  filter={isNpc}
+                  filter={isNpcTemplate}
                   renderObject={renderNpc}
                   sort={npcSort}
                 />

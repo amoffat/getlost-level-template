@@ -1,8 +1,12 @@
-import { Npc } from "@/types/npc";
+import { ObjectAnimationTemplate } from "@/types/animation";
+import { NpcTemplate } from "@/types/npc";
 import { area } from "@/types/rect";
-import { ObjectAnimation, TileGroup } from "@/types/tilegroup";
+import { TileGroupTemplate } from "@/types/tilegroup";
 
-export function tileGroupSort(a: TileGroup, b: TileGroup): number {
+export function tileGroupSort(
+  a: TileGroupTemplate,
+  b: TileGroupTemplate
+): number {
   const aArea = area(a.pos);
   const bArea = area(b.pos);
   if (aArea !== bArea) return bArea - aArea;
@@ -19,8 +23,8 @@ export function tileGroupSort(a: TileGroup, b: TileGroup): number {
 }
 
 export function objectAnimationSort(
-  a: ObjectAnimation,
-  b: ObjectAnimation
+  a: ObjectAnimationTemplate,
+  b: ObjectAnimationTemplate
 ): number {
   const aTg = a.frames[0]!.tg;
   const bTg = b.frames[0]!.tg;
@@ -40,6 +44,6 @@ export function objectAnimationSort(
   return a.id.localeCompare(b.id);
 }
 
-export function npcSort(a: Npc, b: Npc): number {
+export function npcSort(a: NpcTemplate, b: NpcTemplate): number {
   return a.id.localeCompare(b.id);
 }

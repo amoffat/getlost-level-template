@@ -1,7 +1,7 @@
 import { selectors } from "@/slices/tilesetEditor";
 import * as P from "pixi.js";
 import { store } from "../../store/store";
-import { TileGroup } from "../../types/tilegroup";
+import { TileGroupTemplate } from "../../types/tilegroup";
 import { subState } from "../../utils/redux";
 import { drawGrid } from "../common/grid";
 import { globals as g } from "./globals";
@@ -9,7 +9,7 @@ import { shouldOutline } from "./utils/outline";
 
 let mask: P.Graphics | null = null;
 
-export function drawGridMask(groups: TileGroup[]) {
+export function drawGridMask(groups: TileGroupTemplate[]) {
   mask?.removeFromParent();
 
   mask = new P.Graphics();

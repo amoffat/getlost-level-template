@@ -2,7 +2,7 @@ import { actions, selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
-import { isTileGroup } from "@/types/tilegroup";
+import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObject } from "@/types/tilesetobject";
 import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
@@ -198,13 +198,13 @@ export function outlineObjects(objs: TilesetObject[], zoom: number) {
   const stroke = { ...selectStroke, width: (selectStroke.width ?? 1) / zoom };
 
   for (const obj of objs) {
-    if (!isTileGroup(obj)) continue;
+    if (!isTileGroupTemplate(obj)) continue;
 
     const container = new P.Container();
     g.selectionOutlines.addChild(container);
     container.position.set(obj.pos.ul.x, obj.pos.ul.y);
 
-    if (isTileGroup(obj)) {
+    if (isTileGroupTemplate(obj)) {
       drawOutline({
         container,
         frame: obj.pos,

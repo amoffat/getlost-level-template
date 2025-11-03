@@ -3,9 +3,13 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { clearCandAnimFramesThunk } from "@/thunks/tileset";
-import { TileAnimationFrame } from "@/types/animation";
+import {
+  isObjectAnimationTemplate,
+  ObjectAnimationTemplate,
+  TileAnimationFrame,
+} from "@/types/animation";
 import { NpcRequiredAnimation } from "@/types/npc";
-import { isObjectAnimation, ObjectAnimation } from "@/types/tilegroup";
+import { TilesetObjType } from "@/types/tileset";
 import { genAnimId } from "@/utils/tileset";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
@@ -222,8 +226,8 @@ export default function TileAnimationOptions() {
     // Count occurrences in all animations
     const allObjects = Object.values(activeTileset.tiles.entities);
     for (const obj of allObjects) {
-      if (obj && isObjectAnimation(obj)) {
-        const anim = obj as ObjectAnimation;
+      if (obj && isObjectAnimationTemplate(obj)) {
+        const anim = obj as ObjectAnimationTemplate;
         for (const name of anim.names) {
           if (counts.has(name)) {
             counts.set(name, counts.get(name)! + 1);
@@ -261,10 +265,11 @@ export default function TileAnimationOptions() {
     closeSaveModal();
 
     const id = await genAnimId(frames);
-    const anim: ObjectAnimation = {
+    const anim: ObjectAnimationTemplate = {
       id,
-      frames,
+      type: TilesetObjType.ObjectAnimationTemplate,
       tilesetId: tsId,
+      frames,
       names: values.names,
       tags: [],
     };
