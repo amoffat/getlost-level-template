@@ -1,7 +1,7 @@
 import { OklabColor } from "@/types/color";
 import type { Rect } from "./rect";
 import { TilesetObjType } from "./tileset";
-import type { TilesetObject } from "./tilesetobject";
+import type { TilesetObjectTemplate } from "./tilesetobject";
 
 export interface TileGroupTemplate {
   // The unique, stable id, which uses the image data hash plus tileset and
@@ -25,7 +25,7 @@ export interface TileGroupTemplate {
 }
 
 export function isTileGroupTemplate(
-  obj: TilesetObject
+  obj: TilesetObjectTemplate
 ): obj is TileGroupTemplate {
   return obj.type === TilesetObjType.TileGroupTemplate;
 }

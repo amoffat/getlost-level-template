@@ -1,4 +1,4 @@
-import { isObjectAnimationTemplate } from "@/types/animation";
+import { isAnimationTemplate } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import {
@@ -10,7 +10,7 @@ import {
 import { isNpcTemplate } from "@/types/npc";
 import { Rect } from "@/types/rect";
 import { isTileGroupTemplate } from "@/types/tilegroup";
-import { TilesetObject, TsObjCounts } from "@/types/tilesetobject";
+import { TilesetObjectTemplate, TsObjCounts } from "@/types/tilesetobject";
 import { ColliderOpts, MagicPaintOpts, PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
@@ -36,6 +36,8 @@ const objectsAdapter = createEntityAdapter<MapObj>({
   },
 });
 
+const createMapSelector = createSelector.withTypes<MapEditorState>();
+
 const reconcilePrefix = "map";
 
 interface MapEditorState {
@@ -53,7 +55,7 @@ interface MapEditorState {
   };
   modeStack: Mode[];
   place: {
-    obj: TilesetObject | null;
+    obj: TilesetObjectTemplate | null;
     flipX: boolean;
   };
   objects: ReturnType<typeof objectsAdapter.getInitialState>;
@@ -137,7 +139,7 @@ export const slice = createSlice({
       state.layers.dimInactive = action.payload;
     },
 
-    setPlace(state, action: PayloadAction<TilesetObject | null>) {
+    setPlace(state, action: PayloadAction<TilesetObjectTemplate | null>) {
       const obj = action.payload;
       state.place.obj = obj;
       if (
@@ -306,15 +308,15 @@ export const slice = createSlice({
     },
   },
   selectors: {
-    selectMode: createSelector.withTypes<MapEditorState>()(
+    selectMode: createMapSelector(
       [(state) => state.modeStack],
       (modeStack): Mode => modeStack.at(-1) ?? "select"
     ),
-    selectedObjs: createSelector.withTypes<MapEditorState>()(
+    selectedObjs: createMapSelector(
       [(state) => state.selectedIds, (state) => state.objects.entities],
       (selectedIds, entities): MapObj[] => selectedIds.map((id) => entities[id])
     ),
-    numSelectedTgInstances: createSelector.withTypes<MapEditorState>()(
+    numSelectedTgInstances: createMapSelector(
       [(state) => state.selectedIds, (state) => state.objects.entities],
       (selectedIds, entities): number => {
         let count = 0;
@@ -327,7 +329,7 @@ export const slice = createSlice({
         return count;
       }
     ),
-    paletteSelectedTsObjIds: createSelector.withTypes<MapEditorState>()(
+    paletteSelectedTsObjIds: createMapSelector(
       [
         (state) => state.selectedIds,
         (state) => state.objects.entities,
@@ -346,19 +348,19 @@ export const slice = createSlice({
           const instance = entities[id];
           if (instance) {
             if (isTileGroupInstance(instance)) {
-              if (!result.has(instance.tileId)) {
+              if (!result.has(instance.tsObjId)) {
                 counts.objects++;
-                result.add(instance.tileId);
+                result.add(instance.tsObjId);
               }
             } else if (isAnimatedInstance(instance)) {
-              if (!result.has(instance.animId)) {
+              if (!result.has(instance.tsObjId)) {
                 counts.animations++;
-                result.add(instance.animId);
+                result.add(instance.tsObjId);
               }
             } else if (isNpcInstance(instance)) {
-              if (!result.has(instance.npcId)) {
+              if (!result.has(instance.tsObjId)) {
                 counts.npcs++;
-                result.add(instance.npcId);
+                result.add(instance.tsObjId);
               }
             }
           }
@@ -369,7 +371,7 @@ export const slice = createSlice({
           result.add(placeObj.id);
           if (isTileGroupTemplate(placeObj)) {
             counts.objects++;
-          } else if (isObjectAnimationTemplate(placeObj)) {
+          } else if (isAnimationTemplate(placeObj)) {
             counts.animations++;
           } else if (isNpcTemplate(placeObj)) {
             counts.npcs++;

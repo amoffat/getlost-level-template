@@ -1,4 +1,4 @@
-import { ObjectAnimationTemplate } from "@/types/animation";
+import { AnimationTemplate } from "@/types/animation";
 import { NpcTemplate } from "@/types/npc";
 import { area } from "@/types/rect";
 import { TileGroupTemplate } from "@/types/tilegroup";
@@ -23,8 +23,8 @@ export function tileGroupSort(
 }
 
 export function objectAnimationSort(
-  a: ObjectAnimationTemplate,
-  b: ObjectAnimationTemplate
+  a: AnimationTemplate,
+  b: AnimationTemplate
 ): number {
   const aTg = a.frames[0]!.tg;
   const bTg = b.frames[0]!.tg;

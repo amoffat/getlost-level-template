@@ -22,12 +22,12 @@ export const rootReducer = combineReducers({
 
 const mapSyncMiddleware = makeEditorSyncMiddleware(
   "map",
-  g.mapEditorReconciler
+  () => g.mapEditorReconciler
 );
 
 const tileSyncMiddleware = makeEditorSyncMiddleware(
   "tilesetEditor",
-  g.tilesetEditorReconciler
+  () => g.tilesetEditorReconciler
 );
 
 // const collisionMiddleware = makeEditorSyncMiddleware(

@@ -4,8 +4,8 @@ import { actions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { clearCandAnimFramesThunk } from "@/thunks/tileset";
 import {
-  isObjectAnimationTemplate,
-  ObjectAnimationTemplate,
+  AnimationTemplate,
+  isAnimationTemplate,
   TileAnimationFrame,
 } from "@/types/animation";
 import { NpcRequiredAnimation } from "@/types/npc";
@@ -226,8 +226,8 @@ export default function TileAnimationOptions() {
     // Count occurrences in all animations
     const allObjects = Object.values(activeTileset.tiles.entities);
     for (const obj of allObjects) {
-      if (obj && isObjectAnimationTemplate(obj)) {
-        const anim = obj as ObjectAnimationTemplate;
+      if (obj && isAnimationTemplate(obj)) {
+        const anim = obj as AnimationTemplate;
         for (const name of anim.names) {
           if (counts.has(name)) {
             counts.set(name, counts.get(name)! + 1);
@@ -265,9 +265,9 @@ export default function TileAnimationOptions() {
     closeSaveModal();
 
     const id = await genAnimId(frames);
-    const anim: ObjectAnimationTemplate = {
+    const anim: AnimationTemplate = {
       id,
-      type: TilesetObjType.ObjectAnimationTemplate,
+      type: TilesetObjType.AnimationTemplate,
       tilesetId: tsId,
       frames,
       names: values.names,

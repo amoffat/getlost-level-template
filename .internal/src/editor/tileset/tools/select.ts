@@ -3,7 +3,7 @@ import { store } from "@/store/store";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { isTileGroupTemplate } from "@/types/tilegroup";
-import { TilesetObject } from "@/types/tilesetobject";
+import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
 import {
@@ -19,7 +19,7 @@ import { pressedKeys } from "../keys";
 class Selector implements ClickDragListener {
   private marqueeEnabled = false;
 
-  constructor(private spatialIndex: SpatialIndex<TilesetObject>) {}
+  constructor(private spatialIndex: SpatialIndex<TilesetObjectTemplate>) {}
 
   private get addToSelection(): boolean {
     return pressedKeys["Control"] ?? false;
@@ -159,7 +159,7 @@ export function setupSelector({
   spatialIndex,
 }: {
   cd: ClickDragger;
-  spatialIndex: SpatialIndex<TilesetObject>;
+  spatialIndex: SpatialIndex<TilesetObjectTemplate>;
 }) {
   cd.addListener(new Selector(spatialIndex));
 }
@@ -192,7 +192,7 @@ function clearRectSelect() {
  * Outlines the given objects.
  * @param objs Objects to outline
  */
-export function outlineObjects(objs: TilesetObject[], zoom: number) {
+export function outlineObjects(objs: TilesetObjectTemplate[], zoom: number) {
   clearObjectOutlines();
 
   const stroke = { ...selectStroke, width: (selectStroke.width ?? 1) / zoom };
@@ -204,10 +204,14 @@ export function outlineObjects(objs: TilesetObject[], zoom: number) {
     g.selectionOutlines.addChild(container);
     container.position.set(obj.pos.ul.x, obj.pos.ul.y);
 
+    const width = obj.pos.br.x - obj.pos.ul.x;
+    const height = obj.pos.br.y - obj.pos.ul.y;
+
     if (isTileGroupTemplate(obj)) {
       drawOutline({
         container,
-        frame: obj.pos,
+        width,
+        height,
         stroke,
         fill: tileSelectFill,
       });

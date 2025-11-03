@@ -2,7 +2,7 @@ import { log } from "@/log";
 import { Rect } from "@/types/rect";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
-import { TilesetObject } from "@/types/tilesetobject";
+import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
 import {
   createEntityAdapter,
@@ -18,8 +18,9 @@ type ToolOptMapping = object;
 type ToolWithOptions = keyof ToolOptMapping;
 
 const reconcilePrefix = "tilesetEditor";
-export const selectedAdapter = createEntityAdapter<TilesetObject>();
-export const tileAdapter = createEntityAdapter<TilesetObject>();
+export const selectedAdapter = createEntityAdapter<TilesetObjectTemplate>();
+export const tileAdapter = createEntityAdapter<TilesetObjectTemplate>();
+const createTsSelector = createSelector.withTypes<TilesetEditorState>();
 
 export interface TilesetEditorState {
   grid: {
@@ -38,11 +39,13 @@ export interface TilesetEditorState {
   loadingTilesets: boolean;
   tilesetsLoaded: boolean;
   tilesetsError: string | null;
-  selectedTiles: EntityState<TilesetObject, string>;
+  selectedTiles: EntityState<TilesetObjectTemplate, string>;
   toolOptions: {
     [K in ToolWithOptions]: ToolOptMapping[K];
   };
   candAnimFrames: TileGroupTemplate[];
+  // obj id to tileset id
+  fastObjLookup: Record<string, string>;
 }
 
 export const slice = createSlice({
@@ -70,6 +73,7 @@ export const slice = createSlice({
       },
     },
     candAnimFrames: [],
+    fastObjLookup: {},
   } as TilesetEditorState,
   reducers: {
     setGridVisible(state, action: PayloadAction<boolean>) {
@@ -134,8 +138,8 @@ export const slice = createSlice({
     updateTilesetObject: {
       prepare: (payload: {
         tsId: string;
-        obj: TilesetObject;
-        changes: Partial<TilesetObject>;
+        obj: TilesetObjectTemplate;
+        changes: Partial<TilesetObjectTemplate>;
       }) => ({
         meta: {
           reconcilePrefix,
@@ -147,8 +151,8 @@ export const slice = createSlice({
       reducer(
         state,
         action: PayloadAction<{
-          obj: TilesetObject;
-          changes: Partial<TilesetObject>;
+          obj: TilesetObjectTemplate;
+          changes: Partial<TilesetObjectTemplate>;
         }>
       ) {
         const { obj, changes } = action.payload;
@@ -195,6 +199,9 @@ export const slice = createSlice({
       state.tilesetZoomPans[ts.id] ??= DEFAULT_ZOOMPAN;
       if (!state.tilesetIds.includes(ts.id)) {
         state.tilesetIds.push(ts.id);
+        for (const obj of Object.values(ts.tiles.entities)) {
+          state.fastObjLookup[obj.id] = ts.id;
+        }
       }
     },
 
@@ -207,6 +214,12 @@ export const slice = createSlice({
         state.activeZoomPan = DEFAULT_ZOOMPAN;
       }
       delete state.tilesetZoomPans[tsId];
+      // Clean up fast lookup
+      for (const id of Object.keys(state.fastObjLookup)) {
+        if (state.fastObjLookup[id] === tsId) {
+          delete state.fastObjLookup[id];
+        }
+      }
     },
 
     setScanPos: (state, action: PayloadAction<Rect | null>) => {
@@ -234,7 +247,10 @@ export const slice = createSlice({
     },
 
     bulkAddSinglePaletteTiles: {
-      prepare: (payload: { tsId: string; groups: TilesetObject[] }) => ({
+      prepare: (payload: {
+        tsId: string;
+        groups: TilesetObjectTemplate[];
+      }) => ({
         meta: {
           reconcilePrefix,
           reconcileType: "add" as const,
@@ -244,16 +260,19 @@ export const slice = createSlice({
       }),
       reducer(
         state,
-        action: PayloadAction<{ tsId: string; groups: TilesetObject[] }>
+        action: PayloadAction<{ tsId: string; groups: TilesetObjectTemplate[] }>
       ) {
         const { tsId, groups } = action.payload;
         const ts = state.tilesets[tsId];
         tileAdapter.addMany(ts.tiles, groups);
+        for (const group of groups) {
+          state.fastObjLookup[group.id] = tsId;
+        }
       },
     },
 
     addPaletteObject: {
-      prepare: (payload: { tsId: string; group: TilesetObject }) => ({
+      prepare: (payload: { tsId: string; group: TilesetObjectTemplate }) => ({
         meta: {
           reconcilePrefix,
           reconcileType: "add" as const,
@@ -263,11 +282,12 @@ export const slice = createSlice({
       }),
       reducer(
         state,
-        action: PayloadAction<{ tsId: string; group: TilesetObject }>
+        action: PayloadAction<{ tsId: string; group: TilesetObjectTemplate }>
       ) {
         const { tsId, group } = action.payload;
         const ts = state.tilesets[tsId];
         tileAdapter.addOne(ts.tiles, group);
+        state.fastObjLookup[group.id] = tsId;
       },
     },
 
@@ -284,30 +304,41 @@ export const slice = createSlice({
         const { tsId, ids } = action.payload;
         const ts = state.tilesets[tsId];
         tileAdapter.removeMany(ts.tiles, ids);
+        for (const id of ids) {
+          delete state.fastObjLookup[id];
+        }
       },
     },
 
-    setOneSelected: (state, action: PayloadAction<TilesetObject>) => {
+    setOneSelected: (state, action: PayloadAction<TilesetObjectTemplate>) => {
       selectedAdapter.removeAll(state.selectedTiles);
       selectedAdapter.setOne(state.selectedTiles, action.payload);
     },
 
-    addOneSelected: (state, action: PayloadAction<TilesetObject>) => {
+    addOneSelected: (state, action: PayloadAction<TilesetObjectTemplate>) => {
       selectedAdapter.setOne(state.selectedTiles, action.payload);
     },
 
-    setManySelected: (state, action: PayloadAction<TilesetObject[]>) => {
+    setManySelected: (
+      state,
+      action: PayloadAction<TilesetObjectTemplate[]>
+    ) => {
       selectedAdapter.removeAll(state.selectedTiles);
       selectedAdapter.setMany(state.selectedTiles, action.payload);
     },
 
-    addManySelected: (state, action: PayloadAction<TilesetObject[]>) => {
+    addManySelected: (
+      state,
+      action: PayloadAction<TilesetObjectTemplate[]>
+    ) => {
       selectedAdapter.setMany(state.selectedTiles, action.payload);
     },
 
     updateManySelected: (
       state,
-      action: PayloadAction<{ id: string; changes: Partial<TilesetObject> }[]>
+      action: PayloadAction<
+        { id: string; changes: Partial<TilesetObjectTemplate> }[]
+      >
     ) => {
       selectedAdapter.updateMany(state.selectedTiles, action.payload);
     },
@@ -351,16 +382,16 @@ export const slice = createSlice({
       );
   },
   selectors: {
-    selectTilesets: createSelector.withTypes<TilesetEditorState>()(
+    selectTilesets: createTsSelector(
       [(state) => state.tilesetIds, (state) => state.tilesets],
       (tilesetIds, tilesets): Tileset[] => tilesetIds.map((id) => tilesets[id])
     ),
-    activeTileset: createSelector.withTypes<TilesetEditorState>()(
+    activeTileset: createTsSelector(
       [(state) => state.activeTilesetId, (state) => state.tilesets],
       (tsId, tilesets): Tileset | null =>
         tsId ? (tilesets[tsId] ?? null) : null
     ),
-    activeTilesetGroups: createSelector.withTypes<TilesetEditorState>()(
+    activeTilesetGroups: createTsSelector(
       [(state) => state.activeTilesetId, (state) => state.tilesets],
       (tsId, tilesets): TileGroupTemplate[] => {
         if (!tsId) return [];
@@ -377,17 +408,37 @@ export const slice = createSlice({
         return objs;
       }
     ),
-    selectMode: createSelector.withTypes<TilesetEditorState>()(
+    selectMode: createTsSelector(
       [(state) => state.activeModeStack],
       (activeModeStack): Mode => activeModeStack.at(-1) ?? "select"
     ),
-    paletteSelectedIds: createSelector.withTypes<TilesetEditorState>()(
+    paletteSelectedIds: createTsSelector(
       [(state) => state.selectedTiles.ids],
       (selectedIds): Set<string> => new Set(selectedIds as string[])
     ),
-    selectedTiles: createSelector.withTypes<TilesetEditorState>()(
+    selectedTiles: createTsSelector(
       [(state) => state.selectedTiles],
-      (tiles): TilesetObject[] => tiles.ids.map((id) => tiles.entities[id])
+      (tiles): TilesetObjectTemplate[] =>
+        tiles.ids.map((id) => tiles.entities[id])
+    ),
+    templateFromInstance: createTsSelector(
+      [
+        (state) => state.tilesets,
+        (state) => state.fastObjLookup,
+        (_, instanceId: string) => instanceId,
+      ],
+      (
+        tilesets: Record<string, Tileset>,
+        fastObjLookup: Record<string, string>,
+        instanceId: string
+      ): TilesetObjectTemplate | null => {
+        const tsId = fastObjLookup[instanceId];
+        if (!tsId) return null;
+        const ts = tilesets[tsId];
+        if (!ts) return null;
+        const obj = ts.tiles.entities[instanceId];
+        return obj ?? null;
+      }
     ),
   },
 });

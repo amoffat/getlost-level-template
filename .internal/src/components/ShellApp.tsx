@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { getMapInitPromise, getTilesetInitPromise } from "@/init/editorInit";
 import { pathToTab, tabToPath } from "@/routes/tabs";
 import { actions as uiActions } from "@/slices/ui";
-import { resetMapThunk } from "@/thunks/map";
+import { resetAllThunk, resetMapThunk } from "@/thunks/map";
 import { MainTabName } from "@/types/tab";
 import { AppShell, Group, Tabs, Text } from "@mantine/core";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
@@ -102,14 +102,14 @@ const ShellAppContent = memo(function ShellAppContent({
       {
         id: "reset-map",
         label: "Reset map",
-        description: "Delete and re-create the map",
+        description: "Delete all objects in the current map",
         onClick: () => {
           modals.openConfirmModal({
             title: "Reset map?",
             children: (
               <Text size="sm">
-                This will delete and re-create the current map. This action
-                cannot be undone.
+                This will delete everything in the map. This action cannot be
+                undone.
               </Text>
             ),
             labels: { confirm: "Reset map", cancel: "Cancel" },
@@ -117,6 +117,27 @@ const ShellAppContent = memo(function ShellAppContent({
             centered: true,
             withCloseButton: false,
             onConfirm: () => dispatch(resetMapThunk()),
+          });
+        },
+        leftSection: <IconTrash size={24} stroke={1.5} />,
+      },
+      {
+        id: "reset-all",
+        label: "Reset all",
+        description: "Delete all map, tileset, and story data",
+        onClick: () => {
+          modals.openConfirmModal({
+            title: "Reset everything?",
+            children: (
+              <Text size="sm">
+                This will delete everything. This action cannot be undone.
+              </Text>
+            ),
+            labels: { confirm: "Reset ALL", cancel: "Cancel" },
+            confirmProps: { color: "red" },
+            centered: true,
+            withCloseButton: false,
+            onConfirm: () => dispatch(resetAllThunk()),
           });
         },
         leftSection: <IconTrash size={24} stroke={1.5} />,

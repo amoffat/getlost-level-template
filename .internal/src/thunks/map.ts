@@ -1,6 +1,6 @@
 import { iconTsId, lightIcon, startIcon } from "@/constants";
-import { globals as gApp } from "@/globals";
 import { loadMap } from "@/persist/map/api";
+import { router } from "@/router";
 import { actions as mapActions, selectors } from "@/slices/mapEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
@@ -13,6 +13,7 @@ import { loadTileGroup } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { globals as g } from "../editor/map/globals";
+import { removeTilesetThunk } from "./tileset";
 
 export const setActiveLayerThunk = createAsyncThunk(
   "mapEditor/setActiveLayerThunk",
@@ -59,6 +60,28 @@ export const resetMapThunk = createAsyncThunk(
       message: "The map has been cleared.",
       autoClose: 3000,
     });
+    router.navigate("/map");
+  }
+);
+
+export const resetAllThunk = createAsyncThunk(
+  "mapEditor/resetAllThunk",
+  async (_, { dispatch, getState }) => {
+    const state = getState() as RootState;
+
+    dispatch(uiActions.pushLoadingMessage("Resetting all data..."));
+    dispatch(resetMapThunk());
+    for (const tsId of state.tilesetEditor.tilesetIds) {
+      dispatch(removeTilesetThunk(tsId));
+    }
+    // TODO Potentially other slices to reset in the future
+    dispatch(uiActions.popLoadingMessage());
+    notifications.show({
+      title: "All data reset",
+      message: "All data has been cleared.",
+      autoClose: 3000,
+    });
+    router.navigate("/");
   }
 );
 
@@ -134,14 +157,11 @@ export const bringToTopThunk = createAsyncThunk(
     const changeList = [];
 
     for (const obj of objs) {
-      const tg = gApp.tileIdToTileGroup.get(obj.tileId)!;
-      const width = tg.pos.br.x - tg.pos.ul.x;
-      const height = tg.pos.br.y - tg.pos.ul.y;
       const bounds = {
         minX: obj.x,
         minY: obj.y,
-        maxX: obj.x + width,
-        maxY: obj.y + height,
+        maxX: obj.x + obj.width,
+        maxY: obj.y + obj.height,
       };
 
       const hits = g.spatialIndex.getObjects({ pos: bounds });
@@ -166,14 +186,11 @@ export const sendToBottomThunk = createAsyncThunk(
     const changeList = [];
 
     for (const obj of objs) {
-      const tg = gApp.tileIdToTileGroup.get(obj.tileId)!;
-      const width = tg.pos.br.x - tg.pos.ul.x;
-      const height = tg.pos.br.y - tg.pos.ul.y;
       const bounds = {
         minX: obj.x,
         minY: obj.y,
-        maxX: obj.x + width,
-        maxY: obj.y + height,
+        maxX: obj.x + obj.width,
+        maxY: obj.y + obj.height,
       };
 
       const hits = g.spatialIndex.getObjects({ pos: bounds });

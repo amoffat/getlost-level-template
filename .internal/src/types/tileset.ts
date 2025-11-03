@@ -1,5 +1,5 @@
 import { EntityState } from "@reduxjs/toolkit";
-import { TilesetObject } from "./tilesetobject";
+import { TilesetObjectTemplate } from "./tilesetobject";
 
 export type Mode =
   | "select"
@@ -11,7 +11,7 @@ export type Mode =
   | "make-npc"
   | "replace-group";
 
-type TilesBucket = EntityState<TilesetObject, string>;
+type TilesBucket = EntityState<TilesetObjectTemplate, string>;
 
 export interface Tileset {
   id: string;
@@ -22,6 +22,6 @@ export interface Tileset {
 
 export enum TilesetObjType {
   TileGroupTemplate = 0,
-  ObjectAnimationTemplate = 1,
+  AnimationTemplate = 1,
   NpcTemplate = 2,
 }

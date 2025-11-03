@@ -1,10 +1,10 @@
-import type { ObjectAnimationTemplate } from "./animation";
+import type { AnimationTemplate } from "./animation";
 import type { NpcTemplate } from "./npc";
 import type { TileGroupTemplate } from "./tilegroup";
 
-export type TilesetObject =
+export type TilesetObjectTemplate =
   | TileGroupTemplate
-  | ObjectAnimationTemplate
+  | AnimationTemplate
   | NpcTemplate;
 
 export interface TsObjCounts {

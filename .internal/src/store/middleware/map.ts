@@ -5,13 +5,22 @@ import { AppDispatch, RootState } from "../store";
 
 export function makeEditorSyncMiddleware(
   prefix: string,
-  reconciler: ReduxReconciler<any, any>
+  reconcilerOrGetter:
+    | ReduxReconciler<any, any>
+    | (() => ReduxReconciler<any, any>)
 ) {
   const listener = createListenerMiddleware();
   const startAppListening = listener.startListening.withTypes<
     RootState,
     AppDispatch
   >();
+
+  // Helper to get the reconciler, handling both direct and lazy forms
+  const getReconciler = (): ReduxReconciler<any, any> => {
+    return typeof reconcilerOrGetter === "function"
+      ? reconcilerOrGetter()
+      : reconcilerOrGetter;
+  };
 
   // Helper extractors to handle various action payload shapes across slices
   const getReconcileType = (action: any): string | undefined =>
@@ -38,6 +47,7 @@ export function makeEditorSyncMiddleware(
     effect: async (action: any, _api) => {
       const data = action?.meta?.reconcile ?? action.payload;
       const payload = Array.isArray(data) ? data : [data];
+      const reconciler = getReconciler();
       for (const obj of payload) reconciler.enqueueAdd(obj);
     },
   });
@@ -49,6 +59,7 @@ export function makeEditorSyncMiddleware(
     effect: async (action: any, _api) => {
       const data = action?.meta?.reconcile ?? action.payload;
       const updates = Array.isArray(data) ? data : [data];
+      const reconciler = getReconciler();
       for (const u of updates) {
         reconciler.enqueueUpdate(u.id, u.changes);
       }
@@ -62,6 +73,7 @@ export function makeEditorSyncMiddleware(
     effect: async (action: any, _api) => {
       const data = action?.meta?.reconcile ?? action.payload;
       const ids = Array.isArray(data) ? data : [data];
+      const reconciler = getReconciler();
       for (const id of ids) reconciler.enqueueRemove(id);
     },
   });
@@ -73,6 +85,7 @@ export function makeEditorSyncMiddleware(
     effect: async (action: any, _api) => {
       // `meta.reconcile` can override the full array to be diffed
       const full = (action?.meta?.reconcile ?? action.payload) as any[];
+      const reconciler = getReconciler();
       reconciler.enqueueDiff(full);
     },
   });

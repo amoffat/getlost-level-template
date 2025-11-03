@@ -1,6 +1,6 @@
-import type { ObjectAnimationTemplate } from "./animation";
+import type { AnimationTemplate } from "./animation";
 import { TilesetObjType } from "./tileset";
-import type { TilesetObject } from "./tilesetobject";
+import type { TilesetObjectTemplate } from "./tilesetobject";
 
 export type NpcRequiredAnimation =
   | "Idle"
@@ -11,9 +11,9 @@ export type NpcRequiredAnimation =
 
 export type NpcAnimationRecord = Record<
   NpcRequiredAnimation,
-  ObjectAnimationTemplate
+  AnimationTemplate
 > &
-  Record<string, ObjectAnimationTemplate>;
+  Record<string, AnimationTemplate>;
 
 export interface NpcTemplate {
   // A random id
@@ -25,6 +25,6 @@ export interface NpcTemplate {
   animations: NpcAnimationRecord;
 }
 
-export function isNpcTemplate(obj: TilesetObject): obj is NpcTemplate {
+export function isNpcTemplate(obj: TilesetObjectTemplate): obj is NpcTemplate {
   return obj.type === TilesetObjType.NpcTemplate;
 }

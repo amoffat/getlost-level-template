@@ -4,16 +4,18 @@ import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { isObjectAnimationTemplate } from "@/types/animation";
+import { isAnimationTemplate, TileAnimationFrame } from "@/types/animation";
 import { MapLayerName } from "@/types/layer";
 import {
-  AnimatedInstance,
+  AnimationInstance,
   isTileGroupInstance,
   MapObj,
   MapObjType,
+  NpcInstance,
   TileGroupInstance,
 } from "@/types/map";
-import { Rect, toPixiRect } from "@/types/rect";
+import { isNpcTemplate } from "@/types/npc";
+import { toPixiRect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { PaintOpts } from "@/types/tools";
@@ -164,36 +166,57 @@ export class Placer implements ClickDragListener {
     const id = crypto.randomUUID();
 
     if (isTileGroupTemplate(obj)) {
+      const width = obj.pos.br.x - obj.pos.ul.x;
+      const height = obj.pos.br.y - obj.pos.ul.y;
+
       const inst: TileGroupInstance = {
         id,
         type: MapObjType.TileGroupInstance,
         x: pos.x,
         y: pos.y,
-        tileId: obj.id,
+        tsObjId: obj.id,
         tilesetId: obj.tilesetId,
-        frame: obj.pos,
         flipX: place.flipX,
         z,
         layer,
+        width,
+        height,
       };
 
       store.dispatch(actions.addOne(inst));
-    } else if (isObjectAnimationTemplate(obj)) {
-      const inst: AnimatedInstance = {
+    } else if (isAnimationTemplate(obj)) {
+      const firstFrame = obj.frames[0]!.tg;
+      const width = firstFrame.pos.br.x - firstFrame.pos.ul.x;
+      const height = firstFrame.pos.br.y - firstFrame.pos.ul.y;
+
+      const inst: AnimationInstance = {
         id,
-        type: MapObjType.AnimatedInstance,
-        animId: obj.id,
-        tilesetId: obj.frames[0]!.tg.tilesetId,
-        frames: obj.frames.map((f) => ({
-          tileId: f.tg.id,
-          frame: f.tg.pos,
-          time: f.time,
-        })),
+        type: MapObjType.AnimationInstance,
+        tsObjId: obj.id,
+        tilesetId: firstFrame.tilesetId,
         x: pos.x,
         y: pos.y,
         z,
         layer,
         flipX: place.flipX,
+        width,
+        height,
+      };
+
+      store.dispatch(actions.addOne(inst));
+    } else if (isNpcTemplate(obj)) {
+      const inst: NpcInstance = {
+        id,
+        type: MapObjType.NpcInstance,
+        tsObjId: obj.id,
+        tilesetId: obj.tilesetId,
+        x: pos.x,
+        y: pos.y,
+        z,
+        layer,
+        flipX: place.flipX,
+        width,
+        height,
       };
 
       store.dispatch(actions.addOne(inst));
@@ -228,11 +251,9 @@ subState(
 
     if (placeObj && ["paint", "magic-paint"].includes(mode)) {
       let sprite: P.Sprite;
-      let outlineFrame!: Rect;
 
       if (isTileGroupTemplate(placeObj)) {
         const rect = placeObj.pos;
-        outlineFrame = rect;
         const tsTex = gApp.tilesetTextureCache.get(placeObj.tilesetId);
         if (!tsTex) {
           log.error("Tileset texture not found for placer");
@@ -243,11 +264,17 @@ subState(
           frame: toPixiRect(rect),
         });
         sprite = new P.Sprite(texture);
-      } else if (isObjectAnimationTemplate(placeObj)) {
+      } else if (isAnimationTemplate(placeObj) || isNpcTemplate(placeObj)) {
+        let frames: TileAnimationFrame[] = [];
+        if (isAnimationTemplate(placeObj)) {
+          frames = placeObj.frames;
+        } else if (isNpcTemplate(placeObj)) {
+          frames = placeObj.animations.WalkDown.frames;
+        }
+
         const pixiFrames: P.FrameObject[] = [];
-        for (const frame of placeObj.frames) {
+        for (const frame of frames) {
           const rect = frame.tg.pos;
-          outlineFrame = rect;
           const tsTex = gApp.tilesetTextureCache.get(frame.tg.tilesetId);
           if (!tsTex) {
             log.error("Tileset texture not found for placer");
@@ -267,6 +294,7 @@ subState(
         anim.play();
         sprite = anim;
       } else {
+        log.error("Unsupported place object type for placer");
         return;
       }
 
@@ -285,7 +313,8 @@ subState(
 
       drawOutline({
         container: g.placableOutline,
-        frame: outlineFrame,
+        width: sprite.width,
+        height: sprite.height,
         stroke,
       });
     } else {

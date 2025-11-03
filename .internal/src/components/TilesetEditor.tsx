@@ -8,7 +8,7 @@ import {
   selectTilesetThunk,
   setToolThunk,
 } from "@/thunks/tileset";
-import { isObjectAnimationTemplate } from "@/types/animation";
+import { isAnimationTemplate } from "@/types/animation";
 import { isNpcTemplate } from "@/types/npc";
 import { TilesetTabName } from "@/types/tab";
 import { isTileGroupTemplate } from "@/types/tilegroup";
@@ -298,9 +298,12 @@ export default function TilesetEditorTab({
                 }}
               >
                 <ObjectPalette
+                  minScale={1}
+                  defaultScale={4}
+                  maxScale={8}
                   tileset={deferredActiveTileset}
                   selectedObjects={deferredPaletteSelection}
-                  filter={isObjectAnimationTemplate}
+                  filter={isAnimationTemplate}
                   renderObject={renderObjectAnimation}
                   sort={objectAnimationSort}
                 />
@@ -315,6 +318,9 @@ export default function TilesetEditorTab({
                 }}
               >
                 <ObjectPalette
+                  minScale={1}
+                  defaultScale={4}
+                  maxScale={8}
                   tileset={deferredActiveTileset}
                   selectedObjects={deferredPaletteSelection}
                   filter={isNpcTemplate}

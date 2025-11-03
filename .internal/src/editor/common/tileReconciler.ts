@@ -1,15 +1,16 @@
 import { log } from "@/log";
-import { isObjectAnimationTemplate } from "@/types/animation";
+import { isAnimationTemplate } from "@/types/animation";
+import { isNpcTemplate } from "@/types/npc";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
-import { TilesetObject } from "@/types/tilesetobject";
+import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import { AllPropsLoose } from "@/types/union";
 import * as P from "pixi.js";
 import { ReduxReconciler } from "./reconciler";
 import { invisibleStroke } from "./strokes";
 
-export class TileReconciler extends ReduxReconciler<TilesetObject> {
-  private spatialIndex?: SpatialIndex<TilesetObject>;
+export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
+  private spatialIndex?: SpatialIndex<TilesetObjectTemplate>;
   private container?: P.Container;
   private connected = false;
 
@@ -17,7 +18,7 @@ export class TileReconciler extends ReduxReconciler<TilesetObject> {
     spatialIndex,
     container,
   }: {
-    spatialIndex: SpatialIndex<TilesetObject>;
+    spatialIndex: SpatialIndex<TilesetObjectTemplate>;
     container: P.Container;
   }) {
     this.container = container;
@@ -27,17 +28,21 @@ export class TileReconciler extends ReduxReconciler<TilesetObject> {
 
   protected override applyProps(
     node: P.Container,
-    p: AllPropsLoose<TilesetObject>
+    p: AllPropsLoose<TilesetObjectTemplate>
   ) {
     if (p.pos !== undefined) {
       node.position.set(p.pos.ul.x, p.pos.ul.y);
     }
   }
 
-  protected override createNode(obj: TilesetObject): P.Container | null {
+  protected override createNode(
+    obj: TilesetObjectTemplate
+  ): P.Container | null {
     if (isTileGroupTemplate(obj)) {
       return this.createTileGroupNode(obj);
-    } else if (isObjectAnimationTemplate(obj)) {
+    } else if (isAnimationTemplate(obj)) {
+      return null;
+    } else if (isNpcTemplate(obj)) {
       return null;
     } else {
       log.error("Unsupported TilesetObject type");
@@ -82,7 +87,7 @@ export class TileReconciler extends ReduxReconciler<TilesetObject> {
 
   protected override updateItem(
     item: IndexItem,
-    changes: ReduxReconciler<TilesetObject>["ObjParamsType"]
+    changes: ReduxReconciler<TilesetObjectTemplate>["ObjParamsType"]
   ): void {
     // If position-affecting props are changing, update spatial index.
     const willAffectPos = "pos" in changes;
@@ -95,7 +100,7 @@ export class TileReconciler extends ReduxReconciler<TilesetObject> {
     this.spatialIndex!.removeById(id);
   }
 
-  protected override containerByObj(_obj: TilesetObject): P.Container {
+  protected override containerByObj(_obj: TilesetObjectTemplate): P.Container {
     return this.container!;
   }
 

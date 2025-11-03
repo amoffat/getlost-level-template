@@ -1,22 +1,22 @@
 import { TileGroupTemplate } from "./tilegroup";
 import { TilesetObjType } from "./tileset";
-import type { TilesetObject } from "./tilesetobject";
+import type { TilesetObjectTemplate } from "./tilesetobject";
 
-export type TileAnimationFrame = {
+export interface TileAnimationFrame {
   tg: TileGroupTemplate;
   time: number; // ms to display this frame
-};
-export interface ObjectAnimationTemplate {
+}
+export interface AnimationTemplate {
   // The unique, stable id which is based on a hash of the frame ids and times
   id: string;
-  type: TilesetObjType.ObjectAnimationTemplate;
+  type: TilesetObjType.AnimationTemplate;
   tilesetId: string;
   frames: TileAnimationFrame[];
   tags: string[];
   names: string[];
 }
-export function isObjectAnimationTemplate(
-  obj: TilesetObject
-): obj is ObjectAnimationTemplate {
-  return obj.type === TilesetObjType.ObjectAnimationTemplate;
+export function isAnimationTemplate(
+  obj: TilesetObjectTemplate
+): obj is AnimationTemplate {
+  return obj.type === TilesetObjType.AnimationTemplate;
 }

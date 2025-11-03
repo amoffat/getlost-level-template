@@ -2,7 +2,7 @@ import { Rect } from "./rect";
 
 export enum MapObjType {
   TileGroupInstance = 0,
-  AnimatedInstance = 1,
+  AnimationInstance = 1,
   NpcInstance = 2,
   EllipseCollider = 3,
   BoxCollider = 4,
@@ -19,9 +19,12 @@ export interface BaseMapObj {
 }
 export interface TileGroupInstance extends BaseMapObj {
   type: MapObjType.TileGroupInstance;
-  tileId: string;
+  // The id of the underlying tileset object
+  tsObjId: string;
   tilesetId: string;
-  frame: Rect;
+
+  width: number;
+  height: number;
 
   // Properties that can vary per-instance
   flipX: boolean;
@@ -29,11 +32,22 @@ export interface TileGroupInstance extends BaseMapObj {
   tags?: string[];
 }
 
-export interface AnimatedInstance extends BaseMapObj {
-  type: MapObjType.AnimatedInstance;
-  animId: string;
+export interface TileAnimationFrame {
+  // The id of the underlying tileset object
+  tileId: string;
+  frame: Rect;
+  time: number;
+}
+
+export interface AnimationInstance extends BaseMapObj {
+  type: MapObjType.AnimationInstance;
+  // The id of the underlying tileset object
+  tsObjId: string;
   tilesetId: string;
-  frames: { tileId: string; frame: Rect; time: number }[];
+
+  // Convenience, so I don't have to dig through the frames
+  width: number;
+  height: number;
 
   // Properties that can vary per-instance
   flipX: boolean;
@@ -43,8 +57,13 @@ export interface AnimatedInstance extends BaseMapObj {
 
 export interface NpcInstance extends BaseMapObj {
   type: MapObjType.NpcInstance;
-  npcId: string;
+  // The id of the underlying tileset object
+  tsObjId: string;
   tilesetId: string;
+
+  // Convenience, so I don't have to dig through the animation frames
+  width: number;
+  height: number;
 
   // Properties that can vary per-instance
   flipX: boolean;
@@ -68,7 +87,7 @@ export interface PolyObj extends BaseMapObj {
 }
 export type MapObj =
   | TileGroupInstance
-  | AnimatedInstance
+  | AnimationInstance
   | NpcInstance
   | EllipseObj
   | PolyObj
@@ -76,7 +95,7 @@ export type MapObj =
 
 export type MapObjsFromTileset =
   | TileGroupInstance
-  | AnimatedInstance
+  | AnimationInstance
   | NpcInstance;
 
 export function isTileGroupInstance(
@@ -96,10 +115,18 @@ export function isColliderBox(obj: Partial<BaseMapObj>): obj is BoxObj {
 
 export function isAnimatedInstance(
   obj: Partial<BaseMapObj>
-): obj is AnimatedInstance {
-  return obj.type === MapObjType.AnimatedInstance;
+): obj is AnimationInstance {
+  return obj.type === MapObjType.AnimationInstance;
 }
 
 export function isNpcInstance(obj: Partial<BaseMapObj>): obj is NpcInstance {
   return obj.type === MapObjType.NpcInstance;
+}
+
+export function isMapObjFromTileset(
+  obj: Partial<BaseMapObj>
+): obj is MapObjsFromTileset {
+  return (
+    isTileGroupInstance(obj) || isAnimatedInstance(obj) || isNpcInstance(obj)
+  );
 }

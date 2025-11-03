@@ -5,4 +5,4 @@ export type MainTabName =
   | "story-editor"
   | "preview";
 
-export type TilesetTabName = "objects" | "animations";
+export type TilesetTabName = "objects" | "animations" | "npcs";

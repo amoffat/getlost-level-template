@@ -1,5 +1,8 @@
 import { texAtlasPadding } from "@/constants";
 import { log } from "@/log";
+import { selectors as tsSelectors } from "@/slices/tilesetEditor";
+import { store } from "@/store/store";
+import { AnimationTemplate } from "@/types/animation";
 import {
   isAnimatedInstance,
   isColliderBox,
@@ -10,6 +13,7 @@ import {
 } from "@/types/map";
 import { toPixiRect } from "@/types/rect";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
+import { TileGroupTemplate } from "@/types/tilegroup";
 import { makeGroupedDebouncer } from "@/utils/debounce";
 import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
@@ -136,7 +140,12 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         return this.makeErrorNode(obj);
       }
 
-      const frame = obj.frame;
+      const state = store.getState();
+      const tsObj = tsSelectors.templateFromInstance(
+        state,
+        obj.tsObjId
+      ) as TileGroupTemplate;
+      const frame = tsObj.pos;
 
       const width = frame.br.x - frame.ul.x;
       const height = frame.br.y - frame.ul.y;
@@ -179,8 +188,14 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         return this.makeErrorNode(obj);
       }
 
-      for (const animFrame of obj.frames) {
-        const rect = animFrame.frame;
+      const state = store.getState();
+      const tsObj = tsSelectors.templateFromInstance(
+        state,
+        obj.tsObjId
+      ) as AnimationTemplate;
+
+      for (const animFrame of tsObj.frames) {
+        const rect = animFrame.tg.pos;
 
         const texture = new P.Texture({
           source: tsTex.source,
@@ -250,29 +265,14 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     this.debounceNodeError(obj);
 
     const container = new P.Container();
-
-    let width: number;
-    let height: number;
-    if (isTileGroupInstance(obj)) {
-      width = obj.frame.br.x - obj.frame.ul.x;
-      height = obj.frame.br.y - obj.frame.ul.y;
-    } else if (isAnimatedInstance(obj)) {
-      const firstFrame = obj.frames[0];
-      width = firstFrame.frame.br.x - firstFrame.frame.ul.x;
-      height = firstFrame.frame.br.y - firstFrame.frame.ul.y;
-    } else {
-      // For NPCs, just make a default size
-      // FIXME
-      width = 32;
-      height = 48;
-    }
+    container.label = obj.id;
 
     const gfx = new P.Graphics();
     gfx.moveTo(0, 0);
-    gfx.lineTo(width, height);
-    gfx.moveTo(width, 0);
-    gfx.lineTo(0, height);
-    gfx.rect(0, 0, width, height);
+    gfx.lineTo(obj.width, obj.height);
+    gfx.moveTo(obj.width, 0);
+    gfx.lineTo(0, obj.height);
+    gfx.rect(0, 0, obj.width, obj.height);
     gfx.stroke({ color: 0xff0000, width: 4, cap: "round" });
 
     container.addChild(gfx);

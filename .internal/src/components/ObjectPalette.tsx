@@ -1,9 +1,9 @@
 import { useAppSelector } from "@/hooks/redux";
-import { isObjectAnimationTemplate } from "@/types/animation";
+import { isAnimationTemplate } from "@/types/animation";
 import { PaletteObjectProps } from "@/types/palette";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
-import { TilesetObject } from "@/types/tilesetobject";
+import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import { Vector } from "@/vec";
 import {
   Group,
@@ -24,7 +24,7 @@ import React, {
 import ObjectAnimationMenu from "./paletteMenus/ObjectAnimationMenu";
 import TileGroupMenu from "./paletteMenus/TileGroupMenu";
 
-interface ObjectPaletteProps<ObjType extends TilesetObject> {
+interface ObjectPaletteProps<ObjType extends TilesetObjectTemplate> {
   tileset?: Tileset | null;
   onSelectObject?: (obj: ObjType, e: React.MouseEvent) => void;
   onDeselectObject?: () => void;
@@ -32,6 +32,9 @@ interface ObjectPaletteProps<ObjType extends TilesetObject> {
   renderObject: (props: PaletteObjectProps<ObjType>) => React.ReactNode | null;
   sort: (a: ObjType, b: ObjType) => number;
   filter: (obj: ObjType) => boolean;
+  minScale?: number;
+  maxScale?: number;
+  defaultScale?: number;
 }
 
 function findHighestWithAttr(start: HTMLElement, attr: string) {
@@ -46,7 +49,7 @@ function findHighestWithAttr(start: HTMLElement, attr: string) {
   return last;
 }
 
-export default function ObjectPalette<ObjType extends TilesetObject>({
+export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
   onSelectObject,
   onDeselectObject,
   tileset: showTileset,
@@ -54,12 +57,15 @@ export default function ObjectPalette<ObjType extends TilesetObject>({
   renderObject,
   sort,
   filter,
+  minScale = 1,
+  maxScale = 4,
+  defaultScale = 2,
 }: ObjectPaletteProps<ObjType>) {
   const [objMenuPos, setObjMenuPos] = useState<Vector | null>(null);
   const [clicked, setClicked] = useState<ObjType | null>(null);
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const loadingPalette = useAppSelector((state) => state.ui.loadingPalette);
-  const [scale, setScale] = useState(2);
+  const [scale, setScale] = useState(defaultScale);
 
   const objects: ReactNode[] = useMemo(() => {
     const objs: ReactNode[] = [];
@@ -159,7 +165,7 @@ export default function ObjectPalette<ObjType extends TilesetObject>({
         const y = rect.top + rect.height / 4;
         setObjMenuPos({ x, y });
 
-        if (isTileGroupTemplate(obj) || isObjectAnimationTemplate(obj)) {
+        if (isTileGroupTemplate(obj) || isAnimationTemplate(obj)) {
           setClicked(obj as ObjType);
         } else {
           setClicked(null);
@@ -190,16 +196,11 @@ export default function ObjectPalette<ObjType extends TilesetObject>({
             />
             <Slider
               flex="1"
-              min={0.5}
-              max={4}
+              min={minScale}
+              max={maxScale}
               step={0.25}
               value={scale}
               onChange={setScale}
-              marks={[
-                { value: 1, label: "1x" },
-                { value: 2, label: "2x" },
-                { value: 4, label: "4x" },
-              ]}
               label={null}
             />
           </Group>
@@ -227,7 +228,7 @@ export default function ObjectPalette<ObjType extends TilesetObject>({
         />
         <ObjectAnimationMenu
           pos={objMenuPos}
-          obj={clicked && isObjectAnimationTemplate(clicked) ? clicked : null}
+          obj={clicked && isAnimationTemplate(clicked) ? clicked : null}
           closeMenu={() => setObjMenuPos(null)}
         />
       </Portal>

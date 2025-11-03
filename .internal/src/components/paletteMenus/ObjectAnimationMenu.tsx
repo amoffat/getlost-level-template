@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { actions as uiActions, selectors as uiSelectors } from "@/slices/ui";
-import { ObjectAnimationTemplate } from "@/types/animation";
+import { AnimationTemplate } from "@/types/animation";
 import { Vector } from "@/vec";
 import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
 import {
@@ -18,7 +18,7 @@ import TileAnimation from "../TileAnimation";
 
 interface ObjectAnimationMenuProps {
   pos: Vector | null;
-  obj: ObjectAnimationTemplate | null;
+  obj: AnimationTemplate | null;
   onTagsModalOpened?: VoidFunction;
   closeMenu: () => void;
 }

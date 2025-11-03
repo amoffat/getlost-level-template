@@ -8,6 +8,7 @@ import {
 } from "@/editor/map/utils/autotile";
 import { globals as appG } from "@/globals";
 import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
+import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { isTileGroupInstance, MapObj, TileGroupInstance } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
@@ -127,7 +128,7 @@ class Painter extends Placer {
     ): EdgeSignatures | undefined {
       const t = topByPos.get(`${x},${y}`);
       if (t) {
-        const sigs = appG.tileEdgeSigs.get(t.tileId);
+        const sigs = appG.tileEdgeSigs.get(t.tsObjId);
         return sigs;
       }
     };
@@ -167,12 +168,15 @@ class Painter extends Placer {
 
     // Exclude the tile currently under the cursor from consideration
     const underPos = topByPos.get(`${baseX},${baseY}`);
-    const filtered = matches.filter((m) => m.id !== underPos?.tileId);
+    const filtered = matches.filter((m) => m.id !== underPos?.tsObjId);
     const match = filtered[0];
     const excludedUnder = !!underPos && filtered.length !== matches.length;
 
     if (match) {
-      const obj = appG.tileIdToTileGroup.get(match.id)!;
+      const obj = tsSelectors.templateFromInstance(
+        state,
+        match.id
+      ) as TileGroupTemplate;
 
       let orderedCandidates: TileGroupTemplate[] = [];
       if (excludedUnder) {
@@ -180,11 +184,15 @@ class Painter extends Placer {
         // of the candidates list
         orderedCandidates = [
           ...filtered.map((m) => m.id),
-          underPos!.tileId,
-        ].map((id) => appG.tileIdToTileGroup.get(id)!);
+          underPos!.tsObjId,
+        ].map(
+          (id) =>
+            tsSelectors.templateFromInstance(state, id)! as TileGroupTemplate
+        );
       } else {
         orderedCandidates = matches.map(
-          (m) => appG.tileIdToTileGroup.get(m.id)!
+          (m) =>
+            tsSelectors.templateFromInstance(state, m.id)! as TileGroupTemplate
         );
       }
       this.candidateDispatcher(orderedCandidates);

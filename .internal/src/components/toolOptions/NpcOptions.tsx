@@ -1,12 +1,15 @@
 import { overlayProps, requiredNpcAnimations } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { actions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { setToolThunk } from "@/thunks/tileset";
-import {
-  isObjectAnimationTemplate,
-  type ObjectAnimationTemplate,
-} from "@/types/animation";
-import type { NpcRequiredAnimation } from "@/types/npc";
+import { isAnimationTemplate, type AnimationTemplate } from "@/types/animation";
+import type {
+  NpcAnimationRecord,
+  NpcRequiredAnimation,
+  NpcTemplate,
+} from "@/types/npc";
+import { TilesetObjType } from "@/types/tileset";
 import {
   Anchor,
   Button,
@@ -61,46 +64,15 @@ export default function NpcOptions() {
     },
   });
 
-  const formSubmit = form.onSubmit(async (values) => {
-    closeSaveModal();
-
-    // const animations: NpcAnimationRecord = {
-    //   Idle: animationMatches["Idle"]!,
-    //   WalkUp: animationMatches["WalkUp"]!,
-    //   WalkDown: animationMatches["WalkDown"]!,
-    //   WalkLeft: animationMatches["WalkLeft"]!,
-    //   WalkRight: animationMatches["WalkRight"]!,
-    // };
-
-    // const id = crypto.randomUUID();
-    // const anim: Npc = {
-    //   id,
-    //   animations,
-    //   tilesetId: tsId,
-    //   name: values.name,
-    //   tags: values.tags,
-    // };
-    // dispatch(actions.addPaletteObject({ tsId, group: anim }));
-    // dispatch(clearCandAnimFramesThunk());
-    // dispatch(uiActions.setTilesetTab("animations"));
-    notifications.show({
-      title: "NPC saved",
-      message: `Saved NPC "${values.name}".`,
-      autoClose: 3000,
-    });
-    form.reset();
-  });
-
   // Match each NPC animation name with animations from the tileset
   const animationMatches = useMemo<
-    Partial<Record<NpcRequiredAnimation, ObjectAnimationTemplate>>
+    Partial<Record<NpcRequiredAnimation, AnimationTemplate>>
   >(() => {
     const allAnimations = Object.values(ts.tiles.entities).filter(
-      isObjectAnimationTemplate
+      isAnimationTemplate
     );
-    const matches: Partial<
-      Record<NpcRequiredAnimation, ObjectAnimationTemplate>
-    > = {};
+    const matches: Partial<Record<NpcRequiredAnimation, AnimationTemplate>> =
+      {};
     for (const requiredName of requiredNpcAnimations) {
       const match = allAnimations.find((anim) =>
         anim.names.includes(requiredName)
@@ -111,6 +83,38 @@ export default function NpcOptions() {
     }
     return matches;
   }, [ts]);
+
+  const formSubmit = form.onSubmit(async (values) => {
+    closeSaveModal();
+
+    const animations: NpcAnimationRecord = {
+      Idle: animationMatches["Idle"]!,
+      WalkUp: animationMatches["WalkUp"]!,
+      WalkDown: animationMatches["WalkDown"]!,
+      WalkLeft: animationMatches["WalkLeft"]!,
+      WalkRight: animationMatches["WalkRight"]!,
+    };
+
+    const id = crypto.randomUUID();
+    const npc: NpcTemplate = {
+      id,
+      type: TilesetObjType.NpcTemplate,
+      animations,
+      tilesetId: tsId,
+      name: values.name,
+      tags: values.tags,
+    };
+
+    dispatch(actions.addPaletteObject({ tsId, group: npc }));
+    dispatch(uiActions.setTilesetTab("npcs"));
+
+    notifications.show({
+      title: "NPC saved",
+      message: `Saved NPC "${values.name}".`,
+      autoClose: 3000,
+    });
+    form.reset();
+  });
 
   const [hasAll, hasSome, hasNone] = useMemo(() => {
     let hasAll = true;
@@ -249,14 +253,14 @@ export default function NpcOptions() {
             <TileAnimation frames={previewFrames} scale={8} bounded />
             <TextInput
               label="Name"
-              description="The name that will appear in dialogues."
+              description="What should we call this NPC? You can change it later."
               placeholder="MyNPC"
               {...form.getInputProps("name")}
             />
             <TagsInput
               label="Tags"
-              description="Tags for organization"
-              placeholder="Friendly"
+              description="Tags are used to find NPCs in the object palette."
+              placeholder="Enemy"
               splitChars={[",", " ", "|"]}
               limit={5}
               data={[

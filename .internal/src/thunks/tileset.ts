@@ -109,8 +109,6 @@ export const loadEdgeSignaturesThunk = createAsyncThunk(
         const cropped = subImageData(imageData, obj.pos);
         objs.set(obj.id, cropped);
       }
-
-      g.tileIdToTileGroup.set(obj.id, obj);
     }
 
     let count = 0;

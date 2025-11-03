@@ -267,22 +267,24 @@ export function outlineObjects(objs: MapObj[], zoom: number) {
     if (isTileGroupInstance(obj)) {
       drawOutline({
         container,
-        frame: obj.frame,
+        width: obj.width,
+        height: obj.height,
         stroke,
         fill: tileSelectFill,
       });
     } else if (isAnimatedInstance(obj)) {
       drawOutline({
         container,
-        frame: obj.frames[0].frame,
+        width: obj.width,
+        height: obj.height,
         stroke,
         fill: tileSelectFill,
       });
     } else if (isColliderBox(obj)) {
-      const rect = { ul: { x: 0, y: 0 }, br: { x: obj.width, y: obj.height } };
       drawOutline({
         container,
-        frame: rect,
+        width: obj.width,
+        height: obj.height,
         stroke,
         fill: tileSelectFill,
       });

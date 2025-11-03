@@ -4,12 +4,12 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
 import { setToolThunk } from "@/thunks/map";
-import { isObjectAnimationTemplate } from "@/types/animation";
+import { isAnimationTemplate } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { isNpcTemplate } from "@/types/npc";
 import { isTileGroupTemplate } from "@/types/tilegroup";
-import { TilesetObject } from "@/types/tilesetobject";
+import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import {
   npcSort,
   objectAnimationSort,
@@ -94,7 +94,7 @@ export default function MapEditorTab({
   }, []);
 
   const onSelectObject = useCallback(
-    (obj: TilesetObject, e: React.MouseEvent) => {
+    (obj: TilesetObjectTemplate, e: React.MouseEvent) => {
       e.preventDefault();
 
       dispatch(actions.setPlace(obj));
@@ -283,10 +283,13 @@ export default function MapEditorTab({
                 }}
               >
                 <ObjectPalette
+                  minScale={1}
+                  defaultScale={4}
+                  maxScale={8}
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
                   selectedObjects={deferredPaletteSelection}
-                  filter={isObjectAnimationTemplate}
+                  filter={isAnimationTemplate}
                   renderObject={renderObjectAnimation}
                   sort={objectAnimationSort}
                 />
@@ -302,6 +305,9 @@ export default function MapEditorTab({
                 }}
               >
                 <ObjectPalette
+                  minScale={1}
+                  defaultScale={4}
+                  maxScale={8}
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
                   selectedObjects={deferredPaletteSelection}

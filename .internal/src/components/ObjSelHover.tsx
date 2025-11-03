@@ -1,7 +1,10 @@
-import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
+import { selectors as tsSelectors } from "@/slices/tilesetEditor";
+import { store } from "@/store/store";
+import { AnimationTemplate } from "@/types/animation";
 import { isAnimatedInstance, isTileGroupInstance, MapObj } from "@/types/map";
+import { TileGroupTemplate } from "@/types/tilegroup";
 import { Checkbox, Group, Stack } from "@mantine/core";
 import { ReactNode, useCallback, useMemo } from "react";
 import { DynamicHoverCard } from "./DynamicHoverCard";
@@ -26,15 +29,25 @@ export default function ObjSelHover() {
   );
 
   const items: ReactNode[] | undefined = useMemo(() => {
+    const state = store.getState();
+
     return proposed?.objects.map((obj) => {
       let view: ReactNode | null = null;
       if (isTileGroupInstance(obj)) {
-        const group = g.tileIdToTileGroup.get(obj.tileId)!;
-        view = <TilesetGroup group={group} scale={1} bounded />;
+        const tsObj = tsSelectors.templateFromInstance(
+          state,
+          obj.tsObjId
+        ) as TileGroupTemplate;
+
+        view = <TilesetGroup group={tsObj} scale={1} bounded />;
       } else if (isAnimatedInstance(obj)) {
-        const frames = obj.frames.map((f) => {
-          const group = g.tileIdToTileGroup.get(f.tileId)!;
-          return { ...f, tg: group };
+        const tsObj = tsSelectors.templateFromInstance(
+          state,
+          obj.tsObjId
+        ) as AnimationTemplate;
+
+        const frames = tsObj.frames.map((f) => {
+          return { ...f, tg: f.tg };
         });
         view = <TileAnimation frames={frames} scale={1} bounded />;
       }
