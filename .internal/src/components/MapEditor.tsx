@@ -198,35 +198,9 @@ export default function MapEditorTab({
     return tips;
   }, [tool]);
 
-  const objectsBadge = (
-    <Badge
-      size="xs"
-      circle
-      style={{ visibility: selCounts.objects > 0 ? "visible" : "hidden" }}
-    >
-      {selCounts.objects}
-    </Badge>
-  );
-
-  const animationsBadge = (
-    <Badge
-      size="xs"
-      circle
-      style={{ visibility: selCounts.animations > 0 ? "visible" : "hidden" }}
-    >
-      {selCounts.animations}
-    </Badge>
-  );
-
-  const npcsBadge = (
-    <Badge
-      size="xs"
-      circle
-      style={{ visibility: selCounts.npcs > 0 ? "visible" : "hidden" }}
-    >
-      {selCounts.npcs}
-    </Badge>
-  );
+  const objectsBadge = <SelectedBadge count={selCounts.objects} />;
+  const animationsBadge = <SelectedBadge count={selCounts.animations} />;
+  const npcsBadge = <SelectedBadge count={selCounts.npcs} />;
 
   return (
     <>
@@ -360,3 +334,17 @@ export default function MapEditorTab({
     </>
   );
 }
+
+const SelectedBadge = ({ count }: { count: number }) => {
+  return (
+    <Badge
+      size="xs"
+      circle
+      color="lime.4"
+      autoContrast
+      style={{ visibility: count > 0 ? "visible" : "hidden" }}
+    >
+      {count}
+    </Badge>
+  );
+};
