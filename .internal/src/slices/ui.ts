@@ -1,4 +1,5 @@
 import { pathToTab } from "@/routes/tabs";
+import { PaletteFilterSwitches, PaletteTabName } from "@/types/palette";
 import { MainTabName, TilesetTabName } from "@/types/tab";
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
@@ -14,6 +15,7 @@ interface UIState {
   // Whether the Tip component is collapsed (hides text/buttons but keeps alert visible)
   tipCollapsed: boolean;
   tilesetTab: TilesetTabName;
+  paletteFilterSwitches: PaletteFilterSwitches;
 }
 
 // Derive default tab from current URL path when in the browser; fallback to map-editor in non-DOM contexts
@@ -31,12 +33,37 @@ const initialState: UIState = {
   loadingPalette: false,
   tipCollapsed: false,
   tilesetTab: "objects",
+  paletteFilterSwitches: {
+    objects: {
+      hideAnimations: true,
+    },
+    animations: {
+      hideNpcs: true,
+    },
+    npcs: {},
+  },
 };
 
 export const slice = createSlice({
   name: "ui",
   initialState,
   reducers: {
+    togglePaletteFilter(
+      state,
+      action: PayloadAction<
+        {
+          [T in PaletteTabName]: {
+            tab: T;
+            filterKey: keyof PaletteFilterSwitches[T];
+            checked: boolean;
+          };
+        }[PaletteTabName]
+      >
+    ) {
+      const { tab, filterKey, checked } = action.payload;
+      const tabVals = state.paletteFilterSwitches[tab];
+      (tabVals as Record<string, boolean>)[filterKey] = checked;
+    },
     setTab: (state, action: PayloadAction<MainTabName>) => {
       state.activeTab = action.payload;
       state.mountedTabs[action.payload] = true;

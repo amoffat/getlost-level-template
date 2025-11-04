@@ -1,4 +1,5 @@
 import { useAppSelector } from "@/hooks/redux";
+import { RootState } from "@/store/store";
 import { isAnimationTemplate } from "@/types/animation";
 import { PaletteObjectProps } from "@/types/palette";
 import { isTileGroupTemplate } from "@/types/tilegroup";
@@ -21,6 +22,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import { shallowEqual } from "react-redux";
 import ObjectAnimationMenu from "./paletteMenus/ObjectAnimationMenu";
 import TileGroupMenu from "./paletteMenus/TileGroupMenu";
 
@@ -31,10 +33,14 @@ interface ObjectPaletteProps<ObjType extends TilesetObjectTemplate> {
   selectedObjects?: Set<string>;
   renderObject: (props: PaletteObjectProps<ObjType>) => React.ReactNode | null;
   sort: (a: ObjType, b: ObjType) => number;
-  filter: (obj: ObjType) => boolean;
+  filter: (
+    obj: ObjType,
+    state: RootState["ui"]["paletteFilterSwitches"]
+  ) => boolean;
   minScale?: number;
   maxScale?: number;
   defaultScale?: number;
+  filterMenu?: React.ReactNode;
 }
 
 function findHighestWithAttr(start: HTMLElement, attr: string) {
@@ -60,11 +66,16 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
   minScale = 1,
   maxScale = 4,
   defaultScale = 2,
+  filterMenu,
 }: ObjectPaletteProps<ObjType>) {
   const [objMenuPos, setObjMenuPos] = useState<Vector | null>(null);
   const [clicked, setClicked] = useState<ObjType | null>(null);
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const loadingPalette = useAppSelector((state) => state.ui.loadingPalette);
+  const paletteFilterSwitches = useAppSelector(
+    (state) => state.ui.paletteFilterSwitches,
+    shallowEqual
+  );
   const [scale, setScale] = useState(defaultScale);
 
   const objects: ReactNode[] = useMemo(() => {
@@ -83,7 +94,7 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
     const sorted = Object.values(filteredTilesets)
       .flatMap((ts) => Object.values(ts.tiles.entities))
       .map((obj) => obj as ObjType)
-      .filter(filter)
+      .filter((obj) => filter(obj, paletteFilterSwitches))
       .sort(sort);
 
     // It is possible for multiple tilesets to contain the same tile group
@@ -114,6 +125,7 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
     scale,
     sort,
     filter,
+    paletteFilterSwitches,
   ]);
 
   const deselectObject = useCallback(() => {
@@ -186,25 +198,24 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
         h="100%"
         style={{ flex: 1, minHeight: 0 }}
       >
-        {objects.length > 0 && (
-          <Group mb="sm" me="sm">
-            <TextInput
-              flex="3"
-              placeholder="Filter objects"
-              leftSection={<IconSearch size={16} />}
-              disabled
-            />
-            <Slider
-              flex="1"
-              min={minScale}
-              max={maxScale}
-              step={0.25}
-              value={scale}
-              onChange={setScale}
-              label={null}
-            />
-          </Group>
-        )}
+        <Group mb="sm" me="sm" gap="xs">
+          {filterMenu}
+          <TextInput
+            flex="3"
+            placeholder="Filter by tags"
+            leftSection={<IconSearch size={16} />}
+            disabled
+          />
+          <Slider
+            flex="1"
+            min={minScale}
+            max={maxScale}
+            step={0.25}
+            value={scale}
+            onChange={setScale}
+            label={null}
+          />
+        </Group>
 
         <LoadingOverlay
           visible={loadingPalette}

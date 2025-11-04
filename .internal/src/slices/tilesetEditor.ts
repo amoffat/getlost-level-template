@@ -1,4 +1,6 @@
 import { log } from "@/log";
+import { AnimationTemplate, isAnimationTemplate } from "@/types/animation";
+import { isNpcTemplate, NpcTemplate } from "@/types/npc";
 import { Rect } from "@/types/rect";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
@@ -438,6 +440,30 @@ export const slice = createSlice({
         if (!ts) return null;
         const obj = ts.tiles.entities[instanceId];
         return obj ?? null;
+      }
+    ),
+    animations: createTsSelector(
+      [(state, tsId) => state.tilesets[tsId]],
+      (ts): AnimationTemplate[] => {
+        const animations: AnimationTemplate[] = [];
+        for (const obj of Object.values(ts.tiles.entities)) {
+          if (isAnimationTemplate(obj)) {
+            animations.push(obj);
+          }
+        }
+        return animations;
+      }
+    ),
+    npcs: createTsSelector(
+      [(state, tsId) => state.tilesets[tsId]],
+      (ts): NpcTemplate[] => {
+        const npcs: NpcTemplate[] = [];
+        for (const obj of Object.values(ts.tiles.entities)) {
+          if (isNpcTemplate(obj)) {
+            npcs.push(obj);
+          }
+        }
+        return npcs;
       }
     ),
   },

@@ -4,12 +4,11 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
 import { setToolThunk } from "@/thunks/map";
-import { isAnimationTemplate } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { isNpcTemplate } from "@/types/npc";
-import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { animationsFilter, objectsFilter } from "@/utils/palette/filters";
 import {
   npcSort,
   objectAnimationSort,
@@ -48,6 +47,8 @@ import {
 import LayerList from "./LayerList";
 import ObjectPalette from "./ObjectPalette";
 import ObjSelHover from "./ObjSelHover";
+import AnimationsPaletteFilters from "./paletteFilters/Animations";
+import ObjectsPaletteFilters from "./paletteFilters/Objects";
 import { renderNpc } from "./paletteObjects/Npc";
 import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
 import { renderTileGroup } from "./paletteObjects/TileGroup";
@@ -268,9 +269,10 @@ export default function MapEditorTab({
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
                   selectedObjects={deferredPaletteSelection}
-                  filter={isTileGroupTemplate}
+                  filter={objectsFilter}
                   renderObject={renderTileGroup}
                   sort={tileGroupSort}
+                  filterMenu={<ObjectsPaletteFilters />}
                 />
               </Tabs.Panel>
               <Tabs.Panel
@@ -289,9 +291,10 @@ export default function MapEditorTab({
                   onSelectObject={onSelectObject}
                   onDeselectObject={onDeselectObject}
                   selectedObjects={deferredPaletteSelection}
-                  filter={isAnimationTemplate}
+                  filter={animationsFilter}
                   renderObject={renderObjectAnimation}
                   sort={objectAnimationSort}
+                  filterMenu={<AnimationsPaletteFilters />}
                 />
               </Tabs.Panel>
 
