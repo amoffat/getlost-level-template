@@ -197,7 +197,7 @@ export class ClickDragger {
 
   public makeHitbox(snap: boolean = false): Rect {
     if (!this.dragStart || !this.dragEnd) {
-      return { ul: { x: 0, y: 0 }, br: { x: 0, y: 0 } };
+      return { x: 0, y: 0, width: 0, height: 0 };
     }
 
     // This logic ensures that our rect select hitbox can go "negative" correctly
@@ -216,8 +216,11 @@ export class ClickDragger {
       }
     }
 
-    const minPos = { x: left, y: top };
-    const maxPos = { x: right, y: bottom };
-    return { ul: minPos, br: maxPos };
+    return {
+      x: left,
+      y: top,
+      width: right - left,
+      height: bottom - top,
+    };
   }
 }

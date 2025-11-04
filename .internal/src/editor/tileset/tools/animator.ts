@@ -7,6 +7,7 @@ import {
 import { SpatialIndex } from "@/types/spatial";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { rectToBBox } from "@/utils/spatial";
 import {
   ClickDragger,
   ClickDragListener,
@@ -21,12 +22,7 @@ class FrameSelector implements ClickDragListener {
     const mode = tilesetSelectors.selectMode(state);
     if (mode !== "animate") return;
 
-    const searchBounds = {
-      minX: e.hitbox.ul.x,
-      minY: e.hitbox.ul.y,
-      maxX: e.hitbox.br.x,
-      maxY: e.hitbox.br.y,
-    };
+    const searchBounds = rectToBBox(e.hitbox);
 
     const hits = this.spatialIndex
       .getObjects({

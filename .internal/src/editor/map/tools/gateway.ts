@@ -70,9 +70,6 @@ export class Gateway implements ClickDragListener {
     const obj = place.obj! as TileGroupTemplate;
     const id = crypto.randomUUID();
 
-    const width = obj.pos.br.x - obj.pos.ul.x;
-    const height = obj.pos.br.y - obj.pos.ul.y;
-
     const tgi: TileGroupInstance = {
       id,
       type: MapObjType.TileGroupInstance,
@@ -83,8 +80,8 @@ export class Gateway implements ClickDragListener {
       flipX: place.flipX,
       z: 0,
       layer,
-      width,
-      height,
+      width: obj.pos.width,
+      height: obj.pos.height,
     };
 
     store.dispatch(actions.addOne(tgi));

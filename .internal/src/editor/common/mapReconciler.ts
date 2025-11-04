@@ -135,13 +135,11 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       ) as TileGroupTemplate;
       const frame = tsObj.pos;
 
-      const width = frame.br.x - frame.ul.x;
-      const height = frame.br.y - frame.ul.y;
       const texFrame = new P.Rectangle(
-        frame.ul.x + texAtlasPadding,
-        frame.ul.y + texAtlasPadding,
-        width - 2 * texAtlasPadding,
-        height - 2 * texAtlasPadding
+        frame.x + texAtlasPadding,
+        frame.y + texAtlasPadding,
+        frame.width - 2 * texAtlasPadding,
+        frame.height - 2 * texAtlasPadding
       );
       const tileTex = new P.Texture({
         source: tsTex.source,

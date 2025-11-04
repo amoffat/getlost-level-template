@@ -24,10 +24,10 @@ export function redrawBounds() {
 
   g.boundsMask
     .rect(
-      bounds.ul.x,
-      bounds.ul.y,
-      bounds.br.x - bounds.ul.x,
-      bounds.br.y - bounds.ul.y
+      bounds.x,
+      bounds.y,
+      bounds.width,
+      bounds.height
     )
     .fill({ color: 0x000000, alpha: 1 });
 }

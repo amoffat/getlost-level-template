@@ -215,8 +215,8 @@ subState([(state) => state.tilesetEditor.scanPos], (scanPos) => {
     g.scanPos.visible = false;
   } else {
     g.scanPos.visible = true;
-    g.scanPos.position.set(scanPos.ul.x, scanPos.ul.y);
-    g.scanPos.width = scanPos.br.x - scanPos.ul.x;
-    g.scanPos.height = scanPos.br.y - scanPos.ul.y;
+    g.scanPos.position.set(scanPos.x, scanPos.y);
+    g.scanPos.width = scanPos.width;
+    g.scanPos.height = scanPos.height;
   }
 });

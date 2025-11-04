@@ -81,7 +81,7 @@ export const slice = createSlice({
       snap: true,
       curPos: null,
     },
-    bounds: { ul: { x: 0, y: 0 }, br: { x: 5000, y: 5000 } },
+    bounds: { x: 0, y: 0, width: 5000, height: 5000 },
     zoomPan: { zoom: 1, pan: { x: 0, y: 0 } },
     place: {
       obj: null,

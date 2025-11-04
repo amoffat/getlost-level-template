@@ -6,10 +6,10 @@ import { Rect } from "@/types/rect";
  * zero- or negative-sized rect can still return true if its extents are in-bounds.
  */
 export function isRectWithinImageData(image: ImageData, rect: Rect): boolean {
-  const x0 = Math.floor(rect.ul.x);
-  const y0 = Math.floor(rect.ul.y);
-  const x1 = Math.ceil(rect.br.x);
-  const y1 = Math.ceil(rect.br.y);
+  const x0 = Math.floor(rect.x);
+  const y0 = Math.floor(rect.y);
+  const x1 = Math.ceil(rect.x + rect.width);
+  const y1 = Math.ceil(rect.y + rect.height);
   return x0 >= 0 && y0 >= 0 && x1 <= image.width && y1 <= image.height;
 }
 
@@ -25,9 +25,12 @@ export function getImageDataFromBitmap(bitmap: ImageBitmap): ImageData {
 
 export function subImageData(source: ImageData, rect: Rect): ImageData {
   const { width: sw, data: sdata } = source;
-  const { ul, br } = rect;
-  const w = Math.ceil(br.x) - Math.floor(ul.x);
-  const h = Math.ceil(br.y) - Math.floor(ul.y);
+  const x0 = Math.floor(rect.x);
+  const y0 = Math.floor(rect.y);
+  const x1 = Math.ceil(rect.x + rect.width);
+  const y1 = Math.ceil(rect.y + rect.height);
+  const w = x1 - x0;
+  const h = y1 - y0;
 
   // Enforce strict in-bounds access
   if (!isRectWithinImageData(source, rect)) {
@@ -39,7 +42,7 @@ export function subImageData(source: ImageData, rect: Rect): ImageData {
   const out = new Uint8ClampedArray(w * h * 4);
 
   for (let row = 0; row < h; row++) {
-    const srcStart = ((Math.floor(ul.y) + row) * sw + Math.floor(ul.x)) * 4;
+    const srcStart = ((y0 + row) * sw + x0) * 4;
     const srcEnd = srcStart + w * 4;
     const dstStart = row * w * 4;
     out.set(sdata.subarray(srcStart, srcEnd), dstStart);
@@ -77,10 +80,10 @@ export function amountOpaquePixels(imageData: ImageData): number {
  */
 export function hasSolidEdges(imageData: ImageData, rect: Rect): boolean {
   const { width, data } = imageData;
-  const x0 = Math.max(0, Math.floor(rect.ul.x));
-  const y0 = Math.max(0, Math.floor(rect.ul.y));
-  const x1 = Math.min(imageData.width, Math.ceil(rect.br.x));
-  const y1 = Math.min(imageData.height, Math.ceil(rect.br.y));
+  const x0 = Math.max(0, Math.floor(rect.x));
+  const y0 = Math.max(0, Math.floor(rect.y));
+  const x1 = Math.min(imageData.width, Math.ceil(rect.x + rect.width));
+  const y1 = Math.min(imageData.height, Math.ceil(rect.y + rect.height));
 
   const w = x1 - x0;
   const h = y1 - y0;

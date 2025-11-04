@@ -20,6 +20,7 @@ import { SpatialIndex } from "@/types/spatial";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { PaintOpts } from "@/types/tools";
 import { subState } from "@/utils/redux";
+import { rectToBBox } from "@/utils/spatial";
 import { Vector } from "@/vec";
 import * as P from "pixi.js";
 import {
@@ -110,15 +111,17 @@ export class Placer implements ClickDragListener {
     const placedThisSession = this.dragSessionIndex.has(posKey);
     if (placedThisSession) return;
 
-    const innerPadding = 1;
     // We check a slightly smaller area than the actual object size to allow
     // for some small gaps between objects.
-    const searchBounds = {
-      minX: pos.x + innerPadding,
-      minY: pos.y + innerPadding,
-      maxX: pos.x + width - innerPadding,
-      maxY: pos.y + height - innerPadding,
-    };
+    const searchBounds = rectToBBox(
+      {
+        x: pos.x,
+        y: pos.y,
+        width,
+        height,
+      },
+      1
+    );
 
     const layer = ms.layers.active;
     let z = pos.y + g.placableSprite.height;
@@ -166,9 +169,6 @@ export class Placer implements ClickDragListener {
     const id = crypto.randomUUID();
 
     if (isTileGroupTemplate(obj)) {
-      const width = obj.pos.br.x - obj.pos.ul.x;
-      const height = obj.pos.br.y - obj.pos.ul.y;
-
       const inst: TileGroupInstance = {
         id,
         type: MapObjType.TileGroupInstance,
@@ -179,15 +179,13 @@ export class Placer implements ClickDragListener {
         flipX: place.flipX,
         z,
         layer,
-        width,
-        height,
+        width: obj.pos.width,
+        height: obj.pos.height,
       };
 
       store.dispatch(actions.addOne(inst));
     } else if (isAnimationTemplate(obj)) {
       const firstFrame = obj.frames[0]!.tg;
-      const width = firstFrame.pos.br.x - firstFrame.pos.ul.x;
-      const height = firstFrame.pos.br.y - firstFrame.pos.ul.y;
 
       const inst: AnimationInstance = {
         id,

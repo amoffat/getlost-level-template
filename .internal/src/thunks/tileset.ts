@@ -215,10 +215,10 @@ export const addAnimationFrameThunk = createAsyncThunk(
     const curFrames = state.tilesetEditor.candAnimFrames;
     if (curFrames.length > 0) {
       const firstFrame = curFrames[0];
-      const firstWidth = firstFrame.pos.br.x - firstFrame.pos.ul.x;
-      const firstHeight = firstFrame.pos.br.y - firstFrame.pos.ul.y;
-      const newWidth = tg.pos.br.x - tg.pos.ul.x;
-      const newHeight = tg.pos.br.y - tg.pos.ul.y;
+      const firstWidth = firstFrame.pos.width;
+      const firstHeight = firstFrame.pos.height;
+      const newWidth = tg.pos.width;
+      const newHeight = tg.pos.height;
 
       if (firstWidth !== newWidth || firstHeight !== newHeight) {
         notifications.show({

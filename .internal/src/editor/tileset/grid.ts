@@ -19,10 +19,10 @@ export function drawGridMask(groups: TileGroupTemplate[]) {
   for (const group of groups.filter(shouldOutline)) {
     mask
       .rect(
-        group.pos.ul.x,
-        group.pos.ul.y,
-        group.pos.br.x - group.pos.ul.x,
-        group.pos.br.y - group.pos.ul.y
+        group.pos.x,
+        group.pos.y,
+        group.pos.width,
+        group.pos.height
       )
       .fill({ color: 0x000000, alpha: 1 });
   }

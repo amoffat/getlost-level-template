@@ -9,6 +9,7 @@ import { MapObj } from "@/types/map";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";
+import { rectToBBox } from "@/utils/spatial";
 import * as P from "pixi.js";
 import {
   ClickDragger,
@@ -128,12 +129,7 @@ class Selector implements ClickDragListener {
     const state = store.getState();
     const ms = state.mapEditor;
 
-    const searchBounds = {
-      minX: e.hitbox.ul.x,
-      minY: e.hitbox.ul.y,
-      maxX: e.hitbox.br.x,
-      maxY: e.hitbox.br.y,
-    };
+    const searchBounds = rectToBBox(e.hitbox);
 
     const hits = this.spatialIndex.getObjects({
       pos: searchBounds,
@@ -230,10 +226,10 @@ function drawRectSelect(rect: Rect, zoom: number) {
   clearRectSelect();
 
   // This logic ensures that our rect select hitbox can go "negative" correctly
-  const left = Math.min(rect.ul.x, rect.br.x);
-  const top = Math.min(rect.ul.y, rect.br.y);
-  const width = Math.abs(rect.br.x - rect.ul.x);
-  const height = Math.abs(rect.br.y - rect.ul.y);
+  const left = Math.min(rect.x, rect.x + rect.width);
+  const top = Math.min(rect.y, rect.y + rect.height);
+  const width = Math.abs(rect.width);
+  const height = Math.abs(rect.height);
 
   g.rectSelect
     .rect(left, top, width, height)

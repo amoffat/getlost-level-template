@@ -29,9 +29,9 @@ const TilesetGroup = ({
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const ts = tilesets[group.tilesetId];
 
-  const width = Math.max(0, group.pos.br.x - group.pos.ul.x);
-  const height = Math.max(0, group.pos.br.y - group.pos.ul.y);
-  const bgPos = `-${group.pos.ul.x}px -${group.pos.ul.y}px`;
+  const width = Math.max(0, group.pos.width);
+  const height = Math.max(0, group.pos.height);
+  const bgPos = `-${group.pos.x}px -${group.pos.y}px`;
 
   // Measure the parent container to avoid rendering larger than available space
   const wrapperRef = useRef<HTMLDivElement | null>(null);

@@ -31,7 +31,7 @@ export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
     p: AllPropsLoose<TilesetObjectTemplate>
   ) {
     if (p.pos !== undefined) {
-      node.position.set(p.pos.ul.x, p.pos.ul.y);
+      node.position.set(p.pos.x, p.pos.y);
     }
   }
 
@@ -68,14 +68,14 @@ export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
     const rect = new P.Rectangle(
       0,
       0,
-      obj.pos.br.x - obj.pos.ul.x,
-      obj.pos.br.y - obj.pos.ul.y
+      obj.pos.width,
+      obj.pos.height
     );
     gfx.rect(rect.x, rect.y, rect.width, rect.height).stroke(invisibleStroke);
 
     const container = new P.Container();
     container.label = obj.id;
-    container.position.set(obj.pos.ul.x, obj.pos.ul.y);
+    container.position.set(obj.pos.x, obj.pos.y);
     container.addChild(gfx);
     container.interactive = true;
     return container;

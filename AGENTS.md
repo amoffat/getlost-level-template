@@ -54,6 +54,8 @@ The transport that asset loading and saving uses is a simple local REST http cal
 
 Persisted assets must be resilient to schema changes in the file format. As such, each asset type is versioned and has a `migrations` folder which contains callbacks for migrating from version N to version N+1. When an asset is loaded, the asset's version should be compared with the current schema version (defined in the `schema.ts`), and if it is out of date, the sequence of migrations should be run until the asset is current, at which point it is re-saved.
 
+If changes are made to the definitions of objects that are part of data that is persisted to disk, it is important to create a migration for old data, and to bump the latest version of the schema being persisted.
+
 ### State
 
 State is held in Redux using Redux RTK. The main store can be seen in `.internal/src/store/store.ts`, which sets up the root reducer, composed of our subreducers. We also have several middleware for autosaving assets and reconciling pixi.js canvas state.

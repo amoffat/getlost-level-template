@@ -29,21 +29,15 @@ export class Collider implements ClickDragListener {
     this.paint = false;
 
     const rect = e.snappedHitbox;
-    const pos = {
-      x: rect.ul.x,
-      y: rect.ul.y,
-    };
-    const width = rect.br.x - rect.ul.x;
-    const height = rect.br.y - rect.ul.y;
 
     const obj: BoxObj = {
       id: crypto.randomUUID(),
       type: MapObjType.BoxCollider,
-      x: pos.x,
-      y: pos.y,
+      x: rect.x,
+      y: rect.y,
       z: 0,
-      width,
-      height,
+      width: rect.width,
+      height: rect.height,
       layer: LayerName.Meta,
     };
 
@@ -72,10 +66,8 @@ export class Collider implements ClickDragListener {
     if (this.paint) {
       this.gfx.clear();
 
-      const width = e.snappedHitbox.br.x - e.snappedHitbox.ul.x;
-      const height = e.snappedHitbox.br.y - e.snappedHitbox.ul.y;
       this.gfx
-        .rect(e.snappedHitbox.ul.x, e.snappedHitbox.ul.y, width, height)
+        .rect(e.snappedHitbox.x, e.snappedHitbox.y, e.snappedHitbox.width, e.snappedHitbox.height)
         .fill(colliderFill);
       // .stroke(colliderStroke);
     }

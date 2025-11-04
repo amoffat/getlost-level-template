@@ -9,6 +9,7 @@ import { averageOklab } from "@/utils/color";
 import { oklabHilbertIndex } from "@/utils/hilbert";
 import { amountOpaquePixels, subImageData } from "@/utils/image";
 import { subState } from "@/utils/redux";
+import { rectToBBox } from "@/utils/spatial";
 import { genImageId, genTileId } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
@@ -70,13 +71,7 @@ class Grouper implements ClickDragListener {
     if (mode === "delete-group" || mode === "replace-group") {
       const tsId = tsState.activeTilesetId!;
 
-      const innerPadding = 1;
-      const searchBounds = {
-        minX: coords.ul.x + innerPadding,
-        minY: coords.ul.y + innerPadding,
-        maxX: coords.br.x - innerPadding,
-        maxY: coords.br.y - innerPadding,
-      };
+      const searchBounds = rectToBBox(coords, 1);
       const hitIds = this.spatialIndex.search(searchBounds).map((h) => h.id);
 
       store.dispatch(tsActions.deletePaletteObjects({ tsId, ids: hitIds }));
@@ -154,10 +149,10 @@ class Grouper implements ClickDragListener {
 
     // Normalize rectangle so that width/height are always positive
 
-    const left = snapDown(Math.min(hb.ul.x, hb.br.x), gridSize);
-    const top = snapDown(Math.min(hb.ul.y, hb.br.y), gridSize);
-    const right = snapUp(Math.max(hb.ul.x, hb.br.x), gridSize);
-    const bottom = snapUp(Math.max(hb.ul.y, hb.br.y), gridSize);
+    const left = snapDown(Math.min(hb.x, hb.x + hb.width), gridSize);
+    const top = snapDown(Math.min(hb.y, hb.y + hb.height), gridSize);
+    const right = snapUp(Math.max(hb.x, hb.x + hb.width), gridSize);
+    const bottom = snapUp(Math.max(hb.y, hb.y + hb.height), gridSize);
     const width = right - left;
     const height = bottom - top;
 
@@ -191,16 +186,12 @@ async function drawGroups(groups: TileGroupTemplate[], zoom: number) {
   const stroke = { ...groupStroke, width: (groupStroke.width ?? 1) / zoom };
 
   for (const group of groups.filter(shouldOutline)) {
-    const rect = new P.Rectangle(
-      group.pos.ul.x,
-      group.pos.ul.y,
-      group.pos.br.x - group.pos.ul.x,
-      group.pos.br.y - group.pos.ul.y
-    );
-    gfx.rect(rect.x, rect.y, rect.width, rect.height).stroke(stroke);
+    gfx
+      .rect(group.pos.x, group.pos.y, group.pos.width, group.pos.height)
+      .stroke(stroke);
 
     mask
-      .rect(rect.x, rect.y, rect.width, rect.height)
+      .rect(group.pos.x, group.pos.y, group.pos.width, group.pos.height)
       .fill({ color: 0x000000, alpha: 1 });
   }
   g.allGroupsOverlay.addChild(gfx);

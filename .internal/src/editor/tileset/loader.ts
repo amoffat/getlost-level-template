@@ -59,8 +59,10 @@ export function generateGridAlignedCoords(
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       coords.push({
-        ul: { x: x * gridSize, y: y * gridSize },
-        br: { x: (x + 1) * gridSize, y: (y + 1) * gridSize },
+        x: x * gridSize,
+        y: y * gridSize,
+        width: gridSize,
+        height: gridSize,
       });
     }
   }
@@ -103,10 +105,10 @@ export async function unpackTileset(tsId: string, coordsList: Rect[]) {
   for (const coords of coordsList) {
     const innerPadding = 1;
     const searchCoords: BBox = {
-      minX: coords.ul.x + innerPadding,
-      minY: coords.ul.y + innerPadding,
-      maxX: coords.br.x - innerPadding,
-      maxY: coords.br.y - innerPadding,
+      minX: coords.x + innerPadding,
+      minY: coords.y + innerPadding,
+      maxX: coords.x + coords.width - innerPadding,
+      maxY: coords.y + coords.height - innerPadding,
     };
 
     // Don't re-tile over pinned groups

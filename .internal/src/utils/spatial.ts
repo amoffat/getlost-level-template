@@ -1,11 +1,11 @@
 import type { Rect } from "@/types/rect";
 import type { BBox } from "rbush";
 
-export function rectToBBox(rect: Rect): BBox {
+export function rectToBBox(rect: Rect, innerPadding: number = 0): BBox {
   return {
-    minX: rect.ul.x,
-    minY: rect.ul.y,
-    maxX: rect.br.x,
-    maxY: rect.br.y,
+    minX: rect.x + innerPadding,
+    minY: rect.y + innerPadding,
+    maxX: rect.x + rect.width - innerPadding,
+    maxY: rect.y + rect.height - innerPadding,
   };
 }

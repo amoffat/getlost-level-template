@@ -27,7 +27,7 @@ export async function genTileId({
   pos: Rect;
 }): Promise<string> {
   const tsHash = await sha1Hash(
-    `${tsId}:${pos.ul.x},${pos.ul.y}:${pos.br.x},${pos.br.y}`
+    `${tsId}:${pos.x},${pos.y}:${pos.width},${pos.height}`
   );
   return tsHash;
 }
