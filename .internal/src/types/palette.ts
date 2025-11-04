@@ -11,6 +11,7 @@ export type PaletteFilterName = "hideAnimations" | "hideNpcs";
 export interface PaletteFilterSwitches {
   objects: {
     hideAnimations: boolean;
+    hideNpcLeftovers: boolean;
   };
   animations: {
     hideNpcs: boolean;

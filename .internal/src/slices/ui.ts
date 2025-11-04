@@ -36,6 +36,7 @@ const initialState: UIState = {
   paletteFilterSwitches: {
     objects: {
       hideAnimations: true,
+      hideNpcLeftovers: true,
     },
     animations: {
       hideNpcs: true,

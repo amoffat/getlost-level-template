@@ -12,7 +12,7 @@ export default function ObjectsPaletteFilters() {
 
   const filterToggles: FilterToggle[] = [
     {
-      key: "show-animations",
+      key: "hide-animations",
       label: "Hide objects used in animations",
       checked: filters.hideAnimations,
       onChange: (checked) => {
@@ -20,6 +20,20 @@ export default function ObjectsPaletteFilters() {
           uiActions.togglePaletteFilter({
             tab: "objects",
             filterKey: "hideAnimations",
+            checked,
+          })
+        );
+      },
+    },
+    {
+      key: "hide-npcs",
+      label: "Hide from NPC tilesets",
+      checked: filters.hideNpcLeftovers,
+      onChange: (checked) => {
+        dispatch(
+          uiActions.togglePaletteFilter({
+            tab: "objects",
+            filterKey: "hideNpcLeftovers",
             checked,
           })
         );

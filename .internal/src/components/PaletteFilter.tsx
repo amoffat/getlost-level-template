@@ -13,12 +13,14 @@ interface PaletteFilterProps {
 }
 
 export default function PaletteFilter({ toggles }: PaletteFilterProps) {
+  const hasAFilter = toggles.some((t) => t.checked);
+
   return (
     <Menu shadow="md" width="lg">
       <Menu.Target>
         <ActionIcon
           size="input-sm"
-          variant="default"
+          variant={hasAFilter ? "filled" : "default"}
           aria-label="Filter options"
         >
           <IconFilter size={16} />

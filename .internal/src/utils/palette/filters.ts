@@ -25,6 +25,15 @@ export function objectsFilter(
     }
   }
 
+  const npcs = tsSelectors.npcs(state, obj.tilesetId);
+  if (filters.objects.hideNpcLeftovers) {
+    for (const npc of npcs) {
+      if (npc.tilesetId === obj.tilesetId) {
+        return false;
+      }
+    }
+  }
+
   return true;
 }
 
