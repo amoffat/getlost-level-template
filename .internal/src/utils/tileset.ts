@@ -8,8 +8,9 @@ import * as P from "pixi.js";
 import { sha1Hash } from "./hash";
 import { getImageDataFromBitmap } from "./image";
 
-export async function genTilesetId(source: File): Promise<string> {
-  const data = await source.arrayBuffer();
+export async function genTilesetId(objectUrl: string): Promise<string> {
+  const blob = await fetch(objectUrl).then((r) => r.blob());
+  const data = await blob.arrayBuffer();
   return sha1Hash(data);
 }
 

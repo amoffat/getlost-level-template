@@ -8,7 +8,7 @@ export interface PackedSpriteMeta {
 
 export interface PackSpritesOptions {
   /** Padding (in pixels) inserted to the right and bottom of each sprite
-   * (default 1). */
+   * (default 0). */
   padding?: number;
   /** Heuristic for ordering sprites before packing (default 'height'). */
   heuristic?: "height" | "area" | "max";
@@ -16,7 +16,7 @@ export interface PackSpritesOptions {
 }
 
 export interface PackSpritesResult {
-  blob: Blob; // Output PNG
+  objectUrl: string;
   width: number; // Final sheet width
   height: number; // Final sheet height
   sprites: PackedSpriteMeta[]; // Placement metadata
@@ -29,8 +29,6 @@ interface LoadedSprite {
   area: number;
   maxDim: number;
 }
-
-// (AttemptResult removed for single-pass implementation)
 
 /**
  * Pack a collection of arbitrarily sized sprite images into a single sprite sheet (single-pass heuristic).
@@ -58,7 +56,7 @@ export async function packSprites(
     throw new Error("packSprites: no files provided");
   }
 
-  const padding = options.padding ?? 1;
+  const padding = options.padding ?? 0;
   const heuristic = options.heuristic ?? "height";
 
   // 1. Decode
@@ -139,9 +137,10 @@ export async function packSprites(
       b ? resolve(b) : reject(new Error("packSprites: toBlob returned null"))
     );
   });
+  const objectUrl = URL.createObjectURL(blob);
 
   return {
-    blob,
+    objectUrl,
     width: finalWidth,
     height: finalHeight,
     sprites: placements,

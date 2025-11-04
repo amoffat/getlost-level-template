@@ -41,7 +41,39 @@ export async function setCanvasTileset(ts: Tileset | null) {
   }
 }
 
-export async function unpackTileset(tsId: string) {
+/**
+ * Generates grid-aligned coordinates for a tileset based on its dimensions and grid size.
+ * @param tsId - The tileset ID
+ * @param gridSize - The size of each grid cell
+ * @returns An array of Rect coordinates representing each grid-aligned tile position
+ */
+export function generateGridAlignedCoords(
+  tsId: string,
+  gridSize: number
+): Rect[] {
+  const texture = gApp.tilesetTextureCache.get(tsId)!;
+  const cols = Math.floor(texture.width / gridSize);
+  const rows = Math.floor(texture.height / gridSize);
+  const coords: Rect[] = [];
+
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      coords.push({
+        ul: { x: x * gridSize, y: y * gridSize },
+        br: { x: (x + 1) * gridSize, y: (y + 1) * gridSize },
+      });
+    }
+  }
+
+  return coords;
+}
+
+/**
+ * Unpacks a tileset by creating tile groups for the specified coordinates.
+ * @param tsId - The tileset ID
+ * @param coordsList - Array of Rect coordinates to unpack into tile groups
+ */
+export async function unpackTileset(tsId: string, coordsList: Rect[]) {
   const state = store.getState();
   const gridSize = state.tilesetEditor.grid.size;
   const texture = gApp.tilesetTextureCache.get(tsId)!;
@@ -49,9 +81,6 @@ export async function unpackTileset(tsId: string) {
   const canvas = g.app.renderer.extract.canvas(texture) as HTMLCanvasElement;
   const bitmap = await createImageBitmap(canvas);
 
-  // Add all single-tile groups by default
-  const cols = Math.floor(texture.width / gridSize);
-  const rows = Math.floor(texture.height / gridSize);
   // Build a single ImageData snapshot so we can quickly test transparency per tile
   const imageData = getImageDataFromBitmap(bitmap);
 
@@ -59,85 +88,78 @@ export async function unpackTileset(tsId: string) {
   let chunk: TileGroupTemplate[] = [];
   const chunkIds = new Set<string>();
 
-  const flushChunk = async (coords: Rect | null = null) => {
+  const flushChunk = async (currentCoords: Rect | null = null) => {
     if (chunk.length > 0) {
       store.dispatch(
         tsActions.bulkAddSinglePaletteTiles({ tsId, groups: chunk })
       );
-      store.dispatch(tsActions.setScanPos(coords));
+      store.dispatch(tsActions.setScanPos(currentCoords));
       chunk = [];
       chunkIds.clear();
       await schedulerYield();
     }
   };
 
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      const coords: Rect = {
-        ul: { x: x * gridSize, y: y * gridSize },
-        br: { x: (x + 1) * gridSize, y: (y + 1) * gridSize },
-      };
+  for (const coords of coordsList) {
+    const innerPadding = 1;
+    const searchCoords: BBox = {
+      minX: coords.ul.x + innerPadding,
+      minY: coords.ul.y + innerPadding,
+      maxX: coords.br.x - innerPadding,
+      maxY: coords.br.y - innerPadding,
+    };
 
-      const innerPadding = 1;
-      const searchCoords: BBox = {
-        minX: coords.ul.x + innerPadding,
-        minY: coords.ul.y + innerPadding,
-        maxX: coords.br.x - innerPadding,
-        maxY: coords.br.y - innerPadding,
-      };
+    // Don't re-tile over pinned groups
+    const hits = g.spatialIndex
+      .getObjects({ pos: searchCoords })
+      .filter((obj) => obj.pinned);
+    if (hits.length > 0) {
+      // Skip tiles that are already part of a pinned group
+      continue;
+    }
 
-      // Don't re-tile over pinned groups
-      const hits = g.spatialIndex
-        .getObjects({ pos: searchCoords })
-        .filter((obj) => obj.pinned);
-      if (hits.length > 0) {
-        // Skip tiles that are already part of a pinned group
-        continue;
-      }
+    const tileImageData = subImageData(imageData, coords);
 
-      const tileImageData = subImageData(imageData, coords);
+    // Skip empty tiles (all pixels fully transparent)
+    if (isTransparent(tileImageData)) {
+      continue;
+    }
 
-      // Skip empty tiles (all pixels fully transparent)
-      if (isTransparent(tileImageData)) {
-        continue;
-      }
+    const imageId = await genImageId(tileImageData);
+    const id = await genTileId({
+      tsId,
+      pos: coords,
+    });
 
-      const imageId = await genImageId(tileImageData);
-      const id = await genTileId({
-        tsId,
-        pos: coords,
-      });
+    // This fixes a bug where tiles with the same id, but different positions,
+    // are being added in the same chunk, causing only one of them to be added
+    // to the spatial index in the tileReconciler.
+    if (chunkIds.has(id)) {
+      await flushChunk(coords);
+    }
 
-      // This fixes a bug where tiles with the same id, but different positions,
-      // are being added in the same chunk, causing only one of them to be added
-      // to the spatial index in the tileReconciler.
-      if (chunkIds.has(id)) {
-        await flushChunk(coords);
-      }
+    const avgColor = averageOklab(tileImageData);
+    const tg: TileGroupTemplate = {
+      id,
+      type: TilesetObjType.TileGroupTemplate,
+      imageId,
+      pos: coords,
+      tilesetId: tsId,
+      gridSize,
+      zIndices: [],
+      name: "",
+      tags: [],
+      pinned: false,
+      coverage: amountOpaquePixels(tileImageData),
+      avgColor,
+      hilbertIndex: oklabHilbertIndex(avgColor),
+    };
 
-      const avgColor = averageOklab(tileImageData);
-      const tg: TileGroupTemplate = {
-        id,
-        type: TilesetObjType.TileGroupTemplate,
-        imageId,
-        pos: coords,
-        tilesetId: tsId,
-        gridSize,
-        zIndices: [],
-        name: "",
-        tags: [],
-        pinned: false,
-        coverage: amountOpaquePixels(tileImageData),
-        avgColor,
-        hilbertIndex: oklabHilbertIndex(avgColor),
-      };
+    chunk.push(tg);
+    chunkIds.add(id);
 
-      chunk.push(tg);
-      chunkIds.add(id);
-
-      if (chunk.length > 10) {
-        await flushChunk(coords);
-      }
+    if (chunk.length > 10) {
+      await flushChunk(coords);
     }
   }
 

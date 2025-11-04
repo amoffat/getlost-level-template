@@ -1,5 +1,9 @@
 import { computeEdgeSignatures } from "@/editor/map/utils/autotile";
-import { setCanvasTileset, unpackTileset } from "@/editor/tileset/loader";
+import {
+  generateGridAlignedCoords,
+  setCanvasTileset,
+  unpackTileset,
+} from "@/editor/tileset/loader";
 import { globals as g } from "@/globals";
 import { log } from "@/log";
 import { loadTileset, loadTilesets, saveTileset } from "@/persist/tileset/api";
@@ -51,9 +55,8 @@ export const loadTilesetsThunk = createAsyncThunk(
 
 export const uploadTilesetThunk = createAsyncThunk(
   "tilesetEditor/uploadTilesetThunk",
-  async (file: File, { dispatch }) => {
-    const objectUrl = URL.createObjectURL(file);
-    const tsId = await genTilesetId(file);
+  async (objectUrl: string, { dispatch }): Promise<Tileset> => {
+    const tsId = await genTilesetId(objectUrl);
     const ts: Tileset = {
       id: tsId,
       objectUrl,
@@ -63,6 +66,7 @@ export const uploadTilesetThunk = createAsyncThunk(
     await saveTileset(ts);
     await dispatch(loadTilesetThunk(tsId)).unwrap();
     await router.navigate(`/tilesets/${tsId}`);
+    return ts;
   }
 );
 
@@ -177,7 +181,10 @@ export const retileThunk = createAsyncThunk(
       .filter((obj) => !obj.pinned)
       .map((obj) => obj.id);
     dispatch(tsActions.deletePaletteObjects({ tsId, ids }));
-    await unpackTileset(tsId);
+
+    const gridSize = state.tilesetEditor.grid.size;
+    const coords = generateGridAlignedCoords(tsId, gridSize);
+    await unpackTileset(tsId, coords);
   }
 );
 
