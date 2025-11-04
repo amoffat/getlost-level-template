@@ -7,10 +7,12 @@ import {
   isAnimatedInstance,
   isColliderBox,
   isColliderEllipse,
+  isNpcInstance,
   isTileGroupInstance,
   MapObj,
   MapObjsFromTileset,
 } from "@/types/map";
+import { NpcTemplate } from "@/types/npc";
 import { toPixiRect } from "@/types/rect";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
@@ -29,27 +31,13 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
   protected spatialIndex?: SpatialIndex<MapObj>;
   private connected = false;
-  private debounceNodeError: ReturnType<
-    typeof makeGroupedDebouncer<MapObjsFromTileset>
-  >;
+  private debounceNodeError: ReturnType<typeof makeGroupedDebouncer>;
 
   constructor(tilesetCache: Map<string, P.Texture>) {
     super();
     this.tilesetCache = tilesetCache;
 
-    this.debounceNodeError = makeGroupedDebouncer({
-      getKey: (obj: MapObjsFromTileset) => obj.tilesetId,
-      fn: (obj: MapObjsFromTileset) => {
-        notifications.show({
-          title: "Missing tileset",
-          message: `Tileset with SHA-1 hash ${obj.tilesetId} not found. Map objects are replaced with a placeholder. Re-upload the tileset to fix this.`,
-          color: "red",
-          autoClose: false,
-        });
-        log.error(`Tileset texture not found for tilesetId ${obj.tilesetId}.`);
-        return EMPTY;
-      },
-    });
+    this.debounceNodeError = makeGroupedDebouncer();
   }
 
   public attachCanvas({
@@ -135,7 +123,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
   protected override createNode(obj: MapObj): P.Container | null {
     if (isTileGroupInstance(obj)) {
-      const tsTex = this.tilesetCache.get(obj.tilesetId);
+      const tsTex = this.getTilesetTex(obj.tilesetId);
       if (!tsTex) {
         return this.makeErrorNode(obj);
       }
@@ -183,7 +171,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       return spriteContainer;
     } else if (isAnimatedInstance(obj)) {
       const pixiFrames: P.FrameObject[] = [];
-      const tsTex = this.tilesetCache.get(obj.tilesetId);
+      const tsTex = this.getTilesetTex(obj.tilesetId);
       if (!tsTex) {
         return this.makeErrorNode(obj);
       }
@@ -192,9 +180,72 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       const tsObj = tsSelectors.templateFromInstance(
         state,
         obj.tsObjId
-      ) as AnimationTemplate;
+      ) as AnimationTemplate | null;
+      if (!tsObj) {
+        this.debouncedError(
+          obj.tsObjId,
+          "Missing object",
+          `The animation object with ID ${obj.tsObjId} could not be found in the tileset.`
+        );
+        return this.makeErrorNode(obj);
+      }
 
       for (const animFrame of tsObj.frames) {
+        const rect = animFrame.tg.pos;
+
+        const texture = new P.Texture({
+          source: tsTex.source,
+          frame: toPixiRect(rect),
+        });
+        pixiFrames.push({
+          texture,
+          time: animFrame.time,
+        });
+      }
+      const sprite = new P.AnimatedSprite(pixiFrames, true);
+      sprite.play();
+
+      sprite.position.set(
+        sprite.width / 2 + texAtlasPadding,
+        sprite.height / 2 + texAtlasPadding
+      );
+      sprite.interactive = false;
+      sprite.anchor.set(0.5);
+      sprite.scale.x = obj.flipX ? -1 : 1;
+
+      const spriteContainer = new P.Container();
+      spriteContainer.label = obj.id;
+      spriteContainer.position.set(obj.x, obj.y);
+      spriteContainer.zIndex = obj.z;
+      spriteContainer.addChild(sprite);
+      spriteContainer.interactive = true;
+      spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
+
+      return spriteContainer;
+    } else if (isNpcInstance(obj)) {
+      const pixiFrames: P.FrameObject[] = [];
+      const tsTex = this.getTilesetTex(obj.tilesetId);
+      if (!tsTex) {
+        return this.makeErrorNode(obj);
+      }
+
+      const state = store.getState();
+      const tsObj = tsSelectors.templateFromInstance(
+        state,
+        obj.tsObjId
+      ) as NpcTemplate | null;
+      if (!tsObj) {
+        this.debouncedError(
+          obj.tsObjId,
+          "Missing object",
+          `The NPC object with ID ${obj.tsObjId} could not be found in the tileset.`
+        );
+        return this.makeErrorNode(obj);
+      }
+
+      const idleFrames = tsObj.animations.Idle.frames;
+
+      for (const animFrame of idleFrames) {
         const rect = animFrame.tg.pos;
 
         const texture = new P.Texture({
@@ -229,7 +280,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     } else if (isColliderEllipse(obj)) {
       const gfx = new P.Graphics();
       gfx.interactive = false;
-      gfx.ellipse(0, 0, obj.radiusX, obj.radiusY);
+      gfx.ellipse(0, 0, obj.width / 2, obj.height / 2);
       const container = new P.Container();
       container.label = obj.id;
       container.position.set(obj.x, obj.y);
@@ -254,6 +305,14 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     }
   }
 
+  private getTilesetTex(tsId: string): P.Texture | undefined {
+    const tex = this.tilesetCache.get(tsId);
+    if (!tex) {
+      this.missingTilesetError(tsId);
+    }
+    return tex;
+  }
+
   /**
    * Renders a placeholder error node for when a tileset is missing. It has a
    * big red X going from corner to corner and is the size of the object's
@@ -262,8 +321,6 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
    * @returns A placeholder error container
    */
   private makeErrorNode(obj: MapObjsFromTileset): P.Container {
-    this.debounceNodeError(obj);
-
     const container = new P.Container();
     container.label = obj.id;
 
@@ -277,5 +334,25 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
     container.addChild(gfx);
     return container;
+  }
+
+  private missingTilesetError(tsId: string) {
+    this.debouncedError(
+      tsId,
+      "Missing tileset",
+      `Tileset with SHA-1 hash ${tsId} not found. Map objects are replaced with a placeholder. Re-upload the tileset to fix this.`
+    );
+  }
+
+  private debouncedError(key: string, title: string, message: string) {
+    this.debounceNodeError(key, () => {
+      notifications.show({
+        title,
+        message,
+        color: "red",
+        autoClose: false,
+      });
+      return EMPTY;
+    });
   }
 }

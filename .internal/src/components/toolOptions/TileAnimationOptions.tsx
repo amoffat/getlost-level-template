@@ -335,6 +335,14 @@ export default function TileAnimationOptions() {
     dispatch(actions.removeCandAnimIdx(idx));
   };
 
+  const hasAllNpcAnims = useMemo(() => {
+    for (const animName of requiredNpcAnimations) {
+      const count = animationUseCounts.get(animName) ?? 0;
+      if (count <= 0) return false;
+    }
+    return true;
+  }, [animationUseCounts]);
+
   const tips: string[] = useMemo(() => {
     const t = [];
     if (cands.length === 0) {
@@ -349,8 +357,15 @@ export default function TileAnimationOptions() {
         "You can duplicate a frame by clicking the same tile again in the tile editor."
       );
     }
+
+    if (hasAllNpcAnims) {
+      t.push(
+        "When all required NPC animations are present, you can create an NPC with the NPC tool."
+      );
+    }
+
     return t;
-  }, [cands.length]);
+  }, [cands.length, hasAllNpcAnims]);
 
   return (
     <>

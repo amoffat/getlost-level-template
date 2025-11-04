@@ -243,39 +243,19 @@ subState(
   (placeObj, zoom, mode) => {
     if (!g.initialized) return;
 
-    // No change necessary
-    if (placeObj && g.placableSprite?.label === placeObj.id) return;
-
+    const assetChanged = g.placableSprite?.label !== placeObj?.id;
     g.placableOutline.removeChildren();
-    g.placableContainer.removeChildren();
+
+    if (assetChanged) {
+      g.placableContainer.removeChildren();
+    }
 
     if (placeObj && ["paint", "magic-paint"].includes(mode)) {
       let sprite: P.Sprite;
-
-      if (isTileGroupTemplate(placeObj)) {
-        const rect = placeObj.pos;
-        const tsTex = gApp.tilesetTextureCache.get(placeObj.tilesetId);
-        if (!tsTex) {
-          log.error("Tileset texture not found for placer");
-          return;
-        }
-        const texture = new P.Texture({
-          source: tsTex.source,
-          frame: toPixiRect(rect),
-        });
-        sprite = new P.Sprite(texture);
-      } else if (isAnimationTemplate(placeObj) || isNpcTemplate(placeObj)) {
-        let frames: TileAnimationFrame[] = [];
-        if (isAnimationTemplate(placeObj)) {
-          frames = placeObj.frames;
-        } else if (isNpcTemplate(placeObj)) {
-          frames = placeObj.animations.WalkDown.frames;
-        }
-
-        const pixiFrames: P.FrameObject[] = [];
-        for (const frame of frames) {
-          const rect = frame.tg.pos;
-          const tsTex = gApp.tilesetTextureCache.get(frame.tg.tilesetId);
+      if (assetChanged) {
+        if (isTileGroupTemplate(placeObj)) {
+          const rect = placeObj.pos;
+          const tsTex = gApp.tilesetTextureCache.get(placeObj.tilesetId);
           if (!tsTex) {
             log.error("Tileset texture not found for placer");
             return;
@@ -284,27 +264,51 @@ subState(
             source: tsTex.source,
             frame: toPixiRect(rect),
           });
-          pixiFrames.push({
-            texture,
-            time: frame.time,
-          });
+          sprite = new P.Sprite(texture);
+        } else if (isAnimationTemplate(placeObj) || isNpcTemplate(placeObj)) {
+          let frames: TileAnimationFrame[] = [];
+          if (isAnimationTemplate(placeObj)) {
+            frames = placeObj.frames;
+          } else if (isNpcTemplate(placeObj)) {
+            frames = placeObj.animations.WalkDown.frames;
+          }
+
+          const pixiFrames: P.FrameObject[] = [];
+          for (const frame of frames) {
+            const rect = frame.tg.pos;
+            const tsTex = gApp.tilesetTextureCache.get(frame.tg.tilesetId);
+            if (!tsTex) {
+              log.error("Tileset texture not found for placer");
+              return;
+            }
+            const texture = new P.Texture({
+              source: tsTex.source,
+              frame: toPixiRect(rect),
+            });
+            pixiFrames.push({
+              texture,
+              time: frame.time,
+            });
+          }
+
+          const anim = new P.AnimatedSprite(pixiFrames, true);
+          anim.play();
+          sprite = anim;
+        } else {
+          log.error("Unsupported place object type for placer");
+          return;
         }
 
-        const anim = new P.AnimatedSprite(pixiFrames, true);
-        anim.play();
-        sprite = anim;
+        sprite.label = placeObj.id;
+        sprite.anchor.set(0.5);
+        sprite.position.set(sprite.width / 2, sprite.height / 2);
+
+        g.placableContainer.removeChildren();
+        g.placableContainer.addChild(sprite);
+        g.placableSprite = sprite;
       } else {
-        log.error("Unsupported place object type for placer");
-        return;
+        sprite = g.placableSprite!;
       }
-
-      sprite.label = placeObj.id;
-      sprite.anchor.set(0.5);
-      sprite.position.set(sprite.width / 2, sprite.height / 2);
-
-      g.placableContainer.removeChildren();
-      g.placableContainer.addChild(sprite);
-      g.placableSprite = sprite;
 
       const stroke = {
         ...selectStroke,

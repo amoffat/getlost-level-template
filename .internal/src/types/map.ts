@@ -16,15 +16,14 @@ export interface BaseMapObj {
   y: number;
   z: number;
   layer: number;
+  width: number;
+  height: number;
 }
 export interface TileGroupInstance extends BaseMapObj {
   type: MapObjType.TileGroupInstance;
   // The id of the underlying tileset object
   tsObjId: string;
   tilesetId: string;
-
-  width: number;
-  height: number;
 
   // Properties that can vary per-instance
   flipX: boolean;
@@ -45,10 +44,6 @@ export interface AnimationInstance extends BaseMapObj {
   tsObjId: string;
   tilesetId: string;
 
-  // Convenience, so I don't have to dig through the frames
-  width: number;
-  height: number;
-
   // Properties that can vary per-instance
   flipX: boolean;
   name?: string;
@@ -61,10 +56,6 @@ export interface NpcInstance extends BaseMapObj {
   tsObjId: string;
   tilesetId: string;
 
-  // Convenience, so I don't have to dig through the animation frames
-  width: number;
-  height: number;
-
   // Properties that can vary per-instance
   flipX: boolean;
   name?: string;
@@ -73,13 +64,9 @@ export interface NpcInstance extends BaseMapObj {
 
 export interface EllipseObj extends BaseMapObj {
   type: MapObjType.EllipseCollider;
-  radiusX: number;
-  radiusY: number;
 }
 export interface BoxObj extends BaseMapObj {
   type: MapObjType.BoxCollider;
-  width: number;
-  height: number;
 }
 export interface PolyObj extends BaseMapObj {
   type: MapObjType.PolyCollider;
