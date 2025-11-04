@@ -13,7 +13,7 @@ export default function AnimationsPaletteFilters() {
   const filterToggles: FilterToggle[] = [
     {
       key: "hide-npcs",
-      label: "Hide animations used by NPCs",
+      label: "Hide sprites used by NPCs",
       checked: filters.hideNpcs,
       onChange: (checked) => {
         dispatch(

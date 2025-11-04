@@ -13,7 +13,7 @@ export default function ObjectsPaletteFilters() {
   const filterToggles: FilterToggle[] = [
     {
       key: "hide-animations",
-      label: "Hide objects used in animations",
+      label: "Hide sprites used in animations",
       checked: filters.hideAnimations,
       onChange: (checked) => {
         dispatch(
@@ -27,7 +27,7 @@ export default function ObjectsPaletteFilters() {
     },
     {
       key: "hide-npcs",
-      label: "Hide from NPC tilesets",
+      label: "Hide sprites from NPC tilesets",
       checked: filters.hideNpcLeftovers,
       onChange: (checked) => {
         dispatch(
