@@ -76,8 +76,8 @@ class Painter extends Placer {
 
     // Determine the snapped center tile position from the cursor using gridSnap
     const step = state.mapEditor.grid.size;
-    const baseX = Math.floor(e.localPos.x / step) * step;
-    const baseY = Math.floor(e.localPos.y / step) * step;
+    const baseX = Math.floor(e.localPos.x / step.x) * step.x;
+    const baseY = Math.floor(e.localPos.y / step.y) * step.y;
 
     const freezeCand = state.mapEditor.toolOptions["magic-paint"].gridPosFreeze;
     if (freezeCand) {
@@ -99,10 +99,10 @@ class Painter extends Placer {
 
     // Get all of the tiles in a 9x9 area around the cursor
     const searchBounds = {
-      minX: e.localPos.x - 1.5 * step,
-      minY: e.localPos.y - 1.5 * step,
-      maxX: e.localPos.x + 1.5 * step,
-      maxY: e.localPos.y + 1.5 * step,
+      minX: e.localPos.x - 1.5 * step.x,
+      minY: e.localPos.y - 1.5 * step.y,
+      maxX: e.localPos.x + 1.5 * step.x,
+      maxY: e.localPos.y + 1.5 * step.y,
     };
     // Collect all overlapping ground tile group instances, but for each (x,y) stack
     // keep only the topmost (highest z). This preserves one representative per tile position.
@@ -133,10 +133,10 @@ class Painter extends Placer {
       }
     };
 
-    const topSigs = resolveEdgeSig(baseX, baseY - step);
-    const bottomSigs = resolveEdgeSig(baseX, baseY + step);
-    const leftSigs = resolveEdgeSig(baseX - step, baseY);
-    const rightSigs = resolveEdgeSig(baseX + step, baseY);
+    const topSigs = resolveEdgeSig(baseX, baseY - step.y);
+    const bottomSigs = resolveEdgeSig(baseX, baseY + step.y);
+    const leftSigs = resolveEdgeSig(baseX - step.x, baseY);
+    const rightSigs = resolveEdgeSig(baseX + step.x, baseY);
 
     const hasAdjacentTiles = topSigs || bottomSigs || leftSigs || rightSigs;
     // No adjacent tiles to match against, so we can't do anything here.

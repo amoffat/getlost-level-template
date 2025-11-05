@@ -240,10 +240,10 @@ export function matchTile(
  */
 export function pickDirectionWeights(
   pos: Vector,
-  gridSize: number
+  gridSize: Vector
 ): Record<EdgeName, number> {
   // Guard: degenerate grid -> all equal weights of 1
-  if (gridSize <= 1) {
+  if (gridSize.x <= 1 && gridSize.y <= 1) {
     return {
       top: 1,
       bottom: 1,
@@ -253,21 +253,21 @@ export function pickDirectionWeights(
   }
 
   // Position within the current grid cell (ensure non‑negative modulo)
-  const cellXRaw = pos.x % gridSize;
-  const cellYRaw = pos.y % gridSize;
-  const cellX = (cellXRaw + gridSize) % gridSize; // [0, gridSize)
-  const cellY = (cellYRaw + gridSize) % gridSize; // [0, gridSize)
+  const cellXRaw = pos.x % gridSize.x;
+  const cellYRaw = pos.y % gridSize.y;
+  const cellX = (cellXRaw + gridSize.x) % gridSize.x; // [0, gridSize.x)
+  const cellY = (cellYRaw + gridSize.y) % gridSize.y; // [0, gridSize.y)
 
   // Distances to each edge within this cell (continuous model with edges at 0 and gridSize).
   const distances: Record<EdgeName, number> = {
     top: cellY,
-    right: gridSize - cellX,
-    bottom: gridSize - cellY,
+    right: gridSize.x - cellX,
+    bottom: gridSize.y - cellY,
     left: cellX,
   };
 
   // Compute nearest per-axis edges and apply quadratic falloff on each axis independently.
-  const maxMinDist = gridSize / 2;
+  const maxMinDist = Math.min(gridSize.x, gridSize.y) / 2;
   const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
   const gamma = 2; // quadratic
 
