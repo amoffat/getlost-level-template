@@ -20,7 +20,7 @@ export function drawBounds() {
  */
 function redrawBounds() {
   const state = store.getState();
-  const bounds = state.mapEditor.bounds;
+  const bounds = state.tilesetEditor.bounds;
   g.boundsMask.clear();
 
   g.boundsMask
@@ -28,6 +28,6 @@ function redrawBounds() {
     .fill({ color: 0x000000, alpha: 1 });
 }
 
-subState([(state) => state.mapEditor.bounds], (_bounds) => {
+subState([(state) => state.tilesetEditor.bounds], (_bounds) => {
   redrawBounds();
 });

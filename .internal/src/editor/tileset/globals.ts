@@ -18,6 +18,9 @@ interface Globals {
   selectionOutlines: P.Container;
   rectSelectOutline: P.Container;
   rectSelect: P.Graphics;
+  // For drawing the map bounds
+  boundsContainer: P.Graphics;
+  boundsMask: P.Graphics;
 }
 
 export const globals: Globals = {} as Globals;

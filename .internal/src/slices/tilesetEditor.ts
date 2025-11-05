@@ -29,6 +29,7 @@ export interface TilesetEditorState {
     size: number;
     visible: boolean;
   };
+  bounds: Rect;
   selectedTool: Mode | null;
   activeModeStack: Mode[];
   activeTilesetId: string | null;
@@ -57,6 +58,7 @@ export const slice = createSlice({
       size: 16,
       visible: true,
     },
+    bounds: { x: 0, y: 0, width: 1024, height: 1024 },
     selectedTool: null,
     activeModeStack: [],
     activeTilesetId: null,
@@ -167,6 +169,10 @@ export const slice = createSlice({
     setMode(state, action: PayloadAction<Mode | null>) {
       const mode = action.payload;
       state.activeModeStack = mode === null ? [] : [mode];
+    },
+    setBounds(state, action: PayloadAction<{ width: number; height: number }>) {
+      const { width, height } = action.payload;
+      state.bounds = { ...state.bounds, width, height };
     },
     setActiveTileset: {
       prepare: (payload: Tileset | null) => ({

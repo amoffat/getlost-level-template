@@ -38,6 +38,16 @@ export const selectTilesetThunk = createAsyncThunk(
     await setCanvasTileset(ts);
     // Set it as active, which loads its zoom/pan state
     dispatch(tsActions.setActiveTileset(ts));
+
+    if (ts) {
+      const tex = await loadTilesetImage(ts);
+      dispatch(
+        tsActions.setBounds({
+          width: tex.width,
+          height: tex.height,
+        })
+      );
+    }
   }
 );
 

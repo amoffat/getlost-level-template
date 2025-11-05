@@ -46,7 +46,7 @@ import {
 } from "react";
 import LayerList from "./LayerList";
 import ObjectPalette from "./ObjectPalette";
-import ObjSelHover from "./ObjSelHover";
+import ObjSelHover from "./ObjSelHoverMenu";
 import AnimationsPaletteFilters from "./paletteFilters/Animations";
 import ObjectsPaletteFilters from "./paletteFilters/Objects";
 import { renderNpc } from "./paletteObjects/Npc";

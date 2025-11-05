@@ -1,5 +1,6 @@
 import { Vector } from "@/vec";
 import * as P from "pixi.js";
+import { gridStroke } from "./strokes";
 
 export function drawGrid({
   gridSize,
@@ -46,12 +47,6 @@ export function drawGrid({
     gfx.lineTo(w, h);
   }
 
-  const gridStroke: P.StrokeInput = {
-    color: 0x000000,
-    width: 1,
-    alpha: 0.3,
-    pixelLine: true,
-  };
   gfx.stroke(gridStroke);
 
   container.addChild(gfx);

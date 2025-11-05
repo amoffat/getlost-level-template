@@ -33,3 +33,15 @@ export const tileSelectFill: P.FillStyle = {
   color: 0x00ff00,
   alpha: 0.25,
 };
+
+export const gridStroke: P.StrokeInput = {
+  color: 0x000000,
+  width: 1,
+  alpha: 0.4,
+  pixelLine: true,
+};
+
+export const overlayFill: P.FillStyle = {
+  color: 0x000000,
+  alpha: gridStroke.alpha,
+};

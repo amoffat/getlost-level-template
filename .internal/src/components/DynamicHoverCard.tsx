@@ -49,7 +49,7 @@ export function DynamicHoverCard({
           }}
         />
       </Popover.Target>
-      <Popover.Dropdown>{children}</Popover.Dropdown>
+      <Popover.Dropdown p={"xs"}>{children}</Popover.Dropdown>
     </Popover>
   );
 }

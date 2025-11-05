@@ -15,6 +15,7 @@ import { getCursorForMode } from "../common/cursor";
 import { ClickDragger } from "../common/drag";
 import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
+import { drawBounds } from "./bounds";
 import { globals as g } from "./globals";
 import { setupGrid } from "./grid";
 import { setupKeys } from "./keys";
@@ -78,6 +79,13 @@ export async function init(): Promise<P.Application> {
   g.groupSelContainer = new P.Container();
   g.groupSelContainer.zIndex = Number.MAX_SAFE_INTEGER - 2;
   g.tilesetContainer.addChild(g.groupSelContainer);
+
+  g.boundsContainer = new P.Graphics();
+  stage.addChild(g.boundsContainer);
+  g.boundsMask = new P.Graphics();
+  g.boundsContainer.setMask({ mask: g.boundsMask, inverse: true });
+  g.tilesetContainer.addChild(g.boundsMask);
+  drawBounds();
 
   const allGroupsOverlay = new P.Container();
   allGroupsOverlay.zIndex = Number.MAX_SAFE_INTEGER - 3;
@@ -175,10 +183,12 @@ export async function init(): Promise<P.Application> {
   function redrawLayout() {
     const parent = document.getElementById(constants.tilesetEditorContainerId)!;
     if (!parent) return;
+
     const rect = parent.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     checkerboard.width = rect.width;
     checkerboard.height = rect.height;
+    drawBounds();
   }
   window.addEventListener("resize", redrawLayout);
   onVisible(canvas, redrawLayout);

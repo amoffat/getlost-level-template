@@ -3,7 +3,13 @@ import { actions } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { AnimationTemplate } from "@/types/animation";
-import { isAnimatedInstance, isTileGroupInstance, MapObj } from "@/types/map";
+import {
+  isAnimatedInstance,
+  isNpcInstance,
+  isTileGroupInstance,
+  MapObj,
+} from "@/types/map";
+import { NpcTemplate } from "@/types/npc";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { Checkbox, Group, Stack } from "@mantine/core";
 import { ReactNode, useCallback, useMemo } from "react";
@@ -39,7 +45,7 @@ export default function ObjSelHover() {
           obj.tsObjId
         ) as TileGroupTemplate;
 
-        view = <TilesetGroup group={tsObj} scale={1} bounded />;
+        view = <TilesetGroup group={tsObj} scale={2} bounded />;
       } else if (isAnimatedInstance(obj)) {
         const tsObj = tsSelectors.templateFromInstanceId(
           state,
@@ -49,7 +55,17 @@ export default function ObjSelHover() {
         const frames = tsObj.frames.map((f) => {
           return { ...f, tg: f.tg };
         });
-        view = <TileAnimation frames={frames} scale={1} bounded />;
+        view = <TileAnimation frames={frames} scale={2} bounded />;
+      } else if (isNpcInstance(obj)) {
+        const tsObj = tsSelectors.templateFromInstanceId(
+          state,
+          obj.tsObjId
+        ) as NpcTemplate;
+
+        const frames = tsObj.animations.Idle.frames.map((f) => {
+          return { ...f, tg: f.tg };
+        });
+        view = <TileAnimation frames={frames} scale={2} bounded />;
       }
 
       const entry = (
