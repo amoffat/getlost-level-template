@@ -9,7 +9,7 @@ import { Button, Group, Image, Modal, Select, Stack } from "@mantine/core";
 import { FileWithPath } from "@mantine/dropzone";
 import { useForm } from "@mantine/form";
 import { IconLibraryPhoto, IconPhotoPlus } from "@tabler/icons-react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 interface TileAssetTypeModalProps {
   files: File[];
@@ -39,6 +39,15 @@ export default function UploadAssetModal({
       creationOption: "__new_tileset__",
     },
   });
+
+  // Set the default creation option based on image area
+  useEffect(() => {
+    if (files.length > 0) {
+      chooseDefaultCreationOption(files).then((defaultOption) => {
+        form.setFieldValue("creationOption", defaultOption);
+      });
+    }
+  }, [files, form]);
 
   const tilesetOptions = useMemo(() => {
     const groups: Array<{
@@ -181,4 +190,49 @@ export default function UploadAssetModal({
       </form>
     </Modal>
   );
+}
+
+/**
+ * Utility function to determine the default creation option based on image
+ * area. Loads image files, calculates their area (width × height), and returns
+ * the appropriate default option. Uses createImageBitmap for modern, efficient
+ * image decoding.
+ *
+ * @param files - Array of File objects to analyze
+ * @returns Promise resolving to "__merge_uploads__" if average area < 1024,
+ * otherwise "__new_tileset__"
+ */
+async function chooseDefaultCreationOption(
+  files: File[]
+): Promise<SpecialTilesetOption> {
+  // Filter for image files only
+  const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+
+  if (imageFiles.length === 0) {
+    return "__new_tileset__";
+  }
+
+  // Load all images and calculate their areas using createImageBitmap
+  const areaPromises = imageFiles.map(async (file) => {
+    try {
+      const bitmap = await createImageBitmap(file);
+      const area = bitmap.width * bitmap.height;
+      bitmap.close(); // Clean up the bitmap to free memory
+      return area;
+    } catch (error) {
+      console.error(`Failed to load image: ${file.name}`, error);
+      throw error;
+    }
+  });
+
+  try {
+    const areas = await Promise.all(areaPromises);
+    const averageArea =
+      areas.reduce((sum, area) => sum + area, 0) / areas.length;
+
+    return averageArea < 1024 ? "__merge_uploads__" : "__new_tileset__";
+  } catch (error) {
+    console.error("Error calculating image areas:", error);
+    return "__new_tileset__";
+  }
 }
