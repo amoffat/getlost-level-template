@@ -13,7 +13,7 @@ import {
   actions as tsActions,
 } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
-import { store } from "@/store/store";
+import { RootState, store } from "@/store/store";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { schedulerYield } from "@/utils/async";
@@ -25,7 +25,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 export const selectTilesetThunk = createAsyncThunk(
   "tilesetEditor/selectTilesetThunk",
   async (ts: Tileset | null, { dispatch, getState }) => {
-    const state = getState() as { tilesetEditor: TilesetEditorState };
+    const state = getState() as RootState;
 
     if (ts?.id === state.tilesetEditor.activeTilesetId) {
       // Already active
@@ -55,13 +55,17 @@ export const loadTilesetsThunk = createAsyncThunk(
 
 export const uploadTilesetThunk = createAsyncThunk(
   "tilesetEditor/uploadTilesetThunk",
-  async (objectUrl: string, { dispatch }): Promise<Tileset> => {
+  async (
+    { objectUrl, composite }: { objectUrl: string; composite: boolean },
+    { dispatch }
+  ): Promise<Tileset> => {
     const tsId = await genTilesetId(objectUrl);
     const ts: Tileset = {
       id: tsId,
       objectUrl,
       saved: false,
       tiles: { ids: [], entities: {} },
+      composite,
     };
     await saveTileset(ts);
     await dispatch(loadTilesetThunk(tsId)).unwrap();

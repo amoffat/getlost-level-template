@@ -9,7 +9,7 @@ import { Button, Group, Image, Modal, Select, Stack } from "@mantine/core";
 import { FileWithPath } from "@mantine/dropzone";
 import { useForm } from "@mantine/form";
 import { IconLibraryPhoto, IconPhotoPlus } from "@tabler/icons-react";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 interface TileAssetTypeModalProps {
   files: File[];
@@ -21,7 +21,10 @@ interface FormValues {
   creationOption: SpecialTilesetOption | string;
 }
 
-type SpecialTilesetOption = "__new_tileset__" | "__merge_uploads__";
+const NEW_TILESET = "__new_tileset__";
+const MERGE_UPLOADS = "__merge_uploads__";
+
+type SpecialTilesetOption = typeof NEW_TILESET | typeof MERGE_UPLOADS;
 
 export default function UploadAssetModal({
   files,
@@ -30,19 +33,21 @@ export default function UploadAssetModal({
 }: TileAssetTypeModalProps) {
   const dispatch = useAppDispatch();
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
+  const hasSetDefault = useRef(false);
 
   const form = useForm<FormValues>({
     name: "tile-asset-type",
     mode: "uncontrolled",
     onSubmitPreventDefault: "always",
     initialValues: {
-      creationOption: "__new_tileset__",
+      creationOption: NEW_TILESET,
     },
   });
 
-  // Set the default creation option based on image area
+  // Set the default creation option based on image area (only once)
   useEffect(() => {
-    if (files.length > 0) {
+    if (files.length > 1 && !hasSetDefault.current) {
+      hasSetDefault.current = true;
       chooseDefaultCreationOption(files).then((defaultOption) => {
         form.setFieldValue("creationOption", defaultOption);
       });
@@ -55,21 +60,28 @@ export default function UploadAssetModal({
       items: Array<{ value: string; label: string }>;
     }> = [];
 
-    const nt_groups = [
-      {
-        value: "__new_tileset__",
-        label: "Create a new tileset for each upload",
-      },
-    ];
+    const ntGroups: { value: string; label: string }[] = [];
     groups.push({
       group: "New tilesets",
-      items: nt_groups,
+      items: ntGroups,
     });
+
+    if (files.length === 1) {
+      ntGroups.push({
+        value: NEW_TILESET,
+        label: "Create a new tileset",
+      });
+    } else {
+      ntGroups.push({
+        value: NEW_TILESET,
+        label: "Create a new tileset for each upload",
+      });
+    }
 
     // Add "Merge with other uploads" option if there are multiple files
     if (files.length > 1) {
-      nt_groups.push({
-        value: "__merge_uploads__",
+      ntGroups.push({
+        value: MERGE_UPLOADS,
         label: `Merge the ${files.length} uploads into a single new tileset`,
       });
     }
@@ -96,16 +108,16 @@ export default function UploadAssetModal({
 
       const copt = values.creationOption;
 
-      if (copt === "__new_tileset__") {
+      if (copt === NEW_TILESET) {
         for (const file of files) {
           const objectUrl = URL.createObjectURL(file);
-          dispatch(uploadTilesetThunk(objectUrl));
+          dispatch(uploadTilesetThunk({ objectUrl, composite: false }));
         }
-      } else if (copt === "__merge_uploads__") {
+      } else if (copt === MERGE_UPLOADS) {
         // Merge all files into a single tileset
         const merged = await packSprites(files);
         const ts = await dispatch(
-          uploadTilesetThunk(merged.objectUrl)
+          uploadTilesetThunk({ objectUrl: merged.objectUrl, composite: true })
         ).unwrap();
 
         const coords: Rect[] = merged.sprites;
@@ -127,14 +139,14 @@ export default function UploadAssetModal({
   }) => {
     const { value, label } = item.option;
     // Special case for "Merge with other uploads" option
-    if (value === "__merge_uploads__") {
+    if (value === MERGE_UPLOADS) {
       return (
         <Group gap="xs">
           <IconLibraryPhoto />
           {label}
         </Group>
       );
-    } else if (value === "__new_tileset__") {
+    } else if (value === NEW_TILESET) {
       return (
         <Group gap="xs">
           <IconPhotoPlus />
@@ -164,7 +176,10 @@ export default function UploadAssetModal({
       size="lg"
       centered
       opened={opened}
-      onClose={() => closeModal()}
+      onClose={() => {
+        form.reset();
+        closeModal();
+      }}
       title="Tileset upload"
       overlayProps={overlayProps}
       closeOnClickOutside={false}
@@ -209,7 +224,7 @@ async function chooseDefaultCreationOption(
   const imageFiles = files.filter((file) => file.type.startsWith("image/"));
 
   if (imageFiles.length === 0) {
-    return "__new_tileset__";
+    return NEW_TILESET;
   }
 
   // Load all images and calculate their areas using createImageBitmap
@@ -230,9 +245,9 @@ async function chooseDefaultCreationOption(
     const averageArea =
       areas.reduce((sum, area) => sum + area, 0) / areas.length;
 
-    return averageArea < 1024 ? "__merge_uploads__" : "__new_tileset__";
+    return averageArea < 1024 ? MERGE_UPLOADS : NEW_TILESET;
   } catch (error) {
     console.error("Error calculating image areas:", error);
-    return "__new_tileset__";
+    return NEW_TILESET;
   }
 }

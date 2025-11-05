@@ -2,6 +2,7 @@ import {
   actions as mapEdActions,
   selectors as mapEdSelectors,
 } from "@/slices/mapEditor";
+import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { isMapObjFromTileset } from "@/types/map";
@@ -69,7 +70,7 @@ export class Mover implements ClickDragListener {
     }
 
     const snap = state.mapEditor.grid.snap;
-    const gridSnap = state.mapEditor.grid.size;
+    const defaultSnapSize = state.mapEditor.grid.size;
 
     const startOffset = e.localMoveVector;
     const updates = [];
@@ -85,8 +86,13 @@ export class Mover implements ClickDragListener {
         y: Math.round(startPos.y + startOffset.y),
       };
       if (snap) {
-        newPos.x = Math.floor(newPos.x / gridSnap) * gridSnap;
-        newPos.y = Math.floor(newPos.y / gridSnap) * gridSnap;
+        let gridSnap = defaultSnapSize;
+        if (isMapObjFromTileset(obj)) {
+          const tmpl = tsSelectors.templateFromInstanceId(state, obj.tsObjId);
+          gridSnap = tmpl?.gridSize ?? defaultSnapSize;
+        }
+        newPos.x = Math.floor(newPos.x / gridSnap.x) * gridSnap.x;
+        newPos.y = Math.floor(newPos.y / gridSnap.y) * gridSnap.y;
       }
 
       let z = obj.z;

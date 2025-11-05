@@ -113,7 +113,7 @@ class Grouper implements ClickDragListener {
           imageId,
           tilesetId: tsId,
           pos: coords,
-          gridSize,
+          gridSize: { x: gridSize, y: gridSize },
           zIndices: [],
           name: "",
           tags: [],

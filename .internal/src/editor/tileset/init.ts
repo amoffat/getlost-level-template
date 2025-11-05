@@ -144,7 +144,8 @@ export async function init(): Promise<P.Application> {
     coordsRelativeTo: g.tilesetContainer,
     getGridSnap: () => {
       const state = store.getState();
-      return state.tilesetEditor.grid.size;
+      const size = state.tilesetEditor.grid.size;
+      return { x: size, y: size };
     },
     checkPointerOver: (localPos: Vector): string[] => {
       const hits = spatialIndex.getObjects({

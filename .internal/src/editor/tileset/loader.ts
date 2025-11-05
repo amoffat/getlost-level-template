@@ -76,8 +76,6 @@ export function generateGridAlignedCoords(
  * @param coordsList - Array of Rect coordinates to unpack into tile groups
  */
 export async function unpackTileset(tsId: string, coordsList: Rect[]) {
-  const state = store.getState();
-  const gridSize = state.tilesetEditor.grid.size;
   const texture = gApp.tilesetTextureCache.get(tsId)!;
 
   const canvas = g.app.renderer.extract.canvas(texture) as HTMLCanvasElement;
@@ -147,7 +145,7 @@ export async function unpackTileset(tsId: string, coordsList: Rect[]) {
       imageId,
       pos: coords,
       tilesetId: tsId,
-      gridSize,
+      gridSize: { x: coords.width, y: coords.height },
       zIndices: [],
       name: "",
       tags: [],

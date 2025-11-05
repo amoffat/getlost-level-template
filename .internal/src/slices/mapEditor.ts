@@ -42,7 +42,7 @@ const reconcilePrefix = "map";
 
 interface MapEditorState {
   grid: {
-    size: number;
+    size: Vector;
     visible: boolean;
     snap: boolean;
     curPos: Vector | null;
@@ -76,7 +76,7 @@ export const slice = createSlice({
   name: "mapEditor",
   initialState: {
     grid: {
-      size: 16,
+      size: { x: 16, y: 16 },
       visible: true,
       snap: true,
       curPos: null,

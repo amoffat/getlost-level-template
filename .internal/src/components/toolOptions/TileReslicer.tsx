@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { actions } from "@/slices/tilesetEditor";
+import { actions, selectors } from "@/slices/tilesetEditor";
 import { retileThunk } from "@/thunks/tileset";
 import { Button, Fieldset, Stack } from "@mantine/core";
 import { useCallback } from "react";
@@ -9,9 +9,7 @@ import Tip from "../Tip";
 export default function TileReslicer() {
   const dispatch = useAppDispatch();
   const grid = useAppSelector((state) => state.tilesetEditor.grid);
-  const activeTilesetId = useAppSelector(
-    (state) => state.tilesetEditor.activeTilesetId
-  );
+  const ts = useAppSelector(selectors.activeTileset);
 
   const changeGridSize = useCallback(
     async (size: number | string) => {
@@ -22,9 +20,11 @@ export default function TileReslicer() {
   );
 
   const resliceTiles = useCallback(() => {
-    if (!activeTilesetId) return;
-    dispatch(retileThunk(activeTilesetId));
-  }, [dispatch, activeTilesetId]);
+    if (!ts) return;
+    dispatch(retileThunk(ts.id));
+  }, [dispatch, ts]);
+
+  if (!ts) return null;
 
   return (
     <>
@@ -36,7 +36,9 @@ export default function TileReslicer() {
       />
       <Fieldset legend="Reslicer" p="xs">
         <Stack p={0}>
-          <GridSizeInput defaultValue={grid.size} onChange={changeGridSize} />
+          {!ts.composite && (
+            <GridSizeInput defaultValue={grid.size} onChange={changeGridSize} />
+          )}
 
           <Button variant="filled" fullWidth onClick={resliceTiles}>
             Slice

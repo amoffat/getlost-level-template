@@ -2,11 +2,12 @@ import { iconTsId, lightIcon, startIcon } from "@/constants";
 import { loadMap } from "@/persist/map/api";
 import { router } from "@/router";
 import { actions as mapActions, selectors } from "@/slices/mapEditor";
+import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { MapObj, TileGroupInstance } from "@/types/map";
+import { isMapObjFromTileset, MapObj, TileGroupInstance } from "@/types/map";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
@@ -91,12 +92,18 @@ export const duplicateSelectionThunk = createAsyncThunk(
     const state = getState() as RootState;
     const newObjs: MapObj[] = [];
     selectors.selectedObjs(state).forEach((obj) => {
+      let gridSize = state.mapEditor.grid.size;
+      if (isMapObjFromTileset(obj)) {
+        const tmpl = tsSelectors.templateFromInstanceId(state, obj.tsObjId);
+        gridSize = tmpl?.gridSize ?? gridSize;
+      }
+
       const newObj: MapObj = {
         ...obj,
         id: crypto.randomUUID(),
-        x: obj.x + 16,
-        y: obj.y + 16,
-        z: obj.z + 16,
+        x: obj.x + gridSize.x,
+        y: obj.y + gridSize.y,
+        z: obj.z + gridSize.y,
       };
       newObjs.push(newObj);
     });

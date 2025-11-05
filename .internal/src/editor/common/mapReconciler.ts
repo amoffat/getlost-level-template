@@ -129,7 +129,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       }
 
       const state = store.getState();
-      const tsObj = tsSelectors.templateFromInstance(
+      const tsObj = tsSelectors.templateFromInstanceId(
         state,
         obj.tsObjId
       ) as TileGroupTemplate;
@@ -175,7 +175,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       }
 
       const state = store.getState();
-      const tsObj = tsSelectors.templateFromInstance(
+      const tsObj = tsSelectors.templateFromInstanceId(
         state,
         obj.tsObjId
       ) as AnimationTemplate | null;
@@ -228,7 +228,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       }
 
       const state = store.getState();
-      const tsObj = tsSelectors.templateFromInstance(
+      const tsObj = tsSelectors.templateFromInstanceId(
         state,
         obj.tsObjId
       ) as NpcTemplate | null;

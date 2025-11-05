@@ -173,7 +173,7 @@ class Painter extends Placer {
     const excludedUnder = !!underPos && filtered.length !== matches.length;
 
     if (match) {
-      const obj = tsSelectors.templateFromInstance(
+      const obj = tsSelectors.templateFromInstanceId(
         state,
         match.id
       ) as TileGroupTemplate;
@@ -187,12 +187,15 @@ class Painter extends Placer {
           underPos!.tsObjId,
         ].map(
           (id) =>
-            tsSelectors.templateFromInstance(state, id)! as TileGroupTemplate
+            tsSelectors.templateFromInstanceId(state, id)! as TileGroupTemplate
         );
       } else {
         orderedCandidates = matches.map(
           (m) =>
-            tsSelectors.templateFromInstance(state, m.id)! as TileGroupTemplate
+            tsSelectors.templateFromInstanceId(
+              state,
+              m.id
+            )! as TileGroupTemplate
         );
       }
       this.candidateDispatcher(orderedCandidates);

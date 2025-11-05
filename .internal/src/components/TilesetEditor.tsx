@@ -75,12 +75,12 @@ export default function TilesetEditorTab({
 
   use(initPromise);
 
-  const activeTileset = useMemo(() => {
+  const ts = useMemo(() => {
     if (!activeTilesetId) return null;
     return tilesets[activeTilesetId] || null;
   }, [activeTilesetId, tilesets]);
 
-  const deferredActiveTileset = useDeferredValue(activeTileset);
+  const deferredTs = useDeferredValue(ts);
 
   const setActiveTab = useCallback(
     (tab: string | null) => {
@@ -127,51 +127,54 @@ export default function TilesetEditorTab({
     />
   ));
 
+  const hasTsSelected = ts !== null;
+  const enableGroup = ts !== null && !ts.composite;
+
   const toolPalette: Partial<Record<Mode, ToolDescriptor>> = useMemo(
     () => ({
       "reslice-tiles": {
         name: "Reslicer",
         icon: <IconGrid4x4 size={16} />,
         options: <TileReslicer />,
-        enabled: !!activeTilesetId,
+        enabled: enableGroup,
       },
 
       select: {
         name: "Select/move",
         icon: <IconSelectAll size={16} />,
-        enabled: !!activeTilesetId,
+        enabled: hasTsSelected,
       },
       "replace-group": {
         name: "Replace group",
         icon: <IconReplace size={16} />,
         options: <TileReplaceOptions />,
-        enabled: !!activeTilesetId,
+        enabled: enableGroup,
       },
       "add-group": {
         name: "Add group",
         icon: <IconSquarePlus size={16} />,
-        enabled: !!activeTilesetId,
+        enabled: enableGroup,
       },
       "delete-group": {
         name: "Delete group",
         icon: <IconTrash size={16} />,
-        enabled: !!activeTilesetId,
+        enabled: enableGroup,
       },
 
       animate: {
         name: "Animate",
         icon: <IconKeyframes size={16} />,
         options: <TileAnimationOptions />,
-        enabled: !!activeTilesetId,
+        enabled: hasTsSelected,
       },
       "make-npc": {
         name: "Make NPC",
         icon: <IconUser size={16} />,
         options: <NpcOptions />,
-        enabled: !!activeTilesetId,
+        enabled: hasTsSelected,
       },
     }),
-    [activeTilesetId]
+    [enableGroup, hasTsSelected]
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName]!;
@@ -197,31 +200,35 @@ export default function TilesetEditorTab({
     };
 
     if (!tool) {
-      if (deferredActiveTileset) {
-        const hasTiles = deferredActiveTileset.tiles.ids.length > 0;
-        const hasPinned = Object.values(deferredActiveTileset.tiles.entities)
+      if (deferredTs) {
+        const hasTiles = deferredTs.tiles.ids.length > 0;
+        const hasPinned = Object.values(deferredTs.tiles.entities)
           .filter(isTileGroupTemplate)
           .some((obj) => obj.pinned);
 
-        if (hasTiles) {
-          if (hasPinned) {
-            tips.push(
-              "Select a tool above to add or delete tile groups from the tileset."
-            );
+        if (deferredTs.composite) {
+          // Composite tilesets cannot be edited
+        } else {
+          if (hasTiles) {
+            if (hasPinned) {
+              tips.push(
+                "Select a tool above to add or delete tile groups from the tileset."
+              );
+            } else {
+              tips.push(
+                "Add new tile groups by creating them with the tools above."
+              );
+            }
           } else {
             tips.push(
-              "Add new tile groups by creating them with the tools above."
+              <>
+                Use the re-slice tool to create initial tiles.{" "}
+                <Anchor underline="hover" onClick={onActivateReslicer}>
+                  Activate reslicer
+                </Anchor>
+              </>
             );
           }
-        } else {
-          tips.push(
-            <>
-              Use the re-slice tool to create initial tiles.{" "}
-              <Anchor underline="hover" onClick={onActivateReslicer}>
-                Activate reslicer
-              </Anchor>
-            </>
-          );
         }
       } else {
         if (tilesetImages.length === 0) {
@@ -235,7 +242,7 @@ export default function TilesetEditorTab({
       );
     }
     return tips;
-  }, [deferredActiveTileset, dispatch, tilesetImages.length, tool]);
+  }, [deferredTs, dispatch, tilesetImages.length, tool]);
 
   return (
     <>
@@ -281,7 +288,7 @@ export default function TilesetEditorTab({
                 }}
               >
                 <ObjectPalette
-                  tileset={deferredActiveTileset}
+                  tileset={deferredTs}
                   selectedObjects={deferredPaletteSelection}
                   filter={isTileGroupTemplate}
                   renderObject={renderTileGroup}
@@ -301,7 +308,7 @@ export default function TilesetEditorTab({
                   minScale={1}
                   defaultScale={4}
                   maxScale={8}
-                  tileset={deferredActiveTileset}
+                  tileset={deferredTs}
                   selectedObjects={deferredPaletteSelection}
                   filter={isAnimationTemplate}
                   renderObject={renderObjectAnimation}
@@ -321,7 +328,7 @@ export default function TilesetEditorTab({
                   minScale={1}
                   defaultScale={4}
                   maxScale={8}
-                  tileset={deferredActiveTileset}
+                  tileset={deferredTs}
                   selectedObjects={deferredPaletteSelection}
                   filter={isNpcTemplate}
                   renderObject={renderNpc}

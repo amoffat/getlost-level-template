@@ -67,14 +67,14 @@ export class Placer implements ClickDragListener {
     if (mode === "paint") {
       if (!g.placableSprite) return;
 
-      const gridSnap = state.mapEditor.grid.size;
+      const gridSize = state.mapEditor.place.obj!.gridSize;
       const rawPos = e.localPos;
       let finalPos: Vector = rawPos;
       const snap = state.mapEditor.grid.snap;
       if (snap) {
         finalPos = {
-          x: Math.floor(rawPos.x / gridSnap) * gridSnap,
-          y: Math.floor(rawPos.y / gridSnap) * gridSnap,
+          x: Math.floor(rawPos.x / gridSize.x) * gridSize.x,
+          y: Math.floor(rawPos.y / gridSize.y) * gridSize.y,
         };
       } else {
         finalPos = {

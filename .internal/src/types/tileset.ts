@@ -18,6 +18,9 @@ export interface Tileset {
   objectUrl: string;
   saved: boolean;
   tiles: TilesBucket;
+  // A composite tileset combines multiple source tilesets into one, which
+  // implies that it has no innate grid size (a grid size of 1x1)
+  composite: boolean;
 }
 
 export enum TilesetObjType {

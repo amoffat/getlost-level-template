@@ -101,6 +101,7 @@ export default function NpcOptions() {
       type: TilesetObjType.NpcTemplate,
       animations,
       tilesetId: tsId,
+      gridSize: animations["Idle"].gridSize,
       name: values.name,
       tags: values.tags,
     };

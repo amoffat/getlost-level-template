@@ -269,6 +269,7 @@ export default function TileAnimationOptions() {
       id,
       type: TilesetObjType.AnimationTemplate,
       tilesetId: tsId,
+      gridSize: cands[0]!.gridSize,
       frames,
       names: values.names,
       tags: [],

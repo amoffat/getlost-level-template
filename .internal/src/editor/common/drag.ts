@@ -29,7 +29,7 @@ export class ClickDragger {
   public readonly container: P.Container;
   private readonly coordsRelativeTo: P.Container;
   private readonly checkPointerOver?: (pos: Vector) => string[];
-  private readonly getGridSnap: () => number | null;
+  private readonly getGridSnap: () => Vector | null;
 
   private dragStart: Vec2 | null = null;
   private dragEnd: Vec2 | null = null;
@@ -47,7 +47,7 @@ export class ClickDragger {
     container: P.Container;
     coordsRelativeTo?: P.Container;
     checkPointerOver?: (pos: Vector) => string[];
-    getGridSnap?: () => number | null;
+    getGridSnap?: () => Vector | null;
   }) {
     this.app = app;
     this.container = container;
@@ -209,10 +209,10 @@ export class ClickDragger {
     if (snap) {
       const gridSize = this.getGridSnap();
       if (gridSize) {
-        left = Math.floor(left / gridSize) * gridSize;
-        top = Math.floor(top / gridSize) * gridSize;
-        right = Math.ceil(right / gridSize) * gridSize;
-        bottom = Math.ceil(bottom / gridSize) * gridSize;
+        left = Math.floor(left / gridSize.x) * gridSize.x;
+        top = Math.floor(top / gridSize.y) * gridSize.y;
+        right = Math.ceil(right / gridSize.x) * gridSize.x;
+        bottom = Math.ceil(bottom / gridSize.y) * gridSize.y;
       }
     }
 

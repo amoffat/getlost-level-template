@@ -7,7 +7,7 @@ export function drawGrid({
   gridContainer,
   coverSize,
 }: {
-  gridSize: number;
+  gridSize: number | null;
   oldGrid?: P.Container;
   gridContainer: P.Container;
   coverSize: Vector;
@@ -23,23 +23,29 @@ export function drawGrid({
   const w = coverSize.x;
   const h = coverSize.y;
 
-  // Vertical grid lines
-  for (let x = 0; x < w; x += gridSize) {
-    gfx.moveTo(x, 0);
-    gfx.lineTo(x, h);
-  }
-  // Ensure the rightmost boundary line is drawn
-  gfx.moveTo(w, 0);
-  gfx.lineTo(w, h);
+  if (gridSize === null) {
+    // Draw only the outline
+    gfx.rect(0, 0, w, h);
+  } else {
+    // Vertical grid lines
+    for (let x = 0; x < w; x += gridSize) {
+      gfx.moveTo(x, 0);
+      gfx.lineTo(x, h);
+    }
+    // Ensure the rightmost boundary line is drawn
+    gfx.moveTo(w, 0);
+    gfx.lineTo(w, h);
 
-  // Horizontal grid lines
-  for (let y = 0; y < h; y += gridSize) {
-    gfx.moveTo(0, y);
-    gfx.lineTo(w, y);
+    // Horizontal grid lines
+    for (let y = 0; y < h; y += gridSize) {
+      gfx.moveTo(0, y);
+      gfx.lineTo(w, y);
+    }
+    // Ensure the bottom boundary line is drawn
+    gfx.moveTo(0, h);
+    gfx.lineTo(w, h);
   }
-  // Ensure the bottom boundary line is drawn
-  gfx.moveTo(0, h);
-  gfx.lineTo(w, h);
+
   const gridStroke: P.StrokeInput = {
     color: 0x000000,
     width: 1,

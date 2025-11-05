@@ -1,3 +1,4 @@
+import { Vector } from "@/vec";
 import type { AnimationTemplate } from "./animation";
 import { TilesetObjType } from "./tileset";
 import type { TilesetObjectTemplate } from "./tilesetobject";
@@ -20,6 +21,8 @@ export interface NpcTemplate {
   id: string;
   type: TilesetObjType.NpcTemplate;
   tilesetId: string;
+  // The grid size this object is aligned to
+  gridSize: Vector;
   tags: string[];
   name: string;
   animations: NpcAnimationRecord;

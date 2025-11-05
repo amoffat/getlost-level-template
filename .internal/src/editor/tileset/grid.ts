@@ -43,24 +43,23 @@ export function setupGrid() {
   });
 
   subState(
-    [
-      (state) => state.tilesetEditor.activeTilesetId,
-      (state) => state.tilesetEditor.grid.size,
-    ],
-    (tsId, gridSize, state) => {
-      if (tsId === null) {
+    [selectors.activeTileset, (state) => state.tilesetEditor.grid.size],
+    (ts, gridSize: number | null, state) => {
+      if (ts === null) {
         g.grid?.removeFromParent();
         clearGridMask();
       } else {
-        const size = {
-          x: g.currentTileset!.width,
-          y: g.currentTileset!.height,
-        };
+        if (ts.composite) {
+          gridSize = null;
+        }
         g.grid = drawGrid({
           gridSize,
           oldGrid: g.grid,
           gridContainer: g.tilesetContainer,
-          coverSize: size,
+          coverSize: {
+            x: g.currentTileset!.width,
+            y: g.currentTileset!.height,
+          },
         });
         const groups = selectors.activeTilesetGroups(state);
         drawGridMask(groups);

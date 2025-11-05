@@ -183,10 +183,6 @@ export const slice = createSlice({
         state.activeZoomPan = ts
           ? state.tilesetZoomPans[ts.id]
           : DEFAULT_ZOOMPAN;
-
-        if (ts) {
-          // tileAdapter.setAll(ts?.tiles, Object.values(ts.tiles.entities));
-        }
       },
     },
     addTileset: (
@@ -423,7 +419,7 @@ export const slice = createSlice({
       (tiles): TilesetObjectTemplate[] =>
         tiles.ids.map((id) => tiles.entities[id])
     ),
-    templateFromInstance: createTsSelector(
+    templateFromInstanceId: createTsSelector(
       [
         (state) => state.tilesets,
         (state) => state.fastObjLookup,

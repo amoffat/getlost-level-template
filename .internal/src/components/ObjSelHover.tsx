@@ -34,14 +34,14 @@ export default function ObjSelHover() {
     return proposed?.objects.map((obj) => {
       let view: ReactNode | null = null;
       if (isTileGroupInstance(obj)) {
-        const tsObj = tsSelectors.templateFromInstance(
+        const tsObj = tsSelectors.templateFromInstanceId(
           state,
           obj.tsObjId
         ) as TileGroupTemplate;
 
         view = <TilesetGroup group={tsObj} scale={1} bounded />;
       } else if (isAnimatedInstance(obj)) {
-        const tsObj = tsSelectors.templateFromInstance(
+        const tsObj = tsSelectors.templateFromInstanceId(
           state,
           obj.tsObjId
         ) as AnimationTemplate;
