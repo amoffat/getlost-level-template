@@ -1,6 +1,5 @@
 import { selectors } from "@/slices/tilesetEditor";
 import * as P from "pixi.js";
-import { store } from "../../store/store";
 import { TileGroupTemplate } from "../../types/tilegroup";
 import { subState } from "../../utils/redux";
 import { drawGrid } from "../common/grid";
@@ -9,8 +8,13 @@ import { shouldOutline } from "./utils/outline";
 
 let mask: P.Graphics | null = null;
 
-export function drawGridMask(groups: TileGroupTemplate[]) {
-  mask?.removeFromParent();
+/**
+ * Removes the grid wherever there's a tilegroup, so it's obvious where groups
+ * are
+ * @param groups The tilegroups
+ */
+function drawGridMask(groups: TileGroupTemplate[]) {
+  clearGridMask();
 
   mask = new P.Graphics();
   g.grid.addChild(mask);
@@ -18,12 +22,7 @@ export function drawGridMask(groups: TileGroupTemplate[]) {
   mask.fill({ color: 0x000000, alpha: 0 });
   for (const group of groups.filter(shouldOutline)) {
     mask
-      .rect(
-        group.pos.x,
-        group.pos.y,
-        group.pos.width,
-        group.pos.height
-      )
+      .rect(group.pos.x, group.pos.y, group.pos.width, group.pos.height)
       .fill({ color: 0x000000, alpha: 1 });
   }
 
@@ -33,23 +32,39 @@ export function drawGridMask(groups: TileGroupTemplate[]) {
   });
 }
 
-subState([selectors.activeTilesetGroups], (groups) => {
-  if (!g.grid) return;
-  drawGridMask(groups);
-});
+function clearGridMask() {
+  mask?.removeFromParent();
+}
 
-subState([(state) => state.tilesetEditor.activeTilesetId], (_, state) => {
-  const gridSize = state.tilesetEditor.grid.size;
-  const size = {
-    x: g.currentTileset!.width,
-    y: g.currentTileset!.height,
-  };
-  g.grid = drawGrid({
-    gridSize,
-    oldGrid: g.grid,
-    gridContainer: g.tilesetContainer,
-    coverSize: size,
+export function setupGrid() {
+  subState([selectors.activeTilesetGroups], (groups) => {
+    if (!g.grid) return;
+    drawGridMask(groups);
   });
-  const groups = selectors.activeTilesetGroups(store.getState());
-  drawGridMask(groups);
-});
+
+  subState(
+    [
+      (state) => state.tilesetEditor.activeTilesetId,
+      (state) => state.tilesetEditor.grid.size,
+    ],
+    (tsId, gridSize, state) => {
+      if (tsId === null) {
+        g.grid?.removeFromParent();
+        clearGridMask();
+      } else {
+        const size = {
+          x: g.currentTileset!.width,
+          y: g.currentTileset!.height,
+        };
+        g.grid = drawGrid({
+          gridSize,
+          oldGrid: g.grid,
+          gridContainer: g.tilesetContainer,
+          coverSize: size,
+        });
+        const groups = selectors.activeTilesetGroups(state);
+        drawGridMask(groups);
+      }
+    }
+  );
+}

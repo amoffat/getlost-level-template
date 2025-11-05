@@ -1,8 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { setActiveLayerThunk } from "@/thunks/map";
 import { MapLayerName } from "@/types/layer";
-import { ActionIcon, Fieldset, SimpleGrid, Tooltip } from "@mantine/core";
-import { useElementSize } from "@mantine/hooks";
+import { ActionIcon, Fieldset, Group, Tooltip } from "@mantine/core";
 import { ReactNode, useMemo } from "react";
 
 export interface ToolDescriptor {
@@ -25,7 +24,7 @@ interface ToolPaletteProps<T extends string> {
 }
 
 /**
- * Responsive tool palette grid that auto-computes columns based on width.
+ * Responsive tool palette that auto-wraps based on available width.
  */
 export default function ToolPalette<T extends string>({
   tools,
@@ -36,13 +35,8 @@ export default function ToolPalette<T extends string>({
   onToolActivated,
   onToolDeactivated,
 }: ToolPaletteProps<T>) {
-  const { ref, width } = useElementSize();
   const dispatch = useAppDispatch();
   const curLayer = useAppSelector((state) => state.mapEditor.layers.active);
-
-  const cols = useMemo(() => {
-    return Math.max(1, Math.floor((width + gap) / (iconSize + gap)));
-  }, [width, gap, iconSize]);
 
   const toolComponents: ReactNode[] = useMemo(() => {
     const buttons = [];
@@ -101,9 +95,9 @@ export default function ToolPalette<T extends string>({
 
   return (
     <Fieldset p={"xs"} legend={legend}>
-      <SimpleGrid ref={ref} cols={cols} spacing={gap} verticalSpacing={gap}>
+      <Group gap={gap} wrap="wrap">
         {toolComponents}
-      </SimpleGrid>
+      </Group>
     </Fieldset>
   );
 }

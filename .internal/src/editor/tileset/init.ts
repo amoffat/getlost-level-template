@@ -13,11 +13,10 @@ import { onVisible } from "../../utils/visible";
 import { makeBackground } from "../common/bg";
 import { getCursorForMode } from "../common/cursor";
 import { ClickDragger } from "../common/drag";
-import { drawGrid } from "../common/grid";
 import { setupPanControls } from "../common/pan";
 import { setupWheelZoom } from "../common/zoom";
 import { globals as g } from "./globals";
-import { drawGridMask } from "./grid";
+import { setupGrid } from "./grid";
 import { setupKeys } from "./keys";
 import { setupFrameSelector } from "./tools/animator";
 import { setupGrouper } from "./tools/group";
@@ -158,6 +157,7 @@ export async function init(): Promise<P.Application> {
   setupGrouper({ cd, spatialIndex });
   setupSelector({ cd, spatialIndex });
   setupFrameSelector({ cd, spatialIndex });
+  setupGrid();
 
   gApp.tilesetEditorReconciler.attachCanvas({
     spatialIndex,
@@ -188,21 +188,6 @@ export async function init(): Promise<P.Application> {
 
 subState([(state) => state.tilesetEditor.grid.visible], (visible) => {
   g.grid.visible = visible;
-});
-
-subState([(state) => state.tilesetEditor.grid.size], (size) => {
-  const coverSize = {
-    x: g.currentTileset!.width,
-    y: g.currentTileset!.height,
-  };
-  g.grid = drawGrid({
-    gridSize: size,
-    oldGrid: g.grid,
-    gridContainer: g.tilesetContainer,
-    coverSize,
-  });
-  const groups = selectors.activeTilesetGroups(store.getState());
-  drawGridMask(groups);
 });
 
 subState([selectors.selectMode], (mode) => {

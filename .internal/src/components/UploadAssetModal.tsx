@@ -99,7 +99,7 @@ export default function UploadAssetModal({
           uploadTilesetThunk(merged.objectUrl)
         ).unwrap();
 
-        const coords: Rect[] = [];
+        const coords: Rect[] = merged.sprites;
         await unpackTileset(ts.id, coords);
       }
     },
@@ -107,6 +107,7 @@ export default function UploadAssetModal({
   );
 
   const formSubmit = form.onSubmit((values) => {
+    form.reset();
     closeModal();
     uploadTileset(values, files);
     dispatch(uiActions.setTab("tileset-editor"));
