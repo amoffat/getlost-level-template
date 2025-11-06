@@ -144,21 +144,10 @@ class Grouper implements ClickDragListener {
     g.groupSelGraphics.visible = true;
     const c = g.groupSelContainer;
 
-    const hb = e.hitbox;
-    const gridSize = getGridSize();
-
-    // Normalize rectangle so that width/height are always positive
-
-    const left = snapDown(Math.min(hb.x, hb.x + hb.width), gridSize);
-    const top = snapDown(Math.min(hb.y, hb.y + hb.height), gridSize);
-    const right = snapUp(Math.max(hb.x, hb.x + hb.width), gridSize);
-    const bottom = snapUp(Math.max(hb.y, hb.y + hb.height), gridSize);
-    const width = right - left;
-    const height = bottom - top;
-
-    c.position.set(left, top);
-    c.width = width;
-    c.height = height;
+    const hb = e.snappedHitbox;
+    c.position.set(hb.x, hb.y);
+    c.width = hb.width;
+    c.height = hb.height;
   }
 }
 

@@ -1,5 +1,5 @@
 export interface PackedSpriteMeta {
-  name: string;
+  index: number;
   x: number;
   y: number;
   width: number;
@@ -20,12 +20,11 @@ export interface PackSpritesResult {
   width: number; // Final sheet width
   height: number; // Final sheet height
   sprites: PackedSpriteMeta[]; // Placement metadata
-  names: string[]; // Original file names in packing order
 }
 
 interface LoadedSprite {
   bitmap: ImageBitmap;
-  file: File;
+  index: number;
   area: number;
   maxDim: number;
 }
@@ -39,7 +38,7 @@ interface LoadedSprite {
  * sheet while keeping runtime minimal.
  *
  * Steps:
- * 1. Decode all images in parallel (ImageBitmap).
+ * 1. Prepare sprites with metadata (area, maxDim).
  * 2. Sort sprites by heuristic (height | area | max) descending to reduce fragmentation.
  * 3. Compute total area & ideal side length; derive target width = max(largestWidth, ideal * 1.5).
  * 4. Perform a single shelf layout (left-to-right, new row when width exceeded).
@@ -49,28 +48,23 @@ interface LoadedSprite {
  * Padding: right & bottom padding (except outermost edges) reduces sampling bleed.
  */
 export async function packSprites(
-  files: File[],
+  bitmaps: ImageBitmap[],
   options: PackSpritesOptions = {}
 ): Promise<PackSpritesResult> {
-  if (!files || files.length === 0) {
-    throw new Error("packSprites: no files provided");
+  if (!bitmaps || bitmaps.length === 0) {
+    throw new Error("packSprites: no bitmaps provided");
   }
 
   const padding = options.padding ?? 0;
   const heuristic = options.heuristic ?? "height";
 
-  // 1. Decode
-  const loaded: LoadedSprite[] = await Promise.all(
-    files.map(async (file) => {
-      const bitmap = await createImageBitmap(file);
-      return {
-        bitmap,
-        file,
-        area: bitmap.width * bitmap.height,
-        maxDim: Math.max(bitmap.width, bitmap.height),
-      };
-    })
-  );
+  // 1. Prepare sprites with metadata
+  const loaded: LoadedSprite[] = bitmaps.map((bitmap, index) => ({
+    bitmap,
+    index,
+    area: bitmap.width * bitmap.height,
+    maxDim: Math.max(bitmap.width, bitmap.height),
+  }));
 
   // 2. Sort by heuristic (descending)
   const sorted = [...loaded].sort((a, b) => {
@@ -107,7 +101,7 @@ export async function packSprites(
       x = 0;
       rowHeight = 0;
     }
-    placements.push({ name: sp.file.name, x, y, width: w, height: h });
+    placements.push({ index: sp.index, x, y, width: w, height: h });
     x += w + padding;
     rowHeight = Math.max(rowHeight, h);
   }
@@ -123,13 +117,8 @@ export async function packSprites(
   ctx.clearRect(0, 0, finalWidth, finalHeight);
 
   for (const p of placements) {
-    const sp = sorted.find((s) => s.file.name === p.name)!;
+    const sp = sorted.find((s) => s.index === p.index)!;
     ctx.drawImage(sp.bitmap, p.x, p.y);
-  }
-
-  // Cleanup bitmaps
-  for (const s of loaded) {
-    if ("close" in s.bitmap) s.bitmap.close();
   }
 
   const blob: Blob = await new Promise((resolve, reject) => {
@@ -144,6 +133,5 @@ export async function packSprites(
     width: finalWidth,
     height: finalHeight,
     sprites: placements,
-    names: placements.map((p) => p.name),
   };
 }

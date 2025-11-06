@@ -114,8 +114,19 @@ export default function UploadAssetModal({
           dispatch(uploadTilesetThunk({ objectUrl, composite: false }));
         }
       } else if (copt === MERGE_UPLOADS) {
+        // Convert files to ImageBitmaps
+        const bitmaps = await Promise.all(
+          files.map((file) => createImageBitmap(file))
+        );
+
         // Merge all files into a single tileset
-        const merged = await packSprites(files);
+        const merged = await packSprites(bitmaps);
+
+        // Cleanup bitmaps
+        for (const bitmap of bitmaps) {
+          bitmap.close();
+        }
+
         const ts = await dispatch(
           uploadTilesetThunk({ objectUrl: merged.objectUrl, composite: true })
         ).unwrap();

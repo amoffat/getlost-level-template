@@ -142,7 +142,7 @@ class Selector implements ClickDragListener {
     if (mode !== "select") return;
 
     if (this.marqueeEnabled) {
-      drawRectSelect(e.hitbox, state.tilesetEditor.activeZoomPan.zoom);
+      drawRectSelect(e.snappedHitbox, state.tilesetEditor.activeZoomPan.zoom);
       if (state.tilesetEditor.selectedTool !== "select") {
         store.dispatch(actions.setActiveTool("select"));
       }

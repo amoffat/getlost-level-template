@@ -148,17 +148,17 @@ export default function TilesetEditorTab({
         name: "Replace group",
         icon: <IconReplace size={16} />,
         options: <TileReplaceOptions />,
-        enabled: enableGroup,
+        enabled: hasTsSelected,
       },
       "add-group": {
         name: "Add group",
         icon: <IconSquarePlus size={16} />,
-        enabled: enableGroup,
+        enabled: hasTsSelected,
       },
       "delete-group": {
         name: "Delete group",
         icon: <IconTrash size={16} />,
-        enabled: enableGroup,
+        enabled: hasTsSelected,
       },
 
       animate: {

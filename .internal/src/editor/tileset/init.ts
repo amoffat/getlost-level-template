@@ -152,6 +152,11 @@ export async function init(): Promise<P.Application> {
     coordsRelativeTo: g.tilesetContainer,
     getGridSnap: () => {
       const state = store.getState();
+      const mode = selectors.selectMode(state);
+      const ts = selectors.activeTileset(state);
+      if (mode === "select" || ts?.composite) {
+        return { x: 1, y: 1 };
+      }
       const size = state.tilesetEditor.grid.size;
       return { x: size, y: size };
     },
