@@ -181,7 +181,6 @@ export const removeTilesetThunk = createAsyncThunk(
     // If it's the active tileset, clear the canvas
     if (state.tilesetEditor.activeTilesetId === tsId) {
       await setCanvasTileset(null);
-      dispatch(tsActions.setActiveTileset(null));
     }
 
     dispatch(tsActions.removeTileset(tsId));

@@ -242,6 +242,7 @@ export const slice = createSlice({
       if (state.activeTilesetId === tsId) {
         state.activeTilesetId = null;
         state.activeZoomPan = DEFAULT_ZOOMPAN;
+        state.bounds = { x: 0, y: 0, width: 0, height: 0 };
       }
       delete state.tilesetZoomPans[tsId];
       // Clean up fast lookup

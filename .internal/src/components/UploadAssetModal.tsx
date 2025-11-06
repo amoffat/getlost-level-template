@@ -9,7 +9,7 @@ import { Button, Group, Image, Modal, Select, Stack } from "@mantine/core";
 import { FileWithPath } from "@mantine/dropzone";
 import { useForm } from "@mantine/form";
 import { IconLibraryPhoto, IconPhotoPlus } from "@tabler/icons-react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 interface TileAssetTypeModalProps {
   files: File[];
@@ -33,7 +33,6 @@ export default function UploadAssetModal({
 }: TileAssetTypeModalProps) {
   const dispatch = useAppDispatch();
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
-  const hasSetDefault = useRef(false);
 
   const form = useForm<FormValues>({
     name: "tile-asset-type",
@@ -46,13 +45,15 @@ export default function UploadAssetModal({
 
   // Set the default creation option based on image area (only once)
   useEffect(() => {
-    if (files.length > 1 && !hasSetDefault.current) {
-      hasSetDefault.current = true;
+    if (files.length > 1 && opened) {
+      form.reset();
       chooseDefaultCreationOption(files).then((defaultOption) => {
         form.setFieldValue("creationOption", defaultOption);
       });
     }
-  }, [files, form]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [files, opened]);
 
   const tilesetOptions = useMemo(() => {
     const groups: Array<{
@@ -139,7 +140,6 @@ export default function UploadAssetModal({
   );
 
   const formSubmit = form.onSubmit((values) => {
-    form.reset();
     closeModal();
     uploadTileset(values, files);
     dispatch(uiActions.setTab("tileset-editor"));
@@ -187,10 +187,7 @@ export default function UploadAssetModal({
       size="lg"
       centered
       opened={opened}
-      onClose={() => {
-        form.reset();
-        closeModal();
-      }}
+      onClose={closeModal}
       title="Tileset upload"
       overlayProps={overlayProps}
       closeOnClickOutside={false}
