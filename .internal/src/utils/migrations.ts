@@ -41,15 +41,16 @@ export async function applyMigrations<TDoc extends { version: number }>(
   if (!migrations.length) return false;
 
   // Ensure deterministic order (by `from`).
-  const ordered = [...migrations].sort((a, b) => a.from - b.from);
+  const ordered = [...migrations]
+    .sort((a, b) => a.from - b.from)
+    .filter((m) => m.to > m.from)
+    .filter((m) => m.to <= latestVersion);
 
   let applied = false;
   // Keep trying to advance as long as there is a migration whose `from`
   // equals the current document version.
   while (true) {
-    const next = ordered.find(
-      (m) => m.from === doc.version && m.to <= latestVersion
-    );
+    const next = ordered.find((m) => m.from === doc.version);
     if (!next) break;
     await next.migrate(doc);
     doc.version = next.to;

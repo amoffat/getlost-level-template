@@ -1,6 +1,6 @@
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
-import { Rect } from "@/types/rect";
+import { Rect, snap } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
@@ -142,7 +142,8 @@ class Selector implements ClickDragListener {
     if (mode !== "select") return;
 
     if (this.marqueeEnabled) {
-      drawRectSelect(e.snappedHitbox, state.tilesetEditor.activeZoomPan.zoom);
+      const hb = snap(e.hitbox, { x: 1, y: 1 });
+      drawRectSelect(hb, state.tilesetEditor.activeZoomPan.zoom);
       if (state.tilesetEditor.selectedTool !== "select") {
         store.dispatch(actions.setActiveTool("select"));
       }

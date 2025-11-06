@@ -4,7 +4,7 @@ import {
   setCanvasTileset,
   unpackTileset,
 } from "@/editor/tileset/loader";
-import { globals as g } from "@/globals";
+import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import { loadTileset, loadTilesets, saveTileset } from "@/persist/tileset/api";
 import { router } from "@/router";
@@ -70,13 +70,21 @@ export const uploadTilesetThunk = createAsyncThunk(
     { dispatch }
   ): Promise<Tileset> => {
     const tsId = await genTilesetId(objectUrl);
+
+    const bitmap = await createImageBitmap(
+      await fetch(objectUrl).then((res) => res.blob())
+    );
     const ts: Tileset = {
       id: tsId,
       objectUrl,
       saved: false,
+      width: bitmap.width,
+      height: bitmap.height,
       tiles: { ids: [], entities: {} },
       composite,
     };
+    bitmap.close();
+
     await saveTileset(ts);
     await dispatch(loadTilesetThunk(tsId)).unwrap();
     await router.navigate(`/tilesets/${tsId}`);
@@ -89,6 +97,7 @@ export const loadTilesetThunk = createAsyncThunk(
   "tilesetEditor/loadTilesetThunk",
   async (tsId: string, { dispatch }) => {
     dispatch(uiActions.pushLoadingMessage(`Loading tileset ${tsId}...`));
+
     const ts = await loadTileset(tsId);
     dispatch(tsActions.addTileset({ tsId, ts }));
 
@@ -117,7 +126,7 @@ export const loadEdgeSignaturesThunk = createAsyncThunk(
       uiActions.pushLoadingMessage(`Indexing edges for tileset ${tsId}...`)
     );
 
-    const imageData = g.tilesetImageDataCache.get(tsId)!;
+    const imageData = gApp.tilesetImageDataCache.get(tsId)!;
     const objs = new Map<string, ImageData>();
     for (const obj of Object.values(ts.tiles.entities)) {
       if (!isTileGroupTemplate(obj)) continue;
@@ -131,7 +140,7 @@ export const loadEdgeSignaturesThunk = createAsyncThunk(
 
     let count = 0;
     for (const [id, img] of objs.entries()) {
-      g.tileEdgeSigs.set(id, computeEdgeSignatures(img));
+      gApp.tileEdgeSigs.set(id, computeEdgeSignatures(img));
       count++;
       // Schedule yields to avoid blocking the main thread too long. This
       // ensures that our ui loading messages update properly.

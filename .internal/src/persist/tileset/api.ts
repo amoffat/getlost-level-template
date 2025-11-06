@@ -27,6 +27,20 @@ export async function loadTileset(id: string): Promise<Tileset> {
   // Apply all applicable migrations to bring the doc up to the latest version
   const migrations = await getMigrations();
   const baseDecoded = decode<BaseTilesetDoc>(await res.bytes());
+
+  // Check for version override in querystring (for debugging migrations)
+  const urlParams = new URLSearchParams(window.location.search);
+  const tsVersionParam = urlParams.get("tsVersion");
+  if (tsVersionParam !== null) {
+    const versionOverride = Number(tsVersionParam);
+    if (!isNaN(versionOverride)) {
+      baseDecoded.version = versionOverride;
+      log.info(
+        `Tileset ${id} version overridden to ${versionOverride} via querystring`
+      );
+    }
+  }
+
   const migrated = await applyMigrations(
     baseDecoded,
     migrations,

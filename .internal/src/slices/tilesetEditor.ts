@@ -6,6 +6,7 @@ import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
+import { calcDefaultZoomPan } from "@/utils/zoompan";
 import {
   createEntityAdapter,
   createSelector,
@@ -28,6 +29,10 @@ export interface TilesetEditorState {
   grid: {
     size: number;
     visible: boolean;
+  };
+  canvas: {
+    width: number;
+    height: number;
   };
   bounds: Rect;
   selectedTool: Mode | null;
@@ -58,7 +63,11 @@ export const slice = createSlice({
       size: 16,
       visible: true,
     },
-    bounds: { x: 0, y: 0, width: 1024, height: 1024 },
+    canvas: {
+      width: 1024,
+      height: 1024,
+    },
+    bounds: { x: 0, y: 0, width: 0, height: 0 },
     selectedTool: null,
     activeModeStack: [],
     activeTilesetId: null,
@@ -174,6 +183,14 @@ export const slice = createSlice({
       const { width, height } = action.payload;
       state.bounds = { ...state.bounds, width, height };
     },
+    setCanvasSize(
+      state,
+      action: PayloadAction<{ width: number; height: number }>
+    ) {
+      const { width, height } = action.payload;
+      state.canvas.width = width;
+      state.canvas.height = height;
+    },
     setActiveTileset: {
       prepare: (payload: Tileset | null) => ({
         meta: {
@@ -186,9 +203,19 @@ export const slice = createSlice({
       reducer: (state, action: PayloadAction<Tileset | null>) => {
         const ts = action.payload;
         state.activeTilesetId = ts?.id ?? null;
-        state.activeZoomPan = ts
-          ? state.tilesetZoomPans[ts.id]
-          : DEFAULT_ZOOMPAN;
+
+        let zoomPan = DEFAULT_ZOOMPAN;
+        if (ts) {
+          zoomPan =
+            state.tilesetZoomPans[ts.id] ??
+            calcDefaultZoomPan(
+              state.canvas.width,
+              state.canvas.height,
+              ts.width,
+              ts.height
+            );
+        }
+        state.activeZoomPan = zoomPan;
       },
     },
     addTileset: (
@@ -200,7 +227,6 @@ export const slice = createSlice({
     ) => {
       const { ts } = action.payload;
       state.tilesets[ts.id] = ts;
-      state.tilesetZoomPans[ts.id] ??= DEFAULT_ZOOMPAN;
       if (!state.tilesetIds.includes(ts.id)) {
         state.tilesetIds.push(ts.id);
         for (const obj of Object.values(ts.tiles.entities)) {
@@ -234,6 +260,11 @@ export const slice = createSlice({
       const tsId = state.activeTilesetId;
       state.activeZoomPan.zoom = zoom;
       if (!tsId) return;
+
+      const tsZoomPan = state.tilesetZoomPans[tsId];
+      if (!tsZoomPan) {
+        state.tilesetZoomPans[tsId] = state.activeZoomPan;
+      }
       state.tilesetZoomPans[tsId].zoom = zoom;
     },
     setPan: (state, action: PayloadAction<Pan>) => {
@@ -241,6 +272,11 @@ export const slice = createSlice({
       const tsId = state.activeTilesetId;
       state.activeZoomPan.pan = pan;
       if (!tsId) return;
+
+      const tsZoomPan = state.tilesetZoomPans[tsId];
+      if (!tsZoomPan) {
+        state.tilesetZoomPans[tsId] = state.activeZoomPan;
+      }
       state.tilesetZoomPans[tsId].pan = pan;
     },
 

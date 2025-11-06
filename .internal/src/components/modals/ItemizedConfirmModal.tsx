@@ -69,7 +69,7 @@ export default function ItemizedConfirmModal({
   );
 
   const handleConfirm = () => {
-    // onConfirm();
+    onConfirm();
     context.closeModal(id);
   };
 

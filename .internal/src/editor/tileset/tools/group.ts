@@ -1,6 +1,7 @@
 import { globals as gApp } from "@/globals";
 import { selectors, actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
+import { snap } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObjType } from "@/types/tileset";
@@ -11,6 +12,7 @@ import { amountOpaquePixels, subImageData } from "@/utils/image";
 import { subState } from "@/utils/redux";
 import { rectToBBox } from "@/utils/spatial";
 import { genImageId, genTileId } from "@/utils/tileset";
+import { Vector } from "@/vec";
 import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
 import {
@@ -22,16 +24,14 @@ import { groupStroke } from "../../common/strokes";
 import { globals as g } from "../globals";
 import { shouldOutline } from "../utils/outline";
 
-function getGridSize(): number {
-  return store.getState().tilesetEditor.grid.size;
-}
-
-function snapDown(n: number, size: number): number {
-  return Math.floor(n / size) * size;
-}
-
-function snapUp(n: number, size: number): number {
-  return Math.ceil(n / size) * size;
+function getGridSize(): Vector {
+  const state = store.getState();
+  const ts = selectors.activeTileset(state);
+  if (!ts || ts.composite) {
+    return { x: 1, y: 1 };
+  }
+  const size = state.tilesetEditor.grid.size;
+  return { x: size, y: size };
 }
 
 function isGroupActionMode(mode: string | null): boolean {
@@ -65,7 +65,7 @@ class Grouper implements ClickDragListener {
     const tsState = state.tilesetEditor;
     const mode = selectors.selectMode(state);
 
-    const coords = e.snappedHitbox;
+    const coords = snap(e.hitbox, getGridSize());
 
     let finishMode = false;
     if (mode === "delete-group" || mode === "replace-group") {
@@ -144,7 +144,7 @@ class Grouper implements ClickDragListener {
     g.groupSelGraphics.visible = true;
     const c = g.groupSelContainer;
 
-    const hb = e.snappedHitbox;
+    const hb = snap(e.hitbox, getGridSize());
     c.position.set(hb.x, hb.y);
     c.width = hb.width;
     c.height = hb.height;

@@ -1,15 +1,14 @@
 import * as constants from "@/constants";
 import { globals as gApp } from "@/globals";
-import { selectors, tileAdapter } from "@/slices/tilesetEditor";
+import { actions, selectors, tileAdapter } from "@/slices/tilesetEditor";
+import { store } from "@/store/store";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
+import { subState } from "@/utils/redux";
+import { onVisible } from "@/utils/visible";
 import { Vector } from "@/vec";
 import debounce from "debounce";
 import * as P from "pixi.js";
-import { actions } from "../../slices/tilesetEditor";
-import { store } from "../../store/store";
-import { subState } from "../../utils/redux";
-import { onVisible } from "../../utils/visible";
 import { makeBackground } from "../common/bg";
 import { getCursorForMode } from "../common/cursor";
 import { ClickDragger } from "../common/drag";
@@ -150,16 +149,6 @@ export async function init(): Promise<P.Application> {
     app,
     container: stage,
     coordsRelativeTo: g.tilesetContainer,
-    getGridSnap: () => {
-      const state = store.getState();
-      const mode = selectors.selectMode(state);
-      const ts = selectors.activeTileset(state);
-      if (mode === "select" || ts?.composite) {
-        return { x: 1, y: 1 };
-      }
-      const size = state.tilesetEditor.grid.size;
-      return { x: size, y: size };
-    },
     checkPointerOver: (localPos: Vector): string[] => {
       const hits = spatialIndex.getObjects({
         pos: localPos,
@@ -194,6 +183,10 @@ export async function init(): Promise<P.Application> {
     checkerboard.width = rect.width;
     checkerboard.height = rect.height;
     drawBounds();
+
+    store.dispatch(
+      actions.setCanvasSize({ width: rect.width, height: rect.height })
+    );
   }
   window.addEventListener("resize", redrawLayout);
   onVisible(canvas, redrawLayout);

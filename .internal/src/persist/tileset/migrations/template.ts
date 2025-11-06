@@ -1,3 +1,3 @@
-import type { TilesetDocV8 } from "../schema";
+import type { TilesetDocV1 } from "../schema";
 
-export async function migrate(_doc: TilesetDocV8) {}
+export async function migrate(_doc: TilesetDocV1) {}

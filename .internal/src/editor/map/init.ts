@@ -150,7 +150,7 @@ export async function init(): Promise<P.Application> {
     spatialIndex,
   });
 
-  const keyPresses = setupKeys(canvas);
+  setupKeys(canvas);
 
   const cd = new ClickDragger({
     app,
@@ -161,11 +161,6 @@ export async function init(): Promise<P.Application> {
         pos: localPos,
       });
       return hits.map((h) => h.id);
-    },
-    getGridSnap: () => {
-      if (!keyPresses["Control"]) return null;
-      const state = store.getState();
-      return state.mapEditor.grid.size;
     },
   });
 
