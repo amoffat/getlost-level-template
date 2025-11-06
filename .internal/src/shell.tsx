@@ -12,6 +12,7 @@ import { createRoot } from "react-dom/client";
 import { Provider as ReduxProvider } from "react-redux";
 import { RouterProvider } from "react-router-dom";
 import ItemizedConfirmModal from "./components/modals/ItemizedConfirmModal";
+import { overlayProps } from "./constants";
 
 const theme: MantineThemeOverride = {
   components: {
@@ -45,7 +46,10 @@ export default function App() {
     <ReduxProvider store={store}>
       <MantineProvider defaultColorScheme="dark" theme={theme}>
         <Notifications position="top-center" containerWidth={"40%"} />
-        <ModalsProvider modals={modals}>
+        <ModalsProvider
+          modals={modals}
+          modalProps={{ overlayProps: overlayProps }}
+        >
           <CommsProvider>
             <RouterProvider router={router} />
           </CommsProvider>

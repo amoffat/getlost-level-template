@@ -347,7 +347,7 @@ export default function MapEditorTab({
 const SelectedBadge = ({ count }: { count: number }) => {
   return (
     <Badge
-      size="xs"
+      size="sm"
       circle
       color="lime.4"
       autoContrast
