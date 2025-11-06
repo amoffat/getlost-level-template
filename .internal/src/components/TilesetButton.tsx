@@ -1,15 +1,18 @@
 import { useAppDispatch } from "@/hooks/redux";
 import { store } from "@/store/store";
 import { removeTilesetThunk } from "@/thunks/tileset";
-import { DisplayableImage } from "@/types/image";
-import { Image, Menu, Text, UnstyledButton } from "@mantine/core";
+import { isAnimationTemplate } from "@/types/animation";
+import { isNpcTemplate } from "@/types/npc";
+import { isTileGroupTemplate } from "@/types/tilegroup";
+import { Tileset } from "@/types/tileset";
+import { Image, Menu, UnstyledButton } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { IconCopy, IconTrash } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
 
 interface TilesetButtonProps {
   onClick: () => void;
-  ts: DisplayableImage;
+  ts: Tileset;
   isActive?: boolean;
 }
 
@@ -35,7 +38,8 @@ export default function TilesetButton({
   const onDelete = () => {
     const state = store.getState();
     const objs = state.mapEditor.objects;
-    const usedCount = objs.ids.reduce((acc, objId) => {
+
+    const mapUses = objs.ids.reduce((acc, objId) => {
       const obj = objs.entities[objId];
       if ((obj as any).tilesetId === ts.id) {
         acc++;
@@ -43,20 +47,65 @@ export default function TilesetButton({
       return acc;
     }, 0);
 
-    modals.openConfirmModal({
+    let pinnedGroups = 0;
+    let animations = 0;
+    let npcs = 0;
+    for (const objId of ts.tiles.ids) {
+      const obj = ts.tiles.entities[objId];
+      if (isTileGroupTemplate(obj)) {
+        if (obj.pinned) {
+          pinnedGroups++;
+        }
+      } else if (isAnimationTemplate(obj)) {
+        animations++;
+      } else if (isNpcTemplate(obj)) {
+        npcs++;
+      }
+    }
+
+    const items = [];
+
+    items.push({
+      ok: mapUses === 0,
+      message:
+        mapUses > 0
+          ? `${mapUses} map objects use this tileset.`
+          : "No map objects are using this tileset.",
+    });
+
+    items.push({
+      ok: pinnedGroups === 0,
+      message:
+        pinnedGroups > 0
+          ? `It contains custom ${pinnedGroups} tile groups.`
+          : "It contains no custom tile groups.",
+    });
+
+    items.push({
+      ok: animations === 0,
+      message:
+        animations > 0
+          ? `It contains ${animations} animations.`
+          : "It contains no animations.",
+    });
+
+    items.push({
+      ok: npcs === 0,
+      message: npcs > 0 ? `It contains ${npcs} NPCs.` : "It contains no NPCs.",
+    });
+
+    modals.openContextModal({
+      modal: "confirm",
       title: "Delete tileset?",
-      children: (
-        <Text size="sm">
-          Are you sure you want to delete this tileset? This action cannot be
-          undone. <strong>{usedCount} objects are using this tileset.</strong>
-        </Text>
-      ),
-      labels: { confirm: "Delete", cancel: "Cancel" },
-      confirmProps: { color: "red" },
       centered: true,
-      withCloseButton: false,
-      onConfirm: () => {
-        dispatch(removeTilesetThunk(ts.id));
+      withCloseButton: true,
+      innerProps: {
+        items,
+        confirmLabel: "Yes, delete tileset",
+        msg: "Are you sure you want to delete this tileset? This action cannot be undone.",
+        onConfirm: () => {
+          dispatch(removeTilesetThunk(ts.id));
+        },
       },
     });
     setOpened(false);

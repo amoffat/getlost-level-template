@@ -1,5 +1,6 @@
 import { ActionIcon, Menu, Switch } from "@mantine/core";
 import { IconFilter } from "@tabler/icons-react";
+import { memo, useCallback, useState, useTransition } from "react";
 
 export interface FilterToggle {
   key: string;
@@ -11,6 +12,44 @@ export interface FilterToggle {
 interface PaletteFilterProps {
   toggles: FilterToggle[];
 }
+
+// Memoized switch that maintains its own state for instant feedback
+const ResponsiveSwitch = memo(
+  ({ toggle }: { toggle: FilterToggle }) => {
+    const [isChecked, setIsChecked] = useState(toggle.checked);
+    const [, startTransition] = useTransition();
+
+    const handleChange = useCallback(
+      (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newChecked = event.currentTarget.checked;
+        // Update local state immediately for instant visual feedback
+        setIsChecked(newChecked);
+        // Wrap Redux action in transition - marks it as low-priority
+        // This prevents the expensive palette filtering from blocking other UI updates
+        startTransition(() => {
+          toggle.onChange(newChecked);
+        });
+      },
+      [toggle]
+    );
+
+    return (
+      <Switch
+        size="xs"
+        label={toggle.label}
+        checked={isChecked}
+        onChange={handleChange}
+      />
+    );
+  },
+  (prev, next) => {
+    // Only re-render if the toggle key changes, ignore checked changes from Redux
+    return (
+      prev.toggle.key === next.toggle.key &&
+      prev.toggle.label === next.toggle.label
+    );
+  }
+);
 
 export default function PaletteFilter({ toggles }: PaletteFilterProps) {
   const hasAFilter = toggles.some((t) => t.checked);
@@ -31,12 +70,7 @@ export default function PaletteFilter({ toggles }: PaletteFilterProps) {
         <Menu.Label>Filter Options</Menu.Label>
         {toggles.map((toggle) => (
           <Menu.Item key={toggle.key} closeMenuOnClick={false}>
-            <Switch
-              size="xs"
-              label={toggle.label}
-              checked={toggle.checked}
-              onChange={(event) => toggle.onChange(event.currentTarget.checked)}
-            />
+            <ResponsiveSwitch toggle={toggle} />
           </Menu.Item>
         ))}
       </Menu.Dropdown>

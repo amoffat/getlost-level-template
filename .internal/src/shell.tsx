@@ -11,6 +11,7 @@ import { Notifications } from "@mantine/notifications";
 import { createRoot } from "react-dom/client";
 import { Provider as ReduxProvider } from "react-redux";
 import { RouterProvider } from "react-router-dom";
+import ItemizedConfirmModal from "./components/modals/ItemizedConfirmModal";
 
 const theme: MantineThemeOverride = {
   components: {
@@ -30,12 +31,21 @@ const theme: MantineThemeOverride = {
   },
 };
 
+const modals = {
+  confirm: ItemizedConfirmModal,
+};
+declare module "@mantine/modals" {
+  export interface MantineModalsOverride {
+    modals: typeof modals;
+  }
+}
+
 export default function App() {
   return (
     <ReduxProvider store={store}>
       <MantineProvider defaultColorScheme="dark" theme={theme}>
         <Notifications position="top-center" containerWidth={"40%"} />
-        <ModalsProvider>
+        <ModalsProvider modals={modals}>
           <CommsProvider>
             <RouterProvider router={router} />
           </CommsProvider>
