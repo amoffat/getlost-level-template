@@ -3,11 +3,16 @@ import { ContextModalProps } from "@mantine/modals";
 import { IconAlertTriangle, IconCheck } from "@tabler/icons-react";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 
+export interface ItemStatus {
+  ok: boolean;
+  message: string;
+}
+
 interface ItemizedConfirmModalProps {
   onConfirm: () => void;
   msg: ReactNode;
   confirmLabel: ReactNode;
-  items: { ok: boolean; message: string }[];
+  items: ItemStatus[];
   itemDelay?: number;
 }
 

@@ -133,6 +133,15 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         state,
         obj.tsObjId
       ) as TileGroupTemplate;
+      if (!tsObj) {
+        this.debouncedError(
+          obj.tilesetId,
+          "Missing object",
+          `The tile object with ID ${obj.tsObjId} could not be found in the tileset.`
+        );
+        return this.makeErrorNode(obj);
+      }
+
       const frame = tsObj.pos;
 
       const texFrame = new P.Rectangle(
@@ -181,7 +190,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       ) as AnimationTemplate | null;
       if (!tsObj) {
         this.debouncedError(
-          obj.tsObjId,
+          obj.tilesetId,
           "Missing object",
           `The animation object with ID ${obj.tsObjId} could not be found in the tileset.`
         );
@@ -234,7 +243,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       ) as NpcTemplate | null;
       if (!tsObj) {
         this.debouncedError(
-          obj.tsObjId,
+          obj.tilesetId,
           "Missing object",
           `The NPC object with ID ${obj.tsObjId} could not be found in the tileset.`
         );
@@ -323,12 +332,8 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     container.label = obj.id;
 
     const gfx = new P.Graphics();
-    gfx.moveTo(0, 0);
-    gfx.lineTo(obj.width, obj.height);
-    gfx.moveTo(obj.width, 0);
-    gfx.lineTo(0, obj.height);
     gfx.rect(0, 0, obj.width, obj.height);
-    gfx.stroke({ color: 0xff0000, width: 4, cap: "round" });
+    gfx.fill({ color: 0xff0000 });
 
     container.addChild(gfx);
     return container;

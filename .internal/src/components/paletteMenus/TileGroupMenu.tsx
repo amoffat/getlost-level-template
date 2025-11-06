@@ -4,13 +4,7 @@ import { actions as uiActions, selectors as uiSelectors } from "@/slices/ui";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { Vector } from "@/vec";
 import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
-import {
-  IconBlocks,
-  IconCopy,
-  IconStack2,
-  IconTag,
-  IconTrash,
-} from "@tabler/icons-react";
+import { IconBlocks, IconCopy, IconStack2, IconTag } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
 import CollisionModal from "../CollisionModal";
 import ObjectMenu from "../ObjectMenu";
@@ -97,13 +91,6 @@ export default function TileGroupMenu({
     closeMenu();
   }, [obj, closeMenu]);
 
-  const deleteObject = useCallback(() => {
-    if (!obj) return;
-    closeMenu();
-  }, [obj, closeMenu]);
-
-  // const mapEd = tab === "map-editor";
-  const tilesetEd = tab === "tileset-editor";
   if (!obj) return null;
 
   return (
@@ -129,21 +116,6 @@ export default function TileGroupMenu({
         <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
           Copy object id
         </Menu.Item>
-
-        {tilesetEd && (
-          <>
-            <Menu.Divider />
-
-            <Menu.Label>Danger zone</Menu.Label>
-            <Menu.Item
-              color="red"
-              leftSection={<IconTrash size={14} />}
-              onClick={deleteObject}
-            >
-              Delete
-            </Menu.Item>
-          </>
-        )}
       </ObjectMenu>
 
       <Modal

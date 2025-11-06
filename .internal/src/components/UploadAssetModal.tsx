@@ -228,8 +228,16 @@ export default function UploadAssetModal({
 async function chooseDefaultCreationOption(
   files: File[]
 ): Promise<SpecialTilesetOption> {
-  // Filter for image files only
-  const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+  // Filter for image files only. Don't include animated gifs for simplicity.
+  // TODO have animated gifs automatically flatten their frames and generate an
+  // animated object.
+  const allowsImages = new Set([
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "image/tiff",
+  ]);
+  const imageFiles = files.filter((file) => allowsImages.has(file.type));
 
   if (imageFiles.length === 0) {
     return NEW_TILESET;

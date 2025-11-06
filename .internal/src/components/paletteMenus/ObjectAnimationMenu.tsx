@@ -1,16 +1,19 @@
+import { ItemStatus } from "@/components/modals/ItemizedConfirmModal";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { actions as tsActions } from "@/slices/tilesetEditor";
+import {
+  actions as tsActions,
+  selectors as tsSelectors,
+} from "@/slices/tilesetEditor";
 import { actions as uiActions, selectors as uiSelectors } from "@/slices/ui";
+import { store } from "@/store/store";
 import { AnimationTemplate } from "@/types/animation";
+import { isMapObjFromTileset } from "@/types/map";
+import { isNpcTemplate } from "@/types/npc";
 import { Vector } from "@/vec";
 import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
-import {
-  IconBlocks,
-  IconCopy,
-  IconStack2,
-  IconTag,
-  IconTrash,
-} from "@tabler/icons-react";
+import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
+import { IconBlocks, IconCopy, IconTag, IconTrash } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
 import CollisionModal from "../CollisionModal";
 import ObjectMenu from "../ObjectMenu";
@@ -99,8 +102,79 @@ export default function ObjectAnimationMenu({
 
   const deleteObject = useCallback(() => {
     if (!obj) return;
+
+    const state = store.getState();
+    const ts = tsSelectors.selectTileset(state, obj.tilesetId)!;
+
+    const items: ItemStatus[] = [];
+
+    let npcs = 0;
+    for (const objId of ts.tiles.ids) {
+      const obj = ts.tiles.entities[objId];
+      if (isNpcTemplate(obj)) {
+        for (const anim of Object.values(obj.animations)) {
+          if (anim.frames.some((frame) => frame.tg.id === obj.id)) {
+            npcs++;
+          }
+        }
+      }
+    }
+
+    const mapObjs = state.mapEditor.objects;
+    const mapUses = mapObjs.ids.reduce((acc, objId) => {
+      const mapObj = mapObjs.entities[objId];
+      if (isMapObjFromTileset(mapObj) && mapObj.tsObjId === obj.id) {
+        acc++;
+      }
+      return acc;
+    }, 0);
+
+    items.push({
+      ok: npcs === 0,
+      message:
+        npcs > 0
+          ? `It is used by ${npcs} NPCs.`
+          : "No NPCs use this animation.",
+    });
+
+    items.push({
+      ok: mapUses === 0,
+      message:
+        mapUses > 0
+          ? `${mapUses} map objects use this animation.`
+          : "This animation is not used in the map.",
+    });
+
+    const hasWarning = items.some((item) => !item.ok);
+    const onConfirm = () => {
+      dispatch(
+        tsActions.deletePaletteObjects({
+          tsId: obj.tilesetId,
+          ids: [obj.id],
+        })
+      );
+      notifications.show({
+        title: "Animation deleted",
+        message: `Deleted animation "${obj.names}".`,
+        autoClose: 3000,
+      });
+    };
+
+    modals.openContextModal({
+      modal: "confirm",
+      title: "Delete animation?",
+      centered: true,
+      withCloseButton: true,
+      innerProps: {
+        items,
+        confirmLabel: "Yes, delete animation",
+        msg: "Are you sure you want to delete this animation? This action cannot be undone.",
+        onConfirm,
+      },
+    });
+
     closeMenu();
-  }, [obj, closeMenu]);
+  }, [obj, closeMenu, dispatch]);
 
   // const mapEd = tab === "map-editor";
   const tilesetEd = tab === "tileset-editor";
@@ -111,9 +185,6 @@ export default function ObjectAnimationMenu({
       <ObjectMenu pos={pos} opened={pos !== null}>
         <Menu.Label>Object Animation Actions</Menu.Label>
 
-        <Menu.Item leftSection={<IconStack2 size={14} />}>
-          Set z-index
-        </Menu.Item>
         <Menu.Item
           leftSection={<IconBlocks size={14} />}
           onClick={onCollidersItemClicked}

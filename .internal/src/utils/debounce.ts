@@ -9,7 +9,7 @@ export function makeGroupedDebouncer(
   sub$
     .pipe(
       // group per key
-      groupBy(([, key]) => key),
+      groupBy(([key]) => key),
       // for each group, debounce events and call the function sequently
       mergeMap((group$) =>
         group$.pipe(

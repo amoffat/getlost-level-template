@@ -427,6 +427,10 @@ export const slice = createSlice({
       [(state) => state.tilesetIds, (state) => state.tilesets],
       (tilesetIds, tilesets): Tileset[] => tilesetIds.map((id) => tilesets[id])
     ),
+    selectTileset: createTsSelector(
+      [(state, tsId: string) => state.tilesets[tsId]],
+      (ts): Tileset | null => (ts ? ts : null)
+    ),
     activeTileset: createTsSelector(
       [(state) => state.activeTilesetId, (state) => state.tilesets],
       (tsId, tilesets): Tileset | null =>
