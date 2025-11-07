@@ -105,6 +105,17 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
       if (seen.has(obj.id)) continue;
       seen.add(obj.id);
 
+      // Prevent visual duplicates from appearing in the palette. This *could*
+      // be the source of a bug if a user places a tile group from one tileset,
+      // adds another tileset with the same image, and then expects to be able
+      // to find the original tile group in the palette to edit it. However,
+      // this is a very edge case and the benefits of preventing visual
+      // duplicates outweigh the risks.
+      if (isTileGroupTemplate(obj)) {
+        if (seen.has(obj.imageId)) continue;
+        seen.add(obj.imageId);
+      }
+
       const selected = selectedObjects?.has(obj.id) ?? false;
       const rendered = renderObject({
         scale,
