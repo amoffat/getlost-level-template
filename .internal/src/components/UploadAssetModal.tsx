@@ -1,7 +1,6 @@
 import { overlayProps } from "@/constants";
 import { unpackTileset } from "@/editor/tileset/loader";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { actions as uiActions } from "@/slices/ui";
 import { uploadTilesetThunk } from "@/thunks/tileset";
 import { Rect } from "@/types/rect";
 import { packSprites } from "@/utils/spritepack";
@@ -142,7 +141,6 @@ export default function UploadAssetModal({
   const formSubmit = form.onSubmit((values) => {
     closeModal();
     uploadTileset(values, files);
-    dispatch(uiActions.setTab("tileset-editor"));
   });
 
   const renderSelectOption = (item: {

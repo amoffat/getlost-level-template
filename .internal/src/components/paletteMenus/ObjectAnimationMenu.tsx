@@ -145,7 +145,7 @@ export default function ObjectAnimationMenu({
           : "This animation is not used in the map.",
     });
 
-    const hasWarning = items.some((item) => !item.ok);
+    // const hasWarning = items.some((item) => !item.ok);
     const onConfirm = () => {
       dispatch(
         tsActions.deletePaletteObjects({

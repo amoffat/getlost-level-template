@@ -183,7 +183,14 @@ export const removeTilesetThunk = createAsyncThunk(
       await setCanvasTileset(null);
     }
 
+    // Removing the tileset also removes all of its tile groups, since the
+    // createEntityAdapter modifies the tileset's tiles slice directly.
     dispatch(tsActions.removeTileset(tsId));
+    notifications.show({
+      title: "Tileset removed",
+      message: `Tileset ${tsId} has been removed.`,
+      color: "green",
+    });
     await router.navigate("/tilesets");
   }
 );
