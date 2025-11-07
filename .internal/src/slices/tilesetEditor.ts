@@ -52,8 +52,8 @@ export interface TilesetEditorState {
     [K in ToolWithOptions]: ToolOptMapping[K];
   };
   candAnimFrames: TileGroupTemplate[];
-  // obj id to tileset id
-  fastObjLookup: Record<string, string>;
+  // ts obj id to tileset id
+  objIdToTs: Record<string, string>;
 }
 
 export const slice = createSlice({
@@ -86,7 +86,7 @@ export const slice = createSlice({
       },
     },
     candAnimFrames: [],
-    fastObjLookup: {},
+    objIdToTs: {},
   } as TilesetEditorState,
   reducers: {
     setGridVisible(state, action: PayloadAction<boolean>) {
@@ -230,7 +230,7 @@ export const slice = createSlice({
       if (!state.tilesetIds.includes(ts.id)) {
         state.tilesetIds.push(ts.id);
         for (const obj of Object.values(ts.tiles.entities)) {
-          state.fastObjLookup[obj.id] = ts.id;
+          state.objIdToTs[obj.id] = ts.id;
         }
       }
     },
@@ -246,9 +246,9 @@ export const slice = createSlice({
       }
       delete state.tilesetZoomPans[tsId];
       // Clean up fast lookup
-      for (const id of Object.keys(state.fastObjLookup)) {
-        if (state.fastObjLookup[id] === tsId) {
-          delete state.fastObjLookup[id];
+      for (const id of Object.keys(state.objIdToTs)) {
+        if (state.objIdToTs[id] === tsId) {
+          delete state.objIdToTs[id];
         }
       }
     },
@@ -307,7 +307,7 @@ export const slice = createSlice({
         const ts = state.tilesets[tsId];
         tileAdapter.addMany(ts.tiles, groups);
         for (const group of groups) {
-          state.fastObjLookup[group.id] = tsId;
+          state.objIdToTs[group.id] = tsId;
         }
       },
     },
@@ -328,7 +328,7 @@ export const slice = createSlice({
         const { tsId, group } = action.payload;
         const ts = state.tilesets[tsId];
         tileAdapter.addOne(ts.tiles, group);
-        state.fastObjLookup[group.id] = tsId;
+        state.objIdToTs[group.id] = tsId;
       },
     },
 
@@ -346,7 +346,7 @@ export const slice = createSlice({
         const ts = state.tilesets[tsId];
         tileAdapter.removeMany(ts.tiles, ids);
         for (const id of ids) {
-          delete state.fastObjLookup[id];
+          delete state.objIdToTs[id];
         }
       },
     },
@@ -469,7 +469,7 @@ export const slice = createSlice({
     templateFromInstanceId: createTsSelector(
       [
         (state) => state.tilesets,
-        (state) => state.fastObjLookup,
+        (state) => state.objIdToTs,
         (_, instanceId: string) => instanceId,
       ],
       (

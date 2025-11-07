@@ -108,13 +108,14 @@ export default function ObjectAnimationMenu({
 
     const items: ItemStatus[] = [];
 
-    let npcs = 0;
+    const npcs = new Set<string>();
     for (const objId of ts.tiles.ids) {
-      const obj = ts.tiles.entities[objId];
-      if (isNpcTemplate(obj)) {
-        for (const anim of Object.values(obj.animations)) {
-          if (anim.frames.some((frame) => frame.tg.id === obj.id)) {
-            npcs++;
+      const maybeNpc = ts.tiles.entities[objId];
+      if (isNpcTemplate(maybeNpc)) {
+        const objFrames = new Set(obj.frames.map((frame) => frame.tg.id));
+        for (const anim of Object.values(maybeNpc.animations)) {
+          if (anim.frames.some((frame) => objFrames.has(frame.tg.id))) {
+            npcs.add(maybeNpc.id);
           }
         }
       }
@@ -130,10 +131,10 @@ export default function ObjectAnimationMenu({
     }, 0);
 
     items.push({
-      ok: npcs === 0,
+      ok: npcs.size === 0,
       message:
-        npcs > 0
-          ? `It is used by ${npcs} NPCs.`
+        npcs.size > 0
+          ? `It is used by ${npcs.size} NPCs.`
           : "No NPCs use this animation.",
     });
 

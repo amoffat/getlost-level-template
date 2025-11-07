@@ -84,7 +84,10 @@ class Selector implements ClickDragListener {
     // If we just closed the proposed selection menu (in pointerDown), don't do
     // any additional selection logic, since we want to preserve what was
     // selected.
-    if (this.recentlyClosedMenu) return;
+    if (this.recentlyClosedMenu) {
+      this.recentlyClosedMenu = false;
+      return;
+    }
 
     // In pointerDown, we may have deferred to our mover if we clicked "over" an
     // element. However, if we've now determined that we never moved, we should

@@ -1,3 +1,4 @@
+import "@gfazioli/mantine-split-pane/styles.css";
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
 

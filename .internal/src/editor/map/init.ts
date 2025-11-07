@@ -178,7 +178,7 @@ export async function init(): Promise<P.Application> {
       store.dispatch(actions.setZoomPan(zp));
     },
   });
-  setupPanControls({
+  const panner = setupPanControls({
     stage,
     panContainer: g.mapContainer,
     onPanningStart: () => {
@@ -207,12 +207,28 @@ export async function init(): Promise<P.Application> {
 
     const rect = parent.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
+
     checkerboard.width = rect.width;
     checkerboard.height = rect.height;
     drawBounds();
   }
   window.addEventListener("resize", redrawLayout);
-  onVisible(canvas, redrawLayout);
+
+  let firstRedraw = true;
+  onVisible(canvas, () => {
+    if (firstRedraw) {
+      // Center the map container on the stage with zoom at 1
+      const stageWidth = app.screen.width;
+      const stageHeight = app.screen.height;
+
+      const stageCenterX = stageWidth / 2;
+      const stageCenterY = stageHeight / 2;
+
+      panner.setPosition({ x: stageCenterX, y: stageCenterY }, true);
+    }
+    redrawLayout();
+    firstRedraw = false;
+  });
 
   gApp.mapEditorApp = app;
   g.initialized = true;

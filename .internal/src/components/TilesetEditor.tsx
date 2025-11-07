@@ -18,7 +18,8 @@ import {
   objectAnimationSort,
   tileGroupSort,
 } from "@/utils/palette/sort";
-import { Anchor, Flex, Group, ScrollArea, Stack, Tabs } from "@mantine/core";
+import { Split } from "@gfazioli/mantine-split-pane";
+import { Anchor, Group, ScrollArea, Stack, Tabs } from "@mantine/core";
 import {
   IconGrid4x4,
   IconKeyframes,
@@ -126,6 +127,14 @@ export default function TilesetEditorTab({
       isActive={ts.id === activeTilesetId}
     />
   ));
+
+  const handlePaneResize = useCallback(() => {
+    // Trigger redrawLayout when panels are resized
+    // Use a small delay to ensure the DOM has updated
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+  }, []);
 
   const hasTsSelected = ts !== null;
   const enableGroup = ts !== null && !ts.composite;
@@ -246,115 +255,165 @@ export default function TilesetEditorTab({
 
   return (
     <>
-      <Flex h="100dvh" style={{ flex: 1 }}>
-        <Stack miw={300} h="100%" style={{ flex: 1, overflow: "hidden" }}>
-          <ScrollArea type="never" style={{ flex: 1 }}>
-            <Stack pb={50}>{tilesetImages}</Stack>
-          </ScrollArea>
-        </Stack>
-        <Flex direction="column" style={{ flex: 5, minHeight: 0, minWidth: 0 }}>
-          <div
-            ref={containerRef}
-            id={constants.tilesetEditorContainerId}
-            style={{ flex: 3, minHeight: 0, overflow: "hidden" }}
-          ></div>
-
-          <Stack style={{ flex: 2, minHeight: 0 }} p={0}>
-            <Tabs
-              value={curTab}
-              onChange={setActiveTab}
-              className="flex-overflow"
-            >
-              <Tabs.List>
-                <Tabs.Tab value={"objects"}>
-                  <Group gap="xs">Objects</Group>
-                </Tabs.Tab>
-                <Tabs.Tab value="animations">
-                  <Group gap="xs">Animations</Group>
-                </Tabs.Tab>
-
-                <Tabs.Tab value="npcs">
-                  <Group gap="xs">NPCs</Group>
-                </Tabs.Tab>
-              </Tabs.List>
-
-              <Tabs.Panel
-                value="objects"
-                style={{
-                  flex: 1,
-                  minHeight: 0,
-                  height: "100%",
-                  display: "flex",
-                }}
-              >
-                <ObjectPalette
-                  tileset={deferredTs}
-                  selectedObjects={deferredPaletteSelection}
-                  filter={isTileGroupTemplate}
-                  renderObject={renderTileGroup}
-                  sort={tileGroupSort}
-                />
-              </Tabs.Panel>
-              <Tabs.Panel
-                value="animations"
-                style={{
-                  flex: 1,
-                  minHeight: 0,
-                  height: "100%",
-                  display: "flex",
-                }}
-              >
-                <ObjectPalette
-                  minScale={1}
-                  defaultScale={4}
-                  maxScale={8}
-                  tileset={deferredTs}
-                  selectedObjects={deferredPaletteSelection}
-                  filter={isAnimationTemplate}
-                  renderObject={renderObjectAnimation}
-                  sort={objectAnimationSort}
-                />
-              </Tabs.Panel>
-              <Tabs.Panel
-                value="npcs"
-                style={{
-                  flex: 1,
-                  minHeight: 0,
-                  height: "100%",
-                  display: "flex",
-                }}
-              >
-                <ObjectPalette
-                  minScale={1}
-                  defaultScale={4}
-                  maxScale={8}
-                  tileset={deferredTs}
-                  selectedObjects={deferredPaletteSelection}
-                  filter={isNpcTemplate}
-                  renderObject={renderNpc}
-                  sort={npcSort}
-                />
-              </Tabs.Panel>
-            </Tabs>
+      <Split h="100dvh" style={{ flex: 1 }}>
+        {/* Left toolbar - tileset list */}
+        <Split.Pane
+          initialWidth={300}
+          minWidth={200}
+          maxWidth={500}
+          onResizeEnd={handlePaneResize}
+        >
+          <Stack h="100%" style={{ overflow: "hidden" }}>
+            <ScrollArea type="never" style={{ flex: 1 }}>
+              <Stack pb={50}>{tilesetImages}</Stack>
+            </ScrollArea>
           </Stack>
-        </Flex>
-        <Stack miw={300} h="100%" style={{ flex: 1, overflow: "hidden" }}>
-          <ToolPalette
-            activeTool={selectedToolName}
-            tools={toolPalette}
-            onToolActivated={onToolActivated}
-            onToolDeactivated={onToolDeactivated}
-          />
+        </Split.Pane>
 
-          <Tip tips={tips} />
+        <Split.Resizer />
 
-          <ScrollArea type="never" style={{ flex: 1 }}>
-            <Stack p={0} pb={50}>
-              {toolOptions}
-            </Stack>
-          </ScrollArea>
-        </Stack>
-      </Flex>
+        {/* Center panel with editor and palette */}
+        <Split.Pane grow>
+          <Split
+            orientation="horizontal"
+            style={{
+              height: "100%",
+              minHeight: 0,
+              minWidth: 0,
+              position: "relative",
+            }}
+          >
+            {/* Top: Editor canvas */}
+            <Split.Pane grow minHeight={200} onResizeEnd={handlePaneResize}>
+              <div
+                ref={containerRef}
+                id={constants.tilesetEditorContainerId}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  overflow: "hidden",
+                }}
+              ></div>
+            </Split.Pane>
+
+            <Split.Resizer />
+
+            {/* Bottom: Object palette */}
+            <Split.Pane
+              initialHeight={400}
+              minHeight={150}
+              maxHeight={600}
+              onResizeEnd={handlePaneResize}
+            >
+              <Stack style={{ height: "100%" }} p={0}>
+                <Tabs
+                  value={curTab}
+                  onChange={setActiveTab}
+                  className="flex-overflow"
+                >
+                  <Tabs.List>
+                    <Tabs.Tab value={"objects"}>
+                      <Group gap="xs">Objects</Group>
+                    </Tabs.Tab>
+                    <Tabs.Tab value="animations">
+                      <Group gap="xs">Animations</Group>
+                    </Tabs.Tab>
+
+                    <Tabs.Tab value="npcs">
+                      <Group gap="xs">NPCs</Group>
+                    </Tabs.Tab>
+                  </Tabs.List>
+
+                  <Tabs.Panel
+                    value="objects"
+                    style={{
+                      flex: 1,
+                      minHeight: 0,
+                      height: "100%",
+                      display: "flex",
+                    }}
+                  >
+                    <ObjectPalette
+                      tileset={deferredTs}
+                      selectedObjects={deferredPaletteSelection}
+                      filter={isTileGroupTemplate}
+                      renderObject={renderTileGroup}
+                      sort={tileGroupSort}
+                    />
+                  </Tabs.Panel>
+                  <Tabs.Panel
+                    value="animations"
+                    style={{
+                      flex: 1,
+                      minHeight: 0,
+                      height: "100%",
+                      display: "flex",
+                    }}
+                  >
+                    <ObjectPalette
+                      minScale={1}
+                      defaultScale={4}
+                      maxScale={8}
+                      tileset={deferredTs}
+                      selectedObjects={deferredPaletteSelection}
+                      filter={isAnimationTemplate}
+                      renderObject={renderObjectAnimation}
+                      sort={objectAnimationSort}
+                    />
+                  </Tabs.Panel>
+                  <Tabs.Panel
+                    value="npcs"
+                    style={{
+                      flex: 1,
+                      minHeight: 0,
+                      height: "100%",
+                      display: "flex",
+                    }}
+                  >
+                    <ObjectPalette
+                      minScale={1}
+                      defaultScale={4}
+                      maxScale={8}
+                      tileset={deferredTs}
+                      selectedObjects={deferredPaletteSelection}
+                      filter={isNpcTemplate}
+                      renderObject={renderNpc}
+                      sort={npcSort}
+                    />
+                  </Tabs.Panel>
+                </Tabs>
+              </Stack>
+            </Split.Pane>
+          </Split>
+        </Split.Pane>
+
+        <Split.Resizer />
+
+        {/* Right toolbar - tools and options */}
+        <Split.Pane
+          initialWidth={300}
+          minWidth={200}
+          maxWidth={500}
+          onResizeEnd={handlePaneResize}
+        >
+          <Stack h="100%" style={{ overflow: "hidden" }}>
+            <ToolPalette
+              activeTool={selectedToolName}
+              tools={toolPalette}
+              onToolActivated={onToolActivated}
+              onToolDeactivated={onToolDeactivated}
+            />
+
+            <Tip tips={tips} />
+
+            <ScrollArea type="never" style={{ flex: 1 }}>
+              <Stack p={0} pb={50}>
+                {toolOptions}
+              </Stack>
+            </ScrollArea>
+          </Stack>
+        </Split.Pane>
+      </Split>
     </>
   );
 }

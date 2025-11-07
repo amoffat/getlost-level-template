@@ -6,7 +6,9 @@ import type { TilesetObjectTemplate } from "./tilesetobject";
 
 export interface TileGroupTemplate {
   // The unique, stable id, which uses the image data hash plus tileset and
-  // position
+  // position. We use this for most lookups because we need to be able to arrive
+  // at the correct tileset object even if there are multiple identical images
+  // in different tilesets.
   id: string;
   type: TilesetObjType.TileGroupTemplate;
   // The image-hash based id

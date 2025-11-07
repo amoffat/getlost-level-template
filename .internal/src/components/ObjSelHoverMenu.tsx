@@ -43,14 +43,16 @@ export default function ObjSelHover() {
         const tsObj = tsSelectors.templateFromInstanceId(
           state,
           obj.tsObjId
-        ) as TileGroupTemplate;
+        ) as TileGroupTemplate | null;
+        if (!tsObj) return null;
 
         view = <TilesetGroup group={tsObj} scale={2} bounded />;
       } else if (isAnimatedInstance(obj)) {
         const tsObj = tsSelectors.templateFromInstanceId(
           state,
           obj.tsObjId
-        ) as AnimationTemplate;
+        ) as AnimationTemplate | null;
+        if (!tsObj) return null;
 
         const frames = tsObj.frames.map((f) => {
           return { ...f, tg: f.tg };
@@ -60,7 +62,8 @@ export default function ObjSelHover() {
         const tsObj = tsSelectors.templateFromInstanceId(
           state,
           obj.tsObjId
-        ) as NpcTemplate;
+        ) as NpcTemplate | null;
+        if (!tsObj) return null;
 
         const frames = tsObj.animations.Idle.frames.map((f) => {
           return { ...f, tg: f.tg };
