@@ -24,6 +24,7 @@ export interface TileGroupInstance extends BaseMapObj {
   // The id of the underlying tileset object
   tsObjId: string;
   tilesetId: string;
+  imageId: string; // for healing broken references
 
   // Properties that can vary per-instance
   flipX: boolean;

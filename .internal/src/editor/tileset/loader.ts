@@ -2,6 +2,7 @@ import { globals as gApp } from "@/globals";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
+import { addPaletteObjectsThunk } from "@/thunks/tileset";
 import { Rect } from "@/types/rect";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { Tileset, TilesetObjType } from "@/types/tileset";
@@ -79,9 +80,7 @@ export async function unpackTileset(tsId: string, coordsList: Rect[]) {
 
   const flushChunk = async (currentCoords: Rect | null = null) => {
     if (chunk.length > 0) {
-      store.dispatch(
-        tsActions.bulkAddSinglePaletteTiles({ tsId, groups: chunk })
-      );
+      store.dispatch(addPaletteObjectsThunk({ tsId, objs: chunk }));
       store.dispatch(tsActions.setScanPos(currentCoords));
       chunk = [];
       chunkIds.clear();

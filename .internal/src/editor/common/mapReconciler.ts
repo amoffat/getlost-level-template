@@ -25,7 +25,7 @@ import { colliderFill } from "./strokes";
 
 export class MapObjReconciler extends ReduxReconciler<MapObj> {
   private layerContainers?: Record<number, P.Container>;
-  private tilesetCache: Map<string, P.Texture>;
+  private tilesetCache: Map<string, P.CanvasSource>;
   // Object id -> layer container
   private layerLookup = new Map<string, P.Container>();
 
@@ -33,7 +33,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
   private connected = false;
   private debounceNodeError: ReturnType<typeof makeGroupedDebouncer>;
 
-  constructor(tilesetCache: Map<string, P.Texture>) {
+  constructor(tilesetCache: Map<string, P.CanvasSource>) {
     super();
     this.tilesetCache = tilesetCache;
 
@@ -312,7 +312,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     }
   }
 
-  private getTilesetTex(tsId: string): P.Texture | undefined {
+  private getTilesetTex(tsId: string): P.TextureSource | undefined {
     const tex = this.tilesetCache.get(tsId);
     if (!tex) {
       this.missingTilesetError(tsId);

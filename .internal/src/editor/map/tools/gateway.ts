@@ -77,6 +77,7 @@ export class Gateway implements ClickDragListener {
       y: pos.y,
       tsObjId: obj.id,
       tilesetId: obj.tilesetId,
+      imageId: obj.imageId,
       flipX: place.flipX,
       z: 0,
       layer,

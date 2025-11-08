@@ -9,14 +9,14 @@ interface Globals {
   npcEditorApp: P.Application | null;
   tileEdgeSigs: SignatureIndex;
   // Tileset texture cache, keyed by tileset ID
-  tilesetTextureCache: Map<string, P.Texture>;
+  tilesetTextureCache: Map<string, P.CanvasSource>;
   tilesetImageDataCache: Map<string, ImageData>;
   mapEditorReconciler: MapObjReconciler;
   collisionEditorReconciler: MapObjReconciler;
   tilesetEditorReconciler: TileReconciler;
 }
 
-const tilesetTextureCache = new Map<string, P.Texture>();
+const tilesetTextureCache = new Map<string, P.CanvasSource>();
 export const globals: Globals = {
   mapEditorApp: null,
   tilesetEditorApp: null,

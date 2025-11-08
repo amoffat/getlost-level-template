@@ -52,8 +52,10 @@ export interface TilesetEditorState {
     [K in ToolWithOptions]: ToolOptMapping[K];
   };
   candAnimFrames: TileGroupTemplate[];
-  // ts obj id to tileset id
+  // obj id to tileset id
   objIdToTs: Record<string, string>;
+  // image id to tileset id. used for healing broken references
+  imageIdToTs: Record<string, string>;
 }
 
 export const slice = createSlice({
@@ -87,6 +89,7 @@ export const slice = createSlice({
     },
     candAnimFrames: [],
     objIdToTs: {},
+    imageIdToTs: {},
   } as TilesetEditorState,
   reducers: {
     setGridVisible(state, action: PayloadAction<boolean>) {
@@ -231,6 +234,9 @@ export const slice = createSlice({
         state.tilesetIds.push(ts.id);
         for (const obj of Object.values(ts.tiles.entities)) {
           state.objIdToTs[obj.id] = ts.id;
+          if (isTileGroupTemplate(obj)) {
+            state.imageIdToTs[obj.imageId] = ts.id;
+          }
         }
       }
     },
@@ -249,6 +255,11 @@ export const slice = createSlice({
       for (const id of Object.keys(state.objIdToTs)) {
         if (state.objIdToTs[id] === tsId) {
           delete state.objIdToTs[id];
+        }
+      }
+      for (const id of Object.keys(state.imageIdToTs)) {
+        if (state.imageIdToTs[id] === tsId) {
+          delete state.imageIdToTs[id];
         }
       }
     },
@@ -287,48 +298,28 @@ export const slice = createSlice({
       ts.saved = saved;
     },
 
-    bulkAddSinglePaletteTiles: {
-      prepare: (payload: {
-        tsId: string;
-        groups: TilesetObjectTemplate[];
-      }) => ({
+    addPaletteObjects: {
+      prepare: (payload: { tsId: string; objs: TilesetObjectTemplate[] }) => ({
         meta: {
           reconcilePrefix,
           reconcileType: "add" as const,
-          reconcile: payload.groups,
+          reconcile: payload.objs,
         },
         payload,
       }),
       reducer(
         state,
-        action: PayloadAction<{ tsId: string; groups: TilesetObjectTemplate[] }>
+        action: PayloadAction<{ tsId: string; objs: TilesetObjectTemplate[] }>
       ) {
-        const { tsId, groups } = action.payload;
+        const { tsId, objs } = action.payload;
         const ts = state.tilesets[tsId];
-        tileAdapter.addMany(ts.tiles, groups);
-        for (const group of groups) {
-          state.objIdToTs[group.id] = tsId;
+        tileAdapter.addMany(ts.tiles, objs);
+        for (const obj of objs) {
+          state.objIdToTs[obj.id] = tsId;
+          if (isTileGroupTemplate(obj)) {
+            state.imageIdToTs[obj.imageId] = tsId;
+          }
         }
-      },
-    },
-
-    addPaletteObject: {
-      prepare: (payload: { tsId: string; group: TilesetObjectTemplate }) => ({
-        meta: {
-          reconcilePrefix,
-          reconcileType: "add" as const,
-          reconcile: payload.group,
-        },
-        payload,
-      }),
-      reducer(
-        state,
-        action: PayloadAction<{ tsId: string; group: TilesetObjectTemplate }>
-      ) {
-        const { tsId, group } = action.payload;
-        const ts = state.tilesets[tsId];
-        tileAdapter.addOne(ts.tiles, group);
-        state.objIdToTs[group.id] = tsId;
       },
     },
 
@@ -344,10 +335,16 @@ export const slice = createSlice({
       reducer(state, action: PayloadAction<{ tsId: string; ids: string[] }>) {
         const { tsId, ids } = action.payload;
         const ts = state.tilesets[tsId];
-        tileAdapter.removeMany(ts.tiles, ids);
+
         for (const id of ids) {
           delete state.objIdToTs[id];
+          const obj = ts.tiles.entities[id];
+          if (isTileGroupTemplate(obj)) {
+            delete state.imageIdToTs[obj.imageId];
+          }
         }
+
+        tileAdapter.removeMany(ts.tiles, ids);
       },
     },
 
@@ -474,10 +471,10 @@ export const slice = createSlice({
       ],
       (
         tilesets: Record<string, Tileset>,
-        fastObjLookup: Record<string, string>,
+        objIdToTs: Record<string, string>,
         instanceId: string
       ): TilesetObjectTemplate | null => {
-        const tsId = fastObjLookup[instanceId];
+        const tsId = objIdToTs[instanceId];
         if (!tsId) return null;
         const ts = tilesets[tsId];
         if (!ts) return null;

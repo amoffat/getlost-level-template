@@ -274,7 +274,7 @@ export default function TileAnimationOptions() {
       names: values.names,
       tags: [],
     };
-    dispatch(actions.addPaletteObject({ tsId, group: anim }));
+    dispatch(actions.addPaletteObjects({ tsId, objs: [anim] }));
     dispatch(clearCandAnimFramesThunk());
     dispatch(uiActions.setTilesetTab("animations"));
     notifications.show({

@@ -41,14 +41,24 @@ export async function genAnimId(frames: TileAnimationFrame[]): Promise<string> {
 
 export async function loadTilesetImage(ts: Tileset): Promise<P.Texture> {
   const maybeTex = gApp.tilesetTextureCache.get(ts.id);
-  if (maybeTex) return maybeTex;
+  if (maybeTex) return new P.Texture(maybeTex);
 
   const tex = await P.Assets.load<P.Texture>({
     src: ts.objectUrl,
     parser: "loadTextures",
   });
+
+  // Instead of using the image file as the Texture source, we'll use a canvas.
+  // This lets us write to it later, for example, to paint it red if a tileset
+  // is deleted, so that all objects using it are clearly marked as broken.
+  const shared = new P.CanvasSource({});
+  shared.resize(tex.width, tex.height);
+  shared.context2D.drawImage(tex.source.resource as CanvasImageSource, 0, 0);
+  shared.update();
+  tex.source = shared;
+
   tex.source.scaleMode = "nearest";
-  gApp.tilesetTextureCache.set(ts.id, tex);
+  gApp.tilesetTextureCache.set(ts.id, shared);
 
   const bitmap = await createImageBitmap(
     await fetch(ts.objectUrl).then((r) => r.blob())

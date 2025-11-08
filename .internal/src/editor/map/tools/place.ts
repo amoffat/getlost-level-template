@@ -175,6 +175,7 @@ export class Placer implements ClickDragListener {
         x: pos.x,
         y: pos.y,
         tsObjId: obj.id,
+        imageId: obj.imageId,
         tilesetId: obj.tilesetId,
         flipX: place.flipX,
         z,

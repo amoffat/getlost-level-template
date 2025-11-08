@@ -1,6 +1,7 @@
 import { globals as gApp } from "@/globals";
 import { selectors, actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
+import { addPaletteObjectsThunk } from "@/thunks/tileset";
 import { snap } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
@@ -123,7 +124,7 @@ class Grouper implements ClickDragListener {
           hilbertIndex: oklabHilbertIndex(avgColor),
         };
 
-        store.dispatch(tsActions.addPaletteObject({ tsId, group }));
+        store.dispatch(addPaletteObjectsThunk({ tsId, objs: [group] }));
         finishMode = true;
       }
     }

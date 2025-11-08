@@ -106,7 +106,7 @@ export default function NpcOptions() {
       tags: values.tags,
     };
 
-    dispatch(actions.addPaletteObject({ tsId, group: npc }));
+    dispatch(actions.addPaletteObjects({ tsId, objs: [npc] }));
     dispatch(uiActions.setTilesetTab("npcs"));
 
     notifications.show({

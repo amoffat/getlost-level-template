@@ -8,14 +8,18 @@ import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import { loadTileset, loadTilesets, saveTileset } from "@/persist/tileset/api";
 import { router } from "@/router";
+import { brokenTileGroups } from "@/selectors/map";
+import { actions as mapActions } from "@/slices/mapEditor";
 import {
   TilesetEditorState,
   actions as tsActions,
 } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { RootState, store } from "@/store/store";
+import { TileGroupInstance } from "@/types/map";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
+import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import { schedulerYield } from "@/utils/async";
 import { hasSolidEdges, subImageData } from "@/utils/image";
 import { genTilesetId, loadTilesetImage } from "@/utils/tileset";
@@ -101,8 +105,25 @@ export const loadTilesetThunk = createAsyncThunk(
     const ts = await loadTileset(tsId);
     dispatch(tsActions.addTileset({ tsId, ts }));
 
+    const oldSource = gApp.tilesetTextureCache.get(tsId);
+    if (oldSource) {
+      gApp.tilesetTextureCache.delete(tsId);
+    }
+
     // Preload its texture
-    await loadTilesetImage(ts);
+    const tex = await loadTilesetImage(ts);
+
+    if (oldSource) {
+      oldSource.context2D.clearRect(0, 0, oldSource.width, oldSource.height);
+      oldSource.context2D.drawImage(
+        tex.source.resource as CanvasImageSource,
+        0,
+        0
+      );
+      oldSource.update();
+      gApp.tilesetTextureCache.set(tsId, oldSource);
+    }
+
     await dispatch(loadEdgeSignaturesThunk(tsId)).unwrap();
     await dispatch(populateTilesetTagsThunk(tsId)).unwrap();
 
@@ -182,6 +203,16 @@ export const removeTilesetThunk = createAsyncThunk(
     if (state.tilesetEditor.activeTilesetId === tsId) {
       await setCanvasTileset(null);
     }
+
+    const canvasSource = gApp.tilesetTextureCache.get(tsId)!;
+    canvasSource.context2D.fillStyle = "red";
+    canvasSource.context2D.fillRect(
+      0,
+      0,
+      canvasSource.width,
+      canvasSource.height
+    );
+    canvasSource.update();
 
     // Removing the tileset also removes all of its tile groups, since the
     // createEntityAdapter modifies the tileset's tiles slice directly.
@@ -269,5 +300,49 @@ export const clearCandAnimFramesThunk = createAsyncThunk(
   async (_, { dispatch }) => {
     dispatch(tsActions.clearCandAnimFrames());
     dispatch(tsActions.clearSelection());
+  }
+);
+
+export const addPaletteObjectsThunk = createAsyncThunk(
+  "tilesetEditor/addPaletteObjectsThunk",
+  async (
+    { tsId, objs: tmplObjs }: { tsId: string; objs: TilesetObjectTemplate[] },
+    { dispatch, getState }
+  ) => {
+    const state = getState() as RootState;
+    dispatch(tsActions.addPaletteObjects({ tsId, objs: tmplObjs }));
+
+    // Fix broken tile group instances whose imageIds match the newly added tile
+    // groups.
+    const brokenTgs = brokenTileGroups(state);
+    if (brokenTgs.length > 0) {
+      // This lets us lookup all broken tile group instances by the imageId
+      const lookup = new Map<string, TileGroupInstance[]>();
+      for (const tg of brokenTgs) {
+        const arr = lookup.get(tg.imageId) || [];
+        arr.push(tg);
+        lookup.set(tg.imageId, arr);
+      }
+
+      const updates = [];
+
+      for (const tmplObj of tmplObjs) {
+        if (isTileGroupTemplate(tmplObj)) {
+          const brokenInstances = lookup.get(tmplObj.imageId);
+          if (brokenInstances && brokenInstances.length > 0) {
+            for (const b of brokenInstances) {
+              updates.push({
+                id: b.id,
+                changes: { tilesetId: tsId, tsObjId: tmplObj.id },
+              });
+            }
+          }
+        }
+      }
+
+      if (updates.length > 0) {
+        dispatch(mapActions.updateMany(updates));
+      }
+    }
   }
 );

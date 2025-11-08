@@ -11,8 +11,7 @@ const listenerMiddleware = createListenerMiddleware();
 
 type TsAction =
   | ReturnType<typeof tsActions.addTileset>
-  | ReturnType<typeof tsActions.bulkAddSinglePaletteTiles>
-  | ReturnType<typeof tsActions.addPaletteObject>
+  | ReturnType<typeof tsActions.addPaletteObjects>
   | ReturnType<typeof tsActions.updateTilesetObject>
   | ReturnType<typeof tsActions.deletePaletteObjects>;
 
@@ -24,8 +23,7 @@ const startAppListening =
 startAppListening({
   matcher: isAnyOf(
     tsActions.addTileset,
-    tsActions.bulkAddSinglePaletteTiles,
-    tsActions.addPaletteObject,
+    tsActions.addPaletteObjects,
     tsActions.updateTilesetObject,
     tsActions.deletePaletteObjects
   ),
