@@ -8,12 +8,7 @@ import { Tileset, TilesetObjType } from "@/types/tileset";
 import { schedulerYield } from "@/utils/async";
 import { averageOklab } from "@/utils/color";
 import { oklabHilbertIndex } from "@/utils/hilbert";
-import {
-  amountOpaquePixels,
-  getImageDataFromBitmap,
-  isTransparent,
-  subImageData,
-} from "@/utils/image";
+import { amountOpaquePixels, isTransparent, subImageData } from "@/utils/image";
 import { subState } from "@/utils/redux";
 import { genImageId, genTileId, loadTilesetImage } from "@/utils/tileset";
 import * as P from "pixi.js";
@@ -76,13 +71,7 @@ export function generateGridAlignedCoords(
  * @param coordsList - Array of Rect coordinates to unpack into tile groups
  */
 export async function unpackTileset(tsId: string, coordsList: Rect[]) {
-  const texture = gApp.tilesetTextureCache.get(tsId)!;
-
-  const canvas = g.app.renderer.extract.canvas(texture) as HTMLCanvasElement;
-  const bitmap = await createImageBitmap(canvas);
-
-  // Build a single ImageData snapshot so we can quickly test transparency per tile
-  const imageData = getImageDataFromBitmap(bitmap);
+  const imageData = gApp.tilesetImageDataCache.get(tsId)!;
 
   store.dispatch(uiActions.loadingPalette(true));
   let chunk: TileGroupTemplate[] = [];
