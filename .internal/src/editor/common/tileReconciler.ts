@@ -26,13 +26,17 @@ export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
     this.connected = true;
   }
 
-  protected override applyProps(
-    node: P.Container,
-    p: AllPropsLoose<TilesetObjectTemplate>
-  ) {
-    if (p.pos !== undefined) {
-      node.position.set(p.pos.x, p.pos.y);
+  protected override applyProps({
+    node,
+    props,
+  }: {
+    node: P.Container;
+    props: AllPropsLoose<TilesetObjectTemplate>;
+  }): boolean {
+    if (props.pos !== undefined) {
+      node.position.set(props.pos.x, props.pos.y);
     }
+    return false;
   }
 
   protected override createNode(
@@ -65,12 +69,7 @@ export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
     const gfx = new P.Graphics();
     gfx.interactive = false;
 
-    const rect = new P.Rectangle(
-      0,
-      0,
-      obj.pos.width,
-      obj.pos.height
-    );
+    const rect = new P.Rectangle(0, 0, obj.pos.width, obj.pos.height);
     gfx.rect(rect.x, rect.y, rect.width, rect.height).stroke(invisibleStroke);
 
     const container = new P.Container();

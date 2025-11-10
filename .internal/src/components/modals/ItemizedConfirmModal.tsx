@@ -12,7 +12,7 @@ interface ItemizedConfirmModalProps {
   onConfirm: () => void;
   msg: ReactNode;
   confirmLabel: ReactNode;
-  items: ItemStatus[];
+  makeItems: () => ItemStatus[];
   itemDelay?: number;
 }
 
@@ -21,7 +21,7 @@ export default function ItemizedConfirmModal({
   id,
   innerProps,
 }: ContextModalProps<ItemizedConfirmModalProps>) {
-  const { items, onConfirm, msg, itemDelay, confirmLabel } = innerProps;
+  const { makeItems, onConfirm, msg, itemDelay, confirmLabel } = innerProps;
 
   // Track which items have been shown
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
@@ -30,6 +30,8 @@ export default function ItemizedConfirmModal({
   // Duration for each item's animation (in ms)
   const itemDelayValue = itemDelay ?? 750;
   const animateDuration = 500;
+
+  const items = useMemo(() => makeItems(), [makeItems]);
 
   // Animate items in one at a time
   useEffect(() => {

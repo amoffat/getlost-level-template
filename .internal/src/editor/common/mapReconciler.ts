@@ -88,29 +88,33 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     }
   }
 
-  protected override applyProps(
-    node: P.Container,
-    p: ReduxReconciler<MapObj>["ObjParamsType"]
-  ) {
-    if (!this.layerContainers || !this.spatialIndex) return;
+  protected override applyProps({
+    node,
+    props,
+  }: {
+    node: P.Container;
+    props: ReduxReconciler<MapObj>["ObjParamsType"];
+  }): boolean {
+    let recreate = false;
+    if (!this.layerContainers || !this.spatialIndex) return recreate;
 
-    if (p.x !== undefined) {
-      node.x = p.x;
+    if (props.x !== undefined) {
+      node.x = props.x;
     }
-    if (p.y !== undefined) {
-      node.y = p.y;
+    if (props.y !== undefined) {
+      node.y = props.y;
     }
-    if (p.z !== undefined) {
-      node.zIndex = p.z;
-    }
-
-    if (p.flipX !== undefined) {
-      node.children[0].scale.x = p.flipX ? -1 : 1;
+    if (props.z !== undefined) {
+      node.zIndex = props.z;
     }
 
-    if (p.layer !== undefined) {
+    if (props.flipX !== undefined) {
+      node.children[0].scale.x = props.flipX ? -1 : 1;
+    }
+
+    if (props.layer !== undefined) {
       const oldLayer = this.layerLookup.get(node.label)!;
-      const newLayer = this.layerContainers[p.layer]!;
+      const newLayer = this.layerContainers[props.layer]!;
       if (oldLayer !== newLayer) {
         if (oldLayer) {
           oldLayer.removeChild(node);
@@ -119,6 +123,12 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         this.layerLookup.set(node.label, newLayer);
       }
     }
+
+    if (props.tilesetId !== undefined || props.tsObjId !== undefined) {
+      // Recreate the node entirely, since the texture may have changed.
+      recreate = true;
+    }
+    return recreate;
   }
 
   protected override createNode(obj: MapObj): P.Container | null {

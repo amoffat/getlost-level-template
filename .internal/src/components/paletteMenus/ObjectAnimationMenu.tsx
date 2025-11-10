@@ -167,7 +167,7 @@ export default function ObjectAnimationMenu({
       centered: true,
       withCloseButton: true,
       innerProps: {
-        items,
+        makeItems: () => items,
         confirmLabel: "Yes, delete animation",
         msg: "Are you sure you want to delete this animation? This action cannot be undone.",
         onConfirm,

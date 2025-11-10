@@ -9,6 +9,7 @@ import { Image, Menu, UnstyledButton } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { IconCopy, IconTrash } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
+import { ItemStatus } from "./modals/ItemizedConfirmModal";
 
 interface TilesetButtonProps {
   onClick: () => void;
@@ -63,7 +64,7 @@ export default function TilesetButton({
       }
     }
 
-    const items = [];
+    const items: ItemStatus[] = [];
 
     items.push({
       ok: mapUses === 0,
@@ -100,7 +101,7 @@ export default function TilesetButton({
       centered: true,
       withCloseButton: true,
       innerProps: {
-        items,
+        makeItems: () => items,
         confirmLabel: "Yes, delete tileset",
         msg: "Are you sure you want to delete this tileset? This action cannot be undone.",
         onConfirm: () => {

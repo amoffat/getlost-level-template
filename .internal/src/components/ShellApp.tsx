@@ -5,7 +5,9 @@ import "@mantine/dropzone/styles.css";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { getMapInitPromise, getTilesetInitPromise } from "@/init/editorInit";
 import { pathToTab, tabToPath } from "@/routes/tabs";
+import { brokenTileGroups } from "@/selectors/map";
 import { actions as uiActions } from "@/slices/ui";
+import { store } from "@/store/store";
 import { resetAllThunk, resetMapThunk } from "@/thunks/map";
 import { MainTabName } from "@/types/tab";
 import { AppShell, Group, Tabs, Text } from "@mantine/core";
@@ -13,7 +15,13 @@ import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { Spotlight, SpotlightActionData } from "@mantine/spotlight";
-import { IconSearch, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
+import {
+  IconSearch,
+  IconTrash,
+  IconUnlink,
+  IconUpload,
+  IconX,
+} from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import {
   Suspense,
@@ -33,6 +41,7 @@ import PreviewTab from "./Preview";
 import StoryTab from "./StoryTab";
 import TilesetEditorTab from "./TilesetEditor";
 import UploadAssetModal from "./UploadAssetModal";
+import { ItemStatus } from "./modals/ItemizedConfirmModal";
 
 declare global {
   interface Window {
@@ -120,7 +129,7 @@ const ShellAppContent = memo(function ShellAppContent({
             onConfirm: () => dispatch(resetMapThunk()),
           });
         },
-        leftSection: <IconTrash size={24} stroke={1.5} />,
+        leftSection: <IconTrash />,
       },
       {
         id: "reset-all",
@@ -141,7 +150,40 @@ const ShellAppContent = memo(function ShellAppContent({
             onConfirm: () => dispatch(resetAllThunk()),
           });
         },
-        leftSection: <IconTrash size={24} stroke={1.5} />,
+        leftSection: <IconTrash />,
+      },
+      {
+        id: "clear-broken",
+        label: "Clear broken objects",
+        description:
+          "Remove references to missing tilesets or objects from the map",
+        onClick: () => {
+          modals.openContextModal({
+            modal: "confirm",
+            title: "Clear broken references?",
+            centered: true,
+            withCloseButton: true,
+            innerProps: {
+              makeItems: () => {
+                const items: ItemStatus[] = [];
+                const state = store.getState();
+                const broken = brokenTileGroups(state);
+                items.push({
+                  ok: broken.length === 0,
+                  message:
+                    broken.length === 0
+                      ? "No broken tiles found."
+                      : `Found ${broken.length} broken tiles`,
+                });
+                return items;
+              },
+              confirmLabel: "Yes, clear references",
+              msg: "Are you sure you want to clear all broken references? This will delete all map objects that are not backed by a tileset. This action cannot be undone.",
+              onConfirm: () => {},
+            },
+          });
+        },
+        leftSection: <IconUnlink />,
       },
     ],
     [dispatch]

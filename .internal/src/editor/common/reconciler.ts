@@ -1,3 +1,4 @@
+import { log } from "@/log";
 import { IndexItem } from "@/types/spatial";
 import { AllPropsLoose } from "@/types/union";
 import * as P from "pixi.js";
@@ -32,6 +33,10 @@ export abstract class ReduxReconciler<
 
   // id -> DisplayObject
   private nodes = new Map<string, P.Container>();
+
+  // id -> ObjType.
+  // This is used primarily for recreating nodes when needed.
+  private objs = new Map<string, ObjType>();
 
   // coalesced ops for this frame
   private pendingAdds: ObjType[] = [];
@@ -103,13 +108,18 @@ export abstract class ReduxReconciler<
       const node = this.createNode(obj);
       if (!node) continue;
 
-      this.nodes.set(this.selectId(obj), node);
+      const id = this.selectId(obj);
+      // Store a shallow copy to avoid keeping references to frozen Immer objects from Redux
+      this.objs.set(id, { ...obj });
+
+      this.applyProps({ node, props: obj });
+
+      this.nodes.set(id, node);
       const container = this.containerByObj(obj);
       container.addChild(node);
-      this.applyProps(node, obj);
 
       // Index in spatial structure
-      const item = makeIndexItem(this.selectId(obj), node);
+      const item = makeIndexItem(id, node);
       this.insertItem(item);
     }
     this.pendingAdds.length = 0;
@@ -118,15 +128,58 @@ export abstract class ReduxReconciler<
       const node = this.nodes.get(id);
       if (!node) continue;
 
-      this.applyProps(node, changes);
-      this.updateItem(makeIndexItem(id, node), changes);
+      const shouldRecreate = this.applyProps({
+        node,
+        props: changes,
+      });
+
+      const obj = this.objs.get(id);
+      if (!obj) {
+        log.error(`ReduxReconciler: no obj for id ${id}`);
+        continue;
+      }
+      // Update stored obj with a new shallow copy
+      const updatedObj = { ...obj, ...changes };
+      this.objs.set(id, updatedObj);
+
+      // Sometimes applying props requires recreating the node entirely, e.g.,
+      // in the case of the tileset id changing. In those cases, swap out the
+      // node by calling the remove and then add logic.
+      if (shouldRecreate) {
+        // Remove old node
+        const container = this.containerById(id);
+        container.removeChild(node);
+        this.removeById(id);
+        this.nodes.delete(id);
+
+        // Create new node
+        const newNode = this.createNode(updatedObj);
+        if (!newNode) continue;
+
+        // Apply all current props
+        this.applyProps({ node: newNode, props: updatedObj });
+
+        // Insert new node
+        container.addChild(newNode);
+        this.nodes.set(id, newNode);
+        const item = makeIndexItem(id, newNode);
+        this.insertItem(item);
+      } else {
+        this.updateItem(makeIndexItem(id, node), changes);
+      }
     }
     this.pendingUpdates.length = 0;
   }
 
   protected abstract createNode(obj: ObjType): P.Container | null;
 
-  protected abstract applyProps(node: P.Container, p: Partial<ObjType>): void;
+  protected abstract applyProps({
+    node,
+    props,
+  }: {
+    node: P.Container;
+    props: Partial<ObjType>;
+  }): boolean;
 
   protected abstract containerByObj(obj: ObjType): P.Container;
 
