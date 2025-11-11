@@ -19,9 +19,9 @@ import { drawBounds } from "./bounds";
 import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
 import { initLayerVisibility } from "./layers";
+import { setupAutotiler } from "./tools/autotiler";
 import { setupCollider } from "./tools/collider";
 import { setupGateway } from "./tools/gateway";
-import { setupMagicPainter } from "./tools/magicPaint";
 import { setupMover } from "./tools/move";
 import { setupPlacer } from "./tools/place";
 import { setupSelector } from "./tools/select";
@@ -168,7 +168,7 @@ export async function init(): Promise<P.Application> {
   setupSelector({ cd, spatialIndex });
   g.mover = setupMover(cd);
   setupPlacer({ cd, spatialIndex });
-  setupMagicPainter({ cd, spatialIndex });
+  setupAutotiler({ cd, spatialIndex });
   setupGateway({ cd, spatialIndex });
   setupWheelZoom({
     canvas,

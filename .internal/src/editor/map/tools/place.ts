@@ -249,7 +249,7 @@ subState(
       g.placableContainer.removeChildren();
     }
 
-    if (placeObj && ["paint", "magic-paint"].includes(mode)) {
+    if (placeObj && ["paint", "autotiler"].includes(mode)) {
       let sprite: P.Sprite;
       if (assetChanged) {
         if (isTileGroupTemplate(placeObj)) {

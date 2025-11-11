@@ -55,7 +55,7 @@ import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
 import { renderTileGroup } from "./paletteObjects/TileGroup";
 import Tip from "./Tip";
 import AddCollider from "./toolOptions/AddCollider";
-import MagicPaint from "./toolOptions/MagicPaint";
+import Autotiler from "./toolOptions/Autotiler";
 import Paint from "./toolOptions/Paint";
 import SelectTool from "./toolOptions/SelectTool";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
@@ -133,11 +133,11 @@ export default function MapEditorTab({
         enabled: place !== null,
         options: <Paint />,
       },
-      "magic-paint": {
+      autotiler: {
         name: "Autotiler",
         icon: <IconWand size={16} />,
         switchToLayer: MapLayerName.Ground,
-        options: <MagicPaint />,
+        options: <Autotiler />,
       },
       "set-gateway": {
         name: "Set gateway",

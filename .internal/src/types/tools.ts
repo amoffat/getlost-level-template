@@ -11,7 +11,7 @@ export interface ColliderOpts {
   type: "box" | "ellipse" | "polygon";
 }
 
-export interface MagicPaintOpts {
+export interface AutotilerOpts {
   candidates: TileGroupTemplate[];
   gridPosFreeze: Vector | null;
 }

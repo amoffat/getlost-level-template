@@ -12,7 +12,7 @@ import { isNpcTemplate } from "@/types/npc";
 import { Rect } from "@/types/rect";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObjectTemplate, TsObjCounts } from "@/types/tilesetobject";
-import { ColliderOpts, MagicPaintOpts, PaintOpts } from "@/types/tools";
+import { AutotilerOpts, ColliderOpts, PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
 import {
@@ -24,7 +24,7 @@ import {
 
 type ToolOptMapping = {
   paint: PaintOpts;
-  "magic-paint": MagicPaintOpts;
+  autotiler: AutotilerOpts;
   "add-collider": ColliderOpts;
 };
 
@@ -94,7 +94,7 @@ export const slice = createSlice({
     selectedTool: null,
     toolOptions: {
       paint: { mode: "place-once", size: 1, snap: "object" },
-      "magic-paint": { candidates: [], gridPosFreeze: null },
+      autotiler: { candidates: [], gridPosFreeze: null },
       "add-collider": { type: "box" },
     },
     modeStack: [],
@@ -124,7 +124,7 @@ export const slice = createSlice({
       state.selectedIds = [];
 
       if (
-        state.selectedTool === "magic-paint" &&
+        state.selectedTool === "autotiler" &&
         newLayer !== MapLayerName.Ground
       ) {
         state.selectedTool = null;

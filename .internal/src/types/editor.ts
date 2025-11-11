@@ -5,7 +5,7 @@ export type Mode =
   | "set-waypoint"
   | "add-collider"
   | "paint"
-  | "magic-paint"
+  | "autotiler"
   | "set-bounds"
   | "set-sensor-zone"
   | "set-sound-zone"

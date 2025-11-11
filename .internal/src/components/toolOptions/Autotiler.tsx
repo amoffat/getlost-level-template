@@ -5,11 +5,11 @@ import { store } from "@/store/store";
 import { Fieldset, Group, Kbd, Stack, Text } from "@mantine/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Tip from "../Tip";
-import classes from "./MagicPaint.module.css";
+import classes from "./Autotiler.module.css";
 
-export default function MagicPaint() {
+export default function Autotiler() {
   const cands = useAppSelector(
-    (state) => state.mapEditor.toolOptions["magic-paint"].candidates
+    (state) => state.mapEditor.toolOptions["autotiler"].candidates
   );
   const dispatch = useAppDispatch();
   const [pressedKey, setPressedKey] = useState<number | null>(null);
@@ -24,7 +24,7 @@ export default function MagicPaint() {
 
       dispatch(
         mapEdActions.setToolOptions({
-          tool: "magic-paint",
+          tool: "autotiler",
           options: { gridPosFreeze: pos },
         })
       );

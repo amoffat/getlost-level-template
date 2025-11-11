@@ -42,7 +42,7 @@ class Painter extends Placer {
       (cands: TileGroupTemplate[]) => {
         store.dispatch(
           mapEdActions.setToolOptions({
-            tool: "magic-paint",
+            tool: "autotiler",
             options: { candidates: cands },
           })
         );
@@ -52,7 +52,7 @@ class Painter extends Placer {
   public pointerUp(_e: PointerEventData): void {
     const state = store.getState();
     const mode = selectors.selectMode(state);
-    if (mode !== "magic-paint") return;
+    if (mode !== "autotiler") return;
 
     this.instantiatePlacable("overwrite");
     this.paint = false;
@@ -61,7 +61,7 @@ class Painter extends Placer {
   public pointerDown(_e: PointerEventData): void {
     const state = store.getState();
     const mode = selectors.selectMode(state);
-    if (mode !== "magic-paint") return;
+    if (mode !== "autotiler") return;
 
     this.paint = true;
     this.dragSessionIndex.clear();
@@ -72,14 +72,14 @@ class Painter extends Placer {
     const state = store.getState();
     const mode = selectors.selectMode(state);
 
-    if (mode !== "magic-paint") return;
+    if (mode !== "autotiler") return;
 
     // Determine the snapped center tile position from the cursor using gridSnap
     const step = state.mapEditor.grid.size;
     const baseX = Math.floor(e.localPos.x / step.x) * step.x;
     const baseY = Math.floor(e.localPos.y / step.y) * step.y;
 
-    const freezeCand = state.mapEditor.toolOptions["magic-paint"].gridPosFreeze;
+    const freezeCand = state.mapEditor.toolOptions["autotiler"].gridPosFreeze;
     if (freezeCand) {
       // If the candidate freeze position is set and matches our current grid pos,
       // then don't do anything more here.
@@ -88,7 +88,7 @@ class Painter extends Placer {
       } else {
         store.dispatch(
           mapEdActions.setToolOptions({
-            tool: "magic-paint",
+            tool: "autotiler",
             options: { gridPosFreeze: null },
           })
         );
@@ -218,7 +218,7 @@ class Painter extends Placer {
   }
 }
 
-export function setupMagicPainter({
+export function setupAutotiler({
   cd,
   spatialIndex,
 }: {
