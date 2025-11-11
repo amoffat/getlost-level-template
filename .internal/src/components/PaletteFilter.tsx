@@ -55,7 +55,7 @@ export default function PaletteFilter({ toggles }: PaletteFilterProps) {
   const hasAFilter = toggles.some((t) => t.checked);
 
   return (
-    <Menu shadow="md" width="lg">
+    <Menu shadow="md" width="lg" position="top" withArrow>
       <Menu.Target>
         <ActionIcon
           size="input-sm"

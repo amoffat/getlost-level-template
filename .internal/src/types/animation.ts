@@ -15,8 +15,11 @@ export interface AnimationTemplate {
   // The grid size this object is aligned to
   gridSize: Vector;
   frames: TileAnimationFrame[];
+
+  // Properties that can vary per-instance
   tags: string[];
   names: string[];
+  loop: boolean;
 }
 export function isAnimationTemplate(
   obj: TilesetObjectTemplate

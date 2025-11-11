@@ -39,6 +39,34 @@ export default function ObjectsPaletteFilters() {
         );
       },
     },
+    {
+      key: "hide-unused",
+      label: "Hide unused sprites",
+      checked: filters.hideUnusedObjects,
+      onChange: (checked) => {
+        dispatch(
+          uiActions.togglePaletteFilter({
+            tab: "objects",
+            filterKey: "hideUnusedObjects",
+            checked,
+          })
+        );
+      },
+    },
+    {
+      key: "show-tiles",
+      label: "Show only solid tiles",
+      checked: filters.showOnlyTiles,
+      onChange: (checked) => {
+        dispatch(
+          uiActions.togglePaletteFilter({
+            tab: "objects",
+            filterKey: "showOnlyTiles",
+            checked,
+          })
+        );
+      },
+    },
   ];
 
   return <PaletteFilter toggles={filterToggles} />;

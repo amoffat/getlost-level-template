@@ -1,3 +1,4 @@
+import { WalkSound } from "@/constants";
 import { OklabColor } from "@/types/color";
 import { Vector } from "@/vec";
 import type { Rect } from "./rect";
@@ -25,6 +26,12 @@ export interface TileGroupTemplate {
   coverage: number;
   avgColor: OklabColor;
   hilbertIndex: number;
+
+  // Properties that can vary per-instance
+  walkSound: WalkSound;
+  friction: number;
+  traction: number;
+  sink: number;
 }
 
 export function isTileGroupTemplate(

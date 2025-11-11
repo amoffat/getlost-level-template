@@ -37,6 +37,8 @@ const initialState: UIState = {
     objects: {
       hideAnimations: true,
       hideNpcLeftovers: true,
+      hideUnusedObjects: false,
+      showOnlyTiles: false,
     },
     animations: {
       hideNpcs: true,

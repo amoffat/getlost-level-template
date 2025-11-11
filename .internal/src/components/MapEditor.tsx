@@ -15,7 +15,15 @@ import {
   tileGroupSort,
 } from "@/utils/palette/sort";
 import { Split } from "@gfazioli/mantine-split-pane";
-import { Badge, Fieldset, Group, Portal, Stack, Tabs } from "@mantine/core";
+import {
+  Badge,
+  Fieldset,
+  Group,
+  Portal,
+  ScrollArea,
+  Stack,
+  Tabs,
+} from "@mantine/core";
 import {
   IconBulb,
   IconCameraSearch,
@@ -364,7 +372,7 @@ export default function MapEditorTab({
           maxWidth={500}
           onResizeEnd={handlePaneResize}
         >
-          <Stack h="100%">
+          <Stack h="100%" style={{ overflow: "hidden" }}>
             <ToolPalette
               tools={toolPalette}
               activeTool={selectedToolName}
@@ -373,8 +381,11 @@ export default function MapEditorTab({
             />
 
             <Tip tips={tips} />
-
-            {toolOptions}
+            <ScrollArea type="never" style={{ flex: 1 }}>
+              <Stack p={0} pb={100}>
+                {toolOptions}
+              </Stack>
+            </ScrollArea>
           </Stack>
         </Split.Pane>
       </Split>

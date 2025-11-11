@@ -6,6 +6,7 @@ import {
   isNpcInstance,
   isTileGroupInstance,
   MapObj,
+  TileGroupInstance,
 } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
 import { Rect } from "@/types/rect";
@@ -315,6 +316,11 @@ export const slice = createSlice({
     selectedObjs: createMapSelector(
       [(state) => state.selectedIds, (state) => state.objects.entities],
       (selectedIds, entities): MapObj[] => selectedIds.map((id) => entities[id])
+    ),
+    selectedTileGroupInstances: createMapSelector(
+      [(state) => state.selectedIds, (state) => state.objects.entities],
+      (selectedIds, entities): TileGroupInstance[] =>
+        selectedIds.map((id) => entities[id]).filter(isTileGroupInstance)
     ),
     numSelectedTgInstances: createMapSelector(
       [(state) => state.selectedIds, (state) => state.objects.entities],

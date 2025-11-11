@@ -34,6 +34,16 @@ export function objectsFilter(
     }
   }
 
+  if (filters.objects.hideUnusedObjects) {
+    // let used = false;
+  }
+
+  if (filters.objects.showOnlyTiles) {
+    if (obj.coverage < 1.0) {
+      return false;
+    }
+  }
+
   return true;
 }
 

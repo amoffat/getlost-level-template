@@ -1,3 +1,4 @@
+import { WalkSound } from "@/constants";
 import { Rect } from "./rect";
 
 export enum MapObjType {
@@ -27,9 +28,13 @@ export interface TileGroupInstance extends BaseMapObj {
   imageId: string; // for healing broken references
 
   // Properties that can vary per-instance
-  flipX: boolean;
+  flipX?: boolean;
   name?: string;
   tags?: string[];
+  walkSound?: WalkSound;
+  friction?: number;
+  traction?: number;
+  sink?: number;
 }
 
 export interface TileAnimationFrame {
@@ -46,7 +51,7 @@ export interface AnimationInstance extends BaseMapObj {
   tilesetId: string;
 
   // Properties that can vary per-instance
-  flipX: boolean;
+  flipX?: boolean;
   name?: string;
   tags?: string[];
 }
@@ -58,7 +63,7 @@ export interface NpcInstance extends BaseMapObj {
   tilesetId: string;
 
   // Properties that can vary per-instance
-  flipX: boolean;
+  flipX?: boolean;
   name?: string;
   tags?: string[];
 }

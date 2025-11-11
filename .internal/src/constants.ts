@@ -35,3 +35,16 @@ export const requiredNpcAnimations: NpcRequiredAnimation[] = [
   "WalkUp",
   "WalkRight",
 ];
+
+export const walkSounds = [
+  "default",
+  "none",
+  "grass",
+  "gravel",
+  "ice",
+  "puddle",
+  "wood",
+  "sand",
+  "snow",
+] as const;
+export type WalkSound = (typeof walkSounds)[number];
