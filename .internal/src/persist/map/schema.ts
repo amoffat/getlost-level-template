@@ -2,21 +2,18 @@
 // (see `.internal/src/slices/map.ts`). Versioning allows future structural
 // changes (e.g. spatial index, layering metadata, etc.) to be migrated.
 
-import { MapObj } from "@/types/map";
+import { RootState } from "@/store/store";
 
 export interface BaseMapDoc {
   version: number;
 }
 
-export interface MapEntitiesState {
-  ids: string[];
-  // A mix of MapObj and TileGroupInstance (TileGroupInstance extends MapObj)
-  entities: Record<string, MapObj>;
-}
+export type MapState = Partial<RootState["mapEditor"]> &
+  Pick<RootState["mapEditor"], "objects">;
 
 export interface MapDocV1 extends BaseMapDoc {
   version: 1;
-  objects: MapEntitiesState;
+  state: MapState;
 }
 
 export interface MapDocV2 extends Omit<MapDocV1, "version"> {

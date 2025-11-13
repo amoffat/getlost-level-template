@@ -1,12 +1,14 @@
 import * as constants from "@/constants";
+import { iconTsId, transparentIcon } from "@/constants";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/mapEditor";
-import { RootState } from "@/store/store";
+import { RootState, store } from "@/store/store";
 import { setToolThunk } from "@/thunks/map";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { isNpcTemplate } from "@/types/npc";
+import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import { animationsFilter, objectsFilter } from "@/utils/palette/filters";
 import {
@@ -14,6 +16,7 @@ import {
   objectAnimationSort,
   tileGroupSort,
 } from "@/utils/palette/sort";
+import { loadTileGroup } from "@/utils/tileset";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
   Badge,
@@ -25,6 +28,7 @@ import {
   Tabs,
 } from "@mantine/core";
 import {
+  IconBucketDroplet,
   IconBulb,
   IconCameraSearch,
   IconCarCrash,
@@ -56,6 +60,7 @@ import { renderTileGroup } from "./paletteObjects/TileGroup";
 import Tip from "./Tip";
 import AddCollider from "./toolOptions/AddCollider";
 import Autotiler from "./toolOptions/Autotiler";
+import Fill from "./toolOptions/Fill";
 import Paint from "./toolOptions/Paint";
 import SelectTool from "./toolOptions/SelectTool";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
@@ -99,9 +104,45 @@ export default function MapEditorTab({
     (obj: TilesetObjectTemplate, e: React.MouseEvent) => {
       e.preventDefault();
 
-      dispatch(actions.setPlace(obj));
-      if (e.button === 0) {
-        dispatch(setToolThunk("paint"));
+      const state = store.getState();
+      const mode = selectors.selectMode(state);
+      if (mode === "fill" && isTileGroupTemplate(obj)) {
+        const curCands = state.mapEditor.toolOptions.fill.candidates;
+        if (curCands.find((c) => c.tg.id === obj.id)) {
+          // Already selected
+          return;
+        }
+
+        const toAdd = [];
+        if (curCands.length === 0) {
+          const transparentTg = loadTileGroup({
+            id: transparentIcon,
+            tilesetId: iconTsId,
+          });
+          toAdd.push({
+            tg: transparentTg,
+            prob: 0.5,
+          });
+        }
+
+        toAdd.push({
+          tg: obj,
+          prob: 0.5,
+        });
+
+        dispatch(
+          actions.setToolOptions({
+            tool: "fill",
+            options: {
+              candidates: [...curCands, ...toAdd],
+            },
+          })
+        );
+      } else {
+        dispatch(actions.setPlace(obj));
+        if (e.button === 0) {
+          dispatch(setToolThunk("paint"));
+        }
       }
     },
     [dispatch]
@@ -138,6 +179,11 @@ export default function MapEditorTab({
         icon: <IconWand size={16} />,
         switchToLayer: MapLayerName.Ground,
         options: <Autotiler />,
+      },
+      fill: {
+        name: "Fill area",
+        icon: <IconBucketDroplet size={16} />,
+        options: <Fill />,
       },
       "set-gateway": {
         name: "Set gateway",

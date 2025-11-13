@@ -1,3 +1,4 @@
+import * as constants from "@/constants";
 import { globals as gApp } from "@/globals";
 import { selectors, actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
@@ -122,6 +123,10 @@ class Grouper implements ClickDragListener {
           coverage,
           avgColor,
           hilbertIndex: oklabHilbertIndex(avgColor),
+          walkSound: constants.defaultWalkSound,
+          friction: constants.defaultFriction,
+          traction: constants.defaultTraction,
+          sink: 0,
         };
 
         store.dispatch(addPaletteObjectsThunk({ tsId, objs: [group] }));

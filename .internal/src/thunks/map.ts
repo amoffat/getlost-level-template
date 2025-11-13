@@ -41,8 +41,8 @@ export const loadMapThunk = createAsyncThunk(
     dispatch(uiActions.pushLoadingMessage(`Loading map...`));
     const persisted = await loadMap();
     const objs: MapObj[] = [];
-    for (const id of persisted.ids) {
-      const obj = persisted.entities[id];
+    for (const id of persisted.objects.ids) {
+      const obj = persisted.objects.entities[id];
       if (obj) objs.push(obj);
     }
     dispatch(mapActions.setAll(objs));
@@ -120,6 +120,8 @@ export const setToolThunk = createAsyncThunk(
   "mapEditor/setToolThunk",
   async (tool: Mode | null, { dispatch, getState }) => {
     const state = getState() as RootState;
+
+    dispatch(clearUncommittedThunk());
 
     if (tool === null) {
       dispatch(mapActions.setMode("select"));
@@ -213,5 +215,30 @@ export const sendToBottomThunk = createAsyncThunk(
     }
 
     dispatch(mapActions.updateMany(changeList));
+  }
+);
+
+export const setUncommittedObjIdsThunk = createAsyncThunk(
+  "mapEditor/setUncommittedObjIdsThunk",
+  async (obs: MapObj[], { dispatch }) => {
+    await dispatch(clearUncommittedThunk()).unwrap();
+    dispatch(mapActions.setUncommittedObjIds(obs.map((o) => o.id)));
+    dispatch(mapActions.addMany(obs));
+  }
+);
+
+export const clearUncommittedThunk = createAsyncThunk(
+  "mapEditor/clearUncommittedThunk",
+  async (_, { dispatch, getState }) => {
+    const state = getState() as RootState;
+    const uncommitted = state.mapEditor.uncommittedObjIds;
+    dispatch(mapActions.removeMany(uncommitted));
+  }
+);
+
+export const commitObjectsThunk = createAsyncThunk(
+  "mapEditor/commitObjectsThunk",
+  async (_, { dispatch }) => {
+    dispatch(mapActions.setUncommittedObjIds([]));
   }
 );

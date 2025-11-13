@@ -5,15 +5,15 @@ export function makeBackground({
   size = 16,
   width,
   height,
+  blur = true,
 }: {
   container: P.Container;
   size?: number;
   width: number;
   height: number;
+  blur?: boolean;
 }): P.Container {
-  const canvas = document.createElement("canvas");
-  canvas.width = size * 2;
-  canvas.height = size * 2;
+  const canvas = new OffscreenCanvas(size * 2, size * 2);
   const ctx = canvas.getContext("2d")!;
 
   // Colors for the checker pattern
@@ -35,6 +35,8 @@ export function makeBackground({
     height,
   });
   container.addChild(checkerboard);
-  container.filters = [new P.BlurFilter({ strength: 4 })];
+  if (blur) {
+    container.filters = [new P.BlurFilter({ strength: 4 })];
+  }
   return checkerboard;
 }

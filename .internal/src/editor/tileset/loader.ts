@@ -1,3 +1,4 @@
+import * as constants from "@/constants";
 import { globals as gApp } from "@/globals";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
@@ -77,6 +78,7 @@ export async function unpackTileset(tsId: string, coordsList: Rect[]) {
   store.dispatch(uiActions.loadingPalette(true));
   let chunk: TileGroupTemplate[] = [];
   const chunkIds = new Set<string>();
+  const chunkSize = 100;
 
   const flushChunk = async (currentCoords: Rect | null = null) => {
     if (chunk.length > 0) {
@@ -141,12 +143,16 @@ export async function unpackTileset(tsId: string, coordsList: Rect[]) {
       coverage: amountOpaquePixels(tileImageData),
       avgColor,
       hilbertIndex: oklabHilbertIndex(avgColor),
+      walkSound: constants.defaultWalkSound,
+      friction: constants.defaultFriction,
+      traction: constants.defaultTraction,
+      sink: 0,
     };
 
     chunk.push(tg);
     chunkIds.add(id);
 
-    if (chunk.length > 10) {
+    if (chunk.length > chunkSize) {
       await flushChunk(coords);
     }
   }

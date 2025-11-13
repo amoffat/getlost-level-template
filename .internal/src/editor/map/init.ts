@@ -20,7 +20,7 @@ import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
 import { initLayerVisibility } from "./layers";
 import { setupAutotiler } from "./tools/autotiler";
-import { setupCollider } from "./tools/collider";
+import { setupFill } from "./tools/fill";
 import { setupGateway } from "./tools/gateway";
 import { setupMover } from "./tools/move";
 import { setupPlacer } from "./tools/place";
@@ -164,7 +164,7 @@ export async function init(): Promise<P.Application> {
     },
   });
 
-  setupCollider({ cd, spatialIndex });
+  setupFill({ cd });
   setupSelector({ cd, spatialIndex });
   g.mover = setupMover(cd);
   setupPlacer({ cd, spatialIndex });

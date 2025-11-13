@@ -1,3 +1,4 @@
+import { drawRectSelect } from "@/editor/common/select";
 import {
   actions,
   selectors as mapEdSelectors,
@@ -6,7 +7,6 @@ import {
 import { RootState, store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { MapObj } from "@/types/map";
-import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";
 import { rectToBBox } from "@/utils/spatial";
@@ -128,7 +128,8 @@ class Selector implements ClickDragListener {
    * @param e Event data
    */
   private doSelection(e: PointerEventData) {
-    clearRectSelect();
+    g.rectSelect.clear();
+
     const state = store.getState();
     const ms = state.mapEditor;
 
@@ -202,7 +203,11 @@ class Selector implements ClickDragListener {
     this.selectionMenuWasOpen(state);
 
     if (this.marqueeEnabled) {
-      drawRectSelect(e.hitbox, state.mapEditor.zoomPan.zoom);
+      drawRectSelect({
+        gfx: g.rectSelect,
+        rect: e.hitbox,
+        zoom: state.mapEditor.zoomPan.zoom,
+      });
       if (state.mapEditor.selectedTool !== "select") {
         store.dispatch(actions.setActiveTool("select"));
       }
@@ -218,30 +223,6 @@ export function setupSelector({
   spatialIndex: SpatialIndex<MapObj>;
 }) {
   cd.addListener(new Selector(spatialIndex));
-}
-
-/**
- * Draws a rectangle selection outline. Called frequently during drag.
- * @param rect Rectangle in map container space
- * @param zoom Current zoom level
- */
-function drawRectSelect(rect: Rect, zoom: number) {
-  clearRectSelect();
-
-  // This logic ensures that our rect select hitbox can go "negative" correctly
-  const left = Math.min(rect.x, rect.x + rect.width);
-  const top = Math.min(rect.y, rect.y + rect.height);
-  const width = Math.abs(rect.width);
-  const height = Math.abs(rect.height);
-
-  g.rectSelect
-    .rect(left, top, width, height)
-    .stroke({ ...selectStroke, width: (selectStroke.width ?? 1) / zoom })
-    .fill(tileSelectFill);
-}
-
-function clearRectSelect() {
-  g.rectSelect.clear();
 }
 
 /**

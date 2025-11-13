@@ -15,7 +15,6 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { IconBlocks, IconCopy, IconTag, IconTrash } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
-import CollisionModal from "../CollisionModal";
 import ObjectMenu from "../ObjectMenu";
 import TileAnimation from "../TileAnimation";
 
@@ -238,10 +237,10 @@ export default function ObjectAnimationMenu({
         </Stack>
       </Modal>
 
-      <CollisionModal
+      {/* <CollisionModal
         opened={openCollidersModal}
         closeModal={() => setOpenCollidersModal(false)}
-      />
+      /> */}
     </>
   );
 }

@@ -9,20 +9,14 @@ import { catchError, concatMap, debounceTime, tap } from "rxjs/operators";
 
 const listenerMiddleware = createListenerMiddleware();
 
-// Persistence function (wrap real API and swallow large payload logging)
-async function saveMap(mapState: any) {
-  await persistMap(mapState);
-  log.info("[autosave] Map saved (objects: %d)", mapState.ids?.length ?? 0);
-}
-
 // Stream of save requests for the single map
-const saveRequests$ = new Subject<{ map: RootState["mapEditor"]["objects"] }>();
+const saveRequests$ = new Subject<{ map: RootState["mapEditor"] }>();
 
 saveRequests$
   .pipe(
     debounceTime(500), // collapse rapid bursts of actions
     concatMap(({ map }) =>
-      from(saveMap(map)).pipe(
+      from(persistMap(map)).pipe(
         tap(() => {
           // If a future 'markSaved' action is added to the map slice, dispatch it here.
         }),
@@ -45,7 +39,7 @@ startAppListening({
     (action.meta as any)?.reconcileType !== undefined,
   effect: async (_action, { getState }) => {
     const state = getState();
-    saveRequests$.next({ map: state.mapEditor.objects });
+    saveRequests$.next({ map: state.mapEditor });
   },
 });
 

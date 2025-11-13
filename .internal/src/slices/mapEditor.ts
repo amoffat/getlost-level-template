@@ -12,7 +12,12 @@ import { isNpcTemplate } from "@/types/npc";
 import { Rect } from "@/types/rect";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObjectTemplate, TsObjCounts } from "@/types/tilesetobject";
-import { AutotilerOpts, ColliderOpts, PaintOpts } from "@/types/tools";
+import {
+  AutotilerOpts,
+  ColliderOpts,
+  FillOpts,
+  PaintOpts,
+} from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
 import { Vector } from "@/vec";
 import {
@@ -26,6 +31,7 @@ type ToolOptMapping = {
   paint: PaintOpts;
   autotiler: AutotilerOpts;
   "add-collider": ColliderOpts;
+  fill: FillOpts;
 };
 
 // Derive the tool names with options directly from the mapping type.
@@ -65,6 +71,7 @@ interface MapEditorState {
     objects: MapObj[];
     pos: Vector;
   } | null;
+  uncommittedObjIds: string[];
   layers: {
     active: number;
     visible: number[];
@@ -96,6 +103,11 @@ export const slice = createSlice({
       paint: { mode: "place-once", size: 1, snap: "object" },
       autotiler: { candidates: [], gridPosFreeze: null },
       "add-collider": { type: "box" },
+      fill: {
+        candidates: [],
+        clump: 0,
+        bounds: null,
+      },
     },
     modeStack: [],
     layers: {
@@ -108,6 +120,7 @@ export const slice = createSlice({
       lockInactive: true,
       dimInactive: false,
     },
+    uncommittedObjIds: [],
   } as MapEditorState,
   reducers: {
     setZoomPan(state, action: PayloadAction<ZoomPan>) {
@@ -225,6 +238,10 @@ export const slice = createSlice({
     ) {
       const { tool, options } = action.payload;
       state.toolOptions[tool] = { ...state.toolOptions[tool], ...options };
+    },
+
+    setUncommittedObjIds(state, action: PayloadAction<string[]>) {
+      state.uncommittedObjIds = action.payload;
     },
 
     //

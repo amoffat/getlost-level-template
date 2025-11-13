@@ -18,6 +18,7 @@ import { IconSearch } from "@tabler/icons-react";
 import React, {
   ReactNode,
   useCallback,
+  useDeferredValue,
   useEffect,
   useMemo,
   useState,
@@ -139,6 +140,8 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
     paletteFilterSwitches,
   ]);
 
+  const deferredObjects = useDeferredValue(objects);
+
   const deselectObject = useCallback(() => {
     setObjMenuPos(null);
     onDeselectObject?.();
@@ -238,7 +241,7 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
           onContextMenu={onContextMenu}
           style={{ paddingBottom: 75 }}
         >
-          {objects}
+          {deferredObjects}
         </div>
       </ScrollArea.Autosize>
       <Portal>

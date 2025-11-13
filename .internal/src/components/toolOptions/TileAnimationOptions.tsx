@@ -10,6 +10,15 @@ import {
 } from "@/types/animation";
 import { NpcRequiredAnimation } from "@/types/npc";
 import { TilesetObjType } from "@/types/tileset";
+import {
+  mapUiToWeight,
+  mapWeightToUi,
+  rebalanceAfterChange,
+  removeWeight,
+  reorderWeights,
+  resizeWeights,
+  type Weights,
+} from "@/utils/normalizedSliders";
 import { genAnimId } from "@/utils/tileset";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
@@ -46,51 +55,11 @@ import Tip from "../Tip";
 const DEFAULT_TOTAL_TIME = 1000; // ms
 const MIN_FRAME_MS_60FPS = Math.ceil(1000 / 60); // ~16.7ms
 
-// Types (index-keyed to support duplicate ids)
-type Weights = number[]; // length === number of frames; values sum to 1
+// Types for frame time calculation
 type FrameMsMap = number[]; // per-frame time in ms by index
 
-// Helpers
+// Helpers for frame time calculation
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-
-function normalizeWeights(weights: Weights): Weights {
-  const n = weights.length;
-  if (n === 0) return [];
-  const sum = weights.reduce((a, b) => a + (b ?? 0), 0);
-  if (sum <= 0) {
-    const even = 1 / n;
-    return Array(n).fill(even);
-  }
-  return weights.map((w) => (w ?? 0) / sum);
-}
-
-function rebalanceAfterChange(
-  current: Weights,
-  idx: number,
-  target: number
-): Weights {
-  const n = current.length;
-  if (n <= 1) return n === 1 ? [1] : [];
-  const t = clamp01(target);
-  const result: Weights = current.slice();
-  result[idx] = t;
-  let sumOthers = 0;
-  for (let i = 0; i < n; i++) if (i !== idx) sumOthers += result[i] ?? 0;
-  const remaining = 1 - t;
-  if (remaining <= 0) {
-    for (let i = 0; i < n; i++) if (i !== idx) result[i] = 0;
-    return result;
-  }
-  if (sumOthers <= 0) {
-    const per = remaining / (n - 1);
-    for (let i = 0; i < n; i++) if (i !== idx) result[i] = per;
-    return result;
-  }
-  const scale = remaining / sumOthers;
-  for (let i = 0; i < n; i++)
-    if (i !== idx) result[i] = (result[i] ?? 0) * scale;
-  return result;
-}
 
 function getMinPer(totalTime: number, activeCount: number, minFrameMs: number) {
   if (activeCount <= 0) return 0;
@@ -170,17 +139,6 @@ function computeFrameTimes(
   return { frames, byIdx };
 }
 
-// Simpler non-linearity: power curve so that 0.5^gamma = 1/n
-function gammaForCount(n: number) {
-  if (n <= 1) return 1;
-  return Math.log(n) / Math.log(2);
-}
-// Scale mapping will be provided via useCallback with n captured
-function mapWeightToUi(t: number, n: number) {
-  const g = gammaForCount(n);
-  return n <= 1 ? 0.5 : Math.pow(clamp01(t), 1 / g);
-}
-
 interface FormValues {
   names: string[];
 }
@@ -242,13 +200,7 @@ export default function TileAnimationOptions() {
   const n = cands.length;
   const hasFrames = n > 0;
 
-  const scaleFn = useCallback(
-    (v: number) => {
-      const g = gammaForCount(n);
-      return n <= 1 ? v : Math.pow(clamp01(v), g);
-    },
-    [n]
-  );
+  const scaleFn = useCallback((v: number) => mapUiToWeight(v, n), [n]);
   const uiFromWeight = useCallback((t: number) => mapWeightToUi(t, n), [n]);
 
   const { frames, frameTimeByIdx } = useMemo(() => {
@@ -273,6 +225,7 @@ export default function TileAnimationOptions() {
       frames,
       names: values.names,
       tags: [],
+      loop: true,
     };
     dispatch(actions.addPaletteObjects({ tsId, objs: [anim] }));
     dispatch(clearCandAnimFramesThunk());
@@ -293,19 +246,7 @@ export default function TileAnimationOptions() {
   // prefix, assign a small fair share to new frames, then normalize.
   useEffect(() => {
     queueMicrotask(() => {
-      setWeights((prev) => {
-        const nextLen = cands.length;
-        if (nextLen === prev.length) return prev;
-        if (nextLen === 0) return [];
-        const next: Weights = Array(nextLen).fill(0);
-        const m = Math.min(prev.length, nextLen);
-        for (let i = 0; i < m; i++) next[i] = prev[i];
-        if (nextLen > prev.length) {
-          const tentative = 1 / Math.max(1, nextLen);
-          for (let i = prev.length; i < nextLen; i++) next[i] = tentative;
-        }
-        return normalizeWeights(next);
-      });
+      setWeights((prev) => resizeWeights(prev, cands.length));
     });
   }, [cands.length]);
 
@@ -321,11 +262,7 @@ export default function TileAnimationOptions() {
   };
 
   const removeFrame = (idx: number) => {
-    setWeights((prev) => {
-      const next: Weights = prev.slice();
-      next.splice(idx, 1);
-      return normalizeWeights(next);
-    });
+    setWeights((prev) => removeWeight(prev, idx));
     const id = cands[idx].id;
     const numIdsInFrames = cands.reduce((acc, cand) => {
       return acc + (cand.id === id ? 1 : 0);
@@ -391,19 +328,7 @@ export default function TileAnimationOptions() {
               // Update redux frames
               dispatch(actions.reorderCandAnimFrames({ from, to }));
               // Keep weights in sync
-              setWeights((prev) => {
-                const next = prev.slice();
-                if (
-                  from < 0 ||
-                  to < 0 ||
-                  from >= next.length ||
-                  to >= next.length
-                )
-                  return prev;
-                const [moved] = next.splice(from, 1);
-                next.splice(to, 0, moved);
-                return next;
-              });
+              setWeights((prev) => reorderWeights(prev, from, to));
             }}
           >
             <SortableContext

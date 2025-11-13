@@ -25,6 +25,7 @@ export const exitIcon = "586794d8-d094-5451-b47d-2de73e1a13ea";
 export const lightIcon = "673699bc-746a-5d83-929e-9b739784cb9d";
 export const waypointIcon = "082812ec-8053-5712-b782-ca1c13f23c96";
 export const soundIcon = "cb83a1b7-3e73-5f92-9888-a71c8e3c3ee8";
+export const transparentIcon = "1dbfc36648dd2eb6c86b337a183baff35928c1ee";
 
 export const texAtlasPadding = 0.001; // avoid bleeding
 
@@ -48,3 +49,8 @@ export const walkSounds = [
   "snow",
 ] as const;
 export type WalkSound = (typeof walkSounds)[number];
+
+export const defaultWalkSound: WalkSound = "default";
+// How long until the speed halves?
+export const defaultFriction = 0.125; // seconds
+export const defaultTraction = 1.0;

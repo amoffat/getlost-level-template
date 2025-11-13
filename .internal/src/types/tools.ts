@@ -1,4 +1,5 @@
 import { Vector } from "@/vec";
+import { Rect } from "./rect";
 import type { TileGroupTemplate } from "./tilegroup";
 
 export interface PaintOpts {
@@ -14,4 +15,15 @@ export interface ColliderOpts {
 export interface AutotilerOpts {
   candidates: TileGroupTemplate[];
   gridPosFreeze: Vector | null;
+}
+
+interface FillObj {
+  tg: TileGroupTemplate;
+  prob: number;
+}
+
+export interface FillOpts {
+  candidates: FillObj[];
+  clump: number;
+  bounds: Rect | null;
 }

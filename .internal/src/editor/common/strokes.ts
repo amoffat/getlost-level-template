@@ -18,6 +18,12 @@ export const selectStroke: P.StrokeStyle = {
   alpha: 0.75,
 };
 
+export const fillStroke: P.StrokeStyle = {
+  color: 0x0000ff,
+  width: 5,
+  alpha: 0.75,
+};
+
 export const colliderStroke: P.StrokeStyle = {
   color: 0xffffff,
   width: 2,

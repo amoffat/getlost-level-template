@@ -157,11 +157,6 @@ export default function NpcOptions() {
     return t;
   }, [activateAnimationTool, hasAll, hasSome, hasNone]);
 
-  const _handlePickAnimation = (animationName: string) => {
-    // TODO: Implement animation picker
-    console.log("Pick animation for:", animationName);
-  };
-
   const previewFrames = useMemo(() => {
     const frames = [];
     for (const requiredName of requiredNpcAnimations) {

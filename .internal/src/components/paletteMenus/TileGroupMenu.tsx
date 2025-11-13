@@ -6,7 +6,6 @@ import { Vector } from "@/vec";
 import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
 import { IconBlocks, IconCopy, IconStack2, IconTag } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
-import CollisionModal from "../CollisionModal";
 import ObjectMenu from "../ObjectMenu";
 import TilesetGroup from "../TilesetGroup";
 
@@ -23,7 +22,6 @@ export default function TileGroupMenu({
   closeMenu,
   onTagsModalOpened,
 }: TileGroupMenuProps) {
-  const tab = useAppSelector((state) => state.ui.activeTab);
   const [openTagsModal, setOpenTagsModal] = useState(false);
   const [openCollidersModal, setOpenCollidersModal] = useState(false);
 
@@ -138,10 +136,10 @@ export default function TileGroupMenu({
         </Stack>
       </Modal>
 
-      <CollisionModal
+      {/* <CollisionModal
         opened={openCollidersModal}
         closeModal={() => setOpenCollidersModal(false)}
-      />
+      /> */}
     </>
   );
 }
