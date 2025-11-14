@@ -59,9 +59,9 @@ export const loadTilesetsThunk = createAsyncThunk(
   "tilesetEditor/loadTilesetsThunk",
   async (_, { dispatch }) => {
     dispatch(uiActions.pushLoadingMessage("Loading tilesets ids..."));
-    const tilesetIds = await loadTilesets();
-    for (const tsId of tilesetIds) {
-      await dispatch(loadTilesetThunk(tsId)).unwrap();
+    const tilesets = await loadTilesets();
+    for (const tsId of tilesets.ids) {
+      await dispatch(loadTilesetThunk({ tsId })).unwrap();
     }
     dispatch(uiActions.popLoadingMessage());
   }
@@ -90,7 +90,7 @@ export const uploadTilesetThunk = createAsyncThunk(
     bitmap.close();
 
     await saveTileset(ts);
-    await dispatch(loadTilesetThunk(tsId)).unwrap();
+    await dispatch(loadTilesetThunk({ tsId })).unwrap();
     await router.navigate(`/tilesets/${tsId}`);
     return ts;
   }
@@ -99,7 +99,7 @@ export const uploadTilesetThunk = createAsyncThunk(
 // New thunk that loads a single tileset and performs all related side effects
 export const loadTilesetThunk = createAsyncThunk(
   "tilesetEditor/loadTilesetThunk",
-  async (tsId: string, { dispatch }) => {
+  async ({ tsId }: { tsId: string }, { dispatch }) => {
     dispatch(uiActions.pushLoadingMessage(`Loading tileset ${tsId}...`));
 
     const ts = await loadTileset(tsId);

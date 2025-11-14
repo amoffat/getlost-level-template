@@ -23,7 +23,10 @@ export interface Tileset {
   // A composite tileset combines multiple source tilesets into one, which
   // implies that it has no innate grid size (a grid size of 1x1)
   composite: boolean;
+  hidden?: boolean;
 }
+
+export type SavedTileset = Omit<Tileset, "objectUrl" | "saved">;
 
 export enum TilesetObjType {
   TileGroupTemplate = 0,

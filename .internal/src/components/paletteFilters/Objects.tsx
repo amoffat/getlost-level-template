@@ -67,6 +67,20 @@ export default function ObjectsPaletteFilters() {
         );
       },
     },
+    {
+      key: "show-hidden-tilesets",
+      label: "Show hidden tilesets",
+      checked: filters.showHiddenTilesets,
+      onChange: (checked) => {
+        dispatch(
+          uiActions.togglePaletteFilter({
+            tab: "objects",
+            filterKey: "showHiddenTilesets",
+            checked,
+          })
+        );
+      },
+    },
   ];
 
   return <PaletteFilter toggles={filterToggles} />;

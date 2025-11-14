@@ -121,41 +121,39 @@ export const setToolThunk = createAsyncThunk(
   async (tool: Mode | null, { dispatch, getState }) => {
     const state = getState() as RootState;
 
+    if (tool === null) tool = "select";
     dispatch(clearUncommittedThunk());
+    dispatch(mapActions.clearSelection());
 
-    if (tool === null) {
-      dispatch(mapActions.setMode("select"));
-    } else {
-      if (tool === "set-gateway") {
-        const tg = loadTileGroup({
-          id: startIcon,
-          tilesetId: iconTsId,
-        });
-        dispatch(mapActions.setPlace(tg));
-      } else if (tool === "add-light") {
-        const tg = loadTileGroup({
-          id: lightIcon,
-          tilesetId: iconTsId,
-        });
-        dispatch(mapActions.setPlace(tg));
-      } else if (tool === "paint") {
-        const layer = state.mapEditor.layers.active;
-        dispatch(mapActions.clearSelection());
-        if (![MapLayerName.Ground, MapLayerName.Exterior].includes(layer)) {
-          const obj = state.mapEditor.place.obj;
-          if (obj && isTileGroupTemplate(obj)) {
-            const isSolidTile = obj.coverage === 1.0;
-            const switchTo = isSolidTile
-              ? MapLayerName.Ground
-              : MapLayerName.Exterior;
+    if (tool === "set-gateway") {
+      const tg = loadTileGroup({
+        id: startIcon,
+        tilesetId: iconTsId,
+      });
+      dispatch(mapActions.setPlace(tg));
+    } else if (tool === "add-light") {
+      const tg = loadTileGroup({
+        id: lightIcon,
+        tilesetId: iconTsId,
+      });
+      dispatch(mapActions.setPlace(tg));
+    } else if (tool === "paint") {
+      const layer = state.mapEditor.layers.active;
+      dispatch(mapActions.clearSelection());
+      if (![MapLayerName.Ground, MapLayerName.Exterior].includes(layer)) {
+        const obj = state.mapEditor.place.obj;
+        if (obj && isTileGroupTemplate(obj)) {
+          const isSolidTile = obj.coverage === 1.0;
+          const switchTo = isSolidTile
+            ? MapLayerName.Ground
+            : MapLayerName.Exterior;
 
-            dispatch(setActiveLayerThunk({ layer: switchTo, notify: true }));
-          }
+          dispatch(setActiveLayerThunk({ layer: switchTo, notify: true }));
         }
       }
-      dispatch(mapActions.pushMode(tool));
     }
 
+    dispatch(mapActions.setMode(tool));
     dispatch(mapActions.setActiveTool(tool));
   }
 );

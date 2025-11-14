@@ -105,6 +105,7 @@ export async function init(): Promise<P.Application> {
   // This stores the tileset object that we're about to place with the mouse
   g.placableContainer = new P.Container();
   g.mapContainer.addChild(g.placableContainer);
+  g.placableContainer.zIndex = Number.MAX_SAFE_INTEGER - 1;
   g.mapContainer.sortableChildren = true;
 
   // This stores the outlines of selected objects

@@ -28,7 +28,7 @@ import ObjectAnimationMenu from "./paletteMenus/ObjectAnimationMenu";
 import TileGroupMenu from "./paletteMenus/TileGroupMenu";
 
 interface ObjectPaletteProps<ObjType extends TilesetObjectTemplate> {
-  tileset?: Tileset | null;
+  tileset?: Tileset;
   onSelectObject?: (obj: ObjType, e: React.MouseEvent) => void;
   onDeselectObject?: () => void;
   selectedObjects?: Set<string>;
@@ -85,10 +85,12 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
     const filteredTilesets: Tileset[] = Object.values(tilesets).filter((t) => {
       if (showTileset) {
         return t.id === showTileset.id;
-      } else if (showTileset === null) {
-        return false;
       } else {
-        return true;
+        if (t.hidden) {
+          return paletteFilterSwitches.objects.showHiddenTilesets;
+        } else {
+          return true;
+        }
       }
     });
 

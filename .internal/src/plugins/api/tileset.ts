@@ -3,13 +3,15 @@ import formidable from "formidable";
 import * as fs from "fs";
 import { resolve } from "path";
 import { gzipSync } from "zlib";
+import { tilesetSourceHeader } from "../../constants/headers";
+import { LoadTilesetsResponse } from "../../types/api/tileset";
 import { atomicWriteFileSync } from "../../utils/file";
 
 const internalDir = process.cwd();
 const repoDir = resolve(internalDir, "..");
 const levelDir = resolve(repoDir, "level");
 const levelTexDir = resolve(levelDir, "textures");
-// const systemTexDir = resolve(internalDir, "assets", "textures");
+const systemTexDir = resolve(internalDir, "assets", "textures");
 
 export const router = express.Router({ mergeParams: true });
 
@@ -27,11 +29,25 @@ function readDir(path: string): string[] {
   return ids;
 }
 
+function pathForId(id: string): string | null {
+  const levelPath = resolve(levelTexDir, `${id}.cbor.gz`);
+  if (fs.existsSync(levelPath)) return levelPath;
+
+  const systemPath = resolve(systemTexDir, `${id}.cbor.gz`);
+  if (fs.existsSync(systemPath)) return systemPath;
+
+  return null;
+}
+
 // GET "/" — list all tileset IDs (derived from *.cbor.gz files)
 router.get("/", (_req, res) => {
   try {
-    const ids = readDir(levelTexDir);
-    res.json({ ids });
+    const levelTsIds = readDir(levelTexDir);
+    const systemTsIds = readDir(systemTexDir);
+    const resp: LoadTilesetsResponse = {
+      ids: [...levelTsIds, ...systemTsIds],
+    };
+    res.json(resp);
   } catch (error) {
     console.error("Error listing tilesets:", error);
     res.sendStatus(500);
@@ -47,27 +63,26 @@ router.get("/:id", (req, res) => {
       return;
     }
 
-    const gzPath = resolve(levelTexDir, `${id}.cbor.gz`);
-    if (!fs.existsSync(gzPath)) {
+    const gzPath = pathForId(id);
+    if (!gzPath) {
       res.sendStatus(404);
       return;
     }
-    res.sendFile(
-      gzPath,
-      {
-        headers: {
-          "Content-Type": "application/cbor",
-          "Content-Encoding": "gzip",
-          Vary: "Accept-Encoding",
-        },
-      },
-      (err) => {
-        if (err) {
-          console.error("Error sending gzipped tileset:", err);
-          if (!res.headersSent) res.sendStatus(500);
-        }
-      }
-    );
+
+    try {
+      const data = fs.readFileSync(gzPath);
+      res.setHeader("Content-Type", "application/cbor");
+      res.setHeader("Content-Encoding", "gzip");
+      res.setHeader("Vary", "Accept-Encoding");
+      res.setHeader(
+        tilesetSourceHeader,
+        gzPath.startsWith(levelTexDir) ? "level" : "system"
+      );
+      res.send(data);
+    } catch (err) {
+      console.error("Error sending gzipped tileset:", err);
+      res.sendStatus(500);
+    }
     return;
   } catch (error) {
     console.error("Error handling tileset get:", error);
@@ -83,8 +98,8 @@ router.delete("/:id", (req, res) => {
       return;
     }
 
-    const gzPath = resolve(levelTexDir, `${id}.cbor.gz`);
-    if (fs.existsSync(gzPath)) fs.unlinkSync(gzPath);
+    const gzPath = pathForId(id);
+    if (gzPath) fs.unlinkSync(gzPath);
 
     res.sendStatus(204);
   } catch (error) {
@@ -113,8 +128,6 @@ router.put("/:id", (req, res) => {
         return;
       }
 
-      fs.mkdirSync(levelTexDir, { recursive: true });
-
       // Expect a single file under the explicit field name 'tileset'
       const pickFirst = (v: any) => (Array.isArray(v) ? v[0] : v);
       const incoming: any = pickFirst((files as any)["tileset"]);
@@ -123,8 +136,13 @@ router.put("/:id", (req, res) => {
         return;
       }
 
-      // Ignore multipart filename. Always write to <id>.cbor.gz
-      const outPath = resolve(levelTexDir, `${id}.cbor.gz`);
+      // Use pathForId to determine where to write the file
+      // If the file exists, overwrite it; otherwise write to level textures
+      let outPath = pathForId(id);
+      if (!outPath) {
+        fs.mkdirSync(levelTexDir, { recursive: true });
+        outPath = resolve(levelTexDir, `${id}.cbor.gz`);
+      }
 
       const buf = fs.readFileSync(incoming.filepath);
       const gz = gzipSync(buf);

@@ -18,7 +18,6 @@ import {
   Slider,
   Stack,
   Table,
-  Text,
 } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
@@ -41,25 +40,31 @@ export default function Fill() {
   const [clump, setClump] = useState<number>(clumpFromStore);
 
   const n = cands.length;
-  const hasFrames = n > 0;
+  const hasCands = n > 0;
+  const selectedBounds = bounds !== null;
+  const canCommit = hasCands && selectedBounds;
 
   const scaleFn = useCallback((v: number) => mapUiToWeight(v, n), [n]);
   const uiFromWeight = useCallback((t: number) => mapWeightToUi(t, n), [n]);
 
   const tips: ReactNode[] = useMemo(() => {
     const t = [];
-    if (cands.length === 0) {
-      t.push(
-        "The fill tool allows you to fill an enclosed area with a weighted random selection of tiles."
-      );
-      t.push("Select tile groups that you want to use in the fill.");
+    if (!hasCands) {
+      t.push("Select objects from the palette to use them for filling.");
     } else {
       t.push(
         "Adjust the sliders to set the probability that each tile will be placed at a given location in the fill area."
       );
     }
+
+    if (!selectedBounds) {
+      t.push("Drag on the map to select an area to fill.");
+    }
+
+    t.push("The fill tool allows you to fill a rectangle with some objects.");
+
     return t;
-  }, [cands.length]);
+  }, [hasCands, selectedBounds]);
 
   const pixelArea = useMemo(() => {
     if (!bounds) return 0;
@@ -133,6 +138,12 @@ export default function Fill() {
 
   const commitChanges = () => {
     dispatch(commitObjectsThunk());
+    dispatch(
+      actions.setToolOptions({
+        tool: "fill",
+        options: { bounds: null },
+      })
+    );
   };
 
   const updateClump = (value: number) => {
@@ -149,7 +160,7 @@ export default function Fill() {
       <Tip tips={tips} />
       <Fieldset legend="Fill Tool Options" p="xs">
         <Stack p={0} gap="xs">
-          {!hasFrames && (
+          {!hasCands && (
             <Alert
               title="No tiles selected"
               variant="light"
@@ -159,57 +170,53 @@ export default function Fill() {
             </Alert>
           )}
 
-          {hasFrames && (
-            <Table w="100%" withRowBorders={false} layout="fixed">
-              <Table.Tbody>
-                {cands.map((cand, idx) => {
-                  const w = weights[idx] ?? 0;
-                  const uiValue = uiFromWeight(w);
+          <Table w="100%" withRowBorders={false} layout="fixed">
+            <Table.Tbody>
+              {cands.map((cand, idx) => {
+                const w = weights[idx] ?? 0;
+                const uiValue = uiFromWeight(w);
 
-                  return (
-                    <Table.Tr key={`${cand.tg.id}-${idx}`}>
-                      <Table.Td w="20%" p="xs">
-                        <TilesetGroup group={cand.tg} scale={2} bounded />
-                      </Table.Td>
-                      <Table.Td w="80%" p="xs">
-                        <Group gap="xs" wrap="nowrap" align="center" p={0}>
-                          <Slider
-                            size="sm"
-                            style={{ flex: 1 }}
-                            min={0}
-                            max={1}
-                            step={0.01}
-                            scale={scaleFn}
-                            value={uiValue}
-                            onChange={(v) => {
-                              const targetWeight = scaleFn(v);
-                              updateWeight(idx, targetWeight);
-                            }}
-                            onChangeEnd={(_v) => {
-                              if (!dynamicUpdate) {
-                                finalizeWeights(weights);
-                              }
-                            }}
-                            label={(scaledWeight) => {
-                              const clamped = clamp01(scaledWeight);
-                              return `${Math.round(clamped * 100)}%`;
-                            }}
-                            disabled={cands.length <= 1}
-                          />
-                          <CloseButton
-                            size="xs"
-                            onClick={() => removeFrame(idx)}
-                          />
-                        </Group>
-                      </Table.Td>
-                    </Table.Tr>
-                  );
-                })}
-              </Table.Tbody>
-            </Table>
-          )}
+                return (
+                  <Table.Tr key={`${cand.tg.id}-${idx}`}>
+                    <Table.Td w="20%" p="xs">
+                      <TilesetGroup group={cand.tg} scale={2} bounded />
+                    </Table.Td>
+                    <Table.Td w="80%" p="xs">
+                      <Group gap="xs" wrap="nowrap" align="center" p={0}>
+                        <Slider
+                          size="sm"
+                          style={{ flex: 1 }}
+                          min={0}
+                          max={1}
+                          step={0.01}
+                          scale={scaleFn}
+                          value={uiValue}
+                          onChange={(v) => {
+                            const targetWeight = scaleFn(v);
+                            updateWeight(idx, targetWeight);
+                          }}
+                          onChangeEnd={(_v) => {
+                            if (!dynamicUpdate) {
+                              finalizeWeights(weights);
+                            }
+                          }}
+                          label={null}
+                          disabled={cands.length <= 1}
+                        />
+                        <CloseButton
+                          size="xs"
+                          disabled={!cand.canRemove}
+                          onClick={() => removeFrame(idx)}
+                        />
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })}
+            </Table.Tbody>
+          </Table>
 
-          <Stack gap="xs">
+          {/* <Stack gap="xs">
             <Text size="sm" fw={500}>
               Clump similar objects
             </Text>
@@ -217,8 +224,9 @@ export default function Fill() {
               min={0}
               max={1}
               step={0.01}
+              label={null}
               value={clump}
-              disabled={!hasFrames}
+              disabled={!canCommit}
               onChange={(v) => {
                 if (dynamicUpdate) {
                   updateClump(v);
@@ -232,15 +240,15 @@ export default function Fill() {
                 }
               }}
             />
-          </Stack>
+          </Stack> */}
 
           <Button
             variant="filled"
             fullWidth
-            disabled={!hasFrames}
+            disabled={!canCommit}
             onClick={commitChanges}
           >
-            Commit changes
+            Fill
           </Button>
         </Stack>
       </Fieldset>

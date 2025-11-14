@@ -83,10 +83,8 @@ export class Placer implements ClickDragListener {
         };
       }
 
-      const z = finalPos.y + g.placableSprite.height;
       g.placableOutline.position = finalPos;
       g.placableContainer.position = finalPos;
-      g.placableContainer.zIndex = z;
     }
   }
 

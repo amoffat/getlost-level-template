@@ -10,6 +10,7 @@ import { MapLayerName } from "@/types/layer";
 import { isNpcTemplate } from "@/types/npc";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { FillObj } from "@/types/tools";
 import { animationsFilter, objectsFilter } from "@/utils/palette/filters";
 import {
   npcSort,
@@ -113,7 +114,7 @@ export default function MapEditorTab({
           return;
         }
 
-        const toAdd = [];
+        const toAdd: FillObj[] = [];
         if (curCands.length === 0) {
           const transparentTg = loadTileGroup({
             id: transparentIcon,
@@ -122,12 +123,14 @@ export default function MapEditorTab({
           toAdd.push({
             tg: transparentTg,
             prob: 0.5,
+            canRemove: false,
           });
         }
 
         toAdd.push({
           tg: obj,
           prob: 0.5,
+          canRemove: true,
         });
 
         dispatch(

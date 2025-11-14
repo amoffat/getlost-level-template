@@ -17,9 +17,10 @@ export interface AutotilerOpts {
   gridPosFreeze: Vector | null;
 }
 
-interface FillObj {
+export interface FillObj {
   tg: TileGroupTemplate;
   prob: number;
+  canRemove: boolean;
 }
 
 export interface FillOpts {

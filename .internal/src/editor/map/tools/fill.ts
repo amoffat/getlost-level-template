@@ -16,10 +16,11 @@ import { MapObjType, TileGroupInstance } from "@/types/map";
 import { Rect, snap } from "@/types/rect";
 import { weightedIndex } from "@/utils/rand";
 import { subState } from "@/utils/redux";
+import { shallowEqual } from "react-redux";
 import { exhaustMap, Subject, Subscription } from "rxjs";
 import { globals as g } from "../globals";
 
-class Selector implements ClickDragListener {
+class Filler implements ClickDragListener {
   private marquee: Rect | null = null;
   private fillObjects$ = new Subject<void>();
   private subscription: Subscription;
@@ -38,6 +39,10 @@ class Selector implements ClickDragListener {
   }
 
   pointerDown(_e: PointerEventData) {
+    this.clear();
+  }
+
+  clear() {
     this.marquee = null;
     g.rectSelect.clear();
     store.dispatch(clearUncommittedThunk());
@@ -64,6 +69,13 @@ class Selector implements ClickDragListener {
     const gridSize = state.mapEditor.grid.size;
     this.marquee = snap(e.hitbox, gridSize);
 
+    this.drawMarquee();
+  }
+
+  drawMarquee() {
+    if (!this.marquee) return;
+
+    const state = store.getState();
     drawRectSelect({
       gfx: g.rectSelect,
       rect: this.marquee,
@@ -172,10 +184,28 @@ class Selector implements ClickDragListener {
 }
 
 export function setupFill({ cd }: { cd: ClickDragger }) {
-  const selector = new Selector();
-  cd.addListener(selector);
+  const fill = new Filler();
+  cd.addListener(fill);
 
-  subState([(state) => state.mapEditor.toolOptions.fill], () => {
-    selector.fillObjects();
+  subState(
+    [(state) => state.mapEditor.toolOptions.fill],
+    (fillOpts) => {
+      if (fillOpts.bounds === null) {
+        fill.clear();
+      } else {
+        fill.fillObjects();
+      }
+    },
+    shallowEqual
+  );
+
+  subState([(state) => state.mapEditor.zoomPan.zoom], () => {
+    fill.drawMarquee();
+  });
+
+  subState([(state) => state.mapEditor.selectedTool], (tool) => {
+    if (tool !== "fill") {
+      fill.clear();
+    }
   });
 }

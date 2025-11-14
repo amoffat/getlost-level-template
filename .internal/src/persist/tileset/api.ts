@@ -1,21 +1,20 @@
+import { tilesetSourceHeader } from "@/constants/headers";
 import { log } from "@/log";
-import { Tileset } from "@/types/tileset";
+import { LoadTilesetsResponse } from "@/types/api/tileset";
+import { SavedTileset, Tileset } from "@/types/tileset";
 import { applyMigrations } from "@/utils/migrations";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
 import { BaseTilesetDoc, LatestTilesetDoc, latestVersion } from "./schema";
 
-interface LoadTilesetsResponse {
-  ids: string[];
-}
-
-export async function loadTilesets(): Promise<string[]> {
+export async function loadTilesets(): Promise<LoadTilesetsResponse> {
   const res = await fetch("/api/tilesets", {
     method: "GET",
     headers: { "content-type": "application/json" },
   });
   if (!res.ok) throw new Error(`openProject failed: ${res.status}`);
-  return ((await res.json()) as LoadTilesetsResponse).ids;
+  const resp = (await res.json()) as LoadTilesetsResponse;
+  return resp;
 }
 
 export async function loadTileset(id: string): Promise<Tileset> {
@@ -48,7 +47,11 @@ export async function loadTileset(id: string): Promise<Tileset> {
   );
 
   const decoded = baseDecoded as LatestTilesetDoc;
-  const ts = decoded.tileset;
+  const ts = decoded.tileset as Tileset;
+
+  const sourceHeader = res.headers.get(tilesetSourceHeader);
+  const isSystem = sourceHeader === "system";
+  ts.hidden = isSystem;
 
   // Recreate an object URL for the tileset image from persisted bytes
   // Copy to a standalone ArrayBuffer to satisfy TS's BlobPart typing
@@ -67,8 +70,16 @@ export async function loadTileset(id: string): Promise<Tileset> {
 
 export async function saveTileset(ts: Tileset) {
   const imageData = await (await fetch(ts.objectUrl)).bytes();
+
+  const toSave: SavedTileset = {
+    id: ts.id,
+    width: ts.width,
+    height: ts.height,
+    composite: ts.composite,
+    tiles: ts.tiles,
+  };
   const doc: LatestTilesetDoc = {
-    tileset: { ...ts, objectUrl: "" },
+    tileset: toSave,
     imageData,
     version: latestVersion,
   };

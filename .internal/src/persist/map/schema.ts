@@ -16,15 +16,7 @@ export interface MapDocV1 extends BaseMapDoc {
   state: MapState;
 }
 
-export interface MapDocV2 extends Omit<MapDocV1, "version"> {
-  version: 2;
-}
-
-export interface MapDocV3 extends Omit<MapDocV2, "version"> {
-  version: 3;
-}
-
-export interface MapDocV4 extends Omit<MapDocV2, "version"> {
+export interface MapDocV4 extends Omit<MapDocV1, "version"> {
   version: 4;
 }
 

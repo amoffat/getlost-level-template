@@ -1,4 +1,4 @@
-import { Tileset } from "@/types/tileset";
+import { SavedTileset } from "@/types/tileset";
 
 export interface BaseTilesetDoc {
   version: number;
@@ -6,7 +6,7 @@ export interface BaseTilesetDoc {
 
 export interface TilesetDocV1 extends BaseTilesetDoc {
   version: 1;
-  tileset: Tileset;
+  tileset: SavedTileset;
   imageData: Uint8Array;
 }
 

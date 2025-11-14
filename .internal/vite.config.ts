@@ -20,6 +20,7 @@ function addHeadersPlugin() {
 
         res.setHeader("Access-Control-Allow-Methods", "*");
         res.setHeader("Access-Control-Allow-Headers", "*");
+        res.setHeader("Access-Control-Expose-Headers", "*");
         res.setHeader("Access-Control-Allow-Credentials", "true");
 
         res.setHeader("cross-origin-resource-policy", "cross-origin");

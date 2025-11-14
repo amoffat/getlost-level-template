@@ -14,6 +14,7 @@ export interface PaletteFilterSwitches {
     hideNpcLeftovers: boolean;
     hideUnusedObjects: boolean;
     showOnlyTiles: boolean;
+    showHiddenTilesets: boolean;
   };
   animations: {
     hideNpcs: boolean;
