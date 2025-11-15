@@ -230,7 +230,9 @@ export const clearUncommittedThunk = createAsyncThunk(
   async (_, { dispatch, getState }) => {
     const state = getState() as RootState;
     const uncommitted = state.mapEditor.uncommittedObjIds;
-    dispatch(mapActions.removeMany(uncommitted));
+    if (uncommitted.length) {
+      dispatch(mapActions.removeMany(uncommitted));
+    }
   }
 );
 

@@ -44,7 +44,7 @@ export abstract class ReduxReconciler<
     id: string;
     changes: Partial<ObjType>;
   }> = [];
-  private pendingRemoves: string[] = [];
+  private pendingRemoves: Set<string> = new Set();
   private rafScheduled = false;
 
   enqueueAdd(obj: ObjType) {
@@ -56,7 +56,7 @@ export abstract class ReduxReconciler<
     this.scheduleFlush();
   }
   enqueueRemove(id: string) {
-    this.pendingRemoves.push(id);
+    this.pendingRemoves.add(id);
     this.scheduleFlush();
   }
 
@@ -65,7 +65,7 @@ export abstract class ReduxReconciler<
     const nextIds = new Set(fullList.map(this.selectId));
     for (const id of this.nodes.keys()) {
       if (!nextIds.has(id)) {
-        this.pendingRemoves.push(id);
+        this.pendingRemoves.add(id);
       }
     }
     // add/upsert (cheap path: treat as upserts)
@@ -102,13 +102,18 @@ export abstract class ReduxReconciler<
         this.nodes.delete(id);
       }
     }
-    this.pendingRemoves.length = 0;
 
     for (const obj of this.pendingAdds) {
+      const id = this.selectId(obj);
+
+      // skip adds that were also removed this frame
+      if (this.pendingRemoves.has(id)) {
+        continue;
+      }
+
       const node = this.createNode(obj);
       if (!node) continue;
 
-      const id = this.selectId(obj);
       // Store a shallow copy to avoid keeping references to frozen Immer objects from Redux
       this.objs.set(id, { ...obj });
 
@@ -123,6 +128,7 @@ export abstract class ReduxReconciler<
       this.insertItem(item);
     }
     this.pendingAdds.length = 0;
+    this.pendingRemoves.clear();
 
     for (const { id, changes } of this.pendingUpdates) {
       const node = this.nodes.get(id);

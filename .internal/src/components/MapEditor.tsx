@@ -180,55 +180,56 @@ export default function MapEditorTab({
       autotiler: {
         name: "Autotiler",
         icon: <IconWand size={16} />,
-        switchToLayer: MapLayerName.Ground,
+        layerConstraints: [MapLayerName.Ground],
         options: <Autotiler />,
       },
       fill: {
         name: "Fill area",
         icon: <IconBucketDroplet size={16} />,
+        layerConstraints: [MapLayerName.Exterior, MapLayerName.Ground],
         options: <Fill />,
       },
       "set-gateway": {
         name: "Set gateway",
         icon: <IconDoorExit size={16} />,
-        switchToLayer: MapLayerName.Places,
+        layerConstraints: [MapLayerName.Places],
       },
       "set-waypoint": {
         name: "Set waypoint",
         icon: <IconMapPin size={16} />,
-        switchToLayer: MapLayerName.Places,
+        layerConstraints: [MapLayerName.Places],
       },
       "add-collider": {
         name: "Add collider",
         icon: <IconCarCrash size={16} />,
-        switchToLayer: MapLayerName.Colliders,
+        layerConstraints: [MapLayerName.Colliders],
         options: <AddCollider />,
       },
 
       "set-sensor-zone": {
         name: "Sensor zone",
         icon: <IconInputSpark size={16} />,
-        switchToLayer: MapLayerName.Colliders,
+        layerConstraints: [MapLayerName.Colliders],
       },
       "set-sink-zone": {
         name: "Sink zone",
         icon: <IconRipple size={16} />,
-        switchToLayer: MapLayerName.Colliders,
+        layerConstraints: [MapLayerName.Colliders],
       },
       "set-sound-zone": {
         name: "Sound zone",
         icon: <IconEar size={16} />,
-        switchToLayer: MapLayerName.Colliders,
+        layerConstraints: [MapLayerName.Colliders],
       },
       "set-zoom-zone": {
         name: "Zoom zone",
         icon: <IconCameraSearch size={16} />,
-        switchToLayer: MapLayerName.Colliders,
+        layerConstraints: [MapLayerName.Colliders],
       },
       "add-light": {
         name: "Add light",
         icon: <IconBulb size={16} />,
-        switchToLayer: MapLayerName.Colliders,
+        layerConstraints: [MapLayerName.Colliders],
       },
     }),
     [place]
@@ -272,7 +273,7 @@ export default function MapEditorTab({
           onResizeEnd={handlePaneResize}
         >
           <Stack h="100%" style={{ overflow: "hidden" }}>
-            <LayerList />
+            <LayerList layerConstraints={tool?.layerConstraints} />
 
             <Fieldset legend="Grid">
               <Stack p={0}>

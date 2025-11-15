@@ -25,6 +25,6 @@ export interface FillObj {
 
 export interface FillOpts {
   candidates: FillObj[];
-  clump: number;
+  density: number;
   bounds: Rect | null;
 }

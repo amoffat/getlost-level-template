@@ -17,7 +17,7 @@ import { Rect, snap } from "@/types/rect";
 import { weightedIndex } from "@/utils/rand";
 import { subState } from "@/utils/redux";
 import { shallowEqual } from "react-redux";
-import { exhaustMap, Subject, Subscription } from "rxjs";
+import { concatMap, Subject, Subscription } from "rxjs";
 import { globals as g } from "../globals";
 
 class Filler implements ClickDragListener {
@@ -29,7 +29,7 @@ class Filler implements ClickDragListener {
     // Set up the RxJS pipeline to serialize fillObjects calls exhaustMap will
     // drop new emissions while the previous async operation is still running
     this.subscription = this.fillObjects$
-      .pipe(exhaustMap(() => this._fillObjects()))
+      .pipe(concatMap(() => this._fillObjects()))
       .subscribe();
   }
 
@@ -98,7 +98,9 @@ class Filler implements ClickDragListener {
     const cands = fillOpts.candidates;
     if (cands.length === 0) return;
 
-    const clumpAmt = fillOpts.clump;
+    // Linearize density: sqrt makes the spacing change linearly with the slider
+    // fillOpts.density ranges 0-1, we invert it for spacing (0 = sparse, 1 = dense)
+    const density = Math.sqrt(1 - fillOpts.density);
     const gridSize = state.mapEditor.grid.size;
     const baseProbs = cands.map((cand) => cand.prob);
     const layer = state.mapEditor.layers.active;
@@ -107,22 +109,31 @@ class Filler implements ClickDragListener {
     // Track which candidate was chosen at each position for neighbor lookups
     const placedCandidates = new Map<string, number>();
 
-    for (let y = bounds.y; y < bounds.y + bounds.height; y += gridSize.y) {
-      for (let x = bounds.x; x < bounds.x + bounds.width; x += gridSize.x) {
-        const adjustedProbs = this.calculateClumpedProbs(
-          baseProbs,
-          x,
-          y,
-          gridSize,
-          placedCandidates,
-          clumpAmt
-        );
+    let incY = gridSize.y;
+    let incX = gridSize.x;
 
-        const idx = weightedIndex(adjustedProbs);
-        const cand = cands[idx];
-        const tmpl = cand.tg;
+    for (let y = bounds.y; y < bounds.y + bounds.height; y += incY) {
+      incY = gridSize.y;
+      for (let x = bounds.x; x < bounds.x + bounds.width; x += incX) {
+        // A sudden deletion of a candidate with a 1.0 probability can cause
+        // weightedIndex to return -1, so we clamp to 0 here.
+        const idx = Math.max(weightedIndex(baseProbs), 0);
+
+        const chosen = cands[idx];
+        const tmpl = chosen.tg;
+
+        incX = Math.max(tmpl.pos.width * density, gridSize.x);
+        incY = Math.max(Math.max(incY, tmpl.pos.height) * density, gridSize.y);
 
         if (tmpl.id === transparentIcon) continue;
+
+        // Skip if the chosen candidate would overflow the bounds
+        if (
+          x + tmpl.pos.width > bounds.x + bounds.width ||
+          y + tmpl.pos.height > bounds.y + bounds.height
+        ) {
+          continue;
+        }
 
         // Record this placement for neighbor influence
         const key = `${x},${y}`;
@@ -146,40 +157,6 @@ class Filler implements ClickDragListener {
     }
 
     await store.dispatch(setUncommittedObjIdsThunk(toAdd)).unwrap();
-  }
-
-  private calculateClumpedProbs(
-    baseProbs: number[],
-    x: number,
-    y: number,
-    gridSize: { x: number; y: number },
-    placedCandidates: Map<string, number>,
-    clumpAmt: number
-  ): number[] {
-    if (clumpAmt === 0) return baseProbs;
-
-    // Check neighbors (left and above)
-    const neighbors: number[] = [];
-    const leftKey = `${x - gridSize.x},${y}`;
-    const aboveKey = `${x},${y - gridSize.y}`;
-
-    if (placedCandidates.has(leftKey)) {
-      neighbors.push(placedCandidates.get(leftKey)!);
-    }
-    if (placedCandidates.has(aboveKey)) {
-      neighbors.push(placedCandidates.get(aboveKey)!);
-    }
-
-    if (neighbors.length === 0) return baseProbs;
-
-    // Create adjusted probabilities that favor neighbors
-    const adjustedProbs = baseProbs.map((prob, idx) => {
-      const neighborBonus = neighbors.filter((n) => n === idx).length;
-      // Add bonus proportional to clumpAmt and how many neighbors match
-      return prob * (1 + neighborBonus * clumpAmt);
-    });
-
-    return adjustedProbs;
   }
 }
 

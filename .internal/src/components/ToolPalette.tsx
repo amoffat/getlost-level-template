@@ -9,7 +9,7 @@ export interface ToolDescriptor {
   icon: ReactNode;
   // allow disabled state in future
   enabled?: boolean;
-  switchToLayer?: MapLayerName;
+  layerConstraints?: MapLayerName[];
   options?: ReactNode;
 }
 
@@ -53,10 +53,17 @@ export default function ToolPalette<T extends string>({
 
         if (!enabled) return;
 
-        if (t.switchToLayer !== undefined && t.switchToLayer !== curLayer) {
-          dispatch(
-            setActiveLayerThunk({ layer: t.switchToLayer, notify: true })
-          );
+        if (t.layerConstraints !== undefined && t.layerConstraints.length > 0) {
+          // Check if current layer is in the constraints
+          if (!t.layerConstraints.includes(curLayer)) {
+            // Switch to the first constrained layer
+            dispatch(
+              setActiveLayerThunk({
+                layer: t.layerConstraints[0],
+                notify: true,
+              })
+            );
+          }
         }
         onToolActivated?.(slug);
       };

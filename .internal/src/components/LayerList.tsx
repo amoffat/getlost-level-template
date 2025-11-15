@@ -4,7 +4,15 @@ import { RootState } from "@/store/store";
 import { setActiveLayerThunk } from "@/thunks/map";
 import { MapLayerName } from "@/types/layer";
 import { mapLayerToName } from "@/utils/layer";
-import { Fieldset, Group, Radio, Stack, Switch, Text } from "@mantine/core";
+import {
+  Fieldset,
+  Group,
+  Overlay,
+  Radio,
+  Stack,
+  Switch,
+  Text,
+} from "@mantine/core";
 import { useCallback, useMemo } from "react";
 import classes from "./styles/LayerList.module.css";
 
@@ -13,7 +21,11 @@ export interface Layer {
   description: string;
 }
 
-export default function LayerList() {
+export interface LayerListProps {
+  layerConstraints?: MapLayerName[];
+}
+
+export default function LayerList({ layerConstraints }: LayerListProps) {
   const layerState = useAppSelector(
     (state: RootState) => state.mapEditor.layers
   );
@@ -57,26 +69,42 @@ export default function LayerList() {
           onChange={(value) => changeActiveLayer(Number(value))}
         >
           <Stack p={0} gap="xs">
-            {layers.map((layer) => (
-              <Radio.Card
-                className={classes.root}
-                radius="md"
-                value={layer.id.toString()}
-                key={layer.id}
-              >
-                <Group wrap="nowrap" align="flex-start">
-                  <Radio.Indicator />
-                  <div>
-                    <Text className={classes.label}>
-                      {mapLayerToName(layer.id)}
-                    </Text>
-                    <Text className={classes.description}>
-                      {layer.description}
-                    </Text>
-                  </div>
-                </Group>
-              </Radio.Card>
-            ))}
+            {layers.map((layer) => {
+              const isDisabled =
+                layerConstraints !== undefined &&
+                layerConstraints.length > 0 &&
+                !layerConstraints.includes(layer.id);
+              return (
+                <Radio.Card
+                  className={classes.root}
+                  radius="md"
+                  value={layer.id.toString()}
+                  key={layer.id}
+                  disabled={isDisabled}
+                  style={{ position: "relative" }}
+                >
+                  {isDisabled && (
+                    <Overlay
+                      blur={3}
+                      backgroundOpacity={0.2}
+                      color="#000000ff"
+                      radius="md"
+                    />
+                  )}
+                  <Group wrap="nowrap" align="flex-start">
+                    <Radio.Indicator />
+                    <div>
+                      <Text className={classes.label}>
+                        {mapLayerToName(layer.id)}
+                      </Text>
+                      <Text className={classes.description}>
+                        {layer.description}
+                      </Text>
+                    </div>
+                  </Group>
+                </Radio.Card>
+              );
+            })}
           </Stack>
         </Radio.Group>
         <Switch

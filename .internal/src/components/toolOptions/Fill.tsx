@@ -4,6 +4,7 @@ import { commitObjectsThunk } from "@/thunks/map";
 import {
   mapUiToWeight,
   mapWeightToUi,
+  normalizeWeights,
   rebalanceAfterChange,
   removeWeight,
   resizeWeights,
@@ -18,6 +19,7 @@ import {
   Slider,
   Stack,
   Table,
+  Text,
 } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
@@ -30,17 +32,17 @@ const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 export default function Fill() {
   const {
     candidates: cands,
-    clump: clumpFromStore,
+    density: storeDensity,
     bounds,
   } = useAppSelector((state) => state.mapEditor.toolOptions.fill, shallowEqual);
   const dispatch = useAppDispatch();
 
   // Store fractional weights per frame (0..1), always normalized so sum == 1
-  const [weights, setWeights] = useState<Weights>([]);
-  const [clump, setClump] = useState<number>(clumpFromStore);
+  const [weights, setWeights] = useState<Weights>(cands.map((c) => c.prob));
+  const [density, setDensity] = useState<number>(storeDensity);
 
   const n = cands.length;
-  const hasCands = n > 0;
+  const hasCands = n > 1; // 1 for transparent tile
   const selectedBounds = bounds !== null;
   const canCommit = hasCands && selectedBounds;
 
@@ -84,16 +86,17 @@ export default function Fill() {
     });
   }, [cands.length]);
 
-  // Sync local clump state with Redux store
+  // Sync local overlap state with Redux store
   useEffect(() => {
-    setClump(clumpFromStore);
-  }, [clumpFromStore]);
+    setDensity(storeDensity);
+  }, [storeDensity]);
 
   const finalizeWeights = useCallback(
     (weights: Weights) => {
+      weights = normalizeWeights(weights);
       const newCands = cands.map((cand, idx) => ({
         ...cand,
-        prob: clamp01(weights[idx] ?? 0),
+        prob: weights[idx] ?? 0,
       }));
       dispatch(
         actions.setToolOptions({
@@ -146,11 +149,11 @@ export default function Fill() {
     );
   };
 
-  const updateClump = (value: number) => {
+  const updateDensity = (value: number) => {
     dispatch(
       actions.setToolOptions({
         tool: "fill",
-        options: { clump: value },
+        options: { density: value },
       })
     );
   };
@@ -216,31 +219,31 @@ export default function Fill() {
             </Table.Tbody>
           </Table>
 
-          {/* <Stack gap="xs">
+          <Stack gap="xs">
             <Text size="sm" fw={500}>
-              Clump similar objects
+              Density
             </Text>
             <Slider
               min={0}
               max={1}
               step={0.01}
               label={null}
-              value={clump}
+              value={density}
               disabled={!canCommit}
               onChange={(v) => {
                 if (dynamicUpdate) {
-                  updateClump(v);
+                  updateDensity(v);
                 } else {
-                  setClump(v);
+                  setDensity(v);
                 }
               }}
               onChangeEnd={(v) => {
                 if (!dynamicUpdate) {
-                  updateClump(v);
+                  updateDensity(v);
                 }
               }}
             />
-          </Stack> */}
+          </Stack>
 
           <Button
             variant="filled"

@@ -105,7 +105,7 @@ export const slice = createSlice({
       "add-collider": { type: "box" },
       fill: {
         candidates: [],
-        clump: 0,
+        density: 0,
         bounds: null,
       },
     },
