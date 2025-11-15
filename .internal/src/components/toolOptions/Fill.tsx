@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
-import { commitObjectsThunk } from "@/thunks/map";
+import { commitObjectsThunk, setActiveLayerThunk } from "@/thunks/map";
+import { MapLayerName } from "@/types/layer";
 import {
   mapUiToWeight,
   mapWeightToUi,
@@ -68,12 +69,11 @@ export default function Fill() {
     return t;
   }, [hasCands, selectedBounds]);
 
-  const pixelArea = useMemo(() => {
+  const dynamicUpdate = useMemo(() => {
     if (!bounds) return 0;
-    return bounds.width * bounds.height;
+    const area = bounds.width * bounds.height;
+    return area <= 300 * 300;
   }, [bounds]);
-
-  const dynamicUpdate = pixelArea <= 300 * 300;
 
   // Keep weights in sync with candidate count (index-based). Preserve existing
   // prefix, assign a small fair share to new frames, then normalize.
@@ -85,6 +85,17 @@ export default function Fill() {
       setWeights((prev) => resizeWeights(prev, cands.length));
     });
   }, [cands.length]);
+
+  useEffect(() => {
+    const hasFirstCand = cands.length === 2;
+    if (!hasFirstCand) return;
+
+    const placeObj = cands[1]!.tg;
+    const isSolidTile = placeObj.coverage === 1.0;
+    const switchTo = isSolidTile ? MapLayerName.Ground : MapLayerName.Exterior;
+
+    dispatch(setActiveLayerThunk({ layer: switchTo, notify: true }));
+  }, [dispatch, cands]);
 
   // Sync local overlap state with Redux store
   useEffect(() => {

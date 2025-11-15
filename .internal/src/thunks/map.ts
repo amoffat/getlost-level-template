@@ -8,7 +8,6 @@ import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { isMapObjFromTileset, MapObj, TileGroupInstance } from "@/types/map";
-import { isTileGroupTemplate } from "@/types/tilegroup";
 import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
@@ -20,8 +19,11 @@ export const setActiveLayerThunk = createAsyncThunk(
   "mapEditor/setActiveLayerThunk",
   async (
     { layer, notify }: { layer: MapLayerName; notify?: boolean },
-    { dispatch }
+    { dispatch, getState }
   ) => {
+    const state = getState() as RootState;
+    if (state.mapEditor.layers.active === layer) return;
+
     dispatch(mapActions.setActiveLayer(layer));
     dispatch(mapActions.setLockInactiveLayer(true));
     const name = mapLayerToName(layer);
@@ -118,9 +120,7 @@ export const duplicateSelectionThunk = createAsyncThunk(
 
 export const setToolThunk = createAsyncThunk(
   "mapEditor/setToolThunk",
-  async (tool: Mode | null, { dispatch, getState }) => {
-    const state = getState() as RootState;
-
+  async (tool: Mode | null, { dispatch }) => {
     if (tool === null) tool = "select";
     dispatch(clearUncommittedThunk());
     dispatch(mapActions.clearSelection());
@@ -138,19 +138,7 @@ export const setToolThunk = createAsyncThunk(
       });
       dispatch(mapActions.setPlace(tg));
     } else if (tool === "paint") {
-      const layer = state.mapEditor.layers.active;
       dispatch(mapActions.clearSelection());
-      if (![MapLayerName.Ground, MapLayerName.Exterior].includes(layer)) {
-        const obj = state.mapEditor.place.obj;
-        if (obj && isTileGroupTemplate(obj)) {
-          const isSolidTile = obj.coverage === 1.0;
-          const switchTo = isSolidTile
-            ? MapLayerName.Ground
-            : MapLayerName.Exterior;
-
-          dispatch(setActiveLayerThunk({ layer: switchTo, notify: true }));
-        }
-      }
     }
 
     dispatch(mapActions.setMode(tool));

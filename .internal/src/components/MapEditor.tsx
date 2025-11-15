@@ -174,7 +174,7 @@ export default function MapEditorTab({
       paint: {
         name: "Paint area",
         icon: <IconPaint size={16} />,
-        enabled: place !== null,
+        layerConstraints: [MapLayerName.Exterior, MapLayerName.Ground],
         options: <Paint />,
       },
       autotiler: {
@@ -232,7 +232,7 @@ export default function MapEditorTab({
         layerConstraints: [MapLayerName.Colliders],
       },
     }),
-    [place]
+    []
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName];
@@ -240,13 +240,13 @@ export default function MapEditorTab({
 
   const onToolActivated = useCallback(
     (slug: string) => {
-      dispatch(setToolThunk(slug as Mode));
+      dispatch(setToolThunk(slug as Mode)).unwrap();
     },
     [dispatch]
   );
 
   const onToolDeactivated = useCallback(() => {
-    dispatch(setToolThunk(null));
+    dispatch(setToolThunk(null)).unwrap();
   }, [dispatch]);
 
   const tips: string[] = useMemo(() => {
