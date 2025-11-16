@@ -1,5 +1,5 @@
 import { RootState, store } from "@/store/store";
-import { isVector, Vector } from "@/vec";
+import { isVector, Vector2 } from "@/vec";
 import RBush, { BBox } from "rbush";
 
 export interface IndexItem {
@@ -27,7 +27,7 @@ export class SpatialIndex<Obj> extends RBush<IndexItem> {
     this.filterLayer = filterLayer;
   }
 
-  public searchByPos(pos: Vector): IndexItem[] {
+  public searchByPos(pos: Vector2): IndexItem[] {
     return this.search({
       minX: pos.x,
       minY: pos.y,
@@ -56,7 +56,7 @@ export class SpatialIndex<Obj> extends RBush<IndexItem> {
     return this;
   }
 
-  public getObjects({ pos }: { pos: Vector | BBox }): Obj[] {
+  public getObjects({ pos }: { pos: Vector2 | BBox }): Obj[] {
     let hits: IndexItem[];
     if (isVector(pos)) {
       hits = this.searchByPos(pos);

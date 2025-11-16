@@ -108,14 +108,14 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
           </Stack>
         </Radio.Group>
         <Switch
-          label="Lock inactive layer"
+          label="Lock inactive layers"
           checked={layerState.lockInactive}
           onChange={(event) => {
             dispatch(actions.setLockInactiveLayer(event.currentTarget.checked));
           }}
         />
         <Switch
-          label="Dim inactive layer"
+          label="Dim inactive layers"
           checked={layerState.dimInactive}
           onChange={(event) => {
             dispatch(actions.setDimInactiveLayer(event.currentTarget.checked));

@@ -1,8 +1,8 @@
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import { Menu } from "@mantine/core";
 
 interface ObjectMenuProps {
-  pos: Vector | null;
+  pos: Vector2 | null;
   opened: boolean;
   children: React.ReactNode;
 }

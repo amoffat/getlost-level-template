@@ -3,7 +3,7 @@ import { MapObj, TileGroupInstance } from "@/types/map";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { PaintOpts } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import {
   createEntityAdapter,
   createSelector,
@@ -27,7 +27,7 @@ interface CollisionEditorState {
     size: number;
     visible: boolean;
     snap: boolean;
-    curPos: Vector | null;
+    curPos: Vector2 | null;
   };
   zoomPan: ZoomPan;
   selectedTool: Mode | null;
@@ -42,7 +42,7 @@ interface CollisionEditorState {
   selectedObjs: EntityState<MapObj, string>;
   proposedSelection: {
     objects: TileGroupInstance[];
-    pos: Vector;
+    pos: Vector2;
   } | null;
   layers: {
     active: MapLayerName;
@@ -100,7 +100,7 @@ export const slice = createSlice({
       state.place.obj = action.payload;
     },
 
-    setGridPos(state, action: PayloadAction<Vector>) {
+    setGridPos(state, action: PayloadAction<Vector2>) {
       state.grid.curPos = action.payload;
     },
 

@@ -1,11 +1,11 @@
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import * as P from "pixi.js";
 
 export class Panner {
   private stage: P.Container;
   private panContainer: P.Container;
   private onPanningStart?: VoidFunction;
-  private onPanningEnd?: (panPos: Vector) => void;
+  private onPanningEnd?: (panPos: Vector2) => void;
 
   // Panning state
   private panStartGlobal = { x: 0, y: 0 };
@@ -21,7 +21,7 @@ export class Panner {
     stage: P.Container;
     panContainer: P.Container;
     onPanningStart?: VoidFunction;
-    onPanningEnd?: (panPos: Vector) => void;
+    onPanningEnd?: (panPos: Vector2) => void;
   }) {
     this.stage = stage;
     this.panContainer = panContainer;
@@ -77,7 +77,7 @@ export class Panner {
   /**
    * Get the current pan position
    */
-  getPosition(): Vector {
+  getPosition(): Vector2 {
     return {
       x: this.panContainer.position.x,
       y: this.panContainer.position.y,
@@ -89,7 +89,7 @@ export class Panner {
    * @param pos - The new position
    * @param triggerCallbacks - Whether to trigger onPanningEnd callback
    */
-  setPosition(pos: Vector, triggerCallbacks = true) {
+  setPosition(pos: Vector2, triggerCallbacks = true) {
     this.panContainer.position.set(pos.x, pos.y);
     if (triggerCallbacks) {
       this.onPanningEnd?.(pos);
@@ -106,7 +106,7 @@ export function setupPanControls({
   stage: P.Container;
   panContainer: P.Container;
   onPanningStart?: VoidFunction;
-  onPanningEnd?: (panPos: Vector) => void;
+  onPanningEnd?: (panPos: Vector2) => void;
 }): Panner {
   return new Panner({ stage, panContainer, onPanningStart, onPanningEnd });
 }

@@ -6,7 +6,7 @@ import { SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { subState } from "@/utils/redux";
 import { onVisible } from "@/utils/visible";
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import debounce from "debounce";
 import * as P from "pixi.js";
 import { makeBackground } from "../common/bg";
@@ -149,7 +149,7 @@ export async function init(): Promise<P.Application> {
     app,
     container: stage,
     coordsRelativeTo: g.tilesetContainer,
-    checkPointerOver: (localPos: Vector): string[] => {
+    checkPointerOver: (localPos: Vector2): string[] => {
       const hits = spatialIndex.getObjects({
         pos: localPos,
       });

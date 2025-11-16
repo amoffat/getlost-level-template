@@ -1,5 +1,5 @@
 import { Rect } from "@/types/rect";
-import { Vec2, Vector } from "@/vec";
+import { Vec2, Vector2 } from "@/vec";
 import * as P from "pixi.js";
 
 const MOVE_THRESHOLD = 10;
@@ -7,7 +7,7 @@ const MOVE_THRESHOLD = 10;
 export interface PointerEventData {
   localPos: Vec2;
   button?: "left" | "right";
-  pagePos: Vector;
+  pagePos: Vector2;
   hitbox: Rect;
   hoverIds: string[];
   moved: boolean;
@@ -27,7 +27,7 @@ export class ClickDragger {
   private readonly app: P.Application;
   public readonly container: P.Container;
   private readonly coordsRelativeTo: P.Container;
-  private readonly checkPointerOver?: (pos: Vector) => string[];
+  private readonly checkPointerOver?: (pos: Vector2) => string[];
 
   private dragStart: Vec2 | null = null;
   private dragEnd: Vec2 | null = null;
@@ -43,7 +43,7 @@ export class ClickDragger {
     app: P.Application;
     container: P.Container;
     coordsRelativeTo?: P.Container;
-    checkPointerOver?: (pos: Vector) => string[];
+    checkPointerOver?: (pos: Vector2) => string[];
   }) {
     this.app = app;
     this.container = container;
@@ -147,7 +147,7 @@ export class ClickDragger {
     this.dragStart = Vec2.fromVector(this.currentPointerPos);
   }
 
-  private get currentPointerPos(): Vector {
+  private get currentPointerPos(): Vector2 {
     const globalPos = this.app.renderer.events.pointer.global;
     const pos = this.coordsRelativeTo.toLocal(globalPos);
     return pos;

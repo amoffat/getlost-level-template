@@ -1,4 +1,5 @@
 import { WalkSound } from "@/constants";
+import { RgbColor } from "./color";
 import { Rect } from "./rect";
 
 export enum MapObjType {
@@ -8,6 +9,10 @@ export enum MapObjType {
   EllipseCollider = 3,
   BoxCollider = 4,
   PolyCollider = 5,
+  Light = 6,
+  Entry = 7,
+  Exit = 8,
+  Waypoint = 9,
 }
 
 export interface BaseMapObj {
@@ -68,6 +73,12 @@ export interface NpcInstance extends BaseMapObj {
   tags?: string[];
 }
 
+export interface LightObj extends BaseMapObj {
+  type: MapObjType.Light;
+  color: RgbColor;
+  intensity: number;
+}
+
 export interface EllipseObj extends BaseMapObj {
   type: MapObjType.EllipseCollider;
 }
@@ -82,6 +93,7 @@ export type MapObj =
   | TileGroupInstance
   | AnimationInstance
   | NpcInstance
+  | LightObj
   | EllipseObj
   | PolyObj
   | BoxObj;

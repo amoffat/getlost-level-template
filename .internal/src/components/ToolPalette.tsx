@@ -13,20 +13,20 @@ export interface ToolDescriptor {
   options?: ReactNode;
 }
 
-interface ToolPaletteProps<T extends string> {
-  tools: Partial<Record<T, ToolDescriptor>>;
-  activeTool: T | null;
+interface ToolPaletteProps<ToolType extends string> {
+  tools: Partial<Record<ToolType, ToolDescriptor>>;
+  activeTool: ToolType | null;
   legend?: string;
   iconSize?: number; // px square side; default 32
   gap?: number; // px gap; default 4
-  onToolActivated?: (slug: T) => void;
-  onToolDeactivated?: (slug: T) => void;
+  onToolActivated?: (slug: ToolType) => void;
+  onToolDeactivated?: (slug: ToolType) => void;
 }
 
 /**
  * Responsive tool palette that auto-wraps based on available width.
  */
-export default function ToolPalette<T extends string>({
+export default function ToolPalette<ToolType extends string>({
   tools,
   activeTool,
   legend = "Tools",
@@ -34,13 +34,16 @@ export default function ToolPalette<T extends string>({
   gap = 4,
   onToolActivated,
   onToolDeactivated,
-}: ToolPaletteProps<T>) {
+}: ToolPaletteProps<ToolType>) {
   const dispatch = useAppDispatch();
   const curLayer = useAppSelector((state) => state.mapEditor.layers.active);
 
   const toolComponents: ReactNode[] = useMemo(() => {
     const buttons = [];
-    for (const [slug, t] of Object.entries(tools) as [T, ToolDescriptor][]) {
+    for (const [slug, t] of Object.entries(tools) as [
+      ToolType,
+      ToolDescriptor,
+    ][]) {
       const isActive = activeTool === slug;
       const enabled = t.enabled ?? true;
 

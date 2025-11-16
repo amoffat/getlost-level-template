@@ -1,4 +1,4 @@
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import * as P from "pixi.js";
 import { gridStroke } from "./strokes";
 
@@ -11,7 +11,7 @@ export function drawGrid({
   gridSize: number | null;
   oldGrid?: P.Container;
   gridContainer: P.Container;
-  coverSize: Vector;
+  coverSize: Vector2;
 }): P.Container {
   oldGrid?.removeFromParent();
 

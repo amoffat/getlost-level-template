@@ -9,7 +9,7 @@ import { store } from "@/store/store";
 import { AnimationTemplate } from "@/types/animation";
 import { isMapObjFromTileset } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
@@ -19,7 +19,7 @@ import ObjectMenu from "../ObjectMenu";
 import TileAnimation from "../TileAnimation";
 
 interface ObjectAnimationMenuProps {
-  pos: Vector | null;
+  pos: Vector2 | null;
   obj: AnimationTemplate | null;
   onTagsModalOpened?: VoidFunction;
   closeMenu: () => void;

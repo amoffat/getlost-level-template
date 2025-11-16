@@ -98,6 +98,11 @@ const TilesetGroup = ({
     return Math.min(scale, maxFittingScale);
   }, [bounded, containerSize.w, containerSize.h, width, height, scale]);
 
+  // This can happen in deferred renders, where a TilesetGroup may stick around
+  // for a renders after its tileset has been deleted. Specifically, this
+  // happens in the ObjectPalette when a tileset is deleted.
+  if (!ts) return null;
+
   return (
     <div
       ref={wrapperRef}

@@ -1,4 +1,4 @@
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import { Rectangle } from "pixi.js";
 
 export interface Rect {
@@ -16,7 +16,7 @@ export function toPixiRect(rect: Rect): Rectangle {
   return new Rectangle(rect.x, rect.y, rect.width, rect.height);
 }
 
-export function snap(rect: Rect, gridSize: Vector): Rect {
+export function snap(rect: Rect, gridSize: Vector2): Rect {
   let left = rect.x;
   let top = rect.y;
   let right = rect.x + rect.width;

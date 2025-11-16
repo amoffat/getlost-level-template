@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { actions as uiActions, selectors as uiSelectors } from "@/slices/ui";
 import { TileGroupTemplate } from "@/types/tilegroup";
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
 import { IconBlocks, IconCopy, IconStack2, IconTag } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
@@ -10,7 +10,7 @@ import ObjectMenu from "../ObjectMenu";
 import TilesetGroup from "../TilesetGroup";
 
 interface TileGroupMenuProps {
-  pos: Vector | null;
+  pos: Vector2 | null;
   obj: TileGroupTemplate | null;
   onTagsModalOpened?: VoidFunction;
   closeMenu: () => void;

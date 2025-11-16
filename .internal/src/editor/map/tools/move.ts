@@ -6,7 +6,7 @@ import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { isMapObjFromTileset } from "@/types/map";
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import {
   ClickDragger,
   ClickDragListener,
@@ -16,7 +16,7 @@ import {
 export class Mover implements ClickDragListener {
   private _moveEnabled = false;
   private _cd: ClickDragger;
-  private startPositions: Map<string, Vector> = new Map();
+  private startPositions: Map<string, Vector2> = new Map();
 
   constructor(cd: ClickDragger) {
     this._cd = cd;
@@ -81,7 +81,7 @@ export class Mover implements ClickDragListener {
         this.startPositions.set(obj.id, startPos);
       }
 
-      const newPos: Vector = {
+      const newPos: Vector2 = {
         x: Math.round(startPos.x + startOffset.x),
         y: Math.round(startPos.y + startOffset.y),
       };

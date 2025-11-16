@@ -14,7 +14,7 @@ import { amountOpaquePixels, subImageData } from "@/utils/image";
 import { subState } from "@/utils/redux";
 import { rectToBBox } from "@/utils/spatial";
 import { genImageId, genTileId } from "@/utils/tileset";
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
 import {
@@ -26,7 +26,7 @@ import { groupStroke } from "../../common/strokes";
 import { globals as g } from "../globals";
 import { shouldOutline } from "../utils/outline";
 
-function getGridSize(): Vector {
+function getGridSize(): Vector2 {
   const state = store.getState();
   const ts = selectors.activeTileset(state);
   if (!ts || ts.composite) {

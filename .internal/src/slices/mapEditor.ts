@@ -19,7 +19,7 @@ import {
   PaintOpts,
 } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import {
   createEntityAdapter,
   createSelector,
@@ -49,10 +49,10 @@ const reconcilePrefix = "map";
 
 interface MapEditorState {
   grid: {
-    size: Vector;
+    size: Vector2;
     visible: boolean;
     snap: boolean;
-    curPos: Vector | null;
+    curPos: Vector2 | null;
   };
   bounds: Rect;
   zoomPan: ZoomPan;
@@ -69,7 +69,7 @@ interface MapEditorState {
   selectedIds: string[];
   proposedSelection: {
     objects: MapObj[];
-    pos: Vector;
+    pos: Vector2;
   } | null;
   uncommittedObjIds: string[];
   layers: {
@@ -165,7 +165,7 @@ export const slice = createSlice({
       }
     },
 
-    setGridPos(state, action: PayloadAction<Vector>) {
+    setGridPos(state, action: PayloadAction<Vector2>) {
       state.grid.curPos = action.payload;
     },
 

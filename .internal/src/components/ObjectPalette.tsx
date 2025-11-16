@@ -5,7 +5,7 @@ import { PaletteObjectProps } from "@/types/palette";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import {
   Group,
   LoadingOverlay,
@@ -69,7 +69,7 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
   defaultScale = 2,
   filterMenu,
 }: ObjectPaletteProps<ObjType>) {
-  const [objMenuPos, setObjMenuPos] = useState<Vector | null>(null);
+  const [objMenuPos, setObjMenuPos] = useState<Vector2 | null>(null);
   const [clicked, setClicked] = useState<ObjType | null>(null);
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
   const loadingPalette = useAppSelector((state) => state.ui.loadingPalette);

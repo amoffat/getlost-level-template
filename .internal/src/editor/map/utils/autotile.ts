@@ -1,4 +1,4 @@
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import { converter } from "culori";
 import Heap from "heap";
 
@@ -239,8 +239,8 @@ export function matchTile(
  * @returns Array of [edgeName, weight] suitable for `matchTile`.
  */
 export function pickDirectionWeights(
-  pos: Vector,
-  gridSize: Vector
+  pos: Vector2,
+  gridSize: Vector2
 ): Record<EdgeName, number> {
   // Guard: degenerate grid -> all equal weights of 1
   if (gridSize.x <= 1 && gridSize.y <= 1) {

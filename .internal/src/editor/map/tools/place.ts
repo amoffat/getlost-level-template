@@ -22,7 +22,7 @@ import { isTileGroupTemplate } from "@/types/tilegroup";
 import { PaintOpts } from "@/types/tools";
 import { subState } from "@/utils/redux";
 import { rectToBBox } from "@/utils/spatial";
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import * as P from "pixi.js";
 import {
   ClickDragger,
@@ -42,6 +42,7 @@ const placeModes: Set<Mode> = new Set([
 // Modes that allow the creation of the place icon in the canvas.
 const placeIconModes: Set<Mode> = new Set([...placeModes, "autotiler"]);
 
+// Modes that allow dragging to paint/place objects
 const draggableModes: Set<Mode> = new Set(["paint"]);
 
 export class Placer implements ClickDragListener {
@@ -83,7 +84,7 @@ export class Placer implements ClickDragListener {
 
     const gridSize = state.mapEditor.place.obj!.gridSize;
     const rawPos = e.localPos;
-    let finalPos: Vector = rawPos;
+    let finalPos: Vector2 = rawPos;
     const snap = state.mapEditor.grid.snap;
     if (snap) {
       finalPos = {

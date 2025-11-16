@@ -7,7 +7,7 @@ import { MapObj } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";
 import { onVisible } from "@/utils/visible";
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import { DropShadowFilter } from "pixi-filters";
 import * as P from "pixi.js";
 import { makeBackground } from "../common/bg";
@@ -156,7 +156,7 @@ export async function init(): Promise<P.Application> {
     app,
     container: stage,
     coordsRelativeTo: g.mapContainer,
-    checkPointerOver: (localPos: Vector): string[] => {
+    checkPointerOver: (localPos: Vector2): string[] => {
       const hits = spatialIndex.getObjects({
         pos: localPos,
       });

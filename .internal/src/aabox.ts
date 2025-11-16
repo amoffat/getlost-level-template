@@ -6,7 +6,7 @@ import {
   StrokeInput,
   Transform,
 } from "pixi.js";
-import { Vec2, Vector } from "./vec";
+import { Vec2, Vector2 } from "./vec";
 
 // A Box is *always* axis-aligned. If you want something that can be rotated,
 // look at Box. We store the coordinates as the upper-left corner (as position),
@@ -124,7 +124,7 @@ export class AxisAlignedBox extends Transform {
     return this.width * this.height;
   }
 
-  add(other: Vector): AxisAlignedBox {
+  add(other: Vector2): AxisAlignedBox {
     return new AxisAlignedBox(
       this.upperLeft.added(other),
       this.lowerRight.added(other)
@@ -160,7 +160,7 @@ export class AxisAlignedBox extends Transform {
   }
 
   // Expands the box to include the given point.
-  public expandToContain(point: Vector) {
+  public expandToContain(point: Vector2) {
     const upperLeft = this.upperLeft;
     const lowerRight = this.lowerRight;
 
@@ -235,7 +235,7 @@ export class AxisAlignedBox extends Transform {
     );
   }
 
-  containsPoint(point: Vector): boolean {
+  containsPoint(point: Vector2): boolean {
     return (
       this.position.x <= point.x &&
       this.lowerRight.x >= point.x &&

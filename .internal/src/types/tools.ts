@@ -1,4 +1,4 @@
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import { Rect } from "./rect";
 import type { TileGroupTemplate } from "./tilegroup";
 
@@ -14,7 +14,7 @@ export interface ColliderOpts {
 
 export interface AutotilerOpts {
   candidates: TileGroupTemplate[];
-  gridPosFreeze: Vector | null;
+  gridPosFreeze: Vector2 | null;
 }
 
 export interface FillObj {

@@ -1,4 +1,4 @@
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import { TileGroupTemplate } from "./tilegroup";
 import { TilesetObjType } from "./tileset";
 import type { TilesetObjectTemplate } from "./tilesetobject";
@@ -13,7 +13,7 @@ export interface AnimationTemplate {
   type: TilesetObjType.AnimationTemplate;
   tilesetId: string;
   // The grid size this object is aligned to
-  gridSize: Vector;
+  gridSize: Vector2;
   frames: TileAnimationFrame[];
 
   // Properties that can vary per-instance

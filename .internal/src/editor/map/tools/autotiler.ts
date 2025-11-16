@@ -14,7 +14,7 @@ import { isTileGroupInstance, MapObj, TileGroupInstance } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { createRafThrottled } from "@/utils/throttle";
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import { MapLayerName } from "../../../types/layer";
 import { ClickDragger, PointerEventData } from "../../common/drag";
 import { globals as g } from "../globals";
@@ -34,7 +34,7 @@ class Painter extends Placer {
       }
     );
 
-    this.posDispatcher = createRafThrottled((pos: Vector) => {
+    this.posDispatcher = createRafThrottled((pos: Vector2) => {
       store.dispatch(mapEdActions.setGridPos(pos));
     });
 

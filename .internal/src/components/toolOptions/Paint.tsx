@@ -24,11 +24,12 @@ export default function Paint() {
   const placeObj = useAppSelector((state) => state.mapEditor.place.obj);
 
   useEffect(() => {
-    if (placeObj && isTileGroupTemplate(placeObj)) {
-      const isSolidTile = placeObj.coverage === 1.0;
-      const switchTo = isSolidTile
-        ? MapLayerName.Ground
-        : MapLayerName.Exterior;
+    if (placeObj) {
+      let switchTo = MapLayerName.Exterior;
+      if (isTileGroupTemplate(placeObj)) {
+        const isSolidTile = placeObj.coverage === 1.0;
+        switchTo = isSolidTile ? MapLayerName.Ground : MapLayerName.Exterior;
+      }
 
       dispatch(setActiveLayerThunk({ layer: switchTo, notify: true }));
     }

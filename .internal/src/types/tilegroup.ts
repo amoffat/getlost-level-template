@@ -1,6 +1,6 @@
 import { WalkSound } from "@/constants";
 import { OklabColor } from "@/types/color";
-import { Vector } from "@/vec";
+import { Vector2 } from "@/vec";
 import type { Rect } from "./rect";
 import { TilesetObjType } from "./tileset";
 import type { TilesetObjectTemplate } from "./tilesetobject";
@@ -15,7 +15,7 @@ export interface TileGroupTemplate {
   // The image-hash based id
   imageId: string;
   // The grid size this object is aligned to
-  gridSize: Vector;
+  gridSize: Vector2;
   tilesetId: string;
   pos: Rect;
   pinned: boolean;
