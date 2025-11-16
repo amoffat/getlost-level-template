@@ -192,44 +192,44 @@ export default function MapEditorTab({
       "set-gateway": {
         name: "Set gateway",
         icon: <IconDoorExit size={16} />,
-        layerConstraints: [MapLayerName.Places],
+        layerConstraints: [MapLayerName.Special],
       },
       "set-waypoint": {
         name: "Set waypoint",
         icon: <IconMapPin size={16} />,
-        layerConstraints: [MapLayerName.Places],
+        layerConstraints: [MapLayerName.Special],
       },
       "add-collider": {
         name: "Add collider",
         icon: <IconCarCrash size={16} />,
-        layerConstraints: [MapLayerName.Colliders],
+        layerConstraints: [MapLayerName.Sensors],
         options: <AddCollider />,
       },
 
       "set-sensor-zone": {
         name: "Sensor zone",
         icon: <IconInputSpark size={16} />,
-        layerConstraints: [MapLayerName.Colliders],
+        layerConstraints: [MapLayerName.Sensors],
       },
       "set-sink-zone": {
         name: "Sink zone",
         icon: <IconRipple size={16} />,
-        layerConstraints: [MapLayerName.Colliders],
+        layerConstraints: [MapLayerName.Sensors],
       },
       "set-sound-zone": {
         name: "Sound zone",
         icon: <IconEar size={16} />,
-        layerConstraints: [MapLayerName.Colliders],
+        layerConstraints: [MapLayerName.Sensors],
       },
       "set-zoom-zone": {
         name: "Zoom zone",
         icon: <IconCameraSearch size={16} />,
-        layerConstraints: [MapLayerName.Colliders],
+        layerConstraints: [MapLayerName.Sensors],
       },
       "add-light": {
         name: "Add light",
         icon: <IconBulb size={16} />,
-        layerConstraints: [MapLayerName.Colliders],
+        layerConstraints: [MapLayerName.Special],
       },
     }),
     []

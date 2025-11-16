@@ -1,4 +1,4 @@
-import { iconTsId, lightIcon, startIcon } from "@/constants";
+import { iconTsId, lightIcon, startIcon, waypointIcon } from "@/constants";
 import { loadMap } from "@/persist/map/api";
 import { router } from "@/router";
 import { actions as mapActions, selectors } from "@/slices/mapEditor";
@@ -134,6 +134,12 @@ export const setToolThunk = createAsyncThunk(
     } else if (tool === "add-light") {
       const tg = loadTileGroup({
         id: lightIcon,
+        tilesetId: iconTsId,
+      });
+      dispatch(mapActions.setPlace(tg));
+    } else if (tool === "set-waypoint") {
+      const tg = loadTileGroup({
+        id: waypointIcon,
         tilesetId: iconTsId,
       });
       dispatch(mapActions.setPlace(tg));

@@ -21,7 +21,6 @@ import { setupKeys } from "./keys";
 import { initLayerVisibility } from "./layers";
 import { setupAutotiler } from "./tools/autotiler";
 import { setupFill } from "./tools/fill";
-import { setupGateway } from "./tools/gateway";
 import { setupMover } from "./tools/move";
 import { setupPlacer } from "./tools/place";
 import { setupSelector } from "./tools/select";
@@ -138,12 +137,12 @@ export async function init(): Promise<P.Application> {
   g.mapContainer.addChild(worldLayer);
 
   const colliderLayer = new P.Container();
-  g.layerContainers[MapLayerName.Colliders] = colliderLayer;
+  g.layerContainers[MapLayerName.Sensors] = colliderLayer;
   g.mapContainer.addChild(colliderLayer);
 
   const placesLayer = new P.Container();
   placesLayer.filters = [new DropShadowFilter({ offset: { x: 0, y: 0 } })];
-  g.layerContainers[MapLayerName.Places] = placesLayer;
+  g.layerContainers[MapLayerName.Special] = placesLayer;
   g.mapContainer.addChild(placesLayer);
 
   gApp.mapEditorReconciler.attachCanvas({
@@ -170,7 +169,6 @@ export async function init(): Promise<P.Application> {
   g.mover = setupMover(cd);
   setupPlacer({ cd, spatialIndex });
   setupAutotiler({ cd, spatialIndex });
-  setupGateway({ cd, spatialIndex });
   setupWheelZoom({
     canvas,
     stage,

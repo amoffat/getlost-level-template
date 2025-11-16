@@ -20,11 +20,11 @@ export const overlayProps = {
 
 export const iconTsId = "709959c8b2a2c2d74ccb807c9e19d0e67378e4b7";
 
-export const startIcon = "c9b4462d-4e7c-55f6-a0ec-815ab1a723cf";
-export const exitIcon = "586794d8-d094-5451-b47d-2de73e1a13ea";
-export const lightIcon = "673699bc-746a-5d83-929e-9b739784cb9d";
-export const waypointIcon = "082812ec-8053-5712-b782-ca1c13f23c96";
-export const soundIcon = "cb83a1b7-3e73-5f92-9888-a71c8e3c3ee8";
+export const startIcon = "36457fb369d5f1849dea54ab4aa01571e545e273";
+export const exitIcon = "e57e5942a12563d0e6f90ec8ae00efe5a33baab7";
+export const lightIcon = "74dbc3085545a3aebdf3226ee361515a9901e152";
+export const waypointIcon = "bd704aa16ab0e8cb728e79705a195d3eb4781b87";
+export const soundIcon = "c04e0c00c3efcb420f448eaaa62c199798a61938";
 export const transparentIcon = "1dbfc36648dd2eb6c86b337a183baff35928c1ee";
 
 export const texAtlasPadding = 0.001; // avoid bleeding

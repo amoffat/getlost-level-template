@@ -58,7 +58,7 @@ export default function TilesetEditorTab({
 }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { tsid } = useParams<{ tsid?: string }>();
+  const { tsid: tsId } = useParams<{ tsid?: string }>();
   const selectedToolName = useAppSelector(
     (state) => state.tilesetEditor.selectedTool
   );
@@ -102,21 +102,21 @@ export default function TilesetEditorTab({
 
   // Ensure the tileset for the current URL is loaded
   useEffect(() => {
-    if (!tsid) return;
-    if (!tilesets[tsid]) {
-      dispatch(loadTilesetThunk(tsid));
+    if (!tsId) return;
+    if (!tilesets[tsId]) {
+      dispatch(loadTilesetThunk({ tsId }));
     }
-  }, [tsid, tilesets, dispatch]);
+  }, [tsId, tilesets, dispatch]);
 
   // Select the tileset once it's available and not already active
   useEffect(() => {
-    if (!tsid) return;
-    const ts = tilesets[tsid];
-    if (ts && activeTilesetId !== tsid) {
+    if (!tsId) return;
+    const ts = tilesets[tsId];
+    if (ts && activeTilesetId !== tsId) {
       dispatch(selectTilesetThunk(ts)).unwrap();
       dispatch(actions.setActiveTool(null));
     }
-  }, [tsid, tilesets, activeTilesetId, dispatch]);
+  }, [tsId, tilesets, activeTilesetId, dispatch]);
 
   const loadedTilesets = useAppSelector(selectors.selectTilesets);
   const tilesetImages = loadedTilesets.map((ts) => (
@@ -334,7 +334,7 @@ export default function TilesetEditorTab({
                     }}
                   >
                     <ObjectPalette
-                      tileset={deferredTs}
+                      tileset={deferredTs ?? undefined}
                       selectedObjects={deferredPaletteSelection}
                       filter={isTileGroupTemplate}
                       renderObject={renderTileGroup}
@@ -354,7 +354,7 @@ export default function TilesetEditorTab({
                       minScale={1}
                       defaultScale={4}
                       maxScale={8}
-                      tileset={deferredTs}
+                      tileset={deferredTs ?? undefined}
                       selectedObjects={deferredPaletteSelection}
                       filter={isAnimationTemplate}
                       renderObject={renderObjectAnimation}
@@ -374,7 +374,7 @@ export default function TilesetEditorTab({
                       minScale={1}
                       defaultScale={4}
                       maxScale={8}
-                      tileset={deferredTs}
+                      tileset={deferredTs ?? undefined}
                       selectedObjects={deferredPaletteSelection}
                       filter={isNpcTemplate}
                       renderObject={renderNpc}

@@ -5,23 +5,12 @@ import "@mantine/dropzone/styles.css";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { getMapInitPromise, getTilesetInitPromise } from "@/init/editorInit";
 import { pathToTab, tabToPath } from "@/routes/tabs";
-import { brokenTileGroups } from "@/selectors/map";
 import { actions as uiActions } from "@/slices/ui";
-import { store } from "@/store/store";
-import { resetAllThunk, resetMapThunk } from "@/thunks/map";
 import { MainTabName } from "@/types/tab";
 import { AppShell, Group, Tabs, Text } from "@mantine/core";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import { useDisclosure } from "@mantine/hooks";
-import { modals } from "@mantine/modals";
-import { Spotlight, SpotlightActionData } from "@mantine/spotlight";
-import {
-  IconSearch,
-  IconTrash,
-  IconUnlink,
-  IconUpload,
-  IconX,
-} from "@tabler/icons-react";
+import { IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import {
   Suspense,
@@ -38,10 +27,10 @@ import DialogueTab from "./Dialogue";
 import MapEditorTab from "./MapEditor";
 import PanelLoader from "./PanelLoader";
 import PreviewTab from "./Preview";
+import Spotlight from "./Spotlight";
 import StoryTab from "./StoryTab";
 import TilesetEditorTab from "./TilesetEditor";
 import UploadAssetModal from "./UploadAssetModal";
-import { ItemStatus } from "./modals/ItemizedConfirmModal";
 
 declare global {
   interface Window {
@@ -102,92 +91,9 @@ type ShellAppContentProps = {
 const ShellAppContent = memo(function ShellAppContent({
   onTabChange,
 }: ShellAppContentProps) {
-  const dispatch = useAppDispatch();
   const [draggedFiles, setDraggedFiles] = useState<File[] | null>(null);
   const [assetTypeOpened, { open: openAssetType, close: closeAssetType }] =
     useDisclosure(false);
-
-  const actions: SpotlightActionData[] = useMemo(
-    () => [
-      {
-        id: "reset-map",
-        label: "Reset map",
-        description: "Delete all objects in the current map",
-        onClick: () => {
-          modals.openConfirmModal({
-            title: "Reset map?",
-            children: (
-              <Text size="sm">
-                This will delete everything in the map. This action cannot be
-                undone.
-              </Text>
-            ),
-            labels: { confirm: "Reset map", cancel: "Cancel" },
-            confirmProps: { color: "red" },
-            centered: true,
-            withCloseButton: false,
-            onConfirm: () => dispatch(resetMapThunk()),
-          });
-        },
-        leftSection: <IconTrash />,
-      },
-      {
-        id: "reset-all",
-        label: "Reset all",
-        description: "Delete all map, tileset, and story data",
-        onClick: () => {
-          modals.openConfirmModal({
-            title: "Reset everything?",
-            children: (
-              <Text size="sm">
-                This will delete everything. This action cannot be undone.
-              </Text>
-            ),
-            labels: { confirm: "Reset ALL", cancel: "Cancel" },
-            confirmProps: { color: "red" },
-            centered: true,
-            withCloseButton: false,
-            onConfirm: () => dispatch(resetAllThunk()),
-          });
-        },
-        leftSection: <IconTrash />,
-      },
-      {
-        id: "clear-broken",
-        label: "Clear broken objects",
-        description:
-          "Remove references to missing tilesets or objects from the map",
-        onClick: () => {
-          modals.openContextModal({
-            modal: "confirm",
-            title: "Clear broken references?",
-            centered: true,
-            withCloseButton: true,
-            innerProps: {
-              makeItems: () => {
-                const items: ItemStatus[] = [];
-                const state = store.getState();
-                const broken = brokenTileGroups(state);
-                items.push({
-                  ok: broken.length === 0,
-                  message:
-                    broken.length === 0
-                      ? "No broken tiles found."
-                      : `Found ${broken.length} broken tiles`,
-                });
-                return items;
-              },
-              confirmLabel: "Yes, clear references",
-              msg: "Are you sure you want to clear all broken references? This will delete all map objects that are not backed by a tileset. This action cannot be undone.",
-              onConfirm: () => {},
-            },
-          });
-        },
-        leftSection: <IconUnlink />,
-      },
-    ],
-    [dispatch]
-  );
 
   const { activeTab, mountedTabs, loadingMessages } = useAppSelector(
     (state) => ({
@@ -307,16 +213,7 @@ const ShellAppContent = memo(function ShellAppContent({
         </AppShell.Main>
       </AppShell>
 
-      <Spotlight
-        actions={actions}
-        centered
-        nothingFound="Nothing found..."
-        highlightQuery
-        searchProps={{
-          leftSection: <IconSearch size={20} stroke={1.5} />,
-          placeholder: "Search...",
-        }}
-      />
+      <Spotlight />
     </>
   );
 });

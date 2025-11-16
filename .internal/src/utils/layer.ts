@@ -6,10 +6,10 @@ export function mapLayerToName(layer: MapLayerName): string {
       return "Ground";
     case MapLayerName.Exterior:
       return "Exterior";
-    case MapLayerName.Colliders:
-      return "Colliders";
-    case MapLayerName.Places:
-      return "Places";
+    case MapLayerName.Sensors:
+      return "Sensors";
+    case MapLayerName.Special:
+      return "Special";
     default:
       return "Unknown";
   }

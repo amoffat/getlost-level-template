@@ -16,6 +16,9 @@ interface UIState {
   tipCollapsed: boolean;
   tilesetTab: TilesetTabName;
   paletteFilterSwitches: PaletteFilterSwitches;
+  flags: {
+    showHiddenTilesets: boolean;
+  };
 }
 
 // Derive default tab from current URL path when in the browser; fallback to map-editor in non-DOM contexts
@@ -46,6 +49,9 @@ const initialState: UIState = {
     },
     npcs: {},
   },
+  flags: {
+    showHiddenTilesets: false,
+  },
 };
 
 export const slice = createSlice({
@@ -67,6 +73,12 @@ export const slice = createSlice({
       const { tab, filterKey, checked } = action.payload;
       const tabVals = state.paletteFilterSwitches[tab];
       (tabVals as Record<string, boolean>)[filterKey] = checked;
+    },
+    setFlags(
+      state,
+      action: PayloadAction<Record<keyof UIState["flags"], boolean>>
+    ) {
+      state.flags = { ...state.flags, ...action.payload };
     },
     setTab: (state, action: PayloadAction<MainTabName>) => {
       state.activeTab = action.payload;

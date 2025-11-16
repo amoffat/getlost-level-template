@@ -1,4 +1,5 @@
 import { log } from "@/log";
+import { RootState } from "@/store/store";
 import { AnimationTemplate, isAnimationTemplate } from "@/types/animation";
 import { isNpcTemplate, NpcTemplate } from "@/types/npc";
 import { Rect } from "@/types/rect";
@@ -420,10 +421,6 @@ export const slice = createSlice({
       );
   },
   selectors: {
-    selectTilesets: createTsSelector(
-      [(state) => state.tilesetIds, (state) => state.tilesets],
-      (tilesetIds, tilesets): Tileset[] => tilesetIds.map((id) => tilesets[id])
-    ),
     selectTileset: createTsSelector(
       [(state, tsId: string) => state.tilesets[tsId]],
       (ts): Tileset | null => (ts ? ts : null)
@@ -509,5 +506,17 @@ export const slice = createSlice({
   },
 });
 
-export const selectors = slice.selectors;
+const selectTilesets = createSelector.withTypes<RootState>()(
+  [
+    (state) => state.tilesetEditor.tilesetIds,
+    (state) => state.tilesetEditor.tilesets,
+    (state) => state.ui.flags.showHiddenTilesets,
+  ],
+  (tilesetIds, tilesets, showHiddenTilesets): Tileset[] =>
+    tilesetIds
+      .map((id) => tilesets[id])
+      .filter((ts) => (ts.hidden ? showHiddenTilesets : true))
+);
+
+export const selectors = { ...slice.selectors, selectTilesets };
 export const actions = slice.actions;

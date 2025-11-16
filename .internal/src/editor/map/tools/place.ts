@@ -5,6 +5,7 @@ import { log } from "@/log";
 import { actions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { isAnimationTemplate, TileAnimationFrame } from "@/types/animation";
+import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import {
   AnimationInstance,
@@ -30,6 +31,19 @@ import {
 } from "../../common/drag";
 import { globals as g } from "../globals";
 
+// Modes that will allow placement of objects
+const placeModes: Set<Mode> = new Set([
+  "paint",
+  "set-waypoint",
+  "add-light",
+  "set-gateway",
+]);
+
+// Modes that allow the creation of the place icon in the canvas.
+const placeIconModes: Set<Mode> = new Set([...placeModes, "autotiler"]);
+
+const draggableModes: Set<Mode> = new Set(["paint"]);
+
 export class Placer implements ClickDragListener {
   public immediateDrag = true;
   protected paint = false;
@@ -45,7 +59,7 @@ export class Placer implements ClickDragListener {
   public pointerUp(_e: PointerEventData): void {
     const state = store.getState();
     const mode = selectors.selectMode(state);
-    if (mode !== "paint") return;
+    if (!placeModes.has(mode)) return;
 
     const ms = state.mapEditor;
     const paintMode = ms.toolOptions.paint.mode;
@@ -63,33 +77,35 @@ export class Placer implements ClickDragListener {
   public pointerMove(e: PointerEventData): void {
     const state = store.getState();
     const mode = selectors.selectMode(state);
+    if (!placeModes.has(mode)) return;
 
-    if (mode === "paint") {
-      if (!g.placableSprite) return;
+    if (!g.placableSprite) return;
 
-      const gridSize = state.mapEditor.place.obj!.gridSize;
-      const rawPos = e.localPos;
-      let finalPos: Vector = rawPos;
-      const snap = state.mapEditor.grid.snap;
-      if (snap) {
-        finalPos = {
-          x: Math.floor(rawPos.x / gridSize.x) * gridSize.x,
-          y: Math.floor(rawPos.y / gridSize.y) * gridSize.y,
-        };
-      } else {
-        finalPos = {
-          x: Math.round(rawPos.x),
-          y: Math.round(rawPos.y),
-        };
-      }
-
-      g.placableOutline.position = finalPos;
-      g.placableContainer.position = finalPos;
+    const gridSize = state.mapEditor.place.obj!.gridSize;
+    const rawPos = e.localPos;
+    let finalPos: Vector = rawPos;
+    const snap = state.mapEditor.grid.snap;
+    if (snap) {
+      finalPos = {
+        x: Math.floor(rawPos.x / gridSize.x) * gridSize.x,
+        y: Math.floor(rawPos.y / gridSize.y) * gridSize.y,
+      };
+    } else {
+      finalPos = {
+        x: Math.round(rawPos.x),
+        y: Math.round(rawPos.y),
+      };
     }
+
+    g.placableOutline.position = finalPos;
+    g.placableContainer.position = finalPos;
   }
 
   public pointerDrag(_e: PointerEventData): void {
-    if (this.paint) {
+    const state = store.getState();
+    const mode = selectors.selectMode(state);
+
+    if (this.paint && draggableModes.has(mode)) {
       const state = store.getState();
       const ms = state.mapEditor;
       const paintMode = ms.toolOptions.paint.mode;
@@ -247,7 +263,7 @@ subState(
       g.placableContainer.removeChildren();
     }
 
-    if (placeObj && ["paint", "autotiler"].includes(mode)) {
+    if (placeObj && placeIconModes.has(mode)) {
       let sprite: P.Sprite;
       if (assetChanged) {
         if (isTileGroupTemplate(placeObj)) {

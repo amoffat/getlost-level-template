@@ -115,7 +115,7 @@ export const slice = createSlice({
       visible: [
         MapLayerName.Ground,
         MapLayerName.Exterior,
-        MapLayerName.Colliders,
+        MapLayerName.Sensors,
       ],
       lockInactive: true,
       dimInactive: false,

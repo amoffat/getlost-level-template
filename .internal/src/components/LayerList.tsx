@@ -50,13 +50,13 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
         description: "Ground objects are always rendered beneath the character",
       },
       {
-        id: MapLayerName.Colliders,
-        description: "Objects that stop character movement",
+        id: MapLayerName.Sensors,
+        description: "Areas that trigger events or define zones",
       },
 
       {
-        id: MapLayerName.Places,
-        description: "Special locations like gateways and waypoints",
+        id: MapLayerName.Special,
+        description: "Special objects like gateways, lights, and waypoints",
       },
     ];
   }, []);
@@ -87,7 +87,7 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
                     <Overlay
                       blur={3}
                       backgroundOpacity={0.2}
-                      color="#000000ff"
+                      color="#ff0000ff"
                       radius="md"
                     />
                   )}

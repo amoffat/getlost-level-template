@@ -28,8 +28,6 @@ import { shallowEqual } from "react-redux";
 import TilesetGroup from "../TilesetGroup";
 import Tip from "../Tip";
 
-const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-
 export default function Fill() {
   const {
     candidates: cands,
