@@ -1,3 +1,4 @@
+import { lightIcon } from "@/constants/tsObjs";
 import { drawOutline } from "@/editor/common/outline";
 import { selectStroke } from "@/editor/common/strokes";
 import { globals as gApp } from "@/globals";
@@ -7,14 +8,7 @@ import { store } from "@/store/store";
 import { isAnimationTemplate, TileAnimationFrame } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import {
-  AnimationInstance,
-  isTileGroupInstance,
-  MapObj,
-  MapObjType,
-  NpcInstance,
-  TileGroupInstance,
-} from "@/types/map";
+import { isTileGroupInstance, MapObj, MapObjType } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
 import { toPixiRect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
@@ -182,28 +176,44 @@ export class Placer implements ClickDragListener {
     const place = ms.place;
     const obj = place.obj!;
     const id = crypto.randomUUID();
+    let inst!: MapObj;
 
     if (isTileGroupTemplate(obj)) {
-      const inst: TileGroupInstance = {
-        id,
-        type: MapObjType.TileGroupInstance,
-        x: pos.x,
-        y: pos.y,
-        tsObjId: obj.id,
-        imageId: obj.imageId,
-        tilesetId: obj.tilesetId,
-        flipX: place.flipX,
-        z,
-        layer,
-        width: obj.pos.width,
-        height: obj.pos.height,
-      };
-
-      store.dispatch(actions.addOne(inst));
+      if (obj.id === lightIcon) {
+        inst = {
+          id,
+          type: MapObjType.Light,
+          x: pos.x,
+          y: pos.y,
+          z,
+          tsObjId: obj.id,
+          tilesetId: obj.tilesetId,
+          layer,
+          intensity: 1.0,
+          color: { r: 255, g: 255, b: 255 },
+          width: obj.pos.width,
+          height: obj.pos.height,
+        };
+      } else {
+        inst = {
+          id,
+          type: MapObjType.TileGroupInstance,
+          x: pos.x,
+          y: pos.y,
+          tsObjId: obj.id,
+          imageId: obj.imageId,
+          tilesetId: obj.tilesetId,
+          flipX: place.flipX,
+          z,
+          layer,
+          width: obj.pos.width,
+          height: obj.pos.height,
+        };
+      }
     } else if (isAnimationTemplate(obj)) {
       const firstFrame = obj.frames[0]!.tg;
 
-      const inst: AnimationInstance = {
+      inst = {
         id,
         type: MapObjType.AnimationInstance,
         tsObjId: obj.id,
@@ -216,10 +226,8 @@ export class Placer implements ClickDragListener {
         width,
         height,
       };
-
-      store.dispatch(actions.addOne(inst));
     } else if (isNpcTemplate(obj)) {
-      const inst: NpcInstance = {
+      inst = {
         id,
         type: MapObjType.NpcInstance,
         tsObjId: obj.id,
@@ -232,9 +240,10 @@ export class Placer implements ClickDragListener {
         width,
         height,
       };
-
-      store.dispatch(actions.addOne(inst));
     }
+
+    console.assert(!!inst, "No instance created for placer");
+    store.dispatch(actions.addOne(inst));
   }
 }
 

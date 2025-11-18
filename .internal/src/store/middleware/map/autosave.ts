@@ -33,7 +33,7 @@ const startAppListening =
   listenerMiddleware.startListening as AppStartListening;
 
 startAppListening({
-  // Any action from the map slice
+  // Any action with a reconcileType
   predicate: (action) =>
     action.type.startsWith(slice.name) &&
     (action.meta as any)?.reconcileType !== undefined,

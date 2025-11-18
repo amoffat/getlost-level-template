@@ -124,6 +124,7 @@ export function trackKeyPresses({
   };
   window.addEventListener("blur", clearKeys);
   window.addEventListener("focus", clearKeys);
+  element.addEventListener("mouseleave", clearKeys);
 
   return pressedKeys;
 }

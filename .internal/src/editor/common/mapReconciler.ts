@@ -7,10 +7,10 @@ import {
   isAnimatedInstance,
   isColliderBox,
   isColliderEllipse,
+  isLightInstance,
   isNpcInstance,
   isTileGroupInstance,
   MapObj,
-  MapObjsFromTileset,
 } from "@/types/map";
 import { NpcTemplate } from "@/types/npc";
 import { toPixiRect } from "@/types/rect";
@@ -132,7 +132,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
   }
 
   protected override createNode(obj: MapObj): P.Container | null {
-    if (isTileGroupInstance(obj)) {
+    if (isTileGroupInstance(obj) || isLightInstance(obj)) {
       const tsTex = this.getTilesetTex(obj.tilesetId);
       if (!tsTex) {
         return this.makeErrorNode(obj);
@@ -175,7 +175,10 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       );
       sprite.interactive = false;
       sprite.anchor.set(0.5);
-      sprite.scale.x = obj.flipX ? -1 : 1;
+
+      if (isTileGroupInstance(obj)) {
+        sprite.scale.x = obj.flipX ? -1 : 1;
+      }
 
       const spriteContainer = new P.Container();
       spriteContainer.label = obj.id;
@@ -337,7 +340,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
    *
    * @returns A placeholder error container
    */
-  private makeErrorNode(obj: MapObjsFromTileset): P.Container {
+  private makeErrorNode(obj: MapObj): P.Container {
     const container = new P.Container();
     container.label = obj.id;
 

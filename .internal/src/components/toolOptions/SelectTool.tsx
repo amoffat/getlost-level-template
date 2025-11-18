@@ -1,12 +1,19 @@
 import { walkSounds } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { selectors } from "@/slices/mapEditor";
-import { selectors as tsSelectors } from "@/slices/tilesetEditor";
+import {
+  actions as mapActions,
+  selectors as mapSelectors,
+} from "@/slices/mapEditor";
+import {
+  actions as tsActions,
+  selectors as tsSelectors,
+} from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { bringToTopThunk, sendToBottomThunk } from "@/thunks/map";
 import { MapLayerName } from "@/types/layer";
 import { TileGroupInstance } from "@/types/map";
 import { TileGroupTemplate } from "@/types/tilegroup";
+import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import {
   Button,
   Fieldset,
@@ -17,7 +24,9 @@ import {
   TextInput,
 } from "@mantine/core";
 import { IconArrowBarToDown, IconArrowBarToUp } from "@tabler/icons-react";
-import { ReactNode, useMemo } from "react";
+import { x64 } from "murmurhash3js";
+import { ReactNode, useCallback, useMemo } from "react";
+import { shallowEqual } from "react-redux";
 import PropertyValue, {
   PropertyValueInfo,
   PropertyValueLevel,
@@ -26,7 +35,7 @@ import Tip from "../Tip";
 
 export default function SelectTool() {
   const selectedTgInstances = useAppSelector(
-    selectors.selectedTileGroupInstances
+    mapSelectors.selectedTileGroupInstances
   );
   const dispatch = useAppDispatch();
   const groundLayer = useAppSelector(
@@ -63,6 +72,7 @@ export default function SelectTool() {
   return (
     <>
       <Tip tips={tips} />
+
       {groundLayer && (
         <Fieldset legend="Ordering" p="xs">
           <Stack p={0}>
@@ -101,68 +111,145 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
   const groundLayer = useAppSelector(
     (state) => state.mapEditor.layers.active === MapLayerName.Ground
   );
+  const tmpls = useAppSelector(
+    (state) =>
+      tsSelectors.templatesFromInstanceIds(
+        state,
+        objs.map((o) => o.tsObjId)
+      ),
+    shallowEqual
+  );
 
-  type propNames = "name" | "friction" | "traction";
-  const toCollect: {
-    [K in propNames]: PropertyValueInfo<NonNullable<TileGroupInstance[K]>>[];
-  } = {
-    name: [],
-    friction: [],
-    traction: [],
-  };
+  // This is critical for resetting the PropertyValue components when the
+  // selection changes. Otherwise the internal state of these components will
+  // get out of sync.
+  const propId = useMemo(() => {
+    // Create a stable key based on the sorted IDs
+    const sortedIds = [...objs]
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map((o) => o.id);
+    return x64.hash128(sortedIds.join(","));
+  }, [objs]);
 
-  // Helper function to collect property values with proper type narrowing
-  const collectProperty = <K extends propNames, V extends TileGroupInstance[K]>(
-    key: K,
-    obj: TileGroupInstance,
-    tmpl: TileGroupTemplate | null
-  ) => {
-    const valuesArray = toCollect[key];
-    const instanceValue = obj[key] as V;
-    const templateValue = tmpl?.[key] as V;
+  type PropNames = "name" | "friction" | "traction";
 
-    if (instanceValue === undefined) {
-      if (templateValue !== undefined) {
+  const toCollect = useMemo(() => {
+    const toCollect: {
+      [K in PropNames]: PropertyValueInfo<NonNullable<TileGroupInstance[K]>>[];
+    } = {
+      name: [],
+      friction: [],
+      traction: [],
+    };
+
+    // Helper function to collect property values with proper type narrowing
+    const collectProperty = <
+      K extends PropNames,
+      V extends TileGroupInstance[K],
+    >(
+      key: K,
+      obj: TileGroupInstance,
+      tmpl: TileGroupTemplate | null
+    ) => {
+      const valuesArray = toCollect[key];
+      const instanceValue = obj[key] as V;
+      const templateValue = tmpl?.[key] as V;
+
+      if (instanceValue === undefined) {
+        if (templateValue !== undefined) {
+          valuesArray.push({
+            value: templateValue,
+            level: "template",
+          });
+        }
+      } else {
         valuesArray.push({
-          value: templateValue,
-          level: "template",
+          value: instanceValue,
+          level: "instance",
         });
       }
-    } else {
-      valuesArray.push({
-        value: instanceValue,
-        level: "instance",
-      });
-    }
-  };
+    };
 
-  const state = store.getState();
+    objs.forEach((obj, index) => {
+      const tmpl = tmpls[index];
+      for (const key of Object.keys(toCollect) as PropNames[]) {
+        collectProperty(key, obj, tmpl);
+      }
+    });
 
-  for (const obj of objs) {
-    const tmpl = tsSelectors.templateFromInstanceId(
-      state,
-      obj.tsObjId
-    ) as TileGroupTemplate | null;
+    return toCollect;
+  }, [objs, tmpls]);
 
-    for (const key of Object.keys(toCollect) as (keyof typeof toCollect)[]) {
-      collectProperty(key, obj, tmpl);
-    }
-  }
+  const updateProps = useCallback(
+    (level: PropertyValueLevel, props: Partial<TileGroupInstance>) => {
+      // If we're in template mode, all of the changes go to the template
+      // objects
+      if (level === "template") {
+        // Object templates may come from different tilesets, so group by
+        // tileset ID
+        const changesByTs = new Map<string, string[]>();
+        for (const obj of objs) {
+          if (!changesByTs.has(obj.tilesetId)) {
+            changesByTs.set(obj.tilesetId, []);
+          }
+          changesByTs.get(obj.tilesetId)!.push(obj.tsObjId);
+        }
 
-  const updateProps = (props: Partial<TileGroupInstance>) => {
-    // Implementation for updating properties
-  };
+        // Apply the changes to each tileset's template objects, but only the
+        // props for which the value is defined
+        const definedProps = Object.entries(props).reduce(
+          (acc, [key, value]) => {
+            if (value !== undefined) {
+              acc[key as keyof TilesetObjectTemplate] = value as any;
+            }
+            return acc;
+          },
+          {} as Partial<TilesetObjectTemplate>
+        );
+
+        for (const [tsId, tsObjIds] of changesByTs.entries()) {
+          const changes = tsObjIds.map((tsObjId) => ({
+            id: tsObjId,
+            changes: definedProps,
+          }));
+          store.dispatch(tsActions.updateManyTilesetObjects({ tsId, changes }));
+        }
+
+        // Now unset the instance values so they inherit from the updated
+        // templates
+        const changes = [];
+        const undefinedProps: Partial<TileGroupInstance> = {};
+        for (const key of Object.keys(props) as (keyof TileGroupInstance)[]) {
+          undefinedProps[key] = undefined;
+        }
+        for (const obj of objs) {
+          changes.push({ id: obj.id, changes: undefinedProps });
+        }
+        store.dispatch(mapActions.updateMany(changes));
+      }
+      // Otherwise apply changes directly to the instances
+      else {
+        const changes = [];
+        for (const obj of objs) {
+          changes.push({ id: obj.id, changes: props });
+        }
+        store.dispatch(mapActions.updateMany(changes));
+      }
+    },
+    [objs]
+  );
 
   const nameInput = (
     <PropertyValue
+      key={`${propId}-name`}
       label="Name"
-      description="A name for this tile. Does not have to be unique."
+      description="A name for this object. Does not have to be unique."
       values={toCollect.name}
-      onLevelChange={(level: PropertyValueLevel) => {
-        //
-      }}
-      onValueChange={function (value: string): void {
-        updateProps({ name: value });
+      onValueChange={(
+        level: PropertyValueLevel,
+        value: string | undefined
+      ): void => {
+        updateProps(level, { name: value });
       }}
       renderInput={(
         value: string | null,
@@ -170,7 +257,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       ): ReactNode => {
         return (
           <TextInput
-            value={value ?? undefined}
+            value={value ?? ""}
             placeholder={value === null ? "Mixed values" : "Enter name"}
             onChange={(e) => onChange(e.target.value)}
           />
@@ -184,11 +271,11 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       label="Friction"
       description="How much this tile resists movement. Higher values make it harder to slide."
       values={toCollect.friction}
-      onLevelChange={(level: PropertyValueLevel) => {
-        //
-      }}
-      onValueChange={function (value: number): void {
-        throw new Error("Function not implemented.");
+      onValueChange={function (
+        level: PropertyValueLevel,
+        value: number | undefined
+      ): void {
+        updateProps(level, { friction: value });
       }}
       renderInput={(
         value: number | null,
@@ -212,11 +299,8 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       label="Traction"
       description="How much grip this tile provides. Higher values make it easier to change direction."
       values={toCollect.traction}
-      onLevelChange={(level: PropertyValueLevel) => {
-        //
-      }}
-      onValueChange={function (value: number): void {
-        throw new Error("Function not implemented.");
+      onValueChange={(level: PropertyValueLevel, value: number | undefined) => {
+        updateProps(level, { traction: value });
       }}
       renderInput={(
         value: number | null,
@@ -240,10 +324,10 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       label="Walk sound"
       description="The sound that will play when a character walks on this tile"
       values={toCollect.name}
-      onLevelChange={(level: PropertyValueLevel) => {
-        //
-      }}
-      onValueChange={function (value: string): void {
+      onValueChange={function (
+        level: PropertyValueLevel,
+        value: string | undefined
+      ): void {
         throw new Error("Function not implemented.");
       }}
       renderInput={(

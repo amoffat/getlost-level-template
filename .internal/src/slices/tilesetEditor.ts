@@ -179,6 +179,35 @@ export const slice = createSlice({
       },
     },
 
+    updateManyTilesetObjects: {
+      prepare: (payload: {
+        tsId: string;
+        changes: { id: string; changes: Partial<TilesetObjectTemplate> }[];
+      }) => ({
+        meta: {
+          reconcilePrefix,
+          reconcileType: "update" as const,
+          reconcile: payload.changes,
+        },
+        payload,
+      }),
+      reducer(
+        state,
+        action: PayloadAction<{
+          tsId: string;
+          changes: { id: string; changes: Partial<TilesetObjectTemplate> }[];
+        }>
+      ) {
+        const { tsId, changes } = action.payload;
+        if (changes.length === 0) return;
+
+        const ts = state.tilesets[tsId];
+        if (!ts) return;
+
+        tileAdapter.updateMany(ts.tiles, changes);
+      },
+    },
+
     setMode(state, action: PayloadAction<Mode | null>) {
       const mode = action.payload;
       state.activeModeStack = mode === null ? [] : [mode];
@@ -459,6 +488,28 @@ export const slice = createSlice({
       [(state) => state.selectedTiles],
       (tiles): TilesetObjectTemplate[] =>
         tiles.ids.map((id) => tiles.entities[id])
+    ),
+    templatesFromInstanceIds: createTsSelector(
+      [
+        (state) => state.tilesets,
+        (state) => state.objIdToTs,
+        (_, instanceIds: string[]) => instanceIds,
+      ],
+      (
+        tilesets: Record<string, Tileset>,
+        objIdToTs: Record<string, string>,
+        instanceIds: string[]
+      ): (TileGroupTemplate | null)[] => {
+        return instanceIds.map((instanceId) => {
+          const tsId = objIdToTs[instanceId];
+          if (!tsId) return null;
+          const ts = tilesets[tsId];
+          if (!ts) return null;
+          const obj = ts.tiles.entities[instanceId];
+          if (!obj || !isTileGroupTemplate(obj)) return null;
+          return obj;
+        });
+      }
     ),
     templateFromInstanceId: createTsSelector(
       [

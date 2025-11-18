@@ -1,18 +1,31 @@
-import { Group, SegmentedControl, Stack, Text } from "@mantine/core";
+import { overlayProps } from "@/constants";
+import {
+  Box,
+  Group,
+  LoadingOverlay,
+  SegmentedControl,
+  Stack,
+  Text,
+} from "@mantine/core";
+import { useDebouncedCallback } from "@mantine/hooks";
 import {
   IconAlertTriangle,
-  IconHierarchy,
-  IconUser,
+  IconCircleFilled,
+  IconCirclesFilled,
 } from "@tabler/icons-react";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
 export type PropertyValueLevel = "template" | "instance" | "mixed";
+export type SelectableLevel = Extract<
+  PropertyValueLevel,
+  "template" | "instance"
+>;
 
 export interface PropertyValueInfo<T> {
   /** The actual value */
   value: T;
   /** Whether this value is inherited from a template or set on the instance */
-  level: "template" | "instance";
+  level: SelectableLevel;
 }
 
 export interface PropertyValueProps<T> {
@@ -25,11 +38,15 @@ export interface PropertyValueProps<T> {
   /** The input component to render. Receives the effective value and onChange callback */
   renderInput: (value: T | null, onChange: (value: T) => void) => ReactNode;
   /** Callback when the user changes the value */
-  onValueChange: (value: T) => void;
-  /** Callback when the user changes the level (template/instance/mixed) */
-  onLevelChange: (level: PropertyValueLevel) => void;
+  onValueChange: (level: PropertyValueLevel, value: T | undefined) => void;
   /** Optional function to determine if two values are equal (defaults to ===) */
   areEqual?: (a: T, b: T) => boolean;
+  /**
+   * Optional debounce delay in ms for onValueChange callback.
+   * When set, the component will use local state for immediate updates
+   * and debounce calls to onValueChange.
+   */
+  debounceMs?: number;
 }
 
 /**
@@ -45,8 +62,8 @@ export default function PropertyValue<T>({
   values,
   renderInput,
   onValueChange,
-  onLevelChange,
   areEqual = (a, b) => a === b,
+  debounceMs = 300,
 }: PropertyValueProps<T>) {
   const analysis = useMemo(() => {
     if (values.length === 0) {
@@ -55,12 +72,12 @@ export default function PropertyValue<T>({
         hasMixedLevels: false,
         effectiveValue: null,
         uniqueValues: [],
-        levels: new Set<"template" | "instance">(),
+        levels: new Set<SelectableLevel>(),
       };
     }
 
     const uniqueValues: T[] = [];
-    const levels = new Set<"template" | "instance">();
+    const levels = new Set<SelectableLevel>();
 
     // Collect unique values and levels
     for (const info of values) {
@@ -90,8 +107,9 @@ export default function PropertyValue<T>({
     };
   }, [values, areEqual]);
 
-  // Determine the current state for the SegmentedControl (based only on levels, not values)
-  const segmentValue = useMemo(() => {
+  // Determine the current state for the SegmentedControl (based only on levels,
+  // not values)
+  const computedLevel = useMemo(() => {
     if (analysis.hasMixedLevels) {
       return "mixed";
     }
@@ -103,6 +121,67 @@ export default function PropertyValue<T>({
     }
     return "instance"; // default fallback
   }, [analysis]);
+
+  const [localLevel, setLocalLevel] =
+    useState<PropertyValueLevel>(computedLevel);
+  const [localValue, setLocalValue] = useState<T | null>(
+    analysis.effectiveValue
+  );
+
+  const [hasPendingValue, setHasPendingValue] = useState(false);
+
+  const debouncedSetValue = useDebouncedCallback((value: T) => {
+    onValueChange(localLevel, value);
+  }, debounceMs);
+
+  // Sync local state when the effective value changes from outside
+  useEffect(() => {
+    setLocalValue(analysis.effectiveValue);
+  }, [analysis.effectiveValue]);
+
+  // When the segmented control changes, update level and trigger onValueChange
+  const setLevel = useCallback(
+    (strLevel: string) => {
+      const level = strLevel as PropertyValueLevel;
+      // Update local state immediately for responsive UI
+      setLocalLevel(level);
+
+      setHasPendingValue(level === "template");
+
+      // This triggers an expensive operation in parent, so defer it
+      requestIdleCallback(() => {
+        onValueChange(
+          level,
+          level === "template" ? undefined : (localValue ?? undefined)
+        );
+        setHasPendingValue(false);
+      });
+    },
+    [localValue, onValueChange]
+  );
+
+  // The widget for the input field, passed in from props
+  const inputField = useMemo(
+    () =>
+      renderInput(localValue, (value) => {
+        setLocalValue(value);
+
+        if (analysis.hasMixedValues) {
+          setLocalLevel("instance");
+        }
+
+        // Often the input can have rapid changes, like text inputs, so debounce
+        // them
+        debouncedSetValue(value);
+      }),
+    [
+      localValue,
+      setLocalLevel,
+      renderInput,
+      debouncedSetValue,
+      analysis.hasMixedValues,
+    ]
+  );
 
   return (
     <Stack gap="xs" p={0}>
@@ -121,12 +200,8 @@ export default function PropertyValue<T>({
 
       <SegmentedControl
         p={0}
-        value={segmentValue}
-        onChange={(value) => {
-          if (onLevelChange) {
-            onLevelChange(value as PropertyValueLevel);
-          }
-        }}
+        value={localLevel}
+        onChange={setLevel}
         size="xs"
         data={[
           {
@@ -137,12 +212,12 @@ export default function PropertyValue<T>({
               </Group>
             ),
             value: "mixed",
-            disabled: segmentValue !== "mixed",
+            disabled: localLevel !== "mixed",
           },
           {
             label: (
               <Group gap={4} wrap="nowrap">
-                <IconUser size={14} />
+                <IconCirclesFilled size={14} />
                 <Text size="xs">Instance</Text>
               </Group>
             ),
@@ -151,7 +226,7 @@ export default function PropertyValue<T>({
           {
             label: (
               <Group gap={4} wrap="nowrap">
-                <IconHierarchy size={14} />
+                <IconCircleFilled size={14} />
                 <Text size="xs">Template</Text>
               </Group>
             ),
@@ -159,9 +234,9 @@ export default function PropertyValue<T>({
           },
         ]}
         color={
-          segmentValue === "mixed"
+          localLevel === "mixed"
             ? "orange"
-            : segmentValue === "template"
+            : localLevel === "template"
               ? "grape"
               : "cyan"
         }
@@ -172,7 +247,15 @@ export default function PropertyValue<T>({
         }}
       />
 
-      {renderInput(analysis.effectiveValue, onValueChange)}
+      <Box pos="relative">
+        <LoadingOverlay
+          visible={hasPendingValue}
+          zIndex={1000}
+          overlayProps={overlayProps}
+          loaderProps={{ type: "bars", size: "xs" }}
+        />
+        {inputField}
+      </Box>
 
       {analysis.hasMixedValues && (
         <Text size="xs" c="dimmed" fs="italic">

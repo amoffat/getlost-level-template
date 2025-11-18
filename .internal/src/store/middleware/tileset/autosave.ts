@@ -1,19 +1,13 @@
 import { log } from "@/log";
 import { deleteTileset, saveTileset } from "@/persist/tileset/api";
-import { actions as tsActions } from "@/slices/tilesetEditor";
+import { slice, actions as tsActions } from "@/slices/tilesetEditor";
 import { AppStartListening } from "@/types/redux";
 import { makeGroupedDebouncer } from "@/utils/debounce";
-import { createListenerMiddleware, isAnyOf } from "@reduxjs/toolkit";
+import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { EMPTY, from } from "rxjs";
 import { catchError, tap } from "rxjs/operators";
 
 const listenerMiddleware = createListenerMiddleware();
-
-type TsAction =
-  | ReturnType<typeof tsActions.addTileset>
-  | ReturnType<typeof tsActions.addPaletteObjects>
-  | ReturnType<typeof tsActions.updateTilesetObject>
-  | ReturnType<typeof tsActions.deletePaletteObjects>;
 
 const debounceSaves = makeGroupedDebouncer();
 
@@ -21,16 +15,14 @@ const startAppListening =
   listenerMiddleware.startListening as AppStartListening;
 
 startAppListening({
-  matcher: isAnyOf(
-    tsActions.addTileset,
-    tsActions.addPaletteObjects,
-    tsActions.updateTilesetObject,
-    tsActions.deletePaletteObjects
-  ),
+  // Any action with a reconcileType
+  predicate: (action) =>
+    action.type.startsWith(slice.name) &&
+    (action.meta as any)?.reconcileType !== undefined,
 
-  effect: async (action: TsAction, { dispatch, getState }) => {
+  effect: async (action, { dispatch, getState }) => {
     // All matched actions carry a { ts: Tileset } payload
-    const { tsId } = action.payload;
+    const { tsId } = action.payload as { tsId: string };
     const ts = getState().tilesetEditor.tilesets[tsId];
 
     const save = () =>

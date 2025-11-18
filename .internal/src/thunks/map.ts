@@ -1,4 +1,9 @@
-import { iconTsId, lightIcon, startIcon, waypointIcon } from "@/constants";
+import {
+  iconTsId,
+  lightIcon,
+  startIcon,
+  waypointIcon,
+} from "@/constants/tsObjs";
 import { loadMap } from "@/persist/map/api";
 import { router } from "@/router";
 import { actions as mapActions, selectors } from "@/slices/mapEditor";

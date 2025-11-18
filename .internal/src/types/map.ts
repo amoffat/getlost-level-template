@@ -25,11 +25,16 @@ export interface BaseMapObj {
   width: number;
   height: number;
 }
-export interface TileGroupInstance extends BaseMapObj {
-  type: MapObjType.TileGroupInstance;
+
+interface TilesetMapObj extends BaseMapObj {
   // The id of the underlying tileset object
   tsObjId: string;
   tilesetId: string;
+}
+
+export interface TileGroupInstance extends TilesetMapObj {
+  type: MapObjType.TileGroupInstance;
+
   imageId: string; // for healing broken references
 
   // Properties that can vary per-instance
@@ -49,11 +54,8 @@ export interface TileAnimationFrame {
   time: number;
 }
 
-export interface AnimationInstance extends BaseMapObj {
+export interface AnimationInstance extends TilesetMapObj {
   type: MapObjType.AnimationInstance;
-  // The id of the underlying tileset object
-  tsObjId: string;
-  tilesetId: string;
 
   // Properties that can vary per-instance
   flipX?: boolean;
@@ -61,11 +63,8 @@ export interface AnimationInstance extends BaseMapObj {
   tags?: string[];
 }
 
-export interface NpcInstance extends BaseMapObj {
+export interface NpcInstance extends TilesetMapObj {
   type: MapObjType.NpcInstance;
-  // The id of the underlying tileset object
-  tsObjId: string;
-  tilesetId: string;
 
   // Properties that can vary per-instance
   flipX?: boolean;
@@ -73,7 +72,7 @@ export interface NpcInstance extends BaseMapObj {
   tags?: string[];
 }
 
-export interface LightObj extends BaseMapObj {
+export interface LightObj extends TilesetMapObj {
   type: MapObjType.Light;
   color: RgbColor;
   intensity: number;
@@ -134,4 +133,8 @@ export function isMapObjFromTileset(
   return (
     isTileGroupInstance(obj) || isAnimatedInstance(obj) || isNpcInstance(obj)
   );
+}
+
+export function isLightInstance(obj: Partial<BaseMapObj>): obj is LightObj {
+  return obj.type === MapObjType.Light;
 }

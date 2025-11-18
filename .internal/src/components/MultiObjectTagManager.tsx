@@ -67,11 +67,11 @@ export default function MultiObjectTagManager({
   const allIds = useMemo(() => objects.map((obj) => obj.id), [objects]);
 
   // Extract the actual tag from the display value (removes the count suffix)
-  const extractTag = useCallback((displayValue: string): string => {
+  const extractTag = (displayValue: string): string => {
     // Match everything before the count pattern " (n/m)"
     const match = displayValue.match(/^(.+?)\s*\(\d+\/\d+\)$/);
     return match ? match[1] : displayValue;
-  }, []);
+  };
 
   // Handle adding a new tag
   const handleAddTag = useCallback(
@@ -85,7 +85,7 @@ export default function MultiObjectTagManager({
 
       onTagAdded(allIds, tag);
     },
-    [allIds, onTagAdded, tagCounts, objects.length, extractTag]
+    [allIds, onTagAdded, tagCounts, objects.length]
   );
 
   // Handle removing a tag
@@ -94,7 +94,7 @@ export default function MultiObjectTagManager({
       const tag = extractTag(displayValue);
       onTagRemoved(allIds, tag);
     },
-    [allIds, onTagRemoved, extractTag]
+    [allIds, onTagRemoved]
   );
 
   // Custom rendering for dropdown options to show count badges
@@ -118,7 +118,7 @@ export default function MultiObjectTagManager({
         </Group>
       );
     },
-    [tagCounts, objects.length, extractTag]
+    [tagCounts, objects.length]
   );
 
   // Merge suggestions with display tags for the dropdown data

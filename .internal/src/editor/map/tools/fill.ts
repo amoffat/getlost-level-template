@@ -1,4 +1,4 @@
-import { transparentIcon } from "@/constants";
+import { transparentIcon } from "@/constants/tsObjs";
 import {
   ClickDragger,
   ClickDragListener,

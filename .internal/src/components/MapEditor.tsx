@@ -1,5 +1,5 @@
 import * as constants from "@/constants";
-import { iconTsId, transparentIcon } from "@/constants";
+import { iconTsId, transparentIcon } from "@/constants/tsObjs";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/mapEditor";
@@ -85,7 +85,6 @@ export default function MapEditorTab({
   //   (state: RootState) => state.mapEditor.grid.curPos,
   //   shallowEqual
   // );
-  const place = useAppSelector((state: RootState) => state.mapEditor.place.obj);
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -156,13 +155,13 @@ export default function MapEditorTab({
     dispatch(setToolThunk(null));
   }, [dispatch]);
 
-  const handlePaneResize = useCallback(() => {
+  const handlePaneResize = () => {
     // Trigger redrawLayout when panels are resized
     // Use a small delay to ensure the DOM has updated
     requestAnimationFrame(() => {
       window.dispatchEvent(new Event("resize"));
     });
-  }, []);
+  };
 
   const toolPalette: Partial<Record<Mode, ToolDescriptor>> = useMemo(
     () => ({

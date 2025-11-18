@@ -128,13 +128,13 @@ export default function TilesetEditorTab({
     />
   ));
 
-  const handlePaneResize = useCallback(() => {
+  const handlePaneResize = () => {
     // Trigger redrawLayout when panels are resized
     // Use a small delay to ensure the DOM has updated
     requestAnimationFrame(() => {
       window.dispatchEvent(new Event("resize"));
     });
-  }, []);
+  };
 
   const hasTsSelected = ts !== null;
   const enableGroup = ts !== null && !ts.composite;

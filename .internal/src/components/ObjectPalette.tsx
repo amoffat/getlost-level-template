@@ -163,9 +163,9 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
     };
   }, [deselectObject]);
 
-  const onContextMenu = useCallback((e: React.MouseEvent) => {
+  const onContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-  }, []);
+  };
 
   const onPointerDown = useCallback(
     (e: React.MouseEvent) => {
