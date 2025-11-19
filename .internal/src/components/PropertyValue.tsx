@@ -13,6 +13,7 @@ import {
   IconCircleFilled,
   IconCirclesFilled,
 } from "@tabler/icons-react";
+import { x64 } from "murmurhash3js";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
 export type PropertyValueLevel = "template" | "instance" | "mixed";
@@ -22,6 +23,7 @@ export type SelectableLevel = Extract<
 >;
 
 export interface PropertyValueInfo<T> {
+  sourceId: string;
   /** The actual value */
   value: T;
   /** Whether this value is inherited from a template or set on the instance */
@@ -55,8 +57,11 @@ export interface PropertyValueProps<T> {
  * - Objects have different values (shows "Mixed values" indicator)
  * - Values are inherited from templates vs set on instances (shows level indicators)
  * - All objects share the same value (normal editing)
+ *
+ * Note: This component automatically generates a stable key based on the values prop
+ * and label to ensure proper remounting when the selection changes.
  */
-export default function PropertyValue<T>({
+function PropertyValueInner<T>({
   label,
   description,
   values,
@@ -166,7 +171,7 @@ export default function PropertyValue<T>({
       renderInput(localValue, (value) => {
         setLocalValue(value);
 
-        if (analysis.hasMixedValues) {
+        if (analysis.hasMixedValues && analysis.hasMixedLevels) {
           setLocalLevel("instance");
         }
 
@@ -175,11 +180,11 @@ export default function PropertyValue<T>({
         debouncedSetValue(value);
       }),
     [
-      localValue,
-      setLocalLevel,
       renderInput,
-      debouncedSetValue,
+      localValue,
       analysis.hasMixedValues,
+      analysis.hasMixedLevels,
+      debouncedSetValue,
     ]
   );
 
@@ -264,4 +269,23 @@ export default function PropertyValue<T>({
       )}
     </Stack>
   );
+}
+
+/**
+ * Wrapper component that automatically generates a stable key based on the values prop.
+ * This ensures the component remounts when the selection changes, resetting internal state.
+ */
+export default function PropertyValue<T>(props: PropertyValueProps<T>) {
+  // Generate a stable key based on the values array and label
+  // This will change whenever the selection changes, forcing a remount
+  const autoKey = useMemo(() => {
+    const keyParts = props.values.map((v) => v.sourceId);
+    // Include the label to distinguish between different properties
+    if (props.label) {
+      keyParts.push(props.label);
+    }
+    return keyParts.length > 0 ? x64.hash128(keyParts.join(",")) : "empty";
+  }, [props.values, props.label]);
+
+  return <PropertyValueInner key={autoKey} {...props} />;
 }

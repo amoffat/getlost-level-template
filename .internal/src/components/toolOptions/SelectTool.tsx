@@ -1,4 +1,4 @@
-import { walkSounds } from "@/constants";
+import { WalkSound, walkSounds } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
   actions as mapActions,
@@ -24,7 +24,6 @@ import {
   TextInput,
 } from "@mantine/core";
 import { IconArrowBarToDown, IconArrowBarToUp } from "@tabler/icons-react";
-import { x64 } from "murmurhash3js";
 import { ReactNode, useCallback, useMemo } from "react";
 import { shallowEqual } from "react-redux";
 import PropertyValue, {
@@ -120,18 +119,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
     shallowEqual
   );
 
-  // This is critical for resetting the PropertyValue components when the
-  // selection changes. Otherwise the internal state of these components will
-  // get out of sync.
-  const propId = useMemo(() => {
-    // Create a stable key based on the sorted IDs
-    const sortedIds = [...objs]
-      .sort((a, b) => a.id.localeCompare(b.id))
-      .map((o) => o.id);
-    return x64.hash128(sortedIds.join(","));
-  }, [objs]);
-
-  type PropNames = "name" | "friction" | "traction";
+  type PropNames = "name" | "walkSound" | "friction" | "traction";
 
   const toCollect = useMemo(() => {
     const toCollect: {
@@ -140,6 +128,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       name: [],
       friction: [],
       traction: [],
+      walkSound: [],
     };
 
     // Helper function to collect property values with proper type narrowing
@@ -158,12 +147,14 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       if (instanceValue === undefined) {
         if (templateValue !== undefined) {
           valuesArray.push({
+            sourceId: tmpl!.id,
             value: templateValue,
             level: "template",
           });
         }
       } else {
         valuesArray.push({
+          sourceId: obj.id,
           value: instanceValue,
           level: "instance",
         });
@@ -241,7 +232,6 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
 
   const nameInput = (
     <PropertyValue
-      key={`${propId}-name`}
       label="Name"
       description="A name for this object. Does not have to be unique."
       values={toCollect.name}
@@ -260,6 +250,35 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
             value={value ?? ""}
             placeholder={value === null ? "Mixed values" : "Enter name"}
             onChange={(e) => onChange(e.target.value)}
+          />
+        );
+      }}
+    />
+  );
+
+  const walkSoundInput = (
+    <PropertyValue
+      label="Walk sound"
+      description="The sound that will play when a character walks on this tile"
+      values={toCollect.walkSound}
+      onValueChange={function (
+        level: PropertyValueLevel,
+        value: WalkSound | undefined
+      ): void {
+        updateProps(level, { walkSound: value });
+      }}
+      renderInput={(
+        value: WalkSound | null,
+        onChange: (value: WalkSound) => void
+      ): ReactNode => {
+        return (
+          <Select
+            data={walkSounds}
+            value={value ?? undefined}
+            placeholder={value === null ? "Mixed values" : "Select walk sound"}
+            onChange={(val) => {
+              if (val) onChange(val as WalkSound);
+            }}
           />
         );
       }}
@@ -313,35 +332,6 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
             max={1}
             step={0.01}
             onChangeEnd={onChange}
-          />
-        );
-      }}
-    />
-  );
-
-  const walkSoundInput = (
-    <PropertyValue
-      label="Walk sound"
-      description="The sound that will play when a character walks on this tile"
-      values={toCollect.name}
-      onValueChange={function (
-        level: PropertyValueLevel,
-        value: string | undefined
-      ): void {
-        throw new Error("Function not implemented.");
-      }}
-      renderInput={(
-        value: string | null,
-        onChange: (value: string) => void
-      ): ReactNode => {
-        return (
-          <Select
-            data={walkSounds}
-            value={value ?? undefined}
-            placeholder={value === null ? "Mixed values" : "Select walk sound"}
-            onChange={(val) => {
-              if (val) onChange(val);
-            }}
           />
         );
       }}
