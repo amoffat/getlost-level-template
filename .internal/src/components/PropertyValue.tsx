@@ -1,5 +1,6 @@
 import { overlayProps } from "@/constants";
 import {
+  Alert,
   Box,
   Group,
   LoadingOverlay,
@@ -252,6 +253,18 @@ function PropertyValueInner<T>({
         }}
       />
 
+      {analysis.hasMixedValues && (
+        <Alert
+          p="xs"
+          variant="light"
+          color="orange"
+          icon={<IconAlertTriangle size={16} />}
+        >
+          Changing this property will set the same value for all selected
+          objects
+        </Alert>
+      )}
+
       <Box pos="relative">
         <LoadingOverlay
           visible={hasPendingValue}
@@ -261,12 +274,6 @@ function PropertyValueInner<T>({
         />
         {inputField}
       </Box>
-
-      {analysis.hasMixedValues && (
-        <Text size="xs" c="dimmed" fs="italic">
-          Editing will set the same value for all selected objects
-        </Text>
-      )}
     </Stack>
   );
 }

@@ -23,7 +23,11 @@ import {
   Stack,
   TextInput,
 } from "@mantine/core";
-import { IconArrowBarToDown, IconArrowBarToUp } from "@tabler/icons-react";
+import {
+  IconAlertTriangle,
+  IconArrowBarToDown,
+  IconArrowBarToUp,
+} from "@tabler/icons-react";
 import { ReactNode, useCallback, useMemo } from "react";
 import { shallowEqual } from "react-redux";
 import PropertyValue, {
@@ -98,7 +102,7 @@ export default function SelectTool() {
       )}
 
       {props && (
-        <Fieldset legend="Properties" mt="md" p="xs">
+        <Fieldset legend="Object properties" mt="md" p="xs">
           <Stack p={0}>{props}</Stack>
         </Fieldset>
       )}
@@ -247,6 +251,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       ): ReactNode => {
         return (
           <TextInput
+            leftSection={value === null && <IconAlertTriangle size={14} />}
             value={value ?? ""}
             placeholder={value === null ? "Mixed values" : "Enter name"}
             onChange={(e) => onChange(e.target.value)}
@@ -274,6 +279,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
         return (
           <Select
             data={walkSounds}
+            leftSection={value === null && <IconAlertTriangle size={14} />}
             value={value ?? undefined}
             placeholder={value === null ? "Mixed values" : "Select walk sound"}
             onChange={(val) => {
@@ -340,11 +346,11 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
 
   // Placeholder for future Tile Group properties
   return (
-    <>
+    <Stack p={0} gap="xl">
       {nameInput}
       {groundLayer && walkSoundInput}
       {groundLayer && frictionInput}
       {groundLayer && tractionInput}
-    </>
+    </Stack>
   );
 }
