@@ -9,7 +9,7 @@ import {
   TileAnimationFrame,
 } from "@/types/animation";
 import { NpcRequiredAnimation } from "@/types/npc";
-import { TilesetObjType } from "@/types/tileset";
+import { TemplateType } from "@/types/templates";
 import {
   mapUiToWeight,
   mapWeightToUi,
@@ -219,7 +219,7 @@ export default function TileAnimationOptions() {
     const id = await genAnimId(frames);
     const anim: AnimationTemplate = {
       id,
-      type: TilesetObjType.AnimationTemplate,
+      type: TemplateType.Animation,
       tilesetId: tsId,
       gridSize: cands[0]!.gridSize,
       frames,

@@ -1,6 +1,6 @@
 import { Vector2 } from "@/vec";
+import { TemplateType } from "./templates";
 import { TileGroupTemplate } from "./tilegroup";
-import { TilesetObjType } from "./tileset";
 import type { TilesetObjectTemplate } from "./tilesetobject";
 
 export interface TileAnimationFrame {
@@ -10,7 +10,7 @@ export interface TileAnimationFrame {
 export interface AnimationTemplate {
   // The unique, stable id which is based on a hash of the frame ids and times
   id: string;
-  type: TilesetObjType.AnimationTemplate;
+  type: TemplateType.Animation;
   tilesetId: string;
   // The grid size this object is aligned to
   gridSize: Vector2;
@@ -24,5 +24,5 @@ export interface AnimationTemplate {
 export function isAnimationTemplate(
   obj: TilesetObjectTemplate
 ): obj is AnimationTemplate {
-  return obj.type === TilesetObjType.AnimationTemplate;
+  return obj.type === TemplateType.Animation;
 }

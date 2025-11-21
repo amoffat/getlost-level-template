@@ -1,6 +1,6 @@
 import { Vector2 } from "@/vec";
 import type { AnimationTemplate } from "./animation";
-import { TilesetObjType } from "./tileset";
+import { TemplateType } from "./templates";
 import type { TilesetObjectTemplate } from "./tilesetobject";
 
 export type NpcRequiredAnimation =
@@ -19,15 +19,18 @@ export type NpcAnimationRecord = Record<
 export interface NpcTemplate {
   // A random id
   id: string;
-  type: TilesetObjType.NpcTemplate;
+  type: TemplateType.Npc;
   tilesetId: string;
   // The grid size this object is aligned to
   gridSize: Vector2;
-  tags: string[];
-  name: string;
   animations: NpcAnimationRecord;
+
+  // Instance properties
+  name: string;
+  tags: string[];
+  walkSpeed: number;
 }
 
 export function isNpcTemplate(obj: TilesetObjectTemplate): obj is NpcTemplate {
-  return obj.type === TilesetObjType.NpcTemplate;
+  return obj.type === TemplateType.Npc;
 }

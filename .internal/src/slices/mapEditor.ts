@@ -1,6 +1,7 @@
 import { isAnimationTemplate } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
+import { LightTemplate } from "@/types/light";
 import {
   isAnimatedInstance,
   isNpcInstance,
@@ -10,6 +11,7 @@ import {
 } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
 import { Rect } from "@/types/rect";
+import { TemplateType } from "@/types/templates";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObjectTemplate, TsObjCounts } from "@/types/tilesetobject";
 import {
@@ -78,6 +80,9 @@ interface MapEditorState {
     lockInactive: boolean;
     dimInactive: boolean;
   };
+  templates: {
+    lights: LightTemplate;
+  };
 }
 
 export const slice = createSlice({
@@ -120,9 +125,29 @@ export const slice = createSlice({
       lockInactive: true,
       dimInactive: false,
     },
+    templates: {
+      lights: {
+        type: TemplateType.Light,
+        color: { r: 255, g: 255, b: 255 },
+        intensity: 1,
+      },
+    },
     uncommittedObjIds: [],
   } as MapEditorState,
   reducers: {
+    updateTemplate(
+      state,
+      action: PayloadAction<{
+        name: keyof MapEditorState["templates"];
+        updates: Partial<
+          MapEditorState["templates"][keyof MapEditorState["templates"]]
+        >;
+      }>
+    ) {
+      const { name, updates } = action.payload;
+      const existing = state.templates[name];
+      state.templates[name] = { ...existing, ...updates };
+    },
     setZoomPan(state, action: PayloadAction<ZoomPan>) {
       state.zoomPan = action.payload;
     },

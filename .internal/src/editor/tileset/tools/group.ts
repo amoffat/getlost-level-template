@@ -5,8 +5,8 @@ import { store } from "@/store/store";
 import { addPaletteObjectsThunk } from "@/thunks/tileset";
 import { snap } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
+import { TemplateType } from "@/types/templates";
 import { TileGroupTemplate } from "@/types/tilegroup";
-import { TilesetObjType } from "@/types/tileset";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import { averageOklab } from "@/utils/color";
 import { oklabHilbertIndex } from "@/utils/hilbert";
@@ -111,7 +111,7 @@ class Grouper implements ClickDragListener {
 
         const group: TileGroupTemplate = {
           id,
-          type: TilesetObjType.TileGroupTemplate,
+          type: TemplateType.TileGroup,
           imageId,
           tilesetId: tsId,
           pos: coords,
@@ -126,7 +126,7 @@ class Grouper implements ClickDragListener {
           walkSound: constants.defaultWalkSound,
           friction: constants.defaultFriction,
           traction: constants.defaultTraction,
-          sink: 0,
+          hidden: false,
         };
 
         store.dispatch(addPaletteObjectsThunk({ tsId, objs: [group] }));

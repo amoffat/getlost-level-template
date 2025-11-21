@@ -26,7 +26,7 @@ export interface BaseMapObj {
   height: number;
 }
 
-interface TilesetMapObj extends BaseMapObj {
+export interface TilesetMapObj extends BaseMapObj {
   // The id of the underlying tileset object
   tsObjId: string;
   tilesetId: string;
@@ -44,7 +44,6 @@ export interface TileGroupInstance extends TilesetMapObj {
   walkSound?: WalkSound;
   friction?: number;
   traction?: number;
-  sink?: number;
 }
 
 export interface TileAnimationFrame {
@@ -70,12 +69,16 @@ export interface NpcInstance extends TilesetMapObj {
   flipX?: boolean;
   name?: string;
   tags?: string[];
+  walkSpeed?: number;
 }
 
 export interface LightObj extends TilesetMapObj {
   type: MapObjType.Light;
-  color: RgbColor;
-  intensity: number;
+
+  // Properties that can vary per-instance
+  name?: string;
+  color?: RgbColor;
+  intensity?: number;
 }
 
 export interface EllipseObj extends BaseMapObj {

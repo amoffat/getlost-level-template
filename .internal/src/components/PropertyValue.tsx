@@ -50,6 +50,8 @@ export interface PropertyValueProps<T> {
    * and debounce calls to onValueChange.
    */
   debounceMs?: number;
+  /** If true, hides the SegmentedControl and only allows per-instance changes */
+  noTemplate?: boolean;
 }
 
 /**
@@ -70,6 +72,7 @@ function PropertyValueInner<T>({
   onValueChange,
   areEqual = (a, b) => a === b,
   debounceMs = 300,
+  noTemplate = false,
 }: PropertyValueProps<T>) {
   const analysis = useMemo(() => {
     if (values.length === 0) {
@@ -204,54 +207,56 @@ function PropertyValueInner<T>({
         </div>
       )}
 
-      <SegmentedControl
-        p={0}
-        value={localLevel}
-        onChange={setLevel}
-        size="xs"
-        data={[
-          {
-            label: (
-              <Group gap={4} wrap="nowrap">
-                <IconAlertTriangle size={14} />
-                <Text size="xs">Mixed</Text>
-              </Group>
-            ),
-            value: "mixed",
-            disabled: localLevel !== "mixed",
-          },
-          {
-            label: (
-              <Group gap={4} wrap="nowrap">
-                <IconCirclesFilled size={14} />
-                <Text size="xs">Instance</Text>
-              </Group>
-            ),
-            value: "instance",
-          },
-          {
-            label: (
-              <Group gap={4} wrap="nowrap">
-                <IconCircleFilled size={14} />
-                <Text size="xs">Template</Text>
-              </Group>
-            ),
-            value: "template",
-          },
-        ]}
-        color={
-          localLevel === "mixed"
-            ? "orange"
-            : localLevel === "template"
-              ? "grape"
-              : "cyan"
-        }
-        styles={{
-          root: {
-            backgroundColor: "transparent",
-          },
-        }}
-      />
+      {!noTemplate && (
+        <SegmentedControl
+          p={0}
+          value={localLevel}
+          onChange={setLevel}
+          size="xs"
+          data={[
+            {
+              label: (
+                <Group gap={4} wrap="nowrap">
+                  <IconAlertTriangle size={14} />
+                  <Text size="xs">Mixed</Text>
+                </Group>
+              ),
+              value: "mixed",
+              disabled: localLevel !== "mixed",
+            },
+            {
+              label: (
+                <Group gap={4} wrap="nowrap">
+                  <IconCircleFilled size={14} />
+                  <Text size="xs">Unique</Text>
+                </Group>
+              ),
+              value: "instance",
+            },
+            {
+              label: (
+                <Group gap={4} wrap="nowrap">
+                  <IconCirclesFilled size={14} />
+                  <Text size="xs">Shared</Text>
+                </Group>
+              ),
+              value: "template",
+            },
+          ]}
+          color={
+            localLevel === "mixed"
+              ? "orange"
+              : localLevel === "template"
+                ? "grape"
+                : "cyan"
+          }
+          styles={{
+            root: {
+              backgroundColor: "transparent",
+            },
+          }}
+        />
+      )}
 
       {analysis.hasMixedValues && (
         <Alert

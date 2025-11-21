@@ -2,7 +2,7 @@ import { WalkSound } from "@/constants";
 import { OklabColor } from "@/types/color";
 import { Vector2 } from "@/vec";
 import type { Rect } from "./rect";
-import { TilesetObjType } from "./tileset";
+import { TemplateType } from "./templates";
 import type { TilesetObjectTemplate } from "./tilesetobject";
 
 export interface TileGroupTemplate {
@@ -11,7 +11,7 @@ export interface TileGroupTemplate {
   // at the correct tileset object even if there are multiple identical images
   // in different tilesets.
   id: string;
-  type: TilesetObjType.TileGroupTemplate;
+  type: TemplateType.TileGroup;
   // The image-hash based id
   imageId: string;
   // The grid size this object is aligned to
@@ -31,11 +31,11 @@ export interface TileGroupTemplate {
   walkSound: WalkSound;
   friction: number;
   traction: number;
-  sink: number;
+  hidden: boolean;
 }
 
 export function isTileGroupTemplate(
   obj: TilesetObjectTemplate
 ): obj is TileGroupTemplate {
-  return obj.type === TilesetObjType.TileGroupTemplate;
+  return obj.type === TemplateType.TileGroup;
 }

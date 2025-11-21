@@ -27,9 +27,3 @@ export interface Tileset {
 }
 
 export type SavedTileset = Omit<Tileset, "objectUrl" | "saved">;
-
-export enum TilesetObjType {
-  TileGroupTemplate = 0,
-  AnimationTemplate = 1,
-  NpcTemplate = 2,
-}

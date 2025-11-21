@@ -9,7 +9,7 @@ import type {
   NpcRequiredAnimation,
   NpcTemplate,
 } from "@/types/npc";
-import { TilesetObjType } from "@/types/tileset";
+import { TemplateType } from "@/types/templates";
 import {
   Anchor,
   Button,
@@ -98,12 +98,13 @@ export default function NpcOptions() {
     const id = crypto.randomUUID();
     const npc: NpcTemplate = {
       id,
-      type: TilesetObjType.NpcTemplate,
+      type: TemplateType.Npc,
       animations,
       tilesetId: tsId,
       gridSize: animations["Idle"].gridSize,
       name: values.name,
       tags: values.tags,
+      walkSpeed: 0.5,
     };
 
     dispatch(actions.addPaletteObjects({ tsId, objs: [npc] }));
