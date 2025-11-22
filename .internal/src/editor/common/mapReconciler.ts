@@ -7,7 +7,7 @@ import {
   isAnimatedInstance,
   isColliderBox,
   isColliderEllipse,
-  isLightInstance,
+  isMapObjFromTileset,
   isNpcInstance,
   isTileGroupInstance,
   MapObj,
@@ -132,64 +132,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
   }
 
   protected override createNode(obj: MapObj): P.Container | null {
-    if (isTileGroupInstance(obj) || isLightInstance(obj)) {
-      const tsTex = this.getTilesetTex(obj.tilesetId);
-      if (!tsTex) {
-        return this.makeErrorNode(obj);
-      }
-
-      const state = store.getState();
-      const tsObj = tsSelectors.templateFromInstanceId(
-        state,
-        obj.tsObjId
-      ) as TileGroupTemplate;
-      if (!tsObj) {
-        this.debouncedError(
-          obj.tilesetId,
-          "Missing object",
-          `The tile object with ID ${obj.tsObjId} could not be found in the tileset.`
-        );
-        return this.makeErrorNode(obj);
-      }
-
-      const frame = tsObj.pos;
-
-      const texFrame = new P.Rectangle(
-        frame.x + texAtlasPadding,
-        frame.y + texAtlasPadding,
-        frame.width - 2 * texAtlasPadding,
-        frame.height - 2 * texAtlasPadding
-      );
-      const tileTex = new P.Texture({
-        source: tsTex.source,
-        frame: texFrame,
-      });
-
-      // We apply the x-flip on the child sprite so that it can happen about the
-      // center anchor, while the container can have its anchor at top-left for
-      // easier positioning.
-      const sprite = new P.Sprite(tileTex);
-      sprite.position.set(
-        sprite.width / 2 + texAtlasPadding,
-        sprite.height / 2 + texAtlasPadding
-      );
-      sprite.interactive = false;
-      sprite.anchor.set(0.5);
-
-      if (isTileGroupInstance(obj)) {
-        sprite.scale.x = obj.flipX ? -1 : 1;
-      }
-
-      const spriteContainer = new P.Container();
-      spriteContainer.label = obj.id;
-      spriteContainer.position.set(obj.x, obj.y);
-      spriteContainer.zIndex = obj.z;
-      spriteContainer.addChild(sprite);
-      spriteContainer.interactive = true;
-      spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
-
-      return spriteContainer;
-    } else if (isAnimatedInstance(obj)) {
+    if (isAnimatedInstance(obj)) {
       const pixiFrames: P.FrameObject[] = [];
       const tsTex = this.getTilesetTex(obj.tilesetId);
       if (!tsTex) {
@@ -287,6 +230,63 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       sprite.interactive = false;
       sprite.anchor.set(0.5);
       sprite.scale.x = obj.flipX ? -1 : 1;
+
+      const spriteContainer = new P.Container();
+      spriteContainer.label = obj.id;
+      spriteContainer.position.set(obj.x, obj.y);
+      spriteContainer.zIndex = obj.z;
+      spriteContainer.addChild(sprite);
+      spriteContainer.interactive = true;
+      spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
+
+      return spriteContainer;
+    } else if (isMapObjFromTileset(obj)) {
+      const tsTex = this.getTilesetTex(obj.tilesetId);
+      if (!tsTex) {
+        return this.makeErrorNode(obj);
+      }
+
+      const state = store.getState();
+      const tsObj = tsSelectors.templateFromInstanceId(
+        state,
+        obj.tsObjId
+      ) as TileGroupTemplate;
+      if (!tsObj) {
+        this.debouncedError(
+          obj.tilesetId,
+          "Missing object",
+          `The tile object with ID ${obj.tsObjId} could not be found in the tileset.`
+        );
+        return this.makeErrorNode(obj);
+      }
+
+      const frame = tsObj.pos;
+
+      const texFrame = new P.Rectangle(
+        frame.x + texAtlasPadding,
+        frame.y + texAtlasPadding,
+        frame.width - 2 * texAtlasPadding,
+        frame.height - 2 * texAtlasPadding
+      );
+      const tileTex = new P.Texture({
+        source: tsTex.source,
+        frame: texFrame,
+      });
+
+      // We apply the x-flip on the child sprite so that it can happen about the
+      // center anchor, while the container can have its anchor at top-left for
+      // easier positioning.
+      const sprite = new P.Sprite(tileTex);
+      sprite.position.set(
+        sprite.width / 2 + texAtlasPadding,
+        sprite.height / 2 + texAtlasPadding
+      );
+      sprite.interactive = false;
+      sprite.anchor.set(0.5);
+
+      if (isTileGroupInstance(obj)) {
+        sprite.scale.x = obj.flipX ? -1 : 1;
+      }
 
       const spriteContainer = new P.Container();
       spriteContainer.label = obj.id;

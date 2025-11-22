@@ -24,7 +24,8 @@ export type SelectableLevel = Extract<
 >;
 
 export interface PropertyValueInfo<T> {
-  sourceId: string;
+  // Used purly for key generation/stability for react components
+  key: string;
   /** The actual value */
   value: T;
   /** Whether this value is inherited from a template or set on the instance */
@@ -291,7 +292,7 @@ export default function PropertyValue<T>(props: PropertyValueProps<T>) {
   // Generate a stable key based on the values array and label
   // This will change whenever the selection changes, forcing a remount
   const autoKey = useMemo(() => {
-    const keyParts = props.values.map((v) => v.sourceId);
+    const keyParts = props.values.map((v) => v.key);
     // Include the label to distinguish between different properties
     if (props.label) {
       keyParts.push(props.label);

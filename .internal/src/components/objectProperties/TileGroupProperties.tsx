@@ -4,13 +4,13 @@ import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { TileGroupInstance } from "@/types/map";
-import { TileGroupTemplate } from "@/types/tilegroup";
+import { TileGroupProps } from "@/types/properties";
 import {
   collectPropertyValues,
   updateObjectProperties,
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
-import { Select, Slider, Stack, TextInput } from "@mantine/core";
+import { Fieldset, Select, Slider, Stack, TextInput } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { ReactNode, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
@@ -29,22 +29,25 @@ export default function TileGroupProperties({
     return tsSelectors.templateFromInstanceId(
       state,
       obj.tsObjId
-    ) as TileGroupTemplate;
+    ) as TileGroupProps;
   };
 
-  type PropNames = "name" | "walkSound" | "friction" | "traction";
-
   const toCollect = useMemo(() => {
-    return collectPropertyValues<
-      PropNames,
-      TileGroupInstance,
-      TileGroupTemplate | null
-    >(objs, resolveTemplate, ["name", "walkSound", "friction", "traction"]);
+    return collectPropertyValues<TileGroupProps, TileGroupInstance>(
+      objs,
+      resolveTemplate,
+      ["name", "walkSound", "friction", "traction"]
+    );
   }, [objs]);
 
   const updateProps = useCallback(
     (level: PropertyValueLevel, props: Partial<TileGroupInstance>) => {
-      updateObjectProperties(level, objs, props, updateTilesetTemplates);
+      updateObjectProperties<TileGroupProps, TileGroupInstance>(
+        level,
+        objs,
+        props,
+        updateTilesetTemplates
+      );
     },
     [objs]
   );
@@ -160,11 +163,13 @@ export default function TileGroupProperties({
   );
 
   return (
-    <Stack p={0} gap="xl">
-      {nameInput}
-      {groundLayer && walkSoundInput}
-      {groundLayer && frictionInput}
-      {groundLayer && tractionInput}
-    </Stack>
+    <Fieldset legend="Object properties" mt="md" p="xs">
+      <Stack p={0} gap="xl">
+        {nameInput}
+        {groundLayer && walkSoundInput}
+        {groundLayer && frictionInput}
+        {groundLayer && tractionInput}
+      </Stack>
+    </Fieldset>
   );
 }

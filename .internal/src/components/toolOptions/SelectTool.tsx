@@ -3,6 +3,10 @@ import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { bringToTopThunk, sendToBottomThunk } from "@/thunks/map";
 import { MapLayerName } from "@/types/layer";
 import {
+  EntranceObj,
+  ExitObj,
+  isEntranceObj,
+  isExitObj,
   isLightInstance,
   isNpcInstance,
   isTileGroupInstance,
@@ -13,6 +17,7 @@ import {
 import { Button, Fieldset, Kbd, Stack } from "@mantine/core";
 import { IconArrowBarToDown, IconArrowBarToUp } from "@tabler/icons-react";
 import { ReactNode, useMemo } from "react";
+import EntranceProperties from "../objectProperties/EntranceProperties";
 import LightProperties from "../objectProperties/LightProperties";
 import NpcProperties from "../objectProperties/NpcProperties";
 import TileGroupProperties from "../objectProperties/TileGroupProperties";
@@ -49,10 +54,12 @@ export default function SelectTool() {
   };
 
   // Separate selected objects by type
-  const { tileGroups, lights, npcs } = useMemo(() => {
+  const { tileGroups, lights, npcs, entrances, exits } = useMemo(() => {
     const tileGroups: TileGroupInstance[] = [];
     const lights: LightObj[] = [];
     const npcs: NpcInstance[] = [];
+    const entrances: EntranceObj[] = [];
+    const exits: ExitObj[] = [];
 
     for (const obj of selectedObjs) {
       if (isTileGroupInstance(obj)) {
@@ -61,10 +68,14 @@ export default function SelectTool() {
         lights.push(obj);
       } else if (isNpcInstance(obj)) {
         npcs.push(obj);
+      } else if (isEntranceObj(obj)) {
+        entrances.push(obj);
+      } else if (isExitObj(obj)) {
+        exits.push(obj);
       }
     }
 
-    return { tileGroups, lights, npcs };
+    return { tileGroups, lights, npcs, entrances, exits };
   }, [selectedObjs]);
 
   const props = useMemo(() => {
@@ -85,8 +96,16 @@ export default function SelectTool() {
       return <NpcProperties key="npc-props" objs={npcs} />;
     }
 
+    if (entrances.length > 0) {
+      return <EntranceProperties key="entrance-props" objs={entrances} />;
+    }
+
+    if (exits.length > 0) {
+      // Add exit properties component here if needed
+    }
+
     return null;
-  }, [tileGroups, lights, npcs]);
+  }, [tileGroups, lights, npcs, entrances, exits]);
 
   const hasSelection = selectedObjs.length > 0;
 
@@ -119,11 +138,7 @@ export default function SelectTool() {
         </Fieldset>
       )}
 
-      {props && (
-        <Fieldset legend="Object properties" mt="md" p="xs">
-          <Stack p={0}>{props}</Stack>
-        </Fieldset>
-      )}
+      {props}
     </>
   );
 }

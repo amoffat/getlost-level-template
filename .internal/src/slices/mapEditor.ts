@@ -1,7 +1,6 @@
 import { isAnimationTemplate } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { LightTemplate } from "@/types/light";
 import {
   isAnimatedInstance,
   isNpcInstance,
@@ -10,8 +9,8 @@ import {
   TileGroupInstance,
 } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
+import { EntranceProps, ExitProps, LightProps } from "@/types/properties";
 import { Rect } from "@/types/rect";
-import { TemplateType } from "@/types/templates";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObjectTemplate, TsObjCounts } from "@/types/tilesetobject";
 import {
@@ -81,7 +80,9 @@ interface MapEditorState {
     dimInactive: boolean;
   };
   templates: {
-    lights: LightTemplate;
+    lights: LightProps;
+    entryGateways: EntranceProps;
+    exitGateways: ExitProps;
   };
 }
 
@@ -127,21 +128,31 @@ export const slice = createSlice({
     },
     templates: {
       lights: {
-        type: TemplateType.Light,
+        name: "",
+        tags: [],
         color: { r: 255, g: 255, b: 255 },
         intensity: 1,
+      },
+      entryGateways: {
+        name: "",
+        tags: [],
+        exitId: null,
+      },
+      exitGateways: {
+        name: "",
+        tags: [],
+        force: false,
+        preferredEntranceId: null,
       },
     },
     uncommittedObjIds: [],
   } as MapEditorState,
   reducers: {
-    updateTemplate(
-      state,
+    updateTemplate<Name extends keyof MapEditorState["templates"]>(
+      state: MapEditorState,
       action: PayloadAction<{
-        name: keyof MapEditorState["templates"];
-        updates: Partial<
-          MapEditorState["templates"][keyof MapEditorState["templates"]]
-        >;
+        name: Name;
+        updates: Partial<MapEditorState["templates"][Name]>;
       }>
     ) {
       const { name, updates } = action.payload;

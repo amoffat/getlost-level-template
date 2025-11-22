@@ -1,4 +1,4 @@
-import { lightIcon } from "@/constants/tsObjs";
+import { lightIcon, startIcon } from "@/constants/tsObjs";
 import { drawOutline } from "@/editor/common/outline";
 import { selectStroke } from "@/editor/common/strokes";
 import { globals as gApp } from "@/globals";
@@ -189,8 +189,19 @@ export class Placer implements ClickDragListener {
           tsObjId: obj.id,
           tilesetId: obj.tilesetId,
           layer,
-          intensity: 1.0,
-          color: { r: 255, g: 255, b: 255 },
+          width: obj.pos.width,
+          height: obj.pos.height,
+        };
+      } else if (obj.id === startIcon) {
+        inst = {
+          id,
+          type: MapObjType.Entry,
+          x: pos.x,
+          y: pos.y,
+          z,
+          tsObjId: obj.id,
+          tilesetId: obj.tilesetId,
+          layer,
           width: obj.pos.width,
           height: obj.pos.height,
         };
@@ -203,9 +214,9 @@ export class Placer implements ClickDragListener {
           tsObjId: obj.id,
           imageId: obj.imageId,
           tilesetId: obj.tilesetId,
-          flipX: place.flipX,
           z,
           layer,
+          flipX: place.flipX,
           width: obj.pos.width,
           height: obj.pos.height,
         };

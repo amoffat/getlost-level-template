@@ -21,18 +21,18 @@ export interface HasId {
  * @returns Object mapping property names to arrays of PropertyValueInfo
  */
 export function collectPropertyValues<
-  K extends PropertyKey,
-  TInstance extends HasId & Partial<Record<K, any>>,
-  TTemplate extends Partial<HasId & Record<K, any>> | null,
+  TProps extends Record<string, any>,
+  // TInstance must have an id, but properties can be optional
+  TInstance extends HasId & Partial<TProps>,
 >(
   objs: TInstance[],
-  resolveTemplate: (obj: TInstance) => TTemplate | null,
-  propertyNames: K[]
+  resolveTemplate: (obj: TInstance) => TProps | null,
+  propertyNames: (keyof TProps)[]
 ): {
-  [P in K]: PropertyValueInfo<NonNullable<TInstance[P]>>[];
+  [P in keyof TProps]: PropertyValueInfo<NonNullable<TInstance[P]>>[];
 } {
   const collected = {} as {
-    [P in K]: PropertyValueInfo<NonNullable<TInstance[P]>>[];
+    [P in keyof TProps]: PropertyValueInfo<NonNullable<TInstance[P]>>[];
   };
 
   // Initialize arrays for each property
@@ -52,15 +52,15 @@ export function collectPropertyValues<
       if (instanceValue === undefined) {
         if (templateValue !== undefined) {
           valuesArray.push({
-            sourceId: tmpl!.id ?? "tmpl",
-            value: templateValue as NonNullable<TInstance[typeof propName]>,
+            key: obj.id,
+            value: templateValue,
             level: "template",
           });
         }
       } else {
         valuesArray.push({
-          sourceId: obj.id,
-          value: instanceValue as NonNullable<TInstance[typeof propName]>,
+          key: obj.id,
+          value: instanceValue,
           level: "instance",
         });
       }
@@ -86,26 +86,25 @@ export function collectPropertyValues<
  * @param templateUpdate - Callback to update templates when level is "template"
  */
 export function updateObjectProperties<
-  K extends PropertyKey,
-  TInstance extends HasId & Partial<Record<K, any>>,
-  TTemplate extends Record<K, any> | null,
+  TProps extends Record<string, any>,
+  TInstance extends HasId & Partial<TProps>,
 >(
   level: PropertyValueLevel,
   objs: TInstance[],
-  props: Partial<TTemplate>,
-  templateUpdate: (objs: TInstance[], props: Partial<TTemplate>) => void
+  props: Partial<TInstance>,
+  templateUpdate: (objs: TInstance[], props: Partial<TProps>) => void
 ): void {
   if (level === "template") {
     // Filter out undefined props before passing to templateUpdate
     const definedProps = Object.entries(props).reduce((acc, [key, value]) => {
       if (value !== undefined) {
-        acc[key as keyof TInstance] = value as any;
+        acc[key as keyof TProps] = value as any;
       }
       return acc;
-    }, {} as Partial<TInstance>);
+    }, {} as Partial<TProps>);
 
     // Call the provided callback to update templates
-    templateUpdate(objs, definedProps as Partial<TTemplate>);
+    templateUpdate(objs, definedProps);
 
     // Now unset the instance values so they inherit from the updated templates
     const undefinedProps: Partial<TInstance> = {};

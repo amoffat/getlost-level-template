@@ -1,38 +1,37 @@
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { NpcInstance } from "@/types/map";
-import { NpcTemplate } from "@/types/npc";
+import { NpcProps } from "@/types/properties";
 import {
   collectPropertyValues,
   updateObjectProperties,
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
-import { Slider, Stack, TextInput } from "@mantine/core";
+import { Fieldset, Slider, Stack, TextInput } from "@mantine/core";
 import { ReactNode, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 
 export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
   const resolveTemplate = (obj: NpcInstance) => {
     const state = store.getState();
-    return tsSelectors.templateFromInstanceId(
-      state,
-      obj.tsObjId
-    ) as NpcTemplate;
+    return tsSelectors.templateFromInstanceId(state, obj.tsObjId) as NpcProps;
   };
 
-  type PropNames = "name" | "walkSpeed";
-
   const toCollect = useMemo(() => {
-    return collectPropertyValues<PropNames, NpcInstance, NpcTemplate>(
-      objs,
-      resolveTemplate,
-      ["name", "walkSpeed"]
-    );
+    return collectPropertyValues<NpcProps, NpcInstance>(objs, resolveTemplate, [
+      "name",
+      "walkSpeed",
+    ]);
   }, [objs]);
 
   const updateProps = useCallback(
     (level: PropertyValueLevel, props: Partial<NpcInstance>) => {
-      updateObjectProperties(level, objs, props, updateTilesetTemplates);
+      updateObjectProperties<NpcProps, NpcInstance>(
+        level,
+        objs,
+        props,
+        updateTilesetTemplates
+      );
     },
     [objs]
   );
@@ -92,9 +91,11 @@ export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
   );
 
   return (
-    <Stack p={0} gap="xl">
-      {nameInput}
-      {walkSpeedInput}
-    </Stack>
+    <Fieldset legend="NPC properties" mt="md" p="xs">
+      <Stack p={0} gap="xl">
+        {nameInput}
+        {walkSpeedInput}
+      </Stack>
+    </Fieldset>
   );
 }

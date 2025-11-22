@@ -1,5 +1,6 @@
 import { Vector2 } from "@/vec";
 import type { AnimationTemplate } from "./animation";
+import { NpcProps } from "./properties";
 import { TemplateType } from "./templates";
 import type { TilesetObjectTemplate } from "./tilesetobject";
 
@@ -16,7 +17,7 @@ export type NpcAnimationRecord = Record<
 > &
   Record<string, AnimationTemplate>;
 
-export interface NpcTemplate {
+export interface NpcTemplate extends NpcProps {
   // A random id
   id: string;
   type: TemplateType.Npc;
@@ -24,11 +25,6 @@ export interface NpcTemplate {
   // The grid size this object is aligned to
   gridSize: Vector2;
   animations: NpcAnimationRecord;
-
-  // Instance properties
-  name: string;
-  tags: string[];
-  walkSpeed: number;
 }
 
 export function isNpcTemplate(obj: TilesetObjectTemplate): obj is NpcTemplate {

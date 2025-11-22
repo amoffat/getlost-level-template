@@ -147,7 +147,8 @@ export async function unpackTileset(tsId: string, coordsList: Rect[]) {
       walkSound: constants.defaultWalkSound,
       friction: constants.defaultFriction,
       traction: constants.defaultTraction,
-      sink: 0,
+      hidden: false,
+      flipX: false,
     };
 
     chunk.push(tg);

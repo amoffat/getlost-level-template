@@ -2,13 +2,13 @@ import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { RgbColor } from "@/types/color";
-import { LightTemplate } from "@/types/light";
 import { LightObj } from "@/types/map";
+import { LightProps } from "@/types/properties";
 import {
   collectPropertyValues,
   updateObjectProperties,
 } from "@/utils/propertyEditor";
-import { ColorInput, Slider, Stack, TextInput } from "@mantine/core";
+import { ColorInput, Fieldset, Slider, Stack, TextInput } from "@mantine/core";
 import { ReactNode, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 
@@ -17,7 +17,7 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
 
   // All light objects use the same global light template
   const updateLightTemplate = useCallback(
-    (_objs: LightObj[], props: Partial<LightTemplate>) => {
+    (_objs: LightObj[], props: Partial<LightProps>) => {
       dispatch(
         mapEditorActions.updateTemplate({
           name: "lights",
@@ -30,22 +30,27 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
 
   const updateProps = useCallback(
     (level: PropertyValueLevel, props: Partial<Omit<LightObj, "type">>) => {
-      updateObjectProperties(level, objs, props, updateLightTemplate);
+      updateObjectProperties<LightProps, LightObj>(
+        level,
+        objs,
+        props,
+        updateLightTemplate
+      );
     },
     [objs, updateLightTemplate]
   );
 
-  const resolveTemplate = (_obj: LightObj): LightTemplate => {
+  const resolveTemplate = (_obj: LightObj): LightProps => {
     const state = store.getState();
     return state.mapEditor.templates.lights;
   };
 
   const toCollect = useMemo(() => {
-    return collectPropertyValues<
-      "color" | "intensity" | "name",
-      LightObj,
-      LightTemplate
-    >(objs, resolveTemplate, ["color", "intensity", "name"]);
+    return collectPropertyValues<LightProps, LightObj>(objs, resolveTemplate, [
+      "color",
+      "intensity",
+      "name",
+    ]);
   }, [objs]);
 
   const nameInput = (
@@ -147,10 +152,12 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
   );
 
   return (
-    <Stack p={0} gap="xl">
-      {nameInput}
-      {colorInput}
-      {intensityInput}
-    </Stack>
+    <Fieldset legend="Light properties" mt="md" p="xs">
+      <Stack p={0} gap="xl">
+        {nameInput}
+        {colorInput}
+        {intensityInput}
+      </Stack>
+    </Fieldset>
   );
 }

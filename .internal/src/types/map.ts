@@ -1,5 +1,11 @@
-import { WalkSound } from "@/constants";
-import { RgbColor } from "./color";
+import {
+  AnimationProps,
+  EntranceProps,
+  ExitProps,
+  LightProps,
+  NpcProps,
+  TileGroupProps,
+} from "./properties";
 import { Rect } from "./rect";
 
 export enum MapObjType {
@@ -32,18 +38,12 @@ export interface TilesetMapObj extends BaseMapObj {
   tilesetId: string;
 }
 
-export interface TileGroupInstance extends TilesetMapObj {
+export interface TileGroupInstance
+  extends TilesetMapObj,
+    Partial<TileGroupProps> {
   type: MapObjType.TileGroupInstance;
 
   imageId: string; // for healing broken references
-
-  // Properties that can vary per-instance
-  flipX?: boolean;
-  name?: string;
-  tags?: string[];
-  walkSound?: WalkSound;
-  friction?: number;
-  traction?: number;
 }
 
 export interface TileAnimationFrame {
@@ -53,32 +53,18 @@ export interface TileAnimationFrame {
   time: number;
 }
 
-export interface AnimationInstance extends TilesetMapObj {
+export interface AnimationInstance
+  extends TilesetMapObj,
+    Partial<AnimationProps> {
   type: MapObjType.AnimationInstance;
-
-  // Properties that can vary per-instance
-  flipX?: boolean;
-  name?: string;
-  tags?: string[];
 }
 
-export interface NpcInstance extends TilesetMapObj {
+export interface NpcInstance extends TilesetMapObj, Partial<NpcProps> {
   type: MapObjType.NpcInstance;
-
-  // Properties that can vary per-instance
-  flipX?: boolean;
-  name?: string;
-  tags?: string[];
-  walkSpeed?: number;
 }
 
-export interface LightObj extends TilesetMapObj {
+export interface LightObj extends TilesetMapObj, Partial<LightProps> {
   type: MapObjType.Light;
-
-  // Properties that can vary per-instance
-  name?: string;
-  color?: RgbColor;
-  intensity?: number;
 }
 
 export interface EllipseObj extends BaseMapObj {
@@ -91,6 +77,15 @@ export interface PolyObj extends BaseMapObj {
   type: MapObjType.PolyCollider;
   points: { x: number; y: number }[];
 }
+
+export interface EntranceObj extends TilesetMapObj, Partial<EntranceProps> {
+  type: MapObjType.Entry;
+}
+
+export interface ExitObj extends TilesetMapObj, Partial<ExitProps> {
+  type: MapObjType.Exit;
+}
+
 export type MapObj =
   | TileGroupInstance
   | AnimationInstance
@@ -98,12 +93,9 @@ export type MapObj =
   | LightObj
   | EllipseObj
   | PolyObj
-  | BoxObj;
-
-export type MapObjsFromTileset =
-  | TileGroupInstance
-  | AnimationInstance
-  | NpcInstance;
+  | BoxObj
+  | EntranceObj
+  | ExitObj;
 
 export function isTileGroupInstance(
   obj: Partial<BaseMapObj>
@@ -132,12 +124,18 @@ export function isNpcInstance(obj: Partial<BaseMapObj>): obj is NpcInstance {
 
 export function isMapObjFromTileset(
   obj: Partial<BaseMapObj>
-): obj is MapObjsFromTileset {
-  return (
-    isTileGroupInstance(obj) || isAnimatedInstance(obj) || isNpcInstance(obj)
-  );
+): obj is TilesetMapObj {
+  return Object.hasOwn(obj, "tsObjId") && Object.hasOwn(obj, "tilesetId");
 }
 
 export function isLightInstance(obj: Partial<BaseMapObj>): obj is LightObj {
   return obj.type === MapObjType.Light;
+}
+
+export function isEntranceObj(obj: Partial<BaseMapObj>): obj is EntranceObj {
+  return obj.type === MapObjType.Entry;
+}
+
+export function isExitObj(obj: Partial<BaseMapObj>): obj is ExitObj {
+  return obj.type === MapObjType.Exit;
 }
