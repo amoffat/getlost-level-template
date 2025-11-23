@@ -62,6 +62,7 @@ import Tip from "./Tip";
 import AddCollider from "./toolOptions/AddCollider";
 import Autotiler from "./toolOptions/Autotiler";
 import Fill from "./toolOptions/Fill";
+import Gateways from "./toolOptions/Gateways";
 import Paint from "./toolOptions/Paint";
 import SelectTool from "./toolOptions/SelectTool";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
@@ -189,9 +190,10 @@ export default function MapEditorTab({
         options: <Fill />,
       },
       "set-gateway": {
-        name: "Set gateway",
+        name: "Add gateway",
         icon: <IconDoorExit size={16} />,
         layerConstraints: [MapLayerName.Special],
+        options: <Gateways />,
       },
       "set-waypoint": {
         name: "Set waypoint",

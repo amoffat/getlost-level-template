@@ -1,4 +1,4 @@
-import { lightIcon, startIcon } from "@/constants/tsObjs";
+import { entranceIcon, exitIcon, lightIcon } from "@/constants/tsObjs";
 import { drawOutline } from "@/editor/common/outline";
 import { selectStroke } from "@/editor/common/strokes";
 import { globals as gApp } from "@/globals";
@@ -192,10 +192,23 @@ export class Placer implements ClickDragListener {
           width: obj.pos.width,
           height: obj.pos.height,
         };
-      } else if (obj.id === startIcon) {
+      } else if (obj.id === entranceIcon) {
         inst = {
           id,
           type: MapObjType.Entry,
+          x: pos.x,
+          y: pos.y,
+          z,
+          tsObjId: obj.id,
+          tilesetId: obj.tilesetId,
+          layer,
+          width: obj.pos.width,
+          height: obj.pos.height,
+        };
+      } else if (obj.id === exitIcon) {
+        inst = {
+          id,
+          type: MapObjType.Exit,
           x: pos.x,
           y: pos.y,
           z,

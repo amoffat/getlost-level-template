@@ -2,8 +2,8 @@ import { overlayProps } from "@/constants";
 import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { EntranceObj } from "@/types/map";
-import { EntranceProps } from "@/types/properties";
+import { ExitObj } from "@/types/map";
+import { ExitProps } from "@/types/properties";
 import { extractIdFromGithubRepoUrl, extractOwnerRepo } from "@/utils/github";
 import {
   collectPropertyValues,
@@ -11,9 +11,7 @@ import {
 } from "@/utils/propertyEditor";
 import {
   Button,
-  CloseButton,
   Fieldset,
-  Group,
   Loader,
   Modal,
   Select,
@@ -42,7 +40,7 @@ const cachedLookupIdFromGithubRepoUrl = memoize(extractIdFromGithubRepoUrl, {
   promise: true,
 });
 
-export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
+export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
   const dispatch = useAppDispatch();
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
@@ -113,12 +111,12 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
     }
   }, 1000);
 
-  // All entrance objects use the same global entrance template
+  // All exit objects use the same global exit template
   const updateTemplate = useCallback(
-    (_objs: EntranceObj[], props: Partial<EntranceProps>) => {
+    (_objs: ExitObj[], props: Partial<ExitProps>) => {
       dispatch(
         mapEditorActions.updateTemplate({
-          name: "entryGateways",
+          name: "exitGateways",
           updates: props,
         })
       );
@@ -127,8 +125,8 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
   );
 
   const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<EntranceProps>) => {
-      updateObjectProperties<EntranceProps, EntranceObj>(
+    (level: PropertyValueLevel, props: Partial<ExitProps>) => {
+      updateObjectProperties<ExitProps, ExitObj>(
         level,
         objs,
         props,
@@ -151,24 +149,21 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       ? `${numericRepoId}/${values.exitId}`
       : values.exitId;
 
-    // Add the new exit ID to the array
-    const currentExitIds = toCollect.exitIds[0]?.value ?? [];
-    const newExitIds = [...currentExitIds, formattedExitId];
-    updateProps("instance", { exitIds: newExitIds });
+    updateProps("instance", { preferredEntranceId: formattedExitId });
     resetAndCloseModal();
   });
 
-  const resolveTemplate = (_obj: EntranceObj): EntranceProps => {
+  const resolveTemplate = (_obj: ExitObj): ExitProps => {
     const state = store.getState();
-    return state.mapEditor.templates.entryGateways;
+    return state.mapEditor.templates.exitGateways;
   };
 
   const toCollect = useMemo(() => {
-    return collectPropertyValues<EntranceProps, EntranceObj>(
-      objs,
-      resolveTemplate,
-      ["name", "exitIds", "primary"]
-    );
+    return collectPropertyValues<ExitProps, ExitObj>(objs, resolveTemplate, [
+      "name",
+      "preferredEntranceId",
+      "force",
+    ]);
   }, [objs]);
 
   const nameInput = (
@@ -198,73 +193,51 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
     />
   );
 
-  const numExits = toCollect.exitIds[0]?.value.length ?? 0;
-
-  const exitIdInput = (
-    <Stack p={0} gap="xs">
-      <PropertyValue
-        label="Exit connections"
-        description="The IDs of the exits (up to 3) that will lead to this entrance."
-        noTemplate
-        values={toCollect.exitIds}
-        onValueChange={(
-          level: PropertyValueLevel,
-          value: string[] | undefined
-        ): void => {
-          updateProps(level, { exitIds: value });
-        }}
-        renderInput={(
-          value: string[] | null,
-          onChange: (value: string[]) => void
-        ): ReactNode => {
-          const exitIds = value ?? [];
-
-          return (
-            <Stack gap="xs" p={0}>
-              {exitIds.map((exitId, index) => (
-                <Group key={index} gap="xs" wrap="nowrap">
-                  <TextInput
-                    flex={1}
-                    value={exitId}
-                    placeholder="Enter exit id"
-                    onChange={(e) => {
-                      const newExitIds = [...exitIds];
-                      newExitIds[index] = e.target.value;
-                      onChange(newExitIds);
-                    }}
-                  />
-                  <CloseButton
-                    size="xs"
-                    onClick={() => {
-                      const newExitIds = exitIds.filter((_, i) => i !== index);
-                      onChange(newExitIds);
-                    }}
-                  />
-                </Group>
-              ))}
-            </Stack>
-          );
-        }}
-      />
-      {numExits < 3 && (
-        <Button size="xs" fullWidth onClick={openModal}>
-          Add connection
-        </Button>
-      )}
-    </Stack>
+  const preferredEntranceInput = (
+    <PropertyValue
+      label="Preferred entrance"
+      description="If an entrance matching this id attaches to this exit, it will be permanently attached."
+      noTemplate
+      values={toCollect.preferredEntranceId}
+      onValueChange={(
+        level: PropertyValueLevel,
+        value: string | null | undefined
+      ): void => {
+        updateProps(level, { preferredEntranceId: value });
+      }}
+      renderInput={(
+        value: string | null,
+        onChange: (value: string) => void
+      ): ReactNode => {
+        return (
+          <Stack gap="xs" p={0}>
+            <TextInput
+              value={value ?? ""}
+              placeholder="Enter entrance id"
+              onChange={(e) => {
+                onChange(e.target.value);
+              }}
+            />
+            <Button size="xs" fullWidth onClick={openModal}>
+              Add connection
+            </Button>
+          </Stack>
+        );
+      }}
+    />
   );
 
-  const primaryInput = (
+  const forceInput = (
     <PropertyValue
-      label="Primary entrance?"
-      description="When a player arrives at your level directly, they will start at this entrance."
+      label="Force exit?"
+      description="If an exit is forced, players do not get a choice to exit."
       noTemplate
-      values={toCollect.primary}
+      values={toCollect.force}
       onValueChange={(
         level: PropertyValueLevel,
         value: boolean | undefined
       ): void => {
-        updateProps(level, { primary: value });
+        updateProps(level, { force: value });
       }}
       renderInput={(
         value: boolean | null,
@@ -284,11 +257,11 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
 
   return (
     <>
-      <Fieldset legend="Entrance properties" mt="md" p="xs">
+      <Fieldset legend="Exit properties" mt="md" p="xs">
         <Stack p={0} gap="xl">
           {singleSelected && nameInput}
-          {singleSelected && primaryInput}
-          {singleSelected && exitIdInput}
+          {forceInput}
+          {singleSelected && preferredEntranceInput}
         </Stack>
       </Fieldset>
 

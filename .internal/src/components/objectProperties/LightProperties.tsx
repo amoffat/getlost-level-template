@@ -29,7 +29,7 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
   );
 
   const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<Omit<LightObj, "type">>) => {
+    (level: PropertyValueLevel, props: Partial<LightProps>) => {
       updateObjectProperties<LightProps, LightObj>(
         level,
         objs,

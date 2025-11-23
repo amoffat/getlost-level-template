@@ -14,10 +14,12 @@ import {
   NpcInstance,
   TileGroupInstance,
 } from "@/types/map";
-import { Button, Fieldset, Kbd, Stack } from "@mantine/core";
+import { Alert, Button, Fieldset, Kbd, Stack } from "@mantine/core";
 import { IconArrowBarToDown, IconArrowBarToUp } from "@tabler/icons-react";
 import { ReactNode, useMemo } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import EntranceProperties from "../objectProperties/EntranceProperties";
+import ExitProperties from "../objectProperties/ExitProperties";
 import LightProperties from "../objectProperties/LightProperties";
 import NpcProperties from "../objectProperties/NpcProperties";
 import TileGroupProperties from "../objectProperties/TileGroupProperties";
@@ -101,7 +103,7 @@ export default function SelectTool() {
     }
 
     if (exits.length > 0) {
-      // Add exit properties component here if needed
+      return <ExitProperties key="exit-props" objs={exits} />;
     }
 
     return null;
@@ -138,7 +140,16 @@ export default function SelectTool() {
         </Fieldset>
       )}
 
-      {props}
+      <ErrorBoundary
+        resetKeys={[selectedObjs]}
+        fallback={
+          <Alert variant="filled" color="pink" title="Error">
+            Properties failed to render
+          </Alert>
+        }
+      >
+        {props}
+      </ErrorBoundary>
     </>
   );
 }

@@ -141,7 +141,7 @@ function PropertyValueInner<T>({
   const [hasPendingValue, setHasPendingValue] = useState(false);
 
   const debouncedSetValue = useDebouncedCallback((value: T) => {
-    onValueChange(localLevel, value);
+    onValueChange(noTemplate ? "instance" : localLevel, value);
   }, debounceMs);
 
   // Sync local state when the effective value changes from outside

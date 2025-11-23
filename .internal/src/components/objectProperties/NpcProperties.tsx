@@ -25,7 +25,7 @@ export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
   }, [objs]);
 
   const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<NpcInstance>) => {
+    (level: PropertyValueLevel, props: Partial<NpcProps>) => {
       updateObjectProperties<NpcProps, NpcInstance>(
         level,
         objs,

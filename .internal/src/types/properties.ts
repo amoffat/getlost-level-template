@@ -4,7 +4,8 @@ import { RgbColor } from "./color";
 export interface EntranceProps {
   name: string;
   tags: string[];
-  exitId: string | null;
+  exitIds: string[];
+  primary: boolean;
 }
 
 export interface ExitProps {

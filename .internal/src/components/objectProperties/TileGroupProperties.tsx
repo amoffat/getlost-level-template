@@ -41,7 +41,7 @@ export default function TileGroupProperties({
   }, [objs]);
 
   const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<TileGroupInstance>) => {
+    (level: PropertyValueLevel, props: Partial<TileGroupProps>) => {
       updateObjectProperties<TileGroupProps, TileGroupInstance>(
         level,
         objs,

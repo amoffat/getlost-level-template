@@ -136,7 +136,8 @@ export const slice = createSlice({
       entryGateways: {
         name: "",
         tags: [],
-        exitId: null,
+        exitIds: [],
+        primary: false,
       },
       exitGateways: {
         name: "",

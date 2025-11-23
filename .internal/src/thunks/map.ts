@@ -1,9 +1,4 @@
-import {
-  iconTsId,
-  lightIcon,
-  startIcon,
-  waypointIcon,
-} from "@/constants/tsObjs";
+import { iconTsId, lightIcon, waypointIcon } from "@/constants/tsObjs";
 import { loadMap } from "@/persist/map/api";
 import { router } from "@/router";
 import { actions as mapActions, selectors } from "@/slices/mapEditor";
@@ -130,13 +125,7 @@ export const setToolThunk = createAsyncThunk(
     dispatch(clearUncommittedThunk());
     dispatch(mapActions.clearSelection());
 
-    if (tool === "set-gateway") {
-      const tg = loadTileGroup({
-        id: startIcon,
-        tilesetId: iconTsId,
-      });
-      dispatch(mapActions.setPlace(tg));
-    } else if (tool === "add-light") {
+    if (tool === "add-light") {
       const tg = loadTileGroup({
         id: lightIcon,
         tilesetId: iconTsId,
