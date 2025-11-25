@@ -25,7 +25,7 @@ export abstract class NavPlan {
     start: Vec2,
     end: Vec2,
     nearestIsOk: bool,
-    lengthBound: f32 = Number.POSITIVE_INFINITY
+    lengthBound: f32 = Number.POSITIVE_INFINITY as f32
   ): bool {
     const path = host.navigation.findPath(
       "",
