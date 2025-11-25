@@ -15,7 +15,11 @@ import {
   TileGroupInstance,
 } from "@/types/map";
 import { Alert, Button, Fieldset, Kbd, Stack } from "@mantine/core";
-import { IconArrowBarToDown, IconArrowBarToUp } from "@tabler/icons-react";
+import {
+  IconAlertTriangle,
+  IconArrowBarToDown,
+  IconArrowBarToUp,
+} from "@tabler/icons-react";
 import { ReactNode, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import EntranceProperties from "../objectProperties/EntranceProperties";
@@ -55,8 +59,7 @@ export default function SelectTool() {
     dispatch(sendToBottomThunk(selectedTgInstances));
   };
 
-  // Separate selected objects by type
-  const { tileGroups, lights, npcs, entrances, exits } = useMemo(() => {
+  const props = useMemo(() => {
     const tileGroups: TileGroupInstance[] = [];
     const lights: LightObj[] = [];
     const npcs: NpcInstance[] = [];
@@ -77,13 +80,25 @@ export default function SelectTool() {
       }
     }
 
-    return { tileGroups, lights, npcs, entrances, exits };
-  }, [selectedObjs]);
+    const typesCount = [
+      tileGroups.length > 0,
+      lights.length > 0,
+      npcs.length > 0,
+      entrances.length > 0,
+      exits.length > 0,
+    ].filter(Boolean).length;
 
-  const props = useMemo(() => {
-    // If we have a mixed selection, don't show properties
-    if (tileGroups.length > 0 && lights.length > 0) {
-      return null;
+    if (typesCount > 1) {
+      return (
+        <Alert
+          variant="light"
+          color="yellow"
+          title="Mixed selection"
+          icon={<IconAlertTriangle />}
+        >
+          Only objects of the same type can be edited at once.
+        </Alert>
+      );
     }
 
     if (tileGroups.length > 0) {
@@ -107,7 +122,7 @@ export default function SelectTool() {
     }
 
     return null;
-  }, [tileGroups, lights, npcs, entrances, exits]);
+  }, [selectedObjs]);
 
   const hasSelection = selectedObjs.length > 0;
 

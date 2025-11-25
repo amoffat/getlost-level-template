@@ -10,6 +10,8 @@ INTERNAL_DIR="$WORKSPACE_DIR/.internal"
 LEVEL_DIR="$WORKSPACE_DIR/level"
 KEY_FILE="$LEVEL_DIR/assets.key"
 
+# Configure npm to ignore scripts
+npm config set ignore-scripts true
 
 npm ci --prefix "$INTERNAL_DIR"
 

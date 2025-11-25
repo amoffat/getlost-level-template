@@ -35,6 +35,7 @@
     "heap": "^0.2.7",
     "memoizee": "^0.4.17",
     "murmurhash3js": "^3.0.1",
+    "openapi-fetch": "^0.15.0",
     "pino": "^10.1.0",
     "pixi-filters": "^6.1.4",
     "pixi.js": "^8.14.0",

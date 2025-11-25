@@ -1,3 +1,6 @@
+import memoize from "memoizee";
+import { extractNumericIdFromGetLostUrl } from "./getlost";
+
 export async function extractIdFromGithubRepoUrl(
   url: string
 ): Promise<string | null> {
@@ -26,21 +29,48 @@ export async function extractIdFromGithubRepoUrl(
 
     const data = await response.json();
     return data.id ? String(data.id) : null;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
 
-export function extractOwnerRepo(input: string): string | null {
+// Memoized version to avoid spamming GitHub API
+const cachedLookupIdFromGithubRepoUrl = memoize(extractIdFromGithubRepoUrl, {
+  promise: true,
+});
+
+/**
+ * Extract numeric repo ID from various input formats:
+ * - owner/repo format: "amoffat/getlost-level-template"
+ * - GitHub URLs: "https://github.com/owner/repo"
+ * - Numeric ID: "994021540"
+ * - Get Lost URLs: "https://getlost.gg/994021540/main"
+ *
+ * Always returns the numeric GitHub repo ID or null if invalid
+ */
+export async function extractRepoId(input: string): Promise<string | null> {
   const trimmed = input.trim();
   if (!trimmed) return null;
 
-  // Check if it's already in owner/repo format
-  if (/^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+$/.test(trimmed)) {
+  // Check if it's a pure numeric ID
+  if (/^\d+$/.test(trimmed)) {
     return trimmed;
   }
 
-  // Try to parse as URL
+  // Check if it's a Get Lost URL
+  const numericId = extractNumericIdFromGetLostUrl(trimmed);
+  if (numericId) {
+    return numericId;
+  }
+
+  // Check if it's already in owner/repo format
+  if (/^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+$/.test(trimmed)) {
+    return await cachedLookupIdFromGithubRepoUrl(
+      `https://github.com/${trimmed}`
+    );
+  }
+
+  // Try to parse as GitHub URL
   try {
     const urlObj = new URL(trimmed);
     if (urlObj.hostname !== "github.com") {
@@ -54,7 +84,10 @@ export function extractOwnerRepo(input: string): string | null {
       return null;
     }
 
-    return `${pathParts[0]}/${pathParts[1]}`;
+    const ownerRepo = `${pathParts[0]}/${pathParts[1]}`;
+    return await cachedLookupIdFromGithubRepoUrl(
+      `https://github.com/${ownerRepo}`
+    );
   } catch {
     return null;
   }
