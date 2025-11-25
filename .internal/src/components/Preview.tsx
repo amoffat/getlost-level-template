@@ -1,14 +1,33 @@
+import { Split } from "@gfazioli/mantine-split-pane";
+import { Button, Group, SegmentedControl, Select, Stack } from "@mantine/core";
+import { useLocalStorage } from "@mantine/hooks";
 import { useEffect, useRef, useState } from "react";
-import * as constants from "../constants";
 import { useCommsContext } from "../context/comms";
 import { Comms } from "../iframe";
 import { SavePathGraphRequest } from "../iframe/request";
 import { log } from "../log";
+import LogPane from "./LogPane";
+
+const GAME_URLS = {
+  local: "http://localhost:5176",
+  prod: "https://getlost.gg/",
+  qa: "https://qa.getlost.gg/",
+};
 
 export default function PreviewTab() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { comms, setComms } = useCommsContext();
   const [reloadCount, setReloadCount] = useState(0);
+  const [gameEnv, setGameEnv] = useLocalStorage<keyof typeof GAME_URLS>({
+    key: "gl-game-env",
+    defaultValue: "prod",
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const [iframeLoaded, setIframeLoaded] = useState(true);
+  const [audioMode, setAudioMode] = useLocalStorage<"audio" | "muted">({
+    key: "gl-audio-mode",
+    defaultValue: "audio",
+  });
 
   useEffect(() => {
     if (import.meta.hot) {
@@ -39,10 +58,33 @@ export default function PreviewTab() {
     });
   }, [comms]);
 
+  const loadIframe = () => {
+    if (!iframeLoaded) {
+      setIframeLoaded(true);
+      setReloadCount((c) => c + 1);
+    }
+  };
+
+  const stopIframe = () => {
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.src = "about:blank";
+      setIframeLoaded(false);
+      setComms(null);
+    }
+  };
+
+  const restartIframe = () => {
+    setReloadCount((c) => c + 1);
+  };
+
   useEffect(() => {
+    if (!iframeLoaded) return;
+
     const iframe = iframeRef.current!;
     const levelUrl = window.location.origin;
-    const src = new URL(constants.gameUrl);
+    const targetUrl = GAME_URLS[gameEnv];
+    const src = new URL(targetUrl);
 
     // Copy all search params from parent frame to iframe src
     const parentParams = new URL(window.location.href).searchParams;
@@ -51,7 +93,7 @@ export default function PreviewTab() {
     }
 
     src.searchParams.set("levelBaseUrl", levelUrl);
-    log.info(`Loading game from ${constants.gameUrl}`);
+    log.info(`Loading game from ${targetUrl}`);
     iframe.src = src.toString();
 
     const comms = new Comms({
@@ -60,17 +102,146 @@ export default function PreviewTab() {
       role: "parent",
     });
     setComms(comms);
-  }, [reloadCount, setComms]);
+  }, [reloadCount, setComms, gameEnv, iframeLoaded]);
+
+  // Send audio mode changes to iframe without reloading (skip on initial mount)
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    if (!comms || !iframeLoaded) return;
+
+    comms.request({
+      type: "set-audio-mode",
+      data: { muted: audioMode === "muted" },
+    });
+  }, [audioMode, comms, iframeLoaded]);
 
   return (
-    <div id="frame-container">
-      <iframe
-        tabIndex={-1}
-        ref={iframeRef}
-        id="dev-frame"
-        allow="cross-origin-isolated"
-        allowFullScreen
-      ></iframe>
-    </div>
+    <Split h="100dvh" style={{ flex: 1 }}>
+      {/* Left pane */}
+      <Split.Pane
+        initialWidth={300}
+        minWidth={200}
+        maxWidth={500}
+        onResizeStart={() => setIsDragging(true)}
+        onResizeEnd={() => setIsDragging(false)}
+      >
+        <Stack h="100%" style={{ overflow: "hidden" }}>
+          <Stack p={0}>
+            <Select
+              data={[
+                { value: "local", label: "Localhost" },
+                { value: "prod", label: "Production" },
+                { value: "qa", label: "QA" },
+              ]}
+              value={gameEnv}
+              onChange={(value) => setGameEnv(value as keyof typeof GAME_URLS)}
+              allowDeselect={false}
+              w={200}
+            />
+
+            <Group gap="xs">
+              <Button
+                size="xs"
+                onClick={restartIframe}
+                disabled={!iframeLoaded}
+              >
+                Restart
+              </Button>
+              <Button size="xs" onClick={stopIframe} disabled={!iframeLoaded}>
+                Stop
+              </Button>
+              <Button size="xs" onClick={loadIframe} disabled={iframeLoaded}>
+                Start
+              </Button>
+            </Group>
+
+            <SegmentedControl
+              value={audioMode}
+              onChange={(value) => setAudioMode(value as "audio" | "muted")}
+              data={[
+                { value: "audio", label: "Audio" },
+                { value: "muted", label: "Muted" },
+              ]}
+              w={200}
+            />
+          </Stack>
+        </Stack>
+      </Split.Pane>
+
+      <Split.Resizer />
+
+      {/* Center panel with iframe and bottom pane */}
+      <Split.Pane grow>
+        <Split
+          orientation="horizontal"
+          style={{
+            height: "100%",
+            minHeight: 0,
+            minWidth: 0,
+            position: "relative",
+          }}
+        >
+          {/* Top: iframe */}
+          <Split.Pane
+            grow
+            minHeight={200}
+            onResizeStart={() => setIsDragging(true)}
+            onResizeEnd={() => setIsDragging(false)}
+          >
+            <div
+              id="frame-container"
+              style={{
+                width: "100%",
+                height: "100%",
+                overflow: "hidden",
+                position: "relative",
+              }}
+            >
+              <iframe
+                tabIndex={-1}
+                ref={iframeRef}
+                id="dev-frame"
+                allow="cross-origin-isolated"
+                allowFullScreen
+              ></iframe>
+              {/* Overlay to block pointer events on iframe during drag */}
+              {isDragging && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 9999,
+                    cursor: "row-resize",
+                  }}
+                />
+              )}
+            </div>
+          </Split.Pane>
+
+          <Split.Resizer />
+
+          {/* Bottom pane */}
+          <Split.Pane
+            initialHeight={300}
+            minHeight={100}
+            maxHeight={500}
+            onResizeStart={() => setIsDragging(true)}
+            onResizeEnd={() => setIsDragging(false)}
+          >
+            <div style={{ fontSize: "0.8em", height: "100%" }}>
+              <LogPane maxMessages={200} />
+            </div>
+          </Split.Pane>
+        </Split>
+      </Split.Pane>
+    </Split>
   );
 }

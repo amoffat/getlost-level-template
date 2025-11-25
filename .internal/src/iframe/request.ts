@@ -19,10 +19,18 @@ export interface SavePathGraphRequest {
   };
 }
 
+export interface SetAudioModeRequest {
+  type: "set-audio-mode";
+  data: {
+    muted: boolean;
+  };
+}
+
 export type AnyRequest =
   | RecordMarkerMessage
   | ClearMarkerMessage
-  | SavePathGraphRequest;
+  | SavePathGraphRequest
+  | SetAudioModeRequest;
 
 export type RequestType = AnyRequest["type"];
 export type ResponseFor<R extends AnyRequest> = R extends {
