@@ -95,7 +95,8 @@ export function updateObjectProperties<
   templateUpdate: (objs: TInstance[], props: Partial<TProps>) => void
 ): void {
   if (level === "template") {
-    // Filter out undefined props before passing to templateUpdate
+    // Filter out undefined props before passing to templateUpdate. A value may
+    // be undefined if we're switching from instance to template level.
     const definedProps = Object.entries(props).reduce((acc, [key, value]) => {
       if (value !== undefined) {
         acc[key as keyof TProps] = value as any;

@@ -7,6 +7,7 @@ import {
   isAnimatedInstance,
   isColliderBox,
   isColliderEllipse,
+  isExitObj,
   isMapObjFromTileset,
   isNpcInstance,
   isTileGroupInstance,
@@ -21,7 +22,7 @@ import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
 import { EMPTY } from "rxjs";
 import { ReduxReconciler } from "./reconciler";
-import { colliderFill } from "./strokes";
+import { colliderFill, exitFill } from "./strokes";
 
 export class MapObjReconciler extends ReduxReconciler<MapObj> {
   private layerContainers?: Record<number, P.Container>;
@@ -128,6 +129,17 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       // Recreate the node entirely, since the texture may have changed.
       recreate = true;
     }
+
+    if (props.sensorRadius !== undefined) {
+      const gfx = node.getChildByLabel("sensorCircle") as P.Graphics;
+      gfx.clear();
+      gfx.circle(0, 0, props.sensorRadius).fill(exitFill);
+    }
+
+    if (props.tint) {
+      node.tint = (props.tint.r << 16) | (props.tint.g << 8) | props.tint.b;
+    }
+
     return recreate;
   }
 
@@ -283,6 +295,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       );
       sprite.interactive = false;
       sprite.anchor.set(0.5);
+      sprite.zIndex = 10;
 
       if (isTileGroupInstance(obj)) {
         sprite.scale.x = obj.flipX ? -1 : 1;
@@ -295,6 +308,26 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       spriteContainer.addChild(sprite);
       spriteContainer.interactive = true;
       spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
+
+      if (tsObj.tint) {
+        spriteContainer.tint =
+          (tsObj.tint.r << 16) | (tsObj.tint.g << 8) | tsObj.tint.b;
+      }
+
+      if (isExitObj(obj)) {
+        const sensorCircle = new P.Graphics();
+        sensorCircle.interactive = false;
+        sensorCircle.label = "sensorCircle";
+        sensorCircle
+          .circle(0, 0, state.mapEditor.templates.exitGateways.sensorRadius)
+          .fill(exitFill);
+        sensorCircle.position.set(
+          sprite.width / 2 + texAtlasPadding,
+          sprite.height / 2 + texAtlasPadding
+        );
+        sensorCircle.zIndex = 9;
+        spriteContainer.addChild(sensorCircle);
+      }
 
       return spriteContainer;
     } else if (isColliderEllipse(obj)) {

@@ -1,5 +1,5 @@
 import { converter } from "culori";
-import { OklabColor } from "../types/color";
+import { OklabColor, RgbColor } from "../types/color";
 const toOKLab = converter("oklab");
 
 /**
@@ -60,4 +60,19 @@ export function averageOklab(image: ImageData): OklabColor {
     return { l: sumLu / count, a: sumAu / count, b: sumBu / count };
   }
   return { l: 0, a: 0, b: 0 };
+}
+
+export function hexToRgb(hex: string): RgbColor {
+  const cleanHex = hex.replace("#", "");
+  const r = parseInt(cleanHex.slice(0, 2), 16);
+  const g = parseInt(cleanHex.slice(2, 4), 16);
+  const b = parseInt(cleanHex.slice(4, 6), 16);
+  return { r, g, b };
+}
+
+export function rgbToHex(color: RgbColor): string {
+  const rHex = color.r.toString(16).padStart(2, "0");
+  const gHex = color.g.toString(16).padStart(2, "0");
+  const bHex = color.b.toString(16).padStart(2, "0");
+  return `#${rHex}${gHex}${bHex}`;
 }

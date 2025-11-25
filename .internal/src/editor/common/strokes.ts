@@ -51,3 +51,8 @@ export const overlayFill: P.FillStyle = {
   color: 0x000000,
   alpha: gridStroke.alpha,
 };
+
+export const exitFill: P.FillStyle = {
+  color: 0x00ffff,
+  alpha: 0.35,
+};

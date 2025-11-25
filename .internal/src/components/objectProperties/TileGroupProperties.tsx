@@ -2,15 +2,24 @@ import { WalkSound, walkSounds } from "@/constants";
 import { useAppSelector } from "@/hooks/redux";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
+import { RgbColor } from "@/types/color";
 import { MapLayerName } from "@/types/layer";
 import { TileGroupInstance } from "@/types/map";
 import { TileGroupProps } from "@/types/properties";
+import { hexToRgb, rgbToHex } from "@/utils/color";
 import {
   collectPropertyValues,
   updateObjectProperties,
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
-import { Fieldset, Select, Slider, Stack, TextInput } from "@mantine/core";
+import {
+  ColorInput,
+  Fieldset,
+  Select,
+  Slider,
+  Stack,
+  TextInput,
+} from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { ReactNode, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
@@ -36,7 +45,7 @@ export default function TileGroupProperties({
     return collectPropertyValues<TileGroupProps, TileGroupInstance>(
       objs,
       resolveTemplate,
-      ["name", "walkSound", "friction", "traction"]
+      ["name", "tint", "walkSound", "friction", "traction"]
     );
   }, [objs]);
 
@@ -162,10 +171,39 @@ export default function TileGroupProperties({
     />
   );
 
+  const tintInput = (
+    <PropertyValue
+      label="Tint"
+      description="A color tint to apply to this tile"
+      values={toCollect.tint}
+      onValueChange={(level, value: RgbColor | undefined) => {
+        updateProps(level, { tint: value });
+      }}
+      renderInput={(
+        value: RgbColor | null,
+        onChange: (value: RgbColor) => void
+      ): ReactNode => {
+        const hexColor = value ? rgbToHex(value) : "#ffffff";
+
+        return (
+          <ColorInput
+            format="hex"
+            value={hexColor}
+            onChange={(hex) => {
+              onChange(hexToRgb(hex));
+            }}
+          />
+        );
+      }}
+      areEqual={(a, b) => a.r === b.r && a.g === b.g && a.b === b.b}
+    />
+  );
+
   return (
     <Fieldset legend="Object properties" mt="md" p="xs">
       <Stack p={0} gap="xl">
         {nameInput}
+        {tintInput}
         {groundLayer && walkSoundInput}
         {groundLayer && frictionInput}
         {groundLayer && tractionInput}

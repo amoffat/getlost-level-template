@@ -144,6 +144,7 @@ export const slice = createSlice({
         tags: [],
         force: false,
         preferredEntranceId: null,
+        sensorRadius: 32,
       },
     },
     uncommittedObjIds: [],

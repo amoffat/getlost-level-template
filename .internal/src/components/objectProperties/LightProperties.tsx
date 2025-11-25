@@ -4,6 +4,7 @@ import { store } from "@/store/store";
 import { RgbColor } from "@/types/color";
 import { LightObj } from "@/types/map";
 import { LightProps } from "@/types/properties";
+import { hexToRgb, rgbToHex } from "@/utils/color";
 import {
   collectPropertyValues,
   updateObjectProperties,
@@ -92,20 +93,14 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
         value: RgbColor | null,
         onChange: (value: RgbColor) => void
       ): ReactNode => {
-        const hexColor = value
-          ? `#${value.r.toString(16).padStart(2, "0")}${value.g.toString(16).padStart(2, "0")}${value.b.toString(16).padStart(2, "0")}`
-          : "#ffffff";
+        const hexColor = value ? rgbToHex(value) : "#ffffff";
 
         return (
           <ColorInput
             format="hex"
             value={hexColor}
             onChange={(hex) => {
-              const cleanHex = hex.replace("#", "");
-              const r = parseInt(cleanHex.slice(0, 2), 16);
-              const g = parseInt(cleanHex.slice(2, 4), 16);
-              const b = parseInt(cleanHex.slice(4, 6), 16);
-              onChange({ r, g, b });
+              onChange(hexToRgb(hex));
             }}
             swatches={[
               "#ffffff", // White (daylight, bright bulb)

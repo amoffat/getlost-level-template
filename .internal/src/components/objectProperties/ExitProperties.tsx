@@ -7,7 +7,14 @@ import {
   collectPropertyValues,
   updateObjectProperties,
 } from "@/utils/propertyEditor";
-import { Button, Fieldset, Stack, Switch, TextInput } from "@mantine/core";
+import {
+  Button,
+  Fieldset,
+  Slider,
+  Stack,
+  Switch,
+  TextInput,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { ReactNode, useCallback, useMemo } from "react";
 import GatewayModal from "../GatewayModal";
@@ -53,6 +60,7 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
       "name",
       "preferredEntranceId",
       "force",
+      "sensorRadius",
     ]);
   }, [objs]);
 
@@ -161,6 +169,35 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
     />
   );
 
+  const sensorSizeInput = (
+    <PropertyValue
+      label="Sensor radius"
+      description="The radius that triggers the player to exit."
+      values={toCollect.sensorRadius}
+      noTemplate
+      onValueChange={(
+        level: PropertyValueLevel,
+        value: number | undefined
+      ): void => {
+        updateProps(level, { sensorRadius: value });
+      }}
+      renderInput={(
+        value: number | null,
+        onChange: (value: number) => void
+      ): ReactNode => {
+        return (
+          <Slider
+            defaultValue={value ?? 32}
+            min={8}
+            max={64}
+            step={0.01}
+            onChangeEnd={onChange}
+          />
+        );
+      }}
+    />
+  );
+
   const singleSelected = objs.length === 1;
 
   return (
@@ -170,6 +207,7 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
           {singleSelected && nameInput}
           {forceInput}
           {singleSelected && preferredEntranceInput}
+          {sensorSizeInput}
         </Stack>
       </Fieldset>
 

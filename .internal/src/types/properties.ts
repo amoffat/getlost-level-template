@@ -13,6 +13,7 @@ export interface ExitProps {
   tags: string[];
   force: boolean;
   preferredEntranceId: string | null;
+  sensorRadius: number;
 }
 
 export interface LightProps {
@@ -29,12 +30,14 @@ export interface TileGroupProps {
   friction: number;
   traction: number;
   hidden: boolean;
+  tint: RgbColor | null;
 }
 
 export interface AnimationProps {
   name: string;
   tags: string[];
   flipX: boolean;
+  tint: RgbColor | null;
 }
 
 export interface NpcProps {
@@ -42,4 +45,5 @@ export interface NpcProps {
   tags: string[];
   flipX: boolean;
   walkSpeed: number;
+  tint: RgbColor | null;
 }
