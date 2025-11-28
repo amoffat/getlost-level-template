@@ -2,14 +2,13 @@ import {
   PropertyValueInfo,
   PropertyValueLevel,
 } from "@/components/PropertyValue";
+import { globals } from "@/globals";
 import { actions as mapActions } from "@/slices/mapEditor";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
-import { TilesetMapObj } from "@/types/map";
-
-export interface HasId {
-  id: string;
-}
+import { MapObj, TilesetMapObj } from "@/types/map";
+import { resolveTemplate } from "./map";
+import { HasId } from "./misc";
 
 /**
  * Collects property values from a list of instance objects and their templates.
@@ -50,13 +49,11 @@ export function collectPropertyValues<
       const templateValue = tmpl ? (tmpl as any)[propName] : undefined;
 
       if (instanceValue === undefined) {
-        if (templateValue !== undefined) {
-          valuesArray.push({
-            key: obj.id,
-            value: templateValue,
-            level: "template",
-          });
-        }
+        valuesArray.push({
+          key: obj.id,
+          value: templateValue,
+          level: "template",
+        });
       } else {
         valuesArray.push({
           key: obj.id,
@@ -86,14 +83,19 @@ export function collectPropertyValues<
  * @param templateUpdate - Callback to update templates when level is "template"
  */
 export function updateObjectProperties<
-  TProps extends Record<string, any>,
-  TInstance extends HasId & Partial<TProps>,
->(
-  level: PropertyValueLevel,
-  objs: TInstance[],
-  props: Partial<TInstance>,
-  templateUpdate: (objs: TInstance[], props: Partial<TProps>) => void
-): void {
+  TInstance extends MapObj,
+  TProps extends Partial<TInstance>,
+>({
+  level,
+  objs,
+  props,
+  templateUpdate,
+}: {
+  level: PropertyValueLevel;
+  objs: TInstance[];
+  props: Partial<TInstance>;
+  templateUpdate: (objs: TInstance[], props: Partial<TProps>) => void;
+}): void {
   if (level === "template") {
     // Filter out undefined props before passing to templateUpdate. A value may
     // be undefined if we're switching from instance to template level.
@@ -112,10 +114,59 @@ export function updateObjectProperties<
     for (const key of Object.keys(props) as (keyof TInstance)[]) {
       undefinedProps[key] = undefined;
     }
-    const changes = objs.map((obj) => ({
-      id: obj.id,
-      changes: undefinedProps,
-    }));
+
+    // Now collect all template IDs from the affected objects
+    const allTmplIds = new Set<string>();
+    for (const obj of objs) {
+      const tmpl = resolveTemplate(obj);
+      if (!tmpl) continue;
+      allTmplIds.add(tmpl.id);
+    }
+
+    const state = store.getState().mapEditor;
+    const propsToCheck = Object.entries(props) as [keyof TInstance, any][];
+
+    // Use the template index to efficiently find all objects using those
+    // templates and trigger the correct property unsetting.
+    const changes: {
+      id: string;
+      changes: Partial<TInstance>;
+    }[] = [];
+    for (const tmplId of allTmplIds) {
+      const objIds = globals.templateIndex.get(tmplId);
+      if (!objIds) continue;
+
+      for (const objId of objIds) {
+        const obj = state.objects.entities[objId]! as TInstance;
+        const instChanges: Partial<TInstance> = {};
+
+        // This is subtle but very carefully designed. What we need to do is
+        // only do an update of an instance's property to undefined if it is
+        // already undefined. This seems strange, until you realize that this
+        // triggers the map reconciler to re-resolve the property from the
+        // template. We don't want to trigger an update if the instance already
+        // has an explicit value for that property.
+        //
+        // There's an extra curveball here, and that is, if the value of the
+        // property is already undefined, it means we're switching from
+        // instance-level to template-level editing, so we need to explicitly
+        // set the instance property to undefined to trigger map reconciler, and
+        // also to overwrite the existing instance value.
+        for (const [prop, value] of propsToCheck) {
+          if (obj[prop] === undefined || value === undefined) {
+            instChanges[prop] = undefined;
+          }
+        }
+
+        if (Object.keys(instChanges).length > 0) {
+          changes.push({
+            id: objId,
+            changes: instChanges,
+          });
+        }
+      }
+    }
+
     store.dispatch(mapActions.updateMany(changes));
   } else {
     // Apply changes directly to the instances

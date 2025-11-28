@@ -1,3 +1,4 @@
+import * as constants from "@/constants";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { NpcInstance } from "@/types/map";
@@ -26,12 +27,12 @@ export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
 
   const updateProps = useCallback(
     (level: PropertyValueLevel, props: Partial<NpcProps>) => {
-      updateObjectProperties<NpcProps, NpcInstance>(
+      updateObjectProperties<NpcInstance, NpcProps>({
         level,
         objs,
         props,
-        updateTilesetTemplates
-      );
+        templateUpdate: updateTilesetTemplates,
+      });
     },
     [objs]
   );
@@ -41,6 +42,7 @@ export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       label="Name"
       description="A name for the NPC. Does not have to be unique."
       values={toCollect.name}
+      defaultValue=""
       onValueChange={(
         level: PropertyValueLevel,
         value: string | undefined
@@ -48,7 +50,7 @@ export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
         updateProps(level, { name: value });
       }}
       renderInput={(
-        value: string | null,
+        value: string | undefined,
         onChange: (value: string) => void
       ): ReactNode => {
         return (
@@ -67,6 +69,7 @@ export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       label="Walk speed"
       description="How quickly the NPC moves across the map."
       values={toCollect.walkSpeed}
+      defaultValue={constants.defaultNpcWalkSpeed}
       onValueChange={(
         level: PropertyValueLevel,
         value: number | undefined
@@ -74,7 +77,7 @@ export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
         updateProps(level, { walkSpeed: value });
       }}
       renderInput={(
-        value: number | null,
+        value: number | undefined,
         onChange: (value: number) => void
       ): ReactNode => {
         return (

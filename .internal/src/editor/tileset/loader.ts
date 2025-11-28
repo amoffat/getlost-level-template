@@ -149,6 +149,7 @@ export async function unpackTileset(tsId: string, coordsList: Rect[]) {
       traction: constants.defaultTraction,
       hidden: false,
       flipX: false,
+      tint: null,
     };
 
     chunk.push(tg);

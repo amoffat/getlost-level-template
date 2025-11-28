@@ -1,3 +1,5 @@
+import * as constants from "@/constants";
+import { globals } from "@/globals";
 import { isAnimationTemplate } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
@@ -20,6 +22,13 @@ import {
   PaintOpts,
 } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
+import { HasId } from "@/utils/misc";
+import {
+  addToTemplateIndex,
+  clearTemplateIndex,
+  removeFromTemplateIndex,
+  updateTemplateIndex,
+} from "@/utils/templateIndex";
 import { Vector2 } from "@/vec";
 import {
   createEntityAdapter,
@@ -80,9 +89,9 @@ interface MapEditorState {
     dimInactive: boolean;
   };
   templates: {
-    lights: LightProps;
-    entryGateways: EntranceProps;
-    exitGateways: ExitProps;
+    lights: LightProps & HasId;
+    entryGateways: EntranceProps & HasId;
+    exitGateways: ExitProps & HasId;
   };
 }
 
@@ -128,23 +137,25 @@ export const slice = createSlice({
     },
     templates: {
       lights: {
+        id: "lightsTemplate",
         name: "",
-        tags: [],
-        color: { r: 255, g: 255, b: 255 },
-        intensity: 1,
+        color: constants.defaultLightColor,
+        intensity: constants.defaultLightIntensity,
       },
       entryGateways: {
+        id: "entryGatewaysTemplate",
         name: "",
         tags: [],
         exitIds: [],
         primary: false,
       },
       exitGateways: {
+        id: "exitGatewaysTemplate",
         name: "",
         tags: [],
         force: false,
         preferredEntranceId: null,
-        sensorRadius: 32,
+        sensorRadius: constants.defaultExitSensorRadius,
       },
     },
     uncommittedObjIds: [],
@@ -291,6 +302,7 @@ export const slice = createSlice({
       }),
       reducer: (state, action: PayloadAction<MapObj>) => {
         objectsAdapter.addOne(state.objects, action.payload);
+        addToTemplateIndex(globals.templateIndex, action.payload);
       },
     },
     addMany: {
@@ -300,6 +312,9 @@ export const slice = createSlice({
       }),
       reducer: (state, action: PayloadAction<MapObj[]>) => {
         objectsAdapter.addMany(state.objects, action.payload);
+        for (const obj of action.payload) {
+          addToTemplateIndex(globals.templateIndex, obj);
+        }
       },
     },
     upsertMany: {
@@ -308,6 +323,14 @@ export const slice = createSlice({
         payload,
       }),
       reducer: (state, action: PayloadAction<MapObj[]>) => {
+        for (const obj of action.payload) {
+          const existing = state.objects.entities[obj.id];
+          if (existing) {
+            updateTemplateIndex(globals.templateIndex, existing, obj);
+          } else {
+            addToTemplateIndex(globals.templateIndex, obj);
+          }
+        }
         objectsAdapter.upsertMany(state.objects, action.payload);
       },
     },
@@ -320,6 +343,11 @@ export const slice = createSlice({
         state,
         action: PayloadAction<{ id: string; changes: Partial<MapObj> }>
       ) => {
+        const oldObj = state.objects.entities[action.payload.id];
+        if (oldObj) {
+          const newObj = { ...oldObj, ...action.payload.changes } as MapObj;
+          updateTemplateIndex(globals.templateIndex, oldObj as MapObj, newObj);
+        }
         objectsAdapter.updateOne(state.objects, action.payload);
       },
     },
@@ -332,6 +360,17 @@ export const slice = createSlice({
         state,
         action: PayloadAction<Array<{ id: string; changes: Partial<MapObj> }>>
       ) => {
+        for (const update of action.payload) {
+          const oldObj = state.objects.entities[update.id];
+          if (oldObj) {
+            const newObj = { ...oldObj, ...update.changes } as MapObj;
+            updateTemplateIndex(
+              globals.templateIndex,
+              oldObj as MapObj,
+              newObj
+            );
+          }
+        }
         objectsAdapter.updateMany(state.objects, action.payload);
       },
     },
@@ -341,6 +380,10 @@ export const slice = createSlice({
         payload,
       }),
       reducer: (state, action: PayloadAction<string>) => {
+        const obj = state.objects.entities[action.payload];
+        if (obj) {
+          removeFromTemplateIndex(globals.templateIndex, obj);
+        }
         objectsAdapter.removeOne(state.objects, action.payload);
       },
     },
@@ -350,6 +393,12 @@ export const slice = createSlice({
         payload,
       }),
       reducer: (state, action: PayloadAction<string[]>) => {
+        for (const id of action.payload) {
+          const obj = state.objects.entities[id];
+          if (obj) {
+            removeFromTemplateIndex(globals.templateIndex, obj);
+          }
+        }
         objectsAdapter.removeMany(state.objects, action.payload);
       },
     },
@@ -359,6 +408,11 @@ export const slice = createSlice({
         payload,
       }),
       reducer: (state, action: PayloadAction<MapObj[]>) => {
+        // Rebuild the entire template index
+        clearTemplateIndex(globals.templateIndex);
+        for (const obj of action.payload) {
+          addToTemplateIndex(globals.templateIndex, obj);
+        }
         objectsAdapter.setAll(state.objects, action.payload);
       },
     },

@@ -1,10 +1,9 @@
+import * as constants from "@/constants";
 import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { RgbColor } from "@/types/color";
 import { LightObj } from "@/types/map";
 import { LightProps } from "@/types/properties";
-import { hexToRgb, rgbToHex } from "@/utils/color";
 import {
   collectPropertyValues,
   updateObjectProperties,
@@ -29,22 +28,22 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
     [dispatch]
   );
 
-  const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<LightProps>) => {
-      updateObjectProperties<LightProps, LightObj>(
-        level,
-        objs,
-        props,
-        updateLightTemplate
-      );
-    },
-    [objs, updateLightTemplate]
-  );
-
   const resolveTemplate = (_obj: LightObj): LightProps => {
     const state = store.getState();
     return state.mapEditor.templates.lights;
   };
+
+  const updateProps = useCallback(
+    (level: PropertyValueLevel, props: Partial<LightProps>) => {
+      updateObjectProperties<LightObj, LightProps>({
+        level,
+        objs,
+        props,
+        templateUpdate: updateLightTemplate,
+      });
+    },
+    [objs, updateLightTemplate]
+  );
 
   const toCollect = useMemo(() => {
     return collectPropertyValues<LightProps, LightObj>(objs, resolveTemplate, [
@@ -60,6 +59,7 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
       description="A name for the light. Does not have to be unique."
       noTemplate
       values={toCollect.name}
+      defaultValue=""
       onValueChange={(
         level: PropertyValueLevel,
         value: string | undefined
@@ -67,7 +67,7 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
         updateProps(level, { name: value });
       }}
       renderInput={(
-        value: string | null,
+        value: string | undefined,
         onChange: (value: string) => void
       ): ReactNode => {
         return (
@@ -86,21 +86,22 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
       label="Color"
       description="The RGB color of the light"
       values={toCollect.color}
-      onValueChange={(level, value: RgbColor | undefined) => {
+      defaultValue={constants.defaultLightColor}
+      onValueChange={(level, value: string | undefined) => {
         updateProps(level, { color: value });
       }}
       renderInput={(
-        value: RgbColor | null,
-        onChange: (value: RgbColor) => void
+        value: string | undefined,
+        onChange: (value: string) => void
       ): ReactNode => {
-        const hexColor = value ? rgbToHex(value) : "#ffffff";
+        const hexColor = value ? `#${value}` : undefined;
 
         return (
           <ColorInput
             format="hex"
             value={hexColor}
             onChange={(hex) => {
-              onChange(hexToRgb(hex));
+              onChange(hex.replace("#", ""));
             }}
             swatches={[
               "#ffffff", // White (daylight, bright bulb)
@@ -117,7 +118,6 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
           />
         );
       }}
-      areEqual={(a, b) => a.r === b.r && a.g === b.g && a.b === b.b}
     />
   );
 
@@ -126,20 +126,21 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
       label="Intensity"
       description="The brightness of the light"
       values={toCollect.intensity}
+      defaultValue={constants.defaultLightIntensity}
       onValueChange={(level, value: number | undefined) => {
         updateProps(level, { intensity: value });
       }}
       renderInput={(
-        value: number | null,
+        value: number | undefined,
         onChange: (value: number) => void
       ): ReactNode => {
         return (
           <Slider
-            defaultValue={value ?? 1.0}
+            value={value}
             min={0}
             max={1}
             step={0.01}
-            onChangeEnd={onChange}
+            onChange={onChange}
           />
         );
       }}

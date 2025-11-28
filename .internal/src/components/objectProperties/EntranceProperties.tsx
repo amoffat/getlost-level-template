@@ -27,7 +27,7 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
     useDisclosure(false);
 
   // All entrance objects use the same global entrance template
-  const updateTemplate = useCallback(
+  const templateUpdate = useCallback(
     (_objs: EntranceObj[], props: Partial<EntranceProps>) => {
       dispatch(
         mapEditorActions.updateTemplate({
@@ -39,22 +39,22 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
     [dispatch]
   );
 
-  const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<EntranceProps>) => {
-      updateObjectProperties<EntranceProps, EntranceObj>(
-        level,
-        objs,
-        props,
-        updateTemplate
-      );
-    },
-    [objs, updateTemplate]
-  );
-
   const resolveTemplate = (_obj: EntranceObj): EntranceProps => {
     const state = store.getState();
     return state.mapEditor.templates.entryGateways;
   };
+
+  const updateProps = useCallback(
+    (level: PropertyValueLevel, props: Partial<EntranceProps>) => {
+      updateObjectProperties<EntranceObj, EntranceProps>({
+        level,
+        objs,
+        props,
+        templateUpdate,
+      });
+    },
+    [objs, templateUpdate]
+  );
 
   const toCollect = useMemo(() => {
     return collectPropertyValues<EntranceProps, EntranceObj>(
@@ -95,6 +95,7 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       description="A name of the entrance. Must be unique."
       noTemplate
       values={toCollect.name}
+      defaultValue=""
       onValueChange={(
         level: PropertyValueLevel,
         value: string | undefined
@@ -102,7 +103,7 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
         updateProps(level, { name: value });
       }}
       renderInput={(
-        value: string | null,
+        value: string | undefined,
         onChange: (value: string) => void
       ): ReactNode => {
         return (
@@ -132,7 +133,7 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
           updateProps(level, { exitIds: value });
         }}
         renderInput={(
-          value: string[] | null,
+          value: string[] | undefined,
           onChange: (value: string[]) => void
         ): ReactNode => {
           const exitIds = value ?? [];
@@ -185,7 +186,7 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
         updateProps(level, { primary: value });
       }}
       renderInput={(
-        value: boolean | null,
+        value: boolean | undefined,
         onChange: (value: boolean) => void
       ): ReactNode => {
         return (

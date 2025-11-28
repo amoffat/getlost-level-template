@@ -20,5 +20,9 @@ export interface MapDocV4 extends Omit<MapDocV1, "version"> {
   version: 4;
 }
 
-export type LatestMapDoc = MapDocV4;
-export const latestVersion = 4;
+export interface MapDocV5 extends Omit<MapDocV4, "version"> {
+  version: 5;
+}
+
+export type LatestMapDoc = MapDocV5;
+export const latestVersion = 5;

@@ -232,6 +232,7 @@ export class Placer implements ClickDragListener {
           flipX: place.flipX,
           width: obj.pos.width,
           height: obj.pos.height,
+          tint: undefined, // Use template tint by default
         };
       }
     } else if (isAnimationTemplate(obj)) {
@@ -249,6 +250,7 @@ export class Placer implements ClickDragListener {
         flipX: place.flipX,
         width,
         height,
+        tint: undefined, // Use template tint by default
       };
     } else if (isNpcTemplate(obj)) {
       inst = {
@@ -263,6 +265,7 @@ export class Placer implements ClickDragListener {
         flipX: place.flipX,
         width,
         height,
+        tint: undefined, // Use template tint by default
       };
     }
 

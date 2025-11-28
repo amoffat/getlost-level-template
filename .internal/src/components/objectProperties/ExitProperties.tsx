@@ -1,3 +1,4 @@
+import * as constants from "@/constants";
 import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
 import { store } from "@/store/store";
@@ -26,7 +27,7 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
     useDisclosure(false);
 
   // All exit objects use the same global exit template
-  const updateTemplate = useCallback(
+  const templateUpdate = useCallback(
     (_objs: ExitObj[], props: Partial<ExitProps>) => {
       dispatch(
         mapEditorActions.updateTemplate({
@@ -38,22 +39,22 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
     [dispatch]
   );
 
-  const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<ExitProps>) => {
-      updateObjectProperties<ExitProps, ExitObj>(
-        level,
-        objs,
-        props,
-        updateTemplate
-      );
-    },
-    [objs, updateTemplate]
-  );
-
   const resolveTemplate = (_obj: ExitObj): ExitProps => {
     const state = store.getState();
     return state.mapEditor.templates.exitGateways;
   };
+
+  const updateProps = useCallback(
+    (level: PropertyValueLevel, props: Partial<ExitProps>) => {
+      updateObjectProperties<ExitObj, ExitProps>({
+        level,
+        objs,
+        props,
+        templateUpdate,
+      });
+    },
+    [objs, templateUpdate]
+  );
 
   const toCollect = useMemo(() => {
     return collectPropertyValues<ExitProps, ExitObj>(objs, resolveTemplate, [
@@ -82,6 +83,7 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
       description="A name of the entrance. Must be unique."
       noTemplate
       values={toCollect.name}
+      defaultValue=""
       onValueChange={(
         level: PropertyValueLevel,
         value: string | undefined
@@ -89,7 +91,7 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
         updateProps(level, { name: value });
       }}
       renderInput={(
-        value: string | null,
+        value: string | undefined,
         onChange: (value: string) => void
       ): ReactNode => {
         return (
@@ -112,14 +114,15 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
       description="If an entrance matching this id attaches to this exit, it will be permanently attached."
       noTemplate
       values={toCollect.preferredEntranceId}
+      defaultValue=""
       onValueChange={(
         level: PropertyValueLevel,
-        value: string | null | undefined
+        value: string | undefined
       ): void => {
         updateProps(level, { preferredEntranceId: value });
       }}
       renderInput={(
-        value: string | null,
+        value: string | undefined,
         onChange: (value: string) => void
       ): ReactNode => {
         return (
@@ -149,6 +152,7 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
       description="A forced exit does not give the player a choice to stay."
       noTemplate
       values={toCollect.force}
+      defaultValue={false}
       onValueChange={(
         level: PropertyValueLevel,
         value: boolean | undefined
@@ -156,7 +160,7 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
         updateProps(level, { force: value });
       }}
       renderInput={(
-        value: boolean | null,
+        value: boolean | undefined,
         onChange: (value: boolean) => void
       ): ReactNode => {
         return (
@@ -174,7 +178,9 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
       label="Sensor radius"
       description="The radius that triggers the player to exit."
       values={toCollect.sensorRadius}
+      defaultValue={constants.defaultExitSensorRadius}
       noTemplate
+      debounceMs={null}
       onValueChange={(
         level: PropertyValueLevel,
         value: number | undefined
@@ -182,16 +188,16 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
         updateProps(level, { sensorRadius: value });
       }}
       renderInput={(
-        value: number | null,
+        value: number | undefined,
         onChange: (value: number) => void
       ): ReactNode => {
         return (
           <Slider
-            defaultValue={value ?? 32}
+            value={value}
             min={8}
             max={64}
             step={0.01}
-            onChangeEnd={onChange}
+            onChange={onChange}
           />
         );
       }}

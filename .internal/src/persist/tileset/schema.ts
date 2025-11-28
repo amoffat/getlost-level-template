@@ -18,5 +18,9 @@ export interface TilesetDocV11 extends Omit<TilesetDocV10, "version"> {
   version: 11;
 }
 
-export type LatestTilesetDoc = TilesetDocV11;
-export const latestVersion = 11;
+export interface TilesetDocV12 extends Omit<TilesetDocV11, "version"> {
+  version: 12;
+}
+
+export type LatestTilesetDoc = TilesetDocV12;
+export const latestVersion = 12;

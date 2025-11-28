@@ -14,10 +14,12 @@ import {
   MapObj,
 } from "@/types/map";
 import { NpcTemplate } from "@/types/npc";
+import { TileGroupProps } from "@/types/properties";
 import { toPixiRect } from "@/types/rect";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { makeGroupedDebouncer } from "@/utils/debounce";
+import { resolveTemplate } from "@/utils/map";
 import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
 import { EMPTY } from "rxjs";
@@ -99,6 +101,11 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     let recreate = false;
     if (!this.layerContainers || !this.spatialIndex) return recreate;
 
+    const state = store.getState();
+    const objId = node.label;
+    const obj = state.mapEditor.objects.entities[objId];
+    const tmpl = resolveTemplate(obj);
+
     if (props.x !== undefined) {
       node.x = props.x;
     }
@@ -136,8 +143,14 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       gfx.circle(0, 0, props.sensorRadius).fill(exitFill);
     }
 
-    if (props.tint) {
-      node.tint = (props.tint.r << 16) | (props.tint.g << 8) | props.tint.b;
+    if (isTileGroupInstance(obj)) {
+      if (Object.hasOwn(props, "tint")) {
+        const tint = props.tint ?? (tmpl as unknown as TileGroupProps).tint;
+        if (tint) {
+          // Parse hex string (without hash) to numeric value
+          node.tint = parseInt(tint, 16);
+        }
+      }
     }
 
     return recreate;
@@ -308,11 +321,6 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       spriteContainer.addChild(sprite);
       spriteContainer.interactive = true;
       spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
-
-      if (tsObj.tint) {
-        spriteContainer.tint =
-          (tsObj.tint.r << 16) | (tsObj.tint.g << 8) | tsObj.tint.b;
-      }
 
       if (isExitObj(obj)) {
         const sensorCircle = new P.Graphics();

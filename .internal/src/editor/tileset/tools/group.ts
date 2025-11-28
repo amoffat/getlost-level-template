@@ -128,6 +128,7 @@ class Grouper implements ClickDragListener {
           traction: constants.defaultTraction,
           hidden: false,
           flipX: false,
+          tint: null,
         };
 
         store.dispatch(addPaletteObjectsThunk({ tsId, objs: [group] }));

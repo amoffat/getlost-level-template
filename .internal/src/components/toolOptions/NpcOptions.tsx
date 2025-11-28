@@ -106,6 +106,7 @@ export default function NpcOptions() {
       tags: values.tags,
       walkSpeed: 0.5,
       flipX: false,
+      tint: null,
     };
 
     dispatch(actions.addPaletteObjects({ tsId, objs: [npc] }));

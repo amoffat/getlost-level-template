@@ -226,6 +226,8 @@ export default function TileAnimationOptions() {
       names: values.names,
       tags: [],
       loop: true,
+      flipX: false,
+      tint: null,
     };
     dispatch(actions.addPaletteObjects({ tsId, objs: [anim] }));
     dispatch(clearCandAnimFramesThunk());

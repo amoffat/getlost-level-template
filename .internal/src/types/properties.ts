@@ -1,5 +1,4 @@
 import { WalkSound } from "@/constants";
-import { RgbColor } from "./color";
 
 export interface EntranceProps {
   name: string;
@@ -18,7 +17,7 @@ export interface ExitProps {
 
 export interface LightProps {
   name: string;
-  color: RgbColor;
+  color: string;
   intensity: number;
 }
 
@@ -30,14 +29,15 @@ export interface TileGroupProps {
   friction: number;
   traction: number;
   hidden: boolean;
-  tint: RgbColor | null;
+  tint: string | null;
 }
 
 export interface AnimationProps {
-  name: string;
+  names: string[];
   tags: string[];
   flipX: boolean;
-  tint: RgbColor | null;
+  tint: string | null;
+  loop: boolean;
 }
 
 export interface NpcProps {
@@ -45,5 +45,5 @@ export interface NpcProps {
   tags: string[];
   flipX: boolean;
   walkSpeed: number;
-  tint: RgbColor | null;
+  tint: string | null;
 }

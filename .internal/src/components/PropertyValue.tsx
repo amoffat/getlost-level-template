@@ -1,5 +1,6 @@
 import { overlayProps } from "@/constants";
 import {
+  ActionIcon,
   Alert,
   Box,
   Group,
@@ -7,12 +8,14 @@ import {
   SegmentedControl,
   Stack,
   Text,
+  Tooltip,
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
 import {
   IconAlertTriangle,
   IconCircleFilled,
   IconCirclesFilled,
+  IconRestore,
 } from "@tabler/icons-react";
 import { x64 } from "murmurhash3js";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
@@ -40,7 +43,10 @@ export interface PropertyValueProps<T> {
   /** Array of value info from all selected objects */
   values: PropertyValueInfo<T>[];
   /** The input component to render. Receives the effective value and onChange callback */
-  renderInput: (value: T | null, onChange: (value: T) => void) => ReactNode;
+  renderInput: (
+    value: T | undefined,
+    onChange: (value: T) => void
+  ) => ReactNode;
   /** Callback when the user changes the value */
   onValueChange: (level: PropertyValueLevel, value: T | undefined) => void;
   /** Optional function to determine if two values are equal (defaults to ===) */
@@ -50,9 +56,11 @@ export interface PropertyValueProps<T> {
    * When set, the component will use local state for immediate updates
    * and debounce calls to onValueChange.
    */
-  debounceMs?: number;
+  debounceMs?: number | null;
   /** If true, hides the SegmentedControl and only allows per-instance changes */
   noTemplate?: boolean;
+  /** Optional default value to reset to when the reset button is clicked */
+  defaultValue?: T;
 }
 
 /**
@@ -74,13 +82,14 @@ function PropertyValueInner<T>({
   areEqual = (a, b) => a === b,
   debounceMs = 300,
   noTemplate = false,
+  defaultValue,
 }: PropertyValueProps<T>) {
   const analysis = useMemo(() => {
     if (values.length === 0) {
       return {
         hasMixedValues: false,
         hasMixedLevels: false,
-        effectiveValue: null,
+        effectiveValue: undefined,
         uniqueValues: [],
         levels: new Set<SelectableLevel>(),
       };
@@ -106,7 +115,7 @@ function PropertyValueInner<T>({
     // For the effective value:
     // - If all values are the same, use that value
     // - If values differ, use null (which can be interpreted as "mixed")
-    const effectiveValue = hasMixedValues ? null : values[0].value;
+    const effectiveValue = hasMixedValues ? undefined : values[0].value;
 
     return {
       hasMixedValues,
@@ -134,15 +143,22 @@ function PropertyValueInner<T>({
 
   const [localLevel, setLocalLevel] =
     useState<PropertyValueLevel>(computedLevel);
-  const [localValue, setLocalValue] = useState<T | null>(
+  const [localValue, setLocalValue] = useState<T | undefined>(
     analysis.effectiveValue
   );
 
   const [hasPendingValue, setHasPendingValue] = useState(false);
 
+  const setValue = useCallback(
+    (value: T) => {
+      onValueChange(noTemplate ? "instance" : localLevel, value);
+    },
+    [localLevel, noTemplate, onValueChange]
+  );
+
   const debouncedSetValue = useDebouncedCallback((value: T) => {
-    onValueChange(noTemplate ? "instance" : localLevel, value);
-  }, debounceMs);
+    setValue(value);
+  }, debounceMs ?? 0);
 
   // Sync local state when the effective value changes from outside
   useEffect(() => {
@@ -182,7 +198,11 @@ function PropertyValueInner<T>({
 
         // Often the input can have rapid changes, like text inputs, so debounce
         // them
-        debouncedSetValue(value);
+        if (debounceMs !== null) {
+          debouncedSetValue(value);
+        } else {
+          setValue(value);
+        }
       }),
     [
       renderInput,
@@ -190,8 +210,21 @@ function PropertyValueInner<T>({
       analysis.hasMixedValues,
       analysis.hasMixedLevels,
       debouncedSetValue,
+      debounceMs,
+      setValue,
     ]
   );
+
+  const handleReset = useCallback(() => {
+    if (defaultValue !== undefined) {
+      setLocalValue(defaultValue);
+      if (debounceMs !== null) {
+        debouncedSetValue(defaultValue);
+      } else {
+        setValue(defaultValue);
+      }
+    }
+  }, [defaultValue, debounceMs, debouncedSetValue, setValue]);
 
   return (
     <Stack gap="xs" p={0}>
@@ -278,7 +311,21 @@ function PropertyValueInner<T>({
           overlayProps={overlayProps}
           loaderProps={{ type: "bars", size: "xs" }}
         />
-        {inputField}
+        <Group gap="xs" wrap="nowrap">
+          <Box style={{ flex: 1 }}>{inputField}</Box>
+          {defaultValue !== undefined && (
+            <Tooltip label="Reset to default">
+              <ActionIcon
+                onClick={handleReset}
+                variant="subtle"
+                color="gray"
+                size="sm"
+              >
+                <IconRestore size={16} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+        </Group>
       </Box>
     </Stack>
   );

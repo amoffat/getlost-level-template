@@ -37,3 +37,8 @@ export const defaultWalkSound: WalkSound = "default";
 // How long until the speed halves?
 export const defaultFriction = 0.125; // seconds
 export const defaultTraction = 1.0;
+export const defaultTint = "ffffff";
+export const defaultNpcWalkSpeed = 0.5;
+export const defaultExitSensorRadius = 16;
+export const defaultLightIntensity = 0.5;
+export const defaultLightColor = "ffffff";

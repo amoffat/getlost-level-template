@@ -97,6 +97,14 @@ export type MapObj =
   | EntranceObj
   | ExitObj;
 
+export type MapObjProps =
+  | LightProps
+  | EntranceProps
+  | ExitProps
+  | AnimationProps
+  | TileGroupProps
+  | NpcProps;
+
 export function isTileGroupInstance(
   obj: Partial<BaseMapObj>
 ): obj is TileGroupInstance {
@@ -118,7 +126,7 @@ export function isAnimatedInstance(
   return obj.type === MapObjType.AnimationInstance;
 }
 
-export function isNpcInstance(obj: Partial<BaseMapObj>): obj is NpcInstance {
+export function isNpcInstance(obj: Partial<MapObj>): obj is NpcInstance {
   return obj.type === MapObjType.NpcInstance;
 }
 
@@ -128,14 +136,14 @@ export function isMapObjFromTileset(
   return Object.hasOwn(obj, "tsObjId") && Object.hasOwn(obj, "tilesetId");
 }
 
-export function isLightInstance(obj: Partial<BaseMapObj>): obj is LightObj {
+export function isLightInstance(obj: Partial<MapObj>): obj is LightObj {
   return obj.type === MapObjType.Light;
 }
 
-export function isEntranceObj(obj: Partial<BaseMapObj>): obj is EntranceObj {
+export function isEntranceObj(obj: Partial<MapObj>): obj is EntranceObj {
   return obj.type === MapObjType.Entry;
 }
 
-export function isExitObj(obj: Partial<BaseMapObj>): obj is ExitObj {
+export function isExitObj(obj: Partial<MapObj>): obj is ExitObj {
   return obj.type === MapObjType.Exit;
 }

@@ -1,12 +1,11 @@
+import * as constants from "@/constants";
 import { WalkSound, walkSounds } from "@/constants";
 import { useAppSelector } from "@/hooks/redux";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
-import { RgbColor } from "@/types/color";
 import { MapLayerName } from "@/types/layer";
 import { TileGroupInstance } from "@/types/map";
 import { TileGroupProps } from "@/types/properties";
-import { hexToRgb, rgbToHex } from "@/utils/color";
 import {
   collectPropertyValues,
   updateObjectProperties,
@@ -51,12 +50,12 @@ export default function TileGroupProperties({
 
   const updateProps = useCallback(
     (level: PropertyValueLevel, props: Partial<TileGroupProps>) => {
-      updateObjectProperties<TileGroupProps, TileGroupInstance>(
+      updateObjectProperties<TileGroupInstance, TileGroupProps>({
         level,
         objs,
         props,
-        updateTilesetTemplates
-      );
+        templateUpdate: updateTilesetTemplates,
+      });
     },
     [objs]
   );
@@ -72,15 +71,16 @@ export default function TileGroupProperties({
       ): void => {
         updateProps(level, { name: value });
       }}
+      defaultValue=""
       renderInput={(
-        value: string | null,
+        value: string | undefined,
         onChange: (value: string) => void
       ): ReactNode => {
         return (
           <TextInput
-            leftSection={value === null && <IconAlertTriangle size={14} />}
+            leftSection={value === undefined && <IconAlertTriangle size={14} />}
             value={value ?? ""}
-            placeholder={value === null ? "Mixed values" : "Enter name"}
+            placeholder={value === undefined ? "Mixed values" : "Enter name"}
             onChange={(e) => onChange(e.target.value)}
           />
         );
@@ -99,16 +99,19 @@ export default function TileGroupProperties({
       ): void {
         updateProps(level, { walkSound: value });
       }}
+      defaultValue={constants.defaultWalkSound}
       renderInput={(
-        value: WalkSound | null,
+        value: WalkSound | undefined,
         onChange: (value: WalkSound) => void
       ): ReactNode => {
         return (
           <Select
             data={walkSounds}
-            leftSection={value === null && <IconAlertTriangle size={14} />}
+            leftSection={value === undefined && <IconAlertTriangle size={14} />}
             value={value ?? undefined}
-            placeholder={value === null ? "Mixed values" : "Select walk sound"}
+            placeholder={
+              value === undefined ? "Mixed values" : "Select walk sound"
+            }
             onChange={(val) => {
               if (val) onChange(val as WalkSound);
             }}
@@ -121,7 +124,7 @@ export default function TileGroupProperties({
   const frictionInput = (
     <PropertyValue
       label="Friction"
-      description="How much this tile resists movement. Higher values make it harder to slide."
+      description="How many seconds it takes for the player's speed to reduce by half."
       values={toCollect.friction}
       onValueChange={function (
         level: PropertyValueLevel,
@@ -129,17 +132,18 @@ export default function TileGroupProperties({
       ): void {
         updateProps(level, { friction: value });
       }}
+      defaultValue={constants.defaultFriction}
       renderInput={(
-        value: number | null,
+        value: number | undefined,
         onChange: (value: number) => void
       ): ReactNode => {
         return (
           <Slider
-            defaultValue={value ?? 0.5}
+            value={value}
             min={0}
             max={1}
             step={0.01}
-            onChangeEnd={onChange}
+            onChange={onChange}
           />
         );
       }}
@@ -154,17 +158,18 @@ export default function TileGroupProperties({
       onValueChange={(level: PropertyValueLevel, value: number | undefined) => {
         updateProps(level, { traction: value });
       }}
+      defaultValue={constants.defaultTraction}
       renderInput={(
-        value: number | null,
+        value: number | undefined,
         onChange: (value: number) => void
       ): ReactNode => {
         return (
           <Slider
-            defaultValue={value ?? 0.5}
+            value={value}
             min={0}
             max={1}
             step={0.01}
-            onChangeEnd={onChange}
+            onChange={onChange}
           />
         );
       }}
@@ -176,26 +181,28 @@ export default function TileGroupProperties({
       label="Tint"
       description="A color tint to apply to this tile"
       values={toCollect.tint}
-      onValueChange={(level, value: RgbColor | undefined) => {
+      onValueChange={(level, value: string | undefined) => {
         updateProps(level, { tint: value });
       }}
+      defaultValue={constants.defaultTint}
+      debounceMs={null}
       renderInput={(
-        value: RgbColor | null,
-        onChange: (value: RgbColor) => void
+        value: string | undefined,
+        onChange: (value: string) => void
       ): ReactNode => {
-        const hexColor = value ? rgbToHex(value) : "#ffffff";
+        const hexColor = value ? `#${value}` : undefined;
 
         return (
           <ColorInput
             format="hex"
             value={hexColor}
             onChange={(hex) => {
-              onChange(hexToRgb(hex));
+              // Remove the hash symbol before storing
+              onChange(hex.replace("#", ""));
             }}
           />
         );
       }}
-      areEqual={(a, b) => a.r === b.r && a.g === b.g && a.b === b.b}
     />
   );
 
