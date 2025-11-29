@@ -204,6 +204,7 @@ export class Placer implements ClickDragListener {
           layer,
           width: obj.pos.width,
           height: obj.pos.height,
+          status: "error", // New exits start as error until linked
         };
       } else if (obj.id === exitIcon) {
         inst = {
@@ -217,6 +218,7 @@ export class Placer implements ClickDragListener {
           layer,
           width: obj.pos.width,
           height: obj.pos.height,
+          status: "error", // New exits start as error until linked
         };
       } else {
         inst = {

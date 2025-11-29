@@ -6,9 +6,8 @@ import { globals } from "@/globals";
 import { actions as mapActions } from "@/slices/mapEditor";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
-import { MapObj, TilesetMapObj } from "@/types/map";
+import { ExtractProps, MapObj, MapObjProps, TilesetMapObj } from "@/types/map";
 import { resolveTemplate } from "./map";
-import { HasId } from "./misc";
 
 /**
  * Collects property values from a list of instance objects and their templates.
@@ -20,18 +19,11 @@ import { HasId } from "./misc";
  * @returns Object mapping property names to arrays of PropertyValueInfo
  */
 export function collectPropertyValues<
-  TProps extends Record<string, any>,
-  // TInstance must have an id, but properties can be optional
-  TInstance extends HasId & Partial<TProps>,
->(
-  objs: TInstance[],
-  resolveTemplate: (obj: TInstance) => TProps | null,
-  propertyNames: (keyof TProps)[]
-): {
-  [P in keyof TProps]: PropertyValueInfo<NonNullable<TInstance[P]>>[];
-} {
+  TInstance extends MapObj,
+  TProps extends ExtractProps<TInstance> = ExtractProps<TInstance>,
+>(objs: TInstance[], propertyNames: (keyof TProps)[]) {
   const collected = {} as {
-    [P in keyof TProps]: PropertyValueInfo<NonNullable<TInstance[P]>>[];
+    [P in keyof TProps]: PropertyValueInfo<TProps[P]>[];
   };
 
   // Initialize arrays for each property
@@ -41,23 +33,25 @@ export function collectPropertyValues<
 
   // Collect values from each object and its template
   objs.forEach((obj) => {
-    const tmpl = resolveTemplate(obj);
+    const tmpl = resolveTemplate(obj) as MapObjProps | null;
 
     for (const propName of propertyNames) {
       const valuesArray = collected[propName];
-      const instanceValue = obj[propName];
-      const templateValue = tmpl ? (tmpl as any)[propName] : undefined;
+      const instanceValue = obj[propName as keyof TInstance];
 
       if (instanceValue === undefined) {
+        const templateValue = tmpl
+          ? tmpl[propName as keyof MapObjProps]
+          : undefined;
         valuesArray.push({
           key: obj.id,
-          value: templateValue,
+          value: templateValue as TProps[typeof propName],
           level: "template",
         });
       } else {
         valuesArray.push({
           key: obj.id,
-          value: instanceValue,
+          value: instanceValue as TProps[typeof propName],
           level: "instance",
         });
       }
@@ -84,7 +78,7 @@ export function collectPropertyValues<
  */
 export function updateObjectProperties<
   TInstance extends MapObj,
-  TProps extends Partial<TInstance>,
+  TProps extends ExtractProps<TInstance> = ExtractProps<TInstance>,
 >({
   level,
   objs,

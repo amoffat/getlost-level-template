@@ -56,7 +56,7 @@ export interface PropertyValueProps<T> {
    * When set, the component will use local state for immediate updates
    * and debounce calls to onValueChange.
    */
-  debounceMs?: number | null;
+  debounceMs?: number;
   /** If true, hides the SegmentedControl and only allows per-instance changes */
   noTemplate?: boolean;
   /** Optional default value to reset to when the reset button is clicked */
@@ -80,7 +80,7 @@ function PropertyValueInner<T>({
   renderInput,
   onValueChange,
   areEqual = (a, b) => a === b,
-  debounceMs = 300,
+  debounceMs,
   noTemplate = false,
   defaultValue,
 }: PropertyValueProps<T>) {
@@ -198,7 +198,7 @@ function PropertyValueInner<T>({
 
         // Often the input can have rapid changes, like text inputs, so debounce
         // them
-        if (debounceMs !== null) {
+        if (debounceMs !== undefined) {
           debouncedSetValue(value);
         } else {
           setValue(value);
@@ -218,7 +218,7 @@ function PropertyValueInner<T>({
   const handleReset = useCallback(() => {
     if (defaultValue !== undefined) {
       setLocalValue(defaultValue);
-      if (debounceMs !== null) {
+      if (debounceMs !== undefined) {
         debouncedSetValue(defaultValue);
       } else {
         setValue(defaultValue);
@@ -317,6 +317,7 @@ function PropertyValueInner<T>({
             <Tooltip label="Reset to default">
               <ActionIcon
                 onClick={handleReset}
+                disabled={defaultValue === localValue}
                 variant="subtle"
                 color="gray"
                 size="sm"

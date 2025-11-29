@@ -1,8 +1,6 @@
 import * as constants from "@/constants";
 import { WalkSound, walkSounds } from "@/constants";
 import { useAppSelector } from "@/hooks/redux";
-import { selectors as tsSelectors } from "@/slices/tilesetEditor";
-import { store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { TileGroupInstance } from "@/types/map";
 import { TileGroupProps } from "@/types/properties";
@@ -32,25 +30,19 @@ export default function TileGroupProperties({
     (state) => state.mapEditor.layers.active === MapLayerName.Ground
   );
 
-  const resolveTemplate = (obj: TileGroupInstance) => {
-    const state = store.getState();
-    return tsSelectors.templateFromInstanceId(
-      state,
-      obj.tsObjId
-    ) as TileGroupProps;
-  };
-
   const toCollect = useMemo(() => {
-    return collectPropertyValues<TileGroupProps, TileGroupInstance>(
-      objs,
-      resolveTemplate,
-      ["name", "tint", "walkSound", "friction", "traction"]
-    );
+    return collectPropertyValues(objs, [
+      "name",
+      "tint",
+      "walkSound",
+      "friction",
+      "traction",
+    ]);
   }, [objs]);
 
   const updateProps = useCallback(
     (level: PropertyValueLevel, props: Partial<TileGroupProps>) => {
-      updateObjectProperties<TileGroupInstance, TileGroupProps>({
+      updateObjectProperties({
         level,
         objs,
         props,
@@ -181,13 +173,12 @@ export default function TileGroupProperties({
       label="Tint"
       description="A color tint to apply to this tile"
       values={toCollect.tint}
-      onValueChange={(level, value: string | undefined) => {
+      onValueChange={(level, value: string | null | undefined) => {
         updateProps(level, { tint: value });
       }}
       defaultValue={constants.defaultTint}
-      debounceMs={null}
       renderInput={(
-        value: string | undefined,
+        value: string | null | undefined,
         onChange: (value: string) => void
       ): ReactNode => {
         const hexColor = value ? `#${value}` : undefined;

@@ -1,6 +1,4 @@
 import * as constants from "@/constants";
-import { selectors as tsSelectors } from "@/slices/tilesetEditor";
-import { store } from "@/store/store";
 import { NpcInstance } from "@/types/map";
 import { NpcProps } from "@/types/properties";
 import {
@@ -13,21 +11,13 @@ import { ReactNode, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 
 export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
-  const resolveTemplate = (obj: NpcInstance) => {
-    const state = store.getState();
-    return tsSelectors.templateFromInstanceId(state, obj.tsObjId) as NpcProps;
-  };
-
   const toCollect = useMemo(() => {
-    return collectPropertyValues<NpcProps, NpcInstance>(objs, resolveTemplate, [
-      "name",
-      "walkSpeed",
-    ]);
+    return collectPropertyValues(objs, ["name", "walkSpeed"]);
   }, [objs]);
 
   const updateProps = useCallback(
     (level: PropertyValueLevel, props: Partial<NpcProps>) => {
-      updateObjectProperties<NpcInstance, NpcProps>({
+      updateObjectProperties({
         level,
         objs,
         props,

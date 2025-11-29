@@ -1,7 +1,6 @@
 import * as constants from "@/constants";
 import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
-import { store } from "@/store/store";
 import { LightObj } from "@/types/map";
 import { LightProps } from "@/types/properties";
 import {
@@ -28,14 +27,9 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
     [dispatch]
   );
 
-  const resolveTemplate = (_obj: LightObj): LightProps => {
-    const state = store.getState();
-    return state.mapEditor.templates.lights;
-  };
-
   const updateProps = useCallback(
     (level: PropertyValueLevel, props: Partial<LightProps>) => {
-      updateObjectProperties<LightObj, LightProps>({
+      updateObjectProperties({
         level,
         objs,
         props,
@@ -46,11 +40,7 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
   );
 
   const toCollect = useMemo(() => {
-    return collectPropertyValues<LightProps, LightObj>(objs, resolveTemplate, [
-      "color",
-      "intensity",
-      "name",
-    ]);
+    return collectPropertyValues(objs, ["color", "intensity", "name"]);
   }, [objs]);
 
   const nameInput = (

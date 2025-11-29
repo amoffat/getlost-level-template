@@ -148,6 +148,7 @@ export const slice = createSlice({
         tags: [],
         exitIds: [],
         primary: false,
+        status: null,
       },
       exitGateways: {
         id: "exitGatewaysTemplate",
@@ -156,6 +157,7 @@ export const slice = createSlice({
         force: false,
         preferredEntranceId: null,
         sensorRadius: constants.defaultExitSensorRadius,
+        status: null,
       },
     },
     uncommittedObjIds: [],

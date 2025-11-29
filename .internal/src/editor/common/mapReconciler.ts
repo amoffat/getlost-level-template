@@ -1,4 +1,5 @@
 import { texAtlasPadding } from "@/constants";
+import { errorIcon, iconTsId } from "@/constants/tsObjs";
 import { log } from "@/log";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
@@ -7,6 +8,7 @@ import {
   isAnimatedInstance,
   isColliderBox,
   isColliderEllipse,
+  isEntranceObj,
   isExitObj,
   isMapObjFromTileset,
   isNpcInstance,
@@ -150,6 +152,16 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
           // Parse hex string (without hash) to numeric value
           node.tint = parseInt(tint, 16);
         }
+      }
+    }
+
+    if (Object.hasOwn(props, "status")) {
+      const errorIndicator = node.getChildByLabel(
+        "errorIndicator"
+      ) as P.Container | null;
+
+      if (errorIndicator) {
+        errorIndicator.visible = props.status === "error";
       }
     }
 
@@ -335,6 +347,21 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         );
         sensorCircle.zIndex = 9;
         spriteContainer.addChild(sensorCircle);
+
+        const errorIndicator = this.createErrorIndicator(
+          sprite,
+          obj.status === "error"
+        );
+        errorIndicator.zIndex = 20;
+        spriteContainer.addChild(errorIndicator);
+      }
+
+      if (isEntranceObj(obj)) {
+        const errorIndicator = this.createErrorIndicator(
+          sprite,
+          obj.status === "error"
+        );
+        spriteContainer.addChild(errorIndicator);
       }
 
       return spriteContainer;
@@ -372,6 +399,67 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       this.missingTilesetError(tsId);
     }
     return tex;
+  }
+
+  /**
+   * Creates an error indicator container with a red border and warning icon.
+   * The container includes both visual elements and can be shown/hidden as a unit.
+   *
+   * @param sprite The sprite to create the error indicator for
+   * @param visible Whether the error indicator should be initially visible
+   * @returns A container with error border and icon, or null if resources unavailable
+   */
+  private createErrorIndicator(
+    sprite: P.Sprite | P.AnimatedSprite,
+    visible: boolean
+  ): P.Container {
+    const state = store.getState();
+    const errorContainer = new P.Container();
+    errorContainer.label = "errorIndicator";
+    errorContainer.interactive = false;
+    errorContainer.visible = visible;
+
+    // Add error border (red rectangle outline)
+    const errorBorder = new P.Graphics();
+    errorBorder.interactive = false;
+    errorBorder
+      .rect(
+        0,
+        0,
+        sprite.width + 2 * texAtlasPadding,
+        sprite.height + 2 * texAtlasPadding
+      )
+      .stroke({ color: 0xff0000, width: 2 });
+    errorContainer.addChild(errorBorder);
+
+    // Add warning triangle icon sprite in top-right corner
+    const iconTsTex = this.getTilesetTex(iconTsId)!;
+    const iconTsObj = tsSelectors.templateFromInstanceId(
+      state,
+      errorIcon
+    ) as TileGroupTemplate;
+    const iconFrame = iconTsObj.pos;
+    const iconTexFrame = new P.Rectangle(
+      iconFrame.x + texAtlasPadding,
+      iconFrame.y + texAtlasPadding,
+      iconFrame.width - 2 * texAtlasPadding,
+      iconFrame.height - 2 * texAtlasPadding
+    );
+    const iconTex = new P.Texture({
+      source: iconTsTex.source,
+      frame: iconTexFrame,
+    });
+
+    const errorIconSprite = new P.Sprite(iconTex);
+    errorIconSprite.interactive = false;
+    errorIconSprite.tint = 0xff0000; // Red tint
+    errorIconSprite.position.set(
+      sprite.width + texAtlasPadding,
+      texAtlasPadding
+    );
+    errorContainer.addChild(errorIconSprite);
+
+    return errorContainer;
   }
 
   /**

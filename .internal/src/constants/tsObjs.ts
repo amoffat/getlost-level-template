@@ -6,3 +6,4 @@ export const lightIcon = "74dbc3085545a3aebdf3226ee361515a9901e152";
 export const waypointIcon = "bd704aa16ab0e8cb728e79705a195d3eb4781b87";
 export const soundIcon = "c04e0c00c3efcb420f448eaaa62c199798a61938";
 export const transparentIcon = "1dbfc36648dd2eb6c86b337a183baff35928c1ee";
+export const errorIcon = "8806f762dbcf6eb5034c5ad039b0bb32959be416";

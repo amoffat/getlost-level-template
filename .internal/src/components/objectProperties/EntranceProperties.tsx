@@ -1,6 +1,5 @@
 import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
-import { store } from "@/store/store";
 import { EntranceObj } from "@/types/map";
 import { EntranceProps } from "@/types/properties";
 import {
@@ -13,13 +12,13 @@ import {
   Fieldset,
   Group,
   Stack,
-  Switch,
   TextInput,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { ReactNode, useCallback, useMemo } from "react";
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
+import { nonEmptyName } from "./validators/name";
 
 export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
   const dispatch = useAppDispatch();
@@ -39,14 +38,9 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
     [dispatch]
   );
 
-  const resolveTemplate = (_obj: EntranceObj): EntranceProps => {
-    const state = store.getState();
-    return state.mapEditor.templates.entryGateways;
-  };
-
   const updateProps = useCallback(
     (level: PropertyValueLevel, props: Partial<EntranceProps>) => {
-      updateObjectProperties<EntranceObj, EntranceProps>({
+      updateObjectProperties({
         level,
         objs,
         props,
@@ -57,11 +51,7 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
   );
 
   const toCollect = useMemo(() => {
-    return collectPropertyValues<EntranceProps, EntranceObj>(
-      objs,
-      resolveTemplate,
-      ["name", "exitIds", "primary"]
-    );
+    return collectPropertyValues(objs, ["name", "exitIds"]);
   }, [objs]);
 
   const handleModalSubmit = useCallback(
@@ -100,7 +90,10 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
         level: PropertyValueLevel,
         value: string | undefined
       ): void => {
-        updateProps(level, { name: value });
+        updateProps(level, {
+          name: value,
+          status: nonEmptyName(value) ? "error" : null,
+        });
       }}
       renderInput={(
         value: string | undefined,
@@ -110,6 +103,7 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
           <TextInput
             value={value ?? ""}
             placeholder="Enter name"
+            error={nonEmptyName(value)}
             onChange={(e) => onChange(e.target.value)}
           />
         );
@@ -173,32 +167,6 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
     </Stack>
   );
 
-  const primaryInput = (
-    <PropertyValue
-      label="Primary entrance?"
-      description="When a player arrives at your level directly, they will start at this entrance."
-      noTemplate
-      values={toCollect.primary}
-      onValueChange={(
-        level: PropertyValueLevel,
-        value: boolean | undefined
-      ): void => {
-        updateProps(level, { primary: value });
-      }}
-      renderInput={(
-        value: boolean | undefined,
-        onChange: (value: boolean) => void
-      ): ReactNode => {
-        return (
-          <Switch
-            checked={value ?? false}
-            onChange={(e) => onChange(e.currentTarget.checked)}
-          />
-        );
-      }}
-    />
-  );
-
   const singleSelected = objs.length === 1;
 
   return (
@@ -206,7 +174,6 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       <Fieldset legend="Entrance properties" mt="md" p="xs">
         <Stack p={0} gap="xl">
           {singleSelected && nameInput}
-          {singleSelected && primaryInput}
           {singleSelected && exitIdInput}
         </Stack>
       </Fieldset>

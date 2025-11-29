@@ -21,6 +21,7 @@ export enum MapObjType {
   Waypoint = 9,
 }
 
+// The base interface for all playable map objects
 export interface BaseMapObj {
   id: string;
   type: MapObjType;
@@ -32,6 +33,9 @@ export interface BaseMapObj {
   height: number;
 }
 
+// This is a base interface for objects are linked to a tileset. This includes
+// both tile groups that are visible in the map, and things like lights and
+// exits, because their icons are stored in a hidden tileset.
 export interface TilesetMapObj extends BaseMapObj {
   // The id of the underlying tileset object
   tsObjId: string;
@@ -104,6 +108,20 @@ export type MapObjProps =
   | AnimationProps
   | TileGroupProps
   | NpcProps;
+
+export type ExtractProps<T extends MapObj> = T extends LightObj
+  ? LightProps
+  : T extends EntranceObj
+    ? EntranceProps
+    : T extends ExitObj
+      ? ExitProps
+      : T extends AnimationInstance
+        ? AnimationProps
+        : T extends TileGroupInstance
+          ? TileGroupProps
+          : T extends NpcInstance
+            ? NpcProps
+            : never;
 
 export function isTileGroupInstance(
   obj: Partial<BaseMapObj>

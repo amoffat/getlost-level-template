@@ -1,7 +1,6 @@
 import * as constants from "@/constants";
 import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
-import { store } from "@/store/store";
 import { ExitObj } from "@/types/map";
 import { ExitProps } from "@/types/properties";
 import {
@@ -20,6 +19,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { ReactNode, useCallback, useMemo } from "react";
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
+import { nonEmptyName } from "./validators/name";
 
 export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
   const dispatch = useAppDispatch();
@@ -39,14 +39,9 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
     [dispatch]
   );
 
-  const resolveTemplate = (_obj: ExitObj): ExitProps => {
-    const state = store.getState();
-    return state.mapEditor.templates.exitGateways;
-  };
-
   const updateProps = useCallback(
     (level: PropertyValueLevel, props: Partial<ExitProps>) => {
-      updateObjectProperties<ExitObj, ExitProps>({
+      updateObjectProperties({
         level,
         objs,
         props,
@@ -57,7 +52,7 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
   );
 
   const toCollect = useMemo(() => {
-    return collectPropertyValues<ExitProps, ExitObj>(objs, resolveTemplate, [
+    return collectPropertyValues(objs, [
       "name",
       "preferredEntranceId",
       "force",
@@ -88,7 +83,10 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
         level: PropertyValueLevel,
         value: string | undefined
       ): void => {
-        updateProps(level, { name: value });
+        updateProps(level, {
+          name: value,
+          status: nonEmptyName(value) ? "error" : null,
+        });
       }}
       renderInput={(
         value: string | undefined,
@@ -98,6 +96,7 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
           <TextInput
             value={value ?? ""}
             placeholder="Enter name"
+            error={nonEmptyName(value)}
             onChange={(e) => onChange(e.target.value)}
           />
         );
@@ -109,31 +108,33 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
   const hasPrefEntrance = prefEntrance.trim() !== "";
 
   const preferredEntranceInput = (
-    <PropertyValue
+    <PropertyValue<string | null>
       label="Preferred entrance"
       description="If an entrance matching this id attaches to this exit, it will be permanently attached."
       noTemplate
       values={toCollect.preferredEntranceId}
-      defaultValue=""
+      defaultValue={null}
       onValueChange={(
         level: PropertyValueLevel,
-        value: string | undefined
+        value: string | null | undefined
       ): void => {
         updateProps(level, { preferredEntranceId: value });
       }}
       renderInput={(
-        value: string | undefined,
+        value: string | null | undefined,
         onChange: (value: string) => void
       ): ReactNode => {
         return (
           <Stack gap="xs" p={0}>
-            <TextInput
-              value={value ?? ""}
-              placeholder="Enter entrance id"
-              onChange={(e) => {
-                onChange(e.target.value);
-              }}
-            />
+            {value && (
+              <TextInput
+                value={value}
+                placeholder="Enter entrance id"
+                onChange={(e) => {
+                  onChange(e.target.value);
+                }}
+              />
+            )}
 
             {!hasPrefEntrance && (
               <Button size="xs" fullWidth onClick={openModal}>
@@ -147,7 +148,7 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
   );
 
   const forceInput = (
-    <PropertyValue
+    <PropertyValue<boolean | undefined>
       label="Force exit?"
       description="A forced exit does not give the player a choice to stay."
       noTemplate
@@ -174,13 +175,12 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
   );
 
   const sensorSizeInput = (
-    <PropertyValue
+    <PropertyValue<number | undefined>
       label="Sensor radius"
       description="The radius that triggers the player to exit."
       values={toCollect.sensorRadius}
       defaultValue={constants.defaultExitSensorRadius}
       noTemplate
-      debounceMs={null}
       onValueChange={(
         level: PropertyValueLevel,
         value: number | undefined

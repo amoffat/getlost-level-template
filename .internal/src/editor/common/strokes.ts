@@ -53,6 +53,6 @@ export const overlayFill: P.FillStyle = {
 };
 
 export const exitFill: P.FillStyle = {
-  color: 0x00ffff,
+  color: 0x000000,
   alpha: 0.35,
 };

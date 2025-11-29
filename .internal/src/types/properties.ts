@@ -1,10 +1,11 @@
 import { WalkSound } from "@/constants";
+import { InstanceStatus } from "./InstanceStatus";
 
 export interface EntranceProps {
   name: string;
   tags: string[];
   exitIds: string[];
-  primary: boolean;
+  status: InstanceStatus | null;
 }
 
 export interface ExitProps {
@@ -13,6 +14,7 @@ export interface ExitProps {
   force: boolean;
   preferredEntranceId: string | null;
   sensorRadius: number;
+  status: InstanceStatus | null;
 }
 
 export interface LightProps {
