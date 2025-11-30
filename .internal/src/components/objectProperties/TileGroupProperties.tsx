@@ -176,12 +176,12 @@ export default function TileGroupProperties({
       onValueChange={(level, value: string | null | undefined) => {
         updateProps(level, { tint: value });
       }}
-      defaultValue={constants.defaultTint}
+      defaultValue={null}
       renderInput={(
         value: string | null | undefined,
         onChange: (value: string) => void
       ): ReactNode => {
-        const hexColor = value ? `#${value}` : undefined;
+        const hexColor = value ? `#${value}` : "";
 
         return (
           <ColorInput

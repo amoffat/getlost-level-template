@@ -1,4 +1,4 @@
-import { texAtlasPadding } from "@/constants";
+import { defaultTint, texAtlasPadding } from "@/constants";
 import { errorIcon, iconTsId } from "@/constants/tsObjs";
 import { log } from "@/log";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
@@ -147,11 +147,14 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
     if (isTileGroupInstance(obj)) {
       if (Object.hasOwn(props, "tint")) {
-        const tint = props.tint ?? (tmpl as unknown as TileGroupProps).tint;
-        if (tint) {
-          // Parse hex string (without hash) to numeric value
-          node.tint = parseInt(tint, 16);
+        let tint = props.tint;
+        // If tint is undefined, inherit from template. If it's null, don't.
+        if (tint === undefined) {
+          tint = (tmpl as unknown as TileGroupProps).tint ?? tint;
         }
+        tint = tint ?? defaultTint;
+
+        node.tint = parseInt(tint, 16);
       }
     }
 

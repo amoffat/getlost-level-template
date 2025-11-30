@@ -176,10 +176,7 @@ function PropertyValueInner<T>({
 
       // This triggers an expensive operation in parent, so defer it
       requestIdleCallback(() => {
-        onValueChange(
-          level,
-          level === "template" ? undefined : (localValue ?? undefined)
-        );
+        onValueChange(level, level === "template" ? undefined : localValue);
         setHasPendingValue(false);
       });
     },

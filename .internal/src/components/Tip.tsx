@@ -1,5 +1,5 @@
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { actions as uiActions } from "@/slices/ui";
+import { STORAGE_KEYS } from "@/constants/localStorage";
+import { useLocalStorageToggle } from "@/hooks/useLocalStorageToggle";
 import { Alert, Button, Group, Text, Transition } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import {
@@ -46,9 +46,13 @@ export const Tip = memo(
     const count = tips.length;
     // Start from the first tip and iterate predictably
     const [index, setIndex] = useState(0);
-    const collapsed = useAppSelector((state) => state.ui.tipCollapsed);
-    const dispatch = useAppDispatch();
     const [mounted, setMounted] = useState(true);
+
+    // Initialize collapsed state from localStorage, defaulting to false (tips shown)
+    const [collapsed, toggleCollapsed] = useLocalStorageToggle(
+      STORAGE_KEYS.TIPS_COLLAPSED,
+      false
+    );
     const intervalMs = intervalSeconds * 1000;
     const [expanded, setExpanded] = useState(false);
     const [isTruncated, setIsTruncated] = useState(false);
@@ -158,9 +162,6 @@ export const Tip = memo(
     }, [index]);
 
     const icon = useMemo(() => <IconInfoCircle />, []);
-    const onClose = useCallback(() => {
-      dispatch(uiActions.setTipCollapsed(true));
-    }, [dispatch]);
 
     if (count === 0) {
       return null;
@@ -169,7 +170,7 @@ export const Tip = memo(
     return (
       <Alert
         withCloseButton={!collapsed}
-        onClose={onClose}
+        onClose={toggleCollapsed}
         className={className}
         color="green"
         icon={icon}
@@ -181,7 +182,7 @@ export const Tip = memo(
             <Button
               variant="subtle"
               size="compact-xs"
-              onClick={() => dispatch(uiActions.setTipCollapsed(false))}
+              onClick={toggleCollapsed}
               aria-label="Show tips"
             >
               Show tips
