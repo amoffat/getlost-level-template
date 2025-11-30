@@ -137,13 +137,13 @@ export const slice = createSlice({
     },
     templates: {
       lights: {
-        id: "lightsTemplate",
+        id: constants.lightTemplateId,
         name: "",
         color: constants.defaultLightColor,
         intensity: constants.defaultLightIntensity,
       },
       entryGateways: {
-        id: "entryGatewaysTemplate",
+        id: constants.entryTemplateId,
         name: "",
         tags: [],
         exitIds: [],
@@ -151,7 +151,7 @@ export const slice = createSlice({
         status: null,
       },
       exitGateways: {
-        id: "exitGatewaysTemplate",
+        id: constants.exitTemplateId,
         name: "",
         tags: [],
         force: false,
@@ -444,6 +444,18 @@ export const slice = createSlice({
           }
         }
         return count;
+      }
+    ),
+    objectsByTemplateId: createMapSelector(
+      [(state) => state.objects.entities, (_, tmplId: string) => tmplId],
+      (entities, tmplId): MapObj[] => {
+        const ids = globals.templateIndex.get(tmplId)!;
+        const objs = [];
+        for (const id of ids) {
+          const obj = entities[id]!;
+          objs.push(obj);
+        }
+        return objs;
       }
     ),
     paletteSelectedTsObjIds: createMapSelector(

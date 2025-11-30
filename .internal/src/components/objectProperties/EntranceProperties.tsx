@@ -1,5 +1,9 @@
-import { useAppDispatch } from "@/hooks/redux";
-import { actions as mapEditorActions } from "@/slices/mapEditor";
+import { entryTemplateId } from "@/constants";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import {
+  actions as mapEditorActions,
+  selectors as mapSelectors,
+} from "@/slices/mapEditor";
 import { EntranceObj } from "@/types/map";
 import { EntranceProps } from "@/types/properties";
 import {
@@ -18,12 +22,15 @@ import { useDisclosure } from "@mantine/hooks";
 import { ReactNode, useCallback, useMemo } from "react";
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
-import { nonEmptyName } from "./validators/name";
+import { requiredUniqueName } from "./validators/name";
 
 export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
   const dispatch = useAppDispatch();
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
+  const objsByTemplateId = useAppSelector((state) =>
+    mapSelectors.objectsByTemplateId(state, entryTemplateId)
+  );
 
   // All entrance objects use the same global entrance template
   const templateUpdate = useCallback(
@@ -79,6 +86,28 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
     [toCollect.exitIds]
   );
 
+  const existingNames = useMemo(() => {
+    const names = new Set<string>();
+    const skipIds = new Set(objs.map((obj) => obj.id));
+    objsByTemplateId.forEach((obj) => {
+      if (skipIds.has(obj.id)) {
+        return;
+      }
+      const name = (obj as EntranceObj).name;
+      if (name) {
+        names.add(name);
+      }
+    });
+    return names;
+  }, [objsByTemplateId, objs]);
+
+  const nameValidator = useCallback(
+    (value: string | undefined) => {
+      return requiredUniqueName(existingNames, value);
+    },
+    [existingNames]
+  );
+
   const nameInput = (
     <PropertyValue
       label="Name"
@@ -92,7 +121,7 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       ): void => {
         updateProps(level, {
           name: value,
-          status: nonEmptyName(value) ? "error" : null,
+          status: nameValidator(value) ? "error" : null,
         });
       }}
       renderInput={(
@@ -103,7 +132,7 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
           <TextInput
             value={value ?? ""}
             placeholder="Enter name"
-            error={nonEmptyName(value)}
+            error={nameValidator(value)}
             onChange={(e) => onChange(e.target.value)}
           />
         );

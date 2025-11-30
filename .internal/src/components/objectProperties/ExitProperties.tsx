@@ -1,6 +1,9 @@
 import * as constants from "@/constants";
-import { useAppDispatch } from "@/hooks/redux";
-import { actions as mapEditorActions } from "@/slices/mapEditor";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import {
+  actions as mapEditorActions,
+  selectors as mapSelectors,
+} from "@/slices/mapEditor";
 import { ExitObj } from "@/types/map";
 import { ExitProps } from "@/types/properties";
 import {
@@ -19,10 +22,13 @@ import { useDisclosure } from "@mantine/hooks";
 import { ReactNode, useCallback, useMemo } from "react";
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
-import { nonEmptyName } from "./validators/name";
+import { requiredUniqueName } from "./validators/name";
 
 export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
   const dispatch = useAppDispatch();
+  const objsByTemplateId = useAppSelector((state) =>
+    mapSelectors.objectsByTemplateId(state, constants.exitTemplateId)
+  );
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
 
@@ -72,6 +78,28 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
     [updateProps]
   );
 
+  const existingNames = useMemo(() => {
+    const names = new Set<string>();
+    const skipIds = new Set(objs.map((obj) => obj.id));
+    objsByTemplateId.forEach((obj) => {
+      if (skipIds.has(obj.id)) {
+        return;
+      }
+      const name = (obj as ExitObj).name;
+      if (name) {
+        names.add(name);
+      }
+    });
+    return names;
+  }, [objsByTemplateId, objs]);
+
+  const nameValidator = useCallback(
+    (value: string | undefined) => {
+      return requiredUniqueName(existingNames, value);
+    },
+    [existingNames]
+  );
+
   const nameInput = (
     <PropertyValue
       label="Name"
@@ -85,7 +113,7 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
       ): void => {
         updateProps(level, {
           name: value,
-          status: nonEmptyName(value) ? "error" : null,
+          status: nameValidator(value) ? "error" : null,
         });
       }}
       renderInput={(
@@ -96,7 +124,7 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
           <TextInput
             value={value ?? ""}
             placeholder="Enter name"
-            error={nonEmptyName(value)}
+            error={nameValidator(value)}
             onChange={(e) => onChange(e.target.value)}
           />
         );

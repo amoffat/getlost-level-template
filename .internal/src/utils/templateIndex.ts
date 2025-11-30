@@ -1,3 +1,4 @@
+import * as constants from "@/constants";
 import {
   isEntranceObj,
   isExitObj,
@@ -12,11 +13,11 @@ import {
  */
 export function getTemplateId(obj: MapObj): string | null {
   if (isLightInstance(obj)) {
-    return "lightsTemplate";
+    return constants.lightTemplateId;
   } else if (isEntranceObj(obj)) {
-    return "entryGatewaysTemplate";
+    return constants.entryTemplateId;
   } else if (isExitObj(obj)) {
-    return "exitGatewaysTemplate";
+    return constants.exitTemplateId;
   } else if (isMapObjFromTileset(obj)) {
     return obj.tsObjId;
   }
