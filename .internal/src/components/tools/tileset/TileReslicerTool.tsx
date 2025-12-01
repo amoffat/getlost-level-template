@@ -3,10 +3,10 @@ import { actions, selectors } from "@/slices/tilesetEditor";
 import { retileThunk } from "@/thunks/tileset";
 import { Button, Fieldset, Stack } from "@mantine/core";
 import { useCallback } from "react";
-import GridSizeInput from "../GridSizeInput";
-import Tip from "../Tip";
+import GridSizeInput from "../../GridSizeInput";
+import Tip from "../../Tip";
 
-export default function TileReslicer() {
+export default function TileReslicerTool() {
   const dispatch = useAppDispatch();
   const grid = useAppSelector((state) => state.tilesetEditor.grid);
   const ts = useAppSelector(selectors.activeTileset);

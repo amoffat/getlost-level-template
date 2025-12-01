@@ -223,6 +223,45 @@ function PropertyValueInner<T>({
     }
   }, [defaultValue, debounceMs, debouncedSetValue, setValue]);
 
+  const scopes = useMemo(() => {
+    const scopes = [];
+    if (localLevel === "mixed") {
+      scopes.push({
+        label: (
+          <Group gap={4} wrap="nowrap">
+            <IconAlertTriangle size={14} />
+            <Text size="xs">Mixed</Text>
+          </Group>
+        ),
+        value: "mixed",
+      });
+    }
+
+    scopes.push(
+      ...[
+        {
+          label: (
+            <Group gap={4} wrap="nowrap">
+              <IconCircleFilled size={14} />
+              <Text size="xs">Unique</Text>
+            </Group>
+          ),
+          value: "instance",
+        },
+        {
+          label: (
+            <Group gap={4} wrap="nowrap">
+              <IconCirclesFilled size={14} />
+              <Text size="xs">Shared</Text>
+            </Group>
+          ),
+          value: "template",
+        },
+      ]
+    );
+    return scopes;
+  }, [localLevel]);
+
   return (
     <Stack gap="xs" p={0}>
       {label && (
@@ -244,36 +283,7 @@ function PropertyValueInner<T>({
           value={localLevel}
           onChange={setLevel}
           size="xs"
-          data={[
-            {
-              label: (
-                <Group gap={4} wrap="nowrap">
-                  <IconAlertTriangle size={14} />
-                  <Text size="xs">Mixed</Text>
-                </Group>
-              ),
-              value: "mixed",
-              disabled: localLevel !== "mixed",
-            },
-            {
-              label: (
-                <Group gap={4} wrap="nowrap">
-                  <IconCircleFilled size={14} />
-                  <Text size="xs">Unique</Text>
-                </Group>
-              ),
-              value: "instance",
-            },
-            {
-              label: (
-                <Group gap={4} wrap="nowrap">
-                  <IconCirclesFilled size={14} />
-                  <Text size="xs">Shared</Text>
-                </Group>
-              ),
-              value: "template",
-            },
-          ]}
+          data={scopes}
           color={
             localLevel === "mixed"
               ? "orange"

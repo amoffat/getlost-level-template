@@ -1,5 +1,5 @@
 import { overlayProps } from "@/constants";
-import { unpackTileset } from "@/editor/tileset/loader";
+import { unpackTileset } from "@/editors/tileset/loader";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { uploadTilesetThunk } from "@/thunks/tileset";
 import { Rect } from "@/types/rect";

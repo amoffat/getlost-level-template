@@ -1,4 +1,4 @@
-import { slice as collisionSlice } from "@/editor/collision/state";
+import { slice as collisionSlice } from "@/editors/collision/state";
 import { globals as g } from "@/globals";
 import { slice as dialogueSlice } from "@/slices/dialogue";
 import { slice as mapEditorSlice } from "@/slices/mapEditor";

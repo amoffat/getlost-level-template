@@ -1,6 +1,6 @@
-import Tip from "../Tip";
+import Tip from "../../Tip";
 
-export default function TileReplaceOptions() {
+export default function TileReplaceTool() {
   return (
     <>
       <Tip

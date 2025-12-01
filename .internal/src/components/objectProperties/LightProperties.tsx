@@ -15,7 +15,7 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
   const dispatch = useAppDispatch();
 
   // All light objects use the same global light template
-  const updateLightTemplate = useCallback(
+  const templateUpdate = useCallback(
     (_objs: LightObj[], props: Partial<LightProps>) => {
       dispatch(
         mapEditorActions.updateTemplate({
@@ -33,10 +33,10 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
         level,
         objs,
         props,
-        templateUpdate: updateLightTemplate,
+        templateUpdate,
       });
     },
-    [objs, updateLightTemplate]
+    [objs, templateUpdate]
   );
 
   const toCollect = useMemo(() => {

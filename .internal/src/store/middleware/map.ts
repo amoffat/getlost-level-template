@@ -1,5 +1,5 @@
 // store.ts
-import { ReduxReconciler } from "@/editor/common/reconciler";
+import { ReduxReconciler } from "@/editors/common/reconciler";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
 

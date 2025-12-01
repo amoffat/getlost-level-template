@@ -48,9 +48,9 @@ import {
   IconInfoCircle,
 } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import TileAnimation from "../TileAnimation";
-import TilesetGroup from "../TilesetGroup";
-import Tip from "../Tip";
+import TileAnimation from "../../TileAnimation";
+import TilesetGroup from "../../TilesetGroup";
+import Tip from "../../Tip";
 
 const DEFAULT_TOTAL_TIME = 1000; // ms
 const MIN_FRAME_MS_60FPS = Math.ceil(1000 / 60); // ~16.7ms
@@ -143,7 +143,7 @@ interface FormValues {
   names: string[];
 }
 
-export default function TileAnimationOptions() {
+export default function TileAnimationTool() {
   const tsId = useAppSelector((state) => state.tilesetEditor.activeTilesetId)!;
   const cands = useAppSelector((state) => state.tilesetEditor.candAnimFrames);
   const activeTileset = useAppSelector(
@@ -228,6 +228,7 @@ export default function TileAnimationOptions() {
       loop: true,
       flipX: false,
       tint: null,
+      hidden: false,
     };
     dispatch(actions.addPaletteObjects({ tsId, objs: [anim] }));
     dispatch(clearCandAnimFramesThunk());

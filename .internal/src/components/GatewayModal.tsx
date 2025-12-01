@@ -130,7 +130,7 @@ export default function GatewayModal({
           <TextInput
             label="Level id"
             placeholder="Level id"
-            description="Can be the Github repository url, owner/repo, repo id (numeric), or Get Lost level url"
+            description="Can be the Github level url, owner/repo, repo id (numeric), or Get Lost level url"
             key={form.key("githubRepoId")}
             {...form.getInputProps("githubRepoId")}
             error={validationError}
@@ -166,7 +166,7 @@ export default function GatewayModal({
             description={
               availableGateways.length === 0
                 ? gatewayDescription
-                : "Select a gateway from the repository"
+                : "Select a gateway from the level"
             }
             rightSection={loadingGateways ? <Loader size="xs" /> : undefined}
             key={form.key("gatewayId")}

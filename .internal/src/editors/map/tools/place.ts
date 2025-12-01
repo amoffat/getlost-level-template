@@ -1,6 +1,6 @@
 import { entranceIcon, exitIcon, lightIcon } from "@/constants/tsObjs";
-import { drawOutline } from "@/editor/common/outline";
-import { selectStroke } from "@/editor/common/strokes";
+import { drawOutline } from "@/editors/common/outline";
+import { selectStroke } from "@/editors/common/strokes";
 import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import { actions, selectors } from "@/slices/mapEditor";
@@ -234,7 +234,8 @@ export class Placer implements ClickDragListener {
           flipX: place.flipX,
           width: obj.pos.width,
           height: obj.pos.height,
-          tint: undefined, // Use template tint by default
+          tint: undefined,
+          hidden: undefined,
         };
       }
     } else if (isAnimationTemplate(obj)) {
@@ -252,7 +253,8 @@ export class Placer implements ClickDragListener {
         flipX: place.flipX,
         width,
         height,
-        tint: undefined, // Use template tint by default
+        tint: undefined,
+        hidden: undefined,
       };
     } else if (isNpcTemplate(obj)) {
       inst = {
@@ -267,7 +269,8 @@ export class Placer implements ClickDragListener {
         flipX: place.flipX,
         width,
         height,
-        tint: undefined, // Use template tint by default
+        tint: undefined,
+        hidden: undefined,
       };
     }
 

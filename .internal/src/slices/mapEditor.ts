@@ -141,6 +141,7 @@ export const slice = createSlice({
         name: "",
         color: constants.defaultLightColor,
         intensity: constants.defaultLightIntensity,
+        hidden: false,
       },
       entryGateways: {
         id: constants.entryTemplateId,

@@ -21,6 +21,7 @@ export interface LightProps {
   name: string;
   color: string;
   intensity: number;
+  hidden: boolean;
 }
 
 export interface TileGroupProps {
@@ -40,6 +41,7 @@ export interface AnimationProps {
   flipX: boolean;
   tint: string | null;
   loop: boolean;
+  hidden: boolean;
 }
 
 export interface NpcProps {
@@ -48,4 +50,5 @@ export interface NpcProps {
   flipX: boolean;
   walkSpeed: number;
   tint: string | null;
+  hidden: boolean;
 }

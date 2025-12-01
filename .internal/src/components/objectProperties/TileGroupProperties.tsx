@@ -15,6 +15,7 @@ import {
   Select,
   Slider,
   Stack,
+  Switch,
   TextInput,
 } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
@@ -34,6 +35,7 @@ export default function TileGroupProperties({
     return collectPropertyValues(objs, [
       "name",
       "tint",
+      "hidden",
       "walkSound",
       "friction",
       "traction",
@@ -197,11 +199,38 @@ export default function TileGroupProperties({
     />
   );
 
+  const hiddenInput = (
+    <PropertyValue
+      label="Hidden"
+      description="Whether this object starts off hidden on the map."
+      values={toCollect.hidden}
+      defaultValue={false}
+      onValueChange={(
+        level: PropertyValueLevel,
+        value: boolean | undefined
+      ): void => {
+        updateProps(level, { hidden: value });
+      }}
+      renderInput={(
+        value: boolean | undefined,
+        onChange: (value: boolean) => void
+      ): ReactNode => {
+        return (
+          <Switch
+            checked={value ?? false}
+            onChange={(e) => onChange(e.currentTarget.checked)}
+          />
+        );
+      }}
+    />
+  );
+
   return (
     <Fieldset legend="Object properties" mt="md" p="xs">
       <Stack p={0} gap="xl">
         {nameInput}
         {tintInput}
+        {hiddenInput}
         {groundLayer && walkSoundInput}
         {groundLayer && frictionInput}
         {groundLayer && tractionInput}

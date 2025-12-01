@@ -1,5 +1,5 @@
 import { overlayProps } from "@/constants";
-import { init } from "@/editor/collision/init";
+import { init } from "@/editors/collision/init";
 import { Button, Group, Modal, Stack, Stepper, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import * as P from "pixi.js";

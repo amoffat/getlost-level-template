@@ -25,10 +25,10 @@ import {
 import { IconInfoCircle } from "@tabler/icons-react";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual } from "react-redux";
-import TilesetGroup from "../TilesetGroup";
-import Tip from "../Tip";
+import TilesetGroup from "../../TilesetGroup";
+import Tip from "../../Tip";
 
-export default function Fill() {
+export default function FillTool() {
   const {
     candidates: cands,
     density: storeDensity,

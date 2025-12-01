@@ -1,5 +1,5 @@
-import { init as mapInit } from "@/editor/map/init";
-import { init as tsInit } from "@/editor/tileset/init";
+import { init as mapInit } from "@/editors/map/init";
+import { init as tsInit } from "@/editors/tileset/init";
 import { store } from "@/store/store";
 import { loadMapThunk } from "@/thunks/map";
 import { loadTilesetsThunk } from "@/thunks/tileset";

@@ -3,9 +3,9 @@ import { actions } from "@/slices/mapEditor";
 import { ColliderOpts } from "@/types/tools";
 import { Fieldset, Kbd, Radio, Stack } from "@mantine/core";
 import { useCallback } from "react";
-import Tip from "../Tip";
+import Tip from "../../Tip";
 
-export default function AddCollider() {
+export default function ColliderTool() {
   const dispatch = useAppDispatch();
   const opts = useAppSelector(
     (state) => state.mapEditor.toolOptions["add-collider"]

@@ -4,10 +4,10 @@ import { actions as mapEdActions } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Fieldset, Group, Kbd, Stack, Text } from "@mantine/core";
 import { useCallback, useEffect, useRef, useState } from "react";
-import Tip from "../Tip";
+import Tip from "../../Tip";
 import classes from "./Autotiler.module.css";
 
-export default function Autotiler() {
+export default function AutotilerTool() {
   const cands = useAppSelector(
     (state) => state.mapEditor.toolOptions["autotiler"].candidates
   );

@@ -46,10 +46,10 @@ import ToolPalette, { ToolDescriptor } from "./ToolPalette";
 import { renderNpc } from "./paletteObjects/Npc";
 import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
 import { renderTileGroup } from "./paletteObjects/TileGroup";
-import NpcOptions from "./toolOptions/NpcOptions";
-import TileAnimationOptions from "./toolOptions/TileAnimationOptions";
-import TileReplaceOptions from "./toolOptions/TileReplaceOptions";
-import TileReslicer from "./toolOptions/TileReslicer";
+import NpcTool from "./tools/tileset/NpcTool";
+import TileAnimationTool from "./tools/tileset/TileAnimationTool";
+import TileReplaceTool from "./tools/tileset/TileReplaceTool";
+import TileReslicerTool from "./tools/tileset/TileReslicerTool";
 
 export default function TilesetEditorTab({
   initPromise,
@@ -144,7 +144,7 @@ export default function TilesetEditorTab({
       "reslice-tiles": {
         name: "Reslicer",
         icon: <IconGrid4x4 size={16} />,
-        options: <TileReslicer />,
+        options: <TileReslicerTool />,
         enabled: enableGroup,
       },
 
@@ -156,7 +156,7 @@ export default function TilesetEditorTab({
       "replace-group": {
         name: "Replace group",
         icon: <IconReplace size={16} />,
-        options: <TileReplaceOptions />,
+        options: <TileReplaceTool />,
         enabled: hasTsSelected,
       },
       "add-group": {
@@ -173,13 +173,13 @@ export default function TilesetEditorTab({
       animate: {
         name: "Animate",
         icon: <IconKeyframes size={16} />,
-        options: <TileAnimationOptions />,
+        options: <TileAnimationTool />,
         enabled: hasTsSelected,
       },
       "make-npc": {
         name: "Make NPC",
         icon: <IconUser size={16} />,
-        options: <NpcOptions />,
+        options: <NpcTool />,
         enabled: hasTsSelected,
       },
     }),

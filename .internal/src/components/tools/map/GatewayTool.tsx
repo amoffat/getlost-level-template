@@ -4,9 +4,9 @@ import { actions as mapActions } from "@/slices/mapEditor";
 import { loadTileGroup } from "@/utils/tileset";
 import { Fieldset, Radio, Stack, Tooltip } from "@mantine/core";
 import { ReactNode, useCallback, useEffect, useMemo } from "react";
-import Tip from "../Tip";
+import Tip from "../../Tip";
 
-export default function Gateways() {
+export default function GatewayTool() {
   const dispatch = useAppDispatch();
 
   const tips: ReactNode[] = useMemo(() => {

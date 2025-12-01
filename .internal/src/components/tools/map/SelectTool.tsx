@@ -22,12 +22,12 @@ import {
 } from "@tabler/icons-react";
 import { ReactNode, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import EntranceProperties from "../objectProperties/EntranceProperties";
-import ExitProperties from "../objectProperties/ExitProperties";
-import LightProperties from "../objectProperties/LightProperties";
-import NpcProperties from "../objectProperties/NpcProperties";
-import TileGroupProperties from "../objectProperties/TileGroupProperties";
-import Tip from "../Tip";
+import EntranceProperties from "../../objectProperties/EntranceProperties";
+import ExitProperties from "../../objectProperties/ExitProperties";
+import LightProperties from "../../objectProperties/LightProperties";
+import NpcProperties from "../../objectProperties/NpcProperties";
+import TileGroupProperties from "../../objectProperties/TileGroupProperties";
+import Tip from "../../Tip";
 
 export default function SelectTool() {
   const selectedObjs = useAppSelector(mapSelectors.selectedObjs);

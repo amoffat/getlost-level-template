@@ -27,15 +27,15 @@ import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconAlertTriangle, IconCheck } from "@tabler/icons-react";
 import { ReactNode, useCallback, useEffect, useMemo } from "react";
-import TileAnimation from "../TileAnimation";
-import Tip from "../Tip";
+import TileAnimation from "../../TileAnimation";
+import Tip from "../../Tip";
 
 interface FormValues {
   name: string;
   tags: string[];
 }
 
-export default function NpcOptions() {
+export default function NpcTool() {
   const tsId = useAppSelector((state) => state.tilesetEditor.activeTilesetId)!;
   const ts = useAppSelector((state) => state.tilesetEditor.tilesets[tsId]);
   const dispatch = useAppDispatch();
@@ -107,6 +107,7 @@ export default function NpcOptions() {
       walkSpeed: 0.5,
       flipX: false,
       tint: null,
+      hidden: false,
     };
 
     dispatch(actions.addPaletteObjects({ tsId, objs: [npc] }));

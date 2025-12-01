@@ -59,13 +59,13 @@ import { renderNpc } from "./paletteObjects/Npc";
 import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
 import { renderTileGroup } from "./paletteObjects/TileGroup";
 import Tip from "./Tip";
-import AddCollider from "./toolOptions/AddCollider";
-import Autotiler from "./toolOptions/Autotiler";
-import Fill from "./toolOptions/Fill";
-import Gateways from "./toolOptions/Gateways";
-import Paint from "./toolOptions/Paint";
-import SelectTool from "./toolOptions/SelectTool";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
+import AutotilerTool from "./tools/map/AutotilerTool";
+import ColliderTool from "./tools/map/ColliderTool";
+import FillTool from "./tools/map/FillTool";
+import GatewayTool from "./tools/map/GatewayTool";
+import PaintTool from "./tools/map/PaintTool";
+import SelectTool from "./tools/map/SelectTool";
 
 export default function MapEditorTab({
   initPromise,
@@ -175,25 +175,25 @@ export default function MapEditorTab({
         name: "Paint area",
         icon: <IconPaint size={16} />,
         layerConstraints: [MapLayerName.Exterior, MapLayerName.Ground],
-        options: <Paint />,
+        options: <PaintTool />,
       },
       autotiler: {
         name: "Autotiler",
         icon: <IconWand size={16} />,
         layerConstraints: [MapLayerName.Ground],
-        options: <Autotiler />,
+        options: <AutotilerTool />,
       },
       fill: {
         name: "Fill area",
         icon: <IconBucketDroplet size={16} />,
         layerConstraints: [MapLayerName.Exterior, MapLayerName.Ground],
-        options: <Fill />,
+        options: <FillTool />,
       },
       "set-gateway": {
         name: "Add gateway",
         icon: <IconDoorExit size={16} />,
         layerConstraints: [MapLayerName.Special],
-        options: <Gateways />,
+        options: <GatewayTool />,
       },
       "set-waypoint": {
         name: "Set waypoint",
@@ -204,7 +204,7 @@ export default function MapEditorTab({
         name: "Add collider",
         icon: <IconCarCrash size={16} />,
         layerConstraints: [MapLayerName.Sensors],
-        options: <AddCollider />,
+        options: <ColliderTool />,
       },
 
       "set-sensor-zone": {

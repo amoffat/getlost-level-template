@@ -1,4 +1,4 @@
-import { drawRectSelect } from "@/editor/common/select";
+import { drawRectSelect } from "@/editors/common/select";
 import {
   actions,
   selectors as mapEdSelectors,

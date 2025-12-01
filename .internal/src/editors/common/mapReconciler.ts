@@ -57,6 +57,32 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     this.connected = true;
   }
 
+  /**
+   * Resolves a property value with template inheritance.
+   * - If value is undefined, inherits from template (if available)
+   * - If value is null, doesn't inherit (explicit override)
+   * - Otherwise uses the provided value
+   * - Falls back to defaultValue if no value is found
+   *
+   * @param value The property value from props
+   * @param template The template object to inherit from
+   * @param key The property key to look up in the template
+   * @param defaultValue The fallback value if no other value is found
+   * @returns The resolved property value
+   */
+  private resolveWithInheritance<T>(
+    value: T | null | undefined,
+    template: any,
+    key: string,
+    defaultValue: T
+  ): T {
+    // If value is undefined, inherit from template. If it's null, don't.
+    if (value === undefined && template) {
+      value = template[key] ?? value;
+    }
+    return (value ?? defaultValue) as T;
+  }
+
   protected override assertConnected() {
     if (!this.connected) {
       throw new Error("MapObjReconciler operation called before attachCanvas");
@@ -145,15 +171,25 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       gfx.circle(0, 0, props.sensorRadius).fill(exitFill);
     }
 
+    if (Object.hasOwn(props, "hidden")) {
+      // If hidden is undefined, inherit from template. If it's null, don't.
+      const hidden = this.resolveWithInheritance<boolean>(
+        props.hidden,
+        tmpl,
+        "hidden",
+        false
+      );
+      node.alpha = hidden ? 0.35 : 1;
+    }
+
     if (isTileGroupInstance(obj)) {
       if (Object.hasOwn(props, "tint")) {
-        let tint = props.tint;
-        // If tint is undefined, inherit from template. If it's null, don't.
-        if (tint === undefined) {
-          tint = (tmpl as unknown as TileGroupProps).tint ?? tint;
-        }
-        tint = tint ?? defaultTint;
-
+        const tint = this.resolveWithInheritance<string>(
+          props.tint,
+          tmpl as unknown as TileGroupProps,
+          "tint",
+          defaultTint
+        );
         node.tint = parseInt(tint, 16);
       }
     }

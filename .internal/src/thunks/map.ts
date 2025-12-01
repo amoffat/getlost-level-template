@@ -12,7 +12,7 @@ import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { globals as g } from "../editor/map/globals";
+import { globals as g } from "../editors/map/globals";
 import { removeTilesetThunk } from "./tileset";
 
 export const setActiveLayerThunk = createAsyncThunk(

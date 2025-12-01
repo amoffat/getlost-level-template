@@ -1,7 +1,7 @@
-import type { SignatureIndex } from "@/editor/map/utils/autotile";
+import type { SignatureIndex } from "@/editors/map/utils/autotile";
 import * as P from "pixi.js";
-import { MapObjReconciler } from "./editor/common/mapReconciler";
-import { TileReconciler } from "./editor/common/tileReconciler";
+import { MapObjReconciler } from "./editors/common/mapReconciler";
+import { TileReconciler } from "./editors/common/tileReconciler";
 
 interface Globals {
   mapEditorApp: P.Application | null;

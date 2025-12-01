@@ -3,9 +3,9 @@ import {
   ClickDragger,
   ClickDragListener,
   PointerEventData,
-} from "@/editor/common/drag";
-import { drawRectSelect } from "@/editor/common/select";
-import { fillStroke } from "@/editor/common/strokes";
+} from "@/editors/common/drag";
+import { drawRectSelect } from "@/editors/common/select";
+import { fillStroke } from "@/editors/common/strokes";
 import {
   actions as mapActions,
   selectors as mapSelectors,

@@ -14,9 +14,9 @@ import {
 } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useCallback, useEffect } from "react";
-import Tip from "../Tip";
+import Tip from "../../Tip";
 
-export default function Paint() {
+export default function PaintTool() {
   const dispatch = useAppDispatch();
 
   const activeLayer = useAppSelector((state) => state.mapEditor.layers.active);

@@ -1,9 +1,9 @@
-import { computeEdgeSignatures } from "@/editor/map/utils/autotile";
+import { computeEdgeSignatures } from "@/editors/map/utils/autotile";
 import {
   generateGridAlignedCoords,
   setCanvasTileset,
   unpackTileset,
-} from "@/editor/tileset/loader";
+} from "@/editors/tileset/loader";
 import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import { loadTileset, loadTilesets, saveTileset } from "@/persist/tileset/api";
