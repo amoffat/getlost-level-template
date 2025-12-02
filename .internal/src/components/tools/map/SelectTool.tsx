@@ -41,6 +41,7 @@ export default function SelectTool() {
 
   const tips: ReactNode[] = useMemo(() => {
     return [
+      "Right click and drag on the map to pan the view.",
       "Use click and drag to select multiple objects.",
       <>
         Hold <Kbd>Ctrl</Kbd> to add to or remove from the current selection.
