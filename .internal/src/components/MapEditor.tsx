@@ -165,74 +165,75 @@ export default function MapEditorTab({
   };
 
   const toolPalette: Partial<Record<Mode, ToolDescriptor>> = useMemo(
-    () => ({
-      select: {
-        name: "Select/move",
-        icon: <IconSelectAll size={16} />,
-        options: <SelectTool />,
-      },
-      paint: {
-        name: "Paint area",
-        icon: <IconPaint size={16} />,
-        layerConstraints: [MapLayerName.Exterior, MapLayerName.Ground],
-        options: <PaintTool />,
-      },
-      autotiler: {
-        name: "Autotiler",
-        icon: <IconWand size={16} />,
-        layerConstraints: [MapLayerName.Ground],
-        options: <AutotilerTool />,
-      },
-      fill: {
-        name: "Fill area",
-        icon: <IconBucketDroplet size={16} />,
-        layerConstraints: [MapLayerName.Exterior, MapLayerName.Ground],
-        options: <FillTool />,
-      },
-      "set-gateway": {
-        name: "Add gateway",
-        icon: <IconDoorExit size={16} />,
-        layerConstraints: [MapLayerName.Special],
-        options: <GatewayTool />,
-      },
-      "set-waypoint": {
-        name: "Set waypoint",
-        icon: <IconMapPin size={16} />,
-        layerConstraints: [MapLayerName.Special],
-      },
-      "add-collider": {
-        name: "Add collider",
-        icon: <IconCarCrash size={16} />,
-        layerConstraints: [MapLayerName.Sensors],
-        options: <ColliderTool />,
-      },
+    () =>
+      ({
+        select: {
+          name: "Select/move",
+          icon: <IconSelectAll size={16} />,
+          options: <SelectTool />,
+        },
+        paint: {
+          name: "Paint area",
+          icon: <IconPaint size={16} />,
+          layerConstraints: [MapLayerName.Exterior, MapLayerName.Ground],
+          options: <PaintTool />,
+        },
+        autotiler: {
+          name: "Autotiler",
+          icon: <IconWand size={16} />,
+          layerConstraints: [MapLayerName.Ground],
+          options: <AutotilerTool />,
+        },
+        fill: {
+          name: "Fill area",
+          icon: <IconBucketDroplet size={16} />,
+          layerConstraints: [MapLayerName.Exterior, MapLayerName.Ground],
+          options: <FillTool />,
+        },
+        "set-gateway": {
+          name: "Add gateway",
+          icon: <IconDoorExit size={16} />,
+          layerConstraints: [MapLayerName.Special],
+          options: <GatewayTool />,
+        },
+        "set-waypoint": {
+          name: "Set waypoint",
+          icon: <IconMapPin size={16} />,
+          layerConstraints: [MapLayerName.Special],
+        },
+        "add-collider": {
+          name: "Add collider",
+          icon: <IconCarCrash size={16} />,
+          layerConstraints: [MapLayerName.Sensors],
+          options: <ColliderTool />,
+        },
 
-      "set-sensor-zone": {
-        name: "Sensor zone",
-        icon: <IconInputSpark size={16} />,
-        layerConstraints: [MapLayerName.Sensors],
-      },
-      "set-sink-zone": {
-        name: "Sink zone",
-        icon: <IconRipple size={16} />,
-        layerConstraints: [MapLayerName.Sensors],
-      },
-      "set-sound-zone": {
-        name: "Sound zone",
-        icon: <IconEar size={16} />,
-        layerConstraints: [MapLayerName.Sensors],
-      },
-      "set-zoom-zone": {
-        name: "Zoom zone",
-        icon: <IconCameraSearch size={16} />,
-        layerConstraints: [MapLayerName.Sensors],
-      },
-      "add-light": {
-        name: "Add light",
-        icon: <IconBulb size={16} />,
-        layerConstraints: [MapLayerName.Special],
-      },
-    }),
+        "set-sensor-zone": {
+          name: "Sensor zone",
+          icon: <IconInputSpark size={16} />,
+          layerConstraints: [MapLayerName.Sensors],
+        },
+        "set-sink-zone": {
+          name: "Sink zone",
+          icon: <IconRipple size={16} />,
+          layerConstraints: [MapLayerName.Sensors],
+        },
+        "set-sound-zone": {
+          name: "Sound zone",
+          icon: <IconEar size={16} />,
+          layerConstraints: [MapLayerName.Sensors],
+        },
+        "set-zoom-zone": {
+          name: "Zoom zone",
+          icon: <IconCameraSearch size={16} />,
+          layerConstraints: [MapLayerName.Sensors],
+        },
+        "add-light": {
+          name: "Add light",
+          icon: <IconBulb size={16} />,
+          layerConstraints: [MapLayerName.Special],
+        },
+      }) satisfies Partial<Record<Mode, ToolDescriptor>>,
     []
   );
 

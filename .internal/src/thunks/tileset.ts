@@ -13,6 +13,7 @@ import { actions as mapActions } from "@/slices/mapEditor";
 import {
   TilesetEditorState,
   actions as tsActions,
+  selectors as tsSelectors,
 } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { RootState, store } from "@/store/store";
@@ -250,15 +251,28 @@ export const retileThunk = createAsyncThunk(
 
 export const setToolThunk = createAsyncThunk(
   "mapEditor/setToolThunk",
-  async (tool: Mode | null, { dispatch }) => {
+  async (tool: Mode | null, { dispatch, getState }) => {
     if (tool === null) {
       dispatch(tsActions.setMode("select"));
     } else {
       dispatch(tsActions.pushMode(tool));
     }
 
+    const state = getState() as { tilesetEditor: TilesetEditorState };
+    const selected = tsSelectors.paletteSelectedIds(state);
+    const modesUsingSingleSelection: Set<Mode> = new Set([
+      "z-index",
+      "draw-colliders",
+    ]);
+
+    const saveSelection =
+      tool && modesUsingSingleSelection.has(tool) && selected.size === 1;
+
+    if (!saveSelection) {
+      dispatch(tsActions.clearSelection());
+    }
+
     dispatch(tsActions.clearCandAnimFrames());
-    dispatch(tsActions.clearSelection());
     dispatch(tsActions.setActiveTool(tool));
   }
 );

@@ -21,10 +21,12 @@ import {
 import { Split } from "@gfazioli/mantine-split-pane";
 import { Anchor, Group, ScrollArea, Stack, Tabs } from "@mantine/core";
 import {
-  IconGrid4x4,
-  IconKeyframes,
+  IconLetterZ,
   IconReplace,
+  IconRun,
+  IconScissors,
   IconSelectAll,
+  IconShape,
   IconSquarePlus,
   IconTrash,
   IconUser,
@@ -138,52 +140,65 @@ export default function TilesetEditorTab({
 
   const hasTsSelected = ts !== null;
   const enableGroup = ts !== null && !ts.composite;
+  const singleSelectedObject = paletteSelection.size === 1;
 
   const toolPalette: Partial<Record<Mode, ToolDescriptor>> = useMemo(
-    () => ({
-      "reslice-tiles": {
-        name: "Reslicer",
-        icon: <IconGrid4x4 size={16} />,
-        options: <TileReslicerTool />,
-        enabled: enableGroup,
-      },
+    () =>
+      ({
+        "reslice-tiles": {
+          name: "Reslicer",
+          icon: <IconScissors size={16} />,
+          options: <TileReslicerTool />,
+          enabled: enableGroup,
+        },
 
-      select: {
-        name: "Select/move",
-        icon: <IconSelectAll size={16} />,
-        enabled: hasTsSelected,
-      },
-      "replace-group": {
-        name: "Replace group",
-        icon: <IconReplace size={16} />,
-        options: <TileReplaceTool />,
-        enabled: hasTsSelected,
-      },
-      "add-group": {
-        name: "Add group",
-        icon: <IconSquarePlus size={16} />,
-        enabled: hasTsSelected,
-      },
-      "delete-group": {
-        name: "Delete group",
-        icon: <IconTrash size={16} />,
-        enabled: hasTsSelected,
-      },
+        select: {
+          name: "Select",
+          icon: <IconSelectAll size={16} />,
+          enabled: hasTsSelected,
+        },
+        "replace-group": {
+          name: "Replace group",
+          icon: <IconReplace size={16} />,
+          options: <TileReplaceTool />,
+          enabled: hasTsSelected,
+        },
+        "add-group": {
+          name: "Add group",
+          icon: <IconSquarePlus size={16} />,
+          enabled: hasTsSelected,
+        },
+        "delete-group": {
+          name: "Delete group",
+          icon: <IconTrash size={16} />,
+          enabled: hasTsSelected,
+        },
 
-      animate: {
-        name: "Animate",
-        icon: <IconKeyframes size={16} />,
-        options: <TileAnimationTool />,
-        enabled: hasTsSelected,
-      },
-      "make-npc": {
-        name: "Make NPC",
-        icon: <IconUser size={16} />,
-        options: <NpcTool />,
-        enabled: hasTsSelected,
-      },
-    }),
-    [enableGroup, hasTsSelected]
+        animate: {
+          name: "Animate",
+          icon: <IconRun size={16} />,
+          options: <TileAnimationTool />,
+          enabled: hasTsSelected,
+        },
+        "make-npc": {
+          name: "Make NPC",
+          icon: <IconUser size={16} />,
+          options: <NpcTool />,
+          enabled: hasTsSelected,
+        },
+        "z-index": {
+          name: "Set Z-Index",
+          icon: <IconLetterZ size={16} />,
+          enabled: hasTsSelected && singleSelectedObject,
+        },
+        "draw-colliders": {
+          name: "Draw colliders",
+          icon: <IconShape size={16} />,
+          // options: <ColliderTool />,
+          enabled: hasTsSelected && singleSelectedObject,
+        },
+      }) satisfies Partial<Record<Mode, ToolDescriptor>>,
+    [enableGroup, hasTsSelected, singleSelectedObject]
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName]!;

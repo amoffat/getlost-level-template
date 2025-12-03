@@ -9,6 +9,8 @@ export type Mode =
   | "animate"
   | "reslice-tiles"
   | "make-npc"
+  | "z-index"
+  | "draw-colliders"
   | "replace-group";
 
 type TilesBucket = EntityState<TilesetObjectTemplate, string>;

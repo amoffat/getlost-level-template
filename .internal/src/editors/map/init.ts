@@ -128,7 +128,7 @@ export async function init(): Promise<P.Application> {
   drawBounds();
 
   const groundLayer = new P.Container();
-  groundLayer.sortableChildren = false;
+  groundLayer.sortableChildren = true;
   g.layerContainers[MapLayerName.Ground] = groundLayer;
   g.mapContainer.addChild(groundLayer);
 
