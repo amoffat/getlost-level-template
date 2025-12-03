@@ -12,11 +12,11 @@ function setLayerVisibility(layers: RootState["mapEditor"]["layers"]) {
     }
     const active = lc[layers.active as MapLayerName];
     active.alpha = 1;
-    active.interactive = true;
+    active.eventMode = "static";
   } else {
     for (const layer of Object.values(lc)) {
       layer.alpha = 1;
-      layer.interactive = true;
+      layer.eventMode = "static";
     }
   }
 }

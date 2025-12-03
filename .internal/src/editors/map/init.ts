@@ -50,7 +50,7 @@ export async function init(): Promise<P.Application> {
     e.preventDefault();
   });
 
-  stage.interactive = true;
+  stage.eventMode = "static";
 
   const spatialIndex = new SpatialIndex<MapObj>({
     selectById: (state, id) =>
@@ -69,7 +69,7 @@ export async function init(): Promise<P.Application> {
   g.mapContainer = new P.Container();
   stage.addChild(g.mapContainer);
 
-  g.mapContainer.interactive = true;
+  g.mapContainer.eventMode = "static";
 
   stage.on("pointermove", (e) => {
     const state = store.getState();

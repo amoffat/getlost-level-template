@@ -21,6 +21,7 @@ import { setupKeys } from "./keys";
 import { setupFrameSelector } from "./tools/animator";
 import { setupGrouper } from "./tools/group";
 import { setupSelector } from "./tools/select";
+import { setupZIndexer } from "./tools/zindex";
 
 export async function init(): Promise<P.Application> {
   // Create a new application
@@ -42,6 +43,8 @@ export async function init(): Promise<P.Application> {
   // Initialize the application
   await app.init({ backgroundAlpha: 0 });
   const stage = app.stage;
+  stage.sortableChildren = true;
+  stage.label = "Tileset Editor Stage";
 
   // Tweak canvas interaction to avoid browser scroll/selection during drag
   const canvas = app.canvas;
@@ -57,29 +60,44 @@ export async function init(): Promise<P.Application> {
 
   // Background container with checkerboard pattern (conventional transparent-bg look)
   g.backgroundContainer = new P.Container();
+  g.backgroundContainer.label = "Background Container";
   stage.addChild(g.backgroundContainer);
 
   // Foreground container for the tileset sprite
   g.tilesetContainer = new P.Container();
-  g.tilesetContainer.interactive = true;
+  g.tilesetContainer.zIndex = 20;
+  g.tilesetContainer.label = "Tileset Container";
+  g.tilesetContainer.eventMode = "static";
+  g.tilesetContainer.sortableChildren = true;
   stage.addChild(g.tilesetContainer);
 
+  const zIndexOverlay = new P.Container();
+  zIndexOverlay.label = "Z-Index Overlay";
+  zIndexOverlay.zIndex = Number.MAX_SAFE_INTEGER - 5;
+  g.tilesetContainer.addChild(zIndexOverlay);
+  g.zIndexOverlay = zIndexOverlay;
+
   g.selectionOutlines = new P.Container();
-  g.selectionOutlines.zIndex = Number.MAX_SAFE_INTEGER;
+  g.selectionOutlines.label = "Selection Outlines";
+  g.selectionOutlines.zIndex = Number.MAX_SAFE_INTEGER - 10;
   g.tilesetContainer.addChild(g.selectionOutlines);
 
   g.rectSelectOutline = new P.Container();
-  g.rectSelectOutline.zIndex = Number.MAX_SAFE_INTEGER - 1;
+  g.rectSelectOutline.label = "Rectangle Select Outline";
+  g.rectSelectOutline.zIndex = Number.MAX_SAFE_INTEGER - 20;
   g.tilesetContainer.addChild(g.rectSelectOutline);
 
   g.rectSelect = new P.Graphics();
   g.rectSelectOutline.addChild(g.rectSelect);
 
   g.groupSelContainer = new P.Container();
-  g.groupSelContainer.zIndex = Number.MAX_SAFE_INTEGER - 2;
+  g.groupSelContainer.label = "Group Selection Container";
+  g.groupSelContainer.zIndex = Number.MAX_SAFE_INTEGER - 30;
   g.tilesetContainer.addChild(g.groupSelContainer);
 
   g.boundsContainer = new P.Graphics();
+  g.boundsContainer.eventMode = "none";
+  g.boundsContainer.zIndex = 10;
   stage.addChild(g.boundsContainer);
   g.boundsMask = new P.Graphics();
   g.boundsContainer.setMask({ mask: g.boundsMask, inverse: true });
@@ -87,7 +105,8 @@ export async function init(): Promise<P.Application> {
   drawBounds();
 
   const allGroupsOverlay = new P.Container();
-  allGroupsOverlay.zIndex = Number.MAX_SAFE_INTEGER - 3;
+  allGroupsOverlay.label = "All Groups Overlay";
+  allGroupsOverlay.zIndex = Number.MAX_SAFE_INTEGER - 40;
   g.tilesetContainer.addChild(allGroupsOverlay);
   g.allGroupsOverlay = allGroupsOverlay;
 
@@ -98,6 +117,7 @@ export async function init(): Promise<P.Application> {
   g.groupSelGraphics = gfx;
 
   g.scanPos = new P.Container();
+  g.scanPos.label = "Scan Position";
   g.scanPos.zIndex = 200;
   g.scanPos.visible = false;
   g.tilesetContainer.addChild(g.scanPos);
@@ -107,13 +127,14 @@ export async function init(): Promise<P.Application> {
 
   // Route events directly to the stage to avoid per-move hit testing of children
   // (reduces pointermove overhead) and disable child event handling
-  stage.interactive = true;
+  stage.eventMode = "static";
   // Make sure the stage captures pointer events across the whole viewport
   // and update its hitArea to the current screen when needed
   stage.hitArea = app.screen;
 
   // Overlay container for grid lines (kept separate so clearing tileset doesn't remove grid)
   g.gridContainer = new P.Container();
+  g.gridContainer.label = "Grid Container";
 
   // Build checkerboard background
   const checkerboard = makeBackground({
@@ -160,6 +181,7 @@ export async function init(): Promise<P.Application> {
   setupGrouper({ cd, spatialIndex });
   setupSelector({ cd, spatialIndex });
   setupFrameSelector({ cd, spatialIndex });
+  setupZIndexer({ cd });
   setupGrid();
 
   gApp.tilesetEditorReconciler.attachCanvas({

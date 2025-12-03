@@ -50,7 +50,7 @@ export class ClickDragger {
     this.coordsRelativeTo = coordsRelativeTo ?? container;
     this.checkPointerOver = checkPointerOver;
 
-    container.addEventListener("pointermove", (e) => {
+    container.on("pointermove", (e) => {
       this.dragEnd = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
       const ev: PointerEventData = {
         localPos: this.dragEnd,
@@ -87,7 +87,7 @@ export class ClickDragger {
       }
     });
 
-    container.addEventListener("pointerdown", (e) => {
+    container.on("pointerdown", (e) => {
       if (e.button !== 0) return;
       this.dragStart = Vec2.fromPoint(
         e.getLocalPosition(this.coordsRelativeTo)
@@ -113,7 +113,7 @@ export class ClickDragger {
       this.listeners.forEach((listener) => listener.pointerDown?.(ev));
     });
 
-    container.addEventListener("pointerup", (e) => {
+    container.on("pointerup", (e) => {
       if (e.button !== 0) return;
       const localPos = Vec2.fromPoint(
         e.getLocalPosition(this.coordsRelativeTo)

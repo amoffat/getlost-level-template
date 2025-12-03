@@ -248,7 +248,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         sprite.width / 2 + texAtlasPadding,
         sprite.height / 2 + texAtlasPadding
       );
-      sprite.interactive = false;
+      sprite.eventMode = "passive";
       sprite.anchor.set(0.5);
       sprite.scale.x = obj.flipX ? -1 : 1;
 
@@ -257,7 +257,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       spriteContainer.position.set(obj.x, obj.y);
       spriteContainer.zIndex = obj.z;
       spriteContainer.addChild(sprite);
-      spriteContainer.interactive = true;
+      spriteContainer.eventMode = "static";
       spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
 
       return spriteContainer;
@@ -303,7 +303,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         sprite.width / 2 + texAtlasPadding,
         sprite.height / 2 + texAtlasPadding
       );
-      sprite.interactive = false;
+      sprite.eventMode = "passive";
       sprite.anchor.set(0.5);
       sprite.scale.x = obj.flipX ? -1 : 1;
 
@@ -312,7 +312,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       spriteContainer.position.set(obj.x, obj.y);
       spriteContainer.zIndex = obj.z;
       spriteContainer.addChild(sprite);
-      spriteContainer.interactive = true;
+      spriteContainer.eventMode = "static";
       spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
 
       return spriteContainer;
@@ -357,7 +357,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         sprite.width / 2 + texAtlasPadding,
         sprite.height / 2 + texAtlasPadding
       );
-      sprite.interactive = false;
+      sprite.eventMode = "passive";
       sprite.anchor.set(0.5);
       sprite.zIndex = 10;
 
@@ -370,12 +370,12 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       spriteContainer.position.set(obj.x, obj.y);
       spriteContainer.zIndex = obj.z;
       spriteContainer.addChild(sprite);
-      spriteContainer.interactive = true;
+      spriteContainer.eventMode = "static";
       spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
 
       if (isExitObj(obj)) {
         const sensorCircle = new P.Graphics();
-        sensorCircle.interactive = false;
+        sensorCircle.eventMode = "passive";
         sensorCircle.label = "sensorCircle";
         sensorCircle
           .circle(0, 0, state.mapEditor.templates.exitGateways.sensorRadius)
@@ -406,25 +406,25 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       return spriteContainer;
     } else if (isColliderEllipse(obj)) {
       const gfx = new P.Graphics();
-      gfx.interactive = false;
+      gfx.eventMode = "passive";
       gfx.ellipse(0, 0, obj.width / 2, obj.height / 2);
       const container = new P.Container();
       container.label = obj.id;
       container.position.set(obj.x, obj.y);
       container.zIndex = obj.z;
       container.addChild(gfx);
-      container.interactive = true;
+      container.eventMode = "static";
       return container;
     } else if (isColliderBox(obj)) {
       const gfx = new P.Graphics();
-      gfx.interactive = false;
+      gfx.eventMode = "passive";
       gfx.rect(0, 0, obj.width, obj.height).fill(colliderFill);
       const container = new P.Container();
       container.label = obj.id;
       container.position.set(obj.x, obj.y);
       container.zIndex = obj.z;
       container.addChild(gfx);
-      container.interactive = true;
+      container.eventMode = "static";
       return container;
     } else {
       log.error("Unsupported MapObj type");
@@ -455,12 +455,12 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     const state = store.getState();
     const errorContainer = new P.Container();
     errorContainer.label = "errorIndicator";
-    errorContainer.interactive = false;
+    errorContainer.eventMode = "passive";
     errorContainer.visible = visible;
 
     // Add error border (red rectangle outline)
     const errorBorder = new P.Graphics();
-    errorBorder.interactive = false;
+    errorBorder.eventMode = "passive";
     errorBorder
       .rect(
         0,
@@ -490,7 +490,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     });
 
     const errorIconSprite = new P.Sprite(iconTex);
-    errorIconSprite.interactive = false;
+    errorIconSprite.eventMode = "passive";
     errorIconSprite.tint = 0xff0000; // Red tint
     errorIconSprite.position.set(
       sprite.width + texAtlasPadding,

@@ -67,7 +67,6 @@ export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
    */
   private createTileGroupNode(obj: TileGroupTemplate): P.Container {
     const gfx = new P.Graphics();
-    gfx.interactive = false;
 
     const rect = new P.Rectangle(0, 0, obj.pos.width, obj.pos.height);
     gfx.rect(rect.x, rect.y, rect.width, rect.height).stroke(invisibleStroke);
@@ -76,7 +75,7 @@ export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
     container.label = obj.id;
     container.position.set(obj.pos.x, obj.pos.y);
     container.addChild(gfx);
-    container.interactive = true;
+    container.eventMode = "static";
     return container;
   }
 

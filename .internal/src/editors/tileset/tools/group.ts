@@ -68,9 +68,11 @@ class Grouper implements ClickDragListener {
     const mode = selectors.selectMode(state);
 
     const coords = snap(e.hitbox, getGridSize());
+    const isAdd = mode === "add-group" || mode === "replace-group";
+    const isDelete = mode === "delete-group" || mode === "replace-group";
 
     let finishMode = false;
-    if (mode === "delete-group" || mode === "replace-group") {
+    if (isDelete) {
       const tsId = tsState.activeTilesetId!;
 
       const searchBounds = rectToBBox(coords, 1);
@@ -80,7 +82,7 @@ class Grouper implements ClickDragListener {
       finishMode = true;
     }
 
-    if (mode === "add-group" || mode === "replace-group") {
+    if (isAdd) {
       const tsId = tsState.activeTilesetId!;
       const gridSize = tsState.grid.size;
 
@@ -88,9 +90,9 @@ class Grouper implements ClickDragListener {
       // can appear anywhere in any tileset, which makes it easier to fix maps
       // if a tileset gets deleted or renamed.
       const tsImageData = gApp.tilesetImageDataCache.get(tsId)!;
-      let objData: ImageData | undefined;
+      let imgData: ImageData | undefined;
       try {
-        objData = subImageData(tsImageData, coords);
+        imgData = subImageData(tsImageData, coords);
       } catch {
         notifications.show({
           title: "Grouping error",
@@ -100,14 +102,20 @@ class Grouper implements ClickDragListener {
         finishMode = true;
       }
 
-      if (objData) {
-        const coverage = amountOpaquePixels(objData);
-        const imageId = await genImageId(objData);
+      if (imgData) {
+        const coverage = amountOpaquePixels(imgData);
+        const imageId = await genImageId(imgData);
         const id = await genTileId({
           tsId,
           pos: coords,
         });
-        const avgColor = averageOklab(objData);
+        const avgColor = averageOklab(imgData);
+
+        const zIndices: number[] = [];
+        for (let x = 0; x < coords.width / gridSize; x++) {
+          zIndices.push(coords.height / 2);
+        }
+        zIndices.push(coords.height / 2);
 
         const group: TileGroupTemplate = {
           id,
@@ -116,7 +124,7 @@ class Grouper implements ClickDragListener {
           tilesetId: tsId,
           pos: coords,
           gridSize: { x: gridSize, y: gridSize },
-          zIndices: [],
+          zIndices,
           name: "",
           tags: [],
           pinned: true,
@@ -169,7 +177,7 @@ export function setupGrouper({
   cd.addListener(new Grouper(spatialIndex));
 }
 
-async function drawGroups(groups: TileGroupTemplate[], zoom: number) {
+function drawGroups(groups: TileGroupTemplate[], zoom: number) {
   if (!g.allGroupsOverlay) return;
 
   g.allGroupsOverlay.removeChildren();
