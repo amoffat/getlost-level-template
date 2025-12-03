@@ -8,7 +8,7 @@ export const invisibleStroke: P.StrokeStyle = {
 
 export const groupStroke: P.StrokeStyle = {
   color: 0xff0000,
-  width: 2,
+  width: 3,
   alpha: 0.75,
 };
 
@@ -55,4 +55,14 @@ export const overlayFill: P.FillStyle = {
 export const exitFill: P.FillStyle = {
   color: 0x000000,
   alpha: 0.35,
+};
+
+export const topZoneFill: P.FillStyle = {
+  color: 0x000000,
+  alpha: 0.35,
+};
+
+export const bottomZoneFill: P.FillStyle = {
+  color: 0xffffff,
+  alpha: 0,
 };

@@ -7,6 +7,7 @@ import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
+import { HasId } from "@/utils/misc";
 import { calcDefaultZoomPan } from "@/utils/zoompan";
 import {
   createEntityAdapter,
@@ -22,7 +23,7 @@ type ToolOptMapping = object;
 type ToolWithOptions = keyof ToolOptMapping;
 
 const reconcilePrefix = "tilesetEditor";
-export const selectedAdapter = createEntityAdapter<TilesetObjectTemplate>();
+export const selectedAdapter = createEntityAdapter<HasId>();
 export const tileAdapter = createEntityAdapter<TilesetObjectTemplate>();
 const createTsSelector = createSelector.withTypes<TilesetEditorState>();
 
@@ -48,7 +49,7 @@ export interface TilesetEditorState {
   loadingTilesets: boolean;
   tilesetsLoaded: boolean;
   tilesetsError: string | null;
-  selectedTiles: EntityState<TilesetObjectTemplate, string>;
+  selectedTiles: EntityState<HasId, string>;
   toolOptions: {
     [K in ToolWithOptions]: ToolOptMapping[K];
   };
@@ -58,6 +59,11 @@ export interface TilesetEditorState {
   // image id to tileset id. used for healing broken references
   imageIdToTs: Record<string, string>;
 }
+
+const activeTileset = createTsSelector(
+  [(state) => state.activeTilesetId, (state) => state.tilesets],
+  (tsId, tilesets): Tileset | null => (tsId ? (tilesets[tsId] ?? null) : null)
+);
 
 export const slice = createSlice({
   name: "tilesetEditor",
@@ -454,16 +460,11 @@ export const slice = createSlice({
       [(state, tsId: string) => state.tilesets[tsId]],
       (ts): Tileset | null => (ts ? ts : null)
     ),
-    activeTileset: createTsSelector(
-      [(state) => state.activeTilesetId, (state) => state.tilesets],
-      (tsId, tilesets): Tileset | null =>
-        tsId ? (tilesets[tsId] ?? null) : null
-    ),
+    activeTileset,
     activeTilesetGroups: createTsSelector(
-      [(state) => state.activeTilesetId, (state) => state.tilesets],
-      (tsId, tilesets): TileGroupTemplate[] => {
-        if (!tsId) return [];
-        const ts = tilesets[tsId];
+      [activeTileset],
+      (ts): TileGroupTemplate[] => {
+        if (!ts) return [];
         const objs = ts.tiles.ids
           .map((id) => ts.tiles.entities[id])
           .filter(isTileGroupTemplate);
@@ -484,10 +485,12 @@ export const slice = createSlice({
       [(state) => state.selectedTiles.ids],
       (selectedIds): Set<string> => new Set(selectedIds as string[])
     ),
-    selectedTiles: createTsSelector(
-      [(state) => state.selectedTiles],
-      (tiles): TilesetObjectTemplate[] =>
-        tiles.ids.map((id) => tiles.entities[id])
+    selectedObjects: createTsSelector(
+      [(state) => state.selectedTiles, activeTileset],
+      (tiles, ts): TilesetObjectTemplate[] => {
+        if (!ts) return [];
+        return tiles.ids.map((id) => ts.tiles.entities[id]);
+      }
     ),
     templatesFromInstanceIds: createTsSelector(
       [

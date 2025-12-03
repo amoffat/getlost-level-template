@@ -171,6 +171,13 @@ export async function init(): Promise<P.Application> {
     container: stage,
     coordsRelativeTo: g.tilesetContainer,
     checkPointerOver: (localPos: Vector2): string[] => {
+      // First check if we're hovering over any interactive graphics (like z-index handles)
+      const target = app.renderer.events.pointer.target;
+      if (target && target.label && target.label.startsWith("zindex-handle:")) {
+        return [target.label];
+      }
+
+      // Otherwise check spatial index for tile groups
       const hits = spatialIndex.getObjects({
         pos: localPos,
       });
@@ -181,7 +188,7 @@ export async function init(): Promise<P.Application> {
   setupGrouper({ cd, spatialIndex });
   setupSelector({ cd, spatialIndex });
   setupFrameSelector({ cd, spatialIndex });
-  setupZIndexer({ cd });
+  setupZIndexer();
   setupGrid();
 
   gApp.tilesetEditorReconciler.attachCanvas({

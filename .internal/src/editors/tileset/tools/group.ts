@@ -113,9 +113,9 @@ class Grouper implements ClickDragListener {
 
         const zIndices: number[] = [];
         for (let x = 0; x < coords.width / gridSize; x++) {
-          zIndices.push(coords.height / 2);
+          zIndices.push(0.5);
         }
-        zIndices.push(coords.height / 2);
+        zIndices.push(0.5);
 
         const group: TileGroupTemplate = {
           id,

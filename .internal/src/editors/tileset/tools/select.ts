@@ -225,11 +225,11 @@ export function clearObjectOutlines() {
  */
 subState(
   [
-    (state) => state.tilesetEditor.selectedTiles,
+    selectors.selectedObjects,
     (state) => state.tilesetEditor.activeZoomPan.zoom,
   ],
-  (selectedObjs, zoom) => {
-    const objs = selectedObjs.ids.map((id) => selectedObjs.entities[id]);
+  (objs, zoom) => {
+    if (!g.selectionOutlines) return;
     outlineObjects(objs, zoom);
   }
 );
