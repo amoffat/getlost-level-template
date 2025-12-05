@@ -36,7 +36,9 @@ export interface Tool {
 
 /**
  * A centralized event dispatcher that manages pointer events and distributes
- * them to registered tools in priority order.
+ * them to registered tools in priority order. This solves the problem of
+ * multiple tools all needing to have canvas-wide pointer event handling without
+ * conflicting with each other.
  */
 export class ToolDispatcher {
   private stage: P.Container;
