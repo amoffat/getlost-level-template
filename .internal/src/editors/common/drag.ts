@@ -49,94 +49,95 @@ export class ClickDragger {
     this.container = container;
     this.coordsRelativeTo = coordsRelativeTo ?? container;
     this.checkPointerOver = checkPointerOver;
+  }
 
-    container.on("pointermove", (e) => {
-      this.dragEnd = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
-      const ev: PointerEventData = {
-        localPos: this.dragEnd,
-        hitbox: this.makeHitbox(),
-        hoverIds: this.hoverObject(e),
-        moved: this.moved,
-        globalMoveVector: this.globalMoveVector,
-        localMoveVector: this.localMoveVector,
-        pagePos: {
-          x: e.pageX,
-          y: e.pageY,
-        },
-      };
+  public onPointerDown(e: P.FederatedPointerEvent): boolean {
+    if (e.button !== 0) return false;
+    this.dragStart = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
+    this.dragEnd = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
+    this.moved = false;
 
-      for (const listener of this.listeners) {
-        listener.pointerMove?.(ev);
-      }
+    const hoveredIds = this.hoverObject(e);
 
-      if (this.dragStart) {
-        if (this.globalMoveVector.magnitude < MOVE_THRESHOLD && !this.moved) {
-          for (const listener of this.listeners) {
-            if (listener.immediateDrag) {
-              listener.pointerDrag?.(ev);
-            }
-          }
-          return;
-        } else {
-          this.moved = true;
+    const ev: PointerEventData = {
+      localPos: Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo)),
+      button: e.button === 0 ? "left" : e.button === 2 ? "right" : undefined,
+      hitbox: this.makeHitbox(this.dragStart),
+      hoverIds: hoveredIds,
+      moved: this.moved,
+      globalMoveVector: this.globalMoveVector,
+      localMoveVector: this.localMoveVector,
+      pagePos: {
+        x: e.pageX,
+        y: e.pageY,
+      },
+    };
+    this.listeners.forEach((listener) => listener.pointerDown?.(ev));
 
-          for (const listener of this.listeners) {
+    return true;
+  }
+
+  public onPointerUp(e: P.FederatedPointerEvent): boolean {
+    if (e.button !== 0) return false;
+    const localPos = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
+
+    const ev: PointerEventData = {
+      localPos,
+      button: e.button === 0 ? "left" : e.button === 2 ? "right" : undefined,
+      hitbox: this.makeHitbox(localPos),
+      hoverIds: this.hoverObject(e),
+      moved: this.moved,
+      globalMoveVector: this.globalMoveVector,
+      localMoveVector: this.localMoveVector,
+      pagePos: {
+        x: e.pageX,
+        y: e.pageY,
+      },
+    };
+    this.listeners.forEach((listener) => listener.pointerUp?.(ev));
+    this.moved = false;
+    this.dragStart = null;
+    this.dragEnd = null;
+    return true;
+  }
+
+  public onPointerMove(e: P.FederatedPointerEvent): boolean {
+    this.dragEnd = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
+    const ev: PointerEventData = {
+      localPos: this.dragEnd,
+      hitbox: this.makeHitbox(this.dragEnd),
+      hoverIds: this.hoverObject(e),
+      moved: this.moved,
+      globalMoveVector: this.globalMoveVector,
+      localMoveVector: this.localMoveVector,
+      pagePos: {
+        x: e.pageX,
+        y: e.pageY,
+      },
+    };
+
+    for (const listener of this.listeners) {
+      listener.pointerMove?.(ev);
+    }
+
+    if (this.dragStart) {
+      if (this.globalMoveVector.magnitude < MOVE_THRESHOLD && !this.moved) {
+        for (const listener of this.listeners) {
+          if (listener.immediateDrag) {
             listener.pointerDrag?.(ev);
           }
         }
+        return true;
+      } else {
+        this.moved = true;
+
+        for (const listener of this.listeners) {
+          listener.pointerDrag?.(ev);
+        }
       }
-    });
+    }
 
-    container.on("pointerdown", (e) => {
-      if (e.button !== 0) return;
-      this.dragStart = Vec2.fromPoint(
-        e.getLocalPosition(this.coordsRelativeTo)
-      );
-      this.dragEnd = Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo));
-      this.moved = false;
-
-      const hoveredIds = this.hoverObject(e);
-
-      const ev: PointerEventData = {
-        localPos: Vec2.fromPoint(e.getLocalPosition(this.coordsRelativeTo)),
-        button: e.button === 0 ? "left" : e.button === 2 ? "right" : undefined,
-        hitbox: this.makeHitbox(),
-        hoverIds: hoveredIds,
-        moved: this.moved,
-        globalMoveVector: this.globalMoveVector,
-        localMoveVector: this.localMoveVector,
-        pagePos: {
-          x: e.pageX,
-          y: e.pageY,
-        },
-      };
-      this.listeners.forEach((listener) => listener.pointerDown?.(ev));
-    });
-
-    container.on("pointerup", (e) => {
-      if (e.button !== 0) return;
-      const localPos = Vec2.fromPoint(
-        e.getLocalPosition(this.coordsRelativeTo)
-      );
-
-      const ev: PointerEventData = {
-        localPos,
-        button: e.button === 0 ? "left" : e.button === 2 ? "right" : undefined,
-        hitbox: this.makeHitbox(),
-        hoverIds: this.hoverObject(e),
-        moved: this.moved,
-        globalMoveVector: this.globalMoveVector,
-        localMoveVector: this.localMoveVector,
-        pagePos: {
-          x: e.pageX,
-          y: e.pageY,
-        },
-      };
-      this.listeners.forEach((listener) => listener.pointerUp?.(ev));
-      this.moved = false;
-      this.dragStart = null;
-      this.dragEnd = null;
-    });
+    return false;
   }
 
   public addListener(listener: ClickDragListener) {
@@ -187,9 +188,9 @@ export class ClickDragger {
     return globalEnd.subbed(globalStart);
   }
 
-  public makeHitbox(): Rect {
+  public makeHitbox(defaultPos: Vec2): Rect {
     if (!this.dragStart || !this.dragEnd) {
-      return { x: 0, y: 0, width: 0, height: 0 };
+      return { x: defaultPos.x, y: defaultPos.y, width: 0, height: 0 };
     }
 
     // This logic ensures that our rect select hitbox can go "negative" correctly

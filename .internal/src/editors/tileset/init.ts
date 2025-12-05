@@ -13,6 +13,7 @@ import { makeBackground } from "../common/bg";
 import { getCursorForMode } from "../common/cursor";
 import { ClickDragger } from "../common/drag";
 import { setupPanControls } from "../common/pan";
+import { ToolDispatcher } from "../common/tooldispatch";
 import { setupWheelZoom } from "../common/zoom";
 import { drawBounds } from "./bounds";
 import { globals as g } from "./globals";
@@ -45,6 +46,7 @@ export async function init(): Promise<P.Application> {
   const stage = app.stage;
   stage.sortableChildren = true;
   stage.label = "Tileset Editor Stage";
+  g.stage = stage;
 
   // Tweak canvas interaction to avoid browser scroll/selection during drag
   const canvas = app.canvas;
@@ -74,6 +76,7 @@ export async function init(): Promise<P.Application> {
   const zIndexOverlay = new P.Container();
   zIndexOverlay.label = "Z-Index Overlay";
   zIndexOverlay.zIndex = Number.MAX_SAFE_INTEGER - 5;
+  zIndexOverlay.sortableChildren = true;
   g.tilesetContainer.addChild(zIndexOverlay);
   g.zIndexOverlay = zIndexOverlay;
 
@@ -166,24 +169,21 @@ export async function init(): Promise<P.Application> {
     },
   });
 
+  const toolDispatcher = new ToolDispatcher(app);
+
   const cd = new ClickDragger({
     app,
     container: stage,
     coordsRelativeTo: g.tilesetContainer,
     checkPointerOver: (localPos: Vector2): string[] => {
-      // First check if we're hovering over any interactive graphics (like z-index handles)
-      const target = app.renderer.events.pointer.target;
-      if (target && target.label && target.label.startsWith("zindex-handle:")) {
-        return [target.label];
-      }
-
-      // Otherwise check spatial index for tile groups
       const hits = spatialIndex.getObjects({
         pos: localPos,
       });
       return hits.map((h) => h.id);
     },
   });
+
+  toolDispatcher.registerTool(cd);
 
   setupGrouper({ cd, spatialIndex });
   setupSelector({ cd, spatialIndex });

@@ -14,6 +14,7 @@ import { makeBackground } from "../common/bg";
 import { getCursorForMode } from "../common/cursor";
 import { ClickDragger } from "../common/drag";
 import { setupPanControls } from "../common/pan";
+import { ToolDispatcher } from "../common/tooldispatch";
 import { setupWheelZoom } from "../common/zoom";
 import { drawBounds } from "./bounds";
 import { globals as g } from "./globals";
@@ -152,6 +153,7 @@ export async function init(): Promise<P.Application> {
 
   setupKeys(canvas);
 
+  const toolDispatcher = new ToolDispatcher(app);
   const cd = new ClickDragger({
     app,
     container: stage,
@@ -163,6 +165,7 @@ export async function init(): Promise<P.Application> {
       return hits.map((h) => h.id);
     },
   });
+  toolDispatcher.registerTool(cd);
 
   setupFill({ cd });
   setupSelector({ cd, spatialIndex });

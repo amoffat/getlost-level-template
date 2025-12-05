@@ -5,6 +5,7 @@ import * as P from "pixi.js";
 interface Globals {
   app: P.Application;
   canvas: HTMLCanvasElement;
+  stage: P.Container;
 
   /** Main container for the tileset sprite and all interactive overlays. Handles zoom and pan transformations */
   tilesetContainer: P.Container;

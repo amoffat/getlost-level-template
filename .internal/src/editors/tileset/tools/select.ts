@@ -3,6 +3,7 @@ import { store } from "@/store/store";
 import { Rect, snap } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { isTileGroupTemplate } from "@/types/tilegroup";
+import { Mode } from "@/types/tileset";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import { subState } from "@/utils/redux";
 import { rectToBBox } from "@/utils/spatial";
@@ -17,6 +18,12 @@ import { selectStroke, tileSelectFill } from "../../common/strokes";
 import { globals as g } from "../globals";
 import { pressedKeys } from "../keys";
 
+const selectionModes: Set<Mode> = new Set([
+  "select",
+  "z-index",
+  "draw-colliders",
+] as Mode[]);
+
 class Selector implements ClickDragListener {
   private marqueeEnabled = false;
 
@@ -29,13 +36,11 @@ class Selector implements ClickDragListener {
   pointerDown(e: PointerEventData) {
     const state = store.getState();
     const mode = selectors.selectMode(state);
-    if (mode !== "select") return;
+    if (!selectionModes.has(mode)) return;
 
     // If we're over something, it means we want to select it directly, not
-    // start a marquee. This will always be true if we're on the ground layer,
-    // so we'll do some extra checks related to the ground layer in this block.
+    // start a marquee.
     if (e.hoverIds.length > 0) {
-      store.dispatch(actions.setActiveTool("select"));
       const sel = state.tilesetEditor.selectedTiles;
       const selIds = new Set(sel.ids);
 
@@ -59,7 +64,7 @@ class Selector implements ClickDragListener {
   pointerUp(e: PointerEventData) {
     const state = store.getState();
     const mode = selectors.selectMode(state);
-    if (mode !== "select") return;
+    if (!selectionModes.has(mode)) return;
 
     // In pointerDown, we may have deferred to our mover if we clicked "over" an
     // element. However, if we've now determined that we never moved, we should
@@ -139,7 +144,7 @@ class Selector implements ClickDragListener {
 
     const state = store.getState();
     const mode = selectors.selectMode(state);
-    if (mode !== "select") return;
+    if (!selectionModes.has(mode)) return;
 
     if (this.marqueeEnabled) {
       const hb = snap(e.hitbox, { x: 1, y: 1 });

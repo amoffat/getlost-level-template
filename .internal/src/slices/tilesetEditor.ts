@@ -490,6 +490,17 @@ export const slice = createSlice({
       (tiles, ts): TilesetObjectTemplate[] => {
         if (!ts) return [];
         return tiles.ids.map((id) => ts.tiles.entities[id]);
+      },
+      {
+        memoizeOptions: {
+          resultEqualityCheck: (a, b) => {
+            if (a.length !== b.length) return false;
+            for (let i = 0; i < a.length; i++) {
+              if (a[i].id !== b[i].id) return false;
+            }
+            return true;
+          },
+        },
       }
     ),
     templatesFromInstanceIds: createTsSelector(

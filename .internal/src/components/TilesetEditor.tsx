@@ -189,7 +189,7 @@ export default function TilesetEditorTab({
         "z-index": {
           name: "Set Z-Index",
           icon: <IconLetterZ size={16} />,
-          enabled: hasTsSelected && singleSelectedObject,
+          enabled: hasTsSelected,
         },
         "draw-colliders": {
           name: "Draw colliders",

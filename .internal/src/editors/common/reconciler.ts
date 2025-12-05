@@ -106,10 +106,15 @@ export abstract class ReduxReconciler<
     for (const obj of this.pendingAdds) {
       const id = this.selectId(obj);
 
-      // skip adds that were also removed this frame
-      if (this.pendingRemoves.has(id)) {
-        continue;
-      }
+      // skip adds that were also removed this frame. This is commented out
+      // because it was causing an issue where a TileGroup (in the tileset
+      // editor) was being removed and re-added in the same frame, using the
+      // replace tool, and the resulting add was being skipped. This code was
+      // added for a specific reason though, but that reason is now lost to
+      // time.
+      //
+      // if (this.pendingRemoves.has(id)) { continue;
+      // }
 
       const node = this.createNode(obj);
       if (!node) continue;
