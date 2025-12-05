@@ -24,6 +24,14 @@ export interface Tool {
    * @returns Whether to continue or stop event propagation
    */
   onPointerMove?(event: P.FederatedPointerEvent): boolean;
+
+  /**
+   * Get the cursor to display for the current pointer position.
+   * Called during pointer move to determine the appropriate cursor.
+   * @param event The pointer event
+   * @returns The cursor style to use, or null/undefined to not change the cursor
+   */
+  getCursor?(event: P.FederatedPointerEvent): string | null | undefined;
 }
 
 /**
@@ -32,7 +40,9 @@ export interface Tool {
  */
 export class ToolDispatcher {
   private stage: P.Container;
+  private canvas: HTMLCanvasElement;
   private tools: Tool[] = [];
+  private defaultCursor: string = "default";
 
   /**
    * Creates a new ToolDispatcher.
@@ -40,6 +50,7 @@ export class ToolDispatcher {
    */
   constructor(app: P.Application) {
     this.stage = app.stage;
+    this.canvas = app.canvas;
     this.attachListeners();
   }
 
@@ -92,8 +103,28 @@ export class ToolDispatcher {
 
   /**
    * Handles pointer move events by dispatching to tools in order.
+   * Also updates the cursor based on tool feedback.
    */
   private handlePointerMove(event: P.FederatedPointerEvent): void {
+    // First, check for cursor changes from tools
+    let cursorSet = false;
+    for (const tool of this.tools) {
+      if (tool.getCursor) {
+        const cursor = tool.getCursor(event);
+        if (cursor) {
+          this.canvas.style.cursor = cursor;
+          cursorSet = true;
+          break;
+        }
+      }
+    }
+
+    // Reset to default cursor if no tool requested a specific cursor
+    if (!cursorSet) {
+      this.canvas.style.cursor = this.defaultCursor;
+    }
+
+    // Then dispatch the pointer move event
     for (const tool of this.tools) {
       if (tool.onPointerMove) {
         const handled = tool.onPointerMove(event);
@@ -102,6 +133,14 @@ export class ToolDispatcher {
         }
       }
     }
+  }
+
+  /**
+   * Sets the default cursor style to use when no tool requests a specific cursor.
+   * @param cursor The default cursor style
+   */
+  public setDefaultCursor(cursor: string): void {
+    this.defaultCursor = cursor;
   }
 
   /**

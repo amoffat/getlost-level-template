@@ -24,13 +24,17 @@ const selectionModes: Set<Mode> = new Set([
   "draw-colliders",
 ] as Mode[]);
 
+const multiSelectModes: Set<Mode> = new Set(["select"] as Mode[]);
+
 class Selector implements ClickDragListener {
   private marqueeEnabled = false;
 
   constructor(private spatialIndex: SpatialIndex<TilesetObjectTemplate>) {}
 
   private get addToSelection(): boolean {
-    return pressedKeys["Control"] ?? false;
+    const state = store.getState();
+    const mode = selectors.selectMode(state);
+    return multiSelectModes.has(mode) && (pressedKeys["Control"] ?? false);
   }
 
   pointerDown(e: PointerEventData) {
@@ -50,13 +54,13 @@ class Selector implements ClickDragListener {
       const isOverSelected = e.hoverIds.some((id) => selIds.has(id));
       if (isOverSelected && !this.addToSelection) return;
 
-      if (!isOverSelected) {
+      if (!isOverSelected && multiSelectModes.has(mode)) {
         this.marqueeEnabled = true;
       } else {
         this.marqueeEnabled = false;
         this.doSelection(e);
       }
-    } else {
+    } else if (multiSelectModes.has(mode)) {
       this.marqueeEnabled = true;
     }
   }

@@ -183,13 +183,14 @@ export async function init(): Promise<P.Application> {
     },
   });
 
-  toolDispatcher.registerTool(cd);
-
   setupGrouper({ cd, spatialIndex });
   setupSelector({ cd, spatialIndex });
   setupFrameSelector({ cd, spatialIndex });
-  setupZIndexer();
+  const zIndexTool = setupZIndexer();
+  toolDispatcher.registerTool(zIndexTool);
   setupGrid();
+
+  toolDispatcher.registerTool(cd);
 
   gApp.tilesetEditorReconciler.attachCanvas({
     spatialIndex,
