@@ -1,16 +1,24 @@
-import * as host from "@gl/api/w2h/host";
-import { log } from "@gl/api/w2h/host";
-import { loadMusic } from "@gl/utils/sound";
+import * as char from "@gl/api/w2h/char";
+import * as controls from "@gl/api/w2h/controls";
+import * as filters from "@gl/api/w2h/filters";
+import * as lights from "@gl/api/w2h/lights";
+import * as log from "@gl/api/w2h/log";
+import * as map from "@gl/api/w2h/map";
+import * as markers from "@gl/api/w2h/markers";
+import * as pickup from "@gl/api/w2h/pickup";
+import * as sensors from "@gl/api/w2h/sensors";
+import * as sound from "@gl/api/w2h/sound";
+import * as time from "@gl/api/w2h/time";
+import * as ui from "@gl/api/w2h/ui";
 
-import { CrossFadeSpec } from "@gl/api/types/sound";
-import { Vector } from "@gl/api/types/vector";
+import { type Vector } from "@gl/api/types/vector";
+import { addTiltShift } from "@gl/api/w2h/filters";
 import { ColorMatrixFilter } from "@gl/filters/colormatrix";
 import { getSunEventName, SunEvent } from "@gl/types/time";
 import { Character } from "@gl/utils/character";
 import { Delay } from "@gl/utils/delay";
 import { Vec2 } from "@gl/utils/la/vec2";
 import {
-  DefaultThenAttackPlan,
   FollowPlan,
   NavPlan,
   PatrolPlan,
@@ -22,57 +30,50 @@ import {
 } from "@gl/utils/navigation";
 import { Player } from "@gl/utils/player";
 import { createHeatFilter, RippleFilter } from "@gl/utils/ripple";
+import { loadMusic } from "@gl/utils/sound";
 import { isDay, isNight, prevSunEvent } from "@gl/utils/time";
 import { Waypoint } from "@gl/utils/waypoint";
-import * as dialogue from "./generated/dialogue";
 
-export { initAsyncStack } from "@gl/utils/asyncify";
 export { card } from "./card";
 export { entrances, exits } from "./gateways";
-export { choiceMadeEvent } from "./generated/dialogue";
 export { markers } from "./markers";
 export { pickups } from "./pickups";
 
-let tsfid!: i32;
+let tsfid!: number;
 let player!: Player;
-let dayMusic!: i32;
-const dayMusicVolume: f32 = 0.3;
-let nightMusic!: i32;
-const nightMusicVolume: f32 = 0.5;
-let mazeMusic!: i32;
-const mazeMusicVolume: f32 = 0.4;
-let inMaze: bool = false;
-let hearts: f32 = 5;
-let maxHearts: f32 = 5;
+let dayMusic!: number;
+const dayMusicVolume: number = 0.3;
+let nightMusic!: number;
+const nightMusicVolume: number = 0.5;
+let mazeMusic!: number;
+const mazeMusicVolume: number = 0.4;
+let inMaze: boolean = false;
+let hearts: number = 5;
+let maxHearts: number = 5;
 const overheatColor = "red";
-let nighttime: bool = false;
-export let overheat: f32 = 0.0;
-let heatRate: f32 = 0.005;
-let inWater: bool = false;
+let nighttime: boolean = false;
+let overheat: number = 0.0;
+let heatRate: number = 0.005;
+let inWater: boolean = false;
 const healingPool = new Delay(200, 1000, true);
 const heatDamage = new Delay(3000, 0, true);
 const guardAttack = new Delay(2000, 1000, true);
-let guardShouldAttack: bool = false;
-let guardIsAttacking: bool = false;
-let takingDamage: bool = false;
+let guardShouldAttack: boolean = false;
+let guardIsAttacking: boolean = false;
+let takingDamage: boolean = false;
 let damagingChar: string = "";
 let heatFilter!: RippleFilter;
 let colorMatrix!: ColorMatrixFilter;
-let heatAmt: f32 = 0.0;
+let heatAmt: number = 0.0;
 let defaultGuardPlan!: NavPlan;
 let mainGuard!: Character;
-
-class LevelState {
-  embarassedAmina: bool = false;
-  collectedFlags: bool = false;
-}
 
 /**
  * This function initializes your level. It's called once when the level is
  * loaded. Use it to set up your level, like setting the time of day, or adding
  * filters.
  */
-export function init(): void {
+export async function init(): Promise<void> {
   player = new Player();
   Character.initAll();
 
@@ -162,7 +163,7 @@ export function init(): void {
   colorMatrix = new ColorMatrixFilter();
   colorMatrix.hot();
 
-  tsfid = host.filters.addTiltShift(0.06);
+  tsfid = addTiltShift(0.06);
 
   heatFilter.influence = heatAmt;
   colorMatrix.influence = heatAmt;
@@ -171,24 +172,27 @@ export function init(): void {
    * You can set a fixed time for the level like this.
    * Be sure to comment out the setSunTime call in `tickRoom` if you do this.
    */
-  // host.time.setSunEvent(SunEvent.SunriseEnd, 0);
+  // time.setSunEvent(SunEvent.SunriseEnd, 0);
 
-  host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
-  host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
+  ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
+  ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
   updateHeatFilter();
 
-  const hasMap = host.pickup.query("map");
-  host.pickup.toggle("map", !hasMap);
+  const hasMap = pickup.query("map");
+  pickup.toggle("map", !hasMap);
 
-  const stoleFruit = host.markers.query("stole-fruit", false);
-  host.sensors.toggleSensor("fruit", !stoleFruit);
+  const stoleFruit = markers.query("stole-fruit", false);
+  sensors.toggleSensor("fruit", !stoleFruit);
 
-  dayMusic = loadMusic("Musics/restricted/farm1", dayMusicVolume);
-  nightMusic = loadMusic("Musics/music-night", nightMusicVolume);
-  mazeMusic = loadMusic("Musics/restricted/digital-descent", mazeMusicVolume);
+  dayMusic = await loadMusic("Musics/restricted/farm1", dayMusicVolume);
+  nightMusic = await loadMusic("Musics/music-night", nightMusicVolume);
+  mazeMusic = await loadMusic(
+    "Musics/restricted/digital-descent",
+    mazeMusicVolume
+  );
 
-  const ev = host.time.getSunEvent();
-  host.sound.playSound({
+  const ev = time.getSunEvent();
+  sound.playSound({
     assetId: isNight(ev) ? nightMusic : dayMusic,
     spriteId: -1,
   });
@@ -198,12 +202,12 @@ export function init(): void {
  * Sets the heat fx (ripple and color grading) based on the time of day.
  */
 function updateHeatFilter(): void {
-  const curSunEvent = host.time.getSunEvent();
+  const curSunEvent = time.getSunEvent();
   heatAmt = 0;
   if (curSunEvent === SunEvent.GoldenHourEnd) {
-    heatAmt = host.time.getSunEventProgress();
+    heatAmt = time.getSunEventProgress();
   } else if (curSunEvent === SunEvent.GoldenHour) {
-    heatAmt = 1.0 - host.time.getSunEventProgress();
+    heatAmt = 1.0 - time.getSunEventProgress();
   } else if (curSunEvent === SunEvent.SolarNoon) {
     heatAmt = 1.0;
   }
@@ -227,7 +231,7 @@ function getDamageDir(name: string): Vec2 {
  * @param x The x *direction* to move the player.
  * @param y The y *direction* to move the player.
  */
-export function movePlayer(x: f32, y: f32): void {
+export function movePlayer(x: number, y: number): void {
   player.direction.x = x;
   player.direction.y = y;
 }
@@ -235,9 +239,9 @@ export function movePlayer(x: f32, y: f32): void {
 /**
  * Called when a user-created timer is triggered.
  *
- * @param id The id of the timer created by `host.timer.start`.
+ * @param id The id of the timer created by `timer.start`.
  */
-export function timerEvent(id: u32): void {
+export function timerEvent(id: number): void {
   log.info(`Timer event: ${id}`);
 }
 
@@ -246,7 +250,7 @@ export function timerEvent(id: u32): void {
  *
  * @param id The ID of the asset that was loaded.
  */
-export function assetLoadedEvent(id: i32): void {}
+export function assetLoadedEvent(id: number): void {}
 
 /**
  * Called when an async event is triggered. This is usually used for things like
@@ -255,7 +259,7 @@ export function assetLoadedEvent(id: i32): void {}
  *
  * @param id The async event id.
  */
-export function asyncEvent(id: i32): void {}
+export function asyncEvent(id: number): void {}
 
 /**
  * Called when a pickup event occurs.
@@ -263,14 +267,14 @@ export function asyncEvent(id: i32): void {}
  * @param slug The slug of the pickup that was interacted with.
  * @param took Whether the player took the pickup or not.
  */
-export function pickupEvent(slug: string, took: bool): void {
+export function pickupEvent(slug: string, took: boolean): void {
   log.info(`Pickup event: ${slug}, ${took}`);
   if (slug === "flame" && took) {
-    host.lights.toggleLight("flame", false);
-    host.sensors.toggleSensor("flame", false);
-    host.char.toggle("flame", false);
+    lights.toggleLight("flame", false);
+    sensors.toggleSensor("flame", false);
+    char.toggle("flame", false);
   } else if (slug === "fruit" && took) {
-    host.markers.record("stole-fruit", true);
+    markers.record("stole-fruit", true);
   }
 }
 
@@ -280,22 +284,22 @@ export function pickupEvent(slug: string, took: bool): void {
  * @param slug The slug of the button that was pressed.
  * @param down Whether the button was pressed down or released.
  */
-export function buttonPressEvent(slug: string, down: bool): void {
+export function buttonPressEvent(slug: string, down: boolean): void {
   log.info(`Button event: ${slug}, ${down}`);
 
   // If our dialogue was staged via a `dialogue.stage_<id>` call, then the event
   // may be a press of the "interact" button. This checks for that, and if it
   // is, we'll dispatch to the correct passage.
   if (slug.startsWith("passage/") && down) {
-    const passage = slug.split("/")[1];
-    dialogue.dispatch(passage);
+    const passage = slug.split("/")[1]!;
+    // dialogue.dispatch(passage);
   }
 
   if (slug === "fruit-taken" && down) {
-    host.pickup.offerPickup("fruit");
-    host.controls.setButtons([]);
+    pickup.offerPickup("fruit");
+    controls.setButtons([]);
   } else if (slug === "nap" && down) {
-    host.map.exit("nap", false);
+    map.exit("nap", false);
   }
 }
 
@@ -312,11 +316,11 @@ export function buttonPressEvent(slug: string, down: bool): void {
  */
 export function tileCollisionEvent(
   initiator: string,
-  tsTileId: i32,
-  gid: i32,
-  entered: bool,
-  column: i32,
-  row: i32
+  tsTileId: number,
+  gid: number,
+  entered: boolean,
+  column: number,
+  row: number
 ): void {
   // log(`Collision event: ${tsTileId}, ${gid}, ${entered} @ ${column}, ${row}`);
 }
@@ -325,7 +329,7 @@ export function spriteCollisionEvent(
   initiator: string,
   collider: string,
   direction: Vector,
-  entered: bool
+  entered: boolean
 ): void {
   if (initiator !== "player") {
     return;
@@ -361,7 +365,7 @@ export function sensorEvent(
   initiator: string,
   sensorName: string,
   direction: Vector,
-  entered: bool
+  entered: boolean
 ): void {
   if (initiator !== "player") {
     return;
@@ -374,34 +378,34 @@ export function sensorEvent(
   );
 
   if (sensorName === "exit-east" && entered) {
-    host.map.exit("east", false);
+    map.exit("east", false);
   } else if (sensorName === "exit-west" && entered) {
-    host.map.exit("west", false);
+    map.exit("west", false);
   } else if (sensorName === "exit-south" && entered) {
-    host.map.exit("south", false);
+    map.exit("south", false);
   } else if (sensorName === "water") {
     inWater = entered;
   } else if (sensorName === "nap") {
     if (entered) {
-      host.controls.setButtons([
+      controls.setButtons([
         {
           label: "nap",
           slug: "nap",
         },
       ]);
     } else {
-      host.controls.setButtons([]);
+      controls.setButtons([]);
     }
   } else if (sensorName === "fruit") {
     if (entered) {
-      host.controls.setButtons([
+      controls.setButtons([
         {
           label: "takeFruit",
           slug: "fruit-taken",
         },
       ]);
     } else {
-      host.controls.setButtons([]);
+      controls.setButtons([]);
     }
   } else if (sensorName === "heat-adjust") {
     heatRate = entered ? 0.06 : 0.02;
@@ -410,60 +414,62 @@ export function sensorEvent(
 
     if (entered) {
       if (isDay) {
-        const spec = new CrossFadeSpec();
-        spec.assetAId = dayMusic;
-        spec.assetBId = mazeMusic;
-        spec.volumeAStart = dayMusicVolume;
-        spec.volumeBEnd = mazeMusicVolume;
-        host.sound.crossfade(spec);
+        const spec = {
+          assetAId: dayMusic,
+          assetBId: mazeMusic,
+          volumeAStart: dayMusicVolume,
+          volumeBEnd: mazeMusicVolume,
+        };
+        sound.crossfade(spec);
       }
     } else {
       if (isDay) {
-        const spec = new CrossFadeSpec();
-        spec.assetAId = mazeMusic;
-        spec.assetBId = dayMusic;
-        spec.volumeAStart = mazeMusicVolume;
-        spec.volumeBEnd = dayMusicVolume;
-        host.sound.crossfade(spec);
+        const spec = {
+          assetAId: mazeMusic,
+          assetBId: dayMusic,
+          volumeAStart: mazeMusicVolume,
+          volumeBEnd: dayMusicVolume,
+        };
+        sound.crossfade(spec);
       }
     }
   } else if (sensorName.startsWith("snake") && sensorName.endsWith("/hit")) {
     takingDamage = entered;
     if (entered) {
-      damagingChar = sensorName.split("/")[0];
+      damagingChar = sensorName.split("/")[0]!;
       const dir = getDamageDir(damagingChar);
       if (player.hurt(dir)) {
         hearts--;
-        host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
+        ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
       }
     }
-  } else if (sensorName === "nazar/talk") {
-    dialogue.stage_NazarIntro(entered);
-  } else if (sensorName === "omar/talk") {
-    dialogue.stage_OmarIntro(entered);
-  } else if (sensorName === "tarek/talk") {
-    dialogue.stage_TarekIntro(entered);
-  } else if (sensorName === "haddad/talk") {
-    dialogue.stage_HaddadIntro(entered);
-  } else if (sensorName === "guard-gate") {
-    if (entered) {
-      dialogue.passage_GuardIntro();
-    }
-    if (entered) {
-      guardShouldAttack = true;
-      const navPlan = new DefaultThenAttackPlan(defaultGuardPlan, player, 32);
-      mainGuard.setNavPlan(navPlan, false);
-    } else {
-      guardShouldAttack = false;
-      mainGuard.setNavPlan(defaultGuardPlan);
-    }
-  } else if (sensorName === "well" && entered) {
-    dialogue.stage_Well(entered);
+    // } else if (sensorName === "nazar/talk") {
+    //   dialogue.stage_NazarIntro(entered);
+    // } else if (sensorName === "omar/talk") {
+    //   dialogue.stage_OmarIntro(entered);
+    // } else if (sensorName === "tarek/talk") {
+    //   dialogue.stage_TarekIntro(entered);
+    // } else if (sensorName === "haddad/talk") {
+    //   dialogue.stage_HaddadIntro(entered);
+    // } else if (sensorName === "guard-gate") {
+    //   if (entered) {
+    //     dialogue.passage_GuardIntro();
+    //   }
+    //   if (entered) {
+    //     guardShouldAttack = true;
+    //     const navPlan = new DefaultThenAttackPlan(defaultGuardPlan, player, 32);
+    //     mainGuard.setNavPlan(navPlan, false);
+    //   } else {
+    //     guardShouldAttack = false;
+    //     mainGuard.setNavPlan(defaultGuardPlan);
+    //   }
+    // } else if (sensorName === "well" && entered) {
+    //   dialogue.stage_Well(entered);
   } else if (sensorName === "main-guard/hit" && guardIsAttacking) {
     const dir = getDamageDir("main-guard");
     if (player.hurt(dir)) {
       hearts--;
-      host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
+      ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
     }
     guardIsAttacking = false;
   }
@@ -481,37 +487,38 @@ export function timeChangedEvent(event: SunEvent): void {
 
   const wasDay = isDay(lastEvent);
   nighttime = isNight(event);
-  host.lights.toggleLight("flame", nighttime);
-  host.sensors.toggleSensor("flame", nighttime);
-  host.char.toggle("flame", nighttime);
+  lights.toggleLight("flame", nighttime);
+  sensors.toggleSensor("flame", nighttime);
+  char.toggle("flame", nighttime);
 
-  const lights = ["nazar-light", "house-light-1"];
-  for (let i = 0; i < lights.length; i++) {
-    host.lights.toggleLight(lights[i], nighttime);
+  for (const light of ["nazar-light", "house-light-1"]) {
+    lights.toggleLight(light, nighttime);
   }
 
   if (nighttime) {
-    host.ui.clearElement(1, 0);
+    ui.clearElement(1, 0);
   } else {
-    host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
+    ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
   }
 
   updateHeatFilter();
 
   if (event === SunEvent.SunsetStart) {
-    const spec = new CrossFadeSpec();
-    spec.assetAId = dayMusic;
-    spec.assetBId = nightMusic;
-    spec.volumeAStart = dayMusicVolume;
-    spec.volumeBEnd = nightMusicVolume;
-    host.sound.crossfade(spec);
+    const spec = {
+      assetAId: dayMusic,
+      assetBId: nightMusic,
+      volumeAStart: dayMusicVolume,
+      volumeBEnd: nightMusicVolume,
+    };
+    sound.crossfade(spec);
   } else if (event === SunEvent.Dawn) {
-    const spec = new CrossFadeSpec();
-    spec.assetAId = nightMusic;
-    spec.assetBId = dayMusic;
-    spec.volumeAStart = nightMusicVolume;
-    spec.volumeBEnd = dayMusicVolume;
-    host.sound.crossfade(spec);
+    const spec = {
+      assetAId: nightMusic,
+      assetBId: dayMusic,
+      volumeAStart: nightMusicVolume,
+      volumeBEnd: dayMusicVolume,
+    };
+    sound.crossfade(spec);
   }
 }
 
@@ -522,8 +529,8 @@ export function timeChangedEvent(event: SunEvent): void {
  *
  * @param timestep The time since the last tick in milliseconds.
  */
-export function pauseTick(timestep: f32): void {
-  host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
+export function pauseTick(timestep: number): void {
+  ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
 }
 
 /**
@@ -532,25 +539,25 @@ export function pauseTick(timestep: f32): void {
  *
  * @param timestep The time since the last tick in milliseconds.
  */
-export function tick(timestep: f32): void {
+export function tick(timestep: number): void {
   const startHearts = hearts;
   Character.tickAll(timestep);
-  host.filters.setTiltShiftY(tsfid, player.pos.y - 10);
+  filters.setTiltShiftY(tsfid, player.pos.y - 10);
 
   if (inWater && hearts < maxHearts && healingPool.tick(timestep)) {
     hearts++;
   }
 
   // This syncs the time of day with the real world.
-  // host.time.setSunTime(Date.now());
+  // time.setSunTime(Date.now());
 
   // Or we can advance the time of day manually, increasing the step size to
   // make the days faster.
-  // host.time.advanceSunTime(timestep * 2000);
+  // time.advanceSunTime(timestep * 2000);
 
   updateHeatFilter();
 
-  const timeSeconds: f32 = timestep / 1000;
+  const timeSeconds = timestep / 1000;
   if (heatAmt > 0) {
     overheat += timeSeconds * heatRate * heatAmt;
   } else {
@@ -561,7 +568,7 @@ export function tick(timestep: f32): void {
     overheat -= timeSeconds * heatRate * 5;
   }
 
-  overheat = Math.max(0, Math.min(overheat, 1)) as f32;
+  overheat = Math.max(0, Math.min(overheat, 1));
   if (overheat >= 1 && heatDamage.tick(timestep)) {
     hearts--;
   }
@@ -574,20 +581,16 @@ export function tick(timestep: f32): void {
   }
 
   if (hearts <= 0) {
-    host.markers.record("died-overheated", false);
-    host.map.exit("death", true);
+    markers.record("died-overheated", false);
+    map.exit("death", true);
   }
 
-  host.ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
+  ui.setProgressBar(1, 0, "overheat", overheat, overheatColor);
   if (hearts !== startHearts) {
-    host.ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
+    ui.setRating(0, 0, hearts, maxHearts, "heart", "red");
   }
 
   if (guardShouldAttack && guardAttack.tick(timestep) && !guardIsAttacking) {
     guardIsAttacking = true;
   }
-}
-
-export function reduceOverheatBy(amt: f32): void {
-  overheat = Math.max(0, overheat - amt) as f32;
 }

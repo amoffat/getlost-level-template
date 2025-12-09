@@ -1,10 +1,10 @@
-class SinkProps {
-  name!: string;
-  amt!: f32;
+interface SinkProps {
+  name: string;
+  amt: number;
 }
 
-export class CharProps {
-  friction: f32 = 0;
-  traction: f32 = 0;
-  sink!: SinkProps;
+export interface CharProps {
+  friction: number;
+  traction: number;
+  sink: SinkProps;
 }

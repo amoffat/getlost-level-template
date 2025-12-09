@@ -1,33 +1,33 @@
-class Sprite {
+interface Sprite {
   /** The name of the sprite. */
-  name!: string;
+  name: string;
   /** The start time of the sprite in seconds. */
-  start: f32 = 0;
+  start: number;
   /** The length of the sprite in seconds. */
-  length: f32 = 0;
+  length: number;
 }
 
-export class LoadOpts {
+export interface LoadOpts {
   /** The name of the sound to load from your `sounds` folder */
-  name!: string;
+  name: string;
   /** Whether the sound should autoplay on loads. Good for music. */
-  autoplay: boolean = false;
+  autoplay: boolean;
   /** Whether the sound should loop. Also good for music. */
-  loop: boolean = false;
+  loop: boolean;
   /** The volume of the sound. */
-  volume: f32 = 1;
-  sprites: Sprite[] = [];
+  volume: number;
+  sprites: Sprite[];
 }
 
-export class PlayOpts {
-  assetId!: i32;
-  spriteId: i32 = -1;
+export interface PlayOpts {
+  assetId: number;
+  spriteId: number;
 }
 
-export class CrossFadeSpec {
-  assetAId!: i32;
-  assetBId!: i32;
-  duration: i32 = 5000; // ms
-  volumeAStart: f32 = 1;
-  volumeBEnd: f32 = 0;
+export interface CrossFadeSpec {
+  assetAId: number;
+  assetBId: number;
+  duration?: number; // ms
+  volumeAStart?: number;
+  volumeBEnd: number;
 }

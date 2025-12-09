@@ -14,7 +14,12 @@ export class Box {
     return new Box(upperLeft, lowerRight);
   }
 
-  static fromWidthHeight(x: f32, y: f32, width: f32, height: f32): Box {
+  static fromWidthHeight(
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): Box {
     const upperLeft = new Vec2(x, y);
     return new Box(upperLeft, upperLeft.added(new Vec2(width, height)));
   }
@@ -23,19 +28,19 @@ export class Box {
     return new Box(this.upperLeft.added(other), this.lowerRight.added(other));
   }
 
-  get x(): f32 {
+  get x(): number {
     return this.upperLeft.x;
   }
 
-  get y(): f32 {
+  get y(): number {
     return this.upperLeft.y;
   }
 
-  get width(): f32 {
+  get width(): number {
     return this.lowerRight.x - this.upperLeft.x;
   }
 
-  get height(): f32 {
+  get height(): number {
     return this.lowerRight.y - this.upperLeft.y;
   }
 
@@ -90,16 +95,16 @@ export class Box {
     const t4 = (this.lowerRight.y - origin.y) * invDir.y;
 
     // Swap t1 and t2 if necessary
-    const tMinX = Math.min(t1, t2) as f32;
-    const tMaxX = Math.max(t1, t2) as f32;
+    const tMinX = Math.min(t1, t2);
+    const tMaxX = Math.max(t1, t2);
 
     // Swap t3 and t4 if necessary
-    const tMinY = Math.min(t3, t4) as f32;
-    const tMaxY = Math.max(t3, t4) as f32;
+    const tMinY = Math.min(t3, t4);
+    const tMaxY = Math.max(t3, t4);
 
     // Calculate the overall tMin and tMax
-    const tMin = Math.max(tMinX, tMinY) as f32;
-    const tMax = Math.min(tMaxX, tMaxY) as f32;
+    const tMin = Math.max(tMinX, tMinY);
+    const tMax = Math.min(tMaxX, tMaxY);
 
     // If tMax < tMin, the ray misses the box
     if (tMax < tMin || tMax < 0) {

@@ -1,8 +1,6 @@
 export declare function create(
-  ptr: usize,
+  ptr: number,
   tileset: string,
-  tileidx: u32,
-  num: u32
+  tileidx: number,
+  num: number
 ): void;
-
-export const _keep_create = create;

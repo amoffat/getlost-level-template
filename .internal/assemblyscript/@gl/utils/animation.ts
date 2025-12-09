@@ -1,54 +1,74 @@
-import { ProgressCallback } from "../types/animation";
-import { VoidFunction } from "../types/void";
 import { addListener } from "./callbacks";
-import { EasingFunction, linear } from "./easing";
+import { type EasingFunction, Easings } from "./easing";
 
-export function lerp(a: f32, b: f32, t: f32): f32 {
+type ProgressCallback = (progress: number, direction: number) => void;
+type BoundaryCallback = (forward: boolean) => void;
+
+export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
-export class AnimatorOpts {
-  duration: f32 = 1000;
-  forwardCurve: EasingFunction = linear;
-  reverseCurve: EasingFunction = linear;
-  repeat: bool = false;
-  pingPong: bool = false;
-}
-
 export class Animator {
-  private _elapsedTime: f32 = 0;
-  private _duration: f32;
-  private _speed: f32 = 1;
+  private _elapsedTime: number = 0;
+  private _durationMs: number;
+  private _speed: number = 1;
+  private _value: number = 0;
+  private _progressCallbacks: ProgressCallback[] = [];
+  private _startCallbacks: BoundaryCallback[] = [];
+  private _completeCallbacks: BoundaryCallback[] = [];
   private _forwardCurve: EasingFunction;
   private _reverseCurve: EasingFunction;
-  private _direction: i8 = 1; // 1 for forward, -1 for backward
-  private _isPlaying: bool = false;
+  private _direction: 1 | -1 = 1; // 1 for forward, -1 for backward
+  private _isPlaying: boolean = false;
+  private _lastTickTime: number | null = null;
+  // Number of additional passes to run after the initial pass.
+  // 0 => play once, Infinity => loop forever, N => play N additional passes.
+  repeat: number;
+  pingPong: boolean;
+  private _repeatsLeft: number = 0;
 
-  private _repeat: bool = false;
-  private _pingPong: bool = false;
+  private _selfTick: boolean;
+  private _rafId: number | null = null;
 
-  // These can't be used yet because AS doesn't support closures.
-  private _progressCallbacks: ProgressCallback[] = [];
-  private _completeCallbacks: VoidFunction[] = [];
-  // We use this to store the current progress of the animation, instead of
-  // unsupported closure callbacks.
-  progress: f32 = 0;
+  constructor({
+    durationMs,
+    forwardCurve = Easings.linear,
+    reverseCurve,
+    repeat = 0,
+    pingPong = false,
+    selfTick = false,
+  }: {
+    durationMs: number;
+    forwardCurve?: EasingFunction;
+    reverseCurve?: EasingFunction;
+    repeat?: number;
+    pingPong?: boolean;
+    selfTick?: boolean;
+  }) {
+    this._durationMs = durationMs;
+    this._selfTick = selfTick;
+    this._forwardCurve = forwardCurve;
+    this._reverseCurve = reverseCurve ?? this._forwardCurve;
+    this.repeat = repeat;
+    this.pingPong = pingPong;
+    this._repeatsLeft = this.repeat;
 
-  constructor(opts: AnimatorOpts) {
-    this._duration = opts.duration;
-    this._forwardCurve = opts.forwardCurve;
-    this._reverseCurve = opts.reverseCurve;
-    this._repeat = opts.repeat;
-    this._pingPong = opts.pingPong;
-
-    // If we're ping-ponging, we need to set the speed to 0.5 so that the
-    // animation takes the same amount of time to go forward and backward.
-    if (this._pingPong) {
-      this.speed = 2;
+    if (selfTick) {
+      const tick = (timestamp: number) => {
+        if (this._lastTickTime === null) {
+          this._lastTickTime = timestamp;
+        } else {
+          const deltaMs = timestamp - this._lastTickTime;
+          this.tick(deltaMs);
+          this._lastTickTime = timestamp;
+        }
+        this._rafId = requestAnimationFrame(tick);
+      };
+      this._rafId = requestAnimationFrame(tick);
     }
   }
 
-  clearProgressCallbacks(): void {
+  clearProgressCallbacks() {
     this._progressCallbacks = [];
   }
 
@@ -56,110 +76,133 @@ export class Animator {
     return addListener(this._progressCallbacks, callback);
   }
 
-  addCompleteCallback(callback: VoidFunction): VoidFunction {
+  addStartCallback(callback: BoundaryCallback): VoidFunction {
+    return addListener(this._startCallbacks, callback);
+  }
+
+  addCompleteCallback(callback: BoundaryCallback): VoidFunction {
     return addListener(this._completeCallbacks, callback);
   }
 
   // Sets the duration of the animation in milliseconds, while taking into
   // account that the animation may be in progress, and we should preserve the
   // progress.
-  set duration(duration: f32) {
-    const progress = this._elapsedTime / this._duration;
-    this._duration = duration;
-    this._elapsedTime = progress * this._duration;
+  set duration(duration: number) {
+    const progress = this._elapsedTime / this._durationMs;
+    this._durationMs = duration;
+    this._elapsedTime = progress * duration;
   }
 
-  get duration(): f32 {
-    return this._duration;
+  private get _adjustedDuration(): number {
+    return this._durationMs / this._speed;
   }
 
-  /** A time duration othat accounts for our speed */
-  get adjustedDuration(): f32 {
-    return this._duration / this._speed;
-  }
-
-  set speed(speed: f32) {
+  set speed(speed: number) {
     this._speed = speed;
   }
 
-  tick(deltaMS: f32): void {
+  get value(): number {
+    return this._value;
+  }
+
+  tick(deltaMS: number) {
     if (!this._isPlaying) return;
 
     this._elapsedTime += deltaMS * this._direction;
-    const timeProgress = Math.max(
+    const progress = Math.max(
       0,
-      Math.min(this._elapsedTime / this.adjustedDuration, 1)
-    ) as f32;
+      Math.min(this._elapsedTime / this._adjustedDuration, 1)
+    );
 
     const valueFn =
       this._direction == 1 ? this._forwardCurve : this._reverseCurve;
-    const valueProgress = valueFn(timeProgress);
+    const value = valueFn(progress);
+    this._value = value;
 
-    for (let i = 0; i < this._progressCallbacks.length; i++) {
-      const callback = this._progressCallbacks[i];
-      callback(valueProgress);
+    for (const callback of this._progressCallbacks) {
+      callback(value, this._direction);
     }
 
-    let isComplete = false;
+    if (value === 0 || value === 1) {
+      const atForwardEnd = value === 1;
+      const naturalEnd =
+        (atForwardEnd && this._direction === 1) ||
+        (!atForwardEnd && this._direction === -1);
+      const canRepeat = this.repeat === Infinity || this._repeatsLeft > 0;
 
-    if (
-      this._isPlaying &&
-      !this._repeat &&
-      !this._pingPong &&
-      ((valueProgress === 1 && this._direction === 1) ||
-        (valueProgress === 0 && this._direction === -1))
-    ) {
-      isComplete = true;
-    }
+      if (!canRepeat) {
+        this._isPlaying = false;
+        if (naturalEnd) {
+          for (const callback of this._completeCallbacks) {
+            callback(atForwardEnd);
+          }
+        }
+        return;
+      }
 
-    if (valueProgress === 0 || valueProgress === 1) {
-      if (this._pingPong && !this._repeat) {
-        if (this._direction === 1 && valueProgress === 1) {
-          this._direction = -1;
-          this._elapsedTime = this.adjustedDuration;
-        } else if (this._direction === -1 && valueProgress === 0) {
-          isComplete = true;
-        }
-      } else if (this._repeat) {
-        if (this._pingPong) {
-          this._direction *= -1;
-          this._elapsedTime = valueProgress === 0 ? 0 : this.adjustedDuration;
-        } else {
-          this._elapsedTime = 0;
-        }
+      // Decrement remaining repeats if finite.
+      if (this._repeatsLeft !== Infinity) {
+        this._repeatsLeft -= 1;
+      }
+
+      if (this.pingPong) {
+        this._direction *= -1;
+        this._elapsedTime = atForwardEnd ? this._adjustedDuration : 0;
       } else {
-        isComplete = true;
+        // Restart from the beginning for forward direction.
+        this._elapsedTime = 0;
       }
     }
-
-    if (isComplete) {
-      this._isPlaying = false;
-      for (let i = 0; i < this._completeCallbacks.length; i++) {
-        const callback = this._completeCallbacks[i];
-        callback();
-      }
-    }
-
-    this.progress = valueProgress;
   }
 
-  play(): void {
+  public then(next: Animator) {
+    this.addCompleteCallback(() => {
+      next.play();
+    });
+  }
+
+  // Processes the entire animation in one go, using the provided step value to
+  // increment the progress. This is useful in the case of moving the camera to
+  // a "safe" location, when the safety can only be determined by incremental
+  // testing of the current position.
+  playHeadless(step: number) {
+    this.play();
+    let counter = 0;
+    while (this._isPlaying) {
+      this.tick(step);
+      counter++;
+    }
+  }
+
+  play() {
     this._direction = 1;
     this._isPlaying = true;
     this._elapsedTime = 0;
+    this._repeatsLeft = this.repeat;
+    for (const callback of this._startCallbacks) {
+      callback(true);
+    }
   }
 
-  reverse(): void {
+  reverse() {
     this._direction = -1;
     this._isPlaying = true;
-    this._elapsedTime = this.adjustedDuration;
+    this._elapsedTime = this._adjustedDuration;
+    this._repeatsLeft = this.repeat;
+    for (const callback of this._startCallbacks) {
+      callback(false);
+    }
   }
 
-  stop(): void {
+  stop() {
     this._isPlaying = false;
+    if (this._rafId) {
+      cancelAnimationFrame(this._rafId);
+      this._rafId = null;
+    }
   }
 
-  get isAnimating(): bool {
+  get isAnimating(): boolean {
     return this._isPlaying;
   }
 }

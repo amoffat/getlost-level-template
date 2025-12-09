@@ -37,13 +37,12 @@ export function entrances(): Entrance[] {
 
 /**
  * These are the exits that the player can use to leave your level. By calling
- * `host.map.exit(exitName)`, you can send the player to another level. You
- * cannot choose where these exits lead, as that is determined by another
- * level's `entrances` function (see above). However, you can specify a
- * preferred attachment point. If the preferred attachment's entry decides to
- * attach to this exit, we will preserve it and not let it be overritten by
- * another attachment. This lets you have some control over how levels are
- * linked.
+ * `map.exit(exitName)`, you can send the player to another level. You cannot
+ * choose where these exits lead, as that is determined by another level's
+ * `entrances` function (see above). However, you can specify a preferred
+ * attachment point. If the preferred attachment's entry decides to attach to
+ * this exit, we will preserve it and not let it be overritten by another
+ * attachment. This lets you have some control over how levels are linked.
  *
  * Each entrance needs a physical placeholder object in the map with the same
  * name.

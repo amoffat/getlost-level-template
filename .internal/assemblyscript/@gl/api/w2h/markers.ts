@@ -14,7 +14,4 @@ export declare function record(slug: string, notify: boolean): void;
  * @param notify Whether to notify the player with a toast.
  * @returns True if the marker has been made, false otherwise.
  */
-export declare function query(name: string, notify: boolean): boolean;
-
-export const _keep_record = record;
-export const _keep_query = query;
+export declare function query(name: string, notify: boolean): Promise<boolean>;

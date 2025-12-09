@@ -1,4 +1,4 @@
-import { RippleFilterOpts } from "../types/filter";
+import type { RippleFilterOpts } from "../types/filter";
 
 /**
  * Create a new tilt shift effect.
@@ -6,7 +6,7 @@ import { RippleFilterOpts } from "../types/filter";
  * @param blur The amount of blur to apply to the tilt shift effect.
  * @returns The tilt shift filter ID.
  */
-export declare function addTiltShift(blur: f32): i32;
+export declare function addTiltShift(blur: number): number;
 
 /**
  * Adds the amount of blur to the tilt shift effect.
@@ -14,7 +14,7 @@ export declare function addTiltShift(blur: f32): i32;
  * @param id The tilt shift filter ID.
  * @param blur The amount of blur to apply to the tilt shift effect.
  */
-export declare function setTiltShiftBlur(id: i32, blur: i32): void;
+export declare function setTiltShiftBlur(id: number, blur: number): void;
 /**
  * Adjust the tilt shift effect's focus point. This typically should be called
  * from the tick function to follow the player's position.
@@ -22,18 +22,18 @@ export declare function setTiltShiftBlur(id: i32, blur: i32): void;
  * @param id The tilt shift filter ID.
  * @param y The focus point (in screen space pixels) of the tilt shift effect.
  */
-export declare function setTiltShiftY(id: i32, y: f32): void;
+export declare function setTiltShiftY(id: number, y: number): void;
 
 /** Don't use these directly, use the RippleFilter class */
-export declare function addRippleFilter(opts: RippleFilterOpts): i32;
+export declare function addRippleFilter(opts: RippleFilterOpts): number;
 export declare function updateRippleFilter(
-  id: i32,
+  id: number,
   opts: RippleFilterOpts
 ): void;
 
 /** Do not use these directly. Use the ColorMatrixFilter class */
-export declare function addColorMatrix(): i32;
-export declare function setColorMatrix(id: i32, matrix: f32[]): void;
+export declare function addColorMatrix(): number;
+export declare function setColorMatrix(id: number, matrix: number[]): void;
 
 /**
  * Enable or disable a filter.
@@ -42,13 +42,4 @@ export declare function setColorMatrix(id: i32, matrix: f32[]): void;
  * @param enabled The amount to enable the filter. 0 = disabled, 1 = enabled.
  * This is a float to allow for smooth transitions.
  */
-export declare function setFilterInfluence(id: i32, enabled: f32): void;
-
-export const _keep_addTiltShift = addTiltShift;
-export const _keep_setTiltShiftBlur = setTiltShiftBlur;
-export const _keep_setTiltShiftY = setTiltShiftY;
-export const _keep_addRippleFilter = addRippleFilter;
-export const _keep_updateRippleFilter = updateRippleFilter;
-export const _keep_addColorMatrix = addColorMatrix;
-export const _keep_setColorMatrix = setColorMatrix;
-export const _keep_setFilterInfluence = setFilterInfluence;
+export declare function setFilterInfluence(id: number, enabled: number): void;

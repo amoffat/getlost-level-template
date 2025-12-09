@@ -1,45 +1,137 @@
-import { Vec2 } from "./la/vec2";
+/**
+ * Random utilities for sampling elements and indices with optional avoidance.
+ */
+
+import { type Vector } from "../api/types/vector";
+
+// NOTE: int(min,max) is defined later; functions below delegate to it to avoid duplication.
+/**
+ * Returns a random index in [0, count). If count <= 0, returns 0.
+ */
+export function randIndex(count: number): number {
+  if (count <= 0) return 0;
+  return randInt(0, count - 1);
+}
+
+/**
+ * Returns a random index in [0, count) that is NOT equal to avoidIndex.
+ * If count <= 1, returns 0. If avoidIndex is out of range, behaves like randomIndex.
+ */
+export function randIndexAvoid(
+  count: number,
+  avoidIndex?: number | null
+): number {
+  if (count <= 1) return 0;
+  const avoid =
+    typeof avoidIndex === "number" && avoidIndex >= 0 && avoidIndex < count
+      ? avoidIndex
+      : null;
+  let idx = randInt(0, count - 1);
+  if (avoid !== null && idx === avoid) {
+    idx = (idx + 1) % count;
+  }
+  return idx;
+}
+
+/**
+ * Returns a random index in [0, count) that is NOT contained in the avoid set/array.
+ * - If avoid contains all indices (size >= count), returns -1 to indicate none available.
+ * - Selection is uniform among remaining indices without allocating a full candidates array.
+ */
+export function randIndexAvoidMany(
+  count: number,
+  avoid: ReadonlySet<number> | ReadonlyArray<number>
+): number {
+  if (count <= 0) return -1;
+  let avoidSet: ReadonlySet<number>;
+  if (Array.isArray(avoid)) {
+    avoidSet = new Set<number>(avoid as ReadonlyArray<number>);
+  } else {
+    avoidSet = avoid as ReadonlySet<number>;
+  }
+  if (avoidSet.size >= count) return -1;
+
+  const remaining = count - avoidSet.size;
+  const pick = randInt(0, remaining - 1);
+  let seen = 0;
+  for (let i = 0; i < count; i++) {
+    if (!avoidSet.has(i)) {
+      if (seen === pick) return i;
+      seen++;
+    }
+  }
+  return -1; // should not happen
+}
+
+/**
+ * Pick a random element from an array. Returns undefined if the array is empty.
+ */
+export function sample<T>(arr: readonly T[]): T | undefined {
+  if (!arr.length) return undefined;
+  return arr[randInt(0, arr.length - 1)];
+}
+
+/**
+ * Pick a random element from an array that is NOT equal to `avoid`.
+ * If no such element exists, returns undefined.
+ * Equality can be customized via `eq`, which defaults to strict equality (===).
+ */
+export function sampleAvoid<T>(
+  arr: readonly T[],
+  avoid: T,
+  eq: (a: T, b: T) => boolean = (a, b) => a === b
+): T | undefined {
+  if (!arr.length) return undefined;
+  const candidates = arr.filter((x) => !eq(x, avoid));
+  if (!candidates.length) return undefined;
+  return candidates[randInt(0, candidates.length - 1)];
+}
+// Random utilities (TypeScript port of AssemblyScript utils/rand)
+// Notes:
+// - All ranges match the original semantics
+// - Angles are in radians
+// - Integer ranges are inclusive on both ends
+// - "S" variants from AssemblyScript (for StaticArray) are implemented as
+//   equivalents over regular JavaScript arrays
 
 // Basic ranges
 /**
  * Uniform float in [0, 1).
  * Useful for: generic random thresholds, mixing, probabilities.
  */
-export function float01(): f32 {
-  return Mathf.random() as f32; // [0, 1)
+export function float01(): number {
+  return Math.random(); // [0, 1)
 }
 
 /**
  * Uniform float in [min, max).
  * Useful for: random speeds, cooldown offsets, spawn positions along a span.
  */
-export function float(min: f32 = 0.0, max: f32 = 1.0): f32 {
-  // Uniform in [min, max)
-  return (min + (max - min) * float01()) as f32;
+export function randFloat(min = 0, max = 1): number {
+  return min + (max - min) * float01();
 }
 
 /**
  * Uniform integer in [min, max] (inclusive).
  * Useful for: discrete choices like tile indices, loot counts, frame IDs.
  */
-export function int(min: i32, max: i32): i32 {
-  // Uniform integer in [min, max]
+export function randInt(min: number, max: number): number {
   if (max < min) {
     const t = min;
     min = max;
     max = t;
   }
-  const span = (max - min + 1) as f32;
-  return (min + <i32>Mathf.floor(float01() * span)) as i32;
+  const span = max - min + 1;
+  return min + Math.floor(float01() * span);
 }
 
 /**
  * Bernoulli trial with probability p of true.
  * Useful for: branching behaviors, chance-based effects, rare spawns.
  */
-export function chance(p: f32): bool {
-  if (p <= 0.0) return false;
-  if (p >= 1.0) return true;
+export function chance(p: number): boolean {
+  if (p <= 0) return false;
+  if (p >= 1) return true;
   return float01() < p;
 }
 
@@ -47,7 +139,7 @@ export function chance(p: f32): bool {
  * Random sign, returns -1 or 1 with equal probability.
  * Useful for: randomizing left/right or up/down directions.
  */
-export function sign(): i32 {
+export function sign(): number {
   return float01() < 0.5 ? -1 : 1;
 }
 
@@ -56,40 +148,36 @@ export function sign(): i32 {
  * Random angle in radians in [0, 2π).
  * Useful for: radial emission, random facing, circular patterns.
  */
-export function angle(): f32 {
-  // Radians in [0, 2π)
-  return (float01() * 2.0 * Mathf.PI) as f32;
+export function angle(): number {
+  return float01() * 2 * Math.PI;
 }
 
 /**
  * Random unit vector on the circle perimeter (uniform over angle).
  * Useful for: bullet spread directions, burst effects, wandering headings.
  */
-export function onUnitCircle(): Vec2 {
+export function onUnitCircle(): Vector {
   const a = angle();
-  return new Vec2(Mathf.cos(a), Mathf.sin(a));
+  return { x: Math.cos(a), y: Math.sin(a) };
 }
 
 /**
  * Random point uniformly inside the unit disk (area-weighted).
  * Useful for: particle spawn regions, splash decals, noise offsets.
  */
-export function inUnitCircle(): Vec2 {
-  // Uniform over area: r = sqrt(u)
+export function inUnitCircle(): Vector {
   const a = angle();
-  const r = Mathf.sqrt(float01());
-  return new Vec2(r * Mathf.cos(a), r * Mathf.sin(a));
+  const r = Math.sqrt(float01());
+  return { x: r * Math.cos(a), y: r * Math.sin(a) };
 }
 
 /**
  * Random point uniformly inside a circle with given radius.
  * Useful for: spawn jitter around a point, AoE placement, flock dispersion.
  */
-export function inCircle(radius: f32 = 1.0): Vec2 {
+export function inCircle(radius = 1): Vector {
   const v = inUnitCircle();
-  v.x *= radius;
-  v.y *= radius;
-  return v;
+  return { x: v.x * radius, y: v.y * radius };
 }
 
 /**
@@ -97,8 +185,7 @@ export function inCircle(radius: f32 = 1.0): Vec2 {
  * Uses area-correct radius r = sqrt(u*(R^2 - r0^2) + r0^2), angle ~ Uniform[0, 2π).
  * Useful for: donut-shaped spawns, keeping a minimum distance from a center.
  */
-export function inRing(minRadius: f32, maxRadius: f32): Vec2 {
-  // Normalize radii
+export function inRing(minRadius: number, maxRadius: number): Vector {
   let r0 = minRadius;
   let r1 = maxRadius;
   if (r1 < r0) {
@@ -106,77 +193,69 @@ export function inRing(minRadius: f32, maxRadius: f32): Vec2 {
     r0 = r1;
     r1 = t;
   }
-  if (r0 < 0.0) r0 = 0.0;
-  if (r1 < 0.0) r1 = 0.0;
+  if (r0 < 0) r0 = 0;
+  if (r1 < 0) r1 = 0;
 
   const a = angle();
   const u = float01();
-  const r = Mathf.sqrt(u * (r1 * r1 - r0 * r0) + r0 * r0);
-  return new Vec2(r * Mathf.cos(a), r * Mathf.sin(a));
+  const r = Math.sqrt(u * (r1 * r1 - r0 * r0) + r0 * r0);
+  return { x: r * Math.cos(a), y: r * Math.sin(a) };
 }
 
 /**
  * Add symmetric scalar noise in [-amount, amount).
  * Useful for: slight timing/position/velocity variation, hand-feel.
  */
-export function jitter(v: f32, amount: f32): f32 {
-  // Add symmetric noise in [-amount, amount)
-  return (v + (float01() * 2.0 - 1.0) * amount) as f32;
+export function jitter(v: number, amount: number): number {
+  return v + (float01() * 2 - 1) * amount;
 }
 
 /**
  * Offset a vector by a random vector within a circle of given radius.
  * Useful for: randomizing spawn locations, impact scatter, flock jitter.
  */
-export function jitterVec2(vec: Vec2, radius: f32): Vec2 {
-  // Offset by a random vector uniformly within a circle of given radius
+export function jitterVec2(vec: Vector, radius: number): Vector {
   const j = inCircle(radius);
-  return new Vec2((vec.x + j.x) as f32, (vec.y + j.y) as f32);
+  return { x: vec.x + j.x, y: vec.y + j.y };
 }
 
 // Distributions
 // Gaussian using Box–Muller transform with caching.
 let _gaussHasSpare = false;
-let _gaussSpare: f32 = 0.0;
+let _gaussSpare = 0;
 
 /**
  * Gaussian/normal deviate N(mean, stddev^2) via Box–Muller (cached).
  * Useful for: natural variation (accuracy spread, speed variance, noise).
  */
-export function gaussian(mean: f32 = 0.0, stddev: f32 = 1.0): f32 {
-  // Returns N(mean, stddev^2)
+export function gaussian(mean = 0, stddev = 1): number {
   if (_gaussHasSpare) {
     _gaussHasSpare = false;
-    return (mean + stddev * _gaussSpare) as f32;
+    return mean + stddev * _gaussSpare;
   }
 
-  // Two uniforms in (0, 1]
-  let u: f32 = 0.0;
-  let v: f32 = 0.0;
+  let u = 0;
+  let v = 0;
   // Avoid 0 for log
   do {
-    u = (1.0 - float01()) as f32; // (0, 1]
-    v = (1.0 - float01()) as f32; // (0, 1]
-  } while (u <= 0.0 || v <= 0.0);
+    u = 1 - float01(); // (0, 1]
+    v = 1 - float01(); // (0, 1]
+  } while (u <= 0 || v <= 0);
 
-  const mag = Mathf.sqrt((-2.0 * Mathf.log(u)) as f32);
-  const z0 = (mag * Mathf.cos(2.0 * Mathf.PI * v)) as f32;
-  const z1 = (mag * Mathf.sin(2.0 * Mathf.PI * v)) as f32;
+  const mag = Math.sqrt(-2.0 * Math.log(u));
+  const z0 = mag * Math.cos(2.0 * Math.PI * v);
+  const z1 = mag * Math.sin(2.0 * Math.PI * v);
   _gaussSpare = z1;
   _gaussHasSpare = true;
-  return (mean + stddev * z0) as f32;
+  return mean + stddev * z0;
 }
 
 /**
  * 2D vector with independent Gaussian components.
  * Useful for: random movement drift, aim shake, wind gust components.
  */
-export function gaussianVec2(
-  meanX: f32 = 0.0,
-  meanY: f32 = 0.0,
-  std: f32 = 1.0
-): Vec2 {
-  return new Vec2(gaussian(meanX, std), gaussian(meanY, std));
+export function gaussianVec2(meanX = 0, meanY = 0, std = 1): Vector {
+  return { x: gaussian(meanX, std), y: gaussian(meanY, std) };
 }
 
 /**
@@ -184,17 +263,16 @@ export function gaussianVec2(
  * Useful for: biased ranges (e.g., favoring near-middle or near-min/max).
  */
 export function triangular(
-  min: f32,
-  max: f32,
-  mode: f32 = ((min + max) * 0.5) as f32
-): f32 {
-  // Piecewise linear distribution peaking at mode
+  min: number,
+  max: number,
+  mode: number = (min + max) * 0.5
+): number {
   const u = float01();
-  const c = ((mode - min) / (max - min)) as f32;
+  const c = (mode - min) / (max - min);
   if (u < c) {
-    return (min + Mathf.sqrt(u * (max - min) * (mode - min))) as f32;
+    return min + Math.sqrt(u * (max - min) * (mode - min));
   } else {
-    return (max - Mathf.sqrt((1.0 - u) * (max - min) * (max - mode))) as f32;
+    return max - Math.sqrt((1 - u) * (max - min) * (max - mode));
   }
 }
 
@@ -202,13 +280,12 @@ export function triangular(
  * Exponential distribution with rate λ (mean 1/λ).
  * Useful for: random time gaps (e.g., Poisson-like events, spawns over time).
  */
-export function exponential(lambda: f32 = 1.0): f32 {
-  // Mean = 1/lambda
-  let u: f32 = 0.0;
+export function exponential(lambda = 1): number {
+  let u = 0;
   do {
     u = float01();
-  } while (u <= 0.0);
-  return (-Mathf.log(u) / lambda) as f32;
+  } while (u <= 0);
+  return -Math.log(u) / lambda;
 }
 
 // Weighted sampling
@@ -216,81 +293,61 @@ export function exponential(lambda: f32 = 1.0): f32 {
  * Pick an index from non-negative weights (Array). Returns -1 if all zero.
  * Useful for: loot tables, AI decision weights, animation blend choices.
  */
-export function weightedIndex(weights: Array<f32>): i32 {
-  let total: f32 = 0.0;
-  for (let i = 0; i < weights.length; i++) total += weights[i];
-  if (total <= 0.0) return -1;
-  const r = float(0.0, total);
-  let acc: f32 = 0.0;
+export function weightedIndex(weights: ReadonlyArray<number>): number {
+  let total = 0;
+  for (let i = 0; i < weights.length; i++) total += weights[i]!;
+  if (total <= 0) return -1;
+  const r = randFloat(0, total);
+  let acc = 0;
   for (let i = 0; i < weights.length; i++) {
-    acc += weights[i];
-    if (r < acc) return i as i32;
+    acc += weights[i]!;
+    if (r < acc) return i;
   }
-  return (weights.length - 1) as i32;
+  return weights.length - 1;
 }
 
 /**
- * Pick an index from non-negative weights (StaticArray). Returns -1 if all zero.
+ * Pick an index from non-negative weights (StaticArray equivalent). Returns -1 if all zero.
  * Useful for: fixed-size tables, performance-critical sampling.
  */
-export function weightedIndexS(weights: StaticArray<f32>): i32 {
-  let total: f32 = 0.0;
-  for (let i = 0; i < weights.length; i++) total += weights[i];
-  if (total <= 0.0) return -1;
-  const r = float(0.0, total);
-  let acc: f32 = 0.0;
-  for (let i = 0; i < weights.length; i++) {
-    acc += weights[i];
-    if (r < acc) return i as i32;
-  }
-  return (weights.length - 1) as i32;
-}
+export const weightedIndexS = weightedIndex;
 
 /**
  * Choose a random element from a non-empty Array.
  * Useful for: picking random prefab, sound, or waypoint.
  */
-export function choose<T>(arr: Array<T>): T {
+export function choose<T>(arr: ReadonlyArray<T>): T {
   if (arr.length === 0) throw new Error("choose() on empty array");
-  return arr[int(0, arr.length - 1)];
+  // Delegate to sample to keep a single selection logic
+  const v = sample(arr);
+  // sample on non-empty array always returns a value
+  return v as T;
 }
 
 /**
- * Choose a random element from a non-empty StaticArray.
+ * Choose a random element from a non-empty StaticArray equivalent.
  * Useful for: fixed pools like preallocated particles or colors.
  */
-export function chooseS<T>(arr: StaticArray<T>): T {
-  if (arr.length === 0) throw new Error("chooseS() on empty array");
-  return arr[int(0, arr.length - 1)];
-}
+export const chooseS = choose as <T>(arr: ReadonlyArray<T>) => T;
 
 // Shuffles (Fisher–Yates)
 /**
  * In-place Fisher–Yates shuffle for Array.
  * Useful for: randomizing spawn order, deck of cards, path permutations.
  */
-export function shuffle<T>(arr: Array<T>): void {
+export function shuffle<T>(arr: T[]): void {
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = int(0, i);
+    const j = randInt(0, i);
     if (j !== i) {
-      const tmp = arr[i];
-      arr[i] = arr[j];
+      const tmp = arr[i]!;
+      arr[i] = arr[j]!;
       arr[j] = tmp;
     }
   }
 }
 
 /**
- * In-place Fisher–Yates shuffle for StaticArray.
+ * In-place Fisher–Yates shuffle for StaticArray equivalent.
  * Useful for: randomizing fixed buffers like tile variants or color ramps.
  */
-export function shuffleS<T>(arr: StaticArray<T>): void {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = int(0, i);
-    if (j !== i) {
-      const tmp = arr[i];
-      arr[i] = arr[j];
-      arr[j] = tmp;
-    }
-  }
-}
+export const shuffleS = shuffle as <T>(arr: T[]) => void;

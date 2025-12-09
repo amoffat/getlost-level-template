@@ -6,7 +6,7 @@
  * @param tileset The tileset name of the tile to change.
  * @param id The new tile id to change the tile to.
  */
-export declare function change(uid: u32, tileset: string, id: u32): void;
+export declare function change(uid: number, tileset: string, id: number): void;
 
 /**
  * Plays an animated tile.
@@ -16,7 +16,7 @@ export declare function change(uid: u32, tileset: string, id: u32): void;
  * @param animName The name of the animation to play.
  */
 export declare function playAnimation(
-  uid: u32,
+  uid: number,
   tileset: string,
   animName: string
 ): void;
@@ -26,22 +26,16 @@ export declare function playAnimation(
  * @param uid The unique identifier of the tile
  * @param tint The tint color
  */
-export declare function setTint(uid: u32, tint: u32): void;
+export declare function setTint(uid: number, tint: number): void;
 
 export declare function getTiles(
   tileset: string,
-  tileId: u32,
+  tileId: number,
   layerNames: string[]
-): u32[];
+): number[];
 
 /**
  * @param name The name of the object tile to toggle
  * @param enabled Whether the tile should be enabled or disabled
  */
-export declare function toggle(name: string, enabled: bool): void;
-
-export const _keep_setTint = setTint;
-export const _keep_change = change;
-export const _keep_playAnimation = playAnimation;
-export const _keep_getTiles = getTiles;
-export const _keep_toggle = toggle;
+export declare function toggle(name: string, enabled: boolean): void;

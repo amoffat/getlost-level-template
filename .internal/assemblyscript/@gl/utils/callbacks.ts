@@ -1,7 +1,5 @@
 // A helper that allows you to add and remove listeners from an array of
 
-import { VoidFunction } from "../types/void";
-
 // callbacks.
 export function addListener<T extends Function>(
   callbacks: T[],

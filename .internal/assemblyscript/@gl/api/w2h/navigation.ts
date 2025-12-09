@@ -1,4 +1,4 @@
-import { Vector } from "../types/vector";
+import { type Vector } from "../types/vector";
 import { Waypoint } from "../types/waypoint";
 
 export declare function getWaypoint(name: string): Waypoint;
@@ -6,11 +6,7 @@ export declare function findPath(
   key: string,
   startPos: Vector,
   endPos: Vector,
-  nearestIsOk: bool,
-  max: f32
-): Vector[];
+  nearestIsOk: boolean,
+  max: number
+): Promise<Vector[]>;
 export declare function clearPath(key: string): void;
-
-export const _keep_getWaypoint = getWaypoint;
-export const _keep_findPath = findPath;
-export const _keep_clearPath = clearPath;

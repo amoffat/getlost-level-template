@@ -13,7 +13,5 @@ export declare function display(
   msg: string,
   choices: string[],
   params: string[],
-  animate: bool
+  animate: boolean
 ): void;
-
-export const _keep_display = display;

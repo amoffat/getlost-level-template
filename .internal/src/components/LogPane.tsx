@@ -213,14 +213,14 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
     };
   }, [addMessage]);
 
-  // This connects our log pane to a custom event emitted from our Vite WASM
-  // plugin
+  // This connects our log pane to a custom event emitted from our Vite rollup
+  // bundler plugin
   useEffect(() => {
     if (import.meta.hot) {
-      import.meta.hot.on("gl:wasm-compiler", addMessage);
+      import.meta.hot.on("gl:level-bundler", addMessage);
 
       return () => {
-        import.meta.hot!.off("gl:wasm-compiler", addMessage);
+        import.meta.hot!.off("gl:level-bundler", addMessage);
       };
     }
   }, [addMessage]);

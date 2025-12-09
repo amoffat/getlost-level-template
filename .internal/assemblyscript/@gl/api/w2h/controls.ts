@@ -6,5 +6,3 @@ import { Button } from "../types/controls";
  * @param buttons The list of buttons to set in the UI.
  */
 export declare function setButtons(buttons: Button[]): void;
-
-export const _keep_setButtons = setButtons;

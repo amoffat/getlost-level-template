@@ -1,14 +1,21 @@
 import { Vec2 } from "./vec2";
 
 export class Matrix {
-  a: f32 = 1.0;
-  b: f32 = 0.0;
-  c: f32 = 0.0;
-  d: f32 = 1.0;
-  tx: f32 = 0.0;
-  ty: f32 = 0.0;
+  a: number = 1.0;
+  b: number = 0.0;
+  c: number = 0.0;
+  d: number = 1.0;
+  tx: number = 0.0;
+  ty: number = 0.0;
 
-  set(m11: f32, m12: f32, m21: f32, m22: f32, dx: f32, dy: f32): void {
+  set(
+    m11: number,
+    m12: number,
+    m21: number,
+    m22: number,
+    dx: number,
+    dy: number
+  ): void {
     this.a = m11;
     this.b = m12;
     this.c = m21;
@@ -45,9 +52,9 @@ export class Matrix {
     this.d *= scale.y;
   }
 
-  rotate(angle: f32): void {
-    const cos = Mathf.cos(angle);
-    const sin = Mathf.sin(angle);
+  rotate(angle: number): void {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
 
     const m11 = this.a * cos + this.b * sin;
     const m12 = -this.a * sin + this.b * cos;

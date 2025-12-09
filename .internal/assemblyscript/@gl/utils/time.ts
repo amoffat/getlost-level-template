@@ -78,5 +78,5 @@ export function isEvening(time: SunEvent): boolean {
 }
 
 export function prevSunEvent(time: SunEvent): SunEvent {
-  return mod((time as i32) - 1, 14) as SunEvent;
+  return mod((time as number) - 1, 14) as SunEvent;
 }

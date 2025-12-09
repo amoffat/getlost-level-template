@@ -1,10 +1,14 @@
 import * as filters from "../api/w2h/filters";
 
-type ColorMatrix = f32[];
+// prettier-ignore
+type ColorMatrix = [number, number, number, number, number,
+                    number, number, number, number, number,
+                    number, number, number, number, number,
+                    number, number, number, number, number];
 
 export class ColorMatrixFilter {
   private _matrix: ColorMatrix;
-  private _id: i32;
+  private _id: number;
 
   constructor() {
     // prettier-ignore
@@ -17,7 +21,7 @@ export class ColorMatrixFilter {
     this._id = filters.addColorMatrix();
   }
 
-  set influence(amt: f32) {
+  set influence(amt: number) {
     filters.setFilterInfluence(this._id, amt);
   }
 
@@ -34,7 +38,7 @@ export class ColorMatrixFilter {
     this._sync();
   }
 
-  public brightness(b: f32, multiply: boolean = false): void {
+  public brightness(b: number, multiply: boolean = false): void {
     // prettier-ignore
     const matrix: ColorMatrix = [
         b, 0, 0, 0, 0,
@@ -46,7 +50,7 @@ export class ColorMatrixFilter {
     this._loadMatrix(matrix, multiply);
   }
 
-  public greyscale(scale: f32, multiply: boolean = false): void {
+  public greyscale(scale: number, multiply: boolean = false): void {
     // prettier-ignore
     const matrix: ColorMatrix = [
         scale, scale, scale, 0, 0,
@@ -58,7 +62,12 @@ export class ColorMatrixFilter {
     this._loadMatrix(matrix, multiply);
   }
 
-  public tint(r: f32, g: f32, b: f32, multiply: boolean = false): void {
+  public tint(
+    r: number,
+    g: number,
+    b: number,
+    multiply: boolean = false
+  ): void {
     // prettier-ignore
     const matrix: ColorMatrix = [
         r, 0, 0, 0, 0,
@@ -70,7 +79,12 @@ export class ColorMatrixFilter {
     this._loadMatrix(matrix, multiply);
   }
 
-  public overlay(r: f32, g: f32, b: f32, multiply: boolean = false): void {
+  public overlay(
+    r: number,
+    g: number,
+    b: number,
+    multiply: boolean = false
+  ): void {
     // prettier-ignore
     const matrix: ColorMatrix = [
         1-r, 0, 0, 0, r,
@@ -94,9 +108,9 @@ export class ColorMatrixFilter {
     this._loadMatrix(matrix, multiply);
   }
 
-  public contrast(amount: f32, multiply: boolean = false): void {
-    const v: f32 = (amount || 0) + 1;
-    const o: f32 = -0.5 * (v - 1);
+  public contrast(amount: number, multiply: boolean = false): void {
+    const v: number = (amount || 0) + 1;
+    const o: number = -0.5 * (v - 1);
 
     // prettier-ignore
     const matrix: ColorMatrix = [
@@ -181,7 +195,7 @@ export class ColorMatrixFilter {
     this._loadMatrix(matrix, multiply);
   }
 
-  public hue(rotation: f32, multiply: boolean = false): void {
+  public hue(rotation: number, multiply: boolean = false): void {
     const rad = ((rotation || 0) / 180) * Math.PI;
     const cosR = Math.cos(rad);
     const sinR = Math.sin(rad);
@@ -197,7 +211,7 @@ export class ColorMatrixFilter {
     this._loadMatrix(matrix, multiply);
   }
 
-  public saturate(amount: f32, multiply: boolean = false): void {
+  public saturate(amount: number, multiply: boolean = false): void {
     const x = (amount * 2) / 3 + 1;
     const y = (x - 1) * -0.5;
 
@@ -216,7 +230,7 @@ export class ColorMatrixFilter {
     this.saturate(-1, multiply);
   }
 
-  public night(intensity: f32, multiply: boolean = false): void {
+  public night(intensity: number, multiply: boolean = false): void {
     intensity = intensity || 0.1;
     // prettier-ignore
     const matrix: ColorMatrix = [
@@ -229,7 +243,7 @@ export class ColorMatrixFilter {
     this._loadMatrix(matrix, multiply);
   }
 
-  public predator(amount: f32, multiply: boolean = false): void {
+  public predator(amount: number, multiply: boolean = false): void {
     // prettier-ignore
     const matrix: ColorMatrix = [
         11.224130630493164 * amount, -4.794486999511719 * amount, -2.8746118545532227 * amount, 0, 0.40342438220977783 * amount,

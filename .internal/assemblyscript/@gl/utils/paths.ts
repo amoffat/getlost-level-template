@@ -1,9 +1,9 @@
 import { Vec2 } from "./la/vec2";
 
-export class TrackResult {
-  index: i32 = -1;
-  distance: f32 = 0;
-  t: f32 = 0;
+export interface TrackResult {
+  index: number;
+  distance: number;
+  t: number;
 }
 
 /**
@@ -22,14 +22,14 @@ export function deriveTargetIndex(pos: Vec2, path: Vec2[]): TrackResult {
   if (path.length === 1) return { index: 0, distance: 0, t: 0 };
 
   // 1) Find the closest point on the polyline and the segment it lies on.
-  let bestSeg: i32 = 0; // segment start index (segment is [i, i+1])
-  let bestT: f32 = 0.0; // param along the best segment in [0, 1]
-  let bestDist: f32 = 1e30; // large sentinel
+  let bestSeg: number = 0; // segment start index (segment is [i, i+1])
+  let bestT: number = 0.0; // param along the best segment in [0, 1]
+  let bestDist: number = 1e30; // large sentinel
 
-  for (let i: i32 = 0; i < path.length - 1; i++) {
+  for (let i: number = 0; i < path.length - 1; i++) {
     // Consider the segment [a, b]
-    const a = path[i];
-    const b = path[i + 1];
+    const a = path[i]!;
+    const b = path[i + 1]!;
 
     // ab is the segment direction vector, ap is the vector from a to the current position
     const ab = b.subbed(a);
@@ -37,7 +37,7 @@ export function deriveTargetIndex(pos: Vec2, path: Vec2[]): TrackResult {
 
     // Squared length of the segment (avoids a costly sqrt). Used to normalize the projection
     const abLen2 = ab.dot(ab);
-    let t: f32 = 0.0;
+    let t: number = 0.0;
 
     if (abLen2 > 0) {
       // Project ap onto ab to get the parametric position along the infinite line
@@ -65,14 +65,14 @@ export function deriveTargetIndex(pos: Vec2, path: Vec2[]): TrackResult {
 
   // 2) Base target index is the end of the closest segment.
   //    This biases forward progress (avoids bouncing back to the previous node).
-  let idx: i32 = bestSeg + (bestT > 0.0 ? 1 : 0);
+  let idx: number = bestSeg + (bestT > 0.0 ? 1 : 0);
 
   // 3) Look-ahead: if we're close enough to the current target, advance.
   //    Threshold scales with the next segment length.
   while (idx < path.length - 1) {
-    const segLen = path[idx].distanceTo(path[idx + 1]);
-    const advanceThreshold: f32 = Mathf.max(0.1, segLen * 0.25);
-    if (pos.distanceTo(path[idx]) <= advanceThreshold) {
+    const segLen = path[idx]!.distanceTo(path[idx + 1]!);
+    const advanceThreshold: number = Math.max(0.1, segLen * 0.25);
+    if (pos.distanceTo(path[idx]!) <= advanceThreshold) {
       idx++;
     } else {
       break;

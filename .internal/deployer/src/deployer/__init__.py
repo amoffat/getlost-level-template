@@ -80,7 +80,7 @@ def put_level(
     return f"{level_id}-{commit}"
 
 
-def collect_wasm(
+def collect_bundle(
     *,
     level_dir: Path,
     tar: tarfile.TarFile,
@@ -239,7 +239,7 @@ def main():
     # Create a single tar.gz file for both wasm and art
     with tempfile.NamedTemporaryFile(delete=False, suffix=".tar.gz") as temp_gz:
         with tarfile.open(temp_gz.name, "w:gz") as tar:
-            collect_wasm(
+            collect_bundle(
                 tar=tar,
                 level_dir=args.level,
                 metadata={

@@ -1,52 +1,51 @@
-import * as host from "../api/w2h/host";
+import * as map from "../api/w2h/map";
+import * as markers from "../api/w2h/markers";
+import * as pickup from "../api/w2h/pickup";
+import * as time from "../api/w2h/time";
 import * as timeUtils from "../utils/time";
 
-const visitCount = new Map<string, u32>();
+const visitCount = new Map<string, number>();
 
-export function isNight(): bool {
-  const ev = host.time.getSunEvent();
+export function isNight(): boolean {
+  const ev = time.getSunEvent();
   return timeUtils.isNight(ev);
 }
 
-export function isDay(): bool {
-  const ev = host.time.getSunEvent();
+export function isDay(): boolean {
+  const ev = time.getSunEvent();
   return timeUtils.isDay(ev);
 }
 
-export function random(min: i32, max: i32): i32 {
-  return Math.floor((Math.random() * (max - min + 1)) as f32) + min;
+export function random(min: number, max: number): number {
+  return Math.floor((Math.random() * (max - min + 1)) as number) + min;
 }
 
-export function randomFloat(min: f32, max: f32): f32 {
+export function randomFloat(min: number, max: number): number {
   return Math.random() * (max - min) + min;
 }
 
 export function either<T>(options: T[]): T {
-  const idx = Math.floor(Math.random() * options.length) as u32;
-  return options[idx];
+  const idx = Math.floor(Math.random() * options.length) as number;
+  return options[idx]!;
 }
 
 export function recordMarker(slug: string): void {
-  host.markers.record(slug, true);
+  markers.record(slug, true);
 }
 
-export function queryMarker(name: string): bool {
-  return host.markers.query(name, true);
+export function queryMarker(name: string): Promise<boolean> {
+  return markers.query(name, true);
 }
 
-export function visited(id: string): u32 {
-  if (!visitCount.has(id)) {
-    return 0;
-  }
-  const count = visitCount.get(id);
-  return count;
+export function visited(id: string): number {
+  return visitCount.get(id) ?? 0;
 }
 
-export function hasVisited(id: string): bool {
+export function hasVisited(id: string): boolean {
   return visited(id) > 1;
 }
 
-export function lastVisited(passage: string): u32 {
+export function lastVisited(passage: string): number {
   return 0;
 }
 
@@ -54,13 +53,13 @@ export function incrementVisitCount(id: string): void {
   if (!visitCount.has(id)) {
     visitCount.set(id, 0);
   }
-  visitCount.set(id, visitCount.get(id) + 1);
+  visitCount.set(id, visitCount.get(id)! + 1);
 }
 
-export function exit(name: string, force: bool = false): bool {
-  return host.map.exit(name, force);
+export function exit(name: string, force: boolean = false): Promise<boolean> {
+  return map.exit(name, force);
 }
 
-export function hasPickup(tag: string): bool {
-  return host.pickup.query(tag);
+export function hasPickup(tag: string): Promise<boolean> {
+  return pickup.query(tag);
 }

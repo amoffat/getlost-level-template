@@ -1,7 +1,7 @@
 export class SetAnimationOpts {
   name!: string;
-  loop: bool = false;
+  loop: boolean = false;
   /** How long the whole animation should take. If negative, use the native
    * animation duration. */
-  durationMs: f32 = -1;
+  durationMs: number = -1;
 }

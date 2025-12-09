@@ -1,44 +1,38 @@
 export declare function setProgressBar(
-  col: u32,
-  row: u32,
+  col: number,
+  row: number,
   label: string,
-  value: f32,
+  value: number,
   color: string
 ): void;
 
 // Not implemented yet
 export declare function setNumeric(
-  col: u32,
-  row: u32,
+  col: number,
+  row: number,
   label: string,
-  value: i32
+  value: number
 ): void;
 
 // Not implemented yet
 export declare function setTimer(
   name: string,
-  col: u32,
-  row: u32,
+  col: number,
+  row: number,
   label: string,
-  initialTime: f32,
+  initialTime: number,
   countDown: boolean,
-  targetTime: f32,
+  targetTime: number,
   showMilliseconds: boolean
 ): void;
 
 export declare function setRating(
-  col: u32,
-  row: u32,
-  value: f32,
-  max: f32,
+  col: number,
+  row: number,
+  value: number,
+  max: number,
   iconClass: string,
   color: string
 ): void;
 
-export declare function clearElement(col: u32, row: u32): void;
-
-export const _keep_setProgressBar = setProgressBar;
-export const _keep_setNumeric = setNumeric;
-export const _keep_setTimer = setTimer;
-export const _keep_setRating = setRating;
-export const _keep_clearElement = clearElement;
+export declare function clearElement(col: number, row: number): void;

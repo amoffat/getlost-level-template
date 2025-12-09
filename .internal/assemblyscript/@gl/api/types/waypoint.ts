@@ -1,4 +1,4 @@
-import { Vector } from "./vector";
+import { type Vector } from "./vector";
 
 export class Waypoint {
   pos!: Vector;

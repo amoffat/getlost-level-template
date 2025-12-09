@@ -1,7 +1,7 @@
-import { CharAction } from "../../utils/character";
-import { SetAnimationOpts } from "../types/animation";
-import { CharProps } from "../types/char";
-import { Vector } from "../types/vector";
+import type { CharAction } from "../../utils/character";
+import type { SetAnimationOpts } from "../types/animation";
+import type { CharProps } from "../types/char";
+import type { Vector } from "../types/vector";
 
 /**
  * Fetches the merged stack of properties for a character. This is currently
@@ -12,44 +12,29 @@ import { Vector } from "../types/vector";
  */
 export declare function getMoveProps(charName: string): CharProps;
 export declare function getPos(charName: string): Vector;
-export declare function setPos(charName: string, x: f32, y: f32): void;
-export declare function setSpeed(charName: string, speed: f32): void;
+export declare function setPos(charName: string, x: number, y: number): void;
+export declare function setSpeed(charName: string, speed: number): void;
 export declare function setAction(charName: string, anim: CharAction): void;
-export declare function setZIndex(charName: string, z: f32): void;
-export declare function setPivot(charName: string, x: f32, y: f32): void;
-export declare function toggle(name: string, enabled: bool): void;
+export declare function setZIndex(charName: string, z: number): void;
+export declare function setPivot(charName: string, x: number, y: number): void;
+export declare function toggle(name: string, enabled: boolean): void;
 export declare function setAnimation(
-  refId: i32,
+  refId: number,
   name: string,
   opts: SetAnimationOpts
 ): void;
 export declare function checkCollision(
   charName: string,
-  posX: f32,
-  posY: f32,
-  translationX: f32,
-  translationY: f32
-): f32[];
+  posX: number,
+  posY: number,
+  translationX: number,
+  translationY: number
+): Vector;
 export declare function setMoveSound(
   name: string,
   sound: string,
-  volume: f32,
-  onlyWhileMoving: bool
+  volume: number,
+  onlyWhileMoving: boolean
 ): void;
-export declare function makeCollidable(name: string, enabled: bool): void;
+export declare function makeCollidable(name: string, enabled: boolean): void;
 export declare function getAll(): string[];
-
-export const _keep_checkCollision = checkCollision;
-export const _keep_toggleNPC = toggle;
-export const _keep_setAnimation = setAnimation;
-
-export const _keep_getMoveProps = getMoveProps;
-export const _keep_getPos = getPos;
-export const _keep_setPos = setPos;
-export const _keep_setPivot = setPivot;
-export const _keep_setZIndex = setZIndex;
-export const _keep_setAction = setAction;
-export const _keep_setSpeed = setSpeed;
-
-export const _keep_makeCollidable = makeCollidable;
-export const _keep_getAll = getAll;

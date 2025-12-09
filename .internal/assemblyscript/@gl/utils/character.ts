@@ -1,9 +1,12 @@
-import * as host from "../api/w2h/host";
+import * as char from "../api/w2h/char";
+import * as log from "../api/w2h/log";
+import * as navigation from "../api/w2h/navigation";
+
 import { Delay } from "./delay";
 import * as easing from "./easing";
 import { Vec2 } from "./la/vec2";
 import { NavPlan, StationaryPlan } from "./navigation";
-import { deriveTargetIndex, TrackResult } from "./paths";
+import { deriveTargetIndex, type TrackResult } from "./paths";
 import { Waypoint } from "./waypoint";
 
 export enum Direction {
@@ -23,11 +26,10 @@ export enum CharAction {
   HurtRight,
 }
 
-@lazy
 const all: Map<string, Character> = new Map();
-const stuckTRate: f32 = 0.1; // T units per second
-const stuckTimeout: f32 = 2000; // ms
-const baseMoveForce: f32 = 10000;
+const stuckTRate: number = 0.1; // T units per second
+const stuckTimeout: number = 2000; // ms
+const baseMoveForce: number = 10000;
 
 enum NavState {
   stopped,
@@ -39,35 +41,35 @@ export class Character {
   private _pos: Vec2 = new Vec2(0, 0);
   private _velocity: Vec2 = new Vec2(0, 0);
   public direction: Vec2 = new Vec2(0, 0);
-  public speed: f32 = 1.0;
-  private _navSpeed: f32 = 1.0;
+  public speed: number = 1.0;
+  private _navSpeed: number = 1.0;
   private _state: NavState = NavState.stopped;
   private _moveForce: Vec2 = Vec2.fromVal(baseMoveForce);
-  public mass: f32 = 50;
+  public mass: number = 50;
   public maxVelocity: Vec2 = Vec2.fromMagnitude(100);
   private _action: CharAction = CharAction.Idle;
   public name: string;
-  private _isPlayer: bool = false;
-  private _visible: bool = true;
+  private _isPlayer: boolean = false;
+  private _visible: boolean = true;
 
   private _navPlan: NavPlan;
 
   private _sourcePos: Vec2 = new Vec2(0, 0);
   private _targetPos: Vec2 = new Vec2(0, 0);
   private _targetPath: Vec2[] = [];
-  private _targetPathLen: f32 = 0; // total length of the target path
-  private _stuckTimer: f32 = 0;
+  private _targetPathLen: number = 0; // total length of the target path
+  private _stuckTimer: number = 0;
   private _lastTrackResult: TrackResult = { index: -1, distance: 0, t: 0 };
   private _waypointPause: Delay = new Delay(1000, 0, true);
-  public startWalkMomentum: f32 = 5;
-  public endWalkMomentum: f32 = 15;
+  public startWalkMomentum: number = 5;
+  public endWalkMomentum: number = 15;
 
   // When an action is set, it can persist, overriding walk action changes.
   private _persistAction: Delay = new Delay(0);
 
   constructor(name: string) {
     this.name = name;
-    const initialPos = host.char.getPos(name);
+    const initialPos = char.getPos(name);
     this._navPlan = new StationaryPlan(initialPos);
     this._pos = Vec2.fromVector(initialPos);
     this._sourcePos = this._pos;
@@ -77,23 +79,24 @@ export class Character {
   }
 
   static initAll(): void {
-    const names = host.char.getAll();
-    for (let i = 0; i < names.length; i++) {
-      new Character(names[i]);
+    const names = char.getAll();
+    log.info(`Found characters: ${JSON.stringify(names)}`);
+    // log.info(`Initializing characters: ${names.join(", ")}`);
+    for (const name of names) {
+      new Character(name);
     }
   }
 
   static get(name: string): Character {
     if (!all.has(name)) {
-      host.log.error(`No character named ${name}`);
+      log.error(`No character named ${name}`);
     }
-    return all.get(name);
+    return all.get(name)!;
   }
 
-  static tickAll(deltaMS: f32): void {
-    const chars = all.values();
-    for (let i = 0; i < chars.length; i++) {
-      chars[i].tick(deltaMS);
+  static tickAll(deltaMS: number): void {
+    for (const char of all.values()) {
+      char.tick(deltaMS);
     }
   }
 
@@ -122,26 +125,27 @@ export class Character {
     return this._action;
   }
 
-  public setAction(newAction: CharAction, time: f32 = -1): void {
+  public setAction(newAction: CharAction, time: number = -1): void {
     if (this._action === newAction) return;
     if (!this._persistAction.done) return;
 
     this._action = newAction;
     this._persistAction = new Delay(time);
-    host.char.setAction(this.name, this._action);
+    char.setAction(this.name, this._action);
   }
 
-  set collisions(enabled: bool) {
-    host.char.makeCollidable(this.name, enabled);
+  set collisions(enabled: boolean) {
+    char.makeCollidable(this.name, enabled);
   }
 
-  setNavPlan(navPlan: NavPlan, navImmediately: bool = true): void {
+  setNavPlan(navPlan: NavPlan, navImmediately: boolean = true): void {
     this._navPlan = navPlan;
-    
+
     if (navImmediately) {
       this.state = NavState.waiting;
-      const wp = navPlan.getNextWaypoint(this.pos);
-      this._setNavWaypoint(wp);
+      navPlan.getNextWaypoint(this.pos).then((wp) => {
+        this._setNavWaypoint(wp);
+      });
     }
   }
 
@@ -150,7 +154,7 @@ export class Character {
       const hasPath = this.setTargetPos(wp.pos, wp.nearestIsOk);
       this._navSpeed = wp.speed;
       if (!hasPath) {
-        host.log.error(`Failed to find path to waypoint ${wp}`);
+        log.error(`Failed to find path to waypoint ${wp}`);
       }
       this._waypointPause = new Delay(wp.pause, wp.pause, true);
     }
@@ -165,18 +169,21 @@ export class Character {
     }
   }
 
-  setTargetPos(targetPos: Vec2, nearestIsOk: bool = true): bool {
+  async setTargetPos(
+    targetPos: Vec2,
+    nearestIsOk: boolean = true
+  ): Promise<boolean> {
     this.clearTarget();
 
-    this._targetPath = host.navigation
-      .findPath(
+    this._targetPath = (
+      await navigation.findPath(
         this.name,
         this._pos.toVector(),
         targetPos.toVector(),
         nearestIsOk,
-        Number.POSITIVE_INFINITY as f32
+        Number.POSITIVE_INFINITY as number
       )
-      .map<Vec2>((v) => Vec2.fromVector(v));
+    ).map((v) => Vec2.fromVector(v));
     this._targetPathLen = this._pathProgress();
 
     // Even if `nearestIsOk` is true, it's still possible not to find a path, if
@@ -194,20 +201,20 @@ export class Character {
 
   public setMoveSound(
     sound: string,
-    volume: f32 = 1.0,
-    onlyWhileMoving: bool = false
+    volume: number = 1.0,
+    onlyWhileMoving: boolean = false
   ): void {
-    host.char.setMoveSound(this.name, sound, volume, onlyWhileMoving);
+    char.setMoveSound(this.name, sound, volume, onlyWhileMoving);
   }
 
   private set state(state: NavState) {
     this._state = state;
   }
 
-  public set visibility(enabled: bool) {
-    host.char.toggle(this.name, enabled);
+  public set visibility(enabled: boolean) {
+    char.toggle(this.name, enabled);
     this._visible = enabled;
-    host.navigation.clearPath(this.name);
+    navigation.clearPath(this.name);
   }
 
   /**
@@ -219,13 +226,13 @@ export class Character {
    * @param t How far along the last segment we are.
    * @returns The progress along the path.
    */
-  private _pathProgress(end: i32 = -1, t: f32 = -1): f32 {
-    let len: f32 = 0;
+  private _pathProgress(end: number = -1, t: number = -1): number {
+    let len: number = 0;
     const endIdx = end < 0 ? this._targetPath.length - 1 : end;
     for (let i = 0; i < endIdx; i++) {
       const lastIteration = i === endIdx - 1;
-      const a = this._targetPath[i];
-      const b = this._targetPath[i + 1];
+      const a = this._targetPath[i]!;
+      const b = this._targetPath[i + 1]!;
       if (lastIteration && t >= 0) {
         const segLen = b.subbed(a).magnitude * t;
         len += segLen;
@@ -245,13 +252,13 @@ export class Character {
     this._velocity = new Vec2(0, 0);
     this.direction = new Vec2(0, 0);
     this.collisions = true;
-    host.navigation.clearPath(this.name); // clears the debug line
+    navigation.clearPath(this.name); // clears the debug line
   }
 
   protected getMoveAction(velocity: Vec2): CharAction {
     // Choose the walk action based on the direction of movement, considering
     // that this is a 2.5D game, so up and down are not as pronounced.
-    if (abs(velocity.x) > abs(velocity.y * 0.5)) {
+    if (Math.abs(velocity.x) > Math.abs(velocity.y * 0.5)) {
       return velocity.x < 0 ? CharAction.WalkLeft : CharAction.WalkRight;
     } else {
       return velocity.y < 0 ? CharAction.WalkUp : CharAction.WalkDown;
@@ -259,36 +266,36 @@ export class Character {
   }
 
   // Update method to handle position updates per frame
-  tick(deltaMS: f32): void {
+  public async tick(deltaMS: number): Promise<void> {
     if (!this._visible) return;
 
-    const dtSec: f32 = deltaMS / 1000;
+    const dtSec: number = deltaMS / 1000;
     this._persistAction.tick(deltaMS);
 
     if (this._state === NavState.waiting) {
       if (this._waypointPause.tick(deltaMS)) {
-        const wp = this._navPlan.getNextWaypoint(this.pos);
+        const wp = await this._navPlan.getNextWaypoint(this.pos);
         this._setNavWaypoint(wp);
       }
     } else {
       // This lets us interrupt our current nav plan. Useful if our plan is to
       // attack if the player is near, and we're moving randomly otherwise.
-      const needsNewWaypoint = this._navPlan.tick(deltaMS, this.pos);
+      const needsNewWaypoint = await this._navPlan.tick(deltaMS, this.pos);
       if (needsNewWaypoint) {
-        const wp = this._navPlan.getNextWaypoint(this.pos);
+        const wp = await this._navPlan.getNextWaypoint(this.pos);
         this._setNavWaypoint(wp);
       }
     }
 
-    const props = host.char.getMoveProps(this.name);
+    const props = char.getMoveProps(this.name);
     if (!this._isPlayer) {
       this.direction = new Vec2(0, 0);
     }
 
-    let easingSpeed = <f32>1.0;
+    let easingSpeed = <number>1.0;
 
-    let frictionHalflife: f32 = Mathf.max(0.0, props.friction);
-    let traction: f32 = Mathf.max(0.0, Mathf.min(1.0, props.traction));
+    let frictionHalflife: number = Math.max(0.0, props.friction);
+    let traction: number = Math.max(0.0, Math.min(1.0, props.traction));
 
     if (props.sink.amt > 0) {
       // If we're in shallow water, we want to increase friction and leave the
@@ -297,22 +304,22 @@ export class Character {
         frictionHalflife *= 0.5 * (1.0 - props.sink.amt);
       } else {
         frictionHalflife += 1 * props.sink.amt;
-        traction = traction * Mathf.max((1.0 - props.sink.amt) * 0.2, 0.03);
+        traction = traction * Math.max((1.0 - props.sink.amt) * 0.2, 0.03);
       }
     }
 
-    const frictionFactor: f32 = Mathf.pow(0.5, dtSec / frictionHalflife);
+    const frictionFactor: number = Math.pow(0.5, dtSec / frictionHalflife);
 
     if (this._targetPath.length > 0) {
       const trackResult = deriveTargetIndex(this._pos, this._targetPath);
-      const adjustedGoal = this._targetPath[this._targetPath.length - 1];
+      const adjustedGoal = this._targetPath.at(-1)!;
       const goalDist = this._pos.distanceTo(adjustedGoal);
 
       const oldTrackResult = this._lastTrackResult;
       this._lastTrackResult = trackResult;
       const maybeStuck =
         this._lastTrackResult.index == oldTrackResult.index &&
-        Mathf.abs(oldTrackResult.t - trackResult.t) < stuckTRate * dtSec;
+        Math.abs(oldTrackResult.t - trackResult.t) < stuckTRate * dtSec;
 
       if (maybeStuck) {
         // FIXME
@@ -336,15 +343,15 @@ export class Character {
       }
       // Happy path
       else {
-        const targetNode = this._targetPath[trackResult.index];
+        const targetNode = this._targetPath[trackResult.index]!;
         const adjust = targetNode.subbed(this._pos).capScalar(1);
         this.direction.add(adjust).normalize();
 
-        const progress: f32 = this._pathProgress(
+        const progress: number = this._pathProgress(
           trackResult.index,
           trackResult.t
         );
-        easingSpeed = Mathf.max(
+        easingSpeed = Math.max(
           easing.rampHoldRamp(
             this._targetPathLen,
             progress,
@@ -386,7 +393,7 @@ export class Character {
 
       // Check for collisions and adjust proposed translation
       if (needsCollisionCheck) {
-        const correctedTrans = host.char.checkCollision(
+        const correctedTrans = char.checkCollision(
           this.name,
           this._pos.x,
           this._pos.y,
@@ -394,8 +401,8 @@ export class Character {
           proposedTrans.y
         );
         // Update position
-        this._pos.x += correctedTrans[0];
-        this._pos.y += correctedTrans[1];
+        this._pos.x += correctedTrans.x;
+        this._pos.y += correctedTrans.y;
       } else {
         // Update position
         this._pos.x += proposedTrans.x;
@@ -415,7 +422,7 @@ export class Character {
 
       // Check for collisions and adjust proposed translation
       if (needsCollisionCheck) {
-        const correctedTrans = host.char.checkCollision(
+        const correctedTrans = char.checkCollision(
           this.name,
           this._pos.x,
           this._pos.y,
@@ -423,8 +430,8 @@ export class Character {
           proposedTrans.y
         );
         // Update position
-        this._pos.x += correctedTrans[0];
-        this._pos.y += correctedTrans[1];
+        this._pos.x += correctedTrans.x;
+        this._pos.y += correctedTrans.y;
       } else {
         // Update position
         this._pos.x += proposedTrans.x;
@@ -435,12 +442,12 @@ export class Character {
     }
 
     // Slow down our animation speed based on our speed relative to our max speed.
-    const animSpeed = Mathf.min(
+    const animSpeed = Math.min(
       1.0,
-      Mathf.max(0.4, this._velocity.magnitude / 35)
+      Math.max(0.4, this._velocity.magnitude / 35)
     );
-    host.char.setSpeed(this.name, animSpeed);
-    host.char.setPos(this.name, this._pos.x, this._pos.y);
+    char.setSpeed(this.name, animSpeed);
+    char.setPos(this.name, this._pos.x, this._pos.y);
     this.setAction(moveAction);
   }
 }

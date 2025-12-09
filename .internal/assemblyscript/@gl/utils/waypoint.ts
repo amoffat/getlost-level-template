@@ -1,15 +1,15 @@
-import { Vector } from "../api/types/vector";
+import { type Vector } from "../api/types/vector";
 import { Waypoint as ApiWaypoint } from "../api/types/waypoint";
-import * as host from "../api/w2h/host";
+import * as navigation from "../api/w2h/navigation";
 import { Vec2 } from "./la/vec2";
 
 export class Waypoint {
   public pos: Vec2;
-  public speed: f32 = 1.0;
-  public pause: f32 = 1000; // ms
-  public nearestIsOk: bool = false;
+  public speed: number = 1.0;
+  public pause: number = 1000; // ms
+  public nearestIsOk: boolean = false;
 
-  constructor(pos: Vector, pause: f32 = 1000, speed: f32 = 1.0) {
+  constructor(pos: Vector, pause: number = 1000, speed: number = 1.0) {
     this.pos = Vec2.fromVector(pos);
     this.speed = speed;
     this.pause = pause;
@@ -23,10 +23,10 @@ export class Waypoint {
 
   public static fromName(
     name: string,
-    pause: f32 = 1000,
-    speed: f32 = 1.0
+    pause: number = 1000,
+    speed: number = 1.0
   ): Waypoint {
-    const awp = host.navigation.getWaypoint(name);
+    const awp = navigation.getWaypoint(name);
     const wp = Waypoint.fromApi(awp);
     wp.speed = speed;
     wp.pause = pause;
@@ -37,7 +37,7 @@ export class Waypoint {
     return new Waypoint(wp.pos);
   }
 
-  public get isNull(): bool {
+  public get isNull(): boolean {
     return this.speed < 0;
   }
 

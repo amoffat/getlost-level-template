@@ -4,12 +4,16 @@
  * `tick` will return true.
  */
 export class Delay {
-  public _timeMs: f32;
-  public _accumulatedMs: f32 = 0;
-  private _done: bool = false;
-  private _repeat: bool = false;
+  public _timeMs: number;
+  public _accumulatedMs: number = 0;
+  private _done: boolean = false;
+  private _repeat: boolean = false;
 
-  constructor(timeMs: f32, initialDelay: f32 = 0, repeat: bool = false) {
+  constructor(
+    timeMs: number,
+    initialDelay: number = 0,
+    repeat: boolean = false
+  ) {
     this._done = timeMs <= 0;
     this._timeMs = timeMs;
     this._repeat = repeat;
@@ -25,20 +29,20 @@ export class Delay {
     this._done = this._timeMs <= 0;
   }
 
-  public get done(): bool {
+  public get done(): boolean {
     return this._done;
   }
 
-  public set timeMs(value: f32) {
+  public set timeMs(value: number) {
     this._timeMs = value;
     this.reset();
   }
 
-  public get timeMs(): f32 {
+  public get timeMs(): number {
     return this._timeMs;
   }
 
-  public tick(deltaMs: f32): bool {
+  public tick(deltaMs: number): boolean {
     if (this._done) return false;
 
     this._accumulatedMs += deltaMs;

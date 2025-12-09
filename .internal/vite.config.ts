@@ -2,7 +2,7 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import { defineConfig, ViteDevServer } from "vite";
 import apiPlugin from "./src/plugins/api/main";
-import compileWasmPlugin from "./src/plugins/assemblyscript";
+import bundleLevelCodePlugin from "./src/plugins/bundle";
 import levelPlugin from "./src/plugins/level";
 import { isAllowedOrigin } from "./src/plugins/utils";
 import levelWatcher from "./src/plugins/watcher";
@@ -59,7 +59,7 @@ export default defineConfig(() => {
       //     }),
       addHeadersPlugin(),
       react(),
-      compileWasmPlugin(),
+      bundleLevelCodePlugin(),
       levelPlugin(),
       levelWatcher(),
       apiPlugin(),

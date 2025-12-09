@@ -1,6 +1,6 @@
-import { MapSize } from "../types/map";
-import { TileProperties } from "../types/tile";
-import { Vector } from "../types/vector";
+import type { MapSize } from "../types/map";
+import type { TileProperties } from "../types/tile";
+import type { Vector } from "../types/vector";
 
 /**
  * Exits the player from the current map. The name must have already been
@@ -11,7 +11,7 @@ import { Vector } from "../types/vector";
  *
  * @return Returns true if the exit was successful, false otherwise.
  */
-export declare function exit(name: string, force: bool): bool;
+export declare function exit(name: string, force: boolean): Promise<boolean>;
 
 /**
  * Fetches the merged stack of properties for all tiles at a location. This is
@@ -20,7 +20,10 @@ export declare function exit(name: string, force: bool): bool;
  * @param posX The column of the tile to get properties for.
  * @param posY The row of the tile to get properties for.
  */
-export declare function getTileProps(posX: f32, posY: f32): TileProperties;
+export declare function getTileProps(
+  posX: number,
+  posY: number
+): TileProperties;
 
 /**
  * Fetches the size of the map.
@@ -31,8 +34,3 @@ export declare function mapSize(): MapSize;
  * Fetches the size of the canvas.
  */
 export declare function canvasSize(): Vector;
-
-export const _keep_exit = exit;
-export const _keep_getTileProps = getTileProps;
-export const _keep_mapSize = mapSize;
-export const _keep_canvasSize = canvasSize;
