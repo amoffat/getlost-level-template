@@ -77,7 +77,9 @@ export async function saveTileset(ts: Tileset) {
     height: ts.height,
     composite: ts.composite,
     tiles: ts.tiles,
-  };
+    restricted: ts.restricted,
+  } satisfies SavedTileset;
+
   const doc: LatestTilesetDoc = {
     tileset: toSave,
     imageData,

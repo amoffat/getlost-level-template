@@ -70,7 +70,11 @@ export const loadTilesetsThunk = createAsyncThunk(
 export const uploadTilesetThunk = createAsyncThunk(
   "tilesetEditor/uploadTilesetThunk",
   async (
-    { objectUrl, composite }: { objectUrl: string; composite: boolean },
+    {
+      objectUrl,
+      composite,
+      restricted,
+    }: { objectUrl: string; composite: boolean; restricted: boolean },
     { dispatch }
   ): Promise<Tileset> => {
     const tsId = await genTilesetId(objectUrl);
@@ -86,6 +90,7 @@ export const uploadTilesetThunk = createAsyncThunk(
       height: bitmap.height,
       tiles: { ids: [], entities: {} },
       composite,
+      restricted,
     };
     bitmap.close();
 

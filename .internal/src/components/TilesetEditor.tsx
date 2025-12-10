@@ -72,7 +72,7 @@ export default function TilesetEditorTab({
   const activeTilesetId = useAppSelector(
     (state) => state.tilesetEditor.activeTilesetId
   );
-  const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
+  const tilesets = useAppSelector(selectors.selectTilesets);
   const containerRef = useRef<HTMLDivElement>(null);
   const curTab = useAppSelector((state) => state.ui.tilesetTab);
 
@@ -120,15 +120,18 @@ export default function TilesetEditorTab({
     }
   }, [tsId, tilesets, activeTilesetId, dispatch]);
 
-  const loadedTilesets = useAppSelector(selectors.selectTilesets);
-  const tilesetImages = loadedTilesets.map((ts) => (
-    <TilesetButton
-      key={ts.id}
-      ts={ts}
-      onClick={() => navigate(`/tilesets/${ts.id}`)}
-      isActive={ts.id === activeTilesetId}
-    />
-  ));
+  const tilesetImages = useMemo(
+    () =>
+      Object.values(tilesets).map((ts) => (
+        <TilesetButton
+          key={ts.id}
+          ts={ts}
+          onClick={() => navigate(`/tilesets/${ts.id}`)}
+          isActive={ts.id === activeTilesetId}
+        />
+      )),
+    [tilesets, navigate, activeTilesetId]
+  );
 
   const handlePaneResize = () => {
     // Trigger redrawLayout when panels are resized

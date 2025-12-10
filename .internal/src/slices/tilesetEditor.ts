@@ -577,10 +577,17 @@ const selectTilesets = createSelector.withTypes<RootState>()(
     (state) => state.tilesetEditor.tilesets,
     (state) => state.ui.flags.showHiddenTilesets,
   ],
-  (tilesetIds, tilesets, showHiddenTilesets): Tileset[] =>
+  (tilesetIds, tilesets, showHiddenTilesets): Record<string, Tileset> =>
     tilesetIds
       .map((id) => tilesets[id])
       .filter((ts) => (ts.hidden ? showHiddenTilesets : true))
+      .reduce(
+        (acc, ts) => {
+          acc[ts.id] = ts;
+          return acc;
+        },
+        {} as Record<string, Tileset>
+      )
 );
 
 export const selectors = { ...slice.selectors, selectTilesets };

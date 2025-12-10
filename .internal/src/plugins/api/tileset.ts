@@ -1,8 +1,10 @@
+import { LatestTilesetDoc } from "@/persist/tileset/schema";
+import { decode, encode } from "cbor2";
 import express from "express";
 import formidable from "formidable";
 import * as fs from "fs";
 import { resolve } from "path";
-import { gzipSync } from "zlib";
+import { gunzipSync, gzipSync } from "zlib";
 import { tilesetSourceHeader } from "../../constants/headers";
 import { LoadTilesetsResponse } from "../../types/api/tileset";
 import { atomicWriteFileSync } from "../../utils/file";
@@ -14,6 +16,8 @@ const levelTexDir = resolve(levelDir, "textures");
 const systemTexDir = resolve(internalDir, "assets", "textures");
 
 export const router = express.Router({ mergeParams: true });
+type TilesetDoc = Omit<LatestTilesetDoc, "imageData"> &
+  Partial<Pick<LatestTilesetDoc, "imageData">>;
 
 // Sanitize a requested tileset ID so it can be safely used as a filename stem.
 // Allowed characters: a-z A-Z 0-9 . _ - (mirrors previous inline regex)
@@ -29,12 +33,27 @@ function readDir(path: string): string[] {
   return ids;
 }
 
-function pathForId(id: string): string | null {
-  const levelPath = resolve(levelTexDir, `${id}.cbor.gz`);
-  if (fs.existsSync(levelPath)) return levelPath;
+function pathForId(
+  id: string,
+  restricted?: boolean
+): { cbor: string; png: string } | null {
+  // Check level directory (with or without restricted subdirectory)
+  const levelCborPath = resolve(levelTexDir, `${id}.cbor.gz`);
+  const levelPngPath = restricted
+    ? resolve(levelTexDir, "restricted", `${id}.png`)
+    : resolve(levelTexDir, `${id}.png`);
+  if (fs.existsSync(levelCborPath)) {
+    return { cbor: levelCborPath, png: levelPngPath };
+  }
 
-  const systemPath = resolve(systemTexDir, `${id}.cbor.gz`);
-  if (fs.existsSync(systemPath)) return systemPath;
+  // Check system directory (with or without restricted subdirectory)
+  const systemCborPath = resolve(systemTexDir, `${id}.cbor.gz`);
+  const systemPngPath = restricted
+    ? resolve(systemTexDir, "restricted", `${id}.png`)
+    : resolve(systemTexDir, `${id}.png`);
+  if (fs.existsSync(systemCborPath)) {
+    return { cbor: systemCborPath, png: systemPngPath };
+  }
 
   return null;
 }
@@ -54,7 +73,7 @@ router.get("/", (_req, res) => {
   }
 });
 
-// GET "/:id" — serve the specific CBOR file
+// GET "/:id" — serve the CBOR metadata combined with PNG image data
 router.get("/:id", (req, res) => {
   try {
     const id = sanitizeId((req.params as any)["id"]);
@@ -62,23 +81,51 @@ router.get("/:id", (req, res) => {
       res.status(400).send("Invalid id in URL");
       return;
     }
+    console.log(`Serving tileset ${id}`);
 
-    const gzPath = pathForId(id);
-    if (!gzPath) {
+    // First try to read the CBOR to check if restricted property is set
+    const initialPaths = pathForId(id, false);
+    if (!initialPaths || !fs.existsSync(initialPaths.cbor)) {
       res.sendStatus(404);
       return;
     }
 
     try {
-      const data = fs.readFileSync(gzPath);
+      // Read and decompress the CBOR metadata to check restricted flag
+      let cborGz = fs.readFileSync(initialPaths.cbor);
+      const cborData = gunzipSync(cborGz);
+      const doc = decode(cborData) as TilesetDoc;
+
+      // Now get the correct paths based on restricted property
+      const paths = pathForId(id, doc.tileset.restricted);
+      if (!paths) {
+        res.sendStatus(404);
+        return;
+      }
+
+      if (doc.imageData === undefined) {
+        console.log("Loading image data from PNG file");
+        // Read the PNG image data (fs.readFileSync returns Buffer, convert to Uint8Array)
+        const imageBuffer = fs.existsSync(paths.png)
+          ? fs.readFileSync(paths.png)
+          : Buffer.alloc(0);
+
+        // Combine metadata with image data (convert Buffer to Uint8Array for consistency)
+        doc.imageData = new Uint8Array(imageBuffer);
+
+        // Re-encode and send the combined data
+        const combined = encode(doc);
+        cborGz = gzipSync(combined);
+      }
+
       res.setHeader("Content-Type", "application/cbor");
       res.setHeader("Content-Encoding", "gzip");
       res.setHeader("Vary", "Accept-Encoding");
       res.setHeader(
         tilesetSourceHeader,
-        gzPath.startsWith(levelTexDir) ? "level" : "system"
+        paths.cbor.startsWith(levelTexDir) ? "level" : "system"
       );
-      res.send(data);
+      res.send(cborGz);
     } catch (err) {
       console.error("Error sending gzipped tileset:", err);
       res.sendStatus(500);
@@ -98,8 +145,11 @@ router.delete("/:id", (req, res) => {
       return;
     }
 
-    const gzPath = pathForId(id);
-    if (gzPath) fs.unlinkSync(gzPath);
+    const paths = pathForId(id);
+    if (paths) {
+      if (fs.existsSync(paths.cbor)) fs.unlinkSync(paths.cbor);
+      if (fs.existsSync(paths.png)) fs.unlinkSync(paths.png);
+    }
 
     res.sendStatus(204);
   } catch (error) {
@@ -136,17 +186,38 @@ router.put("/:id", (req, res) => {
         return;
       }
 
-      // Use pathForId to determine where to write the file
-      // If the file exists, overwrite it; otherwise write to level textures
-      let outPath = pathForId(id);
-      if (!outPath) {
+      // Read and decode the incoming CBOR data
+      const buf = fs.readFileSync(incoming.filepath);
+      const doc = decode(buf) as TilesetDoc;
+
+      // Extract imageData from the document
+      const imageData = doc.imageData;
+      delete doc.imageData;
+
+      // Determine output paths
+      let paths = pathForId(id, doc.tileset.restricted);
+      if (!paths) {
         fs.mkdirSync(levelTexDir, { recursive: true });
-        outPath = resolve(levelTexDir, `${id}.cbor.gz`);
+        if (doc.tileset.restricted) {
+          fs.mkdirSync(resolve(levelTexDir, "restricted"), { recursive: true });
+        }
+        paths = {
+          cbor: resolve(levelTexDir, `${id}.cbor.gz`),
+          png: doc.tileset.restricted
+            ? resolve(levelTexDir, "restricted", `${id}.png`)
+            : resolve(levelTexDir, `${id}.png`),
+        };
       }
 
-      const buf = fs.readFileSync(incoming.filepath);
-      const gz = gzipSync(buf);
-      atomicWriteFileSync(outPath, gz);
+      // Save the metadata (without imageData) as CBOR
+      const metadataEncoded = encode(doc);
+      const metadataGz = gzipSync(metadataEncoded);
+      atomicWriteFileSync(paths.cbor, metadataGz);
+
+      // Save the image data as a separate PNG file
+      if (imageData && imageData.length > 0) {
+        atomicWriteFileSync(paths.png, Buffer.from(imageData));
+      }
 
       res.sendStatus(204);
     } catch (error) {

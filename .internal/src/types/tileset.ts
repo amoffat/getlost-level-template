@@ -26,6 +26,7 @@ export interface Tileset {
   // implies that it has no innate grid size (a grid size of 1x1)
   composite: boolean;
   hidden?: boolean;
+  restricted?: boolean;
 }
 
 export type SavedTileset = Omit<Tileset, "objectUrl" | "saved">;

@@ -1,13 +1,30 @@
 import { overlayProps } from "@/constants";
 import { unpackTileset } from "@/editors/tileset/loader";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { selectors } from "@/slices/tilesetEditor";
 import { uploadTilesetThunk } from "@/thunks/tileset";
 import { Rect } from "@/types/rect";
 import { packSprites } from "@/utils/spritepack";
-import { Button, Group, Image, Modal, Select, Stack } from "@mantine/core";
+import {
+  Button,
+  Fieldset,
+  Group,
+  Image,
+  Modal,
+  SegmentedControl,
+  Select,
+  Stack,
+  Text,
+} from "@mantine/core";
 import { FileWithPath } from "@mantine/dropzone";
 import { useForm } from "@mantine/form";
-import { IconLibraryPhoto, IconPhotoPlus } from "@tabler/icons-react";
+import {
+  IconLibraryPhoto,
+  IconLicense,
+  IconLock,
+  IconLockOpen2,
+  IconPhotoPlus,
+} from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo } from "react";
 
 interface TileAssetTypeModalProps {
@@ -18,6 +35,7 @@ interface TileAssetTypeModalProps {
 
 interface FormValues {
   creationOption: SpecialTilesetOption | string;
+  restricted: boolean;
 }
 
 const NEW_TILESET = "__new_tileset__";
@@ -31,7 +49,7 @@ export default function UploadAssetModal({
   closeModal,
 }: TileAssetTypeModalProps) {
   const dispatch = useAppDispatch();
-  const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
+  const tilesets = useAppSelector(selectors.selectTilesets);
 
   const form = useForm<FormValues>({
     name: "tile-asset-type",
@@ -39,6 +57,7 @@ export default function UploadAssetModal({
     onSubmitPreventDefault: "always",
     initialValues: {
       creationOption: NEW_TILESET,
+      restricted: false,
     },
   });
 
@@ -111,7 +130,13 @@ export default function UploadAssetModal({
       if (copt === NEW_TILESET) {
         for (const file of files) {
           const objectUrl = URL.createObjectURL(file);
-          dispatch(uploadTilesetThunk({ objectUrl, composite: false }));
+          dispatch(
+            uploadTilesetThunk({
+              objectUrl,
+              composite: false,
+              restricted: values.restricted,
+            })
+          );
         }
       } else if (copt === MERGE_UPLOADS) {
         // Convert files to ImageBitmaps
@@ -128,7 +153,11 @@ export default function UploadAssetModal({
         }
 
         const ts = await dispatch(
-          uploadTilesetThunk({ objectUrl: merged.objectUrl, composite: true })
+          uploadTilesetThunk({
+            objectUrl: merged.objectUrl,
+            composite: true,
+            restricted: values.restricted,
+          })
         ).unwrap();
 
         const coords: Rect[] = merged.sprites;
@@ -201,6 +230,53 @@ export default function UploadAssetModal({
             {...form.getInputProps("creationOption")}
             renderOption={renderSelectOption}
           />
+
+          <Fieldset
+            mt="lg"
+            legend={
+              <Group gap="xs">
+                <IconLicense size={16} />
+                License restrictions
+              </Group>
+            }
+          >
+            <Stack p={0}>
+              <Text size="sm">
+                Does the license for this asset allow you to share it with
+                others? If you're unsure, select "No."
+              </Text>
+              <SegmentedControl
+                fullWidth
+                orientation="vertical"
+                data={[
+                  {
+                    label: (
+                      <Group align="center" gap="xs">
+                        <IconLockOpen2 />
+                        Yes, it's shareable
+                      </Group>
+                    ),
+                    value: "false",
+                  },
+                  {
+                    label: (
+                      <Group align="center" gap="xs">
+                        <IconLock />
+                        No, encrypt it
+                      </Group>
+                    ),
+                    value: "true",
+                  },
+                ]}
+                key={form.key("restricted")}
+                {...form.getInputProps("restricted")}
+                value={String(form.values.restricted)}
+                onChange={(value) =>
+                  form.setFieldValue("restricted", value === "true")
+                }
+              />
+            </Stack>
+          </Fieldset>
 
           <Group mt="lg" justify="flex-end">
             <Button color="blue" type="submit" radius="md">
