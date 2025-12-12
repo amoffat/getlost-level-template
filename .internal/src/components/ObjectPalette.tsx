@@ -251,7 +251,6 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
           pos={objMenuPos}
           obj={clicked && isTileGroupTemplate(clicked) ? clicked : null}
           closeMenu={() => setObjMenuPos(null)}
-          onTagsModalOpened={deselectObject}
         />
         <ObjectAnimationMenu
           pos={objMenuPos}

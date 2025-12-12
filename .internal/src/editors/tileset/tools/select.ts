@@ -26,10 +26,12 @@ const selectionModes: Set<Mode> = new Set([
 
 const multiSelectModes: Set<Mode> = new Set(["select"] as Mode[]);
 
-class Selector implements ClickDragListener {
+class Selector extends ClickDragListener {
   private marqueeEnabled = false;
 
-  constructor(private spatialIndex: SpatialIndex<TilesetObjectTemplate>) {}
+  constructor(private spatialIndex: SpatialIndex<TilesetObjectTemplate>) {
+    super();
+  }
 
   private get addToSelection(): boolean {
     const state = store.getState();
@@ -37,7 +39,7 @@ class Selector implements ClickDragListener {
     return multiSelectModes.has(mode) && (pressedKeys["Control"] ?? false);
   }
 
-  pointerDown(e: PointerEventData) {
+  override pointerDown(e: PointerEventData) {
     const state = store.getState();
     const mode = selectors.selectMode(state);
     if (!selectionModes.has(mode)) return;
@@ -65,7 +67,7 @@ class Selector implements ClickDragListener {
     }
   }
 
-  pointerUp(e: PointerEventData) {
+  override pointerUp(e: PointerEventData) {
     const state = store.getState();
     const mode = selectors.selectMode(state);
     if (!selectionModes.has(mode)) return;
@@ -143,7 +145,7 @@ class Selector implements ClickDragListener {
     }
   }
 
-  pointerDrag(e: PointerEventData) {
+  override pointerDrag(e: PointerEventData) {
     if (!this.marqueeEnabled) return;
 
     const state = store.getState();

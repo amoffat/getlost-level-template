@@ -15,12 +15,12 @@ export interface PointerEventData {
   localMoveVector: Vec2;
 }
 
-export interface ClickDragListener {
+export abstract class ClickDragListener {
   immediateDrag?: boolean;
-  pointerDown?: (e: PointerEventData) => void;
-  pointerUp?: (e: PointerEventData) => void;
-  pointerDrag?: (e: PointerEventData) => void;
-  pointerMove?: (e: PointerEventData) => void;
+  pointerDown?(e: PointerEventData): void;
+  pointerUp?(e: PointerEventData): void;
+  pointerDrag?(e: PointerEventData): void;
+  pointerMove?(e: PointerEventData): void;
 }
 
 export class ClickDragger {

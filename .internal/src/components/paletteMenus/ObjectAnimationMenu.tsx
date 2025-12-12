@@ -4,24 +4,21 @@ import {
   actions as tsActions,
   selectors as tsSelectors,
 } from "@/slices/tilesetEditor";
-import { actions as uiActions, selectors as uiSelectors } from "@/slices/ui";
 import { store } from "@/store/store";
 import { AnimationTemplate } from "@/types/animation";
 import { isMapObjFromTileset } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
 import { Vector2 } from "@/vec";
-import { Menu, Modal, Stack, TagsInput } from "@mantine/core";
+import { Menu } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
-import { IconBlocks, IconCopy, IconTag, IconTrash } from "@tabler/icons-react";
-import { useCallback, useState } from "react";
+import { IconCopy, IconTrash } from "@tabler/icons-react";
+import { useCallback } from "react";
 import ObjectMenu from "../ObjectMenu";
-import TileAnimation from "../TileAnimation";
 
 interface ObjectAnimationMenuProps {
   pos: Vector2 | null;
   obj: AnimationTemplate | null;
-  onTagsModalOpened?: VoidFunction;
   closeMenu: () => void;
 }
 
@@ -29,69 +26,9 @@ export default function ObjectAnimationMenu({
   pos,
   obj,
   closeMenu,
-  onTagsModalOpened,
 }: ObjectAnimationMenuProps) {
   const tab = useAppSelector((state) => state.ui.activeTab);
-  const [openTagsModal, setOpenTagsModal] = useState(false);
-  const [openCollidersModal, setOpenCollidersModal] = useState(false);
-
-  const tgTags = useAppSelector(uiSelectors.selectTilesetGroupTags);
   const dispatch = useAppDispatch();
-
-  const onTagsItemClicked = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      closeMenu();
-      setOpenTagsModal(true);
-      onTagsModalOpened?.();
-    },
-    [closeMenu, onTagsModalOpened]
-  );
-
-  const onCollidersItemClicked = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      closeMenu();
-      setOpenCollidersModal(true);
-    },
-    [closeMenu]
-  );
-
-  const addTag = useCallback(
-    (tag: string) => {
-      if (!obj) return;
-      if (obj.tags.includes(tag)) return;
-      tag = tag.trim();
-      if (tag.length === 0) return;
-
-      const allTags = Array.from(new Set(obj.tags).add(tag));
-      dispatch(
-        tsActions.updateTilesetObject({
-          tsId: obj.tilesetId,
-          obj,
-          changes: { tags: allTags },
-        })
-      );
-      dispatch(uiActions.addTilesetGroupTags([tag]));
-    },
-    [dispatch, obj]
-  );
-
-  const removeTag = useCallback(
-    (tag: string) => {
-      if (!obj) return;
-      const allTags = obj.tags.filter((t) => t !== tag);
-      dispatch(
-        tsActions.updateTilesetObject({
-          tsId: obj.tilesetId,
-          obj,
-          changes: { tags: allTags },
-        })
-      );
-      dispatch(uiActions.removeTilesetGroupTags([tag]));
-    },
-    [dispatch, obj]
-  );
 
   const onCopyId = useCallback(() => {
     if (!obj) return;
@@ -184,19 +121,6 @@ export default function ObjectAnimationMenu({
     <>
       <ObjectMenu pos={pos} opened={pos !== null}>
         <Menu.Label>Object Animation Actions</Menu.Label>
-
-        <Menu.Item
-          leftSection={<IconBlocks size={14} />}
-          onClick={onCollidersItemClicked}
-        >
-          Set colliders
-        </Menu.Item>
-        <Menu.Item
-          leftSection={<IconTag size={14} />}
-          onClick={onTagsItemClicked}
-        >
-          Set tags
-        </Menu.Item>
         <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
           Copy object id
         </Menu.Item>
@@ -216,26 +140,6 @@ export default function ObjectAnimationMenu({
           </>
         )}
       </ObjectMenu>
-
-      <Modal
-        centered={true}
-        opened={openTagsModal}
-        onClose={() => setOpenTagsModal(false)}
-        title="Set tags"
-      >
-        <Stack p={0} align="stretch">
-          <TileAnimation frames={obj.frames} scale={4} />
-          <TagsInput
-            placeholder="Enter tag"
-            splitChars={[",", " ", "|"]}
-            limit={5}
-            onOptionSubmit={addTag}
-            onRemove={removeTag}
-            data={tgTags}
-            defaultValue={obj?.tags || []}
-          />
-        </Stack>
-      </Modal>
 
       {/* <CollisionModal
         opened={openCollidersModal}

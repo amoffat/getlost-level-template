@@ -1,11 +1,13 @@
 import * as PIXI from "pixi.js";
 import { Matrix } from "pixi.js";
 
+/** @public */
 export interface Vector2 {
   x: number;
   y: number;
 }
 
+/** @public */
 export interface Vector3 {
   x: number;
   y: number;

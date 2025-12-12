@@ -1,3 +1,5 @@
+import { HasId } from "@/utils/misc";
+import { EntityState } from "@reduxjs/toolkit";
 import {
   AnimationProps,
   EntranceProps,
@@ -7,6 +9,17 @@ import {
   TileGroupProps,
 } from "./properties";
 import { Rect } from "./rect";
+
+export interface SavedMap {
+  tileWidth: number;
+  tileHeight: number;
+  objects: EntityState<MapObj, string>;
+  templates: {
+    lights: LightProps & HasId;
+    entryGateways: EntranceProps & HasId;
+    exitGateways: ExitProps & HasId;
+  };
+}
 
 export enum MapObjType {
   TileGroupInstance = 0,
@@ -43,8 +56,7 @@ export interface TilesetMapObj extends BaseMapObj {
 }
 
 export interface TileGroupInstance
-  extends TilesetMapObj,
-    Partial<TileGroupProps> {
+  extends TilesetMapObj, Partial<TileGroupProps> {
   type: MapObjType.TileGroupInstance;
 
   imageId: string; // for healing broken references
@@ -58,8 +70,7 @@ export interface TileAnimationFrame {
 }
 
 export interface AnimationInstance
-  extends TilesetMapObj,
-    Partial<AnimationProps> {
+  extends TilesetMapObj, Partial<AnimationProps> {
   type: MapObjType.AnimationInstance;
 }
 

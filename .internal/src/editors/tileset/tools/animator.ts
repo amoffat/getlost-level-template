@@ -14,10 +14,12 @@ import {
   PointerEventData,
 } from "../../common/drag";
 
-class FrameSelector implements ClickDragListener {
-  constructor(private spatialIndex: SpatialIndex<TilesetObjectTemplate>) {}
+class FrameSelector extends ClickDragListener {
+  constructor(private spatialIndex: SpatialIndex<TilesetObjectTemplate>) {
+    super();
+  }
 
-  pointerDown(e: PointerEventData) {
+  override pointerDown(e: PointerEventData) {
     const state = store.getState();
     const mode = tilesetSelectors.selectMode(state);
     if (mode !== "animate") return;

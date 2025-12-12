@@ -1,7 +1,7 @@
 import alias from "@rollup/plugin-alias";
 import commonjs from "@rollup/plugin-commonjs";
 import pluginResolve from "@rollup/plugin-node-resolve";
-// import terser from "@rollup/plugin-terser";
+import terser from "@rollup/plugin-terser";
 import typescript from "@rollup/plugin-typescript";
 import { readFileSync } from "fs";
 import path from "node:path";
@@ -69,9 +69,9 @@ const rollupConfig: RollupOptions = {
       noEmitOnError: false,
     }),
     commonjs(),
-    // terser({
-    //   maxWorkers: 4,
-    // }),
+    terser({
+      maxWorkers: 4,
+    }),
   ],
 };
 
@@ -79,21 +79,25 @@ async function bundleWithRollup(
   metadata: Record<string, string>
 ): Promise<string> {
   // Create a rollup bundle
-  await using bundle = await rollup(rollupConfig);
+  const bundle = await rollup(rollupConfig);
 
-  // Generate the output
-  const { output } = await bundle.generate(
-    rollupConfig.output as OutputOptions
-  );
+  try {
+    // Generate the output
+    const { output } = await bundle.generate(
+      rollupConfig.output as OutputOptions
+    );
 
-  // Return the generated code (first chunk)
-  if (output.length === 0) {
-    throw new Error("No output generated from Rollup");
+    // Return the generated code (first chunk)
+    if (output.length === 0) {
+      throw new Error("No output generated from Rollup");
+    }
+
+    // Inject metadata as a global object at the beginning of the bundle
+    const metadatComment = `// ${JSON.stringify(metadata, null, 0)}\n\n`;
+    return metadatComment + output[0].code;
+  } finally {
+    bundle.close();
   }
-
-  // Inject metadata as a global object at the beginning of the bundle
-  const metadatComment = `// ${JSON.stringify(metadata, null, 0)}\n\n`;
-  return metadatComment + output[0].code;
 }
 
 // Dynamically compile the level code as it is fetched.

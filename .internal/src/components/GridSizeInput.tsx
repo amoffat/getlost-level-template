@@ -1,6 +1,6 @@
 import { NumberInput } from "@mantine/core";
 
-export type GridSizeInputProps = {
+type GridSizeInputProps = {
   defaultValue: number;
   onChange: (size: number) => void;
 };

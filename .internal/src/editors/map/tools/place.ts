@@ -39,7 +39,7 @@ const placeIconModes: Set<Mode> = new Set([...placeModes, "autotiler"]);
 // Modes that allow dragging to paint/place objects
 const draggableModes: Set<Mode> = new Set(["paint"]);
 
-export class Placer implements ClickDragListener {
+export class Placer extends ClickDragListener {
   public immediateDrag = true;
   protected paint = false;
 
@@ -49,9 +49,11 @@ export class Placer implements ClickDragListener {
   protected tempSpatialIndex: Set<string> = new Set();
   protected dragSessionIndex: Set<string> = new Set();
 
-  constructor(protected spatialIndex: SpatialIndex<MapObj>) {}
+  constructor(protected spatialIndex: SpatialIndex<MapObj>) {
+    super();
+  }
 
-  public pointerUp(_e: PointerEventData): void {
+  public override pointerUp(_e: PointerEventData): void {
     const state = store.getState();
     const mode = selectors.selectMode(state);
     if (!placeModes.has(mode)) return;
@@ -63,13 +65,13 @@ export class Placer implements ClickDragListener {
     this.paint = false;
   }
 
-  public pointerDown(_e: PointerEventData): void {
+  public override pointerDown(_e: PointerEventData): void {
     this.paint = true;
     this.dragSessionIndex.clear();
     this.tempSpatialIndex.clear();
   }
 
-  public pointerMove(e: PointerEventData): void {
+  public override pointerMove(e: PointerEventData): void {
     const state = store.getState();
     const mode = selectors.selectMode(state);
     if (!placeModes.has(mode)) return;
@@ -96,7 +98,7 @@ export class Placer implements ClickDragListener {
     g.placableContainer.position = finalPos;
   }
 
-  public pointerDrag(_e: PointerEventData): void {
+  public override pointerDrag(_e: PointerEventData): void {
     const state = store.getState();
     const mode = selectors.selectMode(state);
 

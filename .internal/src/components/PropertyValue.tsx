@@ -27,7 +27,7 @@ export type SelectableLevel = Extract<
 >;
 
 export interface PropertyValueInfo<T> {
-  // Used purly for key generation/stability for react components
+  // Used purely for key generation/stability for react components
   key: string;
   /** The actual value */
   value: T;
@@ -35,7 +35,7 @@ export interface PropertyValueInfo<T> {
   level: SelectableLevel;
 }
 
-export interface PropertyValueProps<T> {
+interface PropertyValueProps<T> {
   /** Label for the property */
   label?: string;
   /** Description text shown below the label */

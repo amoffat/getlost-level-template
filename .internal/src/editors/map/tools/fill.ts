@@ -20,12 +20,13 @@ import { shallowEqual } from "react-redux";
 import { concatMap, Subject, Subscription } from "rxjs";
 import { globals as g } from "../globals";
 
-class Filler implements ClickDragListener {
+class Filler extends ClickDragListener {
   private marquee: Rect | null = null;
   private fillObjects$ = new Subject<void>();
   private subscription: Subscription;
 
   constructor() {
+    super();
     // Set up the RxJS pipeline to serialize fillObjects calls exhaustMap will
     // drop new emissions while the previous async operation is still running
     this.subscription = this.fillObjects$
@@ -38,7 +39,7 @@ class Filler implements ClickDragListener {
     this.fillObjects$.complete();
   }
 
-  pointerDown(_e: PointerEventData) {
+  override pointerDown(_e: PointerEventData) {
     this.clear();
   }
 
@@ -48,7 +49,7 @@ class Filler implements ClickDragListener {
     store.dispatch(clearUncommittedThunk());
   }
 
-  pointerUp(_e: PointerEventData) {
+  override pointerUp(_e: PointerEventData) {
     const state = store.getState();
     const mode = mapSelectors.selectMode(state);
     if (mode !== "fill") return;
@@ -61,7 +62,7 @@ class Filler implements ClickDragListener {
     );
   }
 
-  pointerDrag(e: PointerEventData) {
+  override pointerDrag(e: PointerEventData) {
     const state = store.getState();
     const mode = mapSelectors.selectMode(state);
     if (mode !== "fill") return;

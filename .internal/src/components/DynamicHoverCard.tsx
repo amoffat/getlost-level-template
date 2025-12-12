@@ -9,8 +9,10 @@ import React from "react";
  *
  * Coordinates are treated as viewport pixels (position: fixed), measured from the top-left corner of the window.
  */
-export interface DynamicHoverCardProps
-  extends Omit<PopoverProps, "children" | "opened"> {
+interface DynamicHoverCardProps extends Omit<
+  PopoverProps,
+  "children" | "opened"
+> {
   x: number;
   y: number;
   opened: boolean;

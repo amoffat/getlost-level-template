@@ -42,14 +42,15 @@ function isGroupActionMode(mode: string | null): boolean {
   );
 }
 
-class Grouper implements ClickDragListener {
+class Grouper extends ClickDragListener {
   private spatialIndex: SpatialIndex<TilesetObjectTemplate>;
 
   constructor(spatialIndex: SpatialIndex<TilesetObjectTemplate>) {
+    super();
     this.spatialIndex = spatialIndex;
   }
 
-  pointerDown(_e: PointerEventData) {
+  override pointerDown(_e: PointerEventData) {
     const state = store.getState();
     if (!state.tilesetEditor.activeTilesetId) return;
     const mode = state.tilesetEditor.selectedTool;
@@ -62,7 +63,7 @@ class Grouper implements ClickDragListener {
     }
   }
 
-  async pointerUp(e: PointerEventData) {
+  override async pointerUp(e: PointerEventData) {
     const state = store.getState();
     const tsState = state.tilesetEditor;
     const mode = selectors.selectMode(state);
@@ -137,6 +138,7 @@ class Grouper implements ClickDragListener {
           hidden: false,
           flipX: false,
           tint: null,
+          groundOffset: 0,
         };
         store.dispatch(addPaletteObjectsThunk({ tsId, objs: [group] }));
         finishMode = true;
@@ -150,7 +152,7 @@ class Grouper implements ClickDragListener {
     }
   }
 
-  pointerDrag(e: PointerEventData) {
+  override pointerDrag(e: PointerEventData) {
     const state = store.getState();
     const mode = selectors.selectMode(state);
 

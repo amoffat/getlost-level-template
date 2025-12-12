@@ -229,6 +229,7 @@ export default function TileAnimationTool() {
       flipX: false,
       tint: null,
       hidden: false,
+      groundOffset: 0,
     };
     dispatch(actions.addPaletteObjects({ tsId, objs: [anim] }));
     dispatch(clearCandAnimFramesThunk());

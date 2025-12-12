@@ -41,7 +41,7 @@ export interface TipProps {
  * The Tip component is often displayed in other components so we memoize it to
  * avoid unnecessary re-renders.
  */
-export const Tip = memo(
+const Tip = memo(
   ({ tips, intervalSeconds = 10, className, lines = 3 }: TipProps) => {
     const count = tips.length;
     // Start from the first tip and iterate predictably

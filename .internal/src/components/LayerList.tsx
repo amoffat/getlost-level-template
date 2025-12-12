@@ -16,12 +16,12 @@ import {
 import { useCallback, useMemo } from "react";
 import classes from "./styles/LayerList.module.css";
 
-export interface Layer {
+interface Layer {
   id: number;
   description: string;
 }
 
-export interface LayerListProps {
+interface LayerListProps {
   layerConstraints?: MapLayerName[];
 }
 

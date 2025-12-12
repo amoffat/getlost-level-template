@@ -12,7 +12,12 @@ import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 
 export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
   const toCollect = useMemo(() => {
-    return collectPropertyValues(objs, ["name", "walkSpeed"]);
+    return collectPropertyValues(objs, [
+      "name",
+      "walkSpeed",
+      "dampenWalkCollisions",
+      "groundOffset",
+    ]);
   }, [objs]);
 
   const updateProps = useCallback(
@@ -83,11 +88,71 @@ export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
     />
   );
 
+  const dampenWalkCollisionsInput = (
+    <PropertyValue
+      label="Dampen walk collisions"
+      description="How much to slow the player's movement when colliding with this NPC."
+      values={toCollect.dampenWalkCollisions}
+      defaultValue={0}
+      onValueChange={(
+        level: PropertyValueLevel,
+        value: number | undefined
+      ): void => {
+        updateProps(level, { dampenWalkCollisions: value });
+      }}
+      renderInput={(
+        value: number | undefined,
+        onChange: (value: number) => void
+      ): ReactNode => {
+        return (
+          <Slider
+            value={value ?? 0}
+            onChange={onChange}
+            min={0}
+            max={1}
+            step={0.01}
+          />
+        );
+      }}
+    />
+  );
+
+  const groundOffsetInput = (
+    <PropertyValue
+      label="Ground offset"
+      description="Vertical offset of the NPC from the ground."
+      values={toCollect.groundOffset}
+      defaultValue={0}
+      onValueChange={(
+        level: PropertyValueLevel,
+        value: number | undefined
+      ): void => {
+        updateProps(level, { groundOffset: value });
+      }}
+      renderInput={(
+        value: number | undefined,
+        onChange: (value: number) => void
+      ): ReactNode => {
+        return (
+          <Slider
+            value={value ?? 0}
+            onChange={onChange}
+            min={-16}
+            max={16}
+            step={1}
+          />
+        );
+      }}
+    />
+  );
+
   return (
     <Fieldset legend="NPC properties" mt="md" p="xs">
       <Stack p={0} gap="xl">
         {nameInput}
         {walkSpeedInput}
+        {groundOffsetInput}
+        {dampenWalkCollisionsInput}
       </Stack>
     </Fieldset>
   );

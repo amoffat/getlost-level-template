@@ -42,12 +42,14 @@ export const loadMapThunk = createAsyncThunk(
   async (_: void, { dispatch }) => {
     dispatch(uiActions.pushLoadingMessage(`Loading map...`));
     const persisted = await loadMap();
-    const objs: MapObj[] = [];
-    for (const id of persisted.objects.ids) {
-      const obj = persisted.objects.entities[id];
-      if (obj) objs.push(obj);
+    if (persisted) {
+      const objs: MapObj[] = [];
+      for (const id of persisted.objects.ids) {
+        const obj = persisted.objects.entities[id];
+        if (obj) objs.push(obj);
+      }
+      dispatch(mapActions.setAll(objs));
     }
-    dispatch(mapActions.setAll(objs));
     dispatch(uiActions.popLoadingMessage());
   }
 );

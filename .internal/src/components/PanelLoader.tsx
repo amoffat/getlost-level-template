@@ -1,6 +1,6 @@
 import { Box, Loader, Text } from "@mantine/core";
 
-export interface PanelLoaderProps {
+interface PanelLoaderProps {
   message?: string;
   fullHeight?: boolean;
 }
@@ -9,7 +9,10 @@ export interface PanelLoaderProps {
  * PanelLoader renders a centered spinner with an optional message.
  * Used as a Suspense fallback while editor panels initialize.
  */
-export function PanelLoader({ message, fullHeight = true }: PanelLoaderProps) {
+export default function PanelLoader({
+  message,
+  fullHeight = true,
+}: PanelLoaderProps) {
   return (
     <Box
       pos="relative"
@@ -41,5 +44,3 @@ export function PanelLoader({ message, fullHeight = true }: PanelLoaderProps) {
     </Box>
   );
 }
-
-export default PanelLoader;

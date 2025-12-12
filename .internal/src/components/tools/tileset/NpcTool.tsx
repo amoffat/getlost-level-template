@@ -108,6 +108,9 @@ export default function NpcTool() {
       flipX: false,
       tint: null,
       hidden: false,
+      groundOffset: 0,
+      defaultAnimation: "Idle",
+      dampenWalkCollisions: 0.5,
     };
 
     dispatch(actions.addPaletteObjects({ tsId, objs: [npc] }));

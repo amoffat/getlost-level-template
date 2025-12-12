@@ -39,7 +39,7 @@ export type ResponseFor<R extends AnyRequest> = R extends {
   ? Resp
   : null;
 
-export interface Envelope<Contents, Type> {
+interface Envelope<Contents, Type> {
   // Unique identifier for the request or response
   id: string;
   // The level which sent the request or response. This is used for filtering

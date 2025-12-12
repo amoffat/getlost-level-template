@@ -21,17 +21,19 @@ import { selectStroke, tileSelectFill } from "../../common/strokes";
 import { globals as g } from "../globals";
 import { pressedKeys } from "../keys";
 
-class Selector implements ClickDragListener {
+class Selector extends ClickDragListener {
   private marqueeEnabled = false;
   private recentlyClosedMenu = false;
 
-  constructor(private spatialIndex: SpatialIndex<MapObj>) {}
+  constructor(private spatialIndex: SpatialIndex<MapObj>) {
+    super();
+  }
 
   private get addToSelection(): boolean {
     return pressedKeys["Control"] ?? false;
   }
 
-  pointerDown(e: PointerEventData) {
+  override pointerDown(e: PointerEventData) {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
     if (mode !== "select") return;
@@ -73,7 +75,7 @@ class Selector implements ClickDragListener {
     }
   }
 
-  pointerUp(e: PointerEventData) {
+  override pointerUp(e: PointerEventData) {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
     if (mode !== "select") {
@@ -103,6 +105,19 @@ class Selector implements ClickDragListener {
 
     this.doSelection(e);
     this.marqueeEnabled = false;
+  }
+
+  public override pointerMove(e: PointerEventData) {
+    const searchBounds = rectToBBox(e.hitbox);
+
+    const hits = this.spatialIndex.getObjects({
+      pos: searchBounds,
+    });
+    let cursor = "default";
+    if (hits.length > 0) {
+      cursor = "pointer";
+    }
+    g.canvas.style.cursor = cursor;
   }
 
   /**
@@ -191,7 +206,7 @@ class Selector implements ClickDragListener {
     }
   }
 
-  pointerDrag(e: PointerEventData) {
+  override pointerDrag(e: PointerEventData) {
     if (!this.marqueeEnabled) return;
 
     const state = store.getState();

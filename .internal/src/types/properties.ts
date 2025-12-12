@@ -1,5 +1,7 @@
 import { WalkSound } from "@/constants";
-import { InstanceStatus } from "./InstanceStatus";
+import type { NpcAnimationRecord } from "./npc";
+
+type InstanceStatus = "error" | "warning";
 
 export interface EntranceProps {
   name: string;
@@ -33,6 +35,7 @@ export interface TileGroupProps {
   traction: number;
   hidden: boolean;
   tint: string | null;
+  groundOffset: number;
 }
 
 export interface AnimationProps {
@@ -42,6 +45,7 @@ export interface AnimationProps {
   tint: string | null;
   loop: boolean;
   hidden: boolean;
+  groundOffset: number;
 }
 
 export interface NpcProps {
@@ -51,4 +55,7 @@ export interface NpcProps {
   walkSpeed: number;
   tint: string | null;
   hidden: boolean;
+  defaultAnimation: keyof NpcAnimationRecord;
+  groundOffset: number;
+  dampenWalkCollisions: number;
 }

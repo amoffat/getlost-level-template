@@ -3,6 +3,7 @@
 // changes (e.g. spatial index, layering metadata, etc.) to be migrated.
 
 import { RootState } from "@/store/store";
+import { SavedMap } from "@/types/map";
 
 export interface BaseMapDoc {
   version: number;
@@ -13,7 +14,7 @@ export type MapState = Partial<RootState["mapEditor"]> &
 
 export interface MapDocV1 extends BaseMapDoc {
   version: 1;
-  state: MapState;
+  map: SavedMap;
 }
 
 export interface MapDocV4 extends Omit<MapDocV1, "version"> {

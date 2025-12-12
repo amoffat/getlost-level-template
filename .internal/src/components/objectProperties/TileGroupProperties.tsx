@@ -39,6 +39,7 @@ export default function TileGroupProperties({
       "walkSound",
       "friction",
       "traction",
+      "groundOffset",
     ]);
   }, [objs]);
 
@@ -225,6 +226,35 @@ export default function TileGroupProperties({
     />
   );
 
+  const groundOffsetInput = (
+    <PropertyValue
+      label="Ground offset"
+      description="Vertical offset of the object from the ground."
+      values={toCollect.groundOffset}
+      defaultValue={0}
+      onValueChange={(
+        level: PropertyValueLevel,
+        value: number | undefined
+      ): void => {
+        updateProps(level, { groundOffset: value });
+      }}
+      renderInput={(
+        value: number | undefined,
+        onChange: (value: number) => void
+      ): ReactNode => {
+        return (
+          <Slider
+            value={value ?? 0}
+            onChange={onChange}
+            min={0}
+            max={16}
+            step={1}
+          />
+        );
+      }}
+    />
+  );
+
   return (
     <Fieldset legend="Object properties" mt="md" p="xs">
       <Stack p={0} gap="xl">
@@ -234,6 +264,7 @@ export default function TileGroupProperties({
         {groundLayer && walkSoundInput}
         {groundLayer && frictionInput}
         {groundLayer && tractionInput}
+        {!groundLayer && groundOffsetInput}
       </Stack>
     </Fieldset>
   );

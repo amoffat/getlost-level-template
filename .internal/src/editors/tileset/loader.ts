@@ -150,6 +150,7 @@ export async function unpackTileset(tsId: string, coordsList: Rect[]) {
       hidden: false,
       flipX: false,
       tint: null,
+      groundOffset: 0,
     };
 
     chunk.push(tg);

@@ -13,12 +13,13 @@ import {
   PointerEventData,
 } from "../../common/drag";
 
-export class Mover implements ClickDragListener {
+export class Mover extends ClickDragListener {
   private _moveEnabled = false;
   private _cd: ClickDragger;
   private startPositions: Map<string, Vector2> = new Map();
 
   constructor(cd: ClickDragger) {
+    super();
     this._cd = cd;
   }
 
@@ -36,7 +37,7 @@ export class Mover implements ClickDragListener {
     this._cd.syncDragStart();
   }
 
-  public pointerDown(e: PointerEventData): void {
+  public override pointerDown(e: PointerEventData): void {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
     if (!(mode === "select" || mode === "move")) return;
@@ -51,7 +52,7 @@ export class Mover implements ClickDragListener {
     }
   }
 
-  public pointerUp(_e: PointerEventData): void {
+  public override pointerUp(_e: PointerEventData): void {
     if (!this._moveEnabled) return;
 
     this._moveEnabled = false;
@@ -59,7 +60,7 @@ export class Mover implements ClickDragListener {
     this.startPositions.clear();
   }
 
-  public pointerDrag(e: PointerEventData): void {
+  public override pointerDrag(e: PointerEventData): void {
     if (!this._moveEnabled) return;
 
     const state = store.getState();

@@ -309,6 +309,7 @@ export function weightedIndex(weights: ReadonlyArray<number>): number {
 /**
  * Pick an index from non-negative weights (StaticArray equivalent). Returns -1 if all zero.
  * Useful for: fixed-size tables, performance-critical sampling.
+ * @alias
  */
 export const weightedIndexS = weightedIndex;
 

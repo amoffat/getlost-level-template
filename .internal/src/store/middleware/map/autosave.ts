@@ -1,7 +1,8 @@
+import { defaultTileSize } from "@/constants";
 import { log } from "@/log";
 import { saveMap as persistMap } from "@/persist/map/api";
 import { slice } from "@/slices/mapEditor";
-import { type RootState } from "@/store/store";
+import { SavedMap } from "@/types/map";
 import { AppStartListening } from "@/types/redux";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { EMPTY, Subject, from } from "rxjs";
@@ -10,7 +11,7 @@ import { catchError, concatMap, debounceTime, tap } from "rxjs/operators";
 const listenerMiddleware = createListenerMiddleware();
 
 // Stream of save requests for the single map
-const saveRequests$ = new Subject<{ map: RootState["mapEditor"] }>();
+const saveRequests$ = new Subject<{ map: SavedMap }>();
 
 saveRequests$
   .pipe(
@@ -39,7 +40,15 @@ startAppListening({
     (action.meta as any)?.reconcileType !== undefined,
   effect: async (_action, { getState }) => {
     const state = getState();
-    saveRequests$.next({ map: state.mapEditor });
+
+    const map: SavedMap = {
+      tileWidth: defaultTileSize,
+      tileHeight: defaultTileSize,
+      objects: state.mapEditor.objects,
+      templates: state.mapEditor.templates,
+    } satisfies SavedMap;
+
+    saveRequests$.next({ map });
   },
 });
 
