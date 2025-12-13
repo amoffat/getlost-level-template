@@ -171,6 +171,20 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       gfx.circle(0, 0, props.sensorRadius).fill(exitFill);
     }
 
+    if (Object.hasOwn(props, "groundOffset")) {
+      const sprite = node.getChildByLabel("sprite");
+      if (sprite) {
+        const normalY = sprite.height / 2 + texAtlasPadding;
+        const groundOffset = this.resolveWithInheritance<number>(
+          props.groundOffset,
+          tmpl,
+          "groundOffset",
+          0
+        );
+        sprite.position.y = normalY - groundOffset;
+      }
+    }
+
     if (Object.hasOwn(props, "hidden")) {
       // If hidden is undefined, inherit from template. If it's null, don't.
       const hidden = this.resolveWithInheritance<boolean>(
@@ -242,6 +256,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         });
       }
       const sprite = new P.AnimatedSprite(pixiFrames, true);
+      sprite.label = "sprite";
       sprite.play();
 
       sprite.position.set(
@@ -353,6 +368,12 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       // center anchor, while the container can have its anchor at top-left for
       // easier positioning.
       const sprite = new P.Sprite(tileTex);
+      sprite.label = "sprite";
+
+      if (isTileGroupInstance(obj)) {
+        sprite.scale.x = obj.flipX ? -1 : 1;
+      }
+
       sprite.position.set(
         sprite.width / 2 + texAtlasPadding,
         sprite.height / 2 + texAtlasPadding
@@ -360,10 +381,6 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       sprite.eventMode = "passive";
       sprite.anchor.set(0.5);
       sprite.zIndex = 10;
-
-      if (isTileGroupInstance(obj)) {
-        sprite.scale.x = obj.flipX ? -1 : 1;
-      }
 
       const spriteContainer = new P.Container();
       spriteContainer.label = obj.id;

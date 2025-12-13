@@ -142,18 +142,27 @@ class Filler extends ClickDragListener {
 
         const id = crypto.randomUUID();
         toAdd.push({
+          flipX: undefined,
+          friction: undefined,
+          groundOffset: undefined,
+          height: tmpl.pos.height,
+          hidden: undefined,
           id,
+          imageId: tmpl.imageId,
+          layer,
+          name: undefined,
+          tags: undefined,
+          tilesetId: tmpl.tilesetId,
+          tint: undefined,
+          traction: undefined,
+          tsObjId: tmpl.id,
           type: MapObjType.TileGroupInstance,
+          walkSound: undefined,
+          width: tmpl.pos.width,
           x,
           y,
-          tsObjId: tmpl.id,
-          imageId: tmpl.imageId,
-          tilesetId: tmpl.tilesetId,
           z: y + tmpl.pos.height,
-          layer,
-          width: tmpl.pos.width,
-          height: tmpl.pos.height,
-        });
+        } satisfies TileGroupInstance);
       }
     }
 

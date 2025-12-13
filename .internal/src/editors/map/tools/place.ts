@@ -8,7 +8,17 @@ import { store } from "@/store/store";
 import { isAnimationTemplate, TileAnimationFrame } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { isTileGroupInstance, MapObj, MapObjType } from "@/types/map";
+import {
+  AnimationInstance,
+  EntranceObj,
+  ExitObj,
+  isTileGroupInstance,
+  LightObj,
+  MapObj,
+  MapObjType,
+  NpcInstance,
+  TileGroupInstance,
+} from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
 import { toPixiRect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
@@ -184,6 +194,10 @@ export class Placer extends ClickDragListener {
       if (obj.id === lightIcon) {
         inst = {
           id,
+          color: undefined,
+          intensity: undefined,
+          hidden: undefined,
+          name: undefined,
           type: MapObjType.Light,
           x: pos.x,
           y: pos.y,
@@ -193,10 +207,13 @@ export class Placer extends ClickDragListener {
           layer,
           width: obj.pos.width,
           height: obj.pos.height,
-        };
+        } satisfies LightObj;
       } else if (obj.id === entranceIcon) {
         inst = {
           id,
+          exitIds: [],
+          name: undefined,
+          tags: undefined,
           type: MapObjType.Entry,
           x: pos.x,
           y: pos.y,
@@ -206,11 +223,16 @@ export class Placer extends ClickDragListener {
           layer,
           width: obj.pos.width,
           height: obj.pos.height,
-          status: "error", // New exits start as error until linked
-        };
+          status: "error", // New exits start as error until named
+        } satisfies EntranceObj;
       } else if (obj.id === exitIcon) {
         inst = {
           id,
+          force: false,
+          preferredEntranceId: null,
+          sensorRadius: undefined,
+          name: undefined,
+          tags: undefined,
           type: MapObjType.Exit,
           x: pos.x,
           y: pos.y,
@@ -220,11 +242,13 @@ export class Placer extends ClickDragListener {
           layer,
           width: obj.pos.width,
           height: obj.pos.height,
-          status: "error", // New exits start as error until linked
-        };
+          status: "error", // New exits start as error until named
+        } satisfies ExitObj;
       } else {
         inst = {
           id,
+          name: undefined,
+          tags: undefined,
           type: MapObjType.TileGroupInstance,
           x: pos.x,
           y: pos.y,
@@ -238,13 +262,19 @@ export class Placer extends ClickDragListener {
           height: obj.pos.height,
           tint: undefined,
           hidden: undefined,
-        };
+          walkSound: undefined,
+          friction: undefined,
+          traction: undefined,
+          groundOffset: undefined,
+        } satisfies TileGroupInstance;
       }
     } else if (isAnimationTemplate(obj)) {
       const firstFrame = obj.frames[0]!.tg;
 
       inst = {
         id,
+        names: undefined,
+        tags: undefined,
         type: MapObjType.AnimationInstance,
         tsObjId: obj.id,
         tilesetId: firstFrame.tilesetId,
@@ -257,10 +287,14 @@ export class Placer extends ClickDragListener {
         height,
         tint: undefined,
         hidden: undefined,
-      };
+        loop: undefined,
+        groundOffset: undefined,
+      } satisfies AnimationInstance;
     } else if (isNpcTemplate(obj)) {
       inst = {
         id,
+        name: undefined,
+        tags: undefined,
         type: MapObjType.NpcInstance,
         tsObjId: obj.id,
         tilesetId: obj.tilesetId,
@@ -273,7 +307,11 @@ export class Placer extends ClickDragListener {
         height,
         tint: undefined,
         hidden: undefined,
-      };
+        walkSpeed: undefined,
+        defaultAnimation: undefined,
+        groundOffset: undefined,
+        dampenWalkCollisions: undefined,
+      } satisfies NpcInstance;
     }
 
     console.assert(!!inst, "No instance created for placer");
