@@ -207,6 +207,7 @@ export class Placer extends ClickDragListener {
           layer,
           width: obj.pos.width,
           height: obj.pos.height,
+          flicker: undefined,
         } satisfies LightObj;
       } else if (obj.id === entranceIcon) {
         inst = {

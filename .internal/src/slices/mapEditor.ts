@@ -83,8 +83,8 @@ interface MapEditorState {
   } | null;
   uncommittedObjIds: string[];
   layers: {
-    active: number;
-    visible: number[];
+    active: MapLayerName;
+    visible: MapLayerName[];
     lockInactive: boolean;
     dimInactive: boolean;
   };
@@ -142,6 +142,7 @@ export const slice = createSlice({
         color: constants.defaultLightColor,
         intensity: constants.defaultLightIntensity,
         hidden: false,
+        flicker: "constant",
       },
       entryGateways: {
         id: constants.entryTemplateId,

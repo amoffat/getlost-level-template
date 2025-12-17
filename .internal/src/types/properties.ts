@@ -2,6 +2,7 @@ import { WalkSound } from "@/constants";
 import type { NpcAnimationRecord } from "./npc";
 
 type InstanceStatus = "error" | "warning";
+type LightFlicker = "constant" | "campfire" | "fluorescent";
 
 export interface EntranceProps {
   name: string;
@@ -24,6 +25,7 @@ export interface LightProps {
   color: string;
   intensity: number;
   hidden: boolean;
+  flicker: LightFlicker;
 }
 
 export interface TileGroupProps {

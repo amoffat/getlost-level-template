@@ -7,12 +7,17 @@ on:
   workflow_dispatch:
     inputs:
       license_agreement:
-        description: "I agree to the Level Submission License Agreement"
+        description: "I agree to the Level Submission License Agreement (docs/License.md)"
         required: true
         default: false
         type: boolean
       license_disclosures:
         description: "I have disclosed all third-party assets used in this level"
+        required: true
+        default: false
+        type: boolean
+      story_guidelines_agreement:
+        description: "My level adheres to the Story Submission Guidelines (docs/StoryGuidelines.md)"
         required: true
         default: false
         type: boolean
@@ -25,7 +30,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     if: |
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.license_agreement == 'true' && github.event.inputs.license_disclosures == 'true') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.license_agreement == 'true' && github.event.inputs.license_disclosures == 'true' && github.event.inputs.story_guidelines_agreement == 'true') ||
       (github.event_name == 'push' && (
         github.ref_name != github.event.repository.default_branch ||
         github.repository == 'amoffat/getlost-level-template'

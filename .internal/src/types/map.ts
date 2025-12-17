@@ -1,5 +1,6 @@
-import { HasId, RequiredWithMaybeUndefined } from "@/utils/misc";
+import { HasId, RequiredButMaybeUndefined } from "@/utils/misc";
 import { EntityState } from "@reduxjs/toolkit";
+import type { MapLayerName } from "./layer";
 import {
   AnimationProps,
   EntranceProps,
@@ -41,7 +42,7 @@ export interface BaseMapObj {
   x: number;
   y: number;
   z: number;
-  layer: number;
+  layer: MapLayerName;
   width: number;
   height: number;
 }
@@ -56,7 +57,7 @@ export interface TilesetMapObj extends BaseMapObj {
 }
 
 export interface TileGroupInstance
-  extends TilesetMapObj, RequiredWithMaybeUndefined<TileGroupProps> {
+  extends TilesetMapObj, RequiredButMaybeUndefined<TileGroupProps> {
   type: MapObjType.TileGroupInstance;
 
   imageId: string; // for healing broken references
@@ -70,17 +71,17 @@ export interface TileAnimationFrame {
 }
 
 export interface AnimationInstance
-  extends TilesetMapObj, RequiredWithMaybeUndefined<AnimationProps> {
+  extends TilesetMapObj, RequiredButMaybeUndefined<AnimationProps> {
   type: MapObjType.AnimationInstance;
 }
 
 export interface NpcInstance
-  extends TilesetMapObj, RequiredWithMaybeUndefined<NpcProps> {
+  extends TilesetMapObj, RequiredButMaybeUndefined<NpcProps> {
   type: MapObjType.NpcInstance;
 }
 
 export interface LightObj
-  extends TilesetMapObj, RequiredWithMaybeUndefined<LightProps> {
+  extends TilesetMapObj, RequiredButMaybeUndefined<LightProps> {
   type: MapObjType.Light;
 }
 
@@ -96,12 +97,12 @@ export interface PolyObj extends BaseMapObj {
 }
 
 export interface EntranceObj
-  extends TilesetMapObj, RequiredWithMaybeUndefined<EntranceProps> {
+  extends TilesetMapObj, RequiredButMaybeUndefined<EntranceProps> {
   type: MapObjType.Entry;
 }
 
 export interface ExitObj
-  extends TilesetMapObj, RequiredWithMaybeUndefined<ExitProps> {
+  extends TilesetMapObj, RequiredButMaybeUndefined<ExitProps> {
   type: MapObjType.Exit;
 }
 
