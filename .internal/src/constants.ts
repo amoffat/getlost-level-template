@@ -46,5 +46,6 @@ export const defaultLightColor = "ffffff";
 export const lightTemplateId = "lightsTemplate";
 export const entryTemplateId = "entryGatewaysTemplate";
 export const exitTemplateId = "exitGatewaysTemplate";
+export const pickupTemplateId = "pickupsTemplate";
 
 export const defaultTileSize = 16;

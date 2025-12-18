@@ -180,6 +180,7 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
       const tsId = target.dataset.tsid!;
 
       const obj = tilesets[tsId].tiles.entities[objId];
+      // Left click to select, right click to open menu
       if (e.button === 0) {
         if (selectedObjects?.has(objId)) {
           deselectObject();

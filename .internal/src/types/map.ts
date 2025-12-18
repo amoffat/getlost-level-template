@@ -7,6 +7,7 @@ import {
   ExitProps,
   LightProps,
   NpcProps,
+  PickupProps,
   TileGroupProps,
 } from "./properties";
 import { Rect } from "./rect";
@@ -19,6 +20,7 @@ export interface SavedMap {
     lights: LightProps & HasId;
     entryGateways: EntranceProps & HasId;
     exitGateways: ExitProps & HasId;
+    pickups: PickupProps & HasId;
   };
 }
 
@@ -33,6 +35,7 @@ export enum MapObjType {
   Entry = 7,
   Exit = 8,
   Waypoint = 9,
+  Pickup = 10,
 }
 
 // The base interface for all playable map objects
@@ -106,6 +109,11 @@ export interface ExitObj
   type: MapObjType.Exit;
 }
 
+export interface PickupObj
+  extends TilesetMapObj, RequiredButMaybeUndefined<PickupProps> {
+  type: MapObjType.Pickup;
+}
+
 export type MapObj =
   | TileGroupInstance
   | AnimationInstance
@@ -115,12 +123,14 @@ export type MapObj =
   | PolyObj
   | BoxObj
   | EntranceObj
-  | ExitObj;
+  | ExitObj
+  | PickupObj;
 
 export type MapObjProps =
   | LightProps
   | EntranceProps
   | ExitProps
+  | PickupProps
   | AnimationProps
   | TileGroupProps
   | NpcProps;
@@ -131,13 +141,15 @@ export type ExtractProps<T extends MapObj> = T extends LightObj
     ? EntranceProps
     : T extends ExitObj
       ? ExitProps
-      : T extends AnimationInstance
-        ? AnimationProps
-        : T extends TileGroupInstance
-          ? TileGroupProps
-          : T extends NpcInstance
-            ? NpcProps
-            : never;
+      : T extends PickupObj
+        ? PickupProps
+        : T extends AnimationInstance
+          ? AnimationProps
+          : T extends TileGroupInstance
+            ? TileGroupProps
+            : T extends NpcInstance
+              ? NpcProps
+              : never;
 
 export function isTileGroupInstance(
   obj: Partial<BaseMapObj>
@@ -180,4 +192,8 @@ export function isEntranceObj(obj: Partial<MapObj>): obj is EntranceObj {
 
 export function isExitObj(obj: Partial<MapObj>): obj is ExitObj {
   return obj.type === MapObjType.Exit;
+}
+
+export function isPickupObj(obj: Partial<MapObj>): obj is PickupObj {
+  return obj.type === MapObjType.Pickup;
 }

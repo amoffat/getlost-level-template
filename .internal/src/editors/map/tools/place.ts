@@ -1,4 +1,9 @@
-import { entranceIcon, exitIcon, lightIcon } from "@/constants/tsObjs";
+import {
+  entranceIcon,
+  exitIcon,
+  lightIcon,
+  pickupIcon,
+} from "@/constants/tsObjs";
 import { drawOutline } from "@/editors/common/outline";
 import { selectStroke } from "@/editors/common/strokes";
 import { globals as gApp } from "@/globals";
@@ -17,6 +22,7 @@ import {
   MapObj,
   MapObjType,
   NpcInstance,
+  PickupObj,
   TileGroupInstance,
 } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
@@ -41,6 +47,7 @@ const placeModes: Set<Mode> = new Set([
   "set-waypoint",
   "add-light",
   "set-gateway",
+  "add-pickup",
 ]);
 
 // Modes that allow the creation of the place icon in the canvas.
@@ -245,6 +252,23 @@ export class Placer extends ClickDragListener {
           height: obj.pos.height,
           status: "error", // New exits start as error until named
         } satisfies ExitObj;
+      } else if (obj.id === pickupIcon) {
+        inst = {
+          id,
+          name: undefined,
+          tgId: undefined,
+          tags: undefined,
+          type: MapObjType.Pickup,
+          x: pos.x,
+          y: pos.y,
+          z,
+          tsObjId: obj.id,
+          tilesetId: obj.tilesetId,
+          layer,
+          width: obj.pos.width,
+          height: obj.pos.height,
+          status: "error", // New pickups start as error until named
+        } satisfies PickupObj;
       } else {
         inst = {
           id,

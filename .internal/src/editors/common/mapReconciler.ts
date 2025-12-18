@@ -12,6 +12,7 @@ import {
   isExitObj,
   isMapObjFromTileset,
   isNpcInstance,
+  isPickupObj,
   isTileGroupInstance,
   MapObj,
 } from "@/types/map";
@@ -417,6 +418,15 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
           sprite,
           obj.status === "error"
         );
+        spriteContainer.addChild(errorIndicator);
+      }
+
+      if (isPickupObj(obj)) {
+        const errorIndicator = this.createErrorIndicator(
+          sprite,
+          obj.status === "error"
+        );
+        errorIndicator.zIndex = 20;
         spriteContainer.addChild(errorIndicator);
       }
 

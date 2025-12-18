@@ -9,9 +9,11 @@ import {
   isExitObj,
   isLightInstance,
   isNpcInstance,
+  isPickupObj,
   isTileGroupInstance,
   LightObj,
   NpcInstance,
+  PickupObj,
   TileGroupInstance,
 } from "@/types/map";
 import { Alert, Button, Fieldset, Kbd, Stack } from "@mantine/core";
@@ -26,6 +28,7 @@ import EntranceProperties from "../../objectProperties/EntranceProperties";
 import ExitProperties from "../../objectProperties/ExitProperties";
 import LightProperties from "../../objectProperties/LightProperties";
 import NpcProperties from "../../objectProperties/NpcProperties";
+import PickupProperties from "../../objectProperties/PickupProperties";
 import TileGroupProperties from "../../objectProperties/TileGroupProperties";
 import Tip from "../../Tip";
 
@@ -66,6 +69,7 @@ export default function SelectTool() {
     const npcs: NpcInstance[] = [];
     const entrances: EntranceObj[] = [];
     const exits: ExitObj[] = [];
+    const pickups: PickupObj[] = [];
 
     for (const obj of selectedObjs) {
       if (isTileGroupInstance(obj)) {
@@ -78,6 +82,8 @@ export default function SelectTool() {
         entrances.push(obj);
       } else if (isExitObj(obj)) {
         exits.push(obj);
+      } else if (isPickupObj(obj)) {
+        pickups.push(obj);
       }
     }
 
@@ -87,6 +93,7 @@ export default function SelectTool() {
       npcs.length > 0,
       entrances.length > 0,
       exits.length > 0,
+      pickups.length > 0,
     ].filter(Boolean).length;
 
     if (typesCount > 1) {
@@ -120,6 +127,10 @@ export default function SelectTool() {
 
     if (exits.length > 0) {
       return <ExitProperties key="exit-props" objs={exits} />;
+    }
+
+    if (pickups.length > 0) {
+      return <PickupProperties key="pickup-props" objs={pickups} />;
     }
 
     return null;

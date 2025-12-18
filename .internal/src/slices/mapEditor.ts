@@ -11,7 +11,12 @@ import {
   TileGroupInstance,
 } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
-import { EntranceProps, ExitProps, LightProps } from "@/types/properties";
+import {
+  EntranceProps,
+  ExitProps,
+  LightProps,
+  PickupProps,
+} from "@/types/properties";
 import { Rect } from "@/types/rect";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TilesetObjectTemplate, TsObjCounts } from "@/types/tilesetobject";
@@ -92,6 +97,7 @@ interface MapEditorState {
     lights: LightProps & HasId;
     entryGateways: EntranceProps & HasId;
     exitGateways: ExitProps & HasId;
+    pickups: PickupProps & HasId;
   };
 }
 
@@ -159,6 +165,13 @@ export const slice = createSlice({
         force: false,
         preferredEntranceId: null,
         sensorRadius: constants.defaultExitSensorRadius,
+        status: null,
+      },
+      pickups: {
+        id: constants.pickupTemplateId,
+        key: "",
+        tgId: null,
+        tags: [],
         status: null,
       },
     },

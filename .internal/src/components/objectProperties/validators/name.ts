@@ -10,7 +10,7 @@ export function uniqueName(
   value: string | undefined
 ): string | null {
   if (value && existingNames.has(value.trim())) {
-    return "Name must be unique";
+    return "Must be unique";
   }
   return null;
 }

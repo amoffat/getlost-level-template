@@ -14,4 +14,5 @@ export type Mode =
   | "set-sink-zone"
   | "add-light"
   | "set-gateway"
+  | "add-pickup"
   | "duplicate";

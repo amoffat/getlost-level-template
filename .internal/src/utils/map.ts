@@ -6,6 +6,7 @@ import {
   isExitObj,
   isLightInstance,
   isMapObjFromTileset,
+  isPickupObj,
   MapObj,
 } from "@/types/map";
 import { HasId } from "./misc";
@@ -22,6 +23,8 @@ export function resolveTemplate<
     return state.mapEditor.templates.entryGateways as unknown as TProps;
   } else if (isExitObj(obj)) {
     return state.mapEditor.templates.exitGateways as unknown as TProps;
+  } else if (isPickupObj(obj)) {
+    return state.mapEditor.templates.pickups as unknown as TProps;
   } else if (isMapObjFromTileset(obj)) {
     return tsSelectors.templateFromInstanceId(
       state,

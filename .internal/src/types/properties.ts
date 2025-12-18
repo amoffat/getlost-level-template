@@ -20,6 +20,13 @@ export interface ExitProps {
   status: InstanceStatus | null;
 }
 
+export interface PickupProps {
+  name: string;
+  assetId: string | null;
+  tags: string[];
+  status: InstanceStatus | null;
+}
+
 export interface LightProps {
   name: string;
   color: string;

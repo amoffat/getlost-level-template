@@ -1,19 +1,19 @@
 import { Pickup } from "@gl/types/pickup";
 
 // This function returns an array of pickups that are used in your level. You'll
-// reference the pickup in your code by the `slug` property.
+// reference the pickup in your code by the `name` property.
 export function pickups(): Pickup[] {
   return [
     {
-      key: "map",
+      name: "map",
       tags: ["map"],
     },
     {
-      key: "flame",
+      name: "flame",
       tags: ["fire", "magic"],
     },
     {
-      key: "fruit",
+      name: "fruit",
       tags: ["food", "fruit"],
     },
   ];

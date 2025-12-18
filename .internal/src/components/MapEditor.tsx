@@ -35,11 +35,12 @@ import {
   IconCarCrash,
   IconDoorExit,
   IconEar,
+  IconGift,
   IconInputSpark,
   IconMapPin,
   IconPaint,
+  IconPointer,
   IconRipple,
-  IconSelectAll,
   IconWand,
 } from "@tabler/icons-react";
 import {
@@ -65,6 +66,7 @@ import ColliderTool from "./tools/map/ColliderTool";
 import FillTool from "./tools/map/FillTool";
 import GatewayTool from "./tools/map/GatewayTool";
 import PaintTool from "./tools/map/PaintTool";
+import PickupTool from "./tools/map/PickupTool";
 import SelectTool from "./tools/map/SelectTool";
 
 export default function MapEditorTab({
@@ -169,7 +171,7 @@ export default function MapEditorTab({
       ({
         select: {
           name: "Select/move",
-          icon: <IconSelectAll size={16} />,
+          icon: <IconPointer size={16} />,
           options: <SelectTool />,
         },
         paint: {
@@ -232,6 +234,12 @@ export default function MapEditorTab({
           name: "Add light",
           icon: <IconBulb size={16} />,
           layerConstraints: [MapLayerName.Special],
+        },
+        "add-pickup": {
+          name: "Add pickup",
+          icon: <IconGift size={16} />,
+          layerConstraints: [MapLayerName.Special],
+          options: <PickupTool />,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,
     []

@@ -4,6 +4,7 @@ import {
   isExitObj,
   isLightInstance,
   isMapObjFromTileset,
+  isPickupObj,
   MapObj,
 } from "@/types/map";
 
@@ -18,6 +19,8 @@ export function getTemplateId(obj: MapObj): string | null {
     return constants.entryTemplateId;
   } else if (isExitObj(obj)) {
     return constants.exitTemplateId;
+  } else if (isPickupObj(obj)) {
+    return constants.pickupTemplateId;
   } else if (isMapObjFromTileset(obj)) {
     return obj.tsObjId;
   }
