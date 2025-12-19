@@ -1,4 +1,4 @@
-import { overlayProps, requiredNpcAnimations } from "@/constants";
+import { requiredNpcAnimations } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
@@ -14,12 +14,9 @@ import {
   mapUiToWeight,
   mapWeightToUi,
   rebalanceAfterChange,
-  removeWeight,
   reorderWeights,
-  resizeWeights,
   type Weights,
 } from "@/utils/normalizedSliders";
-import { genAnimId } from "@/utils/tileset";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -33,14 +30,12 @@ import {
   CloseButton,
   Fieldset,
   Group,
-  Modal,
   NumberInput,
   Slider,
   Stack,
   TagsInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
   IconAlertTriangle,
@@ -52,7 +47,6 @@ import TileAnimation from "../../TileAnimation";
 import TilesetGroup from "../../TilesetGroup";
 import Tip from "../../Tip";
 
-const DEFAULT_TOTAL_TIME = 1000; // ms
 const MIN_FRAME_MS_60FPS = Math.ceil(1000 / 60); // ~16.7ms
 
 // Types for frame time calculation
@@ -143,26 +137,36 @@ interface FormValues {
   names: string[];
 }
 
-export default function TileAnimationTool() {
+interface TileAnimationToolProps {
+  selectedAnimation?: AnimationTemplate;
+}
+
+export default function TileAnimationTool({
+  selectedAnimation,
+}: TileAnimationToolProps) {
   const tsId = useAppSelector((state) => state.tilesetEditor.activeTilesetId)!;
-  const cands = useAppSelector((state) => state.tilesetEditor.candAnimFrames);
+  const candFrames = useAppSelector(
+    (state) => state.tilesetEditor.candAnimFrames
+  );
+  const totalTime = useAppSelector(
+    (state) => state.tilesetEditor.candAnimTotalTime
+  );
   const activeTileset = useAppSelector(
     (state) => state.tilesetEditor.tilesets[tsId]!
   );
   const dispatch = useAppDispatch();
   // Store fractional weights per frame (0..1), always normalized so sum == 1
+  // Local state for responsive slider interaction
   const [weights, setWeights] = useState<Weights>([]);
-  // Total animation time in ms
-  const [totalTime, setTotalTime] = useState<number>(DEFAULT_TOTAL_TIME);
-  const [saveModalOpened, { open: openSaveModal, close: closeSaveModal }] =
-    useDisclosure(false);
 
   const form = useForm<FormValues>({
     name: "animation",
-    mode: "uncontrolled",
+    // We have to use a controlled form, because otherwise some fields are very
+    // difficult to update correctly when the selectedAnimation changes.
+    mode: "controlled",
     onSubmitPreventDefault: "always",
     initialValues: {
-      names: [],
+      names: selectedAnimation?.names ?? [],
     },
     validate: {
       names: (value) =>
@@ -197,7 +201,7 @@ export default function TileAnimationTool() {
     return counts;
   }, [activeTileset]);
 
-  const n = cands.length;
+  const n = candFrames.length;
   const hasFrames = n > 0;
 
   const scaleFn = useCallback((v: number) => mapUiToWeight(v, n), [n]);
@@ -206,53 +210,62 @@ export default function TileAnimationTool() {
   const { frames, frameTimeByIdx } = useMemo(() => {
     const result = computeFrameTimes(n, weights, totalTime, MIN_FRAME_MS_60FPS);
     // Adapt to TileAnimation shape
-    const framesForAnim: TileAnimationFrame[] = cands.map((cand, idx) => ({
-      tg: cand,
-      time: result.byIdx[idx] ?? 0,
-    }));
+    const framesForAnim: TileAnimationFrame[] = candFrames.map(
+      (candFrame, idx) => ({
+        tg: candFrame.tileGroup,
+        time: result.byIdx[idx] ?? 0,
+      })
+    );
     return { frames: framesForAnim, frameTimeByIdx: result.byIdx };
-  }, [n, cands, weights, totalTime]);
+  }, [n, candFrames, weights, totalTime]);
 
-  const formSubmit = form.onSubmit(async (values) => {
-    closeSaveModal();
+  const saveAnimation = useCallback(
+    (values: FormValues) => {
+      // It's important to use the existing ID when editing an animation, so
+      // that the map objects using it don't break.
+      const id = selectedAnimation?.id ?? crypto.randomUUID();
 
-    const id = await genAnimId(frames);
-    const anim: AnimationTemplate = {
-      id,
-      type: TemplateType.Animation,
-      tilesetId: tsId,
-      gridSize: cands[0]!.gridSize,
-      frames,
-      names: values.names,
-      tags: [],
-      loop: true,
-      flipX: false,
-      tint: null,
-      hidden: false,
-      groundOffset: 0,
-    };
-    dispatch(actions.addPaletteObjects({ tsId, objs: [anim] }));
-    dispatch(clearCandAnimFramesThunk());
-    dispatch(uiActions.setTilesetTab("animations"));
-    notifications.show({
-      title: "Animation saved",
-      message: `Saved animation "${values.names.join(", ")}".`,
-      autoClose: 3000,
-    });
-    form.reset();
-  });
+      const anim: AnimationTemplate = {
+        id,
+        type: TemplateType.Animation,
+        tilesetId: tsId,
+        gridSize: candFrames[0]!.tileGroup.gridSize,
+        frames,
+        names: values.names,
+        tags: [],
+        loop: true,
+        flipX: false,
+        tint: null,
+        hidden: false,
+        groundOffset: 0,
+      };
+      dispatch(actions.setPaletteObjects({ tsId, objs: [anim] }));
+      dispatch(clearCandAnimFramesThunk());
+      dispatch(uiActions.setTilesetTab("animations"));
+      notifications.show({
+        title: "Animation saved",
+        message: `Saved animation "${values.names.join(", ")}".`,
+        autoClose: 3000,
+      });
+      form.reset();
+    },
+    [frames, tsId, candFrames, dispatch, form, selectedAnimation]
+  );
 
-  const saveAnimation = () => {
-    openSaveModal();
-  };
+  const formSubmit = form.onSubmit(saveAnimation);
 
-  // Keep weights in sync with candidate count (index-based). Preserve existing
-  // prefix, assign a small fair share to new frames, then normalize.
+  // Sync weights when frame count changes (not on every weight update)
+  // Initialize from Redux weights when frames are added/removed
   useEffect(() => {
-    queueMicrotask(() => {
-      setWeights((prev) => resizeWeights(prev, cands.length));
-    });
-  }, [cands.length]);
+    setWeights(candFrames.map((f) => f.weight));
+  }, [candFrames]);
+
+  // Update form names when selectedAnimation changes
+  useEffect(() => {
+    const names = selectedAnimation?.names ?? [];
+    form.setFieldValue("names", names);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAnimation]);
 
   // Rebalance all weights when a single slider is changed so that the sum
   // across frames remains exactly 1.0. We preserve other frames' relative
@@ -266,15 +279,15 @@ export default function TileAnimationTool() {
   };
 
   const removeFrame = (idx: number) => {
-    setWeights((prev) => removeWeight(prev, idx));
-    const id = cands[idx].id;
-    const numIdsInFrames = cands.reduce((acc, cand) => {
-      return acc + (cand.id === id ? 1 : 0);
+    const id = candFrames[idx].tileGroup.id;
+    const numIdsInFrames = candFrames.reduce((acc, candFrame) => {
+      return acc + (candFrame.tileGroup.id === id ? 1 : 0);
     }, 0);
     if (numIdsInFrames <= 1) {
       dispatch(actions.removeOneSelected(id));
     }
     dispatch(actions.removeCandAnimIdx(idx));
+    // Local weights will be updated via useEffect when Redux state changes
   };
 
   const hasAllNpcAnims = useMemo(() => {
@@ -287,7 +300,7 @@ export default function TileAnimationTool() {
 
   const tips: string[] = useMemo(() => {
     const t = [];
-    if (cands.length === 0) {
+    if (candFrames.length === 0) {
       t.push("Select tiles that you want to see in your animation.");
       t.push("You may only select objects that are the same size.");
     } else {
@@ -307,99 +320,92 @@ export default function TileAnimationTool() {
     }
 
     return t;
-  }, [cands.length, hasAllNpcAnims]);
+  }, [candFrames, hasAllNpcAnims]);
+
+  const canSave = hasFrames;
 
   return (
     <>
       <Tip tips={tips} />
-      <Fieldset legend="Animation preview" p="xs">
-        <Stack p={0} gap="xs">
-          {!hasFrames && (
-            <Alert title="No preview" variant="light" icon={<IconInfoCircle />}>
-              Please select tiles from the tileset.
-            </Alert>
-          )}
-          <TileAnimation frames={frames} scale={5} bounded />
+      <form onSubmit={formSubmit}>
+        <Fieldset legend="Animation preview" p="xs">
+          <Stack p={0} gap="xs">
+            {!hasFrames && (
+              <Alert
+                title="No preview"
+                variant="light"
+                icon={<IconInfoCircle />}
+              >
+                Please select tiles from the tileset.
+              </Alert>
+            )}
+            <TileAnimation frames={frames} scale={5} bounded />
 
-          <DndContext
-            collisionDetection={closestCenter}
-            onDragEnd={(event: DragEndEvent) => {
-              const { active, over } = event;
-              if (!over || active.id === over.id) return;
-              const from = Number(active.id);
-              const to = Number(over.id);
-              if (!Number.isInteger(from) || !Number.isInteger(to)) return;
-              // Update redux frames
-              dispatch(actions.reorderCandAnimFrames({ from, to }));
-              // Keep weights in sync
-              setWeights((prev) => reorderWeights(prev, from, to));
-            }}
-          >
-            <SortableContext
-              // Use indices as item ids to support duplicate TileGroup ids
-              items={cands.map((_, i) => String(i))}
-              strategy={verticalListSortingStrategy}
+            <DndContext
+              collisionDetection={closestCenter}
+              onDragEnd={(event: DragEndEvent) => {
+                const { active, over } = event;
+                if (!over || active.id === over.id) return;
+                const from = Number(active.id);
+                const to = Number(over.id);
+                if (!Number.isInteger(from) || !Number.isInteger(to)) return;
+                // Update redux frames (weights stay with their frames during reorder)
+                dispatch(actions.reorderCandAnimFrames({ from, to }));
+                // Update local weights to match reordered state immediately
+                setWeights((prev) => reorderWeights(prev, from, to));
+              }}
             >
-              {cands.map((cand, idx) => {
-                const w = weights[idx] ?? 0;
-                const uiValue = uiFromWeight(w);
+              <SortableContext
+                // Use indices as item ids to support duplicate TileGroup ids
+                items={candFrames.map((_, i) => String(i))}
+                strategy={verticalListSortingStrategy}
+              >
+                {candFrames.map((candFrame, idx) => {
+                  const w = weights[idx] ?? 0;
+                  const uiValue = uiFromWeight(w);
 
-                return (
-                  <SortableFrame
-                    key={`${cand.id}-${idx}`}
-                    id={String(idx)}
-                    idx={idx}
-                    cand={cand}
-                    uiValue={uiValue}
-                    onChange={(v) => {
-                      const targetWeight = scaleFn(v);
-                      updateWeight(idx, targetWeight);
-                    }}
-                    labelMs={frameTimeByIdx[idx]}
-                    totalTime={totalTime}
-                    scaleFn={scaleFn}
-                    removeFrame={removeFrame}
-                    disabled={cands.length <= 1}
-                  />
-                );
-              })}
-            </SortableContext>
-          </DndContext>
+                  return (
+                    <SortableFrame
+                      key={`${candFrame.tileGroup.id}-${idx}`}
+                      id={String(idx)}
+                      idx={idx}
+                      cand={candFrame.tileGroup}
+                      uiValue={uiValue}
+                      onChange={(v) => {
+                        const targetWeight = scaleFn(v);
+                        updateWeight(idx, targetWeight);
+                      }}
+                      onChangeEnd={() => {
+                        // Sync weights to Redux when drag completes
+                        dispatch(
+                          actions.updateAllCandAnimFrameWeights(weights)
+                        );
+                      }}
+                      labelMs={frameTimeByIdx[idx]}
+                      totalTime={totalTime}
+                      scaleFn={scaleFn}
+                      removeFrame={removeFrame}
+                      disabled={candFrames.length <= 1}
+                    />
+                  );
+                })}
+              </SortableContext>
+            </DndContext>
 
-          <NumberInput
-            label="Total time"
-            placeholder="1000"
-            min={1}
-            step={50}
-            value={totalTime}
-            suffix="ms"
-            onChange={(v) =>
-              setTotalTime((typeof v === "number" ? v : Number(v)) || 0)
-            }
-            disabled={!hasFrames}
-          />
+            <NumberInput
+              label="Total time"
+              placeholder="1000"
+              min={1}
+              step={50}
+              value={totalTime}
+              suffix="ms"
+              onChange={(v) => {
+                const time = (typeof v === "number" ? v : Number(v)) || 0;
+                dispatch(actions.setCandAnimTotalTime(time));
+              }}
+              disabled={!hasFrames}
+            />
 
-          <Button
-            variant="filled"
-            fullWidth
-            onClick={saveAnimation}
-            disabled={!hasFrames}
-          >
-            Save animation
-          </Button>
-        </Stack>
-      </Fieldset>
-
-      <Modal
-        centered={true}
-        opened={saveModalOpened}
-        onClose={closeSaveModal}
-        title="Save animation"
-        overlayProps={overlayProps}
-      >
-        <form onSubmit={formSubmit}>
-          <Stack p={0}>
-            <TileAnimation frames={frames} scale={8} bounded />
             <TagsInput
               label="Animation names"
               description="Enter one or more names for this animation."
@@ -434,14 +440,19 @@ export default function TileAnimationTool() {
               }}
               {...form.getInputProps("names")}
             />
-            <Group mt="lg" justify="flex-end">
-              <Button color="blue" type="submit">
-                Save
-              </Button>
-            </Group>
+
+            <Button
+              mt="lg"
+              variant="filled"
+              fullWidth
+              disabled={!canSave}
+              type="submit"
+            >
+              Save animation
+            </Button>
           </Stack>
-        </form>
-      </Modal>
+        </Fieldset>
+      </form>
     </>
   );
 }
@@ -452,6 +463,7 @@ type SortableFrameProps = {
   cand: any; // TileGroup (avoid import cycles in this file)
   uiValue: number;
   onChange: (v: number) => void;
+  onChangeEnd: () => void;
   labelMs: number | undefined;
   totalTime: number;
   scaleFn: (v: number) => number;
@@ -465,6 +477,7 @@ function SortableFrame({
   cand,
   uiValue,
   onChange,
+  onChangeEnd,
   labelMs,
   totalTime,
   scaleFn,
@@ -497,6 +510,7 @@ function SortableFrame({
         scale={scaleFn}
         value={uiValue}
         onChange={onChange}
+        onChangeEnd={onChangeEnd}
         label={(scaledWeight) => {
           const clamped = clamp01(scaledWeight);
           const ms = labelMs;

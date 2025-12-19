@@ -7,11 +7,12 @@ import {
 import { PickupObj } from "@/types/map";
 import { PickupProps } from "@/types/properties";
 import { TileGroupTemplate } from "@/types/tilegroup";
+import { arrayEquals } from "@/utils/array";
 import {
   collectPropertyValues,
   updateObjectProperties,
 } from "@/utils/propertyEditor";
-import { Fieldset, Stack, TagsInput, TextInput } from "@mantine/core";
+import { Fieldset, Stack, Switch, TagsInput, TextInput } from "@mantine/core";
 import { ReactNode, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 import TilesetGroup from "../TilesetGroup";
@@ -49,7 +50,7 @@ export default function PickupProperties({ objs }: { objs: PickupObj[] }) {
   );
 
   const toCollect = useMemo(() => {
-    return collectPropertyValues(objs, ["name", "tags", "assetId"]);
+    return collectPropertyValues(objs, ["name", "tags", "assetId", "hidden"]);
   }, [objs]);
 
   const existingNames = useMemo(() => {
@@ -113,6 +114,7 @@ export default function PickupProperties({ objs }: { objs: PickupObj[] }) {
       description="Tags for categorizing this pickup"
       values={toCollect.tags}
       defaultValue={[]}
+      areEqual={arrayEquals}
       onValueChange={(level, value: string[] | undefined) => {
         updateProps(level, { tags: value });
       }}
@@ -122,7 +124,7 @@ export default function PickupProperties({ objs }: { objs: PickupObj[] }) {
       ): ReactNode => {
         return (
           <TagsInput
-            value={value ?? []}
+            value={value}
             onChange={onChange}
             placeholder="Enter tags"
             splitChars={[",", " ", "|"]}
@@ -184,11 +186,39 @@ export default function PickupProperties({ objs }: { objs: PickupObj[] }) {
     />
   );
 
+  const hiddenInput = (
+    <PropertyValue
+      label="Hidden"
+      description="Whether the pickup starts off hidden on the map."
+      values={toCollect.hidden}
+      defaultValue={false}
+      noTemplate
+      onValueChange={(
+        level: PropertyValueLevel,
+        value: boolean | undefined
+      ): void => {
+        updateProps(level, { hidden: value });
+      }}
+      renderInput={(
+        value: boolean | undefined,
+        onChange: (value: boolean) => void
+      ): ReactNode => {
+        return (
+          <Switch
+            checked={value ?? false}
+            onChange={(e) => onChange(e.currentTarget.checked)}
+          />
+        );
+      }}
+    />
+  );
+
   return (
     <Fieldset legend="Pickup Properties" p="xs">
       <Stack p={0} gap="xl">
         {nameInput}
         {tgIdInput}
+        {hiddenInput}
         {tagsInput}
       </Stack>
     </Fieldset>

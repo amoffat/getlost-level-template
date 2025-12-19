@@ -21,8 +21,8 @@ export default function TileReslicerTool() {
 
   const resliceTiles = useCallback(() => {
     if (!ts) return;
-    dispatch(retileThunk(ts.id));
-  }, [dispatch, ts]);
+    dispatch(retileThunk({ tsId: ts.id, gridSize: grid.size }));
+  }, [dispatch, ts, grid.size]);
 
   if (!ts) return null;
 

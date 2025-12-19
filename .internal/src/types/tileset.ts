@@ -21,6 +21,7 @@ export interface Tileset {
   saved: boolean;
   width: number;
   height: number;
+  gridSize: number;
   tiles: TilesBucket;
   // A composite tileset combines multiple source tilesets into one, which
   // implies that it has no innate grid size (a grid size of 1x1)

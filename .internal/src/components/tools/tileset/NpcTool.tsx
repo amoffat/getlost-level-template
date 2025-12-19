@@ -113,7 +113,7 @@ export default function NpcTool() {
       dampenWalkCollisions: 0.5,
     };
 
-    dispatch(actions.addPaletteObjects({ tsId, objs: [npc] }));
+    dispatch(actions.setPaletteObjects({ tsId, objs: [npc] }));
     dispatch(uiActions.setTilesetTab("npcs"));
 
     notifications.show({

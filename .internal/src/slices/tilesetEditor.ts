@@ -8,6 +8,7 @@ import { Mode, Tileset } from "@/types/tileset";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
 import { HasId } from "@/utils/misc";
+import { resizeWeights } from "@/utils/normalizedSliders";
 import { calcDefaultZoomPan } from "@/utils/zoompan";
 import {
   createEntityAdapter,
@@ -21,6 +22,11 @@ const DEFAULT_ZOOMPAN: ZoomPan = { zoom: 1, pan: { x: 0, y: 0 } };
 
 type ToolOptMapping = object;
 type ToolWithOptions = keyof ToolOptMapping;
+
+export interface CandidateAnimFrame {
+  tileGroup: TileGroupTemplate;
+  weight: number; // 0-1 fraction representing time allocation
+}
 
 const reconcilePrefix = "tilesetEditor";
 export const selectedAdapter = createEntityAdapter<HasId>();
@@ -53,7 +59,8 @@ export interface TilesetEditorState {
   toolOptions: {
     [K in ToolWithOptions]: ToolOptMapping[K];
   };
-  candAnimFrames: TileGroupTemplate[];
+  candAnimTotalTime: number;
+  candAnimFrames: CandidateAnimFrame[];
   // obj id to tileset id
   objIdToTs: Record<string, string>;
   // image id to tileset id. used for healing broken references
@@ -94,6 +101,7 @@ export const slice = createSlice({
         frames: [],
       },
     },
+    candAnimTotalTime: 1000,
     candAnimFrames: [],
     objIdToTs: {},
     imageIdToTs: {},
@@ -119,12 +127,36 @@ export const slice = createSlice({
     },
 
     addCandAnimFrame(state, action: PayloadAction<TileGroupTemplate>) {
-      state.candAnimFrames.push(action.payload);
+      const newLength = state.candAnimFrames.length + 1;
+      const weights = resizeWeights(
+        state.candAnimFrames.map((f) => f.weight),
+        newLength
+      );
+      // Update existing frames with rebalanced weights
+      for (let i = 0; i < state.candAnimFrames.length; i++) {
+        state.candAnimFrames[i].weight = weights[i];
+      }
+      // Add new frame with its weight
+      state.candAnimFrames.push({
+        tileGroup: action.payload,
+        weight: weights[newLength - 1],
+      });
     },
 
     removeCandAnimIdx(state, action: PayloadAction<number>) {
       const idx = action.payload;
       state.candAnimFrames.splice(idx, 1);
+      // Rebalance weights after removal
+      const newLength = state.candAnimFrames.length;
+      if (newLength > 0) {
+        const weights = resizeWeights(
+          state.candAnimFrames.map((f) => f.weight),
+          newLength
+        );
+        for (let i = 0; i < newLength; i++) {
+          state.candAnimFrames[i].weight = weights[i];
+        }
+      }
     },
 
     clearCandAnimFrames(state) {
@@ -148,6 +180,35 @@ export const slice = createSlice({
       const arr = state.candAnimFrames;
       const [moved] = arr.splice(from, 1);
       arr.splice(to, 0, moved);
+    },
+
+    updateCandAnimFrameWeight(
+      state,
+      action: PayloadAction<{ idx: number; weight: number }>
+    ) {
+      const { idx, weight } = action.payload;
+      if (idx >= 0 && idx < state.candAnimFrames.length) {
+        state.candAnimFrames[idx].weight = weight;
+      }
+    },
+
+    updateAllCandAnimFrameWeights(state, action: PayloadAction<number[]>) {
+      const weights = action.payload;
+      for (
+        let i = 0;
+        i < Math.min(weights.length, state.candAnimFrames.length);
+        i++
+      ) {
+        state.candAnimFrames[i].weight = weights[i];
+      }
+    },
+
+    setCandAnimFrames(state, action: PayloadAction<CandidateAnimFrame[]>) {
+      state.candAnimFrames = action.payload;
+    },
+
+    setCandAnimTotalTime(state, action: PayloadAction<number>) {
+      state.candAnimTotalTime = action.payload;
     },
 
     pushMode(state, action: PayloadAction<Mode>) {
@@ -253,6 +314,7 @@ export const slice = createSlice({
               ts.width,
               ts.height
             );
+          state.grid.size = ts.gridSize;
         }
         state.activeZoomPan = zoomPan;
       },
@@ -328,13 +390,23 @@ export const slice = createSlice({
       state.tilesetZoomPans[tsId].pan = pan;
     },
 
+    setTilesetGridSize(
+      state,
+      action: PayloadAction<{ tsId: string; gridSize: number }>
+    ) {
+      const { tsId, gridSize } = action.payload;
+      const ts = state.tilesets[tsId];
+      if (!ts) return;
+      ts.gridSize = gridSize;
+    },
+
     markSaved(state, action: PayloadAction<{ tsId: string; saved: boolean }>) {
       const { tsId, saved } = action.payload;
       const ts = state.tilesets[tsId];
       ts.saved = saved;
     },
 
-    addPaletteObjects: {
+    setPaletteObjects: {
       prepare: (payload: { tsId: string; objs: TilesetObjectTemplate[] }) => ({
         meta: {
           reconcilePrefix,
@@ -349,7 +421,7 @@ export const slice = createSlice({
       ) {
         const { tsId, objs } = action.payload;
         const ts = state.tilesets[tsId];
-        tileAdapter.addMany(ts.tiles, objs);
+        tileAdapter.setMany(ts.tiles, objs);
         for (const obj of objs) {
           state.objIdToTs[obj.id] = tsId;
           if (isTileGroupTemplate(obj)) {

@@ -1,3 +1,4 @@
+import { defaultTileSize } from "@/constants";
 import { computeEdgeSignatures } from "@/editors/map/utils/autotile";
 import {
   generateGridAlignedCoords,
@@ -16,6 +17,7 @@ import {
 } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { RootState, store } from "@/store/store";
+import { AnimationTemplate } from "@/types/animation";
 import { TileGroupInstance } from "@/types/map";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
@@ -88,6 +90,7 @@ export const uploadTilesetThunk = createAsyncThunk(
       saved: false,
       width: bitmap.width,
       height: bitmap.height,
+      gridSize: defaultTileSize,
       tiles: { ids: [], entities: {} },
       composite,
       restricted,
@@ -233,7 +236,10 @@ export const removeTilesetThunk = createAsyncThunk(
 
 export const retileThunk = createAsyncThunk(
   "tilesetEditor/retileThunk",
-  async (tsId: string, { dispatch }) => {
+  async (
+    { tsId, gridSize }: { tsId: string; gridSize: number },
+    { dispatch }
+  ) => {
     const state = store.getState();
     const ts = state.tilesetEditor.tilesets[tsId];
     if (!ts) {
@@ -246,8 +252,8 @@ export const retileThunk = createAsyncThunk(
       .filter((obj) => !obj.pinned)
       .map((obj) => obj.id);
     dispatch(tsActions.deletePaletteObjects({ tsId, ids }));
+    dispatch(tsActions.setTilesetGridSize({ tsId, gridSize }));
 
-    const gridSize = state.tilesetEditor.grid.size;
     const coords = generateGridAlignedCoords(tsId, gridSize);
     await unpackTileset(tsId, coords);
   }
@@ -290,8 +296,8 @@ export const addAnimationFrameThunk = createAsyncThunk(
     const curFrames = state.tilesetEditor.candAnimFrames;
     if (curFrames.length > 0) {
       const firstFrame = curFrames[0];
-      const firstWidth = firstFrame.pos.width;
-      const firstHeight = firstFrame.pos.height;
+      const firstWidth = firstFrame.tileGroup.pos.width;
+      const firstHeight = firstFrame.tileGroup.pos.height;
       const newWidth = tg.pos.width;
       const newHeight = tg.pos.height;
 
@@ -310,6 +316,27 @@ export const addAnimationFrameThunk = createAsyncThunk(
   }
 );
 
+export const setAnimationFramesThunk = createAsyncThunk(
+  "tilesetEditor/setAnimationFramesThunk",
+  async (obj: AnimationTemplate, { dispatch }) => {
+    // Load the animation's frames into the animator
+    // Calculate weights from frame times
+    const totalTime = obj.frames.reduce((sum, frame) => sum + frame.time, 0);
+    const candFrames = obj.frames.map((frame) => ({
+      tileGroup: frame.tg,
+      weight: totalTime > 0 ? frame.time / totalTime : 1 / obj.frames.length,
+    }));
+    dispatch(tsActions.setCandAnimTotalTime(totalTime));
+    dispatch(tsActions.setCandAnimFrames(candFrames));
+    dispatch(tsActions.setManySelected(obj.frames.map((frame) => frame.tg)));
+    notifications.show({
+      title: "Animation loaded",
+      message: `Loaded ${obj.frames.length} frames for animation "${obj.names.join(", ")}".`,
+      color: "green",
+    });
+  }
+);
+
 export const clearCandAnimFramesThunk = createAsyncThunk(
   "tilesetEditor/clearCandAnimFramesThunk",
   async (_, { dispatch }) => {
@@ -325,7 +352,7 @@ export const addPaletteObjectsThunk = createAsyncThunk(
     { dispatch, getState }
   ) => {
     const state = getState() as RootState;
-    dispatch(tsActions.addPaletteObjects({ tsId, objs: tmplObjs }));
+    dispatch(tsActions.setPaletteObjects({ tsId, objs: tmplObjs }));
 
     // Fix broken tile group instances whose imageIds match the newly added tile
     // groups.

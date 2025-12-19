@@ -75,6 +75,7 @@ export async function saveTileset(ts: Tileset) {
     id: ts.id,
     width: ts.width,
     height: ts.height,
+    gridSize: ts.gridSize,
     composite: ts.composite,
     tiles: ts.tiles,
     restricted: ts.restricted,

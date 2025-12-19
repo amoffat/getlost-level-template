@@ -6,13 +6,15 @@ import { actions as uiActions } from "@/slices/ui";
 import {
   loadTilesetThunk,
   selectTilesetThunk,
+  setAnimationFramesThunk,
   setToolThunk,
 } from "@/thunks/tileset";
-import { isAnimationTemplate } from "@/types/animation";
+import { AnimationTemplate, isAnimationTemplate } from "@/types/animation";
 import { isNpcTemplate } from "@/types/npc";
 import { TilesetTabName } from "@/types/tab";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Mode } from "@/types/tileset";
+import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import {
   npcSort,
   objectAnimationSort,
@@ -39,6 +41,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ObjectPalette from "./ObjectPalette";
@@ -75,6 +78,8 @@ export default function TilesetEditorTab({
   const tilesets = useAppSelector(selectors.selectTilesets);
   const containerRef = useRef<HTMLDivElement>(null);
   const curTab = useAppSelector((state) => state.ui.tilesetTab);
+  const [selectedAnimation, setSelectedAnimation] =
+    useState<AnimationTemplate>();
 
   use(initPromise);
 
@@ -180,7 +185,7 @@ export default function TilesetEditorTab({
         animate: {
           name: "Animate",
           icon: <IconRun size={16} />,
-          options: <TileAnimationTool />,
+          options: <TileAnimationTool selectedAnimation={selectedAnimation} />,
           enabled: hasTsSelected,
         },
         "make-npc": {
@@ -201,11 +206,29 @@ export default function TilesetEditorTab({
           enabled: hasTsSelected && singleSelectedObject,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,
-    [enableGroup, hasTsSelected, singleSelectedObject]
+    [enableGroup, hasTsSelected, singleSelectedObject, selectedAnimation]
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName]!;
   const toolOptions = tool?.options;
+
+  const onSelectObject = useCallback(
+    (obj: TilesetObjectTemplate) => {
+      setSelectedAnimation(undefined);
+
+      if (!ts) {
+        const ts = tilesets[obj.tilesetId];
+        dispatch(selectTilesetThunk(ts)).unwrap();
+      }
+
+      if (isAnimationTemplate(obj)) {
+        dispatch(actions.setActiveTool("animate"));
+        dispatch(setAnimationFramesThunk(obj));
+        setSelectedAnimation(obj);
+      }
+    },
+    [dispatch, tilesets, ts]
+  );
 
   const onToolActivated = useCallback(
     (slug: string) => {
@@ -357,6 +380,7 @@ export default function TilesetEditorTab({
                       filter={isTileGroupTemplate}
                       renderObject={renderTileGroup}
                       sort={tileGroupSort}
+                      onSelectObject={onSelectObject}
                     />
                   </Tabs.Panel>
                   <Tabs.Panel
@@ -377,6 +401,7 @@ export default function TilesetEditorTab({
                       filter={isAnimationTemplate}
                       renderObject={renderObjectAnimation}
                       sort={objectAnimationSort}
+                      onSelectObject={onSelectObject}
                     />
                   </Tabs.Panel>
                   <Tabs.Panel
@@ -397,6 +422,7 @@ export default function TilesetEditorTab({
                       filter={isNpcTemplate}
                       renderObject={renderNpc}
                       sort={npcSort}
+                      onSelectObject={onSelectObject}
                     />
                   </Tabs.Panel>
                 </Tabs>

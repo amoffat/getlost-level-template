@@ -25,6 +25,7 @@ export interface PickupProps {
   assetId: string | null;
   tags: string[];
   status: InstanceStatus | null;
+  hidden: boolean;
 }
 
 export interface LightProps {
