@@ -221,17 +221,16 @@ export default function TileAnimationTool({
 
   const saveAnimation = useCallback(
     (values: FormValues) => {
-      // It's important to use the existing ID when editing an animation, so
-      // that the map objects using it don't break.
-      const id = selectedAnimation?.id ?? crypto.randomUUID();
+      const id = crypto.randomUUID();
 
+      // Defaults
       const anim: AnimationTemplate = {
         id,
         type: TemplateType.Animation,
         tilesetId: tsId,
         gridSize: candFrames[0]!.tileGroup.gridSize,
         frames,
-        names: values.names,
+        names: [],
         tags: [],
         loop: true,
         flipX: false,
@@ -239,6 +238,11 @@ export default function TileAnimationTool({
         hidden: false,
         groundOffset: 0,
       };
+      // Merge in existing properties of existing
+      Object.assign(anim, selectedAnimation ?? {});
+      // Set creation values
+      Object.assign(anim, { names: values.names });
+
       dispatch(actions.setPaletteObjects({ tsId, objs: [anim] }));
       dispatch(clearCandAnimFramesThunk());
       dispatch(uiActions.setTilesetTab("animations"));
@@ -247,9 +251,8 @@ export default function TileAnimationTool({
         message: `Saved animation "${values.names.join(", ")}".`,
         autoClose: 3000,
       });
-      form.reset();
     },
-    [frames, tsId, candFrames, dispatch, form, selectedAnimation]
+    [frames, tsId, candFrames, dispatch, selectedAnimation]
   );
 
   const formSubmit = form.onSubmit(saveAnimation);

@@ -1,29 +1,26 @@
-import { overlayProps, requiredNpcAnimations } from "@/constants";
+import { requiredNpcAnimations } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { setToolThunk } from "@/thunks/tileset";
 import { isAnimationTemplate, type AnimationTemplate } from "@/types/animation";
-import type {
-  NpcAnimationRecord,
-  NpcRequiredAnimation,
-  NpcTemplate,
+import {
+  isNpcTemplate,
+  type NpcAnimationRecord,
+  type NpcRequiredAnimation,
+  type NpcTemplate,
 } from "@/types/npc";
 import { TemplateType } from "@/types/templates";
 import {
   Anchor,
   Button,
   Fieldset,
-  Group,
-  Modal,
   Stack,
   Table,
-  TagsInput,
   Text,
   TextInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconAlertTriangle, IconCheck } from "@tabler/icons-react";
 import { ReactNode, useCallback, useEffect, useMemo } from "react";
@@ -32,27 +29,34 @@ import Tip from "../../Tip";
 
 interface FormValues {
   name: string;
-  tags: string[];
 }
 
 export default function NpcTool() {
   const tsId = useAppSelector((state) => state.tilesetEditor.activeTilesetId)!;
   const ts = useAppSelector((state) => state.tilesetEditor.tilesets[tsId]);
   const dispatch = useAppDispatch();
-  const [saveModalOpened, { open: openSaveModal, close: closeSaveModal }] =
-    useDisclosure(false);
+
+  const existingNpc = useMemo(() => {
+    const npcs = ts.tiles.ids
+      .map((id) => ts.tiles.entities[id])
+      .filter(isNpcTemplate);
+    return npcs.at(0);
+  }, [ts]);
 
   useEffect(() => {
-    dispatch(uiActions.setTilesetTab("animations"));
-  }, [dispatch]);
+    if (!existingNpc) {
+      dispatch(uiActions.setTilesetTab("animations"));
+    }
+  }, [dispatch, existingNpc]);
 
   const form = useForm<FormValues>({
     name: "npc",
-    mode: "uncontrolled",
+    // We have to use a controlled form, because otherwise some fields are very
+    // difficult to update correctly.
+    mode: "controlled",
     onSubmitPreventDefault: "always",
     initialValues: {
-      name: "",
-      tags: [],
+      name: existingNpc?.name ?? "npc",
     },
     validate: {
       name: (value) => {
@@ -84,45 +88,53 @@ export default function NpcTool() {
     return matches;
   }, [ts]);
 
-  const formSubmit = form.onSubmit(async (values) => {
-    closeSaveModal();
+  const saveNpc = useCallback(
+    (values: FormValues) => {
+      const animations: NpcAnimationRecord = {
+        Idle: animationMatches["Idle"]!,
+        WalkUp: animationMatches["WalkUp"]!,
+        WalkDown: animationMatches["WalkDown"]!,
+        WalkLeft: animationMatches["WalkLeft"]!,
+        WalkRight: animationMatches["WalkRight"]!,
+      };
 
-    const animations: NpcAnimationRecord = {
-      Idle: animationMatches["Idle"]!,
-      WalkUp: animationMatches["WalkUp"]!,
-      WalkDown: animationMatches["WalkDown"]!,
-      WalkLeft: animationMatches["WalkLeft"]!,
-      WalkRight: animationMatches["WalkRight"]!,
-    };
+      const id = crypto.randomUUID();
 
-    const id = crypto.randomUUID();
-    const npc: NpcTemplate = {
-      id,
-      type: TemplateType.Npc,
-      animations,
-      tilesetId: tsId,
-      gridSize: animations["Idle"].gridSize,
-      name: values.name,
-      tags: values.tags,
-      walkSpeed: 0.5,
-      flipX: false,
-      tint: null,
-      hidden: false,
-      groundOffset: 0,
-      defaultAnimation: "Idle",
-      dampenWalkCollisions: 0.5,
-    };
+      // Defaults
+      const npc: NpcTemplate = {
+        id,
+        type: TemplateType.Npc,
+        animations,
+        tilesetId: tsId,
+        gridSize: animations["Idle"].gridSize,
+        name: "",
+        tags: [],
+        walkSpeed: 0.5,
+        flipX: false,
+        tint: null,
+        hidden: false,
+        groundOffset: 0,
+        defaultAnimation: "Idle",
+        dampenWalkCollisions: 0.5,
+      };
+      // Merge in existing properties of existing
+      Object.assign(npc, existingNpc ?? {});
+      // Set creation values
+      Object.assign(npc, { name: values.name });
 
-    dispatch(actions.setPaletteObjects({ tsId, objs: [npc] }));
-    dispatch(uiActions.setTilesetTab("npcs"));
+      dispatch(actions.setPaletteObjects({ tsId, objs: [npc] }));
+      dispatch(uiActions.setTilesetTab("npcs"));
 
-    notifications.show({
-      title: "NPC saved",
-      message: `Saved NPC "${values.name}".`,
-      autoClose: 3000,
-    });
-    form.reset();
-  });
+      notifications.show({
+        title: "NPC saved",
+        message: `Saved NPC "${values.name}".`,
+        autoClose: 3000,
+      });
+    },
+    [animationMatches, existingNpc, tsId, dispatch]
+  );
+
+  const formSubmit = form.onSubmit(saveNpc);
 
   const [hasAll, hasSome, hasNone] = useMemo(() => {
     let hasAll = true;
@@ -148,7 +160,7 @@ export default function NpcTool() {
 
     if (hasAll) {
       t.push(
-        "Once every animation is assigned, click 'Create NPC' to finalize."
+        "Once every animation is assigned, enter a name and click 'Create NPC' to finalize."
       );
     } else if (hasNone || hasSome) {
       t.push("Create an NPC by defining its required animations.");
@@ -161,135 +173,91 @@ export default function NpcTool() {
         </>
       );
     }
+
+    t.push("Only one NPC template can be created per tileset");
     return t;
   }, [activateAnimationTool, hasAll, hasSome, hasNone]);
 
-  const previewFrames = useMemo(() => {
-    const frames = [];
-    for (const requiredName of requiredNpcAnimations) {
-      const animation = animationMatches[requiredName];
-      if (animation) {
-        frames.push(...animation.frames);
-      }
-    }
-    return frames;
-  }, [animationMatches]);
+  const canSave = hasAll;
 
   return (
     <>
       <Tip tips={tips} />
-      <Fieldset legend="NPC animations" p="xs">
-        <Stack p={0} gap="md">
-          <Table striped highlightOnHover>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Required</Table.Th>
-                <Table.Th>Animation</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {requiredNpcAnimations.map((name) => {
-                const animation = animationMatches[name];
-                return (
-                  <Table.Tr key={name}>
-                    <Table.Td>
-                      <Text
-                        size="sm"
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                        }}
-                      >
-                        {animation ? (
-                          <IconCheck size={16} color="green" />
-                        ) : (
-                          <IconAlertTriangle size={16} color="orange" />
-                        )}
-                        {name}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td>
-                      {animation ? (
-                        <TileAnimation
-                          frames={animation.frames}
-                          scale={2}
-                          bounded
-                        />
-                      ) : (
-                        <Anchor
-                          underline="hover"
-                          size="xs"
-                          onClick={activateAnimationTool}
+      <form onSubmit={formSubmit}>
+        <Fieldset legend="NPC animations" p="xs">
+          <Stack p={0} gap="md">
+            <Table striped highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Required</Table.Th>
+                  <Table.Th>Animation</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {requiredNpcAnimations.map((name) => {
+                  const animation = animationMatches[name];
+                  return (
+                    <Table.Tr key={name}>
+                      <Table.Td>
+                        <Text
+                          size="sm"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                          }}
                         >
-                          Create
-                        </Anchor>
-                      )}
-                    </Table.Td>
-                  </Table.Tr>
-                );
-              })}
-            </Table.Tbody>
-          </Table>
+                          {animation ? (
+                            <IconCheck size={16} color="green" />
+                          ) : (
+                            <IconAlertTriangle size={16} color="orange" />
+                          )}
+                          {name}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td>
+                        {animation ? (
+                          <TileAnimation
+                            frames={animation.frames}
+                            scale={2}
+                            bounded
+                          />
+                        ) : (
+                          <Anchor
+                            underline="hover"
+                            size="xs"
+                            onClick={activateAnimationTool}
+                          >
+                            Create
+                          </Anchor>
+                        )}
+                      </Table.Td>
+                    </Table.Tr>
+                  );
+                })}
+              </Table.Tbody>
+            </Table>
 
-          <Button
-            variant="filled"
-            fullWidth
-            mt="md"
-            disabled={!hasAll}
-            onClick={openSaveModal}
-          >
-            Create NPC
-          </Button>
-        </Stack>
-      </Fieldset>
-
-      <Modal
-        centered={true}
-        opened={saveModalOpened}
-        onClose={closeSaveModal}
-        title="Save NPC"
-        overlayProps={overlayProps}
-      >
-        <form onSubmit={formSubmit}>
-          <Stack p={0}>
-            <TileAnimation frames={previewFrames} scale={8} bounded />
             <TextInput
               label="Name"
-              description="What should we call this NPC? You can change it later."
-              placeholder="MyNPC"
+              description="What should we call this NPC?"
+              placeholder="Jeff"
+              disabled={!canSave}
               {...form.getInputProps("name")}
             />
-            <TagsInput
-              label="Tags"
-              description="Tags are used to find NPCs in the object palette."
-              placeholder="Enemy"
-              splitChars={[",", " ", "|"]}
-              limit={5}
-              data={[
-                {
-                  group: "Required for NPCs",
-                  items: [...requiredNpcAnimations],
-                },
-              ]}
-              renderOption={(item) => {
-                const label = item.option.value;
-                return (
-                  <Group gap="xs" wrap="nowrap">
-                    <span>{label}</span>
-                  </Group>
-                );
-              }}
-              {...form.getInputProps("names")}
-            />
-            <Group mt="lg" justify="flex-end">
-              <Button color="blue" type="submit">
-                Save
-              </Button>
-            </Group>
+
+            <Button
+              variant="filled"
+              fullWidth
+              mt="md"
+              disabled={!canSave}
+              type="submit"
+            >
+              {existingNpc ? "Update NPC" : "Create NPC"}
+            </Button>
           </Stack>
-        </form>
-      </Modal>
+        </Fieldset>
+      </form>
     </>
   );
 }

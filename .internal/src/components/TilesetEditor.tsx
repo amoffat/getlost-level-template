@@ -225,6 +225,8 @@ export default function TilesetEditorTab({
         dispatch(actions.setActiveTool("animate"));
         dispatch(setAnimationFramesThunk(obj));
         setSelectedAnimation(obj);
+      } else if (isNpcTemplate(obj)) {
+        dispatch(actions.setActiveTool("make-npc"));
       }
     },
     [dispatch, tilesets, ts]

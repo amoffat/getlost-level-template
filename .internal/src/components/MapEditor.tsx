@@ -109,6 +109,7 @@ export default function MapEditorTab({
 
       const state = store.getState();
       const mode = selectors.selectMode(state);
+
       if (mode === "fill" && isTileGroupTemplate(obj)) {
         const curCands = state.mapEditor.toolOptions.fill.candidates;
         if (curCands.find((c) => c.tg.id === obj.id)) {
