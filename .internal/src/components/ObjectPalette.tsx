@@ -1,6 +1,7 @@
 import { useAppSelector } from "@/hooks/redux";
 import { RootState } from "@/store/store";
 import { isAnimationTemplate } from "@/types/animation";
+import { isNpcTemplate } from "@/types/npc";
 import { PaletteObjectProps } from "@/types/palette";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
@@ -25,6 +26,7 @@ import React, {
 } from "react";
 import { shallowEqual } from "react-redux";
 import ObjectAnimationMenu from "./paletteMenus/ObjectAnimationMenu";
+import ObjectNpcMenu from "./paletteMenus/ObjectNpcMenu";
 import TileGroupMenu from "./paletteMenus/TileGroupMenu";
 
 interface ObjectPaletteProps<ObjType extends TilesetObjectTemplate> {
@@ -194,7 +196,11 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
         const y = rect.top + rect.height / 4;
         setObjMenuPos({ x, y });
 
-        if (isTileGroupTemplate(obj) || isAnimationTemplate(obj)) {
+        if (
+          isTileGroupTemplate(obj) ||
+          isAnimationTemplate(obj) ||
+          isNpcTemplate(obj)
+        ) {
           setClicked(obj as ObjType);
         } else {
           setClicked(null);
@@ -256,6 +262,11 @@ export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
         <ObjectAnimationMenu
           pos={objMenuPos}
           obj={clicked && isAnimationTemplate(clicked) ? clicked : null}
+          closeMenu={() => setObjMenuPos(null)}
+        />
+        <ObjectNpcMenu
+          pos={objMenuPos}
+          obj={clicked && isNpcTemplate(clicked) ? clicked : null}
           closeMenu={() => setObjMenuPos(null)}
         />
       </Portal>

@@ -1,13 +1,9 @@
 import { ItemStatus } from "@/components/modals/ItemizedConfirmModal";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import {
-  actions as tsActions,
-  selectors as tsSelectors,
-} from "@/slices/tilesetEditor";
+import { actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
-import { AnimationTemplate } from "@/types/animation";
 import { isMapObjFromTileset } from "@/types/map";
-import { isNpcTemplate } from "@/types/npc";
+import { NpcTemplate } from "@/types/npc";
 import { Vector2 } from "@/vec";
 import { Menu } from "@mantine/core";
 import { modals } from "@mantine/modals";
@@ -16,17 +12,17 @@ import { IconCopy, IconTrash } from "@tabler/icons-react";
 import { useCallback } from "react";
 import ObjectMenu from "../ObjectMenu";
 
-interface ObjectAnimationMenuProps {
+interface ObjectNpcMenuProps {
   pos: Vector2 | null;
-  obj: AnimationTemplate | null;
+  obj: NpcTemplate | null;
   closeMenu: () => void;
 }
 
-export default function ObjectAnimationMenu({
+export default function ObjectNpcMenu({
   pos,
   obj,
   closeMenu,
-}: ObjectAnimationMenuProps) {
+}: ObjectNpcMenuProps) {
   const tab = useAppSelector((state) => state.ui.activeTab);
   const dispatch = useAppDispatch();
 
@@ -40,22 +36,7 @@ export default function ObjectAnimationMenu({
     if (!obj) return;
 
     const state = store.getState();
-    const ts = tsSelectors.selectTileset(state, obj.tilesetId)!;
-
     const items: ItemStatus[] = [];
-
-    const npcs = new Set<string>();
-    for (const objId of ts.tiles.ids) {
-      const maybeNpc = ts.tiles.entities[objId];
-      if (isNpcTemplate(maybeNpc)) {
-        const objFrames = new Set(obj.frames.map((frame) => frame.tg.id));
-        for (const anim of Object.values(maybeNpc.animations)) {
-          if (anim.frames.some((frame) => objFrames.has(frame.tg.id))) {
-            npcs.add(maybeNpc.id);
-          }
-        }
-      }
-    }
 
     const mapObjs = state.mapEditor.objects;
     const mapUses = mapObjs.ids.reduce((acc, objId) => {
@@ -67,19 +48,11 @@ export default function ObjectAnimationMenu({
     }, 0);
 
     items.push({
-      ok: npcs.size === 0,
-      message:
-        npcs.size > 0
-          ? `It is used by ${npcs.size} NPCs.`
-          : "No NPCs use this animation.",
-    });
-
-    items.push({
       ok: mapUses === 0,
       message:
         mapUses > 0
-          ? `${mapUses} map objects use this animation.`
-          : "This animation is not used in the map.",
+          ? `${mapUses} map objects use this NPC.`
+          : "This NPC is not used in the map.",
     });
 
     // const hasWarning = items.some((item) => !item.ok);
@@ -91,21 +64,21 @@ export default function ObjectAnimationMenu({
         })
       );
       notifications.show({
-        title: "Animation deleted",
-        message: `Deleted animation "${obj.names}".`,
+        title: "NPC deleted",
+        message: `Deleted NPC "${obj.name}".`,
         autoClose: 3000,
       });
     };
 
     modals.openContextModal({
       modal: "confirm",
-      title: "Delete animation?",
+      title: "Delete NPC?",
       centered: true,
       withCloseButton: true,
       innerProps: {
         makeItems: () => items,
-        confirmLabel: "Yes, delete animation",
-        msg: "Are you sure you want to delete this animation? This action cannot be undone.",
+        confirmLabel: "Yes, delete NPC",
+        msg: "Are you sure you want to delete this NPC? This action cannot be undone.",
         onConfirm,
       },
     });
@@ -120,7 +93,7 @@ export default function ObjectAnimationMenu({
   return (
     <>
       <ObjectMenu pos={pos} opened={pos !== null}>
-        <Menu.Label>Object Animation Actions</Menu.Label>
+        <Menu.Label>Object Npc Actions</Menu.Label>
         <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
           Copy object id
         </Menu.Item>

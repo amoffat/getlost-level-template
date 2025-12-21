@@ -35,7 +35,7 @@ import {
   IconTrash,
   IconUser,
 } from "@tabler/icons-react";
-import {
+import React, {
   ReactNode,
   use,
   useCallback,
@@ -218,7 +218,9 @@ export default function TilesetEditorTab({
   const toolOptions = tool?.options;
 
   const onSelectObject = useCallback(
-    async (obj: TilesetObjectTemplate) => {
+    async (obj: TilesetObjectTemplate, e: React.MouseEvent) => {
+      if (e.button === 2) return;
+
       if (!ts) {
         const ts = tilesets[obj.tilesetId];
         await dispatch(selectTilesetThunk(ts)).unwrap();

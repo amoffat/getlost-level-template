@@ -105,7 +105,7 @@ export default function MapEditorTab({
 
   const onSelectObject = useCallback(
     (obj: TilesetObjectTemplate, e: React.MouseEvent) => {
-      e.preventDefault();
+      if (e.button === 2) return;
 
       const state = store.getState();
       const mode = selectors.selectMode(state);
@@ -146,9 +146,7 @@ export default function MapEditorTab({
         );
       } else {
         dispatch(actions.setPlace(obj));
-        if (e.button === 0) {
-          dispatch(setToolThunk("paint"));
-        }
+        dispatch(setToolThunk("paint"));
       }
     },
     [dispatch]
