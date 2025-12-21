@@ -4,9 +4,11 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import {
+  clearCandAnimFramesThunk,
   loadTilesetThunk,
   selectTilesetThunk,
   setAnimationFramesThunk,
+  setNpcThunk,
   setToolThunk,
 } from "@/thunks/tileset";
 import { AnimationTemplate, isAnimationTemplate } from "@/types/animation";
@@ -117,11 +119,14 @@ export default function TilesetEditorTab({
 
   // Select the tileset once it's available and not already active
   useEffect(() => {
-    if (!tsId) return;
+    if (!tsId) {
+      dispatch(actions.setActiveTool(null));
+      dispatch(selectTilesetThunk(null)).unwrap();
+      return;
+    }
     const ts = tilesets[tsId];
     if (ts && activeTilesetId !== tsId) {
       dispatch(selectTilesetThunk(ts)).unwrap();
-      dispatch(actions.setActiveTool(null));
     }
   }, [tsId, tilesets, activeTilesetId, dispatch]);
 
@@ -213,23 +218,25 @@ export default function TilesetEditorTab({
   const toolOptions = tool?.options;
 
   const onSelectObject = useCallback(
-    (obj: TilesetObjectTemplate) => {
-      setSelectedAnimation(undefined);
-
+    async (obj: TilesetObjectTemplate) => {
       if (!ts) {
         const ts = tilesets[obj.tilesetId];
-        dispatch(selectTilesetThunk(ts)).unwrap();
+        await dispatch(selectTilesetThunk(ts)).unwrap();
+        await navigate(`/tilesets/${ts.id}`);
       }
 
+      setSelectedAnimation(undefined);
+      dispatch(actions.setOneSelected(obj));
+      dispatch(clearCandAnimFramesThunk());
+
       if (isAnimationTemplate(obj)) {
-        dispatch(actions.setActiveTool("animate"));
         dispatch(setAnimationFramesThunk(obj));
         setSelectedAnimation(obj);
       } else if (isNpcTemplate(obj)) {
-        dispatch(actions.setActiveTool("make-npc"));
+        dispatch(setNpcThunk(obj));
       }
     },
-    [dispatch, tilesets, ts]
+    [dispatch, tilesets, ts, navigate]
   );
 
   const onToolActivated = useCallback(

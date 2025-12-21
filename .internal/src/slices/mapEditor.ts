@@ -155,7 +155,6 @@ export const slice = createSlice({
         name: "",
         tags: [],
         exitIds: [],
-        primary: false,
         status: null,
       },
       exitGateways: {
@@ -168,9 +167,10 @@ export const slice = createSlice({
         status: null,
       },
       pickups: {
+        name: "",
+        hidden: false,
         id: constants.pickupTemplateId,
-        key: "",
-        tgId: null,
+        assetId: null,
         tags: [],
         status: null,
       },

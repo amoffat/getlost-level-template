@@ -22,7 +22,8 @@ startAppListening({
 
   effect: async (action, { dispatch, getState }) => {
     // All matched actions carry a { ts: Tileset } payload
-    const { tsId } = action.payload as { tsId: string | undefined };
+    const tp = action.payload as any;
+    const tsId = tp?.tsId;
     if (!tsId) return;
 
     const ts = getState().tilesetEditor.tilesets[tsId];

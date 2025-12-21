@@ -19,6 +19,7 @@ import { actions as uiActions } from "@/slices/ui";
 import { RootState, store } from "@/store/store";
 import { AnimationTemplate } from "@/types/animation";
 import { TileGroupInstance } from "@/types/map";
+import { NpcTemplate } from "@/types/npc";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
@@ -33,12 +34,14 @@ export const selectTilesetThunk = createAsyncThunk(
   async (ts: Tileset | null, { dispatch, getState }) => {
     const state = getState() as RootState;
 
+    // Already active?
     if (ts?.id === state.tilesetEditor.activeTilesetId) {
-      // Already active
       return true;
     }
 
-    dispatch(tsActions.clearSelection());
+    if (!ts) {
+      dispatch(tsActions.clearSelection());
+    }
 
     // Add it to pixi.js
     await setCanvasTileset(ts);
@@ -329,9 +332,25 @@ export const setAnimationFramesThunk = createAsyncThunk(
     dispatch(tsActions.setCandAnimTotalTime(totalTime));
     dispatch(tsActions.setCandAnimFrames(candFrames));
     dispatch(tsActions.setManySelected(obj.frames.map((frame) => frame.tg)));
+    dispatch(tsActions.addOneSelected(obj));
+
+    dispatch(tsActions.setActiveTool("animate"));
     notifications.show({
       title: "Animation loaded",
       message: `Loaded ${obj.frames.length} frames for animation "${obj.names.join(", ")}".`,
+      color: "green",
+    });
+  }
+);
+
+export const setNpcThunk = createAsyncThunk(
+  "tilesetEditor/setNpcThunk",
+  async (npc: NpcTemplate, { dispatch }) => {
+    dispatch(tsActions.setOneSelected(npc));
+    dispatch(tsActions.setActiveTool("make-npc"));
+    notifications.show({
+      title: "NPC loaded",
+      message: `NPC "${npc.name}" loaded.`,
       color: "green",
     });
   }

@@ -1,6 +1,6 @@
 import { requiredNpcAnimations } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { actions } from "@/slices/tilesetEditor";
+import { actions, selectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { clearCandAnimFramesThunk } from "@/thunks/tileset";
 import {
@@ -144,15 +144,12 @@ interface TileAnimationToolProps {
 export default function TileAnimationTool({
   selectedAnimation,
 }: TileAnimationToolProps) {
-  const tsId = useAppSelector((state) => state.tilesetEditor.activeTilesetId)!;
+  const ts = useAppSelector(selectors.activeTileset);
   const candFrames = useAppSelector(
     (state) => state.tilesetEditor.candAnimFrames
   );
   const totalTime = useAppSelector(
     (state) => state.tilesetEditor.candAnimTotalTime
-  );
-  const activeTileset = useAppSelector(
-    (state) => state.tilesetEditor.tilesets[tsId]!
   );
   const dispatch = useAppDispatch();
   // Store fractional weights per frame (0..1), always normalized so sum == 1
@@ -176,7 +173,7 @@ export default function TileAnimationTool({
 
   // Count how many times each required NPC animation name is used in the tileset
   const animationUseCounts = useMemo(() => {
-    if (!activeTileset) return new Map<string, number>();
+    if (!ts) return new Map<string, number>();
 
     const counts = new Map<string, number>();
 
@@ -186,7 +183,7 @@ export default function TileAnimationTool({
     }
 
     // Count occurrences in all animations
-    const allObjects = Object.values(activeTileset.tiles.entities);
+    const allObjects = Object.values(ts.tiles.entities);
     for (const obj of allObjects) {
       if (obj && isAnimationTemplate(obj)) {
         const anim = obj as AnimationTemplate;
@@ -199,7 +196,7 @@ export default function TileAnimationTool({
     }
 
     return counts;
-  }, [activeTileset]);
+  }, [ts]);
 
   const n = candFrames.length;
   const hasFrames = n > 0;
@@ -227,7 +224,7 @@ export default function TileAnimationTool({
       const anim: AnimationTemplate = {
         id,
         type: TemplateType.Animation,
-        tilesetId: tsId,
+        tilesetId: ts!.id,
         gridSize: candFrames[0]!.tileGroup.gridSize,
         frames,
         names: [],
@@ -243,7 +240,7 @@ export default function TileAnimationTool({
       // Set creation values
       Object.assign(anim, { names: values.names });
 
-      dispatch(actions.setPaletteObjects({ tsId, objs: [anim] }));
+      dispatch(actions.setPaletteObjects({ tsId: ts!.id, objs: [anim] }));
       dispatch(clearCandAnimFramesThunk());
       dispatch(uiActions.setTilesetTab("animations"));
       notifications.show({
@@ -252,7 +249,7 @@ export default function TileAnimationTool({
         autoClose: 3000,
       });
     },
-    [frames, tsId, candFrames, dispatch, selectedAnimation]
+    [frames, ts, candFrames, dispatch, selectedAnimation]
   );
 
   const formSubmit = form.onSubmit(saveAnimation);

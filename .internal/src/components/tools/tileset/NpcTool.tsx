@@ -1,6 +1,6 @@
 import { requiredNpcAnimations } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { actions } from "@/slices/tilesetEditor";
+import { actions, selectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { setToolThunk } from "@/thunks/tileset";
 import { isAnimationTemplate, type AnimationTemplate } from "@/types/animation";
@@ -23,7 +23,7 @@ import {
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { IconAlertTriangle, IconCheck } from "@tabler/icons-react";
-import { ReactNode, useCallback, useEffect, useMemo } from "react";
+import { ReactNode, useCallback, useMemo } from "react";
 import TileAnimation from "../../TileAnimation";
 import Tip from "../../Tip";
 
@@ -32,22 +32,15 @@ interface FormValues {
 }
 
 export default function NpcTool() {
-  const tsId = useAppSelector((state) => state.tilesetEditor.activeTilesetId)!;
-  const ts = useAppSelector((state) => state.tilesetEditor.tilesets[tsId]);
+  const ts = useAppSelector(selectors.activeTileset);
   const dispatch = useAppDispatch();
 
   const existingNpc = useMemo(() => {
-    const npcs = ts.tiles.ids
-      .map((id) => ts.tiles.entities[id])
+    const npcs = ts?.tiles.ids
+      .map((id) => ts?.tiles.entities[id])
       .filter(isNpcTemplate);
-    return npcs.at(0);
+    return npcs?.at(0);
   }, [ts]);
-
-  useEffect(() => {
-    if (!existingNpc) {
-      dispatch(uiActions.setTilesetTab("animations"));
-    }
-  }, [dispatch, existingNpc]);
 
   const form = useForm<FormValues>({
     name: "npc",
@@ -72,6 +65,8 @@ export default function NpcTool() {
   const animationMatches = useMemo<
     Partial<Record<NpcRequiredAnimation, AnimationTemplate>>
   >(() => {
+    if (!ts) return {};
+
     const allAnimations = Object.values(ts.tiles.entities).filter(
       isAnimationTemplate
     );
@@ -105,7 +100,7 @@ export default function NpcTool() {
         id,
         type: TemplateType.Npc,
         animations,
-        tilesetId: tsId,
+        tilesetId: ts!.id,
         gridSize: animations["Idle"].gridSize,
         name: "",
         tags: [],
@@ -122,7 +117,7 @@ export default function NpcTool() {
       // Set creation values
       Object.assign(npc, { name: values.name });
 
-      dispatch(actions.setPaletteObjects({ tsId, objs: [npc] }));
+      dispatch(actions.setPaletteObjects({ tsId: ts!.id, objs: [npc] }));
       dispatch(uiActions.setTilesetTab("npcs"));
 
       notifications.show({
@@ -131,7 +126,7 @@ export default function NpcTool() {
         autoClose: 3000,
       });
     },
-    [animationMatches, existingNpc, tsId, dispatch]
+    [animationMatches, existingNpc, ts, dispatch]
   );
 
   const formSubmit = form.onSubmit(saveNpc);

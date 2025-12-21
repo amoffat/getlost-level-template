@@ -457,27 +457,31 @@ export const slice = createSlice({
     },
 
     setOneSelected: (state, action: PayloadAction<TilesetObjectTemplate>) => {
+      const obj = action.payload;
       selectedAdapter.removeAll(state.selectedTiles);
-      selectedAdapter.setOne(state.selectedTiles, action.payload);
+      selectedAdapter.setOne(state.selectedTiles, obj);
     },
 
     addOneSelected: (state, action: PayloadAction<TilesetObjectTemplate>) => {
-      selectedAdapter.setOne(state.selectedTiles, action.payload);
+      const obj = action.payload;
+      selectedAdapter.setOne(state.selectedTiles, obj);
     },
 
     setManySelected: (
       state,
       action: PayloadAction<TilesetObjectTemplate[]>
     ) => {
+      const objs = action.payload;
       selectedAdapter.removeAll(state.selectedTiles);
-      selectedAdapter.setMany(state.selectedTiles, action.payload);
+      selectedAdapter.setMany(state.selectedTiles, objs);
     },
 
     addManySelected: (
       state,
       action: PayloadAction<TilesetObjectTemplate[]>
     ) => {
-      selectedAdapter.setMany(state.selectedTiles, action.payload);
+      const objs = action.payload;
+      selectedAdapter.setMany(state.selectedTiles, objs);
     },
 
     updateManySelected: (
@@ -561,7 +565,9 @@ export const slice = createSlice({
       [(state) => state.selectedTiles, activeTileset],
       (tiles, ts): TilesetObjectTemplate[] => {
         if (!ts) return [];
-        return tiles.ids.map((id) => ts.tiles.entities[id]);
+        return tiles.ids
+          .map((id) => ts.tiles.entities[id])
+          .filter((obj) => obj !== undefined);
       },
       {
         memoizeOptions: {

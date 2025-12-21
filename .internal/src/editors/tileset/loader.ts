@@ -25,6 +25,7 @@ export async function setCanvasTileset(ts: Tileset | null) {
   g.tilesetContainer.position.set(0);
   g.tilesetContainer.scale.set(1);
   g.groupSelContainer.setSize(0);
+  g.boundsMask.clear();
 
   if (ts) {
     const tex = await loadTilesetImage(ts);
