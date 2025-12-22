@@ -10,6 +10,7 @@ import {
   collectPropertyValues,
   updateObjectProperties,
 } from "@/utils/propertyEditor";
+import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
 import {
   Button,
   CloseButton,
@@ -19,18 +20,30 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { ReactNode, useCallback, useMemo } from "react";
+import { memo, ReactNode, useCallback, useMemo } from "react";
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 import { requiredUniqueName } from "./validators/name";
 
-export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
+// Properties that collectPropertyValues needs to access
+const COLLECTED_PROPS = ["name", "exitIds"] as const;
+
+// Additional properties needed for identification
+const TEMPLATE_PROPS = ["id"] as const;
+
+// All properties relevant for memo comparison
+const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
+
+function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
   const dispatch = useAppDispatch();
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
   const objsByTemplateId = useAppSelector((state) =>
     mapSelectors.objectsByTemplateId(state, entryTemplateId)
   );
+
+  // Create a key based only on relevant properties
+  const propertyKey = createPropertyKey(objs, RELEVANT_PROPS);
 
   // All entrance objects use the same global entrance template
   const templateUpdate = useCallback(
@@ -58,8 +71,9 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
   );
 
   const toCollect = useMemo(() => {
-    return collectPropertyValues(objs, ["name", "exitIds"]);
-  }, [objs]);
+    return collectPropertyValues(objs, [...COLLECTED_PROPS]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propertyKey]);
 
   const handleModalSubmit = useCallback(
     (gatewayId: string, numericRepoId: string | null) => {
@@ -219,3 +233,8 @@ export default function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
     </>
   );
 }
+
+export default memo(
+  EntranceProperties,
+  createPropsEqualFn<EntranceObj>(RELEVANT_PROPS)
+);

@@ -10,6 +10,7 @@ import {
   collectPropertyValues,
   updateObjectProperties,
 } from "@/utils/propertyEditor";
+import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
 import {
   Button,
   Fieldset,
@@ -19,18 +20,35 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { ReactNode, useCallback, useMemo } from "react";
+import { memo, ReactNode, useCallback, useMemo } from "react";
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 import { requiredUniqueName } from "./validators/name";
 
-export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
+// Properties that collectPropertyValues needs to access
+const COLLECTED_PROPS = [
+  "name",
+  "preferredEntranceId",
+  "force",
+  "sensorRadius",
+] as const;
+
+// Additional properties needed for identification
+const TEMPLATE_PROPS = ["id"] as const;
+
+// All properties relevant for memo comparison
+const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
+
+function ExitProperties({ objs }: { objs: ExitObj[] }) {
   const dispatch = useAppDispatch();
   const objsByTemplateId = useAppSelector((state) =>
     mapSelectors.objectsByTemplateId(state, constants.exitTemplateId)
   );
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
+
+  // Create a key based only on relevant properties
+  const propertyKey = createPropertyKey(objs, RELEVANT_PROPS);
 
   // All exit objects use the same global exit template
   const templateUpdate = useCallback(
@@ -58,13 +76,9 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
   );
 
   const toCollect = useMemo(() => {
-    return collectPropertyValues(objs, [
-      "name",
-      "preferredEntranceId",
-      "force",
-      "sensorRadius",
-    ]);
-  }, [objs]);
+    return collectPropertyValues(objs, [...COLLECTED_PROPS]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propertyKey]);
 
   const handleModalSubmit = useCallback(
     (gatewayId: string, numericRepoId: string | null) => {
@@ -256,3 +270,8 @@ export default function ExitProperties({ objs }: { objs: ExitObj[] }) {
     </>
   );
 }
+
+export default memo(
+  ExitProperties,
+  createPropsEqualFn<ExitObj>(RELEVANT_PROPS)
+);

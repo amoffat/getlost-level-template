@@ -298,7 +298,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         return this.makeErrorNode(obj);
       }
 
-      const idleFrames = tsObj.animations.Idle.frames;
+      const idleFrames = tsObj.animations.Idle.animation.frames;
 
       for (const animFrame of idleFrames) {
         const rect = animFrame.tg.pos;

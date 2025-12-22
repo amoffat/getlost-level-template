@@ -256,7 +256,7 @@ export class Placer extends ClickDragListener {
         inst = {
           id,
           name: undefined,
-          tgId: undefined,
+          assetId: undefined,
           tags: undefined,
           type: MapObjType.Pickup,
           x: pos.x,
@@ -268,6 +268,7 @@ export class Placer extends ClickDragListener {
           width: obj.pos.width,
           height: obj.pos.height,
           status: "error", // New pickups start as error until named
+          hidden: undefined,
         } satisfies PickupObj;
       } else {
         inst = {
@@ -390,7 +391,7 @@ subState(
           if (isAnimationTemplate(placeObj)) {
             frames = placeObj.frames;
           } else if (isNpcTemplate(placeObj)) {
-            frames = placeObj.animations.WalkDown.frames;
+            frames = placeObj.animations.WalkDown.animation.frames;
           }
 
           const pixiFrames: P.FrameObject[] = [];

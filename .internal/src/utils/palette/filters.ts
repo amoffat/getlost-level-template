@@ -65,7 +65,7 @@ export function animationsFilter(
   if (filters.animations.hideNpcs) {
     for (const npc of npcs) {
       for (const anim of Object.values(npc.animations)) {
-        for (const frame of anim.frames) {
+        for (const frame of anim.animation.frames) {
           if (objFrames.has(frame.tg.id)) {
             return false;
           }

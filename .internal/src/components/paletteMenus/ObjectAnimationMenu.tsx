@@ -50,7 +50,7 @@ export default function ObjectAnimationMenu({
       if (isNpcTemplate(maybeNpc)) {
         const objFrames = new Set(obj.frames.map((frame) => frame.tg.id));
         for (const anim of Object.values(maybeNpc.animations)) {
-          if (anim.frames.some((frame) => objFrames.has(frame.tg.id))) {
+          if (anim.animation.frames.some((frame) => objFrames.has(frame.tg.id))) {
             npcs.add(maybeNpc.id);
           }
         }

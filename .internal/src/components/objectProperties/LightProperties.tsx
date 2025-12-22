@@ -7,12 +7,25 @@ import {
   collectPropertyValues,
   updateObjectProperties,
 } from "@/utils/propertyEditor";
+import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
 import { ColorInput, Fieldset, Slider, Stack, TextInput } from "@mantine/core";
-import { ReactNode, useCallback, useMemo } from "react";
+import { memo, ReactNode, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 
-export default function LightProperties({ objs }: { objs: LightObj[] }) {
+// Properties that collectPropertyValues needs to access
+const COLLECTED_PROPS = ["color", "intensity", "name"] as const;
+
+// Additional properties needed for identification
+const TEMPLATE_PROPS = ["id"] as const;
+
+// All properties relevant for memo comparison
+const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
+
+function LightProperties({ objs }: { objs: LightObj[] }) {
   const dispatch = useAppDispatch();
+
+  // Create a key based only on relevant properties
+  const propertyKey = createPropertyKey(objs, RELEVANT_PROPS);
 
   // All light objects use the same global light template
   const templateUpdate = useCallback(
@@ -40,8 +53,9 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
   );
 
   const toCollect = useMemo(() => {
-    return collectPropertyValues(objs, ["color", "intensity", "name"]);
-  }, [objs]);
+    return collectPropertyValues(objs, [...COLLECTED_PROPS]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propertyKey]);
 
   const nameInput = (
     <PropertyValue
@@ -147,3 +161,8 @@ export default function LightProperties({ objs }: { objs: LightObj[] }) {
     </Fieldset>
   );
 }
+
+export default memo(
+  LightProperties,
+  createPropsEqualFn<LightObj>(RELEVANT_PROPS)
+);

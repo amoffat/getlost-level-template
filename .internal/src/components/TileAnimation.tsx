@@ -8,6 +8,7 @@ export interface TileAnimationProps {
   scale: number;
   className?: string;
   style?: React.CSSProperties;
+  flipX?: boolean; // flip horizontally
   // Playback controls
   loop?: boolean; // repeat when reaching end
   playing?: boolean; // start/stop animation
@@ -24,6 +25,7 @@ const TileAnimation = ({
   scale,
   className,
   style,
+  flipX = false,
   loop = true,
   playing = true,
   startIndex = 0,
@@ -88,6 +90,7 @@ const TileAnimation = ({
       scale={scale}
       className={className}
       style={style}
+      flipX={flipX}
       {...tgOpts}
     />
   );

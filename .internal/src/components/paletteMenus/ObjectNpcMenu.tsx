@@ -1,5 +1,5 @@
 import { ItemStatus } from "@/components/modals/ItemizedConfirmModal";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useAppDispatch } from "@/hooks/redux";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { isMapObjFromTileset } from "@/types/map";
@@ -23,7 +23,6 @@ export default function ObjectNpcMenu({
   obj,
   closeMenu,
 }: ObjectNpcMenuProps) {
-  const tab = useAppSelector((state) => state.ui.activeTab);
   const dispatch = useAppDispatch();
 
   const onCopyId = useCallback(() => {
@@ -86,8 +85,6 @@ export default function ObjectNpcMenu({
     closeMenu();
   }, [obj, closeMenu, dispatch]);
 
-  // const mapEd = tab === "map-editor";
-  const tilesetEd = tab === "tileset-editor";
   if (!obj) return null;
 
   return (
@@ -98,20 +95,16 @@ export default function ObjectNpcMenu({
           Copy object id
         </Menu.Item>
 
-        {tilesetEd && (
-          <>
-            <Menu.Divider />
+        <Menu.Divider />
 
-            <Menu.Label>Danger zone</Menu.Label>
-            <Menu.Item
-              color="red"
-              leftSection={<IconTrash size={14} />}
-              onClick={deleteObject}
-            >
-              Delete
-            </Menu.Item>
-          </>
-        )}
+        <Menu.Label>Danger zone</Menu.Label>
+        <Menu.Item
+          color="red"
+          leftSection={<IconTrash size={14} />}
+          onClick={deleteObject}
+        >
+          Delete
+        </Menu.Item>
       </ObjectMenu>
     </>
   );

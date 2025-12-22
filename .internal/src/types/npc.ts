@@ -11,11 +11,13 @@ export type NpcRequiredAnimation =
   | "WalkLeft"
   | "WalkRight";
 
-export type NpcAnimationRecord = Record<
-  NpcRequiredAnimation,
-  AnimationTemplate
-> &
-  Record<string, AnimationTemplate>;
+interface NpcAnimation {
+  flipX: boolean;
+  animation: AnimationTemplate;
+}
+
+export type NpcAnimationRecord = Record<NpcRequiredAnimation, NpcAnimation> &
+  Record<string, NpcAnimation>;
 
 export interface NpcTemplate extends NpcProps {
   // A random id

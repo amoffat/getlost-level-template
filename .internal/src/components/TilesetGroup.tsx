@@ -15,6 +15,7 @@ export interface TilesetCropProps extends React.HTMLAttributes<HTMLDivElement> {
   style?: React.CSSProperties;
   title?: string;
   selected?: boolean;
+  flipX?: boolean; // flip horizontally
 }
 
 const TilesetGroup = ({
@@ -24,6 +25,7 @@ const TilesetGroup = ({
   scale,
   bounded = false,
   selected,
+  flipX = false,
   ...divProps
 }: TilesetCropProps) => {
   const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
@@ -119,7 +121,9 @@ const TilesetGroup = ({
           height,
           backgroundImage: `url(${ts.objectUrl})`,
           backgroundPosition: bgPos,
-          transform: `scale(${effectiveScale})`,
+          transform: flipX
+            ? `scale(${effectiveScale}) translateX(${width}px) scaleX(-1)`
+            : `scale(${effectiveScale})`,
           transformOrigin: "top left",
           imageRendering: "pixelated",
           ...(style ?? {}),

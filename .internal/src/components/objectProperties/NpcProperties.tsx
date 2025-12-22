@@ -6,19 +6,33 @@ import {
   updateObjectProperties,
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
+import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
 import { Fieldset, Slider, Stack, TextInput } from "@mantine/core";
-import { ReactNode, useCallback, useMemo } from "react";
+import { memo, ReactNode, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 
-export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
+// Properties that collectPropertyValues needs to access
+const COLLECTED_PROPS = [
+  "name",
+  "walkSpeed",
+  "dampenWalkCollisions",
+  "groundOffset",
+] as const;
+
+// Additional properties needed for template resolution
+const TEMPLATE_PROPS = ["id", "tsObjId", "tilesetId"] as const;
+
+// All properties relevant for memo comparison
+const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
+
+function NpcProperties({ objs }: { objs: NpcInstance[] }) {
+  // Create a key based only on relevant properties
+  const propertyKey = createPropertyKey(objs, RELEVANT_PROPS);
+
   const toCollect = useMemo(() => {
-    return collectPropertyValues(objs, [
-      "name",
-      "walkSpeed",
-      "dampenWalkCollisions",
-      "groundOffset",
-    ]);
-  }, [objs]);
+    return collectPropertyValues(objs, [...COLLECTED_PROPS]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propertyKey]);
 
   const updateProps = useCallback(
     (level: PropertyValueLevel, props: Partial<NpcProps>) => {
@@ -157,3 +171,8 @@ export default function NpcProperties({ objs }: { objs: NpcInstance[] }) {
     </Fieldset>
   );
 }
+
+export default memo(
+  NpcProperties,
+  createPropsEqualFn<NpcInstance>(RELEVANT_PROPS)
+);

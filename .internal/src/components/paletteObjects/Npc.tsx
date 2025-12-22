@@ -7,7 +7,7 @@ export function renderNpc({
   obj,
   selected,
 }: PaletteObjectProps<NpcTemplate>): React.ReactNode | null {
-  const tg = obj.animations.Idle.frames[0]!.tg;
+  const tg = obj.animations.Idle.animation.frames[0]!.tg;
 
   return (
     <div

@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { setToolThunk } from "@/thunks/tileset";
-import { isAnimationTemplate, type AnimationTemplate } from "@/types/animation";
+import { isAnimationTemplate } from "@/types/animation";
 import {
   isNpcTemplate,
   type NpcAnimationRecord,
@@ -12,18 +12,25 @@ import {
 } from "@/types/npc";
 import { TemplateType } from "@/types/templates";
 import {
+  ActionIcon,
   Anchor,
   Button,
   Fieldset,
+  Group,
   Stack,
   Table,
   Text,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
-import { IconAlertTriangle, IconCheck } from "@tabler/icons-react";
-import { ReactNode, useCallback, useMemo } from "react";
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconFlipVertical,
+} from "@tabler/icons-react";
+import { ReactNode, useCallback, useMemo, useState } from "react";
 import TileAnimation from "../../TileAnimation";
 import Tip from "../../Tip";
 
@@ -41,6 +48,24 @@ export default function NpcTool() {
       .filter(isNpcTemplate);
     return npcs?.at(0);
   }, [ts]);
+
+  // Track flipX state for each animation, initialized from existingNpc if available
+  const [flipXState, setFlipXState] = useState<
+    Record<NpcRequiredAnimation, boolean>
+  >(() => {
+    const state = {} as Record<NpcRequiredAnimation, boolean>;
+    for (const animName of requiredNpcAnimations) {
+      state[animName] = existingNpc?.animations[animName]?.flipX ?? false;
+    }
+    return state;
+  });
+
+  const toggleFlipX = useCallback((animName: NpcRequiredAnimation) => {
+    setFlipXState((prev) => ({
+      ...prev,
+      [animName]: !prev[animName],
+    }));
+  }, []);
 
   const form = useForm<FormValues>({
     name: "npc",
@@ -62,26 +87,26 @@ export default function NpcTool() {
   });
 
   // Match each NPC animation name with animations from the tileset
-  const animationMatches = useMemo<
-    Partial<Record<NpcRequiredAnimation, AnimationTemplate>>
-  >(() => {
+  const animationMatches = useMemo<Partial<NpcAnimationRecord>>(() => {
     if (!ts) return {};
 
     const allAnimations = Object.values(ts.tiles.entities).filter(
       isAnimationTemplate
     );
-    const matches: Partial<Record<NpcRequiredAnimation, AnimationTemplate>> =
-      {};
+    const matches: Partial<NpcAnimationRecord> = {};
     for (const requiredName of requiredNpcAnimations) {
       const match = allAnimations.find((anim) =>
         anim.names.includes(requiredName)
       );
       if (match) {
-        matches[requiredName] = match;
+        matches[requiredName] = {
+          animation: match,
+          flipX: flipXState[requiredName],
+        };
       }
     }
     return matches;
-  }, [ts]);
+  }, [ts, flipXState]);
 
   const saveNpc = useCallback(
     (values: FormValues) => {
@@ -101,7 +126,7 @@ export default function NpcTool() {
         type: TemplateType.Npc,
         animations,
         tilesetId: ts!.id,
-        gridSize: animations["Idle"].gridSize,
+        gridSize: animations["Idle"].animation.gridSize,
         name: "",
         tags: [],
         walkSpeed: 0.5,
@@ -190,7 +215,7 @@ export default function NpcTool() {
               </Table.Thead>
               <Table.Tbody>
                 {requiredNpcAnimations.map((name) => {
-                  const animation = animationMatches[name];
+                  const animRecord = animationMatches[name];
                   return (
                     <Table.Tr key={name}>
                       <Table.Td>
@@ -202,7 +227,7 @@ export default function NpcTool() {
                             gap: "0.5rem",
                           }}
                         >
-                          {animation ? (
+                          {animRecord ? (
                             <IconCheck size={16} color="green" />
                           ) : (
                             <IconAlertTriangle size={16} color="orange" />
@@ -211,12 +236,24 @@ export default function NpcTool() {
                         </Text>
                       </Table.Td>
                       <Table.Td>
-                        {animation ? (
-                          <TileAnimation
-                            frames={animation.frames}
-                            scale={2}
-                            bounded
-                          />
+                        {animRecord ? (
+                          <Group gap="xs">
+                            <TileAnimation
+                              frames={animRecord.animation.frames}
+                              scale={2}
+                              bounded
+                              flipX={animRecord.flipX}
+                            />
+                            <Tooltip label="Flip horizontally">
+                              <ActionIcon
+                                variant={animRecord.flipX ? "filled" : "subtle"}
+                                size="sm"
+                                onClick={() => toggleFlipX(name)}
+                              >
+                                <IconFlipVertical size={14} />
+                              </ActionIcon>
+                            </Tooltip>
+                          </Group>
                         ) : (
                           <Anchor
                             underline="hover"

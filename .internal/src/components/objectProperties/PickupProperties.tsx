@@ -12,17 +12,30 @@ import {
   collectPropertyValues,
   updateObjectProperties,
 } from "@/utils/propertyEditor";
+import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
 import { Fieldset, Stack, Switch, TagsInput, TextInput } from "@mantine/core";
-import { ReactNode, useCallback, useMemo } from "react";
+import { memo, ReactNode, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 import TilesetGroup from "../TilesetGroup";
 import { requiredUniqueName } from "./validators/name";
 
-export default function PickupProperties({ objs }: { objs: PickupObj[] }) {
+// Properties that collectPropertyValues needs to access
+const COLLECTED_PROPS = ["name", "tags", "assetId", "hidden"] as const;
+
+// Additional properties needed for identification
+const TEMPLATE_PROPS = ["id"] as const;
+
+// All properties relevant for memo comparison
+const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
+
+function PickupProperties({ objs }: { objs: PickupObj[] }) {
   const dispatch = useAppDispatch();
   const objsByTemplateId = useAppSelector((state) =>
     mapSelectors.objectsByTemplateId(state, constants.pickupTemplateId)
   );
+
+  // Create a key based only on relevant properties
+  const propertyKey = createPropertyKey(objs, RELEVANT_PROPS);
 
   // All pickup objects use the same global pickup template
   const templateUpdate = useCallback(
@@ -50,8 +63,9 @@ export default function PickupProperties({ objs }: { objs: PickupObj[] }) {
   );
 
   const toCollect = useMemo(() => {
-    return collectPropertyValues(objs, ["name", "tags", "assetId", "hidden"]);
-  }, [objs]);
+    return collectPropertyValues(objs, [...COLLECTED_PROPS]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propertyKey]);
 
   const existingNames = useMemo(() => {
     const names = new Set<string>();
@@ -224,3 +238,8 @@ export default function PickupProperties({ objs }: { objs: PickupObj[] }) {
     </Fieldset>
   );
 }
+
+export default memo(
+  PickupProperties,
+  createPropsEqualFn<PickupObj>(RELEVANT_PROPS)
+);

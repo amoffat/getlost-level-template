@@ -9,6 +9,7 @@ import {
   updateObjectProperties,
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
+import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
 import {
   ColorInput,
   Fieldset,
@@ -19,29 +20,38 @@ import {
   TextInput,
 } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
-import { ReactNode, useCallback, useMemo } from "react";
+import { memo, ReactNode, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 
-export default function TileGroupProperties({
-  objs,
-}: {
-  objs: TileGroupInstance[];
-}) {
+// Properties that collectPropertyValues needs to access
+const COLLECTED_PROPS = [
+  "name",
+  "tint",
+  "hidden",
+  "walkSound",
+  "friction",
+  "traction",
+  "groundOffset",
+] as const;
+
+// Additional properties needed for template resolution
+const TEMPLATE_PROPS = ["id", "tsObjId", "tilesetId"] as const;
+
+// All properties relevant for memo comparison
+const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
+
+function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
   const groundLayer = useAppSelector(
     (state) => state.mapEditor.layers.active === MapLayerName.Ground
   );
 
+  // Create a key based only on relevant properties
+  const propertyKey = createPropertyKey(objs, RELEVANT_PROPS);
+
   const toCollect = useMemo(() => {
-    return collectPropertyValues(objs, [
-      "name",
-      "tint",
-      "hidden",
-      "walkSound",
-      "friction",
-      "traction",
-      "groundOffset",
-    ]);
-  }, [objs]);
+    return collectPropertyValues(objs, [...COLLECTED_PROPS]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propertyKey]);
 
   const updateProps = useCallback(
     (level: PropertyValueLevel, props: Partial<TileGroupProps>) => {
@@ -269,3 +279,8 @@ export default function TileGroupProperties({
     </Fieldset>
   );
 }
+
+export default memo(
+  TileGroupProperties,
+  createPropsEqualFn<TileGroupInstance>(RELEVANT_PROPS)
+);

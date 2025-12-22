@@ -65,7 +65,7 @@ export default function ObjSelHover() {
         ) as NpcTemplate | null;
         if (!tsObj) return null;
 
-        const frames = tsObj.animations.Idle.frames.map((f) => {
+        const frames = tsObj.animations.Idle.animation.frames.map((f) => {
           return { ...f, tg: f.tg };
         });
         view = <TileAnimation frames={frames} scale={2} bounded />;
