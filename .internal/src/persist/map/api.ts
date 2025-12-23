@@ -6,7 +6,7 @@ import { getMigrations } from "./migrations";
 import { BaseMapDoc, LatestMapDoc, latestVersion } from "./schema";
 
 export async function loadMap(): Promise<SavedMap | undefined> {
-  const res = await fetch("/api/map", { method: "GET" });
+  const res = await fetch("/level/map.cbor.gz", { method: "GET" });
   if (res.status === 404) {
     log.info("No persisted map found; starting fresh");
     return;
@@ -41,7 +41,7 @@ export async function saveMap(map: SavedMap): Promise<void> {
   const ab = new ArrayBuffer(payload.byteLength);
   new Uint8Array(ab).set(payload);
   const blob = new Blob([ab], { type: "application/cbor" });
-  const res = await fetch("/api/map", {
+  const res = await fetch("/level/map.cbor.gz", {
     method: "PUT",
     headers: { "content-type": "application/cbor" },
     body: blob,

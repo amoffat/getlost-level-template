@@ -74,7 +74,7 @@ router.get("/", (_req, res) => {
 });
 
 // GET "/:id" — serve the CBOR metadata combined with PNG image data
-router.get("/:id", (req, res) => {
+router.get("/:id.cbor.gz", (req, res) => {
   try {
     const id = sanitizeId((req.params as any)["id"]);
     if (!id) {
@@ -140,7 +140,7 @@ router.get("/:id", (req, res) => {
   }
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id.cbor.gz", (req, res) => {
   try {
     const id = sanitizeId((req.params as any)["id"]);
     if (!id) {
@@ -161,7 +161,7 @@ router.delete("/:id", (req, res) => {
   }
 });
 
-router.put("/:id", (req, res) => {
+router.put("/:id.cbor.gz", (req, res) => {
   const form = formidable({
     multiples: false,
     maxFileSize: 10 * 1024 * 1024,

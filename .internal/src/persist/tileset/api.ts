@@ -8,7 +8,7 @@ import { getMigrations } from "./migrations";
 import { BaseTilesetDoc, LatestTilesetDoc, latestVersion } from "./schema";
 
 export async function loadTilesets(): Promise<LoadTilesetsResponse> {
-  const res = await fetch("/api/tilesets", {
+  const res = await fetch("/level/tilesets", {
     method: "GET",
     headers: { "content-type": "application/json" },
   });
@@ -18,7 +18,7 @@ export async function loadTilesets(): Promise<LoadTilesetsResponse> {
 }
 
 export async function loadTileset(id: string): Promise<Tileset> {
-  const res = await fetch(`/api/tilesets/${encodeURIComponent(id)}`, {
+  const res = await fetch(`/level/tilesets/${encodeURIComponent(id)}.cbor.gz`, {
     method: "GET",
   });
   if (!res.ok) throw new Error(`loadTileset failed: ${res.status}`);
@@ -99,15 +99,18 @@ export async function saveTileset(ts: Tileset) {
   // Use explicit field name that the server expects
   form.append("tileset", file, `${ts.id}.cbor`);
 
-  const res = await fetch(`/api/tilesets/${encodeURIComponent(ts.id)}`, {
-    method: "PUT",
-    body: form,
-  });
+  const res = await fetch(
+    `/level/tilesets/${encodeURIComponent(ts.id)}.cbor.gz`,
+    {
+      method: "PUT",
+      body: form,
+    }
+  );
   if (!res.ok) throw new Error(`saveMeta failed: ${res.status}`);
 }
 
 export async function deleteTileset(id: string) {
-  const res = await fetch(`/api/tilesets/${encodeURIComponent(id)}`, {
+  const res = await fetch(`/level/tilesets/${encodeURIComponent(id)}.cbor.gz`, {
     method: "DELETE",
   });
   if (!res.ok) throw new Error(`deleteTileset failed: ${res.status}`);

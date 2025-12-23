@@ -3,7 +3,6 @@ import path from "path";
 import { defineConfig, ViteDevServer } from "vite";
 import apiPlugin from "./src/plugins/api/main";
 import bundleLevelCodePlugin from "./src/plugins/bundle";
-import levelPlugin from "./src/plugins/level";
 import { isAllowedOrigin } from "./src/plugins/utils";
 import levelWatcher from "./src/plugins/watcher";
 
@@ -60,7 +59,6 @@ export default defineConfig(() => {
       addHeadersPlugin(),
       react(),
       bundleLevelCodePlugin(),
-      levelPlugin(),
       levelWatcher(),
       apiPlugin(),
     ],
