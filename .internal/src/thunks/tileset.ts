@@ -66,7 +66,15 @@ export const loadTilesetsThunk = createAsyncThunk(
     dispatch(uiActions.pushLoadingMessage("Loading tilesets ids..."));
     const tilesets = await loadTilesets();
     for (const tsId of tilesets.ids) {
-      await dispatch(loadTilesetThunk({ tsId })).unwrap();
+      try {
+        await dispatch(loadTilesetThunk({ tsId })).unwrap();
+      } catch (e) {
+        notifications.show({
+          title: "Failed to load tileset",
+          message: `Tileset ${tsId} failed to load: ${(e as Error).message}`,
+          color: "red",
+        });
+      }
     }
     dispatch(uiActions.popLoadingMessage());
   }

@@ -38,6 +38,14 @@ export default function levelPlugin(): Plugin {
           const fileContent = await fs.readFile(filePath);
 
           res.statusCode = 200;
+
+          // Serve .cbor.gz files with appropriate headers
+          if (filePath.endsWith(".cbor.gz")) {
+            res.setHeader("Content-Type", "application/cbor");
+            res.setHeader("Content-Encoding", "gzip");
+            res.setHeader("Vary", "Accept-Encoding");
+          }
+
           res.end(fileContent);
         } catch (err) {
           console.error("Error reading file:", err);

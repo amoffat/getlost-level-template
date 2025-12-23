@@ -12,8 +12,8 @@ import { atomicWriteFileSync } from "../../utils/file";
 const internalDir = process.cwd();
 const repoDir = resolve(internalDir, "..");
 const levelDir = resolve(repoDir, "level");
-const levelTexDir = resolve(levelDir, "textures");
-const systemTexDir = resolve(internalDir, "assets", "textures");
+const levelTsDir = resolve(levelDir, "tilesets");
+const systemTsDir = resolve(internalDir, "assets", "tilesets");
 
 export const router = express.Router({ mergeParams: true });
 type TilesetDoc = Omit<LatestTilesetDoc, "imageData"> &
@@ -38,19 +38,19 @@ function pathForId(
   restricted?: boolean
 ): { cbor: string; png: string } | null {
   // Check level directory (with or without restricted subdirectory)
-  const levelCborPath = resolve(levelTexDir, `${id}.cbor.gz`);
+  const levelCborPath = resolve(levelTsDir, `${id}.cbor.gz`);
   const levelPngPath = restricted
-    ? resolve(levelTexDir, "restricted", `${id}.png`)
-    : resolve(levelTexDir, `${id}.png`);
+    ? resolve(levelTsDir, "restricted", `${id}.png`)
+    : resolve(levelTsDir, `${id}.png`);
   if (fs.existsSync(levelCborPath)) {
     return { cbor: levelCborPath, png: levelPngPath };
   }
 
   // Check system directory (with or without restricted subdirectory)
-  const systemCborPath = resolve(systemTexDir, `${id}.cbor.gz`);
+  const systemCborPath = resolve(systemTsDir, `${id}.cbor.gz`);
   const systemPngPath = restricted
-    ? resolve(systemTexDir, "restricted", `${id}.png`)
-    : resolve(systemTexDir, `${id}.png`);
+    ? resolve(systemTsDir, "restricted", `${id}.png`)
+    : resolve(systemTsDir, `${id}.png`);
   if (fs.existsSync(systemCborPath)) {
     return { cbor: systemCborPath, png: systemPngPath };
   }
@@ -61,8 +61,8 @@ function pathForId(
 // GET "/" — list all tileset IDs (derived from *.cbor.gz files)
 router.get("/", (_req, res) => {
   try {
-    const levelTsIds = readDir(levelTexDir);
-    const systemTsIds = readDir(systemTexDir);
+    const levelTsIds = readDir(levelTsDir);
+    const systemTsIds = readDir(systemTsDir);
     const resp: LoadTilesetsResponse = {
       ids: [...levelTsIds, ...systemTsIds],
     };
@@ -105,10 +105,13 @@ router.get("/:id", (req, res) => {
 
       if (doc.imageData === undefined) {
         console.log("Loading image data from PNG file");
+
+        if (!fs.existsSync(paths.png)) {
+          res.status(404).send("Tileset image data missing");
+          return;
+        }
         // Read the PNG image data (fs.readFileSync returns Buffer, convert to Uint8Array)
-        const imageBuffer = fs.existsSync(paths.png)
-          ? fs.readFileSync(paths.png)
-          : Buffer.alloc(0);
+        const imageBuffer = fs.readFileSync(paths.png);
 
         // Combine metadata with image data (convert Buffer to Uint8Array for consistency)
         doc.imageData = new Uint8Array(imageBuffer);
@@ -123,7 +126,7 @@ router.get("/:id", (req, res) => {
       res.setHeader("Vary", "Accept-Encoding");
       res.setHeader(
         tilesetSourceHeader,
-        paths.cbor.startsWith(levelTexDir) ? "level" : "system"
+        paths.cbor.startsWith(levelTsDir) ? "level" : "system"
       );
       res.send(cborGz);
     } catch (err) {
@@ -197,15 +200,15 @@ router.put("/:id", (req, res) => {
       // Determine output paths
       let paths = pathForId(id, doc.tileset.restricted);
       if (!paths) {
-        fs.mkdirSync(levelTexDir, { recursive: true });
+        fs.mkdirSync(levelTsDir, { recursive: true });
         if (doc.tileset.restricted) {
-          fs.mkdirSync(resolve(levelTexDir, "restricted"), { recursive: true });
+          fs.mkdirSync(resolve(levelTsDir, "restricted"), { recursive: true });
         }
         paths = {
-          cbor: resolve(levelTexDir, `${id}.cbor.gz`),
+          cbor: resolve(levelTsDir, `${id}.cbor.gz`),
           png: doc.tileset.restricted
-            ? resolve(levelTexDir, "restricted", `${id}.png`)
-            : resolve(levelTexDir, `${id}.png`),
+            ? resolve(levelTsDir, "restricted", `${id}.png`)
+            : resolve(levelTsDir, `${id}.png`),
         };
       }
 
