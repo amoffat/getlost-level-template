@@ -1,3 +1,4 @@
+import { defaultAnimTime } from "@/constants";
 import { log } from "@/log";
 import { RootState } from "@/store/store";
 import { AnimationTemplate, isAnimationTemplate } from "@/types/animation";
@@ -101,7 +102,7 @@ export const slice = createSlice({
         frames: [],
       },
     },
-    candAnimTotalTime: 1000,
+    candAnimTotalTime: defaultAnimTime,
     candAnimFrames: [],
     objIdToTs: {},
     imageIdToTs: {},

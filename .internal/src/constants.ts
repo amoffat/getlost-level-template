@@ -49,3 +49,4 @@ export const exitTemplateId = "exitGatewaysTemplate";
 export const pickupTemplateId = "pickupsTemplate";
 
 export const defaultTileSize = 16;
+export const defaultAnimTime = 1000;

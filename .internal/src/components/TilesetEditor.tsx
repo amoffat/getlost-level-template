@@ -121,11 +121,18 @@ export default function TilesetEditorTab({
   useEffect(() => {
     if (!tsId) {
       dispatch(actions.setActiveTool(null));
+      dispatch(actions.clearSelection());
+      dispatch(clearCandAnimFramesThunk());
       dispatch(selectTilesetThunk(null)).unwrap();
       return;
     }
     const ts = tilesets[tsId];
     if (ts && activeTilesetId !== tsId) {
+      queueMicrotask(() => {
+        setSelectedAnimation(undefined);
+      });
+      dispatch(clearCandAnimFramesThunk());
+      dispatch(actions.clearSelection());
       dispatch(selectTilesetThunk(ts)).unwrap();
     }
   }, [tsId, tilesets, activeTilesetId, dispatch]);
@@ -190,7 +197,12 @@ export default function TilesetEditorTab({
         animate: {
           name: "Animate",
           icon: <IconRun size={16} />,
-          options: <TileAnimationTool selectedAnimation={selectedAnimation} />,
+          options: (
+            <TileAnimationTool
+              key={selectedAnimation?.id}
+              selectedAnimation={selectedAnimation}
+            />
+          ),
           enabled: hasTsSelected,
         },
         "make-npc": {
