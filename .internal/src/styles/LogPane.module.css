@@ -3,6 +3,7 @@
   overflow: auto;
   color: white;
   font-family: monospace;
+  height: 100%;
 }
 
 .success {

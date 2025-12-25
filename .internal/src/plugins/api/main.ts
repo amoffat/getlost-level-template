@@ -15,7 +15,7 @@ export default function expressApi(): Plugin {
     configureServer(server) {
       app.use(express.json({ limit: "5mb" }));
 
-      app.use("/pathgraph", pathgraphRouter);
+      app.use("/pathgraph.gz", pathgraphRouter);
       app.use("/tilesets", tilesetRouter);
       app.use("/map.cbor.gz", mapRouter);
       app.use("/story", storyRouter);
