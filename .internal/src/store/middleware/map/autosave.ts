@@ -40,12 +40,14 @@ startAppListening({
     (action.meta as any)?.reconcileType !== undefined,
   effect: async (_action, { getState }) => {
     const state = getState();
+    const ms = state.mapEditor;
 
     const map: SavedMap = {
       tileWidth: defaultTileSize,
       tileHeight: defaultTileSize,
-      objects: state.mapEditor.objects,
-      templates: state.mapEditor.templates,
+      objects: ms.objects,
+      templates: ms.templates,
+      bounds: ms.bounds,
     } satisfies SavedMap;
 
     saveRequests$.next({ map });

@@ -15,6 +15,7 @@ import { Rect } from "./rect";
 export interface SavedMap {
   tileWidth: number;
   tileHeight: number;
+  bounds: Rect;
   objects: EntityState<MapObj, string>;
   templates: {
     lights: LightProps & HasId;
