@@ -1,6 +1,7 @@
 import { MapLayerName } from "@/types/layer";
 import type { MapObj } from "@/types/map";
 import type { SpatialIndex } from "@/types/spatial";
+import { Vector2 } from "@/vec";
 import * as P from "pixi.js";
 import { Mover } from "./tools/move";
 
@@ -30,9 +31,11 @@ interface Globals {
   initialized: boolean;
 
   spatialIndex: SpatialIndex<MapObj>;
+  mousePos: Vector2;
 }
 
 export const globals: Globals = {
   initialized: false,
   layerContainers: {} as Record<MapLayerName, P.Container>,
+  mousePos: { x: 0, y: 0 },
 } as unknown as Globals;

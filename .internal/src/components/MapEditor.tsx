@@ -1,5 +1,6 @@
 import * as constants from "@/constants";
 import { iconTsId, transparentIcon } from "@/constants/tsObjs";
+import { globals as gPixi } from "@/editors/map/globals";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/mapEditor";
@@ -18,6 +19,7 @@ import {
   tileGroupSort,
 } from "@/utils/palette/sort";
 import { loadTileGroup } from "@/utils/tileset";
+import { Vector2 } from "@/vec";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
   Badge,
@@ -27,6 +29,7 @@ import {
   ScrollArea,
   Stack,
   Tabs,
+  Text,
 } from "@mantine/core";
 import {
   IconBucketDroplet,
@@ -80,19 +83,26 @@ export default function MapEditorTab({
   const [paletteSelection, selCounts] = useAppSelector(
     selectors.paletteSelectedTsObjIds
   );
+  const selected = useAppSelector(selectors.selectedObjs);
+  const cursorPosRef = useRef<HTMLSpanElement>(null);
+  const cursorPosRaf = useRef<number | null>(null);
 
   // Defer visual updates to palette selection to keep interactions responsive
   const deferredPaletteSelection = useDeferredValue(paletteSelection);
 
-  // const gridPos = useAppSelector(
-  //   (state: RootState) => state.mapEditor.grid.curPos,
-  //   shallowEqual
-  // );
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // This waits for our tileset and map to load from the shell.
   use(initPromise);
+
+  const objPos: Vector2 | null = useMemo(() => {
+    if (selected.length !== 1) {
+      return null;
+    }
+    const obj = selected[0];
+    return { x: obj.x, y: obj.y };
+  }, [selected]);
 
   useEffect(() => {
     const container = containerRef.current!;
@@ -101,6 +111,32 @@ export default function MapEditorTab({
     if (!container.contains(canvas)) {
       container.appendChild(canvas);
     }
+  }, []);
+
+  // Update cursor position display without changing react state
+  useEffect(() => {
+    function updateCursorPos() {
+      if (cursorPosRef.current) {
+        const x = Math.floor(gPixi.mousePos.x);
+        const y = Math.floor(gPixi.mousePos.y);
+        cursorPosRef.current.textContent = `${x}, ${y}`;
+      }
+      cursorPosRaf.current = null;
+    }
+
+    function onMouseMove() {
+      if (cursorPosRaf.current === null) {
+        cursorPosRaf.current = requestAnimationFrame(updateCursorPos);
+      }
+    }
+
+    window.addEventListener("mousemove", onMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      if (cursorPosRaf.current !== null) {
+        cancelAnimationFrame(cursorPosRaf.current);
+      }
+    };
   }, []);
 
   const onSelectObject = useCallback(
@@ -284,13 +320,16 @@ export default function MapEditorTab({
           <Stack h="100%" style={{ overflow: "hidden" }}>
             <LayerList layerConstraints={tool?.layerConstraints} />
 
-            <Fieldset legend="Grid">
+            <Fieldset legend="Positions">
               <Stack p={0}>
-                {/* {gridPos && (
+                {objPos && (
                   <Text size="sm" variant="text">
-                    Position: {gridPos.x}, {gridPos.y}
+                    Object Pos: {objPos.x}, {objPos.y}
                   </Text>
-                )} */}
+                )}
+                <Text size="sm" variant="text">
+                  Cursor Pos: <span ref={cursorPosRef}></span>
+                </Text>
               </Stack>
             </Fieldset>
           </Stack>

@@ -31,11 +31,6 @@ export default function levelWatcher() {
           if (changed.startsWith(`${repoDir}/level/`)) {
             gameReload = true;
 
-            // Ignore *.tiled-session files
-            if (changed.endsWith(".tiled-session")) {
-              gameReload = false;
-            }
-
             // Ignore dialogue.ts file, so there isn't a reload loop, because the
             // dynamic AS compiler will produce a new dialogue.ts file, which will
             // trigger a reload.

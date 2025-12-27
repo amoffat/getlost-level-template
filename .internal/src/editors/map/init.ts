@@ -78,6 +78,7 @@ export async function init(): Promise<P.Application> {
     let cursor = getCursorForMode(mode);
 
     const localPos = e.getLocalPosition(g.mapContainer);
+    g.mousePos = { x: localPos.x, y: localPos.y };
 
     const hits = spatialIndex.getObjects({
       pos: localPos,

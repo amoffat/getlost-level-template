@@ -94,9 +94,9 @@ export class Character {
     return all.get(name)!;
   }
 
-  static tickAll(deltaMS: number): void {
+  static async tickAll(deltaMS: number): Promise<void> {
     for (const char of all.values()) {
-      char.tick(deltaMS);
+      await char.tick(deltaMS);
     }
   }
 
