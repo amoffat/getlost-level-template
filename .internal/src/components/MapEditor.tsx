@@ -1,15 +1,16 @@
 import * as constants from "@/constants";
 import { iconTsId, transparentIcon } from "@/constants/tsObjs";
-import { globals as gPixi } from "@/editors/map/globals";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/mapEditor";
 import { RootState, store } from "@/store/store";
 import { setToolThunk } from "@/thunks/map";
+import { isAnimationTemplate } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { isNpcTemplate } from "@/types/npc";
 import { isTileGroupTemplate } from "@/types/tilegroup";
+import { Tileset } from "@/types/tileset";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import { FillObj } from "@/types/tools";
 import { animationsFilter, objectsFilter } from "@/utils/palette/filters";
@@ -19,18 +20,8 @@ import {
   tileGroupSort,
 } from "@/utils/palette/sort";
 import { loadTileGroup } from "@/utils/tileset";
-import { Vector2 } from "@/vec";
 import { Split } from "@gfazioli/mantine-split-pane";
-import {
-  Badge,
-  Fieldset,
-  Group,
-  Portal,
-  ScrollArea,
-  Stack,
-  Tabs,
-  Text,
-} from "@mantine/core";
+import { Badge, Group, Portal, ScrollArea, Stack, Tabs } from "@mantine/core";
 import {
   IconBucketDroplet,
   IconBulb,
@@ -62,6 +53,7 @@ import ObjectsPaletteFilters from "./paletteFilters/Objects";
 import { renderNpc } from "./paletteObjects/Npc";
 import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
 import { renderTileGroup } from "./paletteObjects/TileGroup";
+import PositionsFieldset from "./PositionsFieldset";
 import Tip from "./Tip";
 import ToolPalette, { ToolDescriptor } from "./ToolPalette";
 import AutotilerTool from "./tools/map/AutotilerTool";
@@ -80,29 +72,61 @@ export default function MapEditorTab({
   const selectedToolName = useAppSelector(
     (state: RootState) => state.mapEditor.selectedTool
   );
-  const [paletteSelection, selCounts] = useAppSelector(
-    selectors.paletteSelectedTsObjIds
+  const paletteSelection = useAppSelector(selectors.paletteSelectedTsObjIds);
+  const tilesets = useAppSelector(
+    (state: RootState) => state.tilesetEditor.tilesets
   );
-  const selected = useAppSelector(selectors.selectedObjs);
-  const cursorPosRef = useRef<HTMLSpanElement>(null);
-  const cursorPosRaf = useRef<number | null>(null);
+  const placeObj = useAppSelector(
+    (state: RootState) => state.mapEditor.place.obj
+  );
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Defer visual updates to palette selection to keep interactions responsive
   const deferredPaletteSelection = useDeferredValue(paletteSelection);
 
+  // Derive counts from palette selection - memoized to avoid re-renders
+  const selCounts = useMemo(() => {
+    const counts = { objects: 0, animations: 0, npcs: 0 };
+
+    // Build a lookup from tsObjId to template type
+    const tilesetsArr: Tileset[] = Object.values(tilesets);
+
+    for (const tsObjId of paletteSelection) {
+      // Check if this is the placeObj first
+      if (placeObj && placeObj.id === tsObjId) {
+        if (isTileGroupTemplate(placeObj)) {
+          counts.objects++;
+        } else if (isAnimationTemplate(placeObj)) {
+          counts.animations++;
+        } else if (isNpcTemplate(placeObj)) {
+          counts.npcs++;
+        }
+        continue;
+      }
+
+      // Look up in tilesets
+      for (const ts of tilesetsArr) {
+        const template = ts.tiles.entities[tsObjId];
+        if (template) {
+          if (isTileGroupTemplate(template)) {
+            counts.objects++;
+          } else if (isAnimationTemplate(template)) {
+            counts.animations++;
+          } else if (isNpcTemplate(template)) {
+            counts.npcs++;
+          }
+          break;
+        }
+      }
+    }
+
+    return counts;
+  }, [paletteSelection, tilesets, placeObj]);
+
   const dispatch = useAppDispatch();
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // This waits for our tileset and map to load from the shell.
   use(initPromise);
-
-  const objPos: Vector2 | null = useMemo(() => {
-    if (selected.length !== 1) {
-      return null;
-    }
-    const obj = selected[0];
-    return { x: obj.x, y: obj.y };
-  }, [selected]);
 
   useEffect(() => {
     const container = containerRef.current!;
@@ -111,32 +135,6 @@ export default function MapEditorTab({
     if (!container.contains(canvas)) {
       container.appendChild(canvas);
     }
-  }, []);
-
-  // Update cursor position display without changing react state
-  useEffect(() => {
-    function updateCursorPos() {
-      if (cursorPosRef.current) {
-        const x = Math.floor(gPixi.mousePos.x);
-        const y = Math.floor(gPixi.mousePos.y);
-        cursorPosRef.current.textContent = `${x}, ${y}`;
-      }
-      cursorPosRaf.current = null;
-    }
-
-    function onMouseMove() {
-      if (cursorPosRaf.current === null) {
-        cursorPosRaf.current = requestAnimationFrame(updateCursorPos);
-      }
-    }
-
-    window.addEventListener("mousemove", onMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      if (cursorPosRaf.current !== null) {
-        cancelAnimationFrame(cursorPosRaf.current);
-      }
-    };
   }, []);
 
   const onSelectObject = useCallback(
@@ -320,18 +318,7 @@ export default function MapEditorTab({
           <Stack h="100%" style={{ overflow: "hidden" }}>
             <LayerList layerConstraints={tool?.layerConstraints} />
 
-            <Fieldset legend="Positions">
-              <Stack p={0}>
-                {objPos && (
-                  <Text size="sm" variant="text">
-                    Object Pos: {objPos.x}, {objPos.y}
-                  </Text>
-                )}
-                <Text size="sm" variant="text">
-                  Cursor Pos: <span ref={cursorPosRef}></span>
-                </Text>
-              </Stack>
-            </Fieldset>
+            <PositionsFieldset />
           </Stack>
         </Split.Pane>
 

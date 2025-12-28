@@ -22,7 +22,7 @@ import {
   IconArrowBarToDown,
   IconArrowBarToUp,
 } from "@tabler/icons-react";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useDeferredValue, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import EntranceProperties from "../../objectProperties/EntranceProperties";
 import ExitProperties from "../../objectProperties/ExitProperties";
@@ -34,13 +34,16 @@ import Tip from "../../Tip";
 
 export default function SelectTool() {
   const selectedObjs = useAppSelector(mapSelectors.selectedObjs);
-  const selectedTgInstances = useAppSelector(
-    mapSelectors.selectedTileGroupInstances
-  );
+  const deferredSelectedObjs = useDeferredValue(selectedObjs);
+
   const dispatch = useAppDispatch();
   const groundLayer = useAppSelector(
     (state) => state.mapEditor.layers.active === MapLayerName.Ground
   );
+
+  const selectedTgInstances = useMemo(() => {
+    return deferredSelectedObjs.filter(isTileGroupInstance);
+  }, [deferredSelectedObjs]);
 
   const tips: ReactNode[] = useMemo(() => {
     return [
@@ -71,7 +74,7 @@ export default function SelectTool() {
     const exits: ExitObj[] = [];
     const pickups: PickupObj[] = [];
 
-    for (const obj of selectedObjs) {
+    for (const obj of deferredSelectedObjs) {
       if (isTileGroupInstance(obj)) {
         tileGroups.push(obj);
       } else if (isLightInstance(obj)) {
@@ -134,9 +137,9 @@ export default function SelectTool() {
     }
 
     return null;
-  }, [selectedObjs]);
+  }, [deferredSelectedObjs]);
 
-  const hasSelection = selectedObjs.length > 0;
+  const hasSelection = deferredSelectedObjs.length > 0;
 
   return (
     <>
@@ -168,7 +171,7 @@ export default function SelectTool() {
       )}
 
       <ErrorBoundary
-        resetKeys={[selectedObjs]}
+        resetKeys={[deferredSelectedObjs]}
         fallback={
           <Alert variant="filled" color="pink" title="Error">
             Properties failed to render

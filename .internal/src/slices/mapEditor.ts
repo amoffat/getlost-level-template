@@ -1,6 +1,5 @@
 import * as constants from "@/constants";
 import { globals } from "@/globals";
-import { isAnimationTemplate } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import {
@@ -8,9 +7,7 @@ import {
   isNpcInstance,
   isTileGroupInstance,
   MapObj,
-  TileGroupInstance,
 } from "@/types/map";
-import { isNpcTemplate } from "@/types/npc";
 import {
   EntranceProps,
   ExitProps,
@@ -19,7 +16,7 @@ import {
 } from "@/types/properties";
 import { Rect } from "@/types/rect";
 import { isTileGroupTemplate } from "@/types/tilegroup";
-import { TilesetObjectTemplate, TsObjCounts } from "@/types/tilesetobject";
+import { TilesetObjectTemplate } from "@/types/tilesetobject";
 import {
   AutotilerOpts,
   ColliderOpts,
@@ -443,11 +440,6 @@ export const slice = createSlice({
       [(state) => state.selectedIds, (state) => state.objects.entities],
       (selectedIds, entities): MapObj[] => selectedIds.map((id) => entities[id])
     ),
-    selectedTileGroupInstances: createMapSelector(
-      [(state) => state.selectedIds, (state) => state.objects.entities],
-      (selectedIds, entities): TileGroupInstance[] =>
-        selectedIds.map((id) => entities[id]).filter(isTileGroupInstance)
-    ),
     numSelectedTgInstances: createMapSelector(
       [(state) => state.selectedIds, (state) => state.objects.entities],
       (selectedIds, entities): number => {
@@ -479,33 +471,19 @@ export const slice = createSlice({
         (state) => state.objects.entities,
         (state) => state.place.obj,
       ],
-      (selectedIds, entities, placeObj): [Set<string>, TsObjCounts] => {
+      (selectedIds, entities, placeObj): Set<string> => {
         const result = new Set<string>();
-        const counts = {
-          objects: 0,
-          animations: 0,
-          npcs: 0,
-        };
 
         // Single loop through selectedIds
         for (const id of selectedIds) {
           const instance = entities[id];
           if (instance) {
             if (isTileGroupInstance(instance)) {
-              if (!result.has(instance.tsObjId)) {
-                counts.objects++;
-                result.add(instance.tsObjId);
-              }
+              result.add(instance.tsObjId);
             } else if (isAnimatedInstance(instance)) {
-              if (!result.has(instance.tsObjId)) {
-                counts.animations++;
-                result.add(instance.tsObjId);
-              }
+              result.add(instance.tsObjId);
             } else if (isNpcInstance(instance)) {
-              if (!result.has(instance.tsObjId)) {
-                counts.npcs++;
-                result.add(instance.tsObjId);
-              }
+              result.add(instance.tsObjId);
             }
           }
         }
@@ -513,24 +491,14 @@ export const slice = createSlice({
         // Add placeObj if present
         if (placeObj) {
           result.add(placeObj.id);
-          if (isTileGroupTemplate(placeObj)) {
-            counts.objects++;
-          } else if (isAnimationTemplate(placeObj)) {
-            counts.animations++;
-          } else if (isNpcTemplate(placeObj)) {
-            counts.npcs++;
-          }
         }
 
-        return [result, counts];
+        return result;
       },
       {
         memoizeOptions: {
           // Only return new Set if contents actually changed
-          resultEqualityCheck: (aRes, bRes) => {
-            const [a, _] = aRes;
-            const [b, __] = bRes;
-
+          resultEqualityCheck: (a, b) => {
             if (a.size !== b.size) return false;
             for (const item of a) {
               if (!b.has(item)) return false;

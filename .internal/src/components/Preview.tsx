@@ -141,7 +141,7 @@ export default function PreviewTab() {
               value={gameEnv}
               onChange={(value) => setGameEnv(value as keyof typeof GAME_URLS)}
               allowDeselect={false}
-              w={200}
+              w={"100%"}
             />
 
             <Group gap="xs">
