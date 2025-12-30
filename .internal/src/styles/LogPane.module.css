@@ -11,6 +11,11 @@
   font-weight: bold;
 }
 
+.info {
+  color: deepskyblue;
+  font-weight: bold;
+}
+
 .error {
   color: red;
   font-weight: bold;

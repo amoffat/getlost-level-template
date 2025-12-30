@@ -74,6 +74,10 @@ export default function levelWatcher() {
             sharedState.assemblyscriptTainted = true;
             console.log(`Triggering reload: ${changed}`);
             server.ws.send("gl:level-reload");
+            server.ws.send("gl:log", {
+              msg: `Reload triggered: ${changed}`,
+              className: "info",
+            });
           }
         });
 

@@ -1,6 +1,7 @@
 import { Split } from "@gfazioli/mantine-split-pane";
-import { Button, Group, SegmentedControl, Select, Stack } from "@mantine/core";
+import { Button, Fieldset, Group, Select, Stack, Switch } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
+import { IconDeviceDesktop, IconDeviceMobile } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import { useCommsContext } from "../context/comms";
 import { Comms } from "../iframe";
@@ -28,7 +29,17 @@ export default function PreviewTab() {
     key: "gl-audio-mode",
     defaultValue: "audio",
   });
+  const [deviceType, setDeviceType] = useLocalStorage<"desktop" | "mobile">({
+    key: "gl-device-type",
+    defaultValue: "desktop",
+  });
+  const [enableOverlays, setEnableOverlays] = useLocalStorage<boolean>({
+    key: "gl-overlays-enabled",
+    defaultValue: false,
+  });
 
+  // Respond to level reload requests from HMR (when level code or assets
+  // change)
   useEffect(() => {
     if (import.meta.hot) {
       const fn = () => {
@@ -86,14 +97,21 @@ export default function PreviewTab() {
     const targetUrl = GAME_URLS[gameEnv];
     const src = new URL(targetUrl);
 
+    const qs = src.searchParams;
+    qs.set("overlays", enableOverlays ? "1" : "0");
+    qs.set("device", deviceType);
+
     // Copy all search params from parent frame to iframe src
     const parentParams = new URL(window.location.href).searchParams;
     for (const [key, value] of parentParams.entries()) {
-      src.searchParams.set(key, value);
+      qs.set(key, value);
     }
 
-    src.searchParams.set("levelBaseUrl", levelUrl);
-    log.info(`Loading game from ${targetUrl}`);
+    qs.set("levelBaseUrl", levelUrl);
+    log.info(
+      { qs: new Map(qs.entries()), dev: true },
+      `Loading game from ${targetUrl}`
+    );
     iframe.src = src.toString();
 
     const comms = new Comms({
@@ -102,7 +120,14 @@ export default function PreviewTab() {
       role: "parent",
     });
     setComms(comms);
-  }, [reloadCount, setComms, gameEnv, iframeLoaded]);
+  }, [
+    reloadCount,
+    setComms,
+    gameEnv,
+    iframeLoaded,
+    enableOverlays,
+    deviceType,
+  ]);
 
   // Send audio mode changes to iframe without reloading (skip on initial mount)
   const isInitialMount = useRef(true);
@@ -132,43 +157,86 @@ export default function PreviewTab() {
       >
         <Stack h="100%" style={{ overflow: "hidden" }}>
           <Stack p={0}>
-            <Select
-              data={[
-                { value: "local", label: "Localhost" },
-                { value: "prod", label: "Production" },
-                { value: "qa", label: "QA" },
-              ]}
-              value={gameEnv}
-              onChange={(value) => setGameEnv(value as keyof typeof GAME_URLS)}
-              allowDeselect={false}
-              w={"100%"}
-            />
+            <Fieldset legend="Environment">
+              <Stack p={0}>
+                <Select
+                  data={[
+                    { value: "local", label: "Localhost" },
+                    { value: "prod", label: "Production" },
+                    { value: "qa", label: "QA" },
+                  ]}
+                  value={gameEnv}
+                  onChange={(value) =>
+                    setGameEnv(value as keyof typeof GAME_URLS)
+                  }
+                  allowDeselect={false}
+                  w={"100%"}
+                />
 
-            <Group gap="xs">
-              <Button
-                size="xs"
-                onClick={restartIframe}
-                disabled={!iframeLoaded}
-              >
-                Restart
-              </Button>
-              <Button size="xs" onClick={stopIframe} disabled={!iframeLoaded}>
-                Stop
-              </Button>
-              <Button size="xs" onClick={loadIframe} disabled={iframeLoaded}>
-                Start
-              </Button>
-            </Group>
+                <Group gap="xs">
+                  <Button
+                    size="xs"
+                    onClick={restartIframe}
+                    disabled={!iframeLoaded}
+                  >
+                    Restart
+                  </Button>
+                  <Button
+                    size="xs"
+                    onClick={stopIframe}
+                    disabled={!iframeLoaded}
+                  >
+                    Stop
+                  </Button>
+                  <Button
+                    size="xs"
+                    onClick={loadIframe}
+                    disabled={iframeLoaded}
+                  >
+                    Start
+                  </Button>
+                </Group>
 
-            <SegmentedControl
-              value={audioMode}
-              onChange={(value) => setAudioMode(value as "audio" | "muted")}
-              data={[
-                { value: "audio", label: "Audio" },
-                { value: "muted", label: "Muted" },
-              ]}
-              w={200}
-            />
+                <Switch
+                  label="Enable overlays"
+                  checked={enableOverlays}
+                  onChange={(event) =>
+                    setEnableOverlays(event.currentTarget.checked)
+                  }
+                />
+              </Stack>
+            </Fieldset>
+
+            <Fieldset legend="Device">
+              <Select
+                value={deviceType}
+                onChange={(value) =>
+                  setDeviceType(value as "desktop" | "mobile")
+                }
+                allowDeselect={false}
+                leftSection={
+                  deviceType === "mobile" ? (
+                    <IconDeviceMobile size={16} />
+                  ) : (
+                    <IconDeviceDesktop size={16} />
+                  )
+                }
+                data={[
+                  { value: "desktop", label: "Desktop" },
+                  { value: "mobile", label: "Mobile" },
+                ]}
+              />
+            </Fieldset>
+
+            <Fieldset legend="Audio">
+              <Switch
+                label="Enabled"
+                checked={audioMode === "audio"}
+                onChange={(event) =>
+                  setAudioMode(event.currentTarget.checked ? "audio" : "muted")
+                }
+              />
+            </Fieldset>
           </Stack>
         </Stack>
       </Split.Pane>

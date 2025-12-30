@@ -17,6 +17,9 @@ interface DevMessage {
   color?: string;
 }
 
+// Keys to strip from dev messages when formatting for display
+const DEV_KEYS = ["dev", "color"] as const;
+
 function isDevMessage(msg: unknown): msg is DevMessage {
   return (msg as DevMessage).dev === true;
 }
@@ -30,10 +33,27 @@ function formatLogEvent(logEvent: LogEvent) {
     try {
       if (typeof val === "string") return val;
       if (val && typeof val === "object") {
+        // Remove the dev keys
+        if (isDevMessage(val)) {
+          const rest = { ...(val as unknown as Record<string, unknown>) };
+          for (const key of DEV_KEYS) {
+            delete rest[key];
+          }
+          val = rest;
+          if (Object.keys(rest).length === 0) {
+            return "";
+          }
+        }
         return JSON.stringify(val as any, (_key, value) => {
           if (typeof value === "object" && value !== null) {
             if (seen.has(value)) return "[Circular]";
             seen.add(value);
+            if (value instanceof Map) {
+              return Object.fromEntries(value);
+            }
+            if (value instanceof Set) {
+              return Array.from(value);
+            }
           }
           return value;
         }) as string;
@@ -53,7 +73,6 @@ function formatLogEvent(logEvent: LogEvent) {
   let msgStr = "";
   for (let i = 0; i < logEvent.messages.length; i++) {
     const part = logEvent.messages[i];
-    if (isDevMessage(part)) continue;
     if (msgStr) msgStr += " ";
     msgStr += safeStringify(part);
   }
@@ -217,10 +236,10 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
   // bundler plugin
   useEffect(() => {
     if (import.meta.hot) {
-      import.meta.hot.on("gl:level-bundler", addMessage);
+      import.meta.hot.on("gl:log", addMessage);
 
       return () => {
-        import.meta.hot!.off("gl:level-bundler", addMessage);
+        import.meta.hot!.off("gl:log", addMessage);
       };
     }
   }, [addMessage]);

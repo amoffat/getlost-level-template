@@ -125,7 +125,7 @@ export default function bundleLevelCodePlugin() {
             commit: "main",
           };
           if (!sharedState.assemblyscriptTainted) {
-            server.ws.send("gl:level-bundler", {
+            server.ws.send("gl:log", {
               msg: "Serving cached bundle",
               className: "success",
             });
@@ -137,9 +137,9 @@ export default function bundleLevelCodePlugin() {
           }
 
           const start = performance.now();
-          server.ws.send("gl:level-bundler", {
+          server.ws.send("gl:log", {
             msg: "Bundling JavaScript...",
-            className: "success",
+            className: "info",
           });
 
           try {
@@ -152,14 +152,14 @@ export default function bundleLevelCodePlugin() {
             cachedJs = bundledJs;
             const end = performance.now();
             const time = (end - start).toFixed(2);
-            server.ws.send("gl:level-bundler", {
+            server.ws.send("gl:log", {
               msg: `Bundle compiled in ${time}ms`,
               className: "success",
             });
             sharedState.assemblyscriptTainted = false;
           } catch (e) {
             if (isCompileError(e)) {
-              server.ws.send("gl:level-bundler", {
+              server.ws.send("gl:log", {
                 msg: e.message,
                 className: "error",
               });
