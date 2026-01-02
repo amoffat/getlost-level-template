@@ -1,7 +1,12 @@
 import { Split } from "@gfazioli/mantine-split-pane";
 import { Button, Fieldset, Group, Select, Stack, Switch } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
-import { IconDeviceDesktop, IconDeviceMobile } from "@tabler/icons-react";
+import { notifications } from "@mantine/notifications";
+import {
+  IconDeviceDesktop,
+  IconDeviceMobile,
+  IconUpload,
+} from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import { useCommsContext } from "../context/comms";
 import { Comms } from "../iframe";
@@ -145,6 +150,14 @@ export default function PreviewTab() {
     });
   }, [audioMode, comms, iframeLoaded]);
 
+  const publish = () => {
+    notifications.show({
+      title: "Not Yet Implemented",
+      message: "Level publishing functionality is coming soon.",
+      color: "blue",
+    });
+  };
+
   return (
     <Split h="100dvh" style={{ flex: 1 }}>
       {/* Left pane */}
@@ -236,6 +249,19 @@ export default function PreviewTab() {
                   setAudioMode(event.currentTarget.checked ? "audio" : "muted")
                 }
               />
+            </Fieldset>
+
+            <Fieldset legend="Publishing">
+              <Button
+                fullWidth
+                size="lg"
+                leftSection={<IconUpload size={20} />}
+                variant="gradient"
+                gradient={{ from: "blue", to: "red", deg: 90 }}
+                onClick={publish}
+              >
+                Publish
+              </Button>
             </Fieldset>
           </Stack>
         </Stack>
