@@ -1,7 +1,6 @@
 import chokidar from "chokidar";
 import path from "path";
 import { ViteDevServer } from "vite";
-import { sharedState } from "./shared";
 
 const cwd = process.cwd();
 const repoDir = path.resolve(cwd, "..");
@@ -71,7 +70,6 @@ export default function levelWatcher() {
           }
 
           if (gameReload) {
-            sharedState.assemblyscriptTainted = true;
             console.log(`Triggering reload: ${changed}`);
             server.ws.send("gl:level-reload");
             server.ws.send("gl:log", {

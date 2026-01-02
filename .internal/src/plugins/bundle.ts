@@ -8,12 +8,10 @@ import path from "node:path";
 import { resolve } from "path";
 import { OutputOptions, rollup, RollupOptions } from "rollup";
 import { ViteDevServer } from "vite";
-import { sharedState } from "./shared";
 
 const internalDir = process.cwd();
 const repoDir = resolve(internalDir, "..");
 const levelDir = resolve(repoDir, "level");
-let cachedJs: string = "";
 
 const packageJson = JSON.parse(
   readFileSync(resolve(internalDir, "package.json"), "utf-8")
@@ -124,17 +122,6 @@ export default function bundleLevelCodePlugin() {
             repo: "amoffat/getlost-level-template",
             commit: "main",
           };
-          if (!sharedState.assemblyscriptTainted) {
-            server.ws.send("gl:log", {
-              msg: "Serving cached bundle",
-              className: "success",
-            });
-
-            res.setHeader("Content-Type", "application/javascript");
-            res.statusCode = 200;
-            res.end(cachedJs);
-            return;
-          }
 
           const start = performance.now();
           server.ws.send("gl:log", {
@@ -149,14 +136,12 @@ export default function bundleLevelCodePlugin() {
             res.statusCode = 200;
             res.end(bundledJs);
 
-            cachedJs = bundledJs;
             const end = performance.now();
             const time = (end - start).toFixed(2);
             server.ws.send("gl:log", {
               msg: `Bundle compiled in ${time}ms`,
               className: "success",
             });
-            sharedState.assemblyscriptTainted = false;
           } catch (e) {
             if (isCompileError(e)) {
               server.ws.send("gl:log", {

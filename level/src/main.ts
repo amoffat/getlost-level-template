@@ -191,7 +191,7 @@ export function pauseTick(timestep: number): void {}
  *
  * @param timestep The time since the last tick in milliseconds.
  */
-export async function tick(timestep: number): Promise<void> {
+export async function tick(timestep: number) {
   await player.tick(timestep);
   await Character.tickAll(timestep);
   filters.setTiltShiftY(tsfid, player.pos.y - 10);
