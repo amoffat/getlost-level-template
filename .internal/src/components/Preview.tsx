@@ -1,3 +1,4 @@
+import { useAppSelector } from "@/hooks/redux";
 import { Split } from "@gfazioli/mantine-split-pane";
 import { Button, Fieldset, Group, Select, Stack, Switch } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
@@ -24,6 +25,7 @@ export default function PreviewTab() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { comms, setComms } = useCommsContext();
   const [reloadCount, setReloadCount] = useState(0);
+  const activeTab = useAppSelector((state) => state.ui.activeTab);
   const [gameEnv, setGameEnv] = useLocalStorage<keyof typeof GAME_URLS>({
     key: "gl-game-env",
     defaultValue: "prod",
@@ -42,12 +44,30 @@ export default function PreviewTab() {
     key: "gl-overlays-enabled",
     defaultValue: false,
   });
+  const [autoReload, setAutoReload] = useLocalStorage<boolean>({
+    key: "gl-auto-reload",
+    defaultValue: true,
+  });
+  const [pendingReload, setPendingReload] = useState(false);
 
   // Respond to level reload requests from HMR (when level code or assets
   // change)
   useEffect(() => {
     if (import.meta.hot) {
       const fn = () => {
+        if (!autoReload) {
+          log.info("Auto-reload disabled, skipping reload");
+          return;
+        }
+        if (activeTab !== "preview") {
+          // Queue up the reload for when the tab becomes active
+          setPendingReload(true);
+          log.info(
+            { dev: true, color: "yellow" },
+            "Reload queued (tab inactive)"
+          );
+          return;
+        }
         log.info({ dev: true, color: "green" }, "Reloading level");
         setReloadCount((c) => c + 1);
       };
@@ -57,7 +77,18 @@ export default function PreviewTab() {
         import.meta.hot!.off("gl:level-reload", fn);
       };
     }
-  }, []);
+  }, [activeTab, autoReload]);
+
+  // Process queued reload when tab becomes active
+  useEffect(() => {
+    if (activeTab === "preview" && pendingReload) {
+      log.info({ dev: true, color: "green" }, "Processing queued reload");
+      queueMicrotask(() => {
+        setReloadCount((c) => c + 1);
+        setPendingReload(false);
+      });
+    }
+  }, [activeTab, pendingReload]);
 
   useEffect(() => {
     if (!comms) return;
@@ -209,6 +240,14 @@ export default function PreviewTab() {
                     Start
                   </Button>
                 </Group>
+
+                <Switch
+                  label="Auto-reload"
+                  checked={autoReload}
+                  onChange={(event) =>
+                    setAutoReload(event.currentTarget.checked)
+                  }
+                />
 
                 <Switch
                   label="Enable overlays"

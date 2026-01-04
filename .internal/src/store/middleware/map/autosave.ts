@@ -1,4 +1,4 @@
-import { defaultTileSize } from "@/constants";
+import { autosaveMapDebounce, defaultTileSize } from "@/constants";
 import { log } from "@/log";
 import { saveMap as persistMap } from "@/persist/map/api";
 import { slice } from "@/slices/mapEditor";
@@ -15,7 +15,7 @@ const saveRequests$ = new Subject<{ map: SavedMap }>();
 
 saveRequests$
   .pipe(
-    debounceTime(500), // collapse rapid bursts of actions
+    debounceTime(autosaveMapDebounce), // collapse rapid bursts of actions
     concatMap(({ map }) =>
       from(persistMap(map)).pipe(
         tap(() => {

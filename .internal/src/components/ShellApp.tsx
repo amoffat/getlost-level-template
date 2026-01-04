@@ -165,7 +165,7 @@ const ShellAppContent = memo(function ShellAppContent({
               <Tabs.Tab value="tileset-editor">Tilesets</Tabs.Tab>
               <Tabs.Tab value="story-editor">Story</Tabs.Tab>
               <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
-              <Tabs.Tab value="preview">Level Preview</Tabs.Tab>
+              <Tabs.Tab value="preview">Preview</Tabs.Tab>
             </Tabs.List>
 
             {mountedTabs["preview"] && (

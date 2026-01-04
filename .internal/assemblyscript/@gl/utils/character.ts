@@ -41,7 +41,7 @@ export class Character {
   private _pos: Vec2 = new Vec2(0, 0);
   private _velocity: Vec2 = new Vec2(0, 0);
   public direction: Vec2 = new Vec2(0, 0);
-  public speed: number = 1.0;
+  public speed: number = 0.8;
   private _navSpeed: number = 1.0;
   private _state: NavState = NavState.stopped;
   private _moveForce: Vec2 = Vec2.fromVal(baseMoveForce);
@@ -75,7 +75,6 @@ export class Character {
     this._sourcePos = this._pos;
     this._isPlayer = this.name == "player";
     all.set(name, this);
-    this.speed = this._isPlayer ? 1.0 : 0.8;
   }
 
   static initAll(): void {
