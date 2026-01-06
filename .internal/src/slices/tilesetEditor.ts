@@ -7,6 +7,7 @@ import { Rect } from "@/types/rect";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { AnimatorOpts, CandidateAnimFrame } from "@/types/tools";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
 import { HasId } from "@/utils/misc";
 import { resizeWeights } from "@/utils/normalizedSliders";
@@ -21,13 +22,15 @@ import {
 
 const DEFAULT_ZOOMPAN: ZoomPan = { zoom: 1, pan: { x: 0, y: 0 } };
 
-type ToolOptMapping = object;
+type ToolOptMapping = {
+  animator: AnimatorOpts;
+  collider: {
+    brushSize: number;
+    mode: "paint" | "erase";
+    drawOnOpaqueOnly: boolean;
+  };
+};
 type ToolWithOptions = keyof ToolOptMapping;
-
-export interface CandidateAnimFrame {
-  tileGroup: TileGroupTemplate;
-  weight: number; // 0-1 fraction representing time allocation
-}
 
 const reconcilePrefix = "tilesetEditor";
 export const selectedAdapter = createEntityAdapter<HasId>();
@@ -60,8 +63,6 @@ export interface TilesetEditorState {
   toolOptions: {
     [K in ToolWithOptions]: ToolOptMapping[K];
   };
-  candAnimTotalTime: number;
-  candAnimFrames: CandidateAnimFrame[];
   // obj id to tileset id
   objIdToTs: Record<string, string>;
   // image id to tileset id. used for healing broken references
@@ -100,10 +101,14 @@ export const slice = createSlice({
     toolOptions: {
       animator: {
         frames: [],
+        totalTime: defaultAnimTime,
+      },
+      collider: {
+        brushSize: 8,
+        mode: "paint",
+        drawOnOpaqueOnly: true,
       },
     },
-    candAnimTotalTime: defaultAnimTime,
-    candAnimFrames: [],
     objIdToTs: {},
     imageIdToTs: {},
   } as TilesetEditorState,
@@ -120,25 +125,26 @@ export const slice = createSlice({
     },
 
     setToolOptions<K extends ToolWithOptions>(
-      _state: TilesetEditorState,
-      _action: PayloadAction<{ tool: K; options: Partial<ToolOptMapping[K]> }>
+      state: TilesetEditorState,
+      action: PayloadAction<{ tool: K; options: Partial<ToolOptMapping[K]> }>
     ) {
-      // const { tool, options } = action.payload;
-      // state.toolOptions[tool] = { ...state.toolOptions[tool], ...options };
+      const { tool, options } = action.payload;
+      state.toolOptions[tool] = { ...state.toolOptions[tool], ...options };
     },
 
     addCandAnimFrame(state, action: PayloadAction<TileGroupTemplate>) {
-      const newLength = state.candAnimFrames.length + 1;
+      const frames = state.toolOptions.animator.frames;
+      const newLength = frames.length + 1;
       const weights = resizeWeights(
-        state.candAnimFrames.map((f) => f.weight),
+        frames.map((f) => f.weight),
         newLength
       );
       // Update existing frames with rebalanced weights
-      for (let i = 0; i < state.candAnimFrames.length; i++) {
-        state.candAnimFrames[i].weight = weights[i];
+      for (let i = 0; i < frames.length; i++) {
+        frames[i].weight = weights[i];
       }
       // Add new frame with its weight
-      state.candAnimFrames.push({
+      frames.push({
         tileGroup: action.payload,
         weight: weights[newLength - 1],
       });
@@ -146,22 +152,23 @@ export const slice = createSlice({
 
     removeCandAnimIdx(state, action: PayloadAction<number>) {
       const idx = action.payload;
-      state.candAnimFrames.splice(idx, 1);
+      const frames = state.toolOptions.animator.frames;
+      frames.splice(idx, 1);
       // Rebalance weights after removal
-      const newLength = state.candAnimFrames.length;
+      const newLength = frames.length;
       if (newLength > 0) {
         const weights = resizeWeights(
-          state.candAnimFrames.map((f) => f.weight),
+          frames.map((f) => f.weight),
           newLength
         );
         for (let i = 0; i < newLength; i++) {
-          state.candAnimFrames[i].weight = weights[i];
+          frames[i].weight = weights[i];
         }
       }
     },
 
     clearCandAnimFrames(state) {
-      state.candAnimFrames = [];
+      state.toolOptions.animator.frames = [];
     },
 
     reorderCandAnimFrames(
@@ -169,18 +176,18 @@ export const slice = createSlice({
       action: PayloadAction<{ from: number; to: number }>
     ) {
       const { from, to } = action.payload;
+      const frames = state.toolOptions.animator.frames;
       if (
         from === to ||
         from < 0 ||
         to < 0 ||
-        from >= state.candAnimFrames.length ||
-        to >= state.candAnimFrames.length
+        from >= frames.length ||
+        to >= frames.length
       ) {
         return;
       }
-      const arr = state.candAnimFrames;
-      const [moved] = arr.splice(from, 1);
-      arr.splice(to, 0, moved);
+      const [moved] = frames.splice(from, 1);
+      frames.splice(to, 0, moved);
     },
 
     updateCandAnimFrameWeight(
@@ -188,28 +195,26 @@ export const slice = createSlice({
       action: PayloadAction<{ idx: number; weight: number }>
     ) {
       const { idx, weight } = action.payload;
-      if (idx >= 0 && idx < state.candAnimFrames.length) {
-        state.candAnimFrames[idx].weight = weight;
+      const frames = state.toolOptions.animator.frames;
+      if (idx >= 0 && idx < frames.length) {
+        frames[idx].weight = weight;
       }
     },
 
     updateAllCandAnimFrameWeights(state, action: PayloadAction<number[]>) {
       const weights = action.payload;
-      for (
-        let i = 0;
-        i < Math.min(weights.length, state.candAnimFrames.length);
-        i++
-      ) {
-        state.candAnimFrames[i].weight = weights[i];
+      const frames = state.toolOptions.animator.frames;
+      for (let i = 0; i < Math.min(weights.length, frames.length); i++) {
+        frames[i].weight = weights[i];
       }
     },
 
     setCandAnimFrames(state, action: PayloadAction<CandidateAnimFrame[]>) {
-      state.candAnimFrames = action.payload;
+      state.toolOptions.animator.frames = action.payload;
     },
 
     setCandAnimTotalTime(state, action: PayloadAction<number>) {
-      state.candAnimTotalTime = action.payload;
+      state.toolOptions.animator.totalTime = action.payload;
     },
 
     pushMode(state, action: PayloadAction<Mode>) {

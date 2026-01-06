@@ -20,6 +20,7 @@ import { globals as g } from "./globals";
 import { setupGrid } from "./grid";
 import { setupKeys } from "./keys";
 import { setupFrameSelector } from "./tools/animator";
+import { setupCollider } from "./tools/collider";
 import { setupGrouper } from "./tools/group";
 import { setupSelector } from "./tools/select";
 import { setupZIndexer } from "./tools/zindex";
@@ -188,6 +189,8 @@ export async function init(): Promise<P.Application> {
   setupFrameSelector({ cd, spatialIndex });
   const zIndexTool = setupZIndexer();
   toolDispatcher.registerTool(zIndexTool);
+  const colliderTool = setupCollider();
+  toolDispatcher.registerTool(colliderTool);
   setupGrid();
 
   toolDispatcher.registerTool(cd);

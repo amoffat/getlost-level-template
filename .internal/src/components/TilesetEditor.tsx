@@ -53,6 +53,7 @@ import ToolPalette, { ToolDescriptor } from "./ToolPalette";
 import { renderNpc } from "./paletteObjects/Npc";
 import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
 import { renderTileGroup } from "./paletteObjects/TileGroup";
+import ColliderTool from "./tools/tileset/ColliderTool";
 import NpcTool from "./tools/tileset/NpcTool";
 import TileAnimationTool from "./tools/tileset/TileAnimationTool";
 import TileReplaceTool from "./tools/tileset/TileReplaceTool";
@@ -219,7 +220,7 @@ export default function TilesetEditorTab({
         "draw-colliders": {
           name: "Draw colliders",
           icon: <IconShape size={16} />,
-          // options: <ColliderTool />,
+          options: <ColliderTool />,
           enabled: hasTsSelected && singleSelectedObject,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,

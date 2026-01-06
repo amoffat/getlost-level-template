@@ -300,7 +300,7 @@ export const addAnimationFrameThunk = createAsyncThunk(
   async (tg: TileGroupTemplate, { dispatch, getState }) => {
     const state = getState() as { tilesetEditor: TilesetEditorState };
 
-    const curFrames = state.tilesetEditor.candAnimFrames;
+    const curFrames = state.tilesetEditor.toolOptions.animator.frames;
     if (curFrames.length > 0) {
       const firstFrame = curFrames[0];
       const firstWidth = firstFrame.tileGroup.pos.width;

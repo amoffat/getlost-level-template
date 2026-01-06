@@ -1,7 +1,6 @@
 import { useAppSelector } from "@/hooks/redux";
 import { Split } from "@gfazioli/mantine-split-pane";
 import { Button, Fieldset, Group, Select, Stack, Switch } from "@mantine/core";
-import { useLocalStorage } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
   IconDeviceDesktop,
@@ -10,6 +9,7 @@ import {
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import { useCommsContext } from "../context/comms";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { Comms } from "../iframe";
 import { SavePathGraphRequest } from "../iframe/request";
 import { log } from "../log";

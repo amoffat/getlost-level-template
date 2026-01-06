@@ -10,6 +10,7 @@ interface Globals {
   tileEdgeSigs: SignatureIndex;
   // Tileset texture cache, keyed by tileset ID
   tilesetTextureCache: Map<string, P.CanvasSource>;
+  // Tileset image data cache, keyed by tileset ID
   tilesetImageDataCache: Map<string, ImageData>;
   mapEditorReconciler: MapObjReconciler;
   collisionEditorReconciler: MapObjReconciler;

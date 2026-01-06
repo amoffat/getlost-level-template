@@ -28,3 +28,13 @@ export interface FillOpts {
   density: number;
   bounds: Rect | null;
 }
+
+export interface CandidateAnimFrame {
+  tileGroup: TileGroupTemplate;
+  weight: number; // 0-1 fraction representing time allocation
+}
+
+export interface AnimatorOpts {
+  frames: CandidateAnimFrame[];
+  totalTime: number;
+}

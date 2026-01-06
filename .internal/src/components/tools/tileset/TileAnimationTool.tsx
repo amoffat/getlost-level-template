@@ -146,10 +146,10 @@ export default function TileAnimationTool({
 }: TileAnimationToolProps) {
   const ts = useAppSelector(selectors.activeTileset);
   const candFrames = useAppSelector(
-    (state) => state.tilesetEditor.candAnimFrames
+    (state) => state.tilesetEditor.toolOptions.animator.frames
   );
   const totalTime = useAppSelector(
-    (state) => state.tilesetEditor.candAnimTotalTime
+    (state) => state.tilesetEditor.toolOptions.animator.totalTime
   );
   const dispatch = useAppDispatch();
   // Store fractional weights per frame (0..1), always normalized so sum == 1
