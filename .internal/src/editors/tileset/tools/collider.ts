@@ -139,18 +139,12 @@ export class ColliderTool implements Tool {
     if (!this.brushGraphics) return;
 
     this.brushGraphics.clear();
-    // Draw a square brush cursor centered on the cursor position
-    const halfSize = this.brushSize / 2;
-    this.brushGraphics.rect(
-      -halfSize,
-      -halfSize,
-      this.brushSize,
-      this.brushSize
-    );
-    this.brushGraphics.stroke({
+    // Draw a solid square brush cursor (not centered, positioned at top-left)
+    // This makes it clear exactly which pixels will be drawn
+    this.brushGraphics.rect(0, 0, this.brushSize, this.brushSize);
+    this.brushGraphics.fill({
       color: this.isEraserMode ? 0x0000ff : 0xff0000,
-      width: 2,
-      alpha: 0.75,
+      alpha: 0.5,
     });
   }
 
@@ -194,17 +188,27 @@ export class ColliderTool implements Tool {
     if (!this.maskGraphics || !this.currentObj || !this.maskTexture) return;
 
     const obj = this.currentObj;
-    const radius = this.brushSize / 2;
+
+    // Center the brush on the mouse position, then snap to pixel grid
+    const halfSize = this.brushSize / 2;
+    const snappedX = Math.floor(x - halfSize);
+    const snappedY = Math.floor(y - halfSize);
 
     // Convert to local coordinates relative to the object
-    const localX = Math.round(x - obj.pos.x);
-    const localY = Math.round(y - obj.pos.y);
+    const localX = snappedX - obj.pos.x;
+    const localY = snappedY - obj.pos.y;
 
     // Update collision mask data and draw only on opaque pixels
-    const minX = Math.max(0, Math.floor(localX - radius));
-    const maxX = Math.min(obj.pos.width - 1, Math.ceil(localX + radius));
-    const minY = Math.max(0, Math.floor(localY - radius));
-    const maxY = Math.min(obj.pos.height - 1, Math.ceil(localY + radius));
+    const minX = Math.max(0, Math.floor(localX));
+    const maxX = Math.min(
+      obj.pos.width - 1,
+      Math.floor(localX + this.brushSize - 1)
+    );
+    const minY = Math.max(0, Math.floor(localY));
+    const maxY = Math.min(
+      obj.pos.height - 1,
+      Math.floor(localY + this.brushSize - 1)
+    );
 
     // Update the collision mask data array
     for (let py = minY; py <= maxY; py++) {
@@ -290,11 +294,15 @@ export class ColliderTool implements Tool {
       return false;
     }
 
-    // Update brush cursor position
+    // Update brush cursor position, snapped to pixel grid and centered on mouse
     const localPos = g.tilesetContainer.toLocal(e.global);
 
     if (this.brushContainer) {
-      this.brushContainer.position.set(localPos.x, localPos.y);
+      // Center the brush on the mouse cursor, then snap to pixel grid
+      const halfSize = this.brushSize / 2;
+      const snappedX = Math.floor(localPos.x - halfSize);
+      const snappedY = Math.floor(localPos.y - halfSize);
+      this.brushContainer.position.set(snappedX, snappedY);
     }
 
     // Draw if currently dragging
