@@ -1,20 +1,45 @@
+import { trackKeyPresses } from "@/editors/common/keypress";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
 import {
   Fieldset,
-  NumberInput,
   SegmentedControl,
+  Slider,
   Stack,
   Switch,
+  Text,
 } from "@mantine/core";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import Tip from "../../Tip";
 
 export default function ColliderTool() {
   const dispatch = useAppDispatch();
-  const { brushSize, mode, drawOnOpaqueOnly } = useAppSelector(
-    (state) => state.tilesetEditor.toolOptions.collider
-  );
+  const {
+    brushSize,
+    mode,
+    drawOnOpaqueOnly,
+    lockSelection,
+    overlayOpacity,
+    showColliders,
+  } = useAppSelector((state) => state.tilesetEditor.toolOptions.collider);
+
+  // Track keyboard state
+  useEffect(() => {
+    trackKeyPresses({
+      element: document.body,
+      handlers: {
+        Control: (pressed: boolean) => {
+          const effectiveMode = pressed ? "erase" : "paint";
+          dispatch(
+            actions.setToolOptions({
+              tool: "collider",
+              options: { mode: effectiveMode },
+            })
+          );
+        },
+      },
+    });
+  }, [dispatch]);
 
   const handleBrushSizeChange = useCallback(
     (value: number | string) => {
@@ -53,6 +78,43 @@ export default function ColliderTool() {
     [dispatch]
   );
 
+  const handleLockSelectionChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      dispatch(
+        actions.setToolOptions({
+          tool: "collider",
+          options: { lockSelection: event.currentTarget.checked },
+        })
+      );
+    },
+    [dispatch]
+  );
+
+  const handleOverlayOpacityChange = useCallback(
+    (value: number | string) => {
+      if (typeof value === "string") return;
+      dispatch(
+        actions.setToolOptions({
+          tool: "collider",
+          options: { overlayOpacity: value },
+        })
+      );
+    },
+    [dispatch]
+  );
+
+  const handleShowCollidersChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      dispatch(
+        actions.setToolOptions({
+          tool: "collider",
+          options: { showColliders: event.currentTarget.checked },
+        })
+      );
+    },
+    [dispatch]
+  );
+
   return (
     <>
       <Tip
@@ -73,21 +135,50 @@ export default function ColliderTool() {
             ]}
           />
 
-          <NumberInput
-            label="Brush Size"
-            description="Size of the brush in pixels"
-            value={brushSize}
-            onChange={handleBrushSizeChange}
-            min={1}
-            max={50}
-            step={1}
-          />
+          <Stack gap="xs" p={0} mb="md">
+            <Text size="sm">Brush Size</Text>
+            <Slider
+              label="Brush Size"
+              value={brushSize}
+              onChange={handleBrushSizeChange}
+              min={1}
+              max={16}
+              step={1}
+              marks={[{ value: 1 }, { value: 16 }]}
+            />
+          </Stack>
+
+          <Stack gap="xs" p={0} mb="md">
+            <Text size="sm">Overlay Opacity</Text>
+            <Slider
+              label="Overlay Opacity"
+              value={overlayOpacity}
+              onChange={handleOverlayOpacityChange}
+              min={0}
+              max={1}
+              step={0.05}
+            />
+          </Stack>
 
           <Switch
             label="Draw on opaque pixels only"
             description="When enabled, brush only draws on non-transparent pixels"
             checked={drawOnOpaqueOnly}
             onChange={handleDrawOnOpaqueOnlyChange}
+          />
+
+          <Switch
+            label="Lock selection"
+            description="Prevents accidentally selecting adjacent templates while drawing"
+            checked={lockSelection}
+            onChange={handleLockSelectionChange}
+          />
+
+          <Switch
+            label="Show colliders"
+            description="Display computed collision rectangles as overlays"
+            checked={showColliders}
+            onChange={handleShowCollidersChange}
           />
         </Stack>
       </Fieldset>

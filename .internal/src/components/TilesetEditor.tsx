@@ -161,7 +161,6 @@ export default function TilesetEditorTab({
 
   const hasTsSelected = ts !== null;
   const enableGroup = ts !== null && !ts.composite;
-  const singleSelectedObject = paletteSelection.size === 1;
 
   const toolPalette: Partial<Record<Mode, ToolDescriptor>> = useMemo(
     () =>
@@ -221,10 +220,10 @@ export default function TilesetEditorTab({
           name: "Draw colliders",
           icon: <IconShape size={16} />,
           options: <ColliderTool />,
-          enabled: hasTsSelected && singleSelectedObject,
+          enabled: hasTsSelected,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,
-    [enableGroup, hasTsSelected, singleSelectedObject, selectedAnimation]
+    [enableGroup, hasTsSelected, selectedAnimation]
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName]!;

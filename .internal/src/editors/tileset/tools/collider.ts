@@ -2,7 +2,9 @@ import { Tool } from "@/editors/common/tooldispatch";
 import { globals as gApp } from "@/globals";
 import { selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
+import { Rect } from "@/types/rect";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
+import { determineCoverage } from "@/utils/collider";
 import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
 import { globals as g } from "../globals";
@@ -48,9 +50,21 @@ export class ColliderTool implements Tool {
   /** If true, brush acts as an eraser; if false, brush draws collision mask */
   private isEraserMode = false;
 
+  /** If true, prevents selection changes when clicking outside current object */
+  public lockSelection = false;
+
+  /** If true, collider rectangle overlay is visible */
+  public showColliders = false;
+
   /** 2D array storing collision mask data: true = collision, false = no
    * collision */
   private collisionMask: boolean[][] = [];
+
+  /** Array of rectangles computed from determineCoverage */
+  private coverageRects: Rect[] = [];
+
+  /** Graphics object for drawing coverage rectangle overlays */
+  private rectsGraphics: P.Graphics | null = null;
 
   /**
    * Clears all collision mask visual elements and resets state.
@@ -79,10 +93,17 @@ export class ColliderTool implements Tool {
       this.brushGraphics = null;
     }
 
+    if (this.rectsGraphics) {
+      g.tilesetContainer.removeChild(this.rectsGraphics);
+      this.rectsGraphics.destroy();
+      this.rectsGraphics = null;
+    }
+
     this.currentObj = null;
     this.isDrawing = false;
     this.lastDrawPos = null;
     this.collisionMask = [];
+    this.coverageRects = [];
   }
 
   /**
@@ -91,6 +112,10 @@ export class ColliderTool implements Tool {
   private initializeCollisionMask(obj: TileGroupTemplate): void {
     this.clearCollisionMask();
     this.currentObj = obj;
+
+    const state = store.getState();
+    const colliderOpts = state.tilesetEditor.toolOptions.collider;
+    const alpha = colliderOpts.overlayOpacity;
 
     const width = Math.floor(obj.pos.width);
     const height = Math.floor(obj.pos.height);
@@ -114,7 +139,7 @@ export class ColliderTool implements Tool {
     this.maskSprite = new P.Sprite(this.maskTexture);
     this.maskSprite.position.set(obj.pos.x, obj.pos.y);
     this.maskSprite.tint = 0xff0000; // Red tint
-    this.maskSprite.alpha = 0.8; // Semi-transparent
+    this.maskSprite.alpha = alpha;
     this.maskSprite.zIndex = 100; // Render above everything else
     // Disable texture smoothing for hard pixelated edges
     this.maskTexture.source.scaleMode = "nearest";
@@ -127,6 +152,12 @@ export class ColliderTool implements Tool {
     this.brushGraphics = new P.Graphics();
     this.brushContainer.addChild(this.brushGraphics);
     g.tilesetContainer.addChild(this.brushContainer);
+
+    // Create graphics for coverage rectangles overlay
+    this.rectsGraphics = new P.Graphics();
+    this.rectsGraphics.position.set(obj.pos.x, obj.pos.y);
+    this.rectsGraphics.zIndex = 150; // Above mask (100) but below brush (200)
+    g.tilesetContainer.addChild(this.rectsGraphics);
 
     // Draw initial brush cursor
     this.updateBrushCursor();
@@ -261,6 +292,52 @@ export class ColliderTool implements Tool {
   }
 
   /**
+   * Computes coverage rectangles from the current mask texture and stores them.
+   */
+  public computeCoverage(): void {
+    if (!this.maskTexture) return;
+
+    const app = gApp.tilesetEditorApp!;
+    const pixels = app.renderer.extract.pixels(this.maskTexture);
+    const imageData = new ImageData(
+      new Uint8ClampedArray(pixels.pixels),
+      this.maskTexture.width,
+      this.maskTexture.height
+    );
+
+    // Determine coverage rectangles
+    this.coverageRects = determineCoverage(imageData);
+
+    if (this.showColliders) {
+      this.drawCoverageRects();
+    }
+  }
+
+  /**
+   * Draws the coverage rectangles as outlined overlays.
+   */
+  private drawCoverageRects(): void {
+    if (!this.rectsGraphics) return;
+
+    this.rectsGraphics.clear();
+
+    // Use contrasting colors: cyan and yellow for visibility against red mask
+    const colors = [0x00ffff, 0xffff00, 0x00ff00, 0xff00ff];
+
+    this.coverageRects.forEach((rect, index) => {
+      const color = colors[index % colors.length];
+
+      // Draw the rectangle outline
+      this.rectsGraphics!.rect(rect.x, rect.y, rect.width, rect.height)
+        .fill({
+          color,
+          alpha: 1.0,
+        })
+        .stroke({ color: 0x000000, width: 1, pixelLine: true });
+    });
+  }
+
+  /**
    * Draws a line between two points using circles (for smooth brush strokes).
    */
   private drawLine(x1: number, y1: number, x2: number, y2: number): void {
@@ -318,6 +395,11 @@ export class ColliderTool implements Tool {
         this.drawAtPosition(localPos.x, localPos.y);
       }
 
+      // We don't need to compute coverage on every move if we're not showing it
+      if (this.showColliders) {
+        this.computeCoverage();
+      }
+
       this.lastDrawPos = new P.Point(localPos.x, localPos.y);
       return true;
     }
@@ -347,6 +429,9 @@ export class ColliderTool implements Tool {
       this.isDrawing = false;
       this.lastDrawPos = null;
 
+      // Compute coverage rectangles from the mask
+      this.computeCoverage();
+
       // TODO: Dispatch collision mask data to store
       // For now, we just clear the drawing state
       // In the future, this would save the collision mask to the object
@@ -354,11 +439,12 @@ export class ColliderTool implements Tool {
       return true;
     }
 
-    return false;
+    return this.lockSelection;
   }
 
   /**
    * Implements Tool.onPointerDown - starts drawing when left button is pressed.
+   * Returns true if the event was handled (to stop propagation).
    */
   public onPointerDown(e: P.FederatedPointerEvent): boolean {
     if (e.button !== 0) return false; // Only left button
@@ -370,10 +456,24 @@ export class ColliderTool implements Tool {
       return false;
     }
 
-    // Start drawing
-    this.isDrawing = true;
-
     const localPos = g.tilesetContainer.toLocal(e.global);
+
+    // Check if we clicked inside the current object's bounds
+    const obj = this.currentObj;
+    const isInsideCurrentObj =
+      localPos.x >= obj.pos.x &&
+      localPos.x <= obj.pos.x + obj.pos.width &&
+      localPos.y >= obj.pos.y &&
+      localPos.y <= obj.pos.y + obj.pos.height;
+
+    if (!isInsideCurrentObj && !this.lockSelection) {
+      // If lock selection is enabled, consume the event to prevent selection
+      // changes. Otherwise, let the Selector handle object selection
+      return false;
+    }
+
+    // Start drawing within the current object
+    this.isDrawing = true;
     this.drawAtPosition(localPos.x, localPos.y);
     this.lastDrawPos = new P.Point(localPos.x, localPos.y);
 
@@ -397,6 +497,15 @@ export class ColliderTool implements Tool {
   public setBrushSize(size: number): void {
     this.brushSize = Math.max(1, Math.min(50, size)); // Clamp between 1 and 50
     this.updateBrushCursor();
+  }
+
+  /**
+   * Sets the opacity of the collision mask overlay.
+   */
+  public setOverlayOpacity(opacity: number): void {
+    if (this.maskSprite) {
+      this.maskSprite.alpha = Math.max(0, Math.min(1, opacity)); // Clamp between 0 and 1
+    }
   }
 
   /**
@@ -429,6 +538,21 @@ export class ColliderTool implements Tool {
       target: this.maskTexture,
       clear: true,
     });
+
+    // Clear coverage rectangles
+    this.coverageRects = [];
+    if (this.rectsGraphics) {
+      this.rectsGraphics.clear();
+    }
+  }
+
+  /**
+   * Clears the coverage rectangle display.
+   */
+  public clearCoverageDisplay(): void {
+    if (this.rectsGraphics) {
+      this.rectsGraphics.clear();
+    }
   }
 }
 
@@ -471,6 +595,16 @@ export function setupCollider(): ColliderTool {
       tool.setBrushSize(colliderOpts.brushSize);
       tool.setEraserMode(colliderOpts.mode === "erase");
       tool.drawOnOpaqueOnly = colliderOpts.drawOnOpaqueOnly;
+      tool.lockSelection = colliderOpts.lockSelection;
+      tool.setOverlayOpacity(colliderOpts.overlayOpacity);
+      tool.showColliders = colliderOpts.showColliders;
+
+      // Update collider display when toggling
+      if (colliderOpts.showColliders) {
+        tool.computeCoverage();
+      } else {
+        tool.clearCoverageDisplay();
+      }
     }
   );
 
