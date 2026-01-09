@@ -5,7 +5,7 @@ import { isNpcTemplate } from "@/types/npc";
 import { PaletteObjectProps } from "@/types/palette";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
-import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { TemplateObject } from "@/types/tilesetobject";
 import { Vector2 } from "@/vec";
 import {
   Group,
@@ -29,7 +29,7 @@ import ObjectAnimationMenu from "./paletteMenus/ObjectAnimationMenu";
 import ObjectNpcMenu from "./paletteMenus/ObjectNpcMenu";
 import TileGroupMenu from "./paletteMenus/TileGroupMenu";
 
-interface ObjectPaletteProps<ObjType extends TilesetObjectTemplate> {
+interface ObjectPaletteProps<ObjType extends TemplateObject> {
   tileset?: Tileset;
   onSelectObject?: (obj: ObjType, e: React.MouseEvent) => void;
   onDeselectObject?: () => void;
@@ -58,7 +58,7 @@ function findHighestWithAttr(start: HTMLElement, attr: string) {
   return last;
 }
 
-export default function ObjectPalette<ObjType extends TilesetObjectTemplate>({
+export default function ObjectPalette<ObjType extends TemplateObject>({
   onSelectObject,
   onDeselectObject,
   tileset: showTileset,

@@ -7,7 +7,7 @@ import { snap } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { TemplateType } from "@/types/templates";
 import { TileGroupTemplate } from "@/types/tilegroup";
-import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { TemplateObject } from "@/types/tilesetobject";
 import { averageOklab } from "@/utils/color";
 import { oklabHilbertIndex } from "@/utils/hilbert";
 import { amountOpaquePixels, subImageData } from "@/utils/image";
@@ -43,9 +43,9 @@ function isGroupActionMode(mode: string | null): boolean {
 }
 
 class Grouper extends ClickDragListener {
-  private spatialIndex: SpatialIndex<TilesetObjectTemplate>;
+  private spatialIndex: SpatialIndex<TemplateObject>;
 
-  constructor(spatialIndex: SpatialIndex<TilesetObjectTemplate>) {
+  constructor(spatialIndex: SpatialIndex<TemplateObject>) {
     super();
     this.spatialIndex = spatialIndex;
   }
@@ -139,6 +139,8 @@ class Grouper extends ClickDragListener {
           flipX: false,
           tint: null,
           groundOffset: 0,
+          collisionMask: null,
+          collisionShapes: [],
         };
         store.dispatch(addPaletteObjectsThunk({ tsId, objs: [group] }));
         finishMode = true;
@@ -173,7 +175,7 @@ export function setupGrouper({
   spatialIndex,
 }: {
   cd: ClickDragger;
-  spatialIndex: SpatialIndex<TilesetObjectTemplate>;
+  spatialIndex: SpatialIndex<TemplateObject>;
 }) {
   cd.addListener(new Grouper(spatialIndex));
 }

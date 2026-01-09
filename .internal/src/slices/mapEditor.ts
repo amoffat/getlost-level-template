@@ -16,7 +16,7 @@ import {
 } from "@/types/properties";
 import { Rect } from "@/types/rect";
 import { isTileGroupTemplate } from "@/types/tilegroup";
-import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { TemplateObject } from "@/types/tilesetobject";
 import {
   AutotilerOpts,
   ColliderOpts,
@@ -74,7 +74,7 @@ interface MapEditorState {
   };
   modeStack: Mode[];
   place: {
-    obj: TilesetObjectTemplate | null;
+    obj: TemplateObject | null;
     flipX: boolean;
   };
   objects: ReturnType<typeof objectsAdapter.getInitialState>;
@@ -216,7 +216,7 @@ export const slice = createSlice({
       state.layers.dimInactive = action.payload;
     },
 
-    setPlace(state, action: PayloadAction<TilesetObjectTemplate | null>) {
+    setPlace(state, action: PayloadAction<TemplateObject | null>) {
       const obj = action.payload;
       state.place.obj = obj;
       if (

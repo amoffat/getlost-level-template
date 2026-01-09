@@ -1,7 +1,9 @@
 import { tilesetSourceHeader } from "@/constants/headers";
 import { log } from "@/log";
 import { LoadTilesetsResponse } from "@/types/api/tileset";
+import { isTileGroupTemplate } from "@/types/tilegroup";
 import { SavedTileset, Tileset } from "@/types/tileset";
+import { collisionMaskStore } from "@/utils/maskStore";
 import { applyMigrations } from "@/utils/migrations";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
@@ -49,6 +51,13 @@ export async function loadTileset(id: string): Promise<Tileset> {
   const decoded = baseDecoded as LatestTilesetDoc;
   const ts = decoded.tileset as Tileset;
 
+  // Hydrate the module-level mask store with this tileset's mask data
+  if (decoded.maskData) {
+    for (const [uuid, data] of Object.entries(decoded.maskData)) {
+      collisionMaskStore.set(uuid, data);
+    }
+  }
+
   const sourceHeader = res.headers.get(tilesetSourceHeader);
   const isSystem = sourceHeader === "system";
   ts.hidden = isSystem;
@@ -71,6 +80,19 @@ export async function loadTileset(id: string): Promise<Tileset> {
 export async function saveTileset(ts: Tileset) {
   const imageData = await (await fetch(ts.objectUrl)).bytes();
 
+  // Collect mask data for all TileGroupTemplates in this tileset
+  const maskData: Record<string, Uint8Array> = {};
+  if (ts.tiles?.entities) {
+    for (const tile of Object.values(ts.tiles.entities)) {
+      if (tile && isTileGroupTemplate(tile) && tile.collisionMask) {
+        const data = collisionMaskStore.get(tile.collisionMask);
+        if (data) {
+          maskData[tile.collisionMask] = data;
+        }
+      }
+    }
+  }
+
   const toSave: SavedTileset = {
     id: ts.id,
     width: ts.width,
@@ -84,6 +106,7 @@ export async function saveTileset(ts: Tileset) {
   const doc: LatestTilesetDoc = {
     tileset: toSave,
     imageData,
+    maskData,
     version: latestVersion,
   };
 

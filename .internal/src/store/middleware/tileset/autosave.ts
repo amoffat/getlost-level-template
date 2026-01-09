@@ -30,7 +30,10 @@ startAppListening({
 
     const save = () =>
       from(saveTileset(ts)).pipe(
-        tap(() => dispatch(tsActions.markSaved({ tsId: ts.id, saved: true }))),
+        tap(() => {
+          dispatch(tsActions.markSaved({ tsId: ts.id, saved: true }));
+          log.info(`Tileset ${ts.id} autosaved`);
+        }),
         catchError((e) => {
           log.error({ e }, "Autosave failed");
           return EMPTY;

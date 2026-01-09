@@ -4,7 +4,7 @@ import { Rect, snap } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Mode } from "@/types/tileset";
-import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { TemplateObject } from "@/types/tilesetobject";
 import { subState } from "@/utils/redux";
 import { rectToBBox } from "@/utils/spatial";
 import * as P from "pixi.js";
@@ -29,7 +29,7 @@ const multiSelectModes: Set<Mode> = new Set(["select"] as Mode[]);
 class Selector extends ClickDragListener {
   private marqueeEnabled = false;
 
-  constructor(private spatialIndex: SpatialIndex<TilesetObjectTemplate>) {
+  constructor(private spatialIndex: SpatialIndex<TemplateObject>) {
     super();
   }
 
@@ -167,7 +167,7 @@ export function setupSelector({
   spatialIndex,
 }: {
   cd: ClickDragger;
-  spatialIndex: SpatialIndex<TilesetObjectTemplate>;
+  spatialIndex: SpatialIndex<TemplateObject>;
 }) {
   cd.addListener(new Selector(spatialIndex));
 }
@@ -200,7 +200,7 @@ function clearRectSelect() {
  * Outlines the given objects.
  * @param objs Objects to outline
  */
-export function outlineObjects(objs: TilesetObjectTemplate[], zoom: number) {
+export function outlineObjects(objs: TemplateObject[], zoom: number) {
   clearObjectOutlines();
 
   const stroke = { ...selectStroke, width: (selectStroke.width ?? 1) / zoom };

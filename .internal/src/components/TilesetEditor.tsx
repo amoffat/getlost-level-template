@@ -16,7 +16,7 @@ import { isNpcTemplate } from "@/types/npc";
 import { TilesetTabName } from "@/types/tab";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Mode } from "@/types/tileset";
-import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { TemplateObject } from "@/types/tilesetobject";
 import {
   npcSort,
   objectAnimationSort,
@@ -230,7 +230,7 @@ export default function TilesetEditorTab({
   const toolOptions = tool?.options;
 
   const onSelectObject = useCallback(
-    async (obj: TilesetObjectTemplate, e: React.MouseEvent) => {
+    async (obj: TemplateObject, e: React.MouseEvent) => {
       if (e.button === 2) return;
 
       if (!ts) {

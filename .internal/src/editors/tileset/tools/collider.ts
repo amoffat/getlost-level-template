@@ -1,10 +1,17 @@
 import { Tool } from "@/editors/common/tooldispatch";
 import { globals as gApp } from "@/globals";
-import { selectors } from "@/slices/tilesetEditor";
+import { actions, selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
-import { Rect } from "@/types/rect";
+import { isEllipse } from "@/types/ellipse";
+import { isRect } from "@/types/rect";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
-import { determineCoverage } from "@/utils/collider";
+import {
+  decodeMask,
+  determineCoverage,
+  encodeMask,
+  Shape,
+} from "@/utils/collider";
+import { collisionMaskStore } from "@/utils/maskStore";
 import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
 import { globals as g } from "../globals";
@@ -61,7 +68,7 @@ export class ColliderTool implements Tool {
   private collisionMask: boolean[][] = [];
 
   /** Array of rectangles computed from determineCoverage */
-  private coverageRects: Rect[] = [];
+  private coverageShapes: Shape[] = [];
 
   /** Graphics object for drawing coverage rectangle overlays */
   private rectsGraphics: P.Graphics | null = null;
@@ -103,7 +110,7 @@ export class ColliderTool implements Tool {
     this.isDrawing = false;
     this.lastDrawPos = null;
     this.collisionMask = [];
-    this.coverageRects = [];
+    this.coverageShapes = [];
   }
 
   /**
@@ -120,10 +127,29 @@ export class ColliderTool implements Tool {
     const width = Math.floor(obj.pos.width);
     const height = Math.floor(obj.pos.height);
 
-    // Initialize collision mask data structure
-    this.collisionMask = Array(height)
-      .fill(null)
-      .map(() => Array(width).fill(false));
+    // Load existing collision mask if available, otherwise initialize empty
+    if (obj.collisionMask) {
+      // Lookup the mask data by UUID from the module-level store
+      const maskData = collisionMaskStore.get(obj.collisionMask);
+      if (maskData) {
+        this.collisionMask = decodeMask(maskData);
+      } else {
+        // UUID exists but data is missing - initialize empty
+        this.collisionMask = Array(height)
+          .fill(null)
+          .map(() => Array(width).fill(false));
+      }
+    } else {
+      // Initialize empty collision mask data structure
+      this.collisionMask = Array(height)
+        .fill(null)
+        .map(() => Array(width).fill(false));
+    }
+
+    // Load existing collision shapes if available
+    if (obj.collisionShapes) {
+      this.coverageShapes = obj.collisionShapes;
+    }
 
     // Create render texture for the mask
     this.maskTexture = P.RenderTexture.create({
@@ -158,6 +184,14 @@ export class ColliderTool implements Tool {
     this.rectsGraphics.position.set(obj.pos.x, obj.pos.y);
     this.rectsGraphics.zIndex = 150; // Above mask (100) but below brush (200)
     g.tilesetContainer.addChild(this.rectsGraphics);
+
+    // Render the existing mask data to the texture
+    this.redrawMaskTexture();
+
+    // Draw coverage shapes if showColliders is enabled
+    if (this.showColliders && this.coverageShapes.length > 0) {
+      this.drawCoverageRects();
+    }
 
     // Draw initial brush cursor
     this.updateBrushCursor();
@@ -306,7 +340,7 @@ export class ColliderTool implements Tool {
     );
 
     // Determine coverage rectangles
-    this.coverageRects = determineCoverage(imageData);
+    this.coverageShapes = determineCoverage(imageData);
 
     if (this.showColliders) {
       this.drawCoverageRects();
@@ -324,16 +358,36 @@ export class ColliderTool implements Tool {
     // Use contrasting colors: cyan and yellow for visibility against red mask
     const colors = [0x00ffff, 0xffff00, 0x00ff00, 0xff00ff];
 
-    this.coverageRects.forEach((rect, index) => {
+    this.coverageShapes.forEach((shape, index) => {
       const color = colors[index % colors.length];
 
       // Draw the rectangle outline
-      this.rectsGraphics!.rect(rect.x, rect.y, rect.width, rect.height)
-        .fill({
-          color,
-          alpha: 1.0,
-        })
-        .stroke({ color: 0x000000, width: 1, pixelLine: true });
+      if (isRect(shape)) {
+        this.rectsGraphics!.roundRect(
+          shape.x,
+          shape.y,
+          shape.width,
+          shape.height,
+          2
+        )
+          .fill({
+            color,
+            alpha: 1.0,
+          })
+          .stroke({ color: 0x000000, width: 1, pixelLine: true });
+      } else if (isEllipse(shape)) {
+        this.rectsGraphics!.ellipse(
+          shape.x,
+          shape.y,
+          shape.radiusX,
+          shape.radiusY
+        )
+          .fill({
+            color,
+            alpha: 1.0,
+          })
+          .stroke({ color: 0x000000, width: 1, pixelLine: true });
+      }
     });
   }
 
@@ -432,9 +486,31 @@ export class ColliderTool implements Tool {
       // Compute coverage rectangles from the mask
       this.computeCoverage();
 
-      // TODO: Dispatch collision mask data to store
-      // For now, we just clear the drawing state
-      // In the future, this would save the collision mask to the object
+      // Save collision data to store
+      if (this.currentObj) {
+        const encodedMask = encodeMask(this.collisionMask);
+
+        // Generate UUID if this object doesn't have one yet
+        let maskUUID = this.currentObj.collisionMask;
+        if (!maskUUID) {
+          maskUUID = crypto.randomUUID();
+        }
+
+        // Store the mask data in the module-level store
+        collisionMaskStore.set(maskUUID, encodedMask);
+
+        // Update the object with the UUID reference and collision shapes
+        store.dispatch(
+          actions.updateTilesetObject({
+            tsId: this.currentObj.tilesetId,
+            obj: this.currentObj,
+            changes: {
+              collisionMask: maskUUID,
+              collisionShapes: this.coverageShapes,
+            },
+          })
+        );
+      }
 
       return true;
     }
@@ -540,7 +616,7 @@ export class ColliderTool implements Tool {
     });
 
     // Clear coverage rectangles
-    this.coverageRects = [];
+    this.coverageShapes = [];
     if (this.rectsGraphics) {
       this.rectsGraphics.clear();
     }

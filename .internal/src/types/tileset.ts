@@ -1,5 +1,5 @@
 import { EntityState } from "@reduxjs/toolkit";
-import { TilesetObjectTemplate } from "./tilesetobject";
+import { TemplateObject } from "./tilesetobject";
 
 export type Mode =
   | "select"
@@ -13,7 +13,7 @@ export type Mode =
   | "draw-colliders"
   | "replace-group";
 
-type TilesBucket = EntityState<TilesetObjectTemplate, string>;
+type TilesBucket = EntityState<TemplateObject, string>;
 
 export interface Tileset {
   id: string;

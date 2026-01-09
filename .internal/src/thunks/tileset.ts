@@ -22,7 +22,7 @@ import { TileGroupInstance } from "@/types/map";
 import { NpcTemplate } from "@/types/npc";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
-import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { TemplateObject } from "@/types/tilesetobject";
 import { schedulerYield } from "@/utils/async";
 import { hasSolidEdges, subImageData } from "@/utils/image";
 import { genTilesetId, loadTilesetImage } from "@/utils/tileset";
@@ -371,7 +371,7 @@ export const clearCandAnimFramesThunk = createAsyncThunk(
 export const addPaletteObjectsThunk = createAsyncThunk(
   "tilesetEditor/addPaletteObjectsThunk",
   async (
-    { tsId, objs: tmplObjs }: { tsId: string; objs: TilesetObjectTemplate[] },
+    { tsId, objs: tmplObjs }: { tsId: string; objs: TemplateObject[] },
     { dispatch, getState }
   ) => {
     const state = getState() as RootState;

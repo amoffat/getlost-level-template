@@ -11,7 +11,7 @@ import { MapLayerName } from "@/types/layer";
 import { isNpcTemplate } from "@/types/npc";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
-import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { TemplateObject } from "@/types/tilesetobject";
 import { FillObj } from "@/types/tools";
 import { animationsFilter, objectsFilter } from "@/utils/palette/filters";
 import {
@@ -138,7 +138,7 @@ export default function MapEditorTab({
   }, []);
 
   const onSelectObject = useCallback(
-    (obj: TilesetObjectTemplate, e: React.MouseEvent) => {
+    (obj: TemplateObject, e: React.MouseEvent) => {
       if (e.button === 2) return;
 
       const state = store.getState();

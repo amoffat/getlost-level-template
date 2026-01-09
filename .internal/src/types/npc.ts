@@ -2,7 +2,7 @@ import { Vector2 } from "@/vec";
 import type { AnimationTemplate } from "./animation";
 import { NpcProps } from "./properties";
 import { TemplateType } from "./templates";
-import type { TilesetObjectTemplate } from "./tilesetobject";
+import type { TemplateObject } from "./tilesetobject";
 
 export type NpcRequiredAnimation =
   | "Idle"
@@ -29,6 +29,6 @@ export interface NpcTemplate extends NpcProps {
   animations: NpcAnimationRecord;
 }
 
-export function isNpcTemplate(obj: TilesetObjectTemplate): obj is NpcTemplate {
+export function isNpcTemplate(obj: TemplateObject): obj is NpcTemplate {
   return obj.type === TemplateType.Npc;
 }

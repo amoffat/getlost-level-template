@@ -39,8 +39,8 @@ export const store = configureStore({
     // We also add our middleware for the RTK Query API slices here, which
     // handle things like async thunks.
     getDefaultMiddleware({
-      // immutableCheck: false,
-      // serializableCheck: false,
+      immutableCheck: false,
+      serializableCheck: true,
     }).prepend(
       autosaveTilesetMiddleware,
       autosaveMapMiddleware,

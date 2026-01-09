@@ -2,10 +2,10 @@ import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { RootState, store } from "@/store/store";
 import { isAnimationTemplate } from "@/types/animation";
 import { isTileGroupTemplate } from "@/types/tilegroup";
-import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { TemplateObject } from "@/types/tilesetobject";
 
 export function objectsFilter(
-  obj: TilesetObjectTemplate,
+  obj: TemplateObject,
   filters: RootState["ui"]["paletteFilterSwitches"]
 ): boolean {
   if (!isTileGroupTemplate(obj)) {
@@ -48,7 +48,7 @@ export function objectsFilter(
 }
 
 export function animationsFilter(
-  obj: TilesetObjectTemplate,
+  obj: TemplateObject,
   filters: RootState["ui"]["paletteFilterSwitches"]
 ): boolean {
   if (!isAnimationTemplate(obj)) {

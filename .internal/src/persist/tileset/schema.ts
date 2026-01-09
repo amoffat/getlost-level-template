@@ -26,5 +26,15 @@ export interface TilesetDocV13 extends Omit<TilesetDocV12, "version"> {
   version: 13;
 }
 
-export type LatestTilesetDoc = TilesetDocV13;
-export const latestVersion = 13;
+export interface TilesetDocV14 extends Omit<TilesetDocV13, "version"> {
+  version: 14;
+}
+
+// Version 15: Changed collisionMask to string | null (UUID)
+export interface TilesetDocV15 extends Omit<TilesetDocV14, "version"> {
+  version: 15;
+  maskData: Record<string, Uint8Array>;
+}
+
+export type LatestTilesetDoc = TilesetDocV15;
+export const latestVersion = 15;

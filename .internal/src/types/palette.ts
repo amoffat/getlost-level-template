@@ -1,6 +1,6 @@
-import { TilesetObjectTemplate } from "./tilesetobject";
+import { TemplateObject } from "./tilesetobject";
 
-export interface PaletteObjectProps<ObjType extends TilesetObjectTemplate> {
+export interface PaletteObjectProps<ObjType extends TemplateObject> {
   obj: ObjType;
   scale: number;
   selected: boolean | undefined;

@@ -2,6 +2,8 @@ import { trackKeyPresses } from "@/editors/common/keypress";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
 import {
+  Button,
+  Collapse,
   Fieldset,
   SegmentedControl,
   Slider,
@@ -9,6 +11,7 @@ import {
   Switch,
   Text,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { useCallback, useEffect } from "react";
 import Tip from "../../Tip";
 
@@ -22,6 +25,7 @@ export default function ColliderTool() {
     overlayOpacity,
     showColliders,
   } = useAppSelector((state) => state.tilesetEditor.toolOptions.collider);
+  const [advancedOpen, { toggle }] = useDisclosure(false);
 
   // Track keyboard state
   useEffect(() => {
@@ -148,25 +152,6 @@ export default function ColliderTool() {
             />
           </Stack>
 
-          <Stack gap="xs" p={0} mb="md">
-            <Text size="sm">Overlay Opacity</Text>
-            <Slider
-              label="Overlay Opacity"
-              value={overlayOpacity}
-              onChange={handleOverlayOpacityChange}
-              min={0}
-              max={1}
-              step={0.05}
-            />
-          </Stack>
-
-          <Switch
-            label="Draw on opaque pixels only"
-            description="When enabled, brush only draws on non-transparent pixels"
-            checked={drawOnOpaqueOnly}
-            onChange={handleDrawOnOpaqueOnlyChange}
-          />
-
           <Switch
             label="Lock selection"
             description="Prevents accidentally selecting adjacent templates while drawing"
@@ -174,12 +159,39 @@ export default function ColliderTool() {
             onChange={handleLockSelectionChange}
           />
 
-          <Switch
-            label="Show colliders"
-            description="Display computed collision rectangles as overlays"
-            checked={showColliders}
-            onChange={handleShowCollidersChange}
-          />
+          <Button variant="subtle" size="xs" onClick={toggle} fullWidth>
+            {advancedOpen ? "Hide" : "Show"} Advanced
+          </Button>
+
+          <Collapse in={advancedOpen}>
+            <Stack gap="md" p={0}>
+              <Switch
+                label="Draw on opaque pixels only"
+                description="When enabled, brush only draws on non-transparent pixels"
+                checked={drawOnOpaqueOnly}
+                onChange={handleDrawOnOpaqueOnlyChange}
+              />
+
+              <Stack gap="xs" p={0}>
+                <Text size="sm">Overlay Opacity</Text>
+                <Slider
+                  label="Overlay Opacity"
+                  value={overlayOpacity}
+                  onChange={handleOverlayOpacityChange}
+                  min={0}
+                  max={1}
+                  step={0.05}
+                />
+              </Stack>
+
+              <Switch
+                label="Show colliders"
+                description="Display computed collision rectangles as overlays"
+                checked={showColliders}
+                onChange={handleShowCollidersChange}
+              />
+            </Stack>
+          </Collapse>
         </Stack>
       </Fieldset>
     </>

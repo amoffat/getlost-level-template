@@ -3,14 +3,14 @@ import { isAnimationTemplate } from "@/types/animation";
 import { isNpcTemplate } from "@/types/npc";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
-import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { TemplateObject } from "@/types/tilesetobject";
 import { AllPropsLoose } from "@/types/union";
 import * as P from "pixi.js";
 import { ReduxReconciler } from "./reconciler";
 import { invisibleStroke } from "./strokes";
 
-export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
-  private spatialIndex?: SpatialIndex<TilesetObjectTemplate>;
+export class TileReconciler extends ReduxReconciler<TemplateObject> {
+  private spatialIndex?: SpatialIndex<TemplateObject>;
   private container?: P.Container;
   private connected = false;
 
@@ -18,7 +18,7 @@ export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
     spatialIndex,
     container,
   }: {
-    spatialIndex: SpatialIndex<TilesetObjectTemplate>;
+    spatialIndex: SpatialIndex<TemplateObject>;
     container: P.Container;
   }) {
     this.container = container;
@@ -31,7 +31,7 @@ export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
     props,
   }: {
     node: P.Container;
-    props: AllPropsLoose<TilesetObjectTemplate>;
+    props: AllPropsLoose<TemplateObject>;
   }): boolean {
     if (props.pos !== undefined) {
       node.position.set(props.pos.x, props.pos.y);
@@ -39,9 +39,7 @@ export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
     return false;
   }
 
-  protected override createNode(
-    obj: TilesetObjectTemplate
-  ): P.Container | null {
+  protected override createNode(obj: TemplateObject): P.Container | null {
     if (isTileGroupTemplate(obj)) {
       return this.createTileGroupNode(obj);
     } else if (isAnimationTemplate(obj)) {
@@ -85,7 +83,7 @@ export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
 
   protected override updateItem(
     item: IndexItem,
-    changes: ReduxReconciler<TilesetObjectTemplate>["ObjParamsType"]
+    changes: ReduxReconciler<TemplateObject>["ObjParamsType"]
   ): void {
     // If position-affecting props are changing, update spatial index.
     const willAffectPos = "pos" in changes;
@@ -98,7 +96,7 @@ export class TileReconciler extends ReduxReconciler<TilesetObjectTemplate> {
     this.spatialIndex!.removeById(id);
   }
 
-  protected override containerByObj(_obj: TilesetObjectTemplate): P.Container {
+  protected override containerByObj(_obj: TemplateObject): P.Container {
     return this.container!;
   }
 

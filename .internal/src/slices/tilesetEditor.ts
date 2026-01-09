@@ -6,7 +6,7 @@ import { isNpcTemplate, NpcTemplate } from "@/types/npc";
 import { Rect } from "@/types/rect";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
-import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { TemplateObject } from "@/types/tilesetobject";
 import { AnimatorOpts, CandidateAnimFrame } from "@/types/tools";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
 import { HasId } from "@/utils/misc";
@@ -37,7 +37,7 @@ type ToolWithOptions = keyof ToolOptMapping;
 
 const reconcilePrefix = "tilesetEditor";
 export const selectedAdapter = createEntityAdapter<HasId>();
-export const tileAdapter = createEntityAdapter<TilesetObjectTemplate>();
+export const tileAdapter = createEntityAdapter<TemplateObject>();
 const createTsSelector = createSelector.withTypes<TilesetEditorState>();
 
 export interface TilesetEditorState {
@@ -234,8 +234,8 @@ export const slice = createSlice({
     updateTilesetObject: {
       prepare: (payload: {
         tsId: string;
-        obj: TilesetObjectTemplate;
-        changes: Partial<TilesetObjectTemplate>;
+        obj: TemplateObject;
+        changes: Partial<TemplateObject>;
       }) => ({
         meta: {
           reconcilePrefix,
@@ -247,8 +247,8 @@ export const slice = createSlice({
       reducer(
         state,
         action: PayloadAction<{
-          obj: TilesetObjectTemplate;
-          changes: Partial<TilesetObjectTemplate>;
+          obj: TemplateObject;
+          changes: Partial<TemplateObject>;
         }>
       ) {
         const { obj, changes } = action.payload;
@@ -261,7 +261,7 @@ export const slice = createSlice({
     updateManyTilesetObjects: {
       prepare: (payload: {
         tsId: string;
-        changes: { id: string; changes: Partial<TilesetObjectTemplate> }[];
+        changes: { id: string; changes: Partial<TemplateObject> }[];
       }) => ({
         meta: {
           reconcilePrefix,
@@ -274,7 +274,7 @@ export const slice = createSlice({
         state,
         action: PayloadAction<{
           tsId: string;
-          changes: { id: string; changes: Partial<TilesetObjectTemplate> }[];
+          changes: { id: string; changes: Partial<TemplateObject> }[];
         }>
       ) {
         const { tsId, changes } = action.payload;
@@ -419,7 +419,7 @@ export const slice = createSlice({
     },
 
     setPaletteObjects: {
-      prepare: (payload: { tsId: string; objs: TilesetObjectTemplate[] }) => ({
+      prepare: (payload: { tsId: string; objs: TemplateObject[] }) => ({
         meta: {
           reconcilePrefix,
           reconcileType: "add" as const,
@@ -429,7 +429,7 @@ export const slice = createSlice({
       }),
       reducer(
         state,
-        action: PayloadAction<{ tsId: string; objs: TilesetObjectTemplate[] }>
+        action: PayloadAction<{ tsId: string; objs: TemplateObject[] }>
       ) {
         const { tsId, objs } = action.payload;
         const ts = state.tilesets[tsId];
@@ -468,39 +468,31 @@ export const slice = createSlice({
       },
     },
 
-    setOneSelected: (state, action: PayloadAction<TilesetObjectTemplate>) => {
+    setOneSelected: (state, action: PayloadAction<TemplateObject>) => {
       const obj = action.payload;
       selectedAdapter.removeAll(state.selectedTiles);
       selectedAdapter.setOne(state.selectedTiles, obj);
     },
 
-    addOneSelected: (state, action: PayloadAction<TilesetObjectTemplate>) => {
+    addOneSelected: (state, action: PayloadAction<TemplateObject>) => {
       const obj = action.payload;
       selectedAdapter.setOne(state.selectedTiles, obj);
     },
 
-    setManySelected: (
-      state,
-      action: PayloadAction<TilesetObjectTemplate[]>
-    ) => {
+    setManySelected: (state, action: PayloadAction<TemplateObject[]>) => {
       const objs = action.payload;
       selectedAdapter.removeAll(state.selectedTiles);
       selectedAdapter.setMany(state.selectedTiles, objs);
     },
 
-    addManySelected: (
-      state,
-      action: PayloadAction<TilesetObjectTemplate[]>
-    ) => {
+    addManySelected: (state, action: PayloadAction<TemplateObject[]>) => {
       const objs = action.payload;
       selectedAdapter.setMany(state.selectedTiles, objs);
     },
 
     updateManySelected: (
       state,
-      action: PayloadAction<
-        { id: string; changes: Partial<TilesetObjectTemplate> }[]
-      >
+      action: PayloadAction<{ id: string; changes: Partial<TemplateObject> }[]>
     ) => {
       selectedAdapter.updateMany(state.selectedTiles, action.payload);
     },
@@ -575,7 +567,7 @@ export const slice = createSlice({
     ),
     selectedObjects: createTsSelector(
       [(state) => state.selectedTiles, activeTileset],
-      (tiles, ts): TilesetObjectTemplate[] => {
+      (tiles, ts): TemplateObject[] => {
         if (!ts) return [];
         return tiles.ids
           .map((id) => ts.tiles.entities[id])
@@ -625,7 +617,7 @@ export const slice = createSlice({
         tilesets: Record<string, Tileset>,
         objIdToTs: Record<string, string>,
         instanceId: string
-      ): TilesetObjectTemplate | null => {
+      ): TemplateObject | null => {
         const tsId = objIdToTs[instanceId];
         if (!tsId) return null;
         const ts = tilesets[tsId];

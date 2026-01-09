@@ -6,7 +6,7 @@ import {
 } from "@/thunks/tileset";
 import { SpatialIndex } from "@/types/spatial";
 import { isTileGroupTemplate } from "@/types/tilegroup";
-import { TilesetObjectTemplate } from "@/types/tilesetobject";
+import { TemplateObject } from "@/types/tilesetobject";
 import { rectToBBox } from "@/utils/spatial";
 import {
   ClickDragger,
@@ -15,7 +15,7 @@ import {
 } from "../../common/drag";
 
 class FrameSelector extends ClickDragListener {
-  constructor(private spatialIndex: SpatialIndex<TilesetObjectTemplate>) {
+  constructor(private spatialIndex: SpatialIndex<TemplateObject>) {
     super();
   }
 
@@ -45,7 +45,7 @@ export function setupFrameSelector({
   spatialIndex,
 }: {
   cd: ClickDragger;
-  spatialIndex: SpatialIndex<TilesetObjectTemplate>;
+  spatialIndex: SpatialIndex<TemplateObject>;
 }) {
   cd.addListener(new FrameSelector(spatialIndex));
 }

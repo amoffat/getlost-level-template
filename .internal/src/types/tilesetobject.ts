@@ -2,7 +2,7 @@ import type { AnimationTemplate } from "./animation";
 import type { NpcTemplate } from "./npc";
 import type { TileGroupTemplate } from "./tilegroup";
 
-export type TilesetObjectTemplate =
+export type TemplateObject =
   | TileGroupTemplate
   | AnimationTemplate
   | NpcTemplate;

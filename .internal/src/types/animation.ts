@@ -2,7 +2,7 @@ import { Vector2 } from "@/vec";
 import { AnimationProps } from "./properties";
 import { TemplateType } from "./templates";
 import { TileGroupTemplate } from "./tilegroup";
-import type { TilesetObjectTemplate } from "./tilesetobject";
+import type { TemplateObject } from "./tilesetobject";
 
 export interface TileAnimationFrame {
   tg: TileGroupTemplate;
@@ -18,7 +18,7 @@ export interface AnimationTemplate extends AnimationProps {
   frames: TileAnimationFrame[];
 }
 export function isAnimationTemplate(
-  obj: TilesetObjectTemplate
+  obj: TemplateObject
 ): obj is AnimationTemplate {
   return obj.type === TemplateType.Animation;
 }

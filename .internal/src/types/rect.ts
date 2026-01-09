@@ -8,6 +8,10 @@ export interface Rect {
   height: number;
 }
 
+export function isRect(shape: any): shape is Rect {
+  return "width" in shape && "height" in shape;
+}
+
 export function area(rect: Rect): number {
   return rect.width * rect.height;
 }

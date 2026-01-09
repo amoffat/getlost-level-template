@@ -1,5 +1,6 @@
 import { LatestTilesetDoc } from "@/persist/tileset/schema";
 import { decode, encode } from "cbor2";
+import { registerEncoder } from "cbor2/encoder";
 import express from "express";
 import formidable from "formidable";
 import * as fs from "fs";
@@ -14,6 +15,13 @@ const repoDir = resolve(internalDir, "..");
 const levelDir = resolve(repoDir, "level");
 const levelTsDir = resolve(levelDir, "tilesets");
 const systemTsDir = resolve(internalDir, "assets", "tilesets");
+
+// Node.js likes to encode Uint8Array as Buffers, but we need them to stay as
+// Uint8Arrays
+registerEncoder(Buffer, (b) => [
+  NaN,
+  new Uint8Array(b.buffer, b.byteOffset, b.byteLength),
+]);
 
 export const router = express.Router({ mergeParams: true });
 type TilesetDoc = Omit<LatestTilesetDoc, "imageData"> &
