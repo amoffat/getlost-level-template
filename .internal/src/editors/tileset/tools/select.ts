@@ -97,6 +97,7 @@ class Selector extends ClickDragListener {
   private doSelection(e: PointerEventData) {
     clearRectSelect();
     const state = store.getState();
+    const mode = selectors.selectMode(state);
 
     const searchBounds = rectToBBox(e.hitbox);
 
@@ -135,6 +136,15 @@ class Selector extends ClickDragListener {
             ? actions.addOneSelected
             : actions.setOneSelected;
           store.dispatch(action(obj));
+
+          if (mode === "draw-colliders" && isTileGroupTemplate(obj)) {
+            store.dispatch(
+              actions.setToolOptions({
+                tool: "collider",
+                options: { targetCoverage: obj.collisions.coverage },
+              })
+            );
+          }
         }
       } else {
         const action = this.addToSelection

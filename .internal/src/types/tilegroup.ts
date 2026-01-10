@@ -1,12 +1,11 @@
 import { OklabColor } from "@/types/color";
 import { Vector2 } from "@/vec";
-import type { Ellipse } from "./ellipse";
 import { TileGroupProps } from "./properties";
 import type { Rect } from "./rect";
 import { TemplateType } from "./templates";
 import type { TemplateObject } from "./tilesetobject";
 
-export type CollisionShape = Rect | Ellipse;
+export type CollisionShape = Rect;
 
 export interface TileGroupTemplate extends TileGroupProps {
   // The unique, stable id, which uses the image data hash plus tileset and
@@ -27,10 +26,15 @@ export interface TileGroupTemplate extends TileGroupProps {
   coverage: number;
   avgColor: OklabColor;
   hilbertIndex: number;
-  // UUID key for looking up collision mask data from the module-level mask store
-  collisionMask: string | null;
-  // Computed collision shapes (rectangles/ellipses) that cover the mask
-  collisionShapes: CollisionShape[];
+  collisions: {
+    // UUID key for looking up collision mask data from the module-level mask
+    // store
+    mask: string | null;
+    // Computed collision shapes (rectangles) that cover the mask
+    shapes: CollisionShape[];
+    // Coverage value from 0-1
+    coverage: number;
+  };
 }
 
 export function isTileGroupTemplate(

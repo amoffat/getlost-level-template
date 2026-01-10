@@ -36,5 +36,10 @@ export interface TilesetDocV15 extends Omit<TilesetDocV14, "version"> {
   maskData: Record<string, Uint8Array>;
 }
 
-export type LatestTilesetDoc = TilesetDocV15;
-export const latestVersion = 15;
+// Version 16: Moved collisionMask and collisionShapes to collisions object
+export interface TilesetDocV16 extends Omit<TilesetDocV15, "version"> {
+  version: 16;
+}
+
+export type LatestTilesetDoc = TilesetDocV16;
+export const latestVersion = 16;

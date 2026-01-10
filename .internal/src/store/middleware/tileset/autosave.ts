@@ -1,3 +1,4 @@
+import { autosaveTilesetDebounce } from "@/constants";
 import { log } from "@/log";
 import { deleteTileset, saveTileset } from "@/persist/tileset/api";
 import { slice, actions as tsActions } from "@/slices/tilesetEditor";
@@ -9,7 +10,7 @@ import { catchError, tap } from "rxjs/operators";
 
 const listenerMiddleware = createListenerMiddleware();
 
-const debounceSaves = makeGroupedDebouncer();
+const debounceSaves = makeGroupedDebouncer(autosaveTilesetDebounce);
 
 const startAppListening =
   listenerMiddleware.startListening as AppStartListening;

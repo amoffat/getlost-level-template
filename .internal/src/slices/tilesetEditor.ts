@@ -28,9 +28,9 @@ type ToolOptMapping = {
     brushSize: number;
     mode: "paint" | "erase";
     drawOnOpaqueOnly: boolean;
-    lockSelection: boolean;
     overlayOpacity: number;
     showColliders: boolean;
+    targetCoverage: number;
   };
 };
 type ToolWithOptions = keyof ToolOptMapping;
@@ -110,9 +110,9 @@ export const slice = createSlice({
         brushSize: 8,
         mode: "paint",
         drawOnOpaqueOnly: true,
-        lockSelection: false,
         overlayOpacity: 0.8,
         showColliders: false,
+        targetCoverage: 0.98,
       },
     },
     objIdToTs: {},

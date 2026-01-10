@@ -1,6 +1,7 @@
 import { trackKeyPresses } from "@/editors/common/keypress";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
+import { makeLogRemap } from "@/utils/math";
 import {
   Button,
   Collapse,
@@ -12,7 +13,7 @@ import {
   Text,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import Tip from "../../Tip";
 
 export default function ColliderTool() {
@@ -21,9 +22,9 @@ export default function ColliderTool() {
     brushSize,
     mode,
     drawOnOpaqueOnly,
-    lockSelection,
     overlayOpacity,
     showColliders,
+    targetCoverage,
   } = useAppSelector((state) => state.tilesetEditor.toolOptions.collider);
   const [advancedOpen, { toggle }] = useDisclosure(false);
 
@@ -82,18 +83,6 @@ export default function ColliderTool() {
     [dispatch]
   );
 
-  const handleLockSelectionChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      dispatch(
-        actions.setToolOptions({
-          tool: "collider",
-          options: { lockSelection: event.currentTarget.checked },
-        })
-      );
-    },
-    [dispatch]
-  );
-
   const handleOverlayOpacityChange = useCallback(
     (value: number | string) => {
       if (typeof value === "string") return;
@@ -117,6 +106,25 @@ export default function ColliderTool() {
       );
     },
     [dispatch]
+  );
+
+  const [remapTargetCoverage, invMapTargetCoverage] = useMemo(
+    () => makeLogRemap(10000),
+    []
+  );
+
+  const handleTargetCoverageChange = useCallback(
+    (value: number | string) => {
+      if (typeof value === "string") return;
+      const targetCoverage = remapTargetCoverage(value);
+      dispatch(
+        actions.setToolOptions({
+          tool: "collider",
+          options: { targetCoverage },
+        })
+      );
+    },
+    [dispatch, remapTargetCoverage]
   );
 
   return (
@@ -152,13 +160,6 @@ export default function ColliderTool() {
             />
           </Stack>
 
-          <Switch
-            label="Lock selection"
-            description="Prevents accidentally selecting adjacent templates while drawing"
-            checked={lockSelection}
-            onChange={handleLockSelectionChange}
-          />
-
           <Button variant="subtle" size="xs" onClick={toggle} fullWidth>
             {advancedOpen ? "Hide" : "Show"} Advanced
           </Button>
@@ -190,6 +191,18 @@ export default function ColliderTool() {
                 checked={showColliders}
                 onChange={handleShowCollidersChange}
               />
+
+              <Stack gap="xs" p={0}>
+                <Text size="sm">Collider coverage</Text>
+                <Slider
+                  label={targetCoverage.toFixed(3)}
+                  value={invMapTargetCoverage(targetCoverage)}
+                  onChange={handleTargetCoverageChange}
+                  min={0.01}
+                  max={1.0}
+                  step={0.001}
+                />
+              </Stack>
             </Stack>
           </Collapse>
         </Stack>

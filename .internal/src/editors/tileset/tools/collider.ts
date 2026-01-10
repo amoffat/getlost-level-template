@@ -2,8 +2,6 @@ import { Tool } from "@/editors/common/tooldispatch";
 import { globals as gApp } from "@/globals";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
-import { isEllipse } from "@/types/ellipse";
-import { isRect } from "@/types/rect";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import {
   decodeMask,
@@ -47,6 +45,8 @@ export class ColliderTool implements Tool {
    * strokes */
   private lastDrawPos: P.Point | null = null;
 
+  private startDrawPos: P.Point | null = null;
+
   /** Size of the square brush in pixels */
   private brushSize = 8;
 
@@ -56,9 +56,6 @@ export class ColliderTool implements Tool {
 
   /** If true, brush acts as an eraser; if false, brush draws collision mask */
   private isEraserMode = false;
-
-  /** If true, prevents selection changes when clicking outside current object */
-  public lockSelection = false;
 
   /** If true, collider rectangle overlay is visible */
   public showColliders = false;
@@ -128,9 +125,9 @@ export class ColliderTool implements Tool {
     const height = Math.floor(obj.pos.height);
 
     // Load existing collision mask if available, otherwise initialize empty
-    if (obj.collisionMask) {
+    if (obj.collisions.mask) {
       // Lookup the mask data by UUID from the module-level store
-      const maskData = collisionMaskStore.get(obj.collisionMask);
+      const maskData = collisionMaskStore.get(obj.collisions.mask);
       if (maskData) {
         this.collisionMask = decodeMask(maskData);
       } else {
@@ -147,8 +144,8 @@ export class ColliderTool implements Tool {
     }
 
     // Load existing collision shapes if available
-    if (obj.collisionShapes) {
-      this.coverageShapes = obj.collisionShapes;
+    if (obj.collisions.shapes) {
+      this.coverageShapes = obj.collisions.shapes;
     }
 
     // Create render texture for the mask
@@ -326,10 +323,13 @@ export class ColliderTool implements Tool {
   }
 
   /**
-   * Computes coverage rectangles from the current mask texture and stores them.
+   * Computes coverage rectangles from the current mask texture and draws thems
    */
-  public computeCoverage(): void {
+  private computeCoverage(): void {
     if (!this.maskTexture) return;
+
+    const state = store.getState();
+    const opts = state.tilesetEditor.toolOptions.collider;
 
     const app = gApp.tilesetEditorApp!;
     const pixels = app.renderer.extract.pixels(this.maskTexture);
@@ -340,7 +340,11 @@ export class ColliderTool implements Tool {
     );
 
     // Determine coverage rectangles
-    this.coverageShapes = determineCoverage(imageData);
+    this.coverageShapes = determineCoverage(imageData, {
+      targetCoverage: opts.targetCoverage,
+      minDimension: 1,
+      aspectRatioPenalty: 0,
+    });
 
     if (this.showColliders) {
       this.drawCoverageRects();
@@ -362,32 +366,12 @@ export class ColliderTool implements Tool {
       const color = colors[index % colors.length];
 
       // Draw the rectangle outline
-      if (isRect(shape)) {
-        this.rectsGraphics!.roundRect(
-          shape.x,
-          shape.y,
-          shape.width,
-          shape.height,
-          2
-        )
-          .fill({
-            color,
-            alpha: 1.0,
-          })
-          .stroke({ color: 0x000000, width: 1, pixelLine: true });
-      } else if (isEllipse(shape)) {
-        this.rectsGraphics!.ellipse(
-          shape.x,
-          shape.y,
-          shape.radiusX,
-          shape.radiusY
-        )
-          .fill({
-            color,
-            alpha: 1.0,
-          })
-          .stroke({ color: 0x000000, width: 1, pixelLine: true });
-      }
+      this.rectsGraphics!.rect(shape.x, shape.y, shape.width, shape.height)
+        .fill({
+          color,
+          alpha: 1.0,
+        })
+        .stroke({ color: 0x000000, width: 1, pixelLine: true });
     });
   }
 
@@ -478,44 +462,72 @@ export class ColliderTool implements Tool {
   /**
    * Implements Tool.onPointerUp - ends drawing and commits changes.
    */
-  public onPointerUp(_e: P.FederatedPointerEvent): boolean {
-    if (this.isDrawing) {
-      this.isDrawing = false;
-      this.lastDrawPos = null;
+  public onPointerUp(e: P.FederatedPointerEvent): boolean {
+    const obj = this.currentObj;
+    if (!obj) return false;
 
-      // Compute coverage rectangles from the mask
+    // Compute coverage rectangles from the mask
+    this.updateCoverage();
+
+    // Check if we clicked inside the current object's bounds
+    const localPos = g.tilesetContainer.toLocal(e.global);
+    const isInsideCurrentObj =
+      localPos.x >= obj.pos.x &&
+      localPos.x <= obj.pos.x + obj.pos.width &&
+      localPos.y >= obj.pos.y &&
+      localPos.y <= obj.pos.y + obj.pos.height;
+
+    const moved =
+      this.startDrawPos !== null && !this.startDrawPos.equals(localPos);
+
+    const drawnFromOutside = !isInsideCurrentObj && moved;
+    const drawnInside = isInsideCurrentObj && moved;
+
+    this.isDrawing = false;
+    this.lastDrawPos = null;
+    this.startDrawPos = null;
+    return drawnFromOutside || drawnInside;
+  }
+
+  /**
+   * Compute coverage and persist it to the store for the current object.
+   */
+  public updateCoverage(): void {
+    if (this.currentObj) {
+      const state = store.getState();
+      const opts = state.tilesetEditor.toolOptions.collider;
+      const coverage = opts.targetCoverage;
+
       this.computeCoverage();
+      const encodedMask = encodeMask(this.collisionMask);
 
-      // Save collision data to store
-      if (this.currentObj) {
-        const encodedMask = encodeMask(this.collisionMask);
-
-        // Generate UUID if this object doesn't have one yet
-        let maskUUID = this.currentObj.collisionMask;
-        if (!maskUUID) {
-          maskUUID = crypto.randomUUID();
-        }
-
-        // Store the mask data in the module-level store
-        collisionMaskStore.set(maskUUID, encodedMask);
-
-        // Update the object with the UUID reference and collision shapes
-        store.dispatch(
-          actions.updateTilesetObject({
-            tsId: this.currentObj.tilesetId,
-            obj: this.currentObj,
-            changes: {
-              collisionMask: maskUUID,
-              collisionShapes: this.coverageShapes,
-            },
-          })
-        );
+      // Generate UUID if this object doesn't have one yet. We use a random UUID
+      // instead of using the object id because the object id is based on the
+      // sprite pixel data, and the sprite pixel data may exist in multiple
+      // tilesets with different collision masks.
+      let maskUUID = this.currentObj.collisions.mask;
+      if (!maskUUID) {
+        maskUUID = crypto.randomUUID();
       }
 
-      return true;
-    }
+      // Store the mask data in the module-level store
+      collisionMaskStore.set(maskUUID, encodedMask);
 
-    return this.lockSelection;
+      // Update the object with the UUID reference and collision shapes
+      store.dispatch(
+        actions.updateTilesetObject({
+          tsId: this.currentObj.tilesetId,
+          obj: this.currentObj,
+          changes: {
+            collisions: {
+              mask: maskUUID,
+              shapes: this.coverageShapes,
+              coverage,
+            },
+          },
+        })
+      );
+    }
   }
 
   /**
@@ -534,24 +546,11 @@ export class ColliderTool implements Tool {
 
     const localPos = g.tilesetContainer.toLocal(e.global);
 
-    // Check if we clicked inside the current object's bounds
-    const obj = this.currentObj;
-    const isInsideCurrentObj =
-      localPos.x >= obj.pos.x &&
-      localPos.x <= obj.pos.x + obj.pos.width &&
-      localPos.y >= obj.pos.y &&
-      localPos.y <= obj.pos.y + obj.pos.height;
-
-    if (!isInsideCurrentObj && !this.lockSelection) {
-      // If lock selection is enabled, consume the event to prevent selection
-      // changes. Otherwise, let the Selector handle object selection
-      return false;
-    }
-
     // Start drawing within the current object
     this.isDrawing = true;
     this.drawAtPosition(localPos.x, localPos.y);
     this.lastDrawPos = new P.Point(localPos.x, localPos.y);
+    this.startDrawPos = new P.Point(localPos.x, localPos.y);
 
     return true;
   }
@@ -671,13 +670,12 @@ export function setupCollider(): ColliderTool {
       tool.setBrushSize(colliderOpts.brushSize);
       tool.setEraserMode(colliderOpts.mode === "erase");
       tool.drawOnOpaqueOnly = colliderOpts.drawOnOpaqueOnly;
-      tool.lockSelection = colliderOpts.lockSelection;
       tool.setOverlayOpacity(colliderOpts.overlayOpacity);
       tool.showColliders = colliderOpts.showColliders;
 
       // Update collider display when toggling
       if (colliderOpts.showColliders) {
-        tool.computeCoverage();
+        tool.updateCoverage();
       } else {
         tool.clearCoverageDisplay();
       }

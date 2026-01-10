@@ -152,8 +152,11 @@ export async function unpackTileset(tsId: string, coordsList: Rect[]) {
       flipX: false,
       tint: null,
       groundOffset: 0,
-      collisionMask: null,
-      collisionShapes: [],
+      collisions: {
+        mask: null,
+        shapes: [],
+        coverage: 1.0,
+      },
     };
 
     chunk.push(tg);
