@@ -3,7 +3,7 @@ import { globals as gApp } from "@/globals";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
-import { decodeMask, determineCoverage, encodeMask } from "@/utils/collider2";
+import { decodeMask, determineCoverage, encodeMask } from "@/utils/collider";
 import { collisionMaskStore } from "@/utils/maskStore";
 import { TrianglePolygon } from "@/utils/polygon";
 import { subState } from "@/utils/redux";
