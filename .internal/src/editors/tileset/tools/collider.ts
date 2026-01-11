@@ -3,13 +3,10 @@ import { globals as gApp } from "@/globals";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
-import {
-  decodeMask,
-  determineCoverage,
-  encodeMask,
-  Shape,
-} from "@/utils/collider";
+import { decodeMask, encodeMask } from "@/utils/collider";
+import { determineCoverage } from "@/utils/collider2";
 import { collisionMaskStore } from "@/utils/maskStore";
+import { TrianglePolygon } from "@/utils/polygon";
 import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
 import { globals as g } from "../globals";
@@ -65,7 +62,7 @@ export class ColliderTool implements Tool {
   private collisionMask: boolean[][] = [];
 
   /** Array of rectangles computed from determineCoverage */
-  private coverageShapes: Shape[] = [];
+  private coverageShapes: TrianglePolygon[] = [];
 
   /** Graphics object for drawing coverage rectangle overlays */
   private rectsGraphics: P.Graphics | null = null;
@@ -187,7 +184,7 @@ export class ColliderTool implements Tool {
 
     // Draw coverage shapes if showColliders is enabled
     if (this.showColliders && this.coverageShapes.length > 0) {
-      this.drawCoverageRects();
+      this.drawColliders();
     }
 
     // Draw initial brush cursor
@@ -341,37 +338,36 @@ export class ColliderTool implements Tool {
 
     // Determine coverage rectangles
     this.coverageShapes = determineCoverage(imageData, {
-      targetCoverage: opts.targetCoverage,
-      minDimension: 1,
-      aspectRatioPenalty: 0,
+      simplify: {
+        tolerance: opts.simplify,
+        preserveCorners: false,
+      },
     });
 
     if (this.showColliders) {
-      this.drawCoverageRects();
+      this.drawColliders();
     }
   }
 
   /**
    * Draws the coverage rectangles as outlined overlays.
    */
-  private drawCoverageRects(): void {
+  private drawColliders(): void {
     if (!this.rectsGraphics) return;
 
     this.rectsGraphics.clear();
 
-    // Use contrasting colors: cyan and yellow for visibility against red mask
-    const colors = [0x00ffff, 0xffff00, 0x00ff00, 0xff00ff];
-
-    this.coverageShapes.forEach((shape, index) => {
-      const color = colors[index % colors.length];
-
-      // Draw the rectangle outline
-      this.rectsGraphics!.rect(shape.x, shape.y, shape.width, shape.height)
-        .fill({
-          color,
-          alpha: 1.0,
-        })
-        .stroke({ color: 0x000000, width: 1, pixelLine: true });
+    this.coverageShapes.forEach((polygon) => {
+      // Each polygon is now an array of triangles
+      // Draw each triangle in the polygon
+      polygon.forEach((triangle) => {
+        this.rectsGraphics!.poly([triangle.a, triangle.b, triangle.c])
+          .fill({
+            color: 0x000000,
+            alpha: 0.3,
+          })
+          .stroke({ color: 0x000000, width: 1, pixelLine: true });
+      });
     });
   }
 
@@ -463,6 +459,7 @@ export class ColliderTool implements Tool {
    * Implements Tool.onPointerUp - ends drawing and commits changes.
    */
   public onPointerUp(e: P.FederatedPointerEvent): boolean {
+    if (e.button !== 0) return false; // Only left button
     const obj = this.currentObj;
     if (!obj) return false;
 
@@ -496,7 +493,6 @@ export class ColliderTool implements Tool {
     if (this.currentObj) {
       const state = store.getState();
       const opts = state.tilesetEditor.toolOptions.collider;
-      const coverage = opts.targetCoverage;
 
       this.computeCoverage();
       const encodedMask = encodeMask(this.collisionMask);
@@ -522,7 +518,7 @@ export class ColliderTool implements Tool {
             collisions: {
               mask: maskUUID,
               shapes: this.coverageShapes,
-              coverage,
+              simplify: opts.simplify,
             },
           },
         })

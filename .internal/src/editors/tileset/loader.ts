@@ -155,7 +155,7 @@ export async function unpackTileset(tsId: string, coordsList: Rect[]) {
       collisions: {
         mask: null,
         shapes: [],
-        coverage: 1.0,
+        simplify: 1.0,
       },
     };
 

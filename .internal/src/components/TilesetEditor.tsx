@@ -3,6 +3,7 @@ import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
+import { store } from "@/store/store";
 import {
   clearCandAnimFramesThunk,
   loadTilesetThunk,
@@ -233,7 +234,12 @@ export default function TilesetEditorTab({
     async (obj: TemplateObject, e: React.MouseEvent) => {
       if (e.button === 2) return;
 
+      // If we don't have the tileset loaded, load the tileset associated with
+      // the object we just selected.
       if (!ts) {
+        const state = store.getState();
+        const tilesets = selectors.selectTilesets(state);
+
         const ts = tilesets[obj.tilesetId];
         await dispatch(selectTilesetThunk(ts)).unwrap();
         await navigate(`/tilesets/${ts.id}`);
@@ -250,7 +256,7 @@ export default function TilesetEditorTab({
         dispatch(setNpcThunk(obj));
       }
     },
-    [dispatch, tilesets, ts, navigate]
+    [dispatch, ts, navigate]
   );
 
   const onToolActivated = useCallback(

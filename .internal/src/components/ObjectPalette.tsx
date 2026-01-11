@@ -1,11 +1,13 @@
 import { useAppSelector } from "@/hooks/redux";
-import { RootState } from "@/store/store";
+import { selectors } from "@/slices/tilesetEditor";
+import { RootState, store } from "@/store/store";
 import { isAnimationTemplate } from "@/types/animation";
 import { isNpcTemplate } from "@/types/npc";
 import { PaletteObjectProps } from "@/types/palette";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
 import { TemplateObject } from "@/types/tilesetobject";
+import { setsEqual } from "@/utils/set";
 import { Vector2 } from "@/vec";
 import {
   Group,
@@ -17,6 +19,7 @@ import {
 } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import React, {
+  memo,
   ReactNode,
   useCallback,
   useDeferredValue,
@@ -31,19 +34,19 @@ import TileGroupMenu from "./paletteMenus/TileGroupMenu";
 
 interface ObjectPaletteProps<ObjType extends TemplateObject> {
   tileset?: Tileset;
+  selectedObjects?: Set<string>;
+  minScale?: number;
+  maxScale?: number;
+  defaultScale?: number;
+  filterMenu?: React.ReactNode;
   onSelectObject?: (obj: ObjType, e: React.MouseEvent) => void;
   onDeselectObject?: () => void;
-  selectedObjects?: Set<string>;
   renderObject: (props: PaletteObjectProps<ObjType>) => React.ReactNode | null;
   sort: (a: ObjType, b: ObjType) => number;
   filter: (
     obj: ObjType,
     state: RootState["ui"]["paletteFilterSwitches"]
   ) => boolean;
-  minScale?: number;
-  maxScale?: number;
-  defaultScale?: number;
-  filterMenu?: React.ReactNode;
 }
 
 function findHighestWithAttr(start: HTMLElement, attr: string) {
@@ -58,22 +61,22 @@ function findHighestWithAttr(start: HTMLElement, attr: string) {
   return last;
 }
 
-export default function ObjectPalette<ObjType extends TemplateObject>({
-  onSelectObject,
-  onDeselectObject,
-  tileset: showTileset,
+function ObjectPalette<ObjType extends TemplateObject>({
+  tileset: visibleTileset,
   selectedObjects,
-  renderObject,
-  sort,
-  filter,
   minScale = 1,
   maxScale = 4,
   defaultScale = 2,
   filterMenu,
+  onSelectObject,
+  onDeselectObject,
+  renderObject,
+  sort,
+  filter,
 }: ObjectPaletteProps<ObjType>) {
   const [objMenuPos, setObjMenuPos] = useState<Vector2 | null>(null);
   const [clicked, setClicked] = useState<ObjType | null>(null);
-  const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
+  const tilesets = useAppSelector(selectors.selectTilesets);
   const loadingPalette = useAppSelector((state) => state.ui.loadingPalette);
   const paletteFilterSwitches = useAppSelector(
     (state) => state.ui.paletteFilterSwitches,
@@ -85,15 +88,10 @@ export default function ObjectPalette<ObjType extends TemplateObject>({
     const objs: ReactNode[] = [];
 
     const filteredTilesets: Tileset[] = Object.values(tilesets).filter((t) => {
-      if (showTileset) {
-        return t.id === showTileset.id;
-      } else {
-        if (t.hidden) {
-          return paletteFilterSwitches.objects.showHiddenTilesets;
-        } else {
-          return true;
-        }
+      if (visibleTileset) {
+        return t.id === visibleTileset.id;
       }
+      return true;
     });
 
     const sorted = Object.values(filteredTilesets)
@@ -135,7 +133,7 @@ export default function ObjectPalette<ObjType extends TemplateObject>({
     return objs;
   }, [
     tilesets,
-    showTileset,
+    visibleTileset,
     selectedObjects,
     renderObject,
     scale,
@@ -181,6 +179,9 @@ export default function ObjectPalette<ObjType extends TemplateObject>({
       const objId = target.dataset.objid!;
       const tsId = target.dataset.tsid!;
 
+      const state = store.getState();
+      const tilesets = selectors.selectTilesets(state);
+
       const obj = tilesets[tsId].tiles.entities[objId];
       // Left click to select, right click to open menu
       if (e.button === 0) {
@@ -209,7 +210,7 @@ export default function ObjectPalette<ObjType extends TemplateObject>({
         onSelectObject?.(obj as ObjType, e);
       }
     },
-    [tilesets, deselectObject, selectedObjects, onSelectObject]
+    [deselectObject, selectedObjects, onSelectObject]
   );
 
   return (
@@ -273,3 +274,36 @@ export default function ObjectPalette<ObjType extends TemplateObject>({
     </>
   );
 }
+
+export default memo(ObjectPalette, (prevProps, nextProps) => {
+  // Re-compute if the selected objects are not the same
+  const objsEqual = setsEqual(
+    prevProps.selectedObjects ?? new Set(),
+    nextProps.selectedObjects ?? new Set()
+  );
+
+  // Re-compute if the tileset or its tiles have changed, without diving into
+  // the individual object properties.
+  const prevTs = prevProps.tileset;
+  const nextTs = nextProps.tileset;
+  const sameTilesetId = prevTs?.id === nextTs?.id;
+  const oldTiles = new Set(prevTs?.tiles.ids ?? []);
+  const newTiles = new Set(nextTs?.tiles.ids ?? []);
+
+  const sameTilesetTiles = setsEqual(oldTiles, newTiles);
+
+  return (
+    sameTilesetId &&
+    sameTilesetTiles &&
+    objsEqual &&
+    prevProps.minScale === nextProps.minScale &&
+    prevProps.maxScale === nextProps.maxScale &&
+    prevProps.defaultScale === nextProps.defaultScale &&
+    prevProps.filterMenu === nextProps.filterMenu &&
+    prevProps.onSelectObject === nextProps.onSelectObject &&
+    prevProps.onDeselectObject === nextProps.onDeselectObject &&
+    prevProps.renderObject === nextProps.renderObject &&
+    prevProps.sort === nextProps.sort &&
+    prevProps.filter === nextProps.filter
+  );
+}) as typeof ObjectPalette;

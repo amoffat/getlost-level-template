@@ -141,7 +141,7 @@ class Selector extends ClickDragListener {
             store.dispatch(
               actions.setToolOptions({
                 tool: "collider",
-                options: { targetCoverage: obj.collisions.coverage },
+                options: { simplify: obj.collisions.simplify },
               })
             );
           }

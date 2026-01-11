@@ -30,7 +30,7 @@ type ToolOptMapping = {
     drawOnOpaqueOnly: boolean;
     overlayOpacity: number;
     showColliders: boolean;
-    targetCoverage: number;
+    simplify: number;
   };
 };
 type ToolWithOptions = keyof ToolOptMapping;
@@ -39,7 +39,7 @@ const reconcilePrefix = "tilesetEditor";
 export const selectedAdapter = createEntityAdapter<HasId>();
 export const tileAdapter = createEntityAdapter<TemplateObject>();
 const createTsSelector = createSelector.withTypes<TilesetEditorState>();
-
+const createRootSelector = createSelector.withTypes<RootState>();
 export interface TilesetEditorState {
   grid: {
     size: number;
@@ -112,7 +112,7 @@ export const slice = createSlice({
         drawOnOpaqueOnly: true,
         overlayOpacity: 0.8,
         showColliders: false,
-        targetCoverage: 0.98,
+        simplify: 1.0,
       },
     },
     objIdToTs: {},
@@ -653,7 +653,7 @@ export const slice = createSlice({
   },
 });
 
-const selectTilesets = createSelector.withTypes<RootState>()(
+const selectTilesets = createRootSelector(
   [
     (state) => state.tilesetEditor.tilesetIds,
     (state) => state.tilesetEditor.tilesets,

@@ -1,11 +1,10 @@
 import { OklabColor } from "@/types/color";
+import { TrianglePolygon } from "@/utils/polygon";
 import { Vector2 } from "@/vec";
 import { TileGroupProps } from "./properties";
 import type { Rect } from "./rect";
 import { TemplateType } from "./templates";
 import type { TemplateObject } from "./tilesetobject";
-
-export type CollisionShape = Rect;
 
 export interface TileGroupTemplate extends TileGroupProps {
   // The unique, stable id, which uses the image data hash plus tileset and
@@ -30,10 +29,9 @@ export interface TileGroupTemplate extends TileGroupProps {
     // UUID key for looking up collision mask data from the module-level mask
     // store
     mask: string | null;
-    // Computed collision shapes (rectangles) that cover the mask
-    shapes: CollisionShape[];
-    // Coverage value from 0-1
-    coverage: number;
+    // Computed collision shapes (potentially multiple islands)
+    shapes: TrianglePolygon[];
+    simplify: number;
   };
 }
 

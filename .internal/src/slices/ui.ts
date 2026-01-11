@@ -82,6 +82,9 @@ export const slice = createSlice({
     },
     setTab: (state, action: PayloadAction<MainTabName>) => {
       state.activeTab = action.payload;
+      for (const tab in state.mountedTabs) {
+        state.mountedTabs[tab as MainTabName] = false;
+      }
       state.mountedTabs[action.payload] = true;
     },
     loadingPalette(state, action: PayloadAction<boolean>) {
@@ -96,9 +99,7 @@ export const slice = createSlice({
     clearLoadingMessages(state) {
       state.loadingMessages = [];
     },
-    mountTab: (state, action: PayloadAction<MainTabName>) => {
-      state.mountedTabs[action.payload] = true;
-    },
+
     addTilesetGroupTags(state, action: PayloadAction<string[]>) {
       action.payload.forEach((tag) => {
         state.tags.tilesetGroups[tag] =

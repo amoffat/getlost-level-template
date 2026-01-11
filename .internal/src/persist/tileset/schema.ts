@@ -41,5 +41,10 @@ export interface TilesetDocV16 extends Omit<TilesetDocV15, "version"> {
   version: 16;
 }
 
-export type LatestTilesetDoc = TilesetDocV16;
-export const latestVersion = 16;
+// Version 17: Removed collisions.coverage, added collisions.simplify
+export interface TilesetDocV17 extends Omit<TilesetDocV16, "version"> {
+  version: 17;
+}
+
+export type LatestTilesetDoc = TilesetDocV17;
+export const latestVersion = 17;

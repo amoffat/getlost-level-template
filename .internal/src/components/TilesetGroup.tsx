@@ -1,4 +1,5 @@
 import { useAppSelector } from "@/hooks/redux";
+import { selectors } from "@/slices/tilesetEditor";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import classNames from "classnames";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -28,8 +29,9 @@ const TilesetGroup = ({
   flipX = false,
   ...divProps
 }: TilesetCropProps) => {
-  const tilesets = useAppSelector((state) => state.tilesetEditor.tilesets);
-  const ts = tilesets[group.tilesetId];
+  const objectUrl = useAppSelector(
+    (state) => selectors.selectTileset(state, group.tilesetId)?.objectUrl
+  );
 
   const width = Math.max(0, group.pos.width);
   const height = Math.max(0, group.pos.height);
@@ -103,7 +105,7 @@ const TilesetGroup = ({
   // This can happen in deferred renders, where a TilesetGroup may stick around
   // for a renders after its tileset has been deleted. Specifically, this
   // happens in the ObjectPalette when a tileset is deleted.
-  if (!ts) return null;
+  if (!objectUrl) return null;
 
   return (
     <div
@@ -119,7 +121,7 @@ const TilesetGroup = ({
         style={{
           width,
           height,
-          backgroundImage: `url(${ts.objectUrl})`,
+          backgroundImage: `url(${objectUrl})`,
           backgroundPosition: bgPos,
           transform: flipX
             ? `scale(${effectiveScale}) translateX(${width}px) scaleX(-1)`

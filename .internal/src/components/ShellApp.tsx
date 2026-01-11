@@ -63,7 +63,6 @@ export function ShellApp() {
     if (nextTab !== activeTab) {
       dispatch(uiActions.clearLoadingMessages());
       dispatch(uiActions.setTab(nextTab));
-      dispatch(uiActions.mountTab(nextTab));
     }
   }, [pathname, activeTab, dispatch]);
 

@@ -142,7 +142,7 @@ class Grouper extends ClickDragListener {
           collisions: {
             mask: null,
             shapes: [],
-            coverage: 1.0,
+            simplify: 1.0,
           },
         };
         store.dispatch(addPaletteObjectsThunk({ tsId, objs: [group] }));
