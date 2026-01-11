@@ -1,6 +1,6 @@
 import * as P from "pixi.js";
 
-export function makeBackground({
+export function makeCheckerboard({
   container,
   size = 16,
   width,
@@ -29,14 +29,55 @@ export function makeBackground({
 
   const tex = P.Texture.from(canvas);
 
-  const checkerboard = new P.TilingSprite({
+  const pattern = new P.TilingSprite({
     texture: tex,
     width,
     height,
   });
-  container.addChild(checkerboard);
+  container.addChild(pattern);
   if (blur) {
     container.filters = [new P.BlurFilter({ strength: 4 })];
   }
-  return checkerboard;
+  return pattern;
+}
+
+export function makeWarning({
+  container,
+  size = 16,
+  width,
+  height,
+}: {
+  container: P.Container;
+  size?: number;
+  width: number;
+  height: number;
+}): P.Container {
+  const canvas = new OffscreenCanvas(size * 2, size * 2);
+  const ctx = canvas.getContext("2d")!;
+
+  // Colors for the warning pattern
+  const c1 = "#000000"; // black
+  const c2 = "#ffff00"; // yellow
+
+  // Draw diagonal stripes
+  ctx.fillStyle = c1;
+  ctx.fillRect(0, 0, size * 2, size * 2);
+
+  ctx.fillStyle = c2;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(size * 2, 0);
+  ctx.lineTo(0, size * 2);
+  ctx.closePath();
+  ctx.fill();
+
+  const tex = P.Texture.from(canvas);
+
+  const pattern = new P.TilingSprite({
+    texture: tex,
+    width,
+    height,
+  });
+  container.addChild(pattern);
+  return pattern;
 }

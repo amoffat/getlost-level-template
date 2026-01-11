@@ -9,7 +9,7 @@ import { onVisible } from "@/utils/visible";
 import { Vector2 } from "@/vec";
 import debounce from "debounce";
 import * as P from "pixi.js";
-import { makeBackground } from "../common/bg";
+import { makeCheckerboard } from "../common/bg";
 import { getCursorForMode } from "../common/cursor";
 import { ClickDragger } from "../common/drag";
 import { setupPanControls } from "../common/pan";
@@ -141,7 +141,7 @@ export async function init(): Promise<P.Application> {
   g.gridContainer.label = "Grid Container";
 
   // Build checkerboard background
-  const checkerboard = makeBackground({
+  const checkerboard = makeCheckerboard({
     container: g.backgroundContainer,
     width: app.screen.width,
     height: app.screen.height,

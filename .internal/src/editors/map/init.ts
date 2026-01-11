@@ -10,7 +10,7 @@ import { onVisible } from "@/utils/visible";
 import { Vector2 } from "@/vec";
 import { DropShadowFilter } from "pixi-filters";
 import * as P from "pixi.js";
-import { makeBackground } from "../common/bg";
+import { makeCheckerboard } from "../common/bg";
 import { getCursorForMode } from "../common/cursor";
 import { ClickDragger } from "../common/drag";
 import { setupPanControls } from "../common/pan";
@@ -92,7 +92,7 @@ export async function init(): Promise<P.Application> {
   });
 
   // Build checkerboard background
-  const checkerboard = makeBackground({
+  const checkerboard = makeCheckerboard({
     container: g.backgroundContainer,
     width: app.screen.width,
     height: app.screen.height,

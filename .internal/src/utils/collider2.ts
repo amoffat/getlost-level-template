@@ -14,8 +14,6 @@ interface SimplifyOptions {
 }
 
 export interface DetermineCoverageOptions {
-  /** Alpha cut-off. Pixels with alpha > alphaThreshold are considered solid. Default: 0 */
-  alphaThreshold?: number;
   /** Pixel connectivity for island detection. Default: 4 */
   connectivity?: 4 | 8;
   /** Ignore islands smaller than this many pixels. Default: 1 */
@@ -34,28 +32,27 @@ const DEFAULT_SIMPLIFY: Required<SimplifyOptions> = {
 };
 
 /**
- * Extracts concave polygon boundaries from an ImageData mask.
+ * Extracts concave polygon boundaries from a binary mask.
  *
- * This function analyzes the alpha channel of the provided ImageData and returns
+ * This function analyzes a 2D boolean array mask and returns
  * a list of polygons representing the boundaries of solid regions ("islands").
  * Multiple polygons may be returned if there are disconnected solid regions.
  *
  * Algorithm overview:
- * 1. Build a binary mask from the alpha channel
- * 2. Detect connected component islands using flood-fill
- * 3. Trace boundary edges for each island (outer + holes)
- * 4. Simplify boundary polygons using Douglas-Peucker while preserving corners
- * 5. Triangulate using earcut to create filled polygons
+ * 1. Detect connected component islands using flood-fill
+ * 2. Trace boundary edges for each island (outer + holes)
+ * 3. Simplify boundary polygons using Douglas-Peucker while preserving corners
+ * 4. Triangulate using earcut to create filled polygons
  *
- * @param mask - The ImageData to analyze (typically from a canvas or texture)
+ * @param mask - 2D boolean array where true = solid, false = empty
  * @param options - Configuration options for detection and simplification
  * @returns Array of polygons, where each polygon is an array of triangles
  *
  * @example
  * ```ts
- * const imageData = ctx.getImageData(0, 0, width, height);
- * const polygons = determineCoverage(imageData, {
- *   alphaThreshold: 128,
+ * const mask: boolean[][] = Array(height).fill(null).map(() => Array(width).fill(false));
+ * // ... fill mask with true/false values ...
+ * const polygons = determineCoverage(mask, {
  *   connectivity: 8,
  *   minIslandArea: 10,
  *   simplify: { tolerance: 1.0, preserveCorners: true }
@@ -63,11 +60,10 @@ const DEFAULT_SIMPLIFY: Required<SimplifyOptions> = {
  * ```
  */
 export function determineCoverage(
-  mask: ImageData,
+  mask: boolean[][],
   options: DetermineCoverageOptions = {}
 ): TrianglePolygon[] {
   const {
-    alphaThreshold = 0,
     connectivity = 4,
     minIslandArea = 1,
     simplify: userSimplify = {},
@@ -76,16 +72,16 @@ export function determineCoverage(
   const simplifyOpts = { ...DEFAULT_SIMPLIFY, ...userSimplify };
 
   // Handle empty masks
-  if (mask.width === 0 || mask.height === 0) return [];
+  if (mask.length === 0 || mask[0].length === 0) return [];
 
-  // Convert ImageData alpha channel to binary mask
-  const solid = buildSolidMask(mask, alphaThreshold);
+  const height = mask.length;
+  const width = mask[0].length;
 
   // Find all disconnected solid regions (islands) using flood-fill
   const islands = extractIslands(
-    solid,
-    mask.width,
-    mask.height,
+    mask,
+    width,
+    height,
     connectivity,
     minIslandArea
   );
@@ -94,7 +90,7 @@ export function determineCoverage(
 
   // Process each island to extract and triangulate its boundary
   for (const island of islands) {
-    const boundaryLoops = buildBoundaryLoops(island, mask.width, solid);
+    const boundaryLoops = buildBoundaryLoops(island, width, mask);
     if (boundaryLoops.length === 0) continue;
 
     // Simplify all boundary loops (outer + holes) to reduce vertex count
@@ -125,42 +121,26 @@ export function determineCoverage(
 }
 
 /**
- * Converts ImageData alpha channel to a binary mask.
- *
- * @param mask - Source ImageData to convert
- * @param alphaThreshold - Alpha values > threshold are considered solid (1), otherwise empty (0)
- * @returns Flat Uint8Array where each byte represents one pixel (0 or 1)
- */
-function buildSolidMask(mask: ImageData, alphaThreshold: number): Uint8Array {
-  const result = new Uint8Array(mask.width * mask.height);
-  for (let y = 0; y < mask.height; y++) {
-    for (let x = 0; x < mask.width; x++) {
-      const idx = (y * mask.width + x) * 4 + 3;
-      result[y * mask.width + x] = mask.data[idx] > alphaThreshold ? 1 : 0;
-    }
-  }
-  return result;
-}
-
-/**
  * Detects disconnected solid regions (islands) using flood-fill algorithm.
  *
- * @param solid - Binary mask where 1 = solid, 0 = empty
+ * @param solid - 2D boolean mask where true = solid, false = empty
  * @param width - Width of the mask
  * @param height - Height of the mask
  * @param connectivity - Neighbor connectivity: 4 (cardinal) or 8 (includes diagonals)
  * @param minIslandArea - Minimum pixel count for an island to be included
- * @returns Array of islands, where each island is a Set of linear pixel indices
+ * @returns Array of islands, where each island is a Set of [x, y] coordinate pairs
  */
 function extractIslands(
-  solid: Uint8Array,
+  solid: boolean[][],
   width: number,
   height: number,
   connectivity: 4 | 8,
   minIslandArea: number
-): Array<Set<number>> {
-  const visited = new Uint8Array(width * height);
-  const islands: Array<Set<number>> = [];
+): Array<Set<string>> {
+  const visited: boolean[][] = Array(height)
+    .fill(null)
+    .map(() => Array(width).fill(false));
+  const islands: Array<Set<string>> = [];
 
   // Define neighbor offsets based on connectivity type
   // 8-connectivity includes diagonals, 4-connectivity only cardinal directions
@@ -186,28 +166,27 @@ function extractIslands(
   const inBounds = (x: number, y: number) =>
     x >= 0 && y >= 0 && x < width && y < height;
 
+  const keyOf = (x: number, y: number) => `${x},${y}`;
+
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const idx = y * width + x;
-      if (visited[idx] || solid[idx] === 0) continue;
+      if (visited[y][x] || !solid[y][x]) continue;
 
       // Start flood-fill from this unvisited solid pixel
-      const island = new Set<number>();
+      const island = new Set<string>();
       const stack: Array<[number, number]> = [[x, y]];
-      visited[idx] = 1;
+      visited[y][x] = true;
 
       while (stack.length) {
         const [cx, cy] = stack.pop()!;
-        const cidx = cy * width + cx;
-        island.add(cidx);
+        island.add(keyOf(cx, cy));
 
         for (const [dx, dy] of neighbors) {
           const nx = cx + dx;
           const ny = cy + dy;
           if (!inBounds(nx, ny)) continue;
-          const nIdx = ny * width + nx;
-          if (visited[nIdx] || solid[nIdx] === 0) continue;
-          visited[nIdx] = 1;
+          if (visited[ny][nx] || !solid[ny][nx]) continue;
+          visited[ny][nx] = true;
           stack.push([nx, ny]);
         }
       }
@@ -225,22 +204,24 @@ function extractIslands(
  * Uses a marching squares-style approach: for each solid pixel, check its 4 neighbors.
  * If a neighbor is empty, add the edge between them to the boundary.
  *
- * @param island - Set of linear indices representing the island pixels
+ * @param island - Set of coordinate strings "x,y" representing the island pixels
  * @param width - Width of the mask
- * @param solid - Binary mask for bounds checking
+ * @param solid - 2D boolean mask for bounds checking
  * @returns Array of closed vertex loops representing the island boundary (may include holes)
  */
 function buildBoundaryLoops(
-  island: Set<number>,
+  island: Set<string>,
   width: number,
-  solid: Uint8Array
+  solid: boolean[][]
 ): Vector2[][] {
-  const height = solid.length / width;
+  const height = solid.length;
   const edges: Edge[] = [];
+
+  const keyOf = (x: number, y: number) => `${x},${y}`;
 
   const isSolid = (x: number, y: number): boolean => {
     if (x < 0 || y < 0 || x >= width || y >= height) return false;
-    return island.has(y * width + x);
+    return island.has(keyOf(x, y));
   };
 
   const edgeMap = new Map<string, Edge>();
@@ -254,9 +235,8 @@ function buildBoundaryLoops(
 
   // For each solid pixel, check its 4 neighbors and add boundary edges
   // Edges are defined at pixel corners, forming a pixel-perfect boundary
-  for (const idx of island) {
-    const x = idx % width;
-    const y = Math.floor(idx / width);
+  for (const coordStr of island) {
+    const [x, y] = coordStr.split(",").map(Number);
 
     // Top edge (if neighbor above is empty)
     if (!isSolid(x, y - 1)) addEdge({ x, y }, { x: x + 1, y });
@@ -631,4 +611,78 @@ function douglasPeucker(
 
   const unique = Array.from(new Set(result)).sort((a, b) => a - b);
   return unique.map((i) => ({ ...points[i] }));
+}
+
+/**
+ * Decodes a Uint8Array back into a 2D boolean array.
+ */
+export function decodeMask(buffer: Uint8Array): boolean[][] {
+  if (!buffer || buffer.length < 8) return [];
+
+  // Use DataView to read width and height as 32-bit integers
+  const view = new DataView(
+    buffer.buffer,
+    buffer.byteOffset,
+    buffer.byteLength
+  );
+  const width = view.getUint32(0, true); // little-endian
+  const height = view.getUint32(4, true); // little-endian
+
+  // Unpack bits into 2D array
+  const mask: boolean[][] = Array(height)
+    .fill(null)
+    .map(() => Array(width).fill(false));
+
+  let bitIndex = 0;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const byteIndex = 8 + Math.floor(bitIndex / 8);
+      const bitOffset = bitIndex % 8;
+      mask[y][x] = (buffer[byteIndex] & (1 << bitOffset)) !== 0;
+      bitIndex++;
+    }
+  }
+
+  return mask;
+}
+
+/**
+ * Encodes a 2D boolean array into a compact binary Uint8Array.
+ * Format: width (4 bytes) + height (4 bytes) + bitmask data
+ * Each byte in the bitmask represents 8 pixels (bits).
+ */
+export function encodeMask(mask: boolean[][]): Uint8Array {
+  if (mask.length === 0) return new Uint8Array(0);
+
+  const height = mask.length;
+  const width = mask[0].length;
+  const totalBits = width * height;
+  const numBytes = Math.ceil(totalBits / 8);
+
+  // Create a buffer: 4 bytes for width + 4 bytes for height + bitmask bytes
+  const buffer = new Uint8Array(8 + numBytes);
+
+  // Use DataView to write width and height as 32-bit integers
+  const view = new DataView(
+    buffer.buffer,
+    buffer.byteOffset,
+    buffer.byteLength
+  );
+  view.setUint32(0, width, true); // little-endian
+  view.setUint32(4, height, true); // little-endian
+
+  // Pack bits into bytes
+  let bitIndex = 0;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (mask[y][x]) {
+        const byteIndex = 8 + Math.floor(bitIndex / 8);
+        const bitOffset = bitIndex % 8;
+        buffer[byteIndex] |= 1 << bitOffset;
+      }
+      bitIndex++;
+    }
+  }
+
+  return buffer;
 }

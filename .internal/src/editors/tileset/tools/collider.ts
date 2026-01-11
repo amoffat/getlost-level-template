@@ -3,8 +3,7 @@ import { globals as gApp } from "@/globals";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
-import { decodeMask, encodeMask } from "@/utils/collider";
-import { determineCoverage } from "@/utils/collider2";
+import { decodeMask, determineCoverage, encodeMask } from "@/utils/collider2";
 import { collisionMaskStore } from "@/utils/maskStore";
 import { TrianglePolygon } from "@/utils/polygon";
 import { subState } from "@/utils/redux";
@@ -323,21 +322,13 @@ export class ColliderTool implements Tool {
    * Computes coverage rectangles from the current mask texture and draws thems
    */
   private computeCoverage(): void {
-    if (!this.maskTexture) return;
+    if (!this.currentObj || this.collisionMask.length === 0) return;
 
     const state = store.getState();
     const opts = state.tilesetEditor.toolOptions.collider;
 
-    const app = gApp.tilesetEditorApp!;
-    const pixels = app.renderer.extract.pixels(this.maskTexture);
-    const imageData = new ImageData(
-      new Uint8ClampedArray(pixels.pixels),
-      this.maskTexture.width,
-      this.maskTexture.height
-    );
-
-    // Determine coverage rectangles
-    this.coverageShapes = determineCoverage(imageData, {
+    // Determine coverage rectangles directly from the 2D collision mask
+    this.coverageShapes = determineCoverage(this.collisionMask, {
       simplify: {
         tolerance: opts.simplify,
         preserveCorners: false,
