@@ -6,6 +6,7 @@ import {
   Collapse,
   Fieldset,
   Group,
+  Kbd,
   SegmentedControl,
   Slider,
   Stack,
@@ -19,7 +20,7 @@ import {
   IconEraser,
   IconSquareFilled,
 } from "@tabler/icons-react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Tip from "../../Tip";
 
 export default function ColliderTool() {
@@ -34,6 +35,7 @@ export default function ColliderTool() {
     simplify,
   } = useAppSelector((state) => state.tilesetEditor.toolOptions.collider);
   const [advancedOpen, { toggle }] = useDisclosure(false);
+  const [isControlPressed, setIsControlPressed] = useState(false);
 
   const objKey = useAppSelector((state) => {
     return state.tilesetEditor.selectedTiles.ids.join(",");
@@ -45,6 +47,7 @@ export default function ColliderTool() {
       element: document.body,
       handlers: {
         Control: (pressed: boolean) => {
+          setIsControlPressed(pressed);
           const effectiveMode = pressed ? "erase" : "paint";
           dispatch(
             actions.setToolOptions({
@@ -56,6 +59,27 @@ export default function ColliderTool() {
       },
     });
   }, [dispatch]);
+
+  // Handle scroll wheel for brush size adjustment when Control is pressed
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (isControlPressed) {
+        e.preventDefault();
+
+        const delta = e.deltaY > 0 ? -1 : 1;
+        const newSize = Math.max(1, Math.min(16, brushSize + delta));
+        dispatch(
+          actions.setToolOptions({
+            tool: "collider",
+            options: { brushSize: newSize },
+          })
+        );
+      }
+    };
+
+    document.body.addEventListener("wheel", handleWheel, { passive: false });
+    return () => document.body.removeEventListener("wheel", handleWheel);
+  }, [isControlPressed, brushSize, dispatch]);
 
   const handleBrushSizeChange = useCallback(
     (value: number | string) => {
@@ -151,7 +175,9 @@ export default function ColliderTool() {
         tips={[
           "Draw collision masks on tile groups by painting directly on the tileset.",
           "Paint mode adds collision areas, erase mode removes them.",
-          "Adjust brush size to paint larger or smaller areas.",
+          <>
+            Hold <Kbd>Ctrl</Kbd> to temporarily switch to erase mode.
+          </>,
         ]}
       />
       <Fieldset legend="Collider" p="xs">

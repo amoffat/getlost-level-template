@@ -1,9 +1,7 @@
+import { clamp } from "@/utils/math";
 import * as P from "pixi.js";
 import { ZoomPan } from "../../types/zoompan";
-
-function clamp(n: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, n));
-}
+import { trackKeyPresses } from "./keypress";
 
 export function setupWheelZoom({
   canvas,
@@ -20,6 +18,12 @@ export function setupWheelZoom({
   maxZoom?: number;
   onZoomChange?: (zoomPan: ZoomPan) => void;
 }) {
+  const pressedKeys: Record<string, boolean> = {};
+  trackKeyPresses({
+    element: canvas,
+    pressedKeys,
+  });
+
   canvas.addEventListener("wheel", (e) => {
     // Prevent the whole page from scrolling
     e.preventDefault();
@@ -27,6 +31,8 @@ export function setupWheelZoom({
 
   // Use Pixi's federated wheel events on the stage
   stage.on("wheel", (e: P.FederatedWheelEvent) => {
+    if (pressedKeys["Control"]) return;
+
     // Determine zoom direction and amount using convenience deltaY
     const zoomFactor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
 
