@@ -182,30 +182,33 @@ export default function ColliderTool() {
       />
       <Fieldset legend="Collider" p="xs">
         <Stack p={0} gap="md">
-          <SegmentedControl
-            value={mode}
-            onChange={handleModeChange}
-            data={[
-              {
-                label: (
-                  <Group gap="xs" wrap="nowrap">
-                    <IconBrush size={16} />
-                    Paint
-                  </Group>
-                ),
-                value: "paint",
-              },
-              {
-                label: (
-                  <Group gap="xs" wrap="nowrap">
-                    <IconEraser size={16} />
-                    Erase
-                  </Group>
-                ),
-                value: "erase",
-              },
-            ]}
-          />
+          <Stack gap="xs" p={0}>
+            <Text size="sm">Brush Mode</Text>
+            <SegmentedControl
+              value={mode}
+              onChange={handleModeChange}
+              data={[
+                {
+                  label: (
+                    <Group gap="xs" wrap="nowrap">
+                      <IconBrush size={16} />
+                      Paint
+                    </Group>
+                  ),
+                  value: "paint",
+                },
+                {
+                  label: (
+                    <Group gap="xs" wrap="nowrap">
+                      <IconEraser size={16} />
+                      Erase
+                    </Group>
+                  ),
+                  value: "erase",
+                },
+              ]}
+            />
+          </Stack>
 
           <Stack gap="xs" p={0}>
             <Text size="sm">Brush Shape</Text>
