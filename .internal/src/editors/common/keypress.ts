@@ -6,7 +6,7 @@ export function trackKeyPresses({
   handlers?: Record<string, (pressed: boolean) => void>;
   pressedKeys?: Record<string, boolean>;
   element: HTMLElement;
-}): Record<string, boolean> {
+}): VoidFunction {
   // Order we want modifier keys to appear in combo names
   const modifierOrder = ["Control", "Shift", "Alt", "Meta"];
 
@@ -71,7 +71,7 @@ export function trackKeyPresses({
     handlers = normalized;
   }
 
-  element.addEventListener("keydown", (e: KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.repeat) return; // Ignore repeats
 
     const norm = normalizeKey(e);
@@ -88,8 +88,9 @@ export function trackKeyPresses({
     if (single || comboFn) e.preventDefault();
     single?.(true);
     comboFn?.(true);
-  });
-  element.addEventListener("keyup", (e: KeyboardEvent) => {
+  };
+
+  const handleKeyUp = (e: KeyboardEvent) => {
     // Determine normalized key for release; events may report a different
     // shifted character than what was stored on keydown (e.g. "d" vs "D", "/"
     // vs "?", "1" vs "!").
@@ -117,16 +118,26 @@ export function trackKeyPresses({
     if (single || comboFn) e.preventDefault();
     single?.(false);
     comboFn?.(false);
-  });
+  };
 
   const clearKeys = () => {
     for (const k of Object.keys(pressedKeys)) pressedKeys[k] = false;
   };
+
+  element.addEventListener("keydown", handleKeyDown);
+  element.addEventListener("keyup", handleKeyUp);
   window.addEventListener("blur", clearKeys);
   window.addEventListener("focus", clearKeys);
   element.addEventListener("mouseleave", clearKeys);
 
-  return pressedKeys;
+  // Return cleanup function to remove all event listeners
+  return () => {
+    element.removeEventListener("keydown", handleKeyDown);
+    element.removeEventListener("keyup", handleKeyUp);
+    window.removeEventListener("blur", clearKeys);
+    window.removeEventListener("focus", clearKeys);
+    element.removeEventListener("mouseleave", clearKeys);
+  };
 }
 
 /**

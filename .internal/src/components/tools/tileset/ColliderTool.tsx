@@ -43,7 +43,7 @@ export default function ColliderTool() {
 
   // Track keyboard state
   useEffect(() => {
-    trackKeyPresses({
+    const clearEventHandlers = trackKeyPresses({
       element: document.body,
       handlers: {
         Control: (pressed: boolean) => {
@@ -56,9 +56,21 @@ export default function ColliderTool() {
             })
           );
         },
+        s: (pressed: boolean) => {
+          if (pressed) {
+            const newShape = brushShape === "square" ? "circle" : "square";
+            dispatch(
+              actions.setToolOptions({
+                tool: "collider",
+                options: { brushShape: newShape },
+              })
+            );
+          }
+        },
       },
     });
-  }, [dispatch]);
+    return clearEventHandlers;
+  }, [dispatch, brushShape]);
 
   // Handle scroll wheel for brush size adjustment when Control is pressed
   useEffect(() => {
@@ -177,6 +189,9 @@ export default function ColliderTool() {
           "Paint mode adds collision areas, erase mode removes them.",
           <>
             Hold <Kbd>Ctrl</Kbd> to temporarily switch to erase mode.
+          </>,
+          <>
+            Press <Kbd>S</Kbd> to toggle brush shape.
           </>,
         ]}
       />
