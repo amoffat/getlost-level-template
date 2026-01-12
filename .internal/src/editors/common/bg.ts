@@ -42,42 +42,40 @@ export function makeCheckerboard({
 }
 
 export function makeWarning({
-  container,
   size = 16,
   width,
   height,
 }: {
-  container: P.Container;
   size?: number;
   width: number;
   height: number;
 }): P.Container {
-  const canvas = new OffscreenCanvas(size * 2, size * 2);
+  const canvas = new OffscreenCanvas(size, size);
   const ctx = canvas.getContext("2d")!;
+  ctx.imageSmoothingEnabled = false;
 
   // Colors for the warning pattern
   const c1 = "#000000"; // black
   const c2 = "#ffff00"; // yellow
 
-  // Draw diagonal stripes
-  ctx.fillStyle = c1;
-  ctx.fillRect(0, 0, size * 2, size * 2);
-
-  ctx.fillStyle = c2;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(size * 2, 0);
-  ctx.lineTo(0, size * 2);
-  ctx.closePath();
-  ctx.fill();
+  // Draw diagonal candy-cane stripes (2-pixel wide diagonal lines)
+  // Draw pixel by pixel for crisp lines
+  for (let x = 0; x < size; x++) {
+    for (let y = 0; y < size; y++) {
+      const diagonal = x + y;
+      const stripe = Math.floor(diagonal / 2) % 2;
+      ctx.fillStyle = stripe === 0 ? c1 : c2;
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
 
   const tex = P.Texture.from(canvas);
+  tex.source.scaleMode = "nearest";
 
   const pattern = new P.TilingSprite({
     texture: tex,
     width,
     height,
   });
-  container.addChild(pattern);
   return pattern;
 }

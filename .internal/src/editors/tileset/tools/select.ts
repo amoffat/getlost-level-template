@@ -228,7 +228,8 @@ export function outlineObjects(objs: TemplateObject[], zoom: number) {
         width: obj.pos.width,
         height: obj.pos.height,
         stroke,
-        fill: tileSelectFill,
+        // It's actually distracting if tiles have a fill when selected
+        // fill: tileSelectFill,
       });
     }
   }

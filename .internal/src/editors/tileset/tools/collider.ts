@@ -7,7 +7,9 @@ import { decodeMask, determineCoverage, encodeMask } from "@/utils/collider";
 import { collisionMaskStore } from "@/utils/maskStore";
 import { TrianglePolygon } from "@/utils/polygon";
 import { subState } from "@/utils/redux";
+import { OutlineFilter } from "pixi-filters";
 import * as P from "pixi.js";
+import "pixi.js/advanced-blend-modes";
 import { globals as g } from "../globals";
 
 /**
@@ -157,11 +159,15 @@ export class ColliderTool implements Tool {
     // Create sprite to display the mask
     this.maskSprite = new P.Sprite(this.maskTexture);
     this.maskSprite.position.set(obj.pos.x, obj.pos.y);
-    this.maskSprite.tint = 0xff0000; // Red tint
+    this.maskSprite.tint = 0x000000;
     this.maskSprite.alpha = alpha;
+    // this.maskSprite.blendMode = "difference";
     this.maskSprite.zIndex = 100; // Render above everything else
     // Disable texture smoothing for hard pixelated edges
     this.maskTexture.source.scaleMode = "nearest";
+    this.maskSprite.filters = [
+      new OutlineFilter({ thickness: 2, color: 0xff0000 }),
+    ];
 
     g.tilesetContainer.addChild(this.maskSprite);
 
@@ -354,10 +360,10 @@ export class ColliderTool implements Tool {
       polygon.forEach((triangle) => {
         this.rectsGraphics!.poly([triangle.a, triangle.b, triangle.c])
           .fill({
-            color: 0x000000,
-            alpha: 0.3,
+            color: 0xff0000,
+            alpha: 1.0,
           })
-          .stroke({ color: 0x000000, width: 1, pixelLine: true });
+          .stroke({ color: 0xffffff, width: 1, pixelLine: true });
       });
     });
   }

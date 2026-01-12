@@ -110,7 +110,7 @@ export const slice = createSlice({
         brushSize: 8,
         mode: "paint",
         drawOnOpaqueOnly: true,
-        overlayOpacity: 0.8,
+        overlayOpacity: 0.6,
         showColliders: false,
         simplify: 1.0,
       },

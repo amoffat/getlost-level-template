@@ -95,7 +95,7 @@ export function determineCoverage(
 
     // Simplify all boundary loops (outer + holes) to reduce vertex count
     const simplifiedLoops = boundaryLoops.map((loop) =>
-      simplifyPolygon(loop, simplifyOpts)
+      simplifyPolygon(loop, simplifyOpts, width, height)
     );
 
     // Filter out degenerate loops
@@ -445,21 +445,33 @@ function signedArea(loop: Vector2[]): number {
  *
  * @param loop - Input vertex loop to simplify
  * @param opts - Simplification options
+ * @param maskWidth - Width of the mask (for boundary detection)
+ * @param maskHeight - Height of the mask (for boundary detection)
  * @returns Simplified vertex loop
  */
 function simplifyPolygon(
   loop: Vector2[],
-  opts: Required<SimplifyOptions>
+  opts: Required<SimplifyOptions>,
+  maskWidth: number,
+  maskHeight: number
 ): Vector2[] {
   if (loop.length <= 3) return loop;
 
   let pts = dedupeSequential(loop);
-  if (opts.removeCollinear) pts = dropCollinear(pts);
+  if (opts.removeCollinear) pts = dropCollinear(pts, maskWidth, maskHeight);
   if (!opts.tolerance && !opts.preserveCorners) return pts;
 
   const keep = opts.preserveCorners
     ? detectCornerIndices(pts, opts.cornerAngleThreshold)
     : new Set<number>();
+
+  // Also preserve boundary vertices during Douglas-Peucker simplification
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i];
+    if (p.x === 0 || p.y === 0 || p.x === maskWidth || p.y === maskHeight) {
+      keep.add(i);
+    }
+  }
 
   const simplified = douglasPeucker(pts, opts.tolerance, keep);
   return dedupeSequential(simplified);
@@ -491,18 +503,32 @@ function dedupeSequential(points: Vector2[]): Vector2[] {
 /**
  * Removes collinear points from a vertex loop.
  * A point is collinear if it lies on the line between its neighbors.
+ * Preserves points at the mask boundary (edges of the image).
  *
  * @param points - Input vertex loop
- * @returns Vertex loop with collinear points removed
+ * @param maskWidth - Width of the mask
+ * @param maskHeight - Height of the mask
+ * @returns Vertex loop with collinear points removed (except boundary points)
  */
-function dropCollinear(points: Vector2[]): Vector2[] {
+function dropCollinear(
+  points: Vector2[],
+  maskWidth: number,
+  maskHeight: number
+): Vector2[] {
   if (points.length <= 3) return points;
+
+  const isBoundaryPoint = (p: Vector2) => {
+    return p.x === 0 || p.y === 0 || p.x === maskWidth || p.y === maskHeight;
+  };
+
   const result: Vector2[] = [];
   for (let i = 0; i < points.length; i++) {
     const prev = points[(i + points.length - 1) % points.length];
     const curr = points[i];
     const next = points[(i + 1) % points.length];
-    if (!isCollinear(prev, curr, next)) result.push({ ...curr });
+    if (!isCollinear(prev, curr, next) || isBoundaryPoint(curr)) {
+      result.push({ ...curr });
+    }
   }
   return result;
 }

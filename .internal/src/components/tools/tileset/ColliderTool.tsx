@@ -5,6 +5,7 @@ import {
   Button,
   Collapse,
   Fieldset,
+  Group,
   SegmentedControl,
   Slider,
   Stack,
@@ -12,6 +13,7 @@ import {
   Text,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { IconBrush, IconEraser } from "@tabler/icons-react";
 import { useCallback, useEffect } from "react";
 import Tip from "../../Tip";
 
@@ -140,8 +142,24 @@ export default function ColliderTool() {
             value={mode}
             onChange={handleModeChange}
             data={[
-              { label: "Paint", value: "paint" },
-              { label: "Erase", value: "erase" },
+              {
+                label: (
+                  <Group gap="xs" wrap="nowrap">
+                    <IconBrush size={16} />
+                    Paint
+                  </Group>
+                ),
+                value: "paint",
+              },
+              {
+                label: (
+                  <Group gap="xs" wrap="nowrap">
+                    <IconEraser size={16} />
+                    Erase
+                  </Group>
+                ),
+                value: "erase",
+              },
             ]}
           />
 

@@ -34,6 +34,7 @@ export async function setCanvasTileset(ts: Tileset | null) {
     sprite.x = 0;
     sprite.y = 0;
     sprite.roundPixels = true;
+    sprite.zIndex = 0; // Ensure tileset is at the bottom layer
 
     g.currentTileset = sprite;
     g.tilesetContainer.addChild(sprite);

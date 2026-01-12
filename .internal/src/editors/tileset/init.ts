@@ -43,7 +43,7 @@ export async function init(): Promise<P.Application> {
   g.spatialIndex = spatialIndex;
 
   // Initialize the application
-  await app.init({ backgroundAlpha: 0 });
+  await app.init({ backgroundAlpha: 0, useBackBuffer: true });
   const stage = app.stage;
   stage.sortableChildren = true;
   stage.label = "Tileset Editor Stage";
@@ -116,7 +116,7 @@ export async function init(): Promise<P.Application> {
 
   const gfx = new P.Graphics();
   gfx.visible = false;
-  gfx.rect(0, 0, 16, 16).fill({ color: "0x00ff00", alpha: 0.3 });
+  gfx.rect(0, 0, 16, 16).fill({ color: 0x00ff00, alpha: 0.3 });
   g.groupSelContainer.addChild(gfx);
   g.groupSelGraphics = gfx;
 
