@@ -26,6 +26,7 @@ type ToolOptMapping = {
   animator: AnimatorOpts;
   collider: {
     brushSize: number;
+    brushShape: "square" | "circle";
     mode: "paint" | "erase";
     drawOnOpaqueOnly: boolean;
     overlayOpacity: number;
@@ -108,6 +109,7 @@ export const slice = createSlice({
       },
       collider: {
         brushSize: 8,
+        brushShape: "square",
         mode: "paint",
         drawOnOpaqueOnly: true,
         overlayOpacity: 0.6,

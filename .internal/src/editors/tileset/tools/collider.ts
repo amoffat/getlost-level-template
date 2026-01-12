@@ -48,6 +48,9 @@ export class ColliderTool implements Tool {
   /** Size of the square brush in pixels */
   private brushSize = 8;
 
+  /** Shape of the brush: "square" or "circle" */
+  private brushShape: "square" | "circle" = "square";
+
   /** If true, brush only draws on non-transparent pixels; if false, draws on
    * all pixels including transparent areas */
   public drawOnOpaqueOnly = true;
@@ -203,9 +206,17 @@ export class ColliderTool implements Tool {
     if (!this.brushGraphics) return;
 
     this.brushGraphics.clear();
-    // Draw a solid square brush cursor (not centered, positioned at top-left)
-    // This makes it clear exactly which pixels will be drawn
-    this.brushGraphics.rect(0, 0, this.brushSize, this.brushSize);
+    
+    if (this.brushShape === "circle") {
+      // Draw a circle brush cursor centered on the brush position
+      const radius = this.brushSize / 2;
+      this.brushGraphics.circle(radius, radius, radius);
+    } else {
+      // Draw a solid square brush cursor (not centered, positioned at top-left)
+      // This makes it clear exactly which pixels will be drawn
+      this.brushGraphics.rect(0, 0, this.brushSize, this.brushSize);
+    }
+    
     this.brushGraphics.fill({
       color: this.isEraserMode ? 0x0000ff : 0xff0000,
       alpha: 0.5,
@@ -275,15 +286,43 @@ export class ColliderTool implements Tool {
     );
 
     // Update the collision mask data array
-    for (let py = minY; py <= maxY; py++) {
-      for (let px = minX; px <= maxX; px++) {
-        // Check if within square brush bounds and (optionally) on an opaque pixel
-        const shouldDraw = this.drawOnOpaqueOnly
-          ? this.isPixelOpaque(px, py)
-          : true;
-        if (shouldDraw) {
-          // Update collision mask data based on eraser mode
-          this.collisionMask[py][px] = !this.isEraserMode;
+    if (this.brushShape === "circle") {
+      // Circle brush: check distance from center
+      const radius = this.brushSize / 2;
+      const centerX = localX + radius;
+      const centerY = localY + radius;
+      
+      for (let py = minY; py <= maxY; py++) {
+        for (let px = minX; px <= maxX; px++) {
+          // Calculate distance from pixel center to brush center
+          const dx = px + 0.5 - centerX;
+          const dy = py + 0.5 - centerY;
+          const distSq = dx * dx + dy * dy;
+          
+          // Check if within circle and (optionally) on an opaque pixel
+          if (distSq <= radius * radius) {
+            const shouldDraw = this.drawOnOpaqueOnly
+              ? this.isPixelOpaque(px, py)
+              : true;
+            if (shouldDraw) {
+              // Update collision mask data based on eraser mode
+              this.collisionMask[py][px] = !this.isEraserMode;
+            }
+          }
+        }
+      }
+    } else {
+      // Square brush
+      for (let py = minY; py <= maxY; py++) {
+        for (let px = minX; px <= maxX; px++) {
+          // Check if within square brush bounds and (optionally) on an opaque pixel
+          const shouldDraw = this.drawOnOpaqueOnly
+            ? this.isPixelOpaque(px, py)
+            : true;
+          if (shouldDraw) {
+            // Update collision mask data based on eraser mode
+            this.collisionMask[py][px] = !this.isEraserMode;
+          }
         }
       }
     }
@@ -568,6 +607,14 @@ export class ColliderTool implements Tool {
   }
 
   /**
+   * Sets the brush shape (square or circle).
+   */
+  public setBrushShape(shape: "square" | "circle"): void {
+    this.brushShape = shape;
+    this.updateBrushCursor();
+  }
+
+  /**
    * Sets the opacity of the collision mask overlay.
    */
   public setOverlayOpacity(opacity: number): void {
@@ -661,6 +708,7 @@ export function setupCollider(): ColliderTool {
     [(state) => state.tilesetEditor.toolOptions.collider],
     (colliderOpts) => {
       tool.setBrushSize(colliderOpts.brushSize);
+      tool.setBrushShape(colliderOpts.brushShape);
       tool.setEraserMode(colliderOpts.mode === "erase");
       tool.drawOnOpaqueOnly = colliderOpts.drawOnOpaqueOnly;
       tool.setOverlayOpacity(colliderOpts.overlayOpacity);

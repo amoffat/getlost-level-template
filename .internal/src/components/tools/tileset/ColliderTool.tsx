@@ -13,7 +13,12 @@ import {
   Text,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconBrush, IconEraser } from "@tabler/icons-react";
+import {
+  IconBrush,
+  IconCircleFilled,
+  IconEraser,
+  IconSquareFilled,
+} from "@tabler/icons-react";
 import { useCallback, useEffect } from "react";
 import Tip from "../../Tip";
 
@@ -21,6 +26,7 @@ export default function ColliderTool() {
   const dispatch = useAppDispatch();
   const {
     brushSize,
+    brushShape,
     mode,
     drawOnOpaqueOnly,
     overlayOpacity,
@@ -70,6 +76,18 @@ export default function ColliderTool() {
         actions.setToolOptions({
           tool: "collider",
           options: { mode: value as "paint" | "erase" },
+        })
+      );
+    },
+    [dispatch]
+  );
+
+  const handleBrushShapeChange = useCallback(
+    (value: string) => {
+      dispatch(
+        actions.setToolOptions({
+          tool: "collider",
+          options: { brushShape: value as "square" | "circle" },
         })
       );
     },
@@ -162,6 +180,34 @@ export default function ColliderTool() {
               },
             ]}
           />
+
+          <Stack gap="xs" p={0}>
+            <Text size="sm">Brush Shape</Text>
+            <SegmentedControl
+              value={brushShape}
+              onChange={handleBrushShapeChange}
+              data={[
+                {
+                  label: (
+                    <Group gap="xs" wrap="nowrap">
+                      <IconSquareFilled size={16} />
+                      Square
+                    </Group>
+                  ),
+                  value: "square",
+                },
+                {
+                  label: (
+                    <Group gap="xs" wrap="nowrap">
+                      <IconCircleFilled size={16} />
+                      Circle
+                    </Group>
+                  ),
+                  value: "circle",
+                },
+              ]}
+            />
+          </Stack>
 
           <Stack gap="xs" p={0} mb="md">
             <Text size="sm">Brush Size</Text>
