@@ -40,6 +40,10 @@ function addHeadersPlugin() {
 
 export default defineConfig(() => {
   return {
+    define: {
+      // poly2tri uses `global` which doesn't exist in browsers
+      global: "globalThis",
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

@@ -1,5 +1,5 @@
 import { Vector2 } from "@/vec";
-import earcut from "earcut";
+import * as poly2tri from "poly2tri";
 import { Triangle, TrianglePolygon } from "./polygon";
 
 interface SimplifyOptions {
@@ -42,7 +42,7 @@ const DEFAULT_SIMPLIFY: Required<SimplifyOptions> = {
  * 1. Detect connected component islands using flood-fill
  * 2. Trace boundary edges for each island (outer + holes)
  * 3. Simplify boundary polygons using Douglas-Peucker while preserving corners
- * 4. Triangulate using earcut to create filled polygons
+ * 4. Triangulate using poly2tri to create filled polygons
  *
  * @param mask - 2D boolean array where true = solid, false = empty
  * @param options - Configuration options for detection and simplification
@@ -102,18 +102,35 @@ export function determineCoverage(
     const validLoops = simplifiedLoops.filter((loop) => loop.length >= 3);
     if (validLoops.length === 0) continue;
 
-    // Flatten loops for earcut (outer boundary + holes)
-    const { vertices, holes } = flattenLoops(validLoops);
-    if (vertices.length < 6) continue; // Need at least 3 points (6 coordinates)
+    // Prepare loops for poly2tri (outer boundary + holes)
+    const { outer, holes } = separateOuterAndHoles(validLoops);
+    if (outer.length < 3) continue; // Need at least 3 points
 
-    // Triangulate with earcut
-    const triangleIndices = earcut(vertices, holes, 2);
-    if (triangleIndices.length === 0) continue;
+    try {
+      // Triangulate with poly2tri
+      const contour = outer.map((v) => new poly2tri.Point(v.x, v.y));
+      const swctx = new poly2tri.SweepContext(contour);
 
-    // Convert flat indices to Triangle objects
-    const triangles = indicesToTriangles(vertices, triangleIndices);
-    if (triangles.length > 0) {
-      polygons.push(triangles);
+      // Add holes to the sweep context
+      if (holes.length > 0) {
+        const holeContours = holes.map((hole) =>
+          hole.map((v) => new poly2tri.Point(v.x, v.y))
+        );
+        swctx.addHoles(holeContours);
+      }
+
+      swctx.triangulate();
+      const poly2triTriangles = swctx.getTriangles();
+
+      // Convert poly2tri triangles to our Triangle format
+      const triangles = poly2triToTriangles(poly2triTriangles);
+      if (triangles.length > 0) {
+        polygons.push(triangles);
+      }
+    } catch (error) {
+      // poly2tri can throw on invalid input (duplicate points, etc.)
+      console.warn("Triangulation failed for island:", error);
+      continue;
     }
   }
 
@@ -331,20 +348,20 @@ function normalizeLoop(loop: Vector2[]): Vector2[] {
 }
 
 /**
- * Flattens polygon loops into earcut-compatible format.
+ * Separates polygon loops into outer boundary and holes.
  *
  * The largest loop (by area) is treated as the outer boundary,
  * and remaining loops are treated as holes. Ensures correct winding
  * order: outer is CCW, holes are CW.
  *
  * @param loops - Array of vertex loops
- * @returns Object with flat vertex array and hole indices for earcut
+ * @returns Object with outer boundary and array of holes
  */
-function flattenLoops(loops: Vector2[][]): {
-  vertices: number[];
-  holes: number[];
+function separateOuterAndHoles(loops: Vector2[][]): {
+  outer: Vector2[];
+  holes: Vector2[][];
 } {
-  if (loops.length === 0) return { vertices: [], holes: [] };
+  if (loops.length === 0) return { outer: [], holes: [] };
 
   // Sort loops by area (largest first) to identify outer boundary
   const sorted = [...loops].sort(
@@ -353,27 +370,11 @@ function flattenLoops(loops: Vector2[][]): {
   const outer = sorted[0];
   const holesList = sorted.slice(1);
 
-  const orientedOuter = ensureOrientation(outer, false);
-  const orientedHoles = holesList.map((h) => ensureOrientation(h, true));
+  // poly2tri expects CCW for outer, CW for holes
+  const orientedOuter = ensureOrientation(outer, true); // CCW
+  const orientedHoles = holesList.map((h) => ensureOrientation(h, false)); // CW
 
-  const holes: number[] = [];
-  const vertices: number[] = [];
-
-  let offset = 0;
-  for (const pt of orientedOuter) {
-    vertices.push(pt.x, pt.y);
-    offset += 2;
-  }
-
-  for (const hole of orientedHoles) {
-    holes.push(offset / 2);
-    for (const pt of hole) {
-      vertices.push(pt.x, pt.y);
-      offset += 2;
-    }
-  }
-
-  return { vertices, holes };
+  return { outer: orientedOuter, holes: orientedHoles };
 }
 
 /**
@@ -391,27 +392,25 @@ function ensureOrientation(loop: Vector2[], makeCCW: boolean): Vector2[] {
 }
 
 /**
- * Converts earcut triangle indices to Triangle objects.
+ * Converts poly2tri triangles to our Triangle format.
  *
- * @param flatVertices - Flat array of vertex coordinates [x0, y0, x1, y1, ...]
- * @param triangleIndices - Triangle indices from earcut (each 3 indices = 1 triangle)
+ * @param poly2triTriangles - Array of triangles from poly2tri
  * @returns Array of Triangle objects
  */
-function indicesToTriangles(
-  flatVertices: number[],
-  triangleIndices: number[]
+function poly2triToTriangles(
+  poly2triTriangles: poly2tri.Triangle[]
 ): Triangle[] {
   const triangles: Triangle[] = [];
 
-  for (let i = 0; i < triangleIndices.length; i += 3) {
-    const aIdx = triangleIndices[i];
-    const bIdx = triangleIndices[i + 1];
-    const cIdx = triangleIndices[i + 2];
+  for (const t of poly2triTriangles) {
+    const p0 = t.getPoint(0);
+    const p1 = t.getPoint(1);
+    const p2 = t.getPoint(2);
 
     triangles.push({
-      a: { x: flatVertices[aIdx * 2], y: flatVertices[aIdx * 2 + 1] },
-      b: { x: flatVertices[bIdx * 2], y: flatVertices[bIdx * 2 + 1] },
-      c: { x: flatVertices[cIdx * 2], y: flatVertices[cIdx * 2 + 1] },
+      a: { x: p0.x, y: p0.y },
+      b: { x: p1.x, y: p1.y },
+      c: { x: p2.x, y: p2.y },
     });
   }
 
