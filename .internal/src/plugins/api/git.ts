@@ -13,7 +13,7 @@ router.post("/publish", async (req, res) => {
     // Get list of currently staged files
     const { stdout: stagedFiles } = await execa(
       "git",
-      ["diff", "--staged", "--name-only", "--porcelain"],
+      ["diff", "--staged", "--name-only"],
       { cwd: repoDir }
     );
     const previouslyStaged = stagedFiles
@@ -37,17 +37,17 @@ router.post("/publish", async (req, res) => {
       await execa("git", ["add", ...previouslyStaged], { cwd: repoDir });
     }
 
-    // Get current branch name using porcelain format
+    // Get current branch name
     const { stdout: currentBranch } = await execa(
       "git",
-      ["branch", "--show-current", "--porcelain"],
+      ["branch", "--show-current"],
       {
         cwd: repoDir,
       }
     );
 
     // Push to the current branch using porcelain format
-    await execa("git", ["push", "--porcelain", "origin", currentBranch], {
+    await execa("git", ["push", "origin", currentBranch], {
       cwd: repoDir,
     });
 
