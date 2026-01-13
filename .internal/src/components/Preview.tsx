@@ -1,6 +1,20 @@
+import { useCommsContext } from "@/context/comms";
 import { useAppSelector } from "@/hooks/redux";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { Comms } from "@/iframe";
+import { SavePathGraphRequest } from "@/iframe/request";
+import { log } from "@/log";
 import { Split } from "@gfazioli/mantine-split-pane";
-import { Button, Fieldset, Group, Select, Stack, Switch } from "@mantine/core";
+import {
+  Anchor,
+  Button,
+  Fieldset,
+  Group,
+  Select,
+  Stack,
+  Switch,
+} from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
   IconDeviceDesktop,
@@ -8,12 +22,8 @@ import {
   IconUpload,
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
-import { useCommsContext } from "../context/comms";
-import { useLocalStorage } from "../hooks/useLocalStorage";
-import { Comms } from "../iframe";
-import { SavePathGraphRequest } from "../iframe/request";
-import { log } from "../log";
 import LogPane from "./LogPane";
+import { MarkdownModal } from "./MarkdownModal";
 
 const GAME_URLS = {
   local: "http://localhost:5176",
@@ -49,6 +59,19 @@ export default function PreviewTab() {
     defaultValue: true,
   });
   const [pendingReload, setPendingReload] = useState(false);
+  const [
+    licenseModalOpened,
+    { open: openLicenseModal, close: closeLicenseModal },
+  ] = useDisclosure(false);
+  const [licenseContent, setLicenseContent] = useState<Promise<string>>();
+  const [
+    storyGuidelinesModalOpened,
+    { open: openStoryGuidelinesModal, close: closeStoryGuidelinesModal },
+  ] = useDisclosure(false);
+  const [storyGuidelinesContent, setStoryGuidelinesContent] =
+    useState<Promise<string>>();
+  const [licenseAgreed, setLicenseAgreed] = useState(false);
+  const [guidelinesAgreed, setGuidelinesAgreed] = useState(false);
 
   // Respond to level reload requests from HMR (when level code or assets
   // change)
@@ -189,192 +212,284 @@ export default function PreviewTab() {
     });
   };
 
+  const loadFile = async (path: string): Promise<string> => {
+    const response = await fetch(`/files/${path}`);
+    if (!response.ok) {
+      notifications.show({
+        title: "Error",
+        message: `Failed to load file, please see ${path}`,
+        color: "red",
+      });
+      throw new Error(`Failed to load file: ${response.statusText}`);
+    }
+    return await response.text();
+  };
+
+  const showLicenseAgreement = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    try {
+      const content = loadFile("docs/License.md");
+      setLicenseContent(content);
+      openLicenseModal();
+    } catch (e) {
+      log.error(e);
+    }
+  };
+
+  const showStoryGuidelines = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    try {
+      const content = loadFile("docs/StoryGuidelines.md");
+      setStoryGuidelinesContent(content);
+      openStoryGuidelinesModal();
+    } catch (e) {
+      log.error(e);
+    }
+  };
+
   return (
-    <Split h="100dvh" style={{ flex: 1 }}>
-      {/* Left pane */}
-      <Split.Pane
-        initialWidth={300}
-        minWidth={200}
-        maxWidth={500}
-        onResizeStart={() => setIsDragging(true)}
-        onResizeEnd={() => setIsDragging(false)}
-      >
-        <Stack h="100%" style={{ overflow: "hidden" }}>
-          <Stack p={0}>
-            <Fieldset legend="Environment">
-              <Stack p={0}>
+    <>
+      <Split h="100dvh" style={{ flex: 1 }}>
+        {/* Left pane */}
+        <Split.Pane
+          initialWidth={300}
+          minWidth={200}
+          maxWidth={500}
+          onResizeStart={() => setIsDragging(true)}
+          onResizeEnd={() => setIsDragging(false)}
+        >
+          <Stack h="100%" style={{ overflow: "hidden" }}>
+            <Stack p={0}>
+              <Fieldset legend="Environment">
+                <Stack p={0}>
+                  <Select
+                    data={[
+                      { value: "local", label: "Localhost" },
+                      { value: "prod", label: "Production" },
+                      { value: "qa", label: "QA" },
+                    ]}
+                    value={gameEnv}
+                    onChange={(value) =>
+                      setGameEnv(value as keyof typeof GAME_URLS)
+                    }
+                    allowDeselect={false}
+                    w={"100%"}
+                  />
+
+                  <Group gap="xs">
+                    <Button
+                      size="xs"
+                      onClick={restartIframe}
+                      disabled={!iframeLoaded}
+                    >
+                      Restart
+                    </Button>
+                    <Button
+                      size="xs"
+                      onClick={stopIframe}
+                      disabled={!iframeLoaded}
+                    >
+                      Stop
+                    </Button>
+                    <Button
+                      size="xs"
+                      onClick={loadIframe}
+                      disabled={iframeLoaded}
+                    >
+                      Start
+                    </Button>
+                  </Group>
+
+                  <Switch
+                    label="Auto-reload"
+                    checked={autoReload}
+                    onChange={(event) =>
+                      setAutoReload(event.currentTarget.checked)
+                    }
+                  />
+
+                  <Switch
+                    label="Enable overlays"
+                    checked={enableOverlays}
+                    onChange={(event) =>
+                      setEnableOverlays(event.currentTarget.checked)
+                    }
+                  />
+                </Stack>
+              </Fieldset>
+
+              <Fieldset legend="Device">
                 <Select
-                  data={[
-                    { value: "local", label: "Localhost" },
-                    { value: "prod", label: "Production" },
-                    { value: "qa", label: "QA" },
-                  ]}
-                  value={gameEnv}
+                  value={deviceType}
                   onChange={(value) =>
-                    setGameEnv(value as keyof typeof GAME_URLS)
+                    setDeviceType(value as "desktop" | "mobile")
                   }
                   allowDeselect={false}
-                  w={"100%"}
+                  leftSection={
+                    deviceType === "mobile" ? (
+                      <IconDeviceMobile size={16} />
+                    ) : (
+                      <IconDeviceDesktop size={16} />
+                    )
+                  }
+                  data={[
+                    { value: "desktop", label: "Desktop" },
+                    { value: "mobile", label: "Mobile" },
+                  ]}
                 />
+              </Fieldset>
 
-                <Group gap="xs">
-                  <Button
-                    size="xs"
-                    onClick={restartIframe}
-                    disabled={!iframeLoaded}
-                  >
-                    Restart
-                  </Button>
-                  <Button
-                    size="xs"
-                    onClick={stopIframe}
-                    disabled={!iframeLoaded}
-                  >
-                    Stop
-                  </Button>
-                  <Button
-                    size="xs"
-                    onClick={loadIframe}
-                    disabled={iframeLoaded}
-                  >
-                    Start
-                  </Button>
-                </Group>
-
+              <Fieldset legend="Audio">
                 <Switch
-                  label="Auto-reload"
-                  checked={autoReload}
+                  label="Enabled"
+                  checked={audioMode === "audio"}
                   onChange={(event) =>
-                    setAutoReload(event.currentTarget.checked)
+                    setAudioMode(
+                      event.currentTarget.checked ? "audio" : "muted"
+                    )
                   }
                 />
+              </Fieldset>
 
-                <Switch
-                  label="Enable overlays"
-                  checked={enableOverlays}
-                  onChange={(event) =>
-                    setEnableOverlays(event.currentTarget.checked)
-                  }
-                />
-              </Stack>
-            </Fieldset>
+              <Fieldset legend="Publishing">
+                <Stack p={0} gap="sm">
+                  <Switch
+                    checked={licenseAgreed}
+                    onChange={(event) =>
+                      setLicenseAgreed(event.currentTarget.checked)
+                    }
+                    label={
+                      <>
+                        I agree to the{" "}
+                        <Anchor inherit onClick={showLicenseAgreement}>
+                          Level Submission License Agreement
+                        </Anchor>{" "}
+                      </>
+                    }
+                  />
+                  <Switch
+                    checked={guidelinesAgreed}
+                    onChange={(event) =>
+                      setGuidelinesAgreed(event.currentTarget.checked)
+                    }
+                    label={
+                      <>
+                        My level adheres to the{" "}
+                        <Anchor inherit onClick={showStoryGuidelines}>
+                          Story Submission Guidelines
+                        </Anchor>
+                        .
+                      </>
+                    }
+                  />
 
-            <Fieldset legend="Device">
-              <Select
-                value={deviceType}
-                onChange={(value) =>
-                  setDeviceType(value as "desktop" | "mobile")
-                }
-                allowDeselect={false}
-                leftSection={
-                  deviceType === "mobile" ? (
-                    <IconDeviceMobile size={16} />
-                  ) : (
-                    <IconDeviceDesktop size={16} />
-                  )
-                }
-                data={[
-                  { value: "desktop", label: "Desktop" },
-                  { value: "mobile", label: "Mobile" },
-                ]}
-              />
-            </Fieldset>
-
-            <Fieldset legend="Audio">
-              <Switch
-                label="Enabled"
-                checked={audioMode === "audio"}
-                onChange={(event) =>
-                  setAudioMode(event.currentTarget.checked ? "audio" : "muted")
-                }
-              />
-            </Fieldset>
-
-            <Fieldset legend="Publishing">
-              <Button
-                fullWidth
-                size="lg"
-                leftSection={<IconUpload size={20} />}
-                variant="gradient"
-                gradient={{ from: "blue", to: "red", deg: 90 }}
-                onClick={publish}
-              >
-                Publish
-              </Button>
-            </Fieldset>
+                  <Button
+                    fullWidth
+                    size="lg"
+                    leftSection={<IconUpload size={20} />}
+                    variant="gradient"
+                    gradient={{ from: "blue", to: "red", deg: 90 }}
+                    onClick={publish}
+                    disabled={!licenseAgreed || !guidelinesAgreed}
+                  >
+                    Publish
+                  </Button>
+                </Stack>
+              </Fieldset>
+            </Stack>
           </Stack>
-        </Stack>
-      </Split.Pane>
+        </Split.Pane>
 
-      <Split.Resizer />
+        <Split.Resizer />
 
-      {/* Center panel with iframe and bottom pane */}
-      <Split.Pane grow>
-        <Split
-          orientation="horizontal"
-          style={{
-            height: "100%",
-            minHeight: 0,
-            minWidth: 0,
-            position: "relative",
-          }}
-        >
-          {/* Top: iframe */}
-          <Split.Pane
-            grow
-            minHeight={200}
-            onResizeStart={() => setIsDragging(true)}
-            onResizeEnd={() => setIsDragging(false)}
+        {/* Center panel with iframe and bottom pane */}
+        <Split.Pane grow>
+          <Split
+            orientation="horizontal"
+            style={{
+              height: "100%",
+              minHeight: 0,
+              minWidth: 0,
+              position: "relative",
+            }}
           >
-            <div
-              id="frame-container"
-              style={{
-                width: "100%",
-                height: "100%",
-                overflow: "hidden",
-                position: "relative",
-              }}
+            {/* Top: iframe */}
+            <Split.Pane
+              grow
+              minHeight={200}
+              onResizeStart={() => setIsDragging(true)}
+              onResizeEnd={() => setIsDragging(false)}
             >
-              <iframe
-                tabIndex={-1}
-                ref={iframeRef}
-                id="dev-frame"
-                allow="cross-origin-isolated"
-                allowFullScreen
-              ></iframe>
-              {/* Overlay to block pointer events on iframe during drag */}
-              {isDragging && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 9999,
-                    cursor: "row-resize",
-                  }}
-                />
-              )}
-            </div>
-          </Split.Pane>
+              <div
+                id="frame-container"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+              >
+                <iframe
+                  tabIndex={-1}
+                  ref={iframeRef}
+                  id="dev-frame"
+                  allow="cross-origin-isolated"
+                  allowFullScreen
+                ></iframe>
+                {/* Overlay to block pointer events on iframe during drag */}
+                {isDragging && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 9999,
+                      cursor: "row-resize",
+                    }}
+                  />
+                )}
+              </div>
+            </Split.Pane>
 
-          <Split.Resizer />
+            <Split.Resizer />
 
-          {/* Bottom pane */}
-          <Split.Pane
-            initialHeight={300}
-            minHeight={100}
-            maxHeight={500}
-            onResizeStart={() => setIsDragging(true)}
-            onResizeEnd={() => setIsDragging(false)}
-          >
-            <div style={{ fontSize: "0.8em", height: "100%" }}>
-              <LogPane maxMessages={200} />
-            </div>
-          </Split.Pane>
-        </Split>
-      </Split.Pane>
-    </Split>
+            {/* Bottom pane */}
+            <Split.Pane
+              initialHeight={300}
+              minHeight={100}
+              maxHeight={500}
+              onResizeStart={() => setIsDragging(true)}
+              onResizeEnd={() => setIsDragging(false)}
+            >
+              <div style={{ fontSize: "0.8em", height: "100%" }}>
+                <LogPane maxMessages={200} />
+              </div>
+            </Split.Pane>
+          </Split>
+        </Split.Pane>
+      </Split>
+      {licenseContent && (
+        <MarkdownModal
+          title="Level Submission License Agreement"
+          opened={licenseModalOpened}
+          close={closeLicenseModal}
+        >
+          {licenseContent}
+        </MarkdownModal>
+      )}
+      {storyGuidelinesContent && (
+        <MarkdownModal
+          title="Story Submission Guidelines"
+          opened={storyGuidelinesModalOpened}
+          close={closeStoryGuidelinesModal}
+        >
+          {storyGuidelinesContent}
+        </MarkdownModal>
+      )}
+    </>
   );
 }

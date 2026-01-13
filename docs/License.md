@@ -1,4 +1,4 @@
-**Level Submission License Agreement**
+# Level Submission License Agreement
 
 **(v1.5 – Effective 3/20/25)**
 

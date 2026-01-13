@@ -193,6 +193,10 @@ export default function ColliderTool() {
           <>
             Press <Kbd>S</Kbd> to toggle brush shape.
           </>,
+          <>
+            Hold <Kbd>Ctrl</Kbd> and scroll the mouse wheel to adjust brush
+            size.
+          </>,
         ]}
       />
       <Fieldset legend="Collider" p="xs">
