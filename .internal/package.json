@@ -28,6 +28,7 @@
     "culori": "^4.0.2",
     "debounce": "^3.0.0",
     "elkjs": "^0.11.0",
+    "execa": "^9.6.1",
     "express": "^5.2.1",
     "fflate": "^0.8.2",
     "formidable": "^3.5.4",
