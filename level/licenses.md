@@ -8,8 +8,8 @@ If you do not include an asset in this file, it is understood that it is an orig
 
 ## Art
 
-PixelBoy's Ninja Adventure art assets are CC0
+- PixelBoy's Ninja Adventure art assets are CC0
 
 ## Music
 
-PixelBoy's Ninja Adventure sound and music are CC0
+- PixelBoy's Ninja Adventure sound and music are CC0

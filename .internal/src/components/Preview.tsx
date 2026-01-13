@@ -8,6 +8,7 @@ import { Split } from "@gfazioli/mantine-split-pane";
 import {
   Anchor,
   Button,
+  Checkbox,
   Fieldset,
   Group,
   Select,
@@ -70,8 +71,11 @@ export default function PreviewTab() {
   ] = useDisclosure(false);
   const [storyGuidelinesContent, setStoryGuidelinesContent] =
     useState<Promise<string>>();
-  const [licenseAgreed, setLicenseAgreed] = useState(false);
-  const [guidelinesAgreed, setGuidelinesAgreed] = useState(false);
+  const [publishChecks, setPublishChecks] = useState({
+    licenseAgreed: false,
+    guidelinesAgreed: false,
+    assetsDisclosed: false,
+  });
 
   // Respond to level reload requests from HMR (when level code or assets
   // change)
@@ -355,10 +359,13 @@ export default function PreviewTab() {
 
               <Fieldset legend="Publishing">
                 <Stack p={0} gap="sm">
-                  <Switch
-                    checked={licenseAgreed}
+                  <Checkbox
+                    checked={publishChecks.licenseAgreed}
                     onChange={(event) =>
-                      setLicenseAgreed(event.currentTarget.checked)
+                      setPublishChecks({
+                        ...publishChecks,
+                        licenseAgreed: event.currentTarget.checked,
+                      })
                     }
                     label={
                       <>
@@ -369,10 +376,13 @@ export default function PreviewTab() {
                       </>
                     }
                   />
-                  <Switch
-                    checked={guidelinesAgreed}
+                  <Checkbox
+                    checked={publishChecks.guidelinesAgreed}
                     onChange={(event) =>
-                      setGuidelinesAgreed(event.currentTarget.checked)
+                      setPublishChecks({
+                        ...publishChecks,
+                        guidelinesAgreed: event.currentTarget.checked,
+                      })
                     }
                     label={
                       <>
@@ -380,9 +390,18 @@ export default function PreviewTab() {
                         <Anchor inherit onClick={showStoryGuidelines}>
                           Story Submission Guidelines
                         </Anchor>
-                        .
                       </>
                     }
+                  />
+                  <Checkbox
+                    checked={publishChecks.assetsDisclosed}
+                    onChange={(event) =>
+                      setPublishChecks({
+                        ...publishChecks,
+                        assetsDisclosed: event.currentTarget.checked,
+                      })
+                    }
+                    label="I have disclosed all third-party assets in this level"
                   />
 
                   <Button
@@ -392,7 +411,11 @@ export default function PreviewTab() {
                     variant="gradient"
                     gradient={{ from: "blue", to: "red", deg: 90 }}
                     onClick={publish}
-                    disabled={!licenseAgreed || !guidelinesAgreed}
+                    disabled={
+                      !publishChecks.licenseAgreed ||
+                      !publishChecks.guidelinesAgreed ||
+                      !publishChecks.assetsDisclosed
+                    }
                   >
                     Publish
                   </Button>
