@@ -14,13 +14,15 @@ import {
   Select,
   Stack,
   Switch,
+  Textarea,
 } from "@mantine/core";
+import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
   IconDeviceDesktop,
   IconDeviceMobile,
-  IconUpload,
+  IconRocket,
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import LogPane from "./LogPane";
@@ -71,12 +73,16 @@ export default function PreviewTab() {
   ] = useDisclosure(false);
   const [storyGuidelinesContent, setStoryGuidelinesContent] =
     useState<Promise<string>>();
-  const [publishChecks, setPublishChecks] = useState({
-    licenseAgreed: false,
-    guidelinesAgreed: false,
-    assetsDisclosed: false,
-  });
   const [isPublishing, setIsPublishing] = useState(false);
+
+  const publishForm = useForm({
+    initialValues: {
+      licenseAgreed: false,
+      guidelinesAgreed: false,
+      assetsDisclosed: false,
+      commitMessage: "Updates",
+    },
+  });
 
   // Respond to level reload requests from HMR (when level code or assets
   // change)
@@ -217,6 +223,9 @@ export default function PreviewTab() {
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          message: publishForm.values.commitMessage,
+        }),
       });
 
       const result = await response.json();
@@ -386,16 +395,12 @@ export default function PreviewTab() {
                 />
               </Fieldset>
 
-              <Fieldset legend="Publishing">
+              <Fieldset legend="Publish">
                 <Stack p={0} gap="sm">
                   <Checkbox
-                    checked={publishChecks.licenseAgreed}
-                    onChange={(event) =>
-                      setPublishChecks({
-                        ...publishChecks,
-                        licenseAgreed: event.currentTarget.checked,
-                      })
-                    }
+                    {...publishForm.getInputProps("licenseAgreed", {
+                      type: "checkbox",
+                    })}
                     label={
                       <>
                         I agree to the{" "}
@@ -406,13 +411,9 @@ export default function PreviewTab() {
                     }
                   />
                   <Checkbox
-                    checked={publishChecks.guidelinesAgreed}
-                    onChange={(event) =>
-                      setPublishChecks({
-                        ...publishChecks,
-                        guidelinesAgreed: event.currentTarget.checked,
-                      })
-                    }
+                    {...publishForm.getInputProps("guidelinesAgreed", {
+                      type: "checkbox",
+                    })}
                     label={
                       <>
                         My level adheres to the{" "}
@@ -423,31 +424,35 @@ export default function PreviewTab() {
                     }
                   />
                   <Checkbox
-                    checked={publishChecks.assetsDisclosed}
-                    onChange={(event) =>
-                      setPublishChecks({
-                        ...publishChecks,
-                        assetsDisclosed: event.currentTarget.checked,
-                      })
-                    }
+                    {...publishForm.getInputProps("assetsDisclosed", {
+                      type: "checkbox",
+                    })}
                     label="I have disclosed all third-party assets in this level"
+                  />
+
+                  <Textarea
+                    label="Commit message"
+                    autosize
+                    minRows={1}
+                    maxRows={3}
+                    {...publishForm.getInputProps("commitMessage")}
                   />
 
                   <Button
                     fullWidth
                     size="lg"
-                    leftSection={<IconUpload size={20} />}
+                    leftSection={<IconRocket size={20} />}
                     variant="gradient"
                     gradient={{ from: "blue", to: "red", deg: 90 }}
                     onClick={publish}
                     loading={isPublishing}
                     disabled={
-                      !publishChecks.licenseAgreed ||
-                      !publishChecks.guidelinesAgreed ||
-                      !publishChecks.assetsDisclosed
+                      !publishForm.values.licenseAgreed ||
+                      !publishForm.values.guidelinesAgreed ||
+                      !publishForm.values.assetsDisclosed
                     }
                   >
-                    Publish
+                    Publish Level
                   </Button>
                 </Stack>
               </Fieldset>
