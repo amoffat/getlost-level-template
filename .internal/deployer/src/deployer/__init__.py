@@ -86,7 +86,7 @@ def collect_bundle(
     tar: tarfile.TarFile,
     metadata: Any,
 ):
-    """Compile WASM using the TypeScript CLI and add main.wasm to the provided
+    """Bundle JavaScript code using Rollup and add main.js to the provided
     tarfile handle."""
     import tempfile
 
@@ -94,13 +94,13 @@ def collect_bundle(
     out_dir = Path(temp_dir.name)
     internal_dir = level_dir.parent / ".internal"
     script_dir = (internal_dir / "scripts").resolve()
-    compile_script = script_dir / "compile-wasm.ts"
+    bundle_script = script_dir / "bundle-code.ts"
     # Use npx tsx to run the script, passing the output directory
     result = subprocess.run(
         [
             "npx",
             "tsx",
-            str(compile_script),
+            str(bundle_script),
             "--release",
             "--outDir",
             str(out_dir),
@@ -114,11 +114,11 @@ def collect_bundle(
     if result.returncode != 0:
         print(result.stdout)
         print(result.stderr)
-        raise RuntimeError("WASM compilation failed")
+        raise RuntimeError("JavaScript bundling failed")
 
-    # Add the output WASM file to the tarfile
-    wasm_path = out_dir / "main.wasm"
-    tar.add(wasm_path, arcname="main.wasm")
+    # Add the output JavaScript file to the tarfile
+    js_path = out_dir / "main.js"
+    tar.add(js_path, arcname="main.js")
     temp_dir.cleanup()
 
 
