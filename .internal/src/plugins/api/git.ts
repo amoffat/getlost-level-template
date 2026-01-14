@@ -32,6 +32,11 @@ router.post("/publish", async (req, res) => {
       cwd: repoDir,
     });
 
+    // Tag the commit with publish/ + unix timestamp
+    const timestamp = Math.floor(Date.now() / 1000);
+    const tagName = `publish/${timestamp}`;
+    await execa("git", ["tag", tagName], { cwd: repoDir });
+
     // Restage previously staged files
     if (previouslyStaged.length > 0) {
       await execa("git", ["add", ...previouslyStaged], { cwd: repoDir });
@@ -46,8 +51,11 @@ router.post("/publish", async (req, res) => {
       }
     );
 
-    // Push to the current branch using porcelain format
+    // Push to the current branch and push tags
     await execa("git", ["push", "origin", currentBranch], {
+      cwd: repoDir,
+    });
+    await execa("git", ["push", "origin", "--tags"], {
       cwd: repoDir,
     });
 
@@ -55,6 +63,7 @@ router.post("/publish", async (req, res) => {
       success: true,
       message: "Level changes published successfully",
       branch: currentBranch,
+      tag: tagName,
     });
   } catch (error: any) {
     console.error("Git publish error:", error);
