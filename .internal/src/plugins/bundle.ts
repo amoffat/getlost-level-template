@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { ViteDevServer } from "vite";
-import { bundleWithRollup, isCompileError } from "../bundler.js";
+import { bundleWithRollup, isCompileError } from "../bundler";
 
 const internalDir = process.cwd();
 const repoDir = resolve(internalDir, "..");

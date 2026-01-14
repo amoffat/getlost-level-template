@@ -107,7 +107,7 @@ def collect_bundle(
             "--metadata",
             json.dumps(metadata),
         ],
-        cwd=str(script_dir),
+        cwd=str(internal_dir),
         capture_output=True,
         text=True,
     )

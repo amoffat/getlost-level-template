@@ -2,7 +2,7 @@
 
 import { writeFileSync } from "fs";
 import { resolve } from "path";
-import { bundleWithRollup, isCompileError } from "../src/bundler.js";
+import { bundleWithRollup, isCompileError } from "../src/bundler";
 
 interface Args {
   outDir: string;
