@@ -1,10 +1,11 @@
 name: Level Publish
 
 on:
+  # For publishes made by the editor
   push:
     tags:
-      # For publishes made by the editor
       - "publish/*"
+  # For manual publishes via the GitHub UI
   workflow_dispatch:
     inputs:
       license_agreement:
@@ -30,6 +31,10 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+
+    # Run only if triggered by workflow_dispatch with all agreements accepted
+    # or if triggered by a push by the editor
+    # or if the repository is the level template repo
     if: |
       (github.event_name == 'workflow_dispatch' && github.event.inputs.license_agreement == 'true' && github.event.inputs.license_disclosures == 'true' && github.event.inputs.story_guidelines_agreement == 'true') ||
       (github.event_name == 'push' && 
