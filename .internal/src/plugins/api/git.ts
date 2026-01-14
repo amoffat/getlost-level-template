@@ -27,7 +27,7 @@ router.post("/publish", async (req, res) => {
     await execa("git", ["add", "level"], { cwd: repoDir });
 
     // Commit with TBD message
-    const commitMessage = "TBD: Update level";
+    const commitMessage = "Level update";
     await execa("git", ["commit", "--allow-empty", "-m", commitMessage], {
       cwd: repoDir,
     });
