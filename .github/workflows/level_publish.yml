@@ -5,6 +5,11 @@ on:
   push:
     tags:
       - "publish/*"
+
+    # Also allow pushes to any branch for the level template repository
+    branches:
+      - "**"
+
   # For manual publishes via the GitHub UI
   workflow_dispatch:
     inputs:
