@@ -82,6 +82,16 @@ export default function PreviewTab() {
       assetsDisclosed: false,
       commitMessage: "Updates",
     },
+    validate: {
+      licenseAgreed: (value) =>
+        value ? null : "You must agree to the license agreement",
+      guidelinesAgreed: (value) =>
+        value ? null : "You must agree to the story guidelines",
+      assetsDisclosed: (value) =>
+        value ? null : "You must disclose third-party assets",
+      commitMessage: (value) =>
+        value.trim().length > 0 ? null : "Commit message is required",
+    },
   });
 
   // Respond to level reload requests from HMR (when level code or assets
@@ -216,41 +226,43 @@ export default function PreviewTab() {
   }, [audioMode, comms, iframeLoaded]);
 
   const publish = async () => {
-    setIsPublishing(true);
-    try {
-      const response = await fetch("/api/git/publish", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: publishForm.values.commitMessage,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        notifications.show({
-          title: "Published Successfully",
-          message: `Level changes published to branch: ${result.branch}`,
-          color: "green",
+    if (!publishForm.validate().hasErrors) {
+      setIsPublishing(true);
+      try {
+        const response = await fetch("/api/git/publish", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: publishForm.values.commitMessage,
+          }),
         });
-      } else {
+
+        const result = await response.json();
+
+        if (response.ok) {
+          notifications.show({
+            title: "Published Successfully",
+            message: `Level changes published to branch: ${result.branch}`,
+            color: "green",
+          });
+        } else {
+          notifications.show({
+            title: "Publish Failed",
+            message: result.error || "Failed to publish level changes",
+            color: "red",
+          });
+        }
+      } catch (error: any) {
         notifications.show({
-          title: "Publish Failed",
-          message: result.error || "Failed to publish level changes",
+          title: "Publish Error",
+          message: error.message || "An error occurred while publishing",
           color: "red",
         });
+      } finally {
+        setIsPublishing(false);
       }
-    } catch (error: any) {
-      notifications.show({
-        title: "Publish Error",
-        message: error.message || "An error occurred while publishing",
-        color: "red",
-      });
-    } finally {
-      setIsPublishing(false);
     }
   };
 
@@ -435,6 +447,7 @@ export default function PreviewTab() {
                     autosize
                     minRows={1}
                     maxRows={3}
+                    required
                     {...publishForm.getInputProps("commitMessage")}
                   />
 
