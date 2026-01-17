@@ -1,8 +1,11 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { brokenTileGroups } from "@/selectors/map";
+import { selectors, actions as tsActions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
 import { resetAllThunk, resetMapThunk } from "@/thunks/map";
+import { isTileGroupTemplate } from "@/types/tilegroup";
+import { collisionMaskStore } from "@/utils/maskStore";
 import { Text } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import {
@@ -161,6 +164,42 @@ export default function Spotlight() {
               const state = store.getState();
               const current = state.ui.flags.showHiddenTilesets;
               dispatch(uiActions.setFlags({ showHiddenTilesets: !current }));
+            },
+          },
+          {
+            id: "reset-colliders",
+            label: "Reset tileset's colliders",
+            description: "Remove all collider data from the active tileset",
+            leftSection: <IconTrash />,
+            onClick: () => {
+              const state = store.getState();
+              const ts = selectors.activeTileset(state);
+              if (!ts) return;
+
+              const changes = [];
+              for (const id of ts.tiles.ids) {
+                const obj = ts.tiles.entities[id];
+                if (!isTileGroupTemplate(obj)) continue;
+
+                if (obj.collisions.mask) {
+                  collisionMaskStore.delete(obj.collisions.mask);
+                }
+
+                changes.push({
+                  id: obj.id,
+                  changes: {
+                    collisions: {
+                      mask: null,
+                      shapes: [],
+                      simplify: 1,
+                    },
+                  },
+                });
+              }
+              dispatch(
+                tsActions.updateManyTilesetObjects({ tsId: ts.id, changes })
+              );
+              dispatch(tsActions.clearSelection());
             },
           },
         ]

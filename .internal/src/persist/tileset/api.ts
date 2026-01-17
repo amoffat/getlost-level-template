@@ -83,11 +83,11 @@ export async function saveTileset(ts: Tileset) {
   // Collect mask data for all TileGroupTemplates in this tileset
   const maskData: Record<string, Uint8Array> = {};
   if (ts.tiles?.entities) {
-    for (const tile of Object.values(ts.tiles.entities)) {
-      if (tile && isTileGroupTemplate(tile) && tile.collisions.mask) {
-        const data = collisionMaskStore.get(tile.collisions.mask);
+    for (const obj of Object.values(ts.tiles.entities)) {
+      if (obj && isTileGroupTemplate(obj) && obj.collisions.mask) {
+        const data = collisionMaskStore.get(obj.collisions.mask);
         if (data) {
-          maskData[tile.collisions.mask] = data;
+          maskData[obj.collisions.mask] = data;
         }
       }
     }
