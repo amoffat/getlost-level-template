@@ -1,6 +1,6 @@
 import { Vector2 } from "@/vec";
 import * as poly2tri from "poly2tri";
-import { Triangle, TrianglePolygon } from "./polygon";
+import { ConcavePolygon, Triangle } from "./polygon";
 
 interface SimplifyOptions {
   /** Douglas-Peucker tolerance (in pixels). Higher removes more points. Default: 0.5 */
@@ -62,7 +62,7 @@ const DEFAULT_SIMPLIFY: Required<SimplifyOptions> = {
 export function determineCoverage(
   mask: boolean[][],
   options: DetermineCoverageOptions = {}
-): TrianglePolygon[] {
+): ConcavePolygon[] {
   const {
     connectivity = 4,
     minIslandArea = 1,
@@ -86,7 +86,7 @@ export function determineCoverage(
     minIslandArea
   );
 
-  const polygons: TrianglePolygon[] = [];
+  const polygons: ConcavePolygon[] = [];
 
   // Process each island to extract and triangulate its boundary
   for (const island of islands) {

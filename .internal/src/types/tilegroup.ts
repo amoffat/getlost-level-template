@@ -1,5 +1,5 @@
 import { OklabColor } from "@/types/color";
-import { TrianglePolygon } from "@/utils/polygon";
+import { ConcavePolygon } from "@/utils/polygon";
 import { Vector2 } from "@/vec";
 import { TileGroupProps } from "./properties";
 import type { Rect } from "./rect";
@@ -30,7 +30,7 @@ export interface TileGroupTemplate extends TileGroupProps {
     // store
     mask: string | null;
     // Computed collision shapes (potentially multiple islands)
-    shapes: TrianglePolygon[];
+    shapes: ConcavePolygon[];
     simplify: number;
   };
 }

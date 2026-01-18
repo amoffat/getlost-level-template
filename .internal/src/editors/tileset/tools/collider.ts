@@ -5,7 +5,7 @@ import { store } from "@/store/store";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { decodeMask, determineCoverage, encodeMask } from "@/utils/collider";
 import { collisionMaskStore } from "@/utils/maskStore";
-import { TrianglePolygon } from "@/utils/polygon";
+import { ConcavePolygon } from "@/utils/polygon";
 import { subState } from "@/utils/redux";
 import { OutlineFilter } from "pixi-filters";
 import * as P from "pixi.js";
@@ -65,8 +65,8 @@ export class ColliderTool implements Tool {
    * collision */
   private collisionMask: boolean[][] = [];
 
-  /** Array of rectangles computed from determineCoverage */
-  private coverageShapes: TrianglePolygon[] = [];
+  /** Islands of polygon coverage shapes */
+  private coverageShapes: ConcavePolygon[] = [];
 
   /** Graphics object for drawing coverage rectangle overlays */
   private rectsGraphics: P.Graphics | null = null;
@@ -206,7 +206,7 @@ export class ColliderTool implements Tool {
     if (!this.brushGraphics) return;
 
     this.brushGraphics.clear();
-    
+
     if (this.brushShape === "circle") {
       // Draw a circle brush cursor centered on the brush position
       const radius = this.brushSize / 2;
@@ -216,7 +216,7 @@ export class ColliderTool implements Tool {
       // This makes it clear exactly which pixels will be drawn
       this.brushGraphics.rect(0, 0, this.brushSize, this.brushSize);
     }
-    
+
     this.brushGraphics.fill({
       color: this.isEraserMode ? 0x0000ff : 0xff0000,
       alpha: 0.5,
@@ -277,12 +277,12 @@ export class ColliderTool implements Tool {
     const minX = Math.max(0, Math.floor(localX));
     const maxX = Math.min(
       obj.pos.width - 1,
-      Math.floor(localX + this.brushSize - 1)
+      Math.floor(localX + this.brushSize - 1),
     );
     const minY = Math.max(0, Math.floor(localY));
     const maxY = Math.min(
       obj.pos.height - 1,
-      Math.floor(localY + this.brushSize - 1)
+      Math.floor(localY + this.brushSize - 1),
     );
 
     // Update the collision mask data array
@@ -291,14 +291,14 @@ export class ColliderTool implements Tool {
       const radius = this.brushSize / 2;
       const centerX = localX + radius;
       const centerY = localY + radius;
-      
+
       for (let py = minY; py <= maxY; py++) {
         for (let px = minX; px <= maxX; px++) {
           // Calculate distance from pixel center to brush center
           const dx = px + 0.5 - centerX;
           const dy = py + 0.5 - centerY;
           const distSq = dx * dx + dy * dy;
-          
+
           // Check if within circle and (optionally) on an opaque pixel
           if (distSq <= radius * radius) {
             const shouldDraw = this.drawOnOpaqueOnly
@@ -459,7 +459,7 @@ export class ColliderTool implements Tool {
           this.lastDrawPos.x,
           this.lastDrawPos.y,
           localPos.x,
-          localPos.y
+          localPos.y,
         );
       } else {
         this.drawAtPosition(localPos.x, localPos.y);
@@ -557,7 +557,7 @@ export class ColliderTool implements Tool {
               simplify: opts.simplify,
             },
           },
-        })
+        }),
       );
     }
   }
@@ -700,7 +700,7 @@ export function setupCollider(): ColliderTool {
 
       const objs = selectedObjs.filter(isTileGroupTemplate);
       tool.setActiveObject(objs.length === 1 ? objs[0] : null);
-    }
+    },
   );
 
   // Subscribe to tool options changes
@@ -720,7 +720,7 @@ export function setupCollider(): ColliderTool {
       } else {
         tool.clearCoverageDisplay();
       }
-    }
+    },
   );
 
   return tool;

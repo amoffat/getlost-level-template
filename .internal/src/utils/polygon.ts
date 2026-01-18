@@ -6,4 +6,4 @@ export type Triangle = {
   c: Vector2;
 };
 
-export type TrianglePolygon = Triangle[];
+export type ConcavePolygon = Triangle[];
