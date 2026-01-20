@@ -26,10 +26,44 @@ export interface SetAudioModeRequest {
   };
 }
 
+export type DebugFlagKey =
+  | "collisions"
+  | "pathfinding"
+  | "charSprites"
+  | "zSorting";
+
+export interface DebugFlag {
+  type: "debug-flag";
+  data: {
+    flag: string;
+    value: boolean;
+  };
+}
+
+export interface SetGameSpeedRequest {
+  type: "set-game-speed";
+  data: {
+    speed: number;
+  };
+}
+
+export interface SetWindowGeomRequest {
+  type: "set-window-geom";
+  data: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+}
+
 export type AnyRequest =
+  | DebugFlag
+  | SetGameSpeedRequest
   | RecordMarkerMessage
   | ClearMarkerMessage
   | SavePathGraphRequest
+  | SetWindowGeomRequest
   | SetAudioModeRequest;
 
 export type RequestType = AnyRequest["type"];
@@ -58,7 +92,7 @@ export interface ResponseEnvelope extends Envelope<unknown, "response"> {
 }
 
 export function isResponse<T extends AnyRequest>(
-  envelope: RequestEnvelope<T> | ResponseEnvelope
+  envelope: RequestEnvelope<T> | ResponseEnvelope,
 ): envelope is ResponseEnvelope {
   return envelope.type === "response";
 }

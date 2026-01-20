@@ -54,7 +54,7 @@ export default function FillTool() {
       t.push("Select objects from the palette to use them for filling.");
     } else {
       t.push(
-        "Adjust the sliders to set the probability that each tile will be placed at a given location in the fill area."
+        "Adjust the sliders to set the probability that each tile will be placed at a given location in the fill area.",
       );
     }
 
@@ -113,10 +113,10 @@ export default function FillTool() {
           options: {
             candidates: newCands,
           },
-        })
+        }),
       );
     },
-    [cands, dispatch]
+    [cands, dispatch],
   );
 
   // Rebalance all weights when a single slider is changed so that the sum
@@ -137,7 +137,7 @@ export default function FillTool() {
       actions.setToolOptions({
         tool: "fill",
         options: { candidates: cands.filter((_, i) => i !== idx) },
-      })
+      }),
     );
   };
 
@@ -154,7 +154,7 @@ export default function FillTool() {
       actions.setToolOptions({
         tool: "fill",
         options: { bounds: null },
-      })
+      }),
     );
   };
 
@@ -163,7 +163,7 @@ export default function FillTool() {
       actions.setToolOptions({
         tool: "fill",
         options: { density: value },
-      })
+      }),
     );
   };
 
@@ -228,7 +228,7 @@ export default function FillTool() {
             </Table.Tbody>
           </Table>
 
-          <Stack gap="xs">
+          <Stack gap="xs" p={0}>
             <Text size="sm" fw={500}>
               Density
             </Text>

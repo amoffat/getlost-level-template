@@ -2,8 +2,9 @@ import { useCommsContext } from "@/context/comms";
 import { useAppSelector } from "@/hooks/redux";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Comms } from "@/iframe";
-import { SavePathGraphRequest } from "@/iframe/request";
+import { DebugFlagKey, SavePathGraphRequest } from "@/iframe/request";
 import { log } from "@/log";
+import { encodeForUrl } from "@/utils/url";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
   Anchor,
@@ -12,8 +13,10 @@ import {
   Fieldset,
   Group,
   Select,
+  Slider,
   Stack,
   Switch,
+  Text,
   Textarea,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -24,7 +27,7 @@ import {
   IconDeviceMobile,
   IconRocket,
 } from "@tabler/icons-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import LogPane from "./LogPane";
 import { MarkdownModal } from "./MarkdownModal";
 
@@ -36,6 +39,7 @@ const GAME_URLS = {
 
 export default function PreviewTab() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const frameContainerRef = useRef<HTMLDivElement>(null);
   const { comms, setComms } = useCommsContext();
   const [reloadCount, setReloadCount] = useState(0);
   const activeTab = useAppSelector((state) => state.ui.activeTab);
@@ -60,6 +64,10 @@ export default function PreviewTab() {
   const [autoReload, setAutoReload] = useLocalStorage<boolean>({
     key: "gl-auto-reload",
     defaultValue: true,
+  });
+  const [debugFlags, setDebugFlags] = useLocalStorage<Record<string, boolean>>({
+    key: "gl-debug-flags",
+    defaultValue: {},
   });
   const [pendingReload, setPendingReload] = useState(false);
   const [
@@ -108,7 +116,7 @@ export default function PreviewTab() {
           setPendingReload(true);
           log.info(
             { dev: true, color: "yellow" },
-            "Reload queued (tab inactive)"
+            "Reload queued (tab inactive)",
           );
           return;
         }
@@ -178,8 +186,20 @@ export default function PreviewTab() {
     const src = new URL(targetUrl);
 
     const qs = src.searchParams;
-    qs.set("overlays", enableOverlays ? "1" : "0");
-    qs.set("device", deviceType);
+
+    const frameRect = frameContainerRef.current!.getBoundingClientRect();
+    const debugConfig = {
+      overlays: enableOverlays,
+      device: deviceType,
+      flags: debugFlags,
+      frameGeom: {
+        width: frameRect.width,
+        height: frameRect.height,
+        x: 0,
+        y: 0,
+      },
+    };
+    qs.set("debug", encodeForUrl(debugConfig));
 
     // Copy all search params from parent frame to iframe src
     const parentParams = new URL(window.location.href).searchParams;
@@ -190,7 +210,7 @@ export default function PreviewTab() {
     qs.set("levelBaseUrl", levelUrl);
     log.info(
       { qs: new Map(qs.entries()), dev: true },
-      `Loading game from ${targetUrl}`
+      `Loading game from ${targetUrl}`,
     );
     iframe.src = src.toString();
 
@@ -200,6 +220,7 @@ export default function PreviewTab() {
       role: "parent",
     });
     setComms(comms);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     reloadCount,
     setComms,
@@ -224,6 +245,30 @@ export default function PreviewTab() {
       data: { muted: audioMode === "muted" },
     });
   }, [audioMode, comms, iframeLoaded]);
+
+  const toggleDebug = (flag: string, enabled: boolean) => {
+    setDebugFlags((prev) => ({ ...prev, [flag]: enabled }));
+
+    if (!comms || !iframeLoaded) return;
+
+    comms.request({
+      type: "debug-flag",
+      data: { flag, value: enabled },
+    });
+  };
+
+  const createDebugSwitch = (
+    label: string,
+    key: DebugFlagKey,
+  ): React.ReactNode => {
+    return (
+      <Switch
+        label={label}
+        defaultChecked={debugFlags[key] || false}
+        onChange={(event) => toggleDebug(key, event.currentTarget.checked)}
+      />
+    );
+  };
 
   const publish = async () => {
     if (!publishForm.validate().hasErrors) {
@@ -303,6 +348,56 @@ export default function PreviewTab() {
     }
   };
 
+  const handleGameSpeedChange = useCallback(
+    (value: number) => {
+      const speedValues = [0.5, 1, 2, 3, 5, 10];
+      const speed = speedValues[value];
+      comms?.request({
+        type: "set-game-speed",
+        data: { speed },
+      });
+    },
+    [comms],
+  );
+
+  const setGameFrameGeom = useCallback(() => {
+    if (!comms) return;
+
+    const container = frameContainerRef.current;
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      comms.request({
+        type: "set-window-geom",
+        data: {
+          width: rect.width,
+          height: rect.height,
+          x: 0,
+          y: 0,
+        },
+      });
+    }
+  }, [comms]);
+
+  useEffect(() => {
+    window.addEventListener("resize", setGameFrameGeom);
+    return () => {
+      window.removeEventListener("resize", setGameFrameGeom);
+    };
+  }, [setGameFrameGeom]);
+
+  const handlePaneResizeStart = () => {
+    setIsDragging(true);
+  };
+
+  const handlePaneResizeEnd = () => {
+    // Trigger redrawLayout when panels are resized
+    // Use a small delay to ensure the DOM has updated
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+    setIsDragging(false);
+  };
+
   return (
     <>
       <Split h="100dvh" style={{ flex: 1 }}>
@@ -311,91 +406,90 @@ export default function PreviewTab() {
           initialWidth={300}
           minWidth={200}
           maxWidth={500}
-          onResizeStart={() => setIsDragging(true)}
-          onResizeEnd={() => setIsDragging(false)}
+          onResizeStart={handlePaneResizeStart}
+          onResizeEnd={handlePaneResizeEnd}
         >
           <Stack h="100%" style={{ overflow: "hidden" }}>
-            <Stack p={0}>
-              <Fieldset legend="Environment">
-                <Stack p={0}>
-                  <Select
-                    data={[
-                      { value: "local", label: "Localhost" },
-                      { value: "prod", label: "Production" },
-                      { value: "qa", label: "QA" },
-                    ]}
-                    value={gameEnv}
-                    onChange={(value) =>
-                      setGameEnv(value as keyof typeof GAME_URLS)
-                    }
-                    allowDeselect={false}
-                    w={"100%"}
-                  />
-
-                  <Group gap="xs">
-                    <Button
-                      size="xs"
-                      onClick={restartIframe}
-                      disabled={!iframeLoaded}
-                    >
-                      Restart
-                    </Button>
-                    <Button
-                      size="xs"
-                      onClick={stopIframe}
-                      disabled={!iframeLoaded}
-                    >
-                      Stop
-                    </Button>
-                    <Button
-                      size="xs"
-                      onClick={loadIframe}
-                      disabled={iframeLoaded}
-                    >
-                      Start
-                    </Button>
-                  </Group>
-
-                  <Switch
-                    label="Auto-reload"
-                    checked={autoReload}
-                    onChange={(event) =>
-                      setAutoReload(event.currentTarget.checked)
-                    }
-                  />
-
-                  <Switch
-                    label="Enable overlays"
-                    checked={enableOverlays}
-                    onChange={(event) =>
-                      setEnableOverlays(event.currentTarget.checked)
-                    }
-                  />
-                </Stack>
-              </Fieldset>
-
-              <Fieldset legend="Device">
+            <Fieldset legend="Environment">
+              <Stack p={0}>
                 <Select
-                  value={deviceType}
+                  data={[
+                    { value: "local", label: "Localhost" },
+                    { value: "prod", label: "Production" },
+                    { value: "qa", label: "QA" },
+                  ]}
+                  value={gameEnv}
                   onChange={(value) =>
-                    setDeviceType(value as "desktop" | "mobile")
+                    setGameEnv(value as keyof typeof GAME_URLS)
                   }
                   allowDeselect={false}
-                  leftSection={
-                    deviceType === "mobile" ? (
-                      <IconDeviceMobile size={16} />
-                    ) : (
-                      <IconDeviceDesktop size={16} />
-                    )
-                  }
-                  data={[
-                    { value: "desktop", label: "Desktop" },
-                    { value: "mobile", label: "Mobile" },
-                  ]}
+                  w={"100%"}
                 />
-              </Fieldset>
 
-              <Fieldset legend="Audio">
+                <Group gap="xs">
+                  <Button
+                    size="xs"
+                    onClick={restartIframe}
+                    disabled={!iframeLoaded}
+                  >
+                    Restart
+                  </Button>
+                  <Button
+                    size="xs"
+                    onClick={stopIframe}
+                    disabled={!iframeLoaded}
+                  >
+                    Stop
+                  </Button>
+                  <Button
+                    size="xs"
+                    onClick={loadIframe}
+                    disabled={iframeLoaded}
+                  >
+                    Start
+                  </Button>
+                </Group>
+
+                <Switch
+                  label="Auto-reload"
+                  checked={autoReload}
+                  onChange={(event) =>
+                    setAutoReload(event.currentTarget.checked)
+                  }
+                />
+
+                <Switch
+                  label="Enable overlays"
+                  checked={enableOverlays}
+                  onChange={(event) =>
+                    setEnableOverlays(event.currentTarget.checked)
+                  }
+                />
+              </Stack>
+            </Fieldset>
+
+            <Fieldset legend="Device emulation">
+              <Select
+                value={deviceType}
+                onChange={(value) =>
+                  setDeviceType(value as "desktop" | "mobile")
+                }
+                allowDeselect={false}
+                leftSection={
+                  deviceType === "mobile" ? (
+                    <IconDeviceMobile size={16} />
+                  ) : (
+                    <IconDeviceDesktop size={16} />
+                  )
+                }
+                data={[
+                  { value: "desktop", label: "Desktop" },
+                  { value: "mobile", label: "Mobile" },
+                ]}
+              />
+            </Fieldset>
+
+            {/* <Fieldset legend="Audio">
                 <Switch
                   label="Enabled"
                   checked={audioMode === "audio"}
@@ -405,71 +499,70 @@ export default function PreviewTab() {
                     )
                   }
                 />
-              </Fieldset>
+              </Fieldset> */}
 
-              <Fieldset legend="Publish">
-                <Stack p={0} gap="sm">
-                  <Checkbox
-                    {...publishForm.getInputProps("licenseAgreed", {
-                      type: "checkbox",
-                    })}
-                    label={
-                      <>
-                        I agree to the{" "}
-                        <Anchor inherit onClick={showLicenseAgreement}>
-                          Level Submission License Agreement
-                        </Anchor>{" "}
-                      </>
-                    }
-                  />
-                  <Checkbox
-                    {...publishForm.getInputProps("guidelinesAgreed", {
-                      type: "checkbox",
-                    })}
-                    label={
-                      <>
-                        My level adheres to the{" "}
-                        <Anchor inherit onClick={showStoryGuidelines}>
-                          Story Submission Guidelines
-                        </Anchor>
-                      </>
-                    }
-                  />
-                  <Checkbox
-                    {...publishForm.getInputProps("assetsDisclosed", {
-                      type: "checkbox",
-                    })}
-                    label="I have disclosed all third-party assets in this level"
-                  />
+            <Fieldset legend="Publish">
+              <Stack p={0} gap="sm">
+                <Checkbox
+                  {...publishForm.getInputProps("licenseAgreed", {
+                    type: "checkbox",
+                  })}
+                  label={
+                    <>
+                      I agree to the{" "}
+                      <Anchor inherit onClick={showLicenseAgreement}>
+                        Level Submission License Agreement
+                      </Anchor>{" "}
+                    </>
+                  }
+                />
+                <Checkbox
+                  {...publishForm.getInputProps("guidelinesAgreed", {
+                    type: "checkbox",
+                  })}
+                  label={
+                    <>
+                      My level follows the{" "}
+                      <Anchor inherit onClick={showStoryGuidelines}>
+                        Story Submission Guidelines
+                      </Anchor>
+                    </>
+                  }
+                />
+                <Checkbox
+                  {...publishForm.getInputProps("assetsDisclosed", {
+                    type: "checkbox",
+                  })}
+                  label="I have disclosed all third-party assets in this level"
+                />
 
-                  <Textarea
-                    label="Commit message"
-                    autosize
-                    minRows={1}
-                    maxRows={3}
-                    required
-                    {...publishForm.getInputProps("commitMessage")}
-                  />
+                <Textarea
+                  label="Publish message"
+                  autosize
+                  minRows={1}
+                  maxRows={3}
+                  required
+                  {...publishForm.getInputProps("commitMessage")}
+                />
 
-                  <Button
-                    fullWidth
-                    size="lg"
-                    leftSection={<IconRocket size={20} />}
-                    variant="gradient"
-                    gradient={{ from: "blue", to: "red", deg: 90 }}
-                    onClick={publish}
-                    loading={isPublishing}
-                    disabled={
-                      !publishForm.values.licenseAgreed ||
-                      !publishForm.values.guidelinesAgreed ||
-                      !publishForm.values.assetsDisclosed
-                    }
-                  >
-                    Publish Level
-                  </Button>
-                </Stack>
-              </Fieldset>
-            </Stack>
+                <Button
+                  fullWidth
+                  size="lg"
+                  leftSection={<IconRocket size={20} />}
+                  variant="gradient"
+                  gradient={{ from: "blue", to: "red", deg: 90 }}
+                  onClick={publish}
+                  loading={isPublishing}
+                  disabled={
+                    !publishForm.values.licenseAgreed ||
+                    !publishForm.values.guidelinesAgreed ||
+                    !publishForm.values.assetsDisclosed
+                  }
+                >
+                  Publish Level
+                </Button>
+              </Stack>
+            </Fieldset>
           </Stack>
         </Split.Pane>
 
@@ -490,11 +583,12 @@ export default function PreviewTab() {
             <Split.Pane
               grow
               minHeight={200}
-              onResizeStart={() => setIsDragging(true)}
-              onResizeEnd={() => setIsDragging(false)}
+              onResizeStart={handlePaneResizeStart}
+              onResizeEnd={handlePaneResizeEnd}
             >
               <div
                 id="frame-container"
+                ref={frameContainerRef}
                 style={{
                   width: "100%",
                   height: "100%",
@@ -533,14 +627,62 @@ export default function PreviewTab() {
               initialHeight={300}
               minHeight={100}
               maxHeight={500}
-              onResizeStart={() => setIsDragging(true)}
-              onResizeEnd={() => setIsDragging(false)}
+              onResizeStart={handlePaneResizeStart}
+              onResizeEnd={handlePaneResizeEnd}
             >
               <div style={{ fontSize: "0.8em", height: "100%" }}>
                 <LogPane maxMessages={200} />
               </div>
             </Split.Pane>
           </Split>
+        </Split.Pane>
+
+        <Split.Resizer />
+
+        {/* Right toolbar - tools and options */}
+        <Split.Pane
+          initialWidth={300}
+          minWidth={200}
+          maxWidth={500}
+          onResizeStart={handlePaneResizeStart}
+          onResizeEnd={handlePaneResizeEnd}
+        >
+          <Stack h="100%" style={{ overflow: "hidden" }}>
+            <Fieldset legend="Debug">
+              <Stack gap="xs" p={0}>
+                <Text size="sm" fw={500}>
+                  Game speed
+                </Text>
+                <Slider
+                  mb="lg"
+                  label={null}
+                  defaultValue={1}
+                  min={0}
+                  max={5}
+                  step={1}
+                  marks={[
+                    { value: 0, label: "0.5x" },
+                    { value: 1, label: "1x" },
+                    { value: 2, label: "2x" },
+                    { value: 3, label: "3x" },
+                    { value: 4, label: "5x" },
+                    { value: 5, label: "10x" },
+                  ]}
+                  onChangeEnd={handleGameSpeedChange}
+                />
+              </Stack>
+
+              <Stack gap="sm" p={0} mt="md">
+                {createDebugSwitch("Show collisions", "collisions")}
+                {createDebugSwitch("Show pathfinding", "pathfinding")}
+                {createDebugSwitch(
+                  "Show character bounding boxes",
+                  "charSprites",
+                )}
+                {createDebugSwitch("Show z-sorting bounding boxes", "zSorting")}
+              </Stack>
+            </Fieldset>
+          </Stack>
         </Split.Pane>
       </Split>
       {licenseContent && (
