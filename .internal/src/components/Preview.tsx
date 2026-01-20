@@ -350,7 +350,7 @@ export default function PreviewTab() {
 
   const handleGameSpeedChange = useCallback(
     (value: number) => {
-      const speedValues = [0.5, 1, 2, 3, 5, 10];
+      const speedValues = [0.25, 0.5, 1, 2, 5, 10];
       const speed = speedValues[value];
       comms?.request({
         type: "set-game-speed",
@@ -410,7 +410,7 @@ export default function PreviewTab() {
           onResizeEnd={handlePaneResizeEnd}
         >
           <Stack h="100%" style={{ overflow: "hidden" }}>
-            <Fieldset legend="Environment">
+            <Fieldset legend="Engine">
               <Stack p={0}>
                 <Select
                   data={[
@@ -418,7 +418,7 @@ export default function PreviewTab() {
                     { value: "prod", label: "Production" },
                     { value: "qa", label: "QA" },
                   ]}
-                  value={gameEnv}
+                  defaultValue={gameEnv}
                   onChange={(value) =>
                     setGameEnv(value as keyof typeof GAME_URLS)
                   }
@@ -452,7 +452,7 @@ export default function PreviewTab() {
 
                 <Switch
                   label="Auto-reload"
-                  checked={autoReload}
+                  defaultChecked={autoReload}
                   onChange={(event) =>
                     setAutoReload(event.currentTarget.checked)
                   }
@@ -460,7 +460,7 @@ export default function PreviewTab() {
 
                 <Switch
                   label="Enable overlays"
-                  checked={enableOverlays}
+                  defaultChecked={enableOverlays}
                   onChange={(event) =>
                     setEnableOverlays(event.currentTarget.checked)
                   }
@@ -470,7 +470,7 @@ export default function PreviewTab() {
 
             <Fieldset legend="Device emulation">
               <Select
-                value={deviceType}
+                defaultValue={deviceType}
                 onChange={(value) =>
                   setDeviceType(value as "desktop" | "mobile")
                 }
@@ -656,15 +656,15 @@ export default function PreviewTab() {
                 <Slider
                   mb="lg"
                   label={null}
-                  defaultValue={1}
+                  defaultValue={2}
                   min={0}
                   max={5}
                   step={1}
                   marks={[
-                    { value: 0, label: "0.5x" },
-                    { value: 1, label: "1x" },
-                    { value: 2, label: "2x" },
-                    { value: 3, label: "3x" },
+                    { value: 0, label: "0.25x" },
+                    { value: 1, label: "0.5x" },
+                    { value: 2, label: "1x" },
+                    { value: 3, label: "2x" },
                     { value: 4, label: "5x" },
                     { value: 5, label: "10x" },
                   ]}
