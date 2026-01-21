@@ -55,6 +55,7 @@ router.post("/:scriptName", async (req, res) => {
         env: { ...process.env, ...req.body.env },
       },
     );
+    console.log("Script execution completed:", { stdout, stderr });
 
     res.json({
       success: true,
