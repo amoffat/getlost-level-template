@@ -1,5 +1,6 @@
 // If you're running the engine locally (only private beta testers can do this),
 
+import { Env } from "./types/env";
 import type { NpcRequiredAnimation } from "./types/npc";
 
 export const mapEditorContainerId = "map-editor-container";
@@ -52,3 +53,9 @@ export const defaultTileSize = 16;
 export const defaultAnimTime = 1000;
 export const autosaveMapDebounce = 2000; // ms
 export const autosaveTilesetDebounce = 1000; // ms
+
+export const gameUrls: Record<Env, string> = {
+  local: "http://localhost:5176",
+  prod: "https://getlost.gg/",
+  qa: "https://qa.getlost.gg/",
+};

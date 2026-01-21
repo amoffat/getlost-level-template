@@ -1,9 +1,11 @@
+import * as constants from "@/constants";
 import { useCommsContext } from "@/context/comms";
 import { useAppSelector } from "@/hooks/redux";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Comms } from "@/iframe";
 import { DebugFlagKey, SavePathGraphRequest } from "@/iframe/request";
 import { log } from "@/log";
+import { Env } from "@/types/env";
 import { encodeForUrl } from "@/utils/url";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
@@ -31,19 +33,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import LogPane from "./LogPane";
 import { MarkdownModal } from "./MarkdownModal";
 
-const GAME_URLS = {
-  local: "http://localhost:5176",
-  prod: "https://getlost.gg/",
-  qa: "https://qa.getlost.gg/",
-};
-
 export default function PreviewTab() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const frameContainerRef = useRef<HTMLDivElement>(null);
   const { comms, setComms } = useCommsContext();
   const [reloadCount, setReloadCount] = useState(0);
   const activeTab = useAppSelector((state) => state.ui.activeTab);
-  const [gameEnv, setGameEnv] = useLocalStorage<keyof typeof GAME_URLS>({
+  const [gameEnv, setGameEnv] = useLocalStorage<Env>({
     key: "gl-game-env",
     defaultValue: "prod",
   });
@@ -182,7 +178,7 @@ export default function PreviewTab() {
 
     const iframe = iframeRef.current!;
     const levelUrl = window.location.origin;
-    const targetUrl = GAME_URLS[gameEnv];
+    const targetUrl = constants.gameUrls[gameEnv];
     const src = new URL(targetUrl);
 
     const qs = src.searchParams;
@@ -413,15 +409,14 @@ export default function PreviewTab() {
             <Fieldset legend="Engine">
               <Stack p={0}>
                 <Select
+                  label="Environment"
                   data={[
                     { value: "local", label: "Localhost" },
                     { value: "prod", label: "Production" },
                     { value: "qa", label: "QA" },
                   ]}
                   defaultValue={gameEnv}
-                  onChange={(value) =>
-                    setGameEnv(value as keyof typeof GAME_URLS)
-                  }
+                  onChange={(value) => setGameEnv(value as Env)}
                   allowDeselect={false}
                   w={"100%"}
                 />

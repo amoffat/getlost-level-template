@@ -68,7 +68,7 @@ export const slice = createSlice({
             checked: boolean;
           };
         }[PaletteTabName]
-      >
+      >,
     ) {
       const { tab, filterKey, checked } = action.payload;
       const tabVals = state.paletteFilterSwitches[tab];
@@ -76,7 +76,7 @@ export const slice = createSlice({
     },
     setFlags(
       state,
-      action: PayloadAction<Record<keyof UIState["flags"], boolean>>
+      action: PayloadAction<Record<keyof UIState["flags"], boolean>>,
     ) {
       state.flags = { ...state.flags, ...action.payload };
     },
@@ -134,7 +134,7 @@ export const slice = createSlice({
           .sort((a, b) => b[1] - a[1])
           .filter((e) => e[1] > 0)
           .map((e) => e[0]);
-      }
+      },
     ),
   },
 });

@@ -7,9 +7,11 @@ import { getMapInitPromise, getTilesetInitPromise } from "@/init/editorInit";
 import { pathToTab, tabToPath } from "@/routes/tabs";
 import { actions as uiActions } from "@/slices/ui";
 import { MainTabName } from "@/types/tab";
+import { hasNewerEngineVersion } from "@/utils/version";
 import { AppShell, Group, Tabs, Text } from "@mantine/core";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import { useDisclosure } from "@mantine/hooks";
+import { modals } from "@mantine/modals";
 import { IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import {
@@ -57,6 +59,56 @@ export function ShellApp() {
     pathnameRef.current = pathname;
   }, [pathname]);
 
+  // Check for newer engine version on mount
+  useEffect(() => {
+    const checkVersion = async () => {
+      try {
+        // Wait a few seconds before checking
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        const hasNewer = await hasNewerEngineVersion();
+        if (hasNewer) {
+          modals.openContextModal({
+            modal: "confirm",
+            title: "Update Available",
+            centered: true,
+            withCloseButton: true,
+            innerProps: {
+              makeItems: () => [
+                {
+                  ok: true,
+                  message: "The editor will update",
+                },
+                {
+                  ok: true,
+                  message: "It will migrate your assets automatically",
+                },
+                {
+                  ok: false,
+                  message: "You may need to migrate your level code manually",
+                },
+                {
+                  ok: true,
+                  message: "The upgrade is reversible",
+                },
+              ],
+              confirmLabel: "Ok, upgrade",
+              msg: "There's a new version of the editor available. Please update now.",
+              onConfirm: () => {
+                // TODO: Implement upgrade logic
+                console.log("Upgrade confirmed - implementing upgrade logic");
+              },
+            },
+          });
+        }
+      } catch (error) {
+        console.error("Failed to check for newer engine version:", error);
+      }
+    };
+
+    checkVersion();
+  }, []);
+
   // Sync tab changes with URL path
   useEffect(() => {
     const nextTab = pathToTab(pathname);
@@ -75,7 +127,7 @@ export function ShellApp() {
         navigate(canonical);
       }
     },
-    [navigate]
+    [navigate],
   );
 
   // Using memo on this allows us to not have to re-render the entire ShellApp
@@ -100,7 +152,7 @@ const ShellAppContent = memo(function ShellAppContent({
       mountedTabs: state.ui.mountedTabs,
       loadingMessages: state.ui.loadingMessages,
     }),
-    shallowEqual
+    shallowEqual,
   );
 
   const onDrop = useCallback(
@@ -108,7 +160,7 @@ const ShellAppContent = memo(function ShellAppContent({
       setDraggedFiles(files);
       openAssetType();
     },
-    [openAssetType]
+    [openAssetType],
   );
 
   // Get the cached init promises that persist across HMR

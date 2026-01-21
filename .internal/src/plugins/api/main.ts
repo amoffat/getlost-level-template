@@ -1,5 +1,6 @@
 import express from "express";
 import type { Plugin } from "vite";
+import { router as execRouter } from "./exec";
 import { router as filesRouter } from "./files";
 import { router as gitRouter } from "./git";
 import { router as localeRouter } from "./locale";
@@ -33,6 +34,7 @@ export default function expressApi(): Plugin {
       rootRouter.use("/files", filesRouter);
 
       apiRouter.use("/git", gitRouter);
+      apiRouter.use("/exec", execRouter);
 
       server.middlewares.use("/", app);
     },
