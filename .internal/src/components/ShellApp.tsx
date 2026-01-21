@@ -113,10 +113,19 @@ export function ShellApp() {
                   notifications.show({
                     title: "Upgrade Failed",
                     color: "red",
-                    message: `Failed to upgrade: ${resp.status} ${resp.statusText} - ${msg}`,
+                    message: `Failed to upgrade: ${msg}`,
+                    autoClose: 3000,
                   });
                 } else {
-                  window.location.reload();
+                  notifications.show({
+                    title: "Upgrade succesful",
+                    color: "green",
+                    message:
+                      "The editor has been upgraded successfully. The page will now reload.",
+                    onClose: () => {
+                      window.location.reload();
+                    },
+                  });
                 }
               },
             },
