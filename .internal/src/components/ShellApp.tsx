@@ -102,7 +102,7 @@ export function ShellApp() {
                   },
                   body: JSON.stringify({}),
                 });
-                window.location.reload();
+                //window.location.reload();
               },
             },
           });

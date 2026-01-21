@@ -58,15 +58,14 @@ router.post("/:scriptName", async (req, res) => {
     console.log("Script execution completed:", { stdout, stderr });
 
     res.json({
-      success: true,
+      ok: true,
       stdout,
       stderr,
-      script: scriptName,
     });
   } catch (error: any) {
     console.error("Script execution error:", error);
     res.status(500).json({
-      success: false,
+      ok: false,
       error: error.message || "Failed to execute script",
       stdout: error.stdout,
       stderr: error.stderr,
