@@ -30,7 +30,7 @@ export async function resolveVersion(
   if (env === "local") return version;
 
   const gameUrl = gameUrls[env];
-  const resp = await fetch(`${gameUrl}${version}/version`);
+  const resp = await fetch(`${gameUrl}engine/${version}/version`);
   if (resp.ok) {
     const version = (await resp.text()).trim();
     if (version === "null") {

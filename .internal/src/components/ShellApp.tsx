@@ -68,7 +68,7 @@ export function ShellApp() {
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
         const hasNewer = await hasNewerEngineVersion();
-        if (hasNewer || true) {
+        if (hasNewer) {
           modals.openContextModal({
             modal: "confirm",
             title: "Update Available",

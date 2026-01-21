@@ -34,10 +34,10 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
         mapEditorActions.updateTemplate({
           name: "lights",
           updates: props,
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const updateProps = useCallback(
@@ -49,7 +49,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
         templateUpdate,
       });
     },
-    [objs, templateUpdate]
+    [objs, templateUpdate],
   );
 
   const toCollect = useMemo(() => {
@@ -66,13 +66,13 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       defaultValue=""
       onValueChange={(
         level: PropertyValueLevel,
-        value: string | undefined
+        value: string | undefined,
       ): void => {
         updateProps(level, { name: value });
       }}
       renderInput={(
         value: string | undefined,
-        onChange: (value: string) => void
+        onChange: (value: string) => void,
       ): ReactNode => {
         return (
           <TextInput
@@ -88,6 +88,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
   const colorInput = (
     <PropertyValue
       label="Color"
+      noTemplate
       description="The RGB color of the light"
       values={toCollect.color}
       defaultValue={constants.defaultLightColor}
@@ -96,7 +97,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       }}
       renderInput={(
         value: string | undefined,
-        onChange: (value: string) => void
+        onChange: (value: string) => void,
       ): ReactNode => {
         const hexColor = value ? `#${value}` : undefined;
 
@@ -129,6 +130,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
     <PropertyValue
       label="Intensity"
       description="The brightness of the light"
+      noTemplate
       values={toCollect.intensity}
       defaultValue={constants.defaultLightIntensity}
       onValueChange={(level, value: number | undefined) => {
@@ -136,7 +138,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       }}
       renderInput={(
         value: number | undefined,
-        onChange: (value: number) => void
+        onChange: (value: number) => void,
       ): ReactNode => {
         return (
           <Slider
@@ -164,5 +166,5 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
 
 export default memo(
   LightProperties,
-  createPropsEqualFn<LightObj>(RELEVANT_PROPS)
+  createPropsEqualFn<LightObj>(RELEVANT_PROPS),
 );
