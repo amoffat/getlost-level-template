@@ -50,7 +50,8 @@
     "react-router-dom": "^7.10.0",
     "redux-undo": "^1.1.0",
     "rxjs": "^7.8.2",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "ws": "^8.19.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

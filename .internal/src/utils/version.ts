@@ -30,7 +30,7 @@ export async function resolveVersion(
   if (env === "local") return version;
 
   const gameUrl = gameUrls[env];
-  const resp = await fetch(`${gameUrl}/${version}/version`);
+  const resp = await fetch(`${gameUrl}${version}/version`);
   if (resp.ok) {
     const version = (await resp.text()).trim();
     if (version === "null") {
@@ -47,6 +47,6 @@ export async function resolveVersion(
 export async function hasNewerEngineVersion(): Promise<boolean> {
   const currentVersion = await fetchEngineVersion();
   const currentMajor = Number(currentVersion.split(".")[0]);
-  const latest = resolveVersion("prod", `${currentMajor + 1}.0.0`);
+  const latest = await resolveVersion("prod", `${currentMajor + 1}.0.0`);
   return latest !== null;
 }

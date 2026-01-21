@@ -67,7 +67,7 @@ export function ShellApp() {
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
         const hasNewer = await hasNewerEngineVersion();
-        if (hasNewer) {
+        if (hasNewer || true) {
           modals.openContextModal({
             modal: "confirm",
             title: "Update Available",
@@ -94,8 +94,15 @@ export function ShellApp() {
               ],
               confirmLabel: "Ok, upgrade",
               msg: "There's a new version of the editor available. Please update now.",
-              onConfirm: () => {
-                fetch("/api/exec/upgrade.py", { method: "POST" });
+              onConfirm: async () => {
+                await fetch("/api/exec/upgrade.py", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({}),
+                });
+                window.location.reload();
               },
             },
           });

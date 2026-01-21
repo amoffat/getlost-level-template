@@ -33,21 +33,6 @@ def upgrade_repo(
     temp_clone_dir = target_path / "_template_update"
     level_backup = target_path / "_level_backup"
 
-    # Stop all pm2 processes before upgrade
-    print("Stopping all pm2 processes...")
-    if not dry_run:
-        subprocess.run(
-            [
-                "npx",
-                "--prefix",
-                str(internal_dir),
-                "pm2",
-                "stop",
-                "all",
-            ],
-            check=True,
-        )
-
     if not target_path.exists():
         print(f"Error: Target directory '{target_path}' does not exist.")
         exit(1)
@@ -71,6 +56,21 @@ def upgrade_repo(
 
     # Check if the working tree and index are clean
     check_clean_working_tree(target_path)
+
+    # Stop all pm2 processes before upgrade
+    print("Stopping all pm2 processes...")
+    if not dry_run:
+        subprocess.run(
+            [
+                "npx",
+                "--prefix",
+                str(internal_dir),
+                "pm2",
+                "stop",
+                "all",
+            ],
+            check=True,
+        )
 
     # Move 'level' directory aside
     if not dry_run:
