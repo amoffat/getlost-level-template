@@ -95,8 +95,7 @@ export function ShellApp() {
               confirmLabel: "Ok, upgrade",
               msg: "There's a new version of the editor available. Please update now.",
               onConfirm: () => {
-                // TODO: Implement upgrade logic
-                console.log("Upgrade confirmed - implementing upgrade logic");
+                fetch("/api/exec/upgrade.py", { method: "POST" });
               },
             },
           });
