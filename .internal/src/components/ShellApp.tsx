@@ -12,6 +12,7 @@ import { AppShell, Group, Tabs, Text } from "@mantine/core";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
 import { IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import {
@@ -95,14 +96,28 @@ export function ShellApp() {
               confirmLabel: "Ok, upgrade",
               msg: "There's a new version of the editor available. Please update now.",
               onConfirm: async () => {
-                await fetch("/api/exec/upgrade.py", {
+                const resp = await fetch("/api/exec/upgrade.py", {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
                   },
                   body: JSON.stringify({}),
                 });
-                //window.location.reload();
+                if (!resp.ok) {
+                  const errorData = await resp.json().catch(() => ({
+                    error: resp.statusText,
+                    stderr: "Unknown error",
+                  }));
+                  const msg = `${errorData.error}: ${errorData.stderr}`;
+
+                  notifications.show({
+                    title: "Upgrade Failed",
+                    color: "red",
+                    message: `Failed to upgrade: ${resp.status} ${resp.statusText} - ${msg}`,
+                  });
+                } else {
+                  window.location.reload();
+                }
               },
             },
           });

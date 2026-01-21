@@ -2,6 +2,7 @@ import argparse
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import NoReturn
 
@@ -19,7 +20,8 @@ def check_clean_working_tree(target_path: Path) -> None:
     )
     if result.stdout.strip():
         print(
-            "Error: Working tree or index is not clean. Please commit or stash your changes."
+            "Working tree or index is not clean. Please commit or stash your changes.",
+            file=sys.stderr,
         )
         exit(1)
 
@@ -34,12 +36,15 @@ def upgrade_repo(
     level_backup = target_path / "_level_backup"
 
     if not target_path.exists():
-        print(f"Error: Target directory '{target_path}' does not exist.")
+        print(
+            f" Target directory '{target_path}' does not exist.",
+            file=sys.stderr,
+        )
         exit(1)
 
     # Check that target_dir is a git repository
     if not (target_path / ".git").exists():
-        print(f"Error: '{target_path}' is not a git repository, aborting.")
+        print(f"'{target_path}' is not a git repository, aborting.", file=sys.stderr)
         exit(1)
 
     if temp_clone_dir.exists():
