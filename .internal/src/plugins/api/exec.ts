@@ -44,6 +44,9 @@ router.post("/:scriptName", async (req, res) => {
     const argsArray = Array.isArray(args) ? args : [args];
 
     // Execute the script
+    console.log(
+      `Executing script: ${scriptPath} with args: ${argsArray.join(" ")}`,
+    );
     const { stdout, stderr } = await execa(
       interpreter,
       [scriptPath, ...argsArray],
