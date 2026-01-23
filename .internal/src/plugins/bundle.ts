@@ -7,7 +7,7 @@ const internalDir = process.cwd();
 const repoDir = resolve(internalDir, "..");
 
 const packageJson = JSON.parse(
-  readFileSync(resolve(internalDir, "package.json"), "utf-8")
+  readFileSync(resolve(internalDir, "package.json"), "utf-8"),
 );
 const tmplVersion = packageJson.version;
 
@@ -18,13 +18,13 @@ export default function bundleLevelCodePlugin() {
     configureServer(server: ViteDevServer) {
       server.middlewares.use(async (req, res, next) => {
         const url = new URL(
-          `http://${process.env.HOST ?? "localhost"}${req.url}`
+          `http://${process.env.HOST ?? "localhost"}${req.url}`,
         );
 
         if (url.pathname === "/main.js") {
           const engineVersion = readFileSync(
             resolve(repoDir, "engine_version.txt"),
-            "utf-8"
+            "utf-8",
           ).trim();
 
           const metadata = {
@@ -43,7 +43,9 @@ export default function bundleLevelCodePlugin() {
           });
 
           try {
-            const bundledJs = await bundleWithRollup(metadata);
+            const bundledJs = await bundleWithRollup(metadata, {
+              minify: false,
+            });
 
             res.setHeader("Content-Type", "application/javascript");
             res.statusCode = 200;

@@ -5,7 +5,8 @@ import { SunEvent } from "../../types/time";
  * location on earth. Call this every tick to stay in sync with the player's
  * time.
  *
- * @param millisSinceEpoch Milliseconds since epoch.
+ * @param millisSinceEpoch Milliseconds since epoch. Use `Date.now()` to get the
+ * current time.
  */
 export declare function setSunTime(millisSinceEpoch: number): void;
 
@@ -40,7 +41,7 @@ export declare function setSunColor(
   r: number,
   g: number,
   b: number,
-  a: number
+  a: number,
 ): void;
 
 /**

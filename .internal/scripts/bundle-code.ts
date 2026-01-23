@@ -52,7 +52,7 @@ async function main() {
   const start = performance.now();
 
   try {
-    const bundledJs = await bundleWithRollup(metadata);
+    const bundledJs = await bundleWithRollup(metadata, { minify: true });
     const outputPath = resolve(args.outDir, "main.js");
     writeFileSync(outputPath, bundledJs, "utf-8");
 

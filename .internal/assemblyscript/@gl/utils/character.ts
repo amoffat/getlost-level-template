@@ -1,5 +1,4 @@
 import * as char from "../api/w2h/char";
-import * as log from "../api/w2h/log";
 import * as navigation from "../api/w2h/navigation";
 
 import { Delay } from "./delay";
@@ -26,7 +25,7 @@ export enum CharAction {
   HurtRight,
 }
 
-const all: Map<string, Character> = new Map();
+export const chars: Map<string, Character> = new Map();
 const stuckTRate: number = 0.1; // T units per second
 const stuckTimeout: number = 2000; // ms
 const baseMoveForce: number = 10000;
@@ -41,11 +40,11 @@ export class Character {
   private _pos: Vec2 = new Vec2(0, 0);
   private _velocity: Vec2 = new Vec2(0, 0);
   public direction: Vec2 = new Vec2(0, 0);
-  public speed: number = 0.8;
+  public speed: number = 1.0;
   private _navSpeed: number = 1.0;
   private _state: NavState = NavState.stopped;
   private _moveForce: Vec2 = Vec2.fromVal(baseMoveForce);
-  public mass: number = 50;
+  public mass: number = 40;
   public maxVelocity: Vec2 = Vec2.fromMagnitude(100);
   private _action: CharAction = CharAction.Idle;
   public name: string;
@@ -74,29 +73,24 @@ export class Character {
     this._pos = Vec2.fromVector(initialPos);
     this._sourcePos = this._pos;
     this._isPlayer = this.name == "player";
-    all.set(name, this);
-  }
-
-  static initAll(): void {
-    const names = char.getAll();
-    log.info(`Found characters: ${JSON.stringify(names)}`);
-    // log.info(`Initializing characters: ${names.join(", ")}`);
-    for (const name of names) {
-      new Character(name);
-    }
+    chars.set(name, this);
   }
 
   static get(name: string): Character {
-    if (!all.has(name)) {
-      log.error(`No character named ${name}`);
+    if (!chars.has(name)) {
+      console.error(`No character named ${name}`);
     }
-    return all.get(name)!;
+    return chars.get(name)!;
   }
 
-  static async tickAll(deltaMS: number): Promise<void> {
-    for (const char of all.values()) {
-      await char.tick(deltaMS);
-    }
+  /**
+   * Do not call directly. The engine calls this.
+   * @param deltaMS
+   */
+  public static tickAll(deltaMS: number): void {
+    chars.forEach((char) => {
+      char.tick(deltaMS);
+    });
   }
 
   // Get the character's current position. This is used in our game loop tick.
@@ -153,7 +147,7 @@ export class Character {
       const hasPath = this.setTargetPos(wp.pos, wp.nearestIsOk);
       this._navSpeed = wp.speed;
       if (!hasPath) {
-        log.error(`Failed to find path to waypoint ${wp}`);
+        console.error(`Failed to find path to waypoint ${wp}`);
       }
       this._waypointPause = new Delay(wp.pause, wp.pause, true);
     }
@@ -170,7 +164,7 @@ export class Character {
 
   async setTargetPos(
     targetPos: Vec2,
-    nearestIsOk: boolean = true
+    nearestIsOk: boolean = true,
   ): Promise<boolean> {
     this.clearTarget();
 
@@ -180,7 +174,7 @@ export class Character {
         this._pos.toVector(),
         targetPos.toVector(),
         nearestIsOk,
-        Number.POSITIVE_INFINITY as number
+        Number.POSITIVE_INFINITY as number,
       )
     ).map((v) => Vec2.fromVector(v));
     this._targetPathLen = this._pathProgress();
@@ -201,7 +195,7 @@ export class Character {
   public setMoveSound(
     sound: string,
     volume: number = 1.0,
-    onlyWhileMoving: boolean = false
+    onlyWhileMoving: boolean = false,
   ): void {
     char.setMoveSound(this.name, sound, volume, onlyWhileMoving);
   }
@@ -264,7 +258,11 @@ export class Character {
     }
   }
 
-  // Update method to handle position updates per frame
+  /**
+   * Do not call directly. The engine calls this.
+   * @param deltaMS
+   * @returns
+   */
   public async tick(deltaMS: number): Promise<void> {
     if (!this._visible) return;
 
@@ -348,16 +346,16 @@ export class Character {
 
         const progress: number = this._pathProgress(
           trackResult.index,
-          trackResult.t
+          trackResult.t,
         );
         easingSpeed = Math.max(
           easing.rampHoldRamp(
             this._targetPathLen,
             progress,
             this.startWalkMomentum,
-            this.endWalkMomentum
+            this.endWalkMomentum,
           ),
-          0.3
+          0.3,
         );
       }
     }
@@ -397,7 +395,7 @@ export class Character {
           this._pos.x,
           this._pos.y,
           proposedTrans.x,
-          proposedTrans.y
+          proposedTrans.y,
         );
         // Update position
         this._pos.x += correctedTrans.x;
@@ -426,7 +424,7 @@ export class Character {
           this._pos.x,
           this._pos.y,
           proposedTrans.x,
-          proposedTrans.y
+          proposedTrans.y,
         );
         // Update position
         this._pos.x += correctedTrans.x;
@@ -443,7 +441,7 @@ export class Character {
     // Slow down our animation speed based on our speed relative to our max speed.
     const animSpeed = Math.min(
       1.0,
-      Math.max(0.4, this._velocity.magnitude / 35)
+      Math.max(0.4, this._velocity.magnitude / 35),
     );
     char.setSpeed(this.name, animSpeed);
     char.setPos(this.name, this._pos.x, this._pos.y);

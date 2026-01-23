@@ -1,13 +1,10 @@
 import * as filters from "@gl/api/w2h/filters";
-import * as log from "@gl/api/w2h/log";
 
 import { type Vector } from "@gl/api/types/vector";
 import { addTiltShift } from "@gl/api/w2h/filters";
-import { setSunEvent } from "@gl/api/w2h/time";
+import { setSunEvent, setSunTime } from "@gl/api/w2h/time";
 import { getSunEventName, SunEvent } from "@gl/types/time";
-import { Character } from "@gl/utils/character";
 import type { Vec2 } from "@gl/utils/la/vec2";
-import { Player } from "@gl/utils/player";
 import { prevSunEvent } from "@gl/utils/time";
 
 export { card } from "./card";
@@ -16,7 +13,6 @@ export { markers } from "./markers";
 export { pickups } from "./pickups";
 
 let tsfid!: number;
-let player!: Player;
 
 /**
  * This function initializes your level. It's called once when the level is
@@ -24,9 +20,6 @@ let player!: Player;
  * filters.
  */
 export async function init(): Promise<void> {
-  player = new Player();
-  Character.initAll();
-
   tsfid = addTiltShift(0.06);
   setSunEvent(SunEvent.SolarNoon, 0);
 }
@@ -51,7 +44,7 @@ export function movePlayer(dir: Vec2): void {
  * @param id The id of the timer created by `timer.start`.
  */
 export function timerEvent(id: number): void {
-  log.info(`Timer event: ${id}`);
+  console.log(`Timer event: ${id}`);
 }
 
 /**
@@ -77,7 +70,7 @@ export function asyncEvent(id: number): void {}
  * @param took Whether the player took the pickup or not.
  */
 export function pickupEvent(slug: string, took: boolean): void {
-  log.info(`Pickup event: ${slug}, ${took}`);
+  console.log(`Pickup event: ${slug}, ${took}`);
 }
 
 /**
@@ -87,7 +80,7 @@ export function pickupEvent(slug: string, took: boolean): void {
  * @param down Whether the button was pressed down or released.
  */
 export function buttonPressEvent(slug: string, down: boolean): void {
-  log.info(`Button event: ${slug}, ${down}`);
+  console.log(`Button event: ${slug}, ${down}`);
 }
 
 /**
@@ -107,7 +100,7 @@ export function tileCollisionEvent(
   gid: number,
   entered: boolean,
   column: number,
-  row: number
+  row: number,
 ): void {
   // log(`Collision event: ${tsTileId}, ${gid}, ${entered} @ ${column}, ${row}`);
 }
@@ -116,7 +109,7 @@ export function spriteCollisionEvent(
   initiator: string,
   collider: string,
   direction: Vector,
-  entered: boolean
+  entered: boolean,
 ): void {
   if (initiator !== "player") {
     return;
@@ -136,7 +129,7 @@ export function dialogClosedEvent(passageId: string): void {}
  * @param name The name of the timer that was completed.
  */
 export function timerCompletedEvent(name: string): void {
-  log.info(`Timer completed: ${name}`);
+  console.log(`Timer completed: ${name}`);
 }
 
 /**
@@ -152,16 +145,16 @@ export function sensorEvent(
   initiator: string,
   sensorName: string,
   direction: Vector,
-  entered: boolean
+  entered: boolean,
 ): void {
   if (initiator !== "player") {
     return;
   }
 
-  log.info(
+  console.log(
     `Sensor event: '${initiator}' ${
       entered ? "entered" : "left"
-    } '${sensorName}'`
+    } '${sensorName}'`,
   );
 }
 
@@ -171,8 +164,8 @@ export function sensorEvent(
  */
 export function timeChangedEvent(event: SunEvent): void {
   const lastEvent = prevSunEvent(event);
-  log.info(
-    `Time changed: ${getSunEventName(lastEvent)} -> ${getSunEventName(event)} `
+  console.log(
+    `Time changed: ${getSunEventName(lastEvent)} -> ${getSunEventName(event)} `,
   );
 }
 
@@ -192,7 +185,6 @@ export function pauseTick(timestep: number): void {}
  * @param timestep The time since the last tick in milliseconds.
  */
 export async function tick(timestep: number) {
-  await player.tick(timestep);
-  await Character.tickAll(timestep);
   filters.setTiltShiftY(tsfid, player.pos.y - 10);
+  setSunTime(Date.now());
 }
