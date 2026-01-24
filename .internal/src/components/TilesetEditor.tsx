@@ -46,7 +46,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ObjectPalette from "./ObjectPalette";
 import TilesetButton from "./TilesetButton";
 import Tip from "./Tip";
@@ -68,8 +68,9 @@ export default function TilesetEditorTab({
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { tsid: tsId } = useParams<{ tsid?: string }>();
+  const location = useLocation();
   const selectedToolName = useAppSelector(
-    (state) => state.tilesetEditor.selectedTool
+    (state) => state.tilesetEditor.selectedTool,
   );
   const paletteSelection = useAppSelector(selectors.paletteSelectedIds);
 
@@ -77,7 +78,7 @@ export default function TilesetEditorTab({
   const deferredPaletteSelection = useDeferredValue(paletteSelection);
 
   const activeTilesetId = useAppSelector(
-    (state) => state.tilesetEditor.activeTilesetId
+    (state) => state.tilesetEditor.activeTilesetId,
   );
   const tilesets = useAppSelector(selectors.selectTilesets);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -99,7 +100,7 @@ export default function TilesetEditorTab({
       if (!tab) return;
       dispatch(uiActions.setTilesetTab(tab as TilesetTabName));
     },
-    [dispatch]
+    [dispatch],
   );
 
   useEffect(() => {
@@ -121,7 +122,13 @@ export default function TilesetEditorTab({
 
   // Select the tileset once it's available and not already active
   useEffect(() => {
+    const samePage = location.pathname.startsWith("/tilesets");
     if (!tsId) {
+      // If we're navigating away don't clear our tools, selection, tileset,
+      // etc, because we may want to jump back. We only want to clear those
+      // things if the tileset is deleted.
+      if (!samePage) return;
+
       dispatch(actions.setActiveTool(null));
       dispatch(actions.clearSelection());
       dispatch(clearCandAnimFramesThunk());
@@ -137,7 +144,7 @@ export default function TilesetEditorTab({
       dispatch(actions.clearSelection());
       dispatch(selectTilesetThunk(ts)).unwrap();
     }
-  }, [tsId, tilesets, activeTilesetId, dispatch]);
+  }, [tsId, tilesets, activeTilesetId, dispatch, location]);
 
   const tilesetImages = useMemo(
     () =>
@@ -149,7 +156,7 @@ export default function TilesetEditorTab({
           isActive={ts.id === activeTilesetId}
         />
       )),
-    [tilesets, navigate, activeTilesetId]
+    [tilesets, navigate, activeTilesetId],
   );
 
   const handlePaneResize = () => {
@@ -224,7 +231,7 @@ export default function TilesetEditorTab({
           enabled: hasTsSelected,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,
-    [enableGroup, hasTsSelected, selectedAnimation]
+    [enableGroup, hasTsSelected, selectedAnimation],
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName]!;
@@ -256,7 +263,7 @@ export default function TilesetEditorTab({
         dispatch(setNpcThunk(obj));
       }
     },
-    [dispatch, ts, navigate]
+    [dispatch, ts, navigate],
   );
 
   const onToolActivated = useCallback(
@@ -264,7 +271,7 @@ export default function TilesetEditorTab({
       const toolName = slug as Mode;
       dispatch(setToolThunk(toolName));
     },
-    [dispatch]
+    [dispatch],
   );
 
   const onToolDeactivated = useCallback(() => {
@@ -291,11 +298,11 @@ export default function TilesetEditorTab({
           if (hasTiles) {
             if (hasPinned) {
               tips.push(
-                "Select a tool above to add or delete tile groups from the tileset."
+                "Select a tool above to add or delete tile groups from the tileset.",
               );
             } else {
               tips.push(
-                "Add new tile groups by creating them with the tools above."
+                "Add new tile groups by creating them with the tools above.",
               );
             }
           } else {
@@ -305,7 +312,7 @@ export default function TilesetEditorTab({
                 <Anchor underline="hover" onClick={onActivateReslicer}>
                   Activate reslicer
                 </Anchor>
-              </>
+              </>,
             );
           }
         }
@@ -317,7 +324,7 @@ export default function TilesetEditorTab({
         }
       }
       tips.push(
-        "Drag and drop an image file onto the tileset area to upload it."
+        "Drag and drop an image file onto the tileset area to upload it.",
       );
     }
     return tips;

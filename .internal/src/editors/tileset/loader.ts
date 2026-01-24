@@ -49,7 +49,7 @@ export async function setCanvasTileset(ts: Tileset | null) {
  */
 export function generateGridAlignedCoords(
   tsId: string,
-  gridSize: number
+  gridSize: number,
 ): Rect[] {
   const texture = gApp.tilesetTextureCache.get(tsId)!;
   const cols = Math.floor(texture.width / gridSize);
@@ -71,11 +71,11 @@ export function generateGridAlignedCoords(
 }
 
 /**
- * Unpacks a tileset by creating tile groups for the specified coordinates.
+ * Slices a tileset by creating tile groups for the specified coordinates.
  * @param tsId - The tileset ID
  * @param coordsList - Array of Rect coordinates to unpack into tile groups
  */
-export async function unpackTileset(tsId: string, coordsList: Rect[]) {
+export async function sliceTileset(tsId: string, coordsList: Rect[]) {
   const imageData = gApp.tilesetImageDataCache.get(tsId)!;
 
   store.dispatch(uiActions.loadingPalette(true));

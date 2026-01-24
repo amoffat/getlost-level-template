@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { getMapInitPromise, getTilesetInitPromise } from "@/init/editorInit";
 import { pathToTab, tabToPath } from "@/routes/tabs";
 import { actions as uiActions } from "@/slices/ui";
+import { store } from "@/store/store";
 import { MainTabName } from "@/types/tab";
 import { hasNewerEngineVersion } from "@/utils/version";
 import { AppShell, Group, Tabs, Text } from "@mantine/core";
@@ -152,7 +153,19 @@ export function ShellApp() {
   const handleTabChange = useCallback(
     (value: MainTabName | null) => {
       if (!value) return;
-      const canonical = tabToPath(value);
+      let canonical = tabToPath(value);
+
+      // If navigating to tileset editor, preserve the active tileset ID in the
+      // URL. This makes it easy to jump back and forth between the map and
+      // tileset editor.
+      if (value === "tileset-editor") {
+        const state = store.getState();
+        const tsId = state.tilesetEditor?.activeTilesetId;
+        if (tsId) {
+          canonical += `/${tsId}`;
+        }
+      }
+
       if (pathnameRef.current !== canonical) {
         navigate(canonical);
       }

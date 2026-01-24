@@ -3,7 +3,7 @@ import { computeEdgeSignatures } from "@/editors/map/utils/autotile";
 import {
   generateGridAlignedCoords,
   setCanvasTileset,
-  unpackTileset,
+  sliceTileset,
 } from "@/editors/tileset/loader";
 import { globals as gApp } from "@/globals";
 import { log } from "@/log";
@@ -50,10 +50,10 @@ export const selectTilesetThunk = createAsyncThunk(
         tsActions.setBounds({
           width: tex.width,
           height: tex.height,
-        })
+        }),
       );
     }
-  }
+  },
 );
 
 export const loadTilesetsThunk = createAsyncThunk(
@@ -73,7 +73,7 @@ export const loadTilesetsThunk = createAsyncThunk(
       }
     }
     dispatch(uiActions.popLoadingMessage());
-  }
+  },
 );
 
 export const uploadTilesetThunk = createAsyncThunk(
@@ -84,12 +84,12 @@ export const uploadTilesetThunk = createAsyncThunk(
       composite,
       restricted,
     }: { objectUrl: string; composite: boolean; restricted: boolean },
-    { dispatch }
+    { dispatch },
   ): Promise<Tileset> => {
     const tsId = await genTilesetId(objectUrl);
 
     const bitmap = await createImageBitmap(
-      await fetch(objectUrl).then((res) => res.blob())
+      await fetch(objectUrl).then((res) => res.blob()),
     );
     const ts: Tileset = {
       id: tsId,
@@ -108,7 +108,7 @@ export const uploadTilesetThunk = createAsyncThunk(
     await dispatch(loadTilesetThunk({ tsId })).unwrap();
     await router.navigate(`/tilesets/${tsId}`);
     return ts;
-  }
+  },
 );
 
 // New thunk that loads a single tileset and performs all related side effects
@@ -133,7 +133,7 @@ export const loadTilesetThunk = createAsyncThunk(
       oldSource.context2D.drawImage(
         tex.source.resource as CanvasImageSource,
         0,
-        0
+        0,
       );
       oldSource.update();
       gApp.tilesetTextureCache.set(tsId, oldSource);
@@ -145,7 +145,7 @@ export const loadTilesetThunk = createAsyncThunk(
     dispatch(uiActions.popLoadingMessage());
 
     return true;
-  }
+  },
 );
 
 export const loadEdgeSignaturesThunk = createAsyncThunk(
@@ -159,7 +159,7 @@ export const loadEdgeSignaturesThunk = createAsyncThunk(
     }
 
     dispatch(
-      uiActions.pushLoadingMessage(`Indexing edges for tileset ${tsId}...`)
+      uiActions.pushLoadingMessage(`Indexing edges for tileset ${tsId}...`),
     );
 
     const imageData = gApp.tilesetImageDataCache.get(tsId)!;
@@ -186,7 +186,7 @@ export const loadEdgeSignaturesThunk = createAsyncThunk(
     }
 
     dispatch(uiActions.popLoadingMessage());
-  }
+  },
 );
 
 export const populateTilesetTagsThunk = createAsyncThunk(
@@ -204,7 +204,7 @@ export const populateTilesetTagsThunk = createAsyncThunk(
         dispatch(uiActions.addTilesetGroupTags(obj.tags));
       }
     }
-  }
+  },
 );
 
 export const removeTilesetThunk = createAsyncThunk(
@@ -225,7 +225,7 @@ export const removeTilesetThunk = createAsyncThunk(
       0,
       0,
       canvasSource.width,
-      canvasSource.height
+      canvasSource.height,
     );
     canvasSource.update();
 
@@ -238,14 +238,14 @@ export const removeTilesetThunk = createAsyncThunk(
       color: "green",
     });
     await router.navigate("/tilesets");
-  }
+  },
 );
 
 export const retileThunk = createAsyncThunk(
   "tilesetEditor/retileThunk",
   async (
     { tsId, gridSize }: { tsId: string; gridSize: number },
-    { dispatch }
+    { dispatch },
   ) => {
     const state = store.getState();
     const ts = state.tilesetEditor.tilesets[tsId];
@@ -262,8 +262,8 @@ export const retileThunk = createAsyncThunk(
     dispatch(tsActions.setTilesetGridSize({ tsId, gridSize }));
 
     const coords = generateGridAlignedCoords(tsId, gridSize);
-    await unpackTileset(tsId, coords);
-  }
+    await sliceTileset(tsId, coords);
+  },
 );
 
 export const setToolThunk = createAsyncThunk(
@@ -288,7 +288,7 @@ export const setToolThunk = createAsyncThunk(
 
     dispatch(tsActions.clearCandAnimFrames());
     dispatch(tsActions.setActiveTool(tool));
-  }
+  },
 );
 
 /**
@@ -320,7 +320,7 @@ export const addAnimationFrameThunk = createAsyncThunk(
 
     dispatch(tsActions.addCandAnimFrame(tg));
     store.dispatch(tsActions.addOneSelected(tg));
-  }
+  },
 );
 
 export const setAnimationFramesThunk = createAsyncThunk(
@@ -344,7 +344,7 @@ export const setAnimationFramesThunk = createAsyncThunk(
       message: `Loaded ${obj.frames.length} frames for animation "${obj.names.join(", ")}".`,
       color: "green",
     });
-  }
+  },
 );
 
 export const setNpcThunk = createAsyncThunk(
@@ -357,7 +357,7 @@ export const setNpcThunk = createAsyncThunk(
       message: `NPC "${npc.name}" loaded.`,
       color: "green",
     });
-  }
+  },
 );
 
 export const clearCandAnimFramesThunk = createAsyncThunk(
@@ -365,14 +365,14 @@ export const clearCandAnimFramesThunk = createAsyncThunk(
   async (_, { dispatch }) => {
     dispatch(tsActions.clearCandAnimFrames());
     dispatch(tsActions.clearSelection());
-  }
+  },
 );
 
 export const addPaletteObjectsThunk = createAsyncThunk(
   "tilesetEditor/addPaletteObjectsThunk",
   async (
     { tsId, objs: tmplObjs }: { tsId: string; objs: TemplateObject[] },
-    { dispatch, getState }
+    { dispatch, getState },
   ) => {
     const state = getState() as RootState;
     dispatch(tsActions.setPaletteObjects({ tsId, objs: tmplObjs }));
@@ -409,5 +409,5 @@ export const addPaletteObjectsThunk = createAsyncThunk(
         dispatch(mapActions.updateMany(updates));
       }
     }
-  }
+  },
 );

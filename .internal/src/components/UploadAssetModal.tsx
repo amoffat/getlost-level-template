@@ -1,5 +1,5 @@
 import { overlayProps } from "@/constants";
-import { unpackTileset } from "@/editors/tileset/loader";
+import { sliceTileset } from "@/editors/tileset/loader";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors } from "@/slices/tilesetEditor";
 import { uploadTilesetThunk } from "@/thunks/tileset";
@@ -135,13 +135,13 @@ export default function UploadAssetModal({
               objectUrl,
               composite: false,
               restricted: values.restricted,
-            })
+            }),
           );
         }
       } else if (copt === MERGE_UPLOADS) {
         // Convert files to ImageBitmaps
         const bitmaps = await Promise.all(
-          files.map((file) => createImageBitmap(file))
+          files.map((file) => createImageBitmap(file)),
         );
 
         // Merge all files into a single tileset
@@ -157,14 +157,14 @@ export default function UploadAssetModal({
             objectUrl: merged.objectUrl,
             composite: true,
             restricted: values.restricted,
-          })
+          }),
         ).unwrap();
 
         const coords: Rect[] = merged.sprites;
-        await unpackTileset(ts.id, coords);
+        await sliceTileset(ts.id, coords);
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   const formSubmit = form.onSubmit((values) => {
@@ -300,7 +300,7 @@ export default function UploadAssetModal({
  * otherwise "__new_tileset__"
  */
 async function chooseDefaultCreationOption(
-  files: File[]
+  files: File[],
 ): Promise<SpecialTilesetOption> {
   // Filter for image files only. Don't include animated gifs for simplicity.
   // TODO have animated gifs automatically flatten their frames and generate an
