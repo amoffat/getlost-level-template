@@ -12,7 +12,7 @@ export { entrances, exits } from "./gateways";
 export { markers } from "./markers";
 export { pickups } from "./pickups";
 
-let tsfid!: number;
+let tiltShift!: number;
 
 /**
  * This function initializes your level. It's called once when the level is
@@ -20,7 +20,7 @@ let tsfid!: number;
  * filters.
  */
 export async function init(): Promise<void> {
-  tsfid = addTiltShift(0.06);
+  tiltShift = addTiltShift(0.06);
 }
 
 /**
@@ -158,13 +158,13 @@ export function sensorEvent(
 }
 
 /**
- * Called when there's a time event change, for example, from Sunrise to
+ * Called when there's a sun event change, for example, from Sunrise to
  * SunriseEnd
  */
-export function timeChangedEvent(event: SunEvent): void {
+export function sunChangedEvent(event: SunEvent): void {
   const lastEvent = prevSunEvent(event);
   console.log(
-    `Time changed: ${getSunEventName(lastEvent)} -> ${getSunEventName(event)} `,
+    `Sun changed: ${getSunEventName(lastEvent)} -> ${getSunEventName(event)} `,
   );
 }
 
@@ -184,6 +184,6 @@ export function pauseTick(timestep: number): void {}
  * @param timestep The time since the last tick in milliseconds.
  */
 export async function tick(timestep: number) {
-  filters.setTiltShiftY(tsfid, player.pos.y - 10);
+  filters.setTiltShiftY(tiltShift, player.pos.y - 10);
   setSunTime(Date.now());
 }
