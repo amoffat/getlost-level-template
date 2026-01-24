@@ -37,12 +37,11 @@ export default function TimeDisplay({ comms }: TimeDisplayProps) {
     [comms, syncTime],
   );
 
-  // Sync time from engine every 10 seconds
   useEffect(() => {
     syncTime();
 
-    // Sync every 10 seconds
-    const intervalId = setInterval(syncTime, 10000);
+    // Sync every minute
+    const intervalId = setInterval(syncTime, 60 * 1000);
 
     return () => clearInterval(intervalId);
   }, [syncTime]);

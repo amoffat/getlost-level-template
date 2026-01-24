@@ -2,7 +2,7 @@ import * as filters from "@gl/api/w2h/filters";
 
 import { type Vector } from "@gl/api/types/vector";
 import { addTiltShift } from "@gl/api/w2h/filters";
-import { setSunEvent, setSunTime } from "@gl/api/w2h/time";
+import { setSunTime } from "@gl/api/w2h/time";
 import { getSunEventName, SunEvent } from "@gl/types/time";
 import type { Vec2 } from "@gl/utils/la/vec2";
 import { prevSunEvent } from "@gl/utils/time";
@@ -21,7 +21,6 @@ let tsfid!: number;
  */
 export async function init(): Promise<void> {
   tsfid = addTiltShift(0.06);
-  setSunEvent(SunEvent.SolarNoon, 0);
 }
 
 /**
