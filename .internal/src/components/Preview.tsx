@@ -32,6 +32,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import LogPane from "./LogPane";
 import { MarkdownModal } from "./MarkdownModal";
+import TimeDisplay from "./TimeDisplay";
 
 export default function PreviewTab() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -643,8 +644,8 @@ export default function PreviewTab() {
           onResizeEnd={handlePaneResizeEnd}
         >
           <Stack h="100%" style={{ overflow: "hidden" }}>
-            <Fieldset legend="Debug">
-              <Stack gap="xs" p={0}>
+            <Fieldset legend="Time Control">
+              <Stack gap="xs" p={0} mb="lg">
                 <Text size="sm" fw={500}>
                   Game speed
                 </Text>
@@ -667,6 +668,10 @@ export default function PreviewTab() {
                 />
               </Stack>
 
+              <TimeDisplay comms={comms} />
+            </Fieldset>
+
+            <Fieldset legend="Visualization">
               <Stack gap="sm" p={0} mt="md">
                 {createDebugSwitch("Show collisions", "collisions")}
                 {createDebugSwitch("Show pathfinding", "pathfinding")}

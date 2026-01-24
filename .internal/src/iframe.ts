@@ -13,7 +13,7 @@ import { isAsync } from "./utils/async";
 type EventHandlerFunction<Req extends AnyRequest = AnyRequest> = (
   data: Req extends { data: infer D } ? D : never,
   respond: (data: ResponseFor<Req>) => void,
-  envelope: Pick<RequestEnvelope<Req>, "id" | "forLevel">
+  envelope: Pick<RequestEnvelope<Req>, "id" | "forLevel">,
 ) => any;
 
 interface EventHandler<T extends AnyRequest = AnyRequest> {
@@ -105,7 +105,7 @@ export class Comms {
   }
 
   private _broadcastBatch(
-    msgs: Array<RequestEnvelope<any> | ResponseEnvelope>
+    msgs: Array<RequestEnvelope<any> | ResponseEnvelope>,
   ): void {
     for (const sub of this._subWindows) {
       sub.postMessage(msgs, "*");
@@ -179,7 +179,7 @@ export class Comms {
   // response.
   request<Req extends AnyRequest, Resp = Promise<ResponseFor<Req>>>(
     req: Omit<Req, "response">,
-    hasResponse: boolean = false
+    hasResponse: boolean = false,
   ): Resp {
     // this.log.info(`Requesting: ${req.type}`);
     const id = uuidv4();

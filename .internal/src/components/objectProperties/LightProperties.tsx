@@ -8,12 +8,19 @@ import {
   updateObjectProperties,
 } from "@/utils/propertyEditor";
 import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
-import { ColorInput, Fieldset, Slider, Stack, TextInput } from "@mantine/core";
+import {
+  ColorInput,
+  Fieldset,
+  Slider,
+  Stack,
+  Switch,
+  TextInput,
+} from "@mantine/core";
 import { memo, ReactNode, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 
 // Properties that collectPropertyValues needs to access
-const COLLECTED_PROPS = ["color", "intensity", "name"] as const;
+const COLLECTED_PROPS = ["color", "intensity", "name", "offDuringDay"] as const;
 
 // Additional properties needed for identification
 const TEMPLATE_PROPS = ["id"] as const;
@@ -108,18 +115,6 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
             onChange={(hex) => {
               onChange(hex.replace("#", ""));
             }}
-            swatches={[
-              "#ffffff", // White (daylight, bright bulb)
-              "#fffaf0", // Warm white (indoor lighting)
-              "#ffa500", // Orange (fire, torch, lava)
-              "#ff4500", // Red-orange (hot fire, ember)
-              "#ffff00", // Yellow (sunlight, lantern)
-              "#00ffff", // Cyan (magical, ethereal)
-              "#0080ff", // Blue (moonlight, cold magic)
-              "#ff00ff", // Magenta (mystical, portal)
-              "#00ff00", // Green (toxic, alien)
-              "#ff0000", // Red (danger, alarm)
-            ]}
           />
         );
       }}
@@ -144,9 +139,36 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
           <Slider
             value={value}
             min={0}
-            max={1}
+            max={3}
             step={0.01}
             onChange={onChange}
+          />
+        );
+      }}
+    />
+  );
+
+  const offDuringDayInput = (
+    <PropertyValue
+      label="Off during day"
+      description="Whether the light is off during the day"
+      noTemplate
+      values={toCollect.offDuringDay}
+      defaultValue={false}
+      onValueChange={(
+        level: PropertyValueLevel,
+        value: boolean | undefined,
+      ): void => {
+        updateProps(level, { offDuringDay: value });
+      }}
+      renderInput={(
+        value: boolean | undefined,
+        onChange: (value: boolean) => void,
+      ): ReactNode => {
+        return (
+          <Switch
+            checked={value ?? false}
+            onChange={(e) => onChange(e.currentTarget.checked)}
           />
         );
       }}
@@ -159,6 +181,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
         {nameInput}
         {colorInput}
         {intensityInput}
+        {offDuringDayInput}
       </Stack>
     </Fieldset>
   );

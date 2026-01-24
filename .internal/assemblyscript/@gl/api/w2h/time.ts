@@ -11,15 +11,6 @@ import { SunEvent } from "../../types/time";
 export declare function setSunTime(millisSinceEpoch: number): void;
 
 /**
- * Advances the sun's position by the given timestep. Useful for staying
- * somewhat in sync with the player's time, but maybe advancing faster than
- * normal. Call this per tick with the input timestep.
- *
- * @param timestep The time since the last tick in milliseconds.
- */
-export declare function advanceSunTime(timestep: number): void;
-
-/**
  * Like setSunTime, but instead of taking a specific time, it takes a SunEvent,
  * and we figure out the time from that.
  *

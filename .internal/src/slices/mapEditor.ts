@@ -146,6 +146,7 @@ export const slice = createSlice({
         intensity: constants.defaultLightIntensity,
         hidden: false,
         flicker: "constant",
+        offDuringDay: false,
       },
       entryGateways: {
         id: constants.entryTemplateId,
@@ -180,7 +181,7 @@ export const slice = createSlice({
       action: PayloadAction<{
         name: Name;
         updates: Partial<MapEditorState["templates"][Name]>;
-      }>
+      }>,
     ) {
       const { name, updates } = action.payload;
       const existing = state.templates[name];
@@ -254,7 +255,7 @@ export const slice = createSlice({
 
     removeOneSelected: (state, action: PayloadAction<string>) => {
       state.selectedIds = state.selectedIds.filter(
-        (id) => id !== action.payload
+        (id) => id !== action.payload,
       );
     },
 
@@ -264,7 +265,7 @@ export const slice = createSlice({
 
     setProposedSelection(
       state,
-      action: PayloadAction<MapEditorState["proposedSelection"]>
+      action: PayloadAction<MapEditorState["proposedSelection"]>,
     ) {
       state.proposedSelection = action.payload;
     },
@@ -297,7 +298,7 @@ export const slice = createSlice({
 
     setToolOptions<K extends ToolWithOptions>(
       state: MapEditorState,
-      action: PayloadAction<{ tool: K; options: Partial<ToolOptMapping[K]> }>
+      action: PayloadAction<{ tool: K; options: Partial<ToolOptMapping[K]> }>,
     ) {
       const { tool, options } = action.payload;
       state.toolOptions[tool] = { ...state.toolOptions[tool], ...options };
@@ -355,7 +356,7 @@ export const slice = createSlice({
       }),
       reducer: (
         state,
-        action: PayloadAction<{ id: string; changes: Partial<MapObj> }>
+        action: PayloadAction<{ id: string; changes: Partial<MapObj> }>,
       ) => {
         const oldObj = state.objects.entities[action.payload.id];
         if (oldObj) {
@@ -372,7 +373,7 @@ export const slice = createSlice({
       }),
       reducer: (
         state,
-        action: PayloadAction<Array<{ id: string; changes: Partial<MapObj> }>>
+        action: PayloadAction<Array<{ id: string; changes: Partial<MapObj> }>>,
       ) => {
         for (const update of action.payload) {
           const oldObj = state.objects.entities[update.id];
@@ -381,7 +382,7 @@ export const slice = createSlice({
             updateTemplateIndex(
               globals.templateIndex,
               oldObj as MapObj,
-              newObj
+              newObj,
             );
           }
         }
@@ -434,11 +435,12 @@ export const slice = createSlice({
   selectors: {
     selectMode: createMapSelector(
       [(state) => state.modeStack],
-      (modeStack): Mode => modeStack.at(-1) ?? "select"
+      (modeStack): Mode => modeStack.at(-1) ?? "select",
     ),
     selectedObjs: createMapSelector(
       [(state) => state.selectedIds, (state) => state.objects.entities],
-      (selectedIds, entities): MapObj[] => selectedIds.map((id) => entities[id])
+      (selectedIds, entities): MapObj[] =>
+        selectedIds.map((id) => entities[id]),
     ),
     numSelectedTgInstances: createMapSelector(
       [(state) => state.selectedIds, (state) => state.objects.entities],
@@ -451,7 +453,7 @@ export const slice = createSlice({
           }
         }
         return count;
-      }
+      },
     ),
     objectsByTemplateId: createMapSelector(
       [(state) => state.objects.entities, (_, tmplId: string) => tmplId],
@@ -463,7 +465,7 @@ export const slice = createSlice({
           objs.push(obj);
         }
         return objs;
-      }
+      },
     ),
     paletteSelectedTsObjIds: createMapSelector(
       [
@@ -506,7 +508,7 @@ export const slice = createSlice({
             return true;
           },
         },
-      }
+      },
     ),
   },
 });

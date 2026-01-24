@@ -34,6 +34,7 @@ export interface LightProps {
   intensity: number;
   hidden: boolean;
   flicker: LightFlicker;
+  offDuringDay: boolean;
 }
 
 export interface TileGroupProps {

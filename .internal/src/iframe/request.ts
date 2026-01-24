@@ -47,6 +47,19 @@ export interface SetGameSpeedRequest {
   };
 }
 
+export interface AdvanceGameTimeRequest {
+  type: "advance-game-time";
+  data: {
+    amt: number | null;
+  };
+}
+
+export interface GetTimeRequest {
+  type: "get-time";
+  data?: null;
+  response: number;
+}
+
 export interface SetWindowGeomRequest {
   type: "set-window-geom";
   data: {
@@ -59,6 +72,8 @@ export interface SetWindowGeomRequest {
 
 export type AnyRequest =
   | DebugFlag
+  | AdvanceGameTimeRequest
+  | GetTimeRequest
   | SetGameSpeedRequest
   | RecordMarkerMessage
   | ClearMarkerMessage
