@@ -45,7 +45,7 @@ interface ObjectPaletteProps<ObjType extends TemplateObject> {
   sort: (a: ObjType, b: ObjType) => number;
   filter: (
     obj: ObjType,
-    state: RootState["ui"]["paletteFilterSwitches"]
+    state: RootState["ui"]["paletteFilterSwitches"],
   ) => boolean;
 }
 
@@ -80,7 +80,7 @@ function ObjectPalette<ObjType extends TemplateObject>({
   const loadingPalette = useAppSelector((state) => state.ui.loadingPalette);
   const paletteFilterSwitches = useAppSelector(
     (state) => state.ui.paletteFilterSwitches,
-    shallowEqual
+    shallowEqual,
   );
   const [scale, setScale] = useState(defaultScale);
 
@@ -210,7 +210,7 @@ function ObjectPalette<ObjType extends TemplateObject>({
         onSelectObject?.(obj as ObjType, e);
       }
     },
-    [deselectObject, selectedObjects, onSelectObject]
+    [deselectObject, selectedObjects, onSelectObject],
   );
 
   return (
@@ -279,7 +279,7 @@ export default memo(ObjectPalette, (prevProps, nextProps) => {
   // Re-compute if the selected objects are not the same
   const objsEqual = setsEqual(
     prevProps.selectedObjects ?? new Set(),
-    nextProps.selectedObjects ?? new Set()
+    nextProps.selectedObjects ?? new Set(),
   );
 
   // Re-compute if the tileset or its tiles have changed, without diving into

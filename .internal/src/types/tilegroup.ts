@@ -20,7 +20,7 @@ export interface TileGroupTemplate extends TileGroupProps {
   tilesetId: string;
   pos: Rect;
   pinned: boolean;
-  zIndices: number[];
+  zIndices: Vector2[];
   // From 0-1 representing how much of the tile is opaque. Used in sorting.
   coverage: number;
   avgColor: OklabColor;
@@ -36,7 +36,7 @@ export interface TileGroupTemplate extends TileGroupProps {
 }
 
 export function isTileGroupTemplate(
-  obj: TemplateObject
+  obj: TemplateObject,
 ): obj is TileGroupTemplate {
   return obj.type === TemplateType.TileGroup;
 }

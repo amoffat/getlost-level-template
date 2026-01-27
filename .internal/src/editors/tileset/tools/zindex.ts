@@ -5,6 +5,7 @@ import { store } from "@/store/store";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { clamp } from "@/utils/math";
 import { subState } from "@/utils/redux";
+import { Vector2 } from "@/vec";
 import * as P from "pixi.js";
 import { globals as g } from "../globals";
 
@@ -13,6 +14,8 @@ interface ZIndexHandle {
   idx: number;
   circleGfx: P.Graphics;
 }
+
+const moveHandleFill = { color: 0xffff00, alpha: 0.5 };
 
 /**
  * A tool that implements the Tool interface for handling z-index drag operations.
@@ -29,12 +32,18 @@ export class ZIndexTool implements Tool {
   // Drag state for handle dragging
   private isDragging = false;
   private dragHandle: ZIndexHandle | null = null;
-  private currentZIndices: number[] = [];
+  private currentZIndices: Vector2[] = [];
 
   // Line segment drag state
   private isDraggingLineSegment = false;
   private dragLineSegmentIndices: [number, number] | null = null;
   private dragLineSegmentStartY: number = 0;
+
+  // Double-click tracking
+  private lastClickTime: number = 0;
+  private lastClickHandle: ZIndexHandle | null = null;
+  private lastClickSegment: [number, number] | null = null;
+  private readonly DOUBLE_CLICK_THRESHOLD = 300; // ms
 
   /**
    * Clears all z-index visual elements and resets drag state.
@@ -58,31 +67,32 @@ export class ZIndexTool implements Tool {
    * Redraws just the line graphics based on current zIndices.
    * zIndices are normalized (0-1), so we convert to pixel coordinates.
    */
-  private redrawLines(zIndices: number[]): void {
+  private redrawLines(zIndices: Vector2[]): void {
     if (!this.currentLineGraphics || !this.currentObj) return;
 
     const lineGfx = this.currentLineGraphics;
     const obj = this.currentObj;
 
     lineGfx.clear();
-    zIndices.forEach((zIndex, idx) => {
-      const x = idx * obj.gridSize.x;
-      const y = zIndex * obj.pos.height;
+    zIndices.forEach((point, idx) => {
+      const x = point.x * obj.pos.width;
+      const y = point.y * obj.pos.height;
       if (idx === 0) {
         lineGfx.moveTo(x, y);
       } else {
-        lineGfx.lineTo(x, y).stroke({
-          color: 0xff0000,
-          width: 1,
-        });
+        lineGfx.lineTo(x, y);
       }
+    });
+    lineGfx.stroke({
+      color: 0xff0000,
+      width: 1,
     });
   }
 
   /**
    * Redraws the interactive line segment hit areas based on current zIndices.
    */
-  private redrawLineSegments(zIndices: number[]): void {
+  private redrawLineSegments(zIndices: Vector2[]): void {
     if (this.currentLineSegmentGraphics.length === 0 || !this.currentObj)
       return;
 
@@ -91,10 +101,10 @@ export class ZIndexTool implements Tool {
 
     // Update each line segment's position
     for (let i = 0; i < lineSegments.length; i++) {
-      const x1 = i * obj.gridSize.x;
-      const y1 = zIndices[i] * obj.pos.height;
-      const x2 = (i + 1) * obj.gridSize.x;
-      const y2 = zIndices[i + 1] * obj.pos.height;
+      const x1 = zIndices[i].x * obj.pos.width;
+      const y1 = zIndices[i].y * obj.pos.height;
+      const x2 = zIndices[i + 1].x * obj.pos.width;
+      const y2 = zIndices[i + 1].y * obj.pos.height;
 
       const lineSegmentGfx = lineSegments[i];
       lineSegmentGfx.clear();
@@ -111,7 +121,7 @@ export class ZIndexTool implements Tool {
   /**
    * Redraws the upper and lower area polygons based on current zIndices.
    */
-  private redrawPolygons(zIndices: number[]): void {
+  private redrawPolygons(zIndices: Vector2[]): void {
     if (
       !this.currentUpperPolygons ||
       !this.currentLowerPolygons ||
@@ -131,8 +141,8 @@ export class ZIndexTool implements Tool {
     upperPoints.push(obj.pos.width, 0);
     // Follow z-index line from right to left
     for (let i = zIndices.length - 1; i >= 0; i--) {
-      const x = i * obj.gridSize.x;
-      const y = zIndices[i] * obj.pos.height;
+      const x = zIndices[i].x * obj.pos.width;
+      const y = zIndices[i].y * obj.pos.height;
       upperPoints.push(x, y);
     }
 
@@ -140,8 +150,8 @@ export class ZIndexTool implements Tool {
     const lowerPoints: number[] = [];
     // Follow z-index line from left to right
     for (let i = 0; i < zIndices.length; i++) {
-      const x = i * obj.gridSize.x;
-      const y = zIndices[i] * obj.pos.height;
+      const x = zIndices[i].x * obj.pos.width;
+      const y = zIndices[i].y * obj.pos.height;
       lowerPoints.push(x, y);
     }
     // Bottom-right corner
@@ -184,7 +194,17 @@ export class ZIndexTool implements Tool {
    */
   public getCursor(e: P.FederatedPointerEvent): string | null {
     // Always show resize cursor while dragging
-    if (this.isDragging || this.isDraggingLineSegment) {
+    if (this.isDragging) {
+      // Check if this is the first or last handle (vertical only)
+      if (this.dragHandle) {
+        const isFirst = this.dragHandle.idx === 0;
+        const isLast = this.dragHandle.idx === this.currentZIndices.length - 1;
+        return isFirst || isLast ? "ns-resize" : "move";
+      }
+      return "move";
+    }
+
+    if (this.isDraggingLineSegment) {
       return "ns-resize";
     }
 
@@ -199,7 +219,9 @@ export class ZIndexTool implements Tool {
     // Check if we're hovering over a handle
     const hitHandle = this.hitTestHandles(localPos);
     if (hitHandle) {
-      return "ns-resize";
+      const isFirst = hitHandle.idx === 0;
+      const isLast = hitHandle.idx === this.currentZIndices.length - 1;
+      return isFirst || isLast ? "ns-resize" : "move";
     }
 
     // Check if we're hovering over a line segment
@@ -247,10 +269,27 @@ export class ZIndexTool implements Tool {
 
     // Get local position relative to tilesetContainer
     const localPos = g.tilesetContainer.toLocal(e.global);
+    const currentTime = Date.now();
+    const timeSinceLastClick = currentTime - this.lastClickTime;
 
     // Check if we hit a handle (handles have higher priority)
     const hitHandle = this.hitTestHandles(localPos);
     if (hitHandle) {
+      // Check for double-click on handle
+      if (
+        timeSinceLastClick < this.DOUBLE_CLICK_THRESHOLD &&
+        this.lastClickHandle?.idx === hitHandle.idx
+      ) {
+        // Double-click detected - remove handle (if not first or last)
+        this.removeHandle(hitHandle.idx);
+        this.lastClickTime = 0; // Reset to prevent triple-click
+        this.lastClickHandle = null;
+        return true;
+      }
+
+      this.lastClickTime = currentTime;
+      this.lastClickHandle = hitHandle;
+      this.lastClickSegment = null;
       this.startHandleDrag(hitHandle, e);
       return true;
     }
@@ -258,6 +297,23 @@ export class ZIndexTool implements Tool {
     // Check if we hit a line segment
     const hitSegment = this.hitTestLineSegments(localPos);
     if (hitSegment) {
+      // Check for double-click on line segment
+      if (
+        timeSinceLastClick < this.DOUBLE_CLICK_THRESHOLD &&
+        this.lastClickSegment &&
+        this.lastClickSegment[0] === hitSegment.indices[0] &&
+        this.lastClickSegment[1] === hitSegment.indices[1]
+      ) {
+        // Double-click detected - add handle at this position
+        this.addHandleAtPosition(localPos);
+        this.lastClickTime = 0; // Reset to prevent triple-click
+        this.lastClickSegment = null;
+        return true;
+      }
+
+      this.lastClickTime = currentTime;
+      this.lastClickSegment = hitSegment.indices;
+      this.lastClickHandle = null;
       this.startLineSegmentDrag(hitSegment.obj, hitSegment.indices, e);
       return true;
     }
@@ -276,8 +332,9 @@ export class ZIndexTool implements Tool {
     }
 
     for (const h of this.currentHandles) {
-      const handleX = obj.pos.x + h.idx * obj.gridSize.x;
-      const handleY = obj.pos.y + this.currentZIndices[h.idx] * obj.pos.height;
+      const point = this.currentZIndices[h.idx];
+      const handleX = obj.pos.x + point.x * obj.pos.width;
+      const handleY = obj.pos.y + point.y * obj.pos.height;
 
       const dx = localPos.x - handleX;
       const dy = localPos.y - handleY;
@@ -295,7 +352,7 @@ export class ZIndexTool implements Tool {
    * Hit tests all current line segments to find one at the given local position.
    */
   private hitTestLineSegments(
-    localPos: P.PointData
+    localPos: P.PointData,
   ): { obj: TileGroupTemplate; indices: [number, number] } | null {
     const hitWidth = 10; // Same as the stroke width for hit area
 
@@ -307,10 +364,12 @@ export class ZIndexTool implements Tool {
     const segments = this.currentZIndices.length - 1;
 
     for (let i = 0; i < segments; i++) {
-      const x1 = obj.pos.x + i * obj.gridSize.x;
-      const y1 = obj.pos.y + this.currentZIndices[i] * obj.pos.height;
-      const x2 = obj.pos.x + (i + 1) * obj.gridSize.x;
-      const y2 = obj.pos.y + this.currentZIndices[i + 1] * obj.pos.height;
+      const point1 = this.currentZIndices[i];
+      const point2 = this.currentZIndices[i + 1];
+      const x1 = obj.pos.x + point1.x * obj.pos.width;
+      const y1 = obj.pos.y + point1.y * obj.pos.height;
+      const x2 = obj.pos.x + point2.x * obj.pos.width;
+      const y2 = obj.pos.y + point2.y * obj.pos.height;
 
       // Calculate distance from point to line segment
       const distance = this.pointToLineSegmentDistance(
@@ -319,7 +378,7 @@ export class ZIndexTool implements Tool {
         x1,
         y1,
         x2,
-        y2
+        y2,
       );
 
       if (distance <= hitWidth / 2) {
@@ -339,7 +398,7 @@ export class ZIndexTool implements Tool {
     x1: number,
     y1: number,
     x2: number,
-    y2: number
+    y2: number,
   ): number {
     const dx = x2 - x1;
     const dy = y2 - y1;
@@ -353,7 +412,7 @@ export class ZIndexTool implements Tool {
     // Project point onto line segment, clamped to [0, 1]
     const t = Math.max(
       0,
-      Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lengthSquared)
+      Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lengthSquared),
     );
 
     // Find closest point on segment
@@ -368,7 +427,7 @@ export class ZIndexTool implements Tool {
    */
   private startHandleDrag(
     handle: ZIndexHandle,
-    _e: P.FederatedPointerEvent
+    _e: P.FederatedPointerEvent,
   ): void {
     const state = store.getState();
     const activeTsId = state.tilesetEditor.activeTilesetId;
@@ -379,7 +438,7 @@ export class ZIndexTool implements Tool {
 
     // Highlight the active handle
     handle.circleGfx.clear();
-    handle.circleGfx.circle(0, 0, 4).fill(0xffff00);
+    handle.circleGfx.circle(0, 0, 4).fill(moveHandleFill);
   }
 
   /**
@@ -400,19 +459,43 @@ export class ZIndexTool implements Tool {
     const handle = this.dragHandle;
     const obj = this.currentObj!;
 
-    // Calculate normalized z-index (0-1) based on position within object height
+    // Calculate normalized position (0-1) for both x and y
+    const relativeX = Math.round(localPos.x - obj.pos.x);
     const relativeY = Math.round(localPos.y - obj.pos.y);
-    const normalizedZ = relativeY / obj.pos.height;
-    // Clamp between 0 and 1
-    const clampedZ = Math.max(0, Math.min(1, normalizedZ));
+    const normalizedX = relativeX / obj.pos.width;
+    const normalizedY = relativeY / obj.pos.height;
+
+    // Clamp Y between 0 and 1
+    const clampedY = Math.max(0, Math.min(1, normalizedY));
+
+    // Handle X constraints based on position
+    let clampedX: number;
+    const isFirst = handle.idx === 0;
+    const isLast = handle.idx === this.currentZIndices.length - 1;
+
+    if (isFirst) {
+      // First handle must stay at x=0
+      clampedX = 0;
+    } else if (isLast) {
+      // Last handle must stay at x=1
+      clampedX = 1;
+    } else {
+      // Middle handles are constrained by neighbors with 1px buffer
+      const pixelBuffer = 1 / obj.pos.width; // 1 pixel normalized
+      const leftNeighbor = this.currentZIndices[handle.idx - 1];
+      const rightNeighbor = this.currentZIndices[handle.idx + 1];
+      const minX = leftNeighbor.x + pixelBuffer;
+      const maxX = rightNeighbor.x - pixelBuffer;
+      clampedX = Math.max(minX, Math.min(maxX, normalizedX));
+    }
 
     // Update the zIndices array
-    this.currentZIndices[handle.idx] = clampedZ;
+    this.currentZIndices[handle.idx] = { x: clampedX, y: clampedY };
 
     // Update the circle position visually (convert back to pixel coordinates)
-    const x = handle.idx * obj.gridSize.x;
-    const pixelY = clampedZ * obj.pos.height;
-    handle.circleGfx.position.set(obj.pos.x + x, obj.pos.y + pixelY);
+    const pixelX = clampedX * obj.pos.width;
+    const pixelY = clampedY * obj.pos.height;
+    handle.circleGfx.position.set(obj.pos.x + pixelX, obj.pos.y + pixelY);
 
     // Redraw the connecting lines with updated positions
     this.redrawLines(this.currentZIndices);
@@ -446,7 +529,7 @@ export class ZIndexTool implements Tool {
         changes: {
           zIndices: [...this.currentZIndices],
         },
-      })
+      }),
     );
 
     this.resetDrag();
@@ -458,7 +541,7 @@ export class ZIndexTool implements Tool {
   private startLineSegmentDrag(
     obj: TileGroupTemplate,
     indices: [number, number],
-    e: P.FederatedPointerEvent
+    e: P.FederatedPointerEvent,
   ): void {
     const state = store.getState();
     const activeTsId = state.tilesetEditor.activeTilesetId;
@@ -484,11 +567,11 @@ export class ZIndexTool implements Tool {
 
     if (handle1) {
       handle1.circleGfx.clear();
-      handle1.circleGfx.circle(0, 0, 4).fill(0xffff00);
+      handle1.circleGfx.circle(0, 0, 4).fill(moveHandleFill);
     }
     if (handle2) {
       handle2.circleGfx.clear();
-      handle2.circleGfx.circle(0, 0, 4).fill(0xffff00);
+      handle2.circleGfx.circle(0, 0, 4).fill(moveHandleFill);
     }
   }
 
@@ -524,21 +607,27 @@ export class ZIndexTool implements Tool {
     ] as TileGroupTemplate;
     if (!freshObj) return;
 
-    const newZ1 = freshObj.zIndices[idx1] + deltaNormalized;
-    const newZ2 = freshObj.zIndices[idx2] + deltaNormalized;
+    const newY1 = freshObj.zIndices[idx1].y + deltaNormalized;
+    const newY2 = freshObj.zIndices[idx2].y + deltaNormalized;
 
     // Check if either would exceed boundaries
-    if (newZ1 < 0 || newZ1 > 1 || newZ2 < 0 || newZ2 > 1) {
+    if (newY1 < 0 || newY1 > 1 || newY2 < 0 || newY2 > 1) {
       // Stop moving - clamp to boundary
-      const clampedZ1 = Math.max(0, Math.min(1, newZ1));
-      const clampedZ2 = Math.max(0, Math.min(1, newZ2));
+      const clampedY1 = Math.max(0, Math.min(1, newY1));
+      const clampedY2 = Math.max(0, Math.min(1, newY2));
 
-      this.currentZIndices[idx1] = clampedZ1;
-      this.currentZIndices[idx2] = clampedZ2;
+      this.currentZIndices[idx1] = {
+        ...this.currentZIndices[idx1],
+        y: clampedY1,
+      };
+      this.currentZIndices[idx2] = {
+        ...this.currentZIndices[idx2],
+        y: clampedY2,
+      };
     } else {
-      // Apply the delta to both handles
-      this.currentZIndices[idx1] = newZ1;
-      this.currentZIndices[idx2] = newZ2;
+      // Apply the delta to both handles (only y changes)
+      this.currentZIndices[idx1] = { ...this.currentZIndices[idx1], y: newY1 };
+      this.currentZIndices[idx2] = { ...this.currentZIndices[idx2], y: newY2 };
     }
 
     // Update both circle positions
@@ -546,15 +635,17 @@ export class ZIndexTool implements Tool {
     const handle2 = this.currentHandles.find((h) => h.idx === idx2);
 
     if (handle1) {
-      const x1 = idx1 * obj.gridSize.x;
-      const pixelY1 = this.currentZIndices[idx1] * obj.pos.height;
-      handle1.circleGfx.position.set(obj.pos.x + x1, obj.pos.y + pixelY1);
+      const point1 = this.currentZIndices[idx1];
+      const pixelX1 = point1.x * obj.pos.width;
+      const pixelY1 = point1.y * obj.pos.height;
+      handle1.circleGfx.position.set(obj.pos.x + pixelX1, obj.pos.y + pixelY1);
     }
 
     if (handle2) {
-      const x2 = idx2 * obj.gridSize.x;
-      const pixelY2 = this.currentZIndices[idx2] * obj.pos.height;
-      handle2.circleGfx.position.set(obj.pos.x + x2, obj.pos.y + pixelY2);
+      const point2 = this.currentZIndices[idx2];
+      const pixelX2 = point2.x * obj.pos.width;
+      const pixelY2 = point2.y * obj.pos.height;
+      handle2.circleGfx.position.set(obj.pos.x + pixelX2, obj.pos.y + pixelY2);
     }
 
     // Redraw the connecting lines with updated positions
@@ -596,7 +687,7 @@ export class ZIndexTool implements Tool {
         changes: {
           zIndices: [...this.currentZIndices],
         },
-      })
+      }),
     );
 
     this.resetLineSegmentDrag();
@@ -611,6 +702,109 @@ export class ZIndexTool implements Tool {
     this.isDraggingLineSegment = false;
     this.dragLineSegmentIndices = null;
     this.dragLineSegmentStartY = 0;
+  }
+
+  /**
+   * Removes a handle at the specified index (if not first or last).
+   */
+  private removeHandle(idx: number): void {
+    if (!this.currentObj) return;
+
+    const state = store.getState();
+    const activeTsId = state.tilesetEditor.activeTilesetId;
+    if (!activeTsId) return;
+
+    const obj = state.tilesetEditor.tilesets[activeTsId]?.tiles.entities[
+      this.currentObj.id
+    ] as TileGroupTemplate;
+    if (!obj) return;
+
+    // Cannot remove first or last handle
+    if (idx === 0 || idx === obj.zIndices.length - 1) return;
+
+    // Create new array without the specified index
+    const newZIndices = [
+      ...obj.zIndices.slice(0, idx),
+      ...obj.zIndices.slice(idx + 1),
+    ];
+
+    // Dispatch the update
+    store.dispatch(
+      actions.updateTilesetObject({
+        tsId: obj.tilesetId,
+        obj,
+        changes: {
+          zIndices: newZIndices,
+        },
+      }),
+    );
+
+    // Fetch the updated object from the store and redraw
+    const updatedState = store.getState();
+    const updatedObj = updatedState.tilesetEditor.tilesets[activeTsId]?.tiles
+      .entities[this.currentObj.id] as TileGroupTemplate;
+    if (updatedObj) {
+      this.setActiveObject(updatedObj);
+    }
+  }
+
+  /**
+   * Adds a new handle at the specified position.
+   */
+  private addHandleAtPosition(localPos: P.PointData): void {
+    if (!this.currentObj) return;
+
+    const state = store.getState();
+    const activeTsId = state.tilesetEditor.activeTilesetId;
+    if (!activeTsId) return;
+
+    const obj = state.tilesetEditor.tilesets[activeTsId]?.tiles.entities[
+      this.currentObj.id
+    ] as TileGroupTemplate;
+    if (!obj) return;
+
+    // Calculate normalized position (0-1)
+    const relativeX = localPos.x - obj.pos.x;
+    const relativeY = localPos.y - obj.pos.y;
+    const normalizedX = clamp(relativeX / obj.pos.width, 0, 1);
+    const normalizedY = clamp(relativeY / obj.pos.height, 0, 1);
+
+    const newPoint: Vector2 = { x: normalizedX, y: normalizedY };
+
+    // Find the correct position to insert (maintain sorted order by x)
+    const newZIndices = [...obj.zIndices];
+    let insertIndex = newZIndices.length;
+    for (let i = 0; i < newZIndices.length - 1; i++) {
+      if (
+        normalizedX > newZIndices[i].x &&
+        normalizedX < newZIndices[i + 1].x
+      ) {
+        insertIndex = i + 1;
+        break;
+      }
+    }
+
+    // Insert the new point
+    newZIndices.splice(insertIndex, 0, newPoint);
+
+    // Dispatch the update
+    store.dispatch(
+      actions.updateTilesetObject({
+        tsId: obj.tilesetId,
+        obj,
+        changes: {
+          zIndices: newZIndices,
+        },
+      }),
+    );
+
+    // Fetch the updated object from the store and redraw
+    const updatedState = store.getState();
+    const updatedObj = updatedState.tilesetEditor.tilesets[activeTsId]?.tiles
+      .entities[this.currentObj.id] as TileGroupTemplate;
+    if (updatedObj) {
+      this.setActiveObject(updatedObj);
+    }
   }
 
   public setActiveObject(obj: TileGroupTemplate | null): void {
@@ -629,24 +823,28 @@ export class ZIndexTool implements Tool {
     this.clearZIndices();
 
     this.currentObj = obj;
-    const zIndices = obj.zIndices.map((z) => clamp(z, 0, 1));
+    const zIndices = obj.zIndices.map((point) => ({
+      x: clamp(point.x, 0, 1),
+      y: clamp(point.y, 0, 1),
+    }));
 
     // Draw connecting lines
     const lineGfx = new P.Graphics();
     lineGfx.zIndex = 20;
-    zIndices.forEach((zIndex, idx) => {
-      const x = idx * obj.gridSize.x;
-      // Convert normalized z-index (0-1) to pixel coordinates
-      const y = zIndex * obj.pos.height;
+    zIndices.forEach((point, idx) => {
+      const x = point.x * obj.pos.width;
+      const y = point.y * obj.pos.height;
       if (idx === 0) {
         lineGfx.moveTo(x, y);
       } else {
-        lineGfx.lineTo(x, y).stroke({
-          color: 0xff0000,
-          width: 1,
-        });
+        lineGfx.lineTo(x, y);
       }
     });
+    lineGfx.stroke({
+      color: 0xff0000,
+      width: 1,
+    });
+
     lineGfx.position.set(obj.pos.x, obj.pos.y);
     g.zIndexOverlay.addChild(lineGfx);
     this.currentLineGraphics = lineGfx;
@@ -671,10 +869,10 @@ export class ZIndexTool implements Tool {
     // are on top) - these are now just visual placeholders for hit testing,
     // actual hit testing is done in hitTestLineSegments
     for (let i = 0; i < zIndices.length - 1; i++) {
-      const x1 = i * obj.gridSize.x;
-      const y1 = zIndices[i] * obj.pos.height;
-      const x2 = (i + 1) * obj.gridSize.x;
-      const y2 = zIndices[i + 1] * obj.pos.height;
+      const x1 = zIndices[i].x * obj.pos.width;
+      const y1 = zIndices[i].y * obj.pos.height;
+      const x2 = zIndices[i + 1].x * obj.pos.width;
+      const y2 = zIndices[i + 1].y * obj.pos.height;
 
       // Create an invisible interactive line segment with a wider hit area
       const lineSegmentGfx = new P.Graphics();
@@ -698,10 +896,9 @@ export class ZIndexTool implements Tool {
 
     // Draw each circle as a separate Graphics element (AFTER line
     // segments for proper z-order) - hit testing is now done in hitTestHandles
-    zIndices.forEach((zIndex, idx) => {
-      const x = idx * obj.gridSize.x;
-      // Convert normalized z-index (0-1) to pixel coordinates
-      const y = zIndex * obj.pos.height;
+    zIndices.forEach((point, idx) => {
+      const x = point.x * obj.pos.width;
+      const y = point.y * obj.pos.height;
 
       const circleGfx = new P.Graphics();
       circleGfx.circle(0, 0, 2).fill(0xff0000);
@@ -748,7 +945,7 @@ export function setupZIndexer(): ZIndexTool {
 
       const objs = selectedObjs.filter(isTileGroupTemplate);
       tool.setActiveObject(objs.length === 1 ? objs[0] : null);
-    }
+    },
   );
 
   return tool;

@@ -112,11 +112,12 @@ class Grouper extends ClickDragListener {
         });
         const avgColor = averageOklab(imgData);
 
-        const zIndices: number[] = [];
-        for (let x = 0; x < coords.width / gridSize; x++) {
-          zIndices.push(0.5);
-        }
-        zIndices.push(0.5);
+        // One for the beginning and one for the end of the tile group
+        // First point at far left (x=0), last point at far right (x=1)
+        const zIndices: Vector2[] = [
+          { x: 0, y: 0.5 },
+          { x: 1, y: 0.5 },
+        ];
 
         const group: TileGroupTemplate = {
           id,
@@ -216,5 +217,5 @@ subState(
   (groups, zoom) => {
     if (!groups) return;
     drawGroups(groups, zoom);
-  }
+  },
 );

@@ -59,6 +59,7 @@ import NpcTool from "./tools/tileset/NpcTool";
 import TileAnimationTool from "./tools/tileset/TileAnimationTool";
 import TileReplaceTool from "./tools/tileset/TileReplaceTool";
 import TileReslicerTool from "./tools/tileset/TileReslicerTool";
+import ZIndexTool from "./tools/tileset/ZIndexTool";
 
 export default function TilesetEditorTab({
   initPromise,
@@ -140,8 +141,9 @@ export default function TilesetEditorTab({
       queueMicrotask(() => {
         setSelectedAnimation(undefined);
       });
-      dispatch(clearCandAnimFramesThunk());
+      dispatch(actions.setActiveTool(null));
       dispatch(actions.clearSelection());
+      dispatch(clearCandAnimFramesThunk());
       dispatch(selectTilesetThunk(ts)).unwrap();
     }
   }, [tsId, tilesets, activeTilesetId, dispatch, location]);
@@ -169,6 +171,10 @@ export default function TilesetEditorTab({
 
   const hasTsSelected = ts !== null;
   const enableGroup = ts !== null && !ts.composite;
+  const tooLarge =
+    ts &&
+    (ts.width * ts.height) / (ts.gridSize * ts.gridSize) >
+      constants.maxSliceObjects;
 
   const toolPalette: Partial<Record<Mode, ToolDescriptor>> = useMemo(
     () =>
@@ -177,7 +183,7 @@ export default function TilesetEditorTab({
           name: "Reslicer",
           icon: <IconScissors size={16} />,
           options: <TileReslicerTool />,
-          enabled: enableGroup,
+          enabled: enableGroup && !tooLarge,
         },
 
         select: {
@@ -222,6 +228,7 @@ export default function TilesetEditorTab({
         "z-index": {
           name: "Set Z-Index",
           icon: <IconLetterZ size={16} />,
+          options: <ZIndexTool />,
           enabled: hasTsSelected,
         },
         "draw-colliders": {
@@ -231,7 +238,7 @@ export default function TilesetEditorTab({
           enabled: hasTsSelected,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,
-    [enableGroup, hasTsSelected, selectedAnimation],
+    [enableGroup, hasTsSelected, selectedAnimation, tooLarge],
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName]!;

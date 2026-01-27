@@ -59,3 +59,5 @@ export const gameUrls: Record<Env, string> = {
   prod: "https://getlost.gg/",
   qa: "https://qa.getlost.gg/",
 };
+
+export const maxSliceObjects = 1500;

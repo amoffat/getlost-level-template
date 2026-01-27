@@ -46,5 +46,10 @@ export interface TilesetDocV17 extends Omit<TilesetDocV16, "version"> {
   version: 17;
 }
 
-export type LatestTilesetDoc = TilesetDocV17;
-export const latestVersion = 17;
+// Version 18: Changed zIndices from number[] to Vector2[]
+export interface TilesetDocV18 extends Omit<TilesetDocV17, "version"> {
+  version: 18;
+}
+
+export type LatestTilesetDoc = TilesetDocV18;
+export const latestVersion = 18;

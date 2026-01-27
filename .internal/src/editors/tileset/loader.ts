@@ -139,7 +139,10 @@ export async function sliceTileset(tsId: string, coordsList: Rect[]) {
       pos: coords,
       tilesetId: tsId,
       gridSize: { x: coords.width, y: coords.height },
-      zIndices: [],
+      zIndices: [
+        { x: 0, y: 0.5 },
+        { x: 1, y: 0.5 },
+      ],
       name: "",
       tags: [],
       pinned: false,
