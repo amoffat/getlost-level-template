@@ -18,15 +18,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
-import React, {
-  memo,
-  ReactNode,
-  useCallback,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual } from "react-redux";
 import ObjectAnimationMenu from "./paletteMenus/ObjectAnimationMenu";
 import ObjectNpcMenu from "./paletteMenus/ObjectNpcMenu";
@@ -84,9 +76,8 @@ function ObjectPalette<ObjType extends TemplateObject>({
   );
   const [scale, setScale] = useState(defaultScale);
 
-  const objects: ReactNode[] = useMemo(() => {
-    const objs: ReactNode[] = [];
-
+  // Step 1: Filter and sort objects (independent of rendering concerns like scale/selection)
+  const sortedObjects = useMemo(() => {
     const filteredTilesets: Tileset[] = Object.values(tilesets).filter((t) => {
       if (visibleTileset) {
         return t.id === visibleTileset.id;
@@ -103,6 +94,7 @@ function ObjectPalette<ObjType extends TemplateObject>({
     // It is possible for multiple tilesets to contain the same tile group
     // (having the same id), because the id is a hash of the image data.
     const seen = new Set<string>();
+    const deduplicated: ObjType[] = [];
 
     for (const obj of sorted) {
       if (seen.has(obj.id)) continue;
@@ -119,30 +111,25 @@ function ObjectPalette<ObjType extends TemplateObject>({
         seen.add(obj.imageId);
       }
 
+      deduplicated.push(obj);
+    }
+
+    return deduplicated;
+  }, [tilesets, visibleTileset, sort, filter, paletteFilterSwitches]);
+
+  const objects = useMemo(() => {
+    const renderedObjects: React.ReactNode[] = [];
+    for (const obj of sortedObjects) {
       const selected = selectedObjects?.has(obj.id) ?? false;
       const rendered = renderObject({
         scale,
-        obj: obj as ObjType,
+        obj,
         selected,
       });
-      if (rendered) {
-        objs.push(rendered);
-      }
+      renderedObjects.push(rendered);
     }
-
-    return objs;
-  }, [
-    tilesets,
-    visibleTileset,
-    selectedObjects,
-    renderObject,
-    scale,
-    sort,
-    filter,
-    paletteFilterSwitches,
-  ]);
-
-  const deferredObjects = useDeferredValue(objects);
+    return renderedObjects;
+  }, [sortedObjects, selectedObjects, renderObject, scale]);
 
   const deselectObject = useCallback(() => {
     setObjMenuPos(null);
@@ -251,7 +238,7 @@ function ObjectPalette<ObjType extends TemplateObject>({
           onContextMenu={onContextMenu}
           style={{ paddingBottom: 75 }}
         >
-          {deferredObjects}
+          {objects}
         </div>
       </ScrollArea.Autosize>
       <Portal>
