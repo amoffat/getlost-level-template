@@ -148,7 +148,7 @@ export class Placer extends ClickDragListener {
         width,
         height,
       },
-      1
+      1,
     );
 
     const layer = ms.layers.active;
@@ -173,7 +173,7 @@ export class Placer extends ClickDragListener {
       // Get the max z-index of any existing objects here
       const maxZ = hits.reduce(
         (max, obj) => (obj.z > max ? obj.z : max),
-        Number.NEGATIVE_INFINITY
+        Number.NEGATIVE_INFINITY,
       );
 
       // Don't place if there's already something here
@@ -215,6 +215,7 @@ export class Placer extends ClickDragListener {
           width: obj.pos.width,
           height: obj.pos.height,
           flicker: undefined,
+          offDuringDay: undefined,
         } satisfies LightObj;
       } else if (obj.id === entranceIcon) {
         inst = {
@@ -446,7 +447,7 @@ subState(
       g.placableSprite?.destroy();
       g.placableSprite = undefined;
     }
-  }
+  },
 );
 
 subState([(state) => state.mapEditor.place.flipX], (flipX) => {

@@ -31,7 +31,7 @@ class Painter extends Placer {
     this.placeDispatcher = createRafThrottled(
       (obj: TileGroupTemplate | null) => {
         store.dispatch(mapEdActions.setPlace(obj));
-      }
+      },
     );
 
     this.posDispatcher = createRafThrottled((pos: Vector2) => {
@@ -44,9 +44,9 @@ class Painter extends Placer {
           mapEdActions.setToolOptions({
             tool: "autotiler",
             options: { candidates: cands },
-          })
+          }),
         );
-      }
+      },
     );
   }
   public pointerUp(_e: PointerEventData): void {
@@ -76,21 +76,21 @@ class Painter extends Placer {
 
     // Determine the snapped center tile position from the cursor using gridSnap
     const step = state.mapEditor.grid.size;
-    const baseX = Math.floor(e.localPos.x / step.x) * step.x;
-    const baseY = Math.floor(e.localPos.y / step.y) * step.y;
+    const snappedX = Math.floor(e.localPos.x / step.x) * step.x;
+    const snappedY = Math.floor(e.localPos.y / step.y) * step.y;
 
     const freezeCand = state.mapEditor.toolOptions["autotiler"].gridPosFreeze;
     if (freezeCand) {
       // If the candidate freeze position is set and matches our current grid pos,
       // then don't do anything more here.
-      if (freezeCand.x === baseX && freezeCand.y === baseY) {
+      if (freezeCand.x === snappedX && freezeCand.y === snappedY) {
         return;
       } else {
         store.dispatch(
           mapEdActions.setToolOptions({
             tool: "autotiler",
             options: { gridPosFreeze: null },
-          })
+          }),
         );
       }
     }
@@ -119,12 +119,13 @@ class Painter extends Placer {
     }
 
     const curGridPos = state.mapEditor.grid.curPos;
-    const gridChanged = curGridPos?.x !== baseX || curGridPos?.y !== baseY;
-    if (gridChanged) this.posDispatcher({ x: baseX, y: baseY });
+    const gridChanged =
+      curGridPos?.x !== snappedX || curGridPos?.y !== snappedY;
+    if (gridChanged) this.posDispatcher({ x: snappedX, y: snappedY });
 
     const resolveEdgeSig = function (
       x: number,
-      y: number
+      y: number,
     ): EdgeSignatures | undefined {
       const t = topByPos.get(`${x},${y}`);
       if (t) {
@@ -133,10 +134,10 @@ class Painter extends Placer {
       }
     };
 
-    const topSigs = resolveEdgeSig(baseX, baseY - step.y);
-    const bottomSigs = resolveEdgeSig(baseX, baseY + step.y);
-    const leftSigs = resolveEdgeSig(baseX - step.x, baseY);
-    const rightSigs = resolveEdgeSig(baseX + step.x, baseY);
+    const topSigs = resolveEdgeSig(snappedX, snappedY - step.y);
+    const bottomSigs = resolveEdgeSig(snappedX, snappedY + step.y);
+    const leftSigs = resolveEdgeSig(snappedX - step.x, snappedY);
+    const rightSigs = resolveEdgeSig(snappedX + step.x, snappedY);
 
     const hasAdjacentTiles = topSigs || bottomSigs || leftSigs || rightSigs;
     // No adjacent tiles to match against, so we can't do anything here.
@@ -167,7 +168,7 @@ class Painter extends Placer {
     const matches = matchTile(query, appG.tileEdgeSigs, { topN: 5 });
 
     // Exclude the tile currently under the cursor from consideration
-    const underPos = topByPos.get(`${baseX},${baseY}`);
+    const underPos = topByPos.get(`${snappedX},${snappedY}`);
     const filtered = matches.filter((m) => m.id !== underPos?.tsObjId);
     const match = filtered[0];
     const excludedUnder = !!underPos && filtered.length !== matches.length;
@@ -175,7 +176,7 @@ class Painter extends Placer {
     if (match) {
       const obj = tsSelectors.templateFromInstanceId(
         state,
-        match.id
+        match.id,
       ) as TileGroupTemplate;
 
       let orderedCandidates: TileGroupTemplate[] = [];
@@ -187,15 +188,15 @@ class Painter extends Placer {
           underPos!.tsObjId,
         ].map(
           (id) =>
-            tsSelectors.templateFromInstanceId(state, id)! as TileGroupTemplate
+            tsSelectors.templateFromInstanceId(state, id)! as TileGroupTemplate,
         );
       } else {
         orderedCandidates = matches.map(
           (m) =>
             tsSelectors.templateFromInstanceId(
               state,
-              m.id
-            )! as TileGroupTemplate
+              m.id,
+            )! as TileGroupTemplate,
         );
       }
       this.candidateDispatcher(orderedCandidates);
@@ -204,10 +205,8 @@ class Painter extends Placer {
         this.placeDispatcher(obj);
       }
 
-      const z = baseY;
-      g.placableOutline.position = { x: baseX, y: baseY };
-      g.placableContainer.position = { x: baseX, y: baseY };
-      g.placableContainer.zIndex = z;
+      g.placableOutline.position = { x: snappedX, y: snappedY };
+      g.placableContainer.position = { x: snappedX, y: snappedY };
     }
   }
 
