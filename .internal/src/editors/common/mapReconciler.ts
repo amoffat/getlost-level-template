@@ -22,7 +22,7 @@ import { toPixiRect } from "@/types/rect";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { makeGroupedDebouncer } from "@/utils/debounce";
-import { resolveTemplate } from "@/utils/map";
+import { resolveTemplateProps } from "@/utils/map";
 import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
 import { EMPTY } from "rxjs";
@@ -75,7 +75,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     value: T | null | undefined,
     template: any,
     key: string,
-    defaultValue: T
+    defaultValue: T,
   ): T {
     // If value is undefined, inherit from template. If it's null, don't.
     if (value === undefined && template) {
@@ -110,7 +110,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
   protected override updateItem(
     item: IndexItem,
-    changes: ReduxReconciler<MapObj>["ObjParamsType"]
+    changes: ReduxReconciler<MapObj>["ObjParamsType"],
   ): void {
     // If position-affecting props are changing, update spatial index.
     const willAffectPos =
@@ -133,7 +133,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     const state = store.getState();
     const objId = node.label;
     const obj = state.mapEditor.objects.entities[objId];
-    const tmpl = resolveTemplate(obj);
+    const tmpl = resolveTemplateProps(obj);
 
     if (props.x !== undefined) {
       node.x = props.x;
@@ -180,7 +180,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
           props.groundOffset,
           tmpl,
           "groundOffset",
-          0
+          0,
         );
         sprite.position.y = normalY - groundOffset;
       }
@@ -192,7 +192,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         props.hidden,
         tmpl,
         "hidden",
-        false
+        false,
       );
       node.alpha = hidden ? 0.35 : 1;
     }
@@ -203,7 +203,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
           props.tint,
           tmpl as unknown as TileGroupProps,
           "tint",
-          defaultTint
+          defaultTint,
         );
         node.tint = parseInt(tint, 16);
       }
@@ -211,7 +211,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
     if (Object.hasOwn(props, "status")) {
       const errorIndicator = node.getChildByLabel(
-        "errorIndicator"
+        "errorIndicator",
       ) as P.Container | null;
 
       if (errorIndicator) {
@@ -233,13 +233,13 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       const state = store.getState();
       const tsObj = tsSelectors.templateFromInstanceId(
         state,
-        obj.tsObjId
+        obj.tsObjId,
       ) as AnimationTemplate | null;
       if (!tsObj) {
         this.debouncedError(
           obj.tilesetId,
           "Missing object",
-          `The animation object with ID ${obj.tsObjId} could not be found in the tileset.`
+          `The animation object with ID ${obj.tsObjId} could not be found in the tileset.`,
         );
         return this.makeErrorNode(obj);
       }
@@ -262,7 +262,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
       sprite.position.set(
         sprite.width / 2 + texAtlasPadding,
-        sprite.height / 2 + texAtlasPadding
+        sprite.height / 2 + texAtlasPadding,
       );
       sprite.eventMode = "passive";
       sprite.anchor.set(0.5);
@@ -287,13 +287,13 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       const state = store.getState();
       const tsObj = tsSelectors.templateFromInstanceId(
         state,
-        obj.tsObjId
+        obj.tsObjId,
       ) as NpcTemplate | null;
       if (!tsObj) {
         this.debouncedError(
           obj.tilesetId,
           "Missing object",
-          `The NPC object with ID ${obj.tsObjId} could not be found in the tileset.`
+          `The NPC object with ID ${obj.tsObjId} could not be found in the tileset.`,
         );
         return this.makeErrorNode(obj);
       }
@@ -317,7 +317,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
       sprite.position.set(
         sprite.width / 2 + texAtlasPadding,
-        sprite.height / 2 + texAtlasPadding
+        sprite.height / 2 + texAtlasPadding,
       );
       sprite.eventMode = "passive";
       sprite.anchor.set(0.5);
@@ -341,13 +341,13 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       const state = store.getState();
       const tsObj = tsSelectors.templateFromInstanceId(
         state,
-        obj.tsObjId
+        obj.tsObjId,
       ) as TileGroupTemplate;
       if (!tsObj) {
         this.debouncedError(
           obj.tilesetId,
           "Missing object",
-          `The tile object with ID ${obj.tsObjId} could not be found in the tileset.`
+          `The tile object with ID ${obj.tsObjId} could not be found in the tileset.`,
         );
         return this.makeErrorNode(obj);
       }
@@ -358,7 +358,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         frame.x + texAtlasPadding,
         frame.y + texAtlasPadding,
         frame.width - 2 * texAtlasPadding,
-        frame.height - 2 * texAtlasPadding
+        frame.height - 2 * texAtlasPadding,
       );
       const tileTex = new P.Texture({
         source: tsTex.source,
@@ -377,7 +377,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
       sprite.position.set(
         sprite.width / 2 + texAtlasPadding,
-        sprite.height / 2 + texAtlasPadding
+        sprite.height / 2 + texAtlasPadding,
       );
       sprite.eventMode = "passive";
       sprite.anchor.set(0.5);
@@ -400,14 +400,14 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
           .fill(exitFill);
         sensorCircle.position.set(
           sprite.width / 2 + texAtlasPadding,
-          sprite.height / 2 + texAtlasPadding
+          sprite.height / 2 + texAtlasPadding,
         );
         sensorCircle.zIndex = 9;
         spriteContainer.addChild(sensorCircle);
 
         const errorIndicator = this.createErrorIndicator(
           sprite,
-          obj.status === "error"
+          obj.status === "error",
         );
         errorIndicator.zIndex = 20;
         spriteContainer.addChild(errorIndicator);
@@ -416,7 +416,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       if (isEntranceObj(obj)) {
         const errorIndicator = this.createErrorIndicator(
           sprite,
-          obj.status === "error"
+          obj.status === "error",
         );
         spriteContainer.addChild(errorIndicator);
       }
@@ -424,7 +424,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       if (isPickupObj(obj)) {
         const errorIndicator = this.createErrorIndicator(
           sprite,
-          obj.status === "error"
+          obj.status === "error",
         );
         errorIndicator.zIndex = 20;
         spriteContainer.addChild(errorIndicator);
@@ -477,7 +477,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
    */
   private createErrorIndicator(
     sprite: P.Sprite | P.AnimatedSprite,
-    visible: boolean
+    visible: boolean,
   ): P.Container {
     const state = store.getState();
     const errorContainer = new P.Container();
@@ -493,7 +493,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         0,
         0,
         sprite.width + 2 * texAtlasPadding,
-        sprite.height + 2 * texAtlasPadding
+        sprite.height + 2 * texAtlasPadding,
       )
       .stroke({ color: 0xff0000, width: 2 });
     errorContainer.addChild(errorBorder);
@@ -502,14 +502,14 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     const iconTsTex = this.getTilesetTex(iconTsId)!;
     const iconTsObj = tsSelectors.templateFromInstanceId(
       state,
-      errorIcon
+      errorIcon,
     ) as TileGroupTemplate;
     const iconFrame = iconTsObj.pos;
     const iconTexFrame = new P.Rectangle(
       iconFrame.x + texAtlasPadding,
       iconFrame.y + texAtlasPadding,
       iconFrame.width - 2 * texAtlasPadding,
-      iconFrame.height - 2 * texAtlasPadding
+      iconFrame.height - 2 * texAtlasPadding,
     );
     const iconTex = new P.Texture({
       source: iconTsTex.source,
@@ -521,7 +521,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     errorIconSprite.tint = 0xff0000; // Red tint
     errorIconSprite.position.set(
       sprite.width + texAtlasPadding,
-      texAtlasPadding
+      texAtlasPadding,
     );
     errorContainer.addChild(errorIconSprite);
 
@@ -551,7 +551,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     this.debouncedError(
       tsId,
       "Missing tileset",
-      `Tileset with SHA-1 hash ${tsId} not found. Map objects are replaced with a placeholder. Re-upload the tileset to fix this.`
+      `Tileset with SHA-1 hash ${tsId} not found. Map objects are replaced with a placeholder. Re-upload the tileset to fix this.`,
     );
   }
 

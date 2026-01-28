@@ -65,14 +65,14 @@ export default function TimeDisplay({ comms }: TimeDisplayProps) {
         <Button
           size="xs"
           variant="default"
-          onClick={() => forwardTime(60 * 1000)}
+          onClick={() => forwardTime(5 * 60 * 1000)}
         >
-          +1 min
+          +5 min
         </Button>
         <Button
           size="xs"
           variant="default"
-          onClick={() => forwardTime(3600 * 1000)}
+          onClick={() => forwardTime(60 * 60 * 1000)}
         >
           +1 hr
         </Button>

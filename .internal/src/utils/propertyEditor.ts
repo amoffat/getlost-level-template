@@ -7,7 +7,7 @@ import { actions as mapActions } from "@/slices/mapEditor";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { ExtractProps, MapObj, MapObjProps, TilesetMapObj } from "@/types/map";
-import { resolveTemplate } from "./map";
+import { resolveTemplateProps } from "./map";
 
 /**
  * Collects property values from a list of instance objects and their templates.
@@ -33,7 +33,7 @@ export function collectPropertyValues<
 
   // Collect values from each object and its template
   objs.forEach((obj) => {
-    const tmpl = resolveTemplate(obj) as MapObjProps | null;
+    const tmpl = resolveTemplateProps(obj) as MapObjProps | null;
 
     for (const propName of propertyNames) {
       const valuesArray = collected[propName];
@@ -112,7 +112,7 @@ export function updateObjectProperties<
     // Now collect all template IDs from the affected objects
     const allTmplIds = new Set<string>();
     for (const obj of objs) {
-      const tmpl = resolveTemplate(obj);
+      const tmpl = resolveTemplateProps(obj);
       if (!tmpl) continue;
       allTmplIds.add(tmpl.id);
     }
@@ -178,7 +178,7 @@ export function updateObjectProperties<
  */
 export function updateTilesetTemplates<TTemplate extends Record<string, any>>(
   objs: TilesetMapObj[],
-  props: Partial<TTemplate>
+  props: Partial<TTemplate>,
 ): void {
   // Object templates may come from different tilesets, so group by tileset ID
   const changesByTs = new Map<string, string[]>();

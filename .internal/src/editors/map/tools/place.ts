@@ -9,6 +9,7 @@ import { selectStroke } from "@/editors/common/strokes";
 import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import { actions, selectors } from "@/slices/mapEditor";
+import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { isAnimationTemplate, TileAnimationFrame } from "@/types/animation";
 import { Mode } from "@/types/editor";
@@ -71,6 +72,8 @@ export class Placer extends ClickDragListener {
   }
 
   public override pointerUp(_e: PointerEventData): void {
+    if (!this.paint) return;
+
     const state = store.getState();
     const mode = selectors.selectMode(state);
     if (!placeModes.has(mode)) return;
@@ -82,10 +85,29 @@ export class Placer extends ClickDragListener {
     this.paint = false;
   }
 
-  public override pointerDown(_e: PointerEventData): void {
-    this.paint = true;
+  public override pointerDown(e: PointerEventData): void {
     this.dragSessionIndex.clear();
     this.tempSpatialIndex.clear();
+
+    if (g.placableSprite) {
+      this.paint = true;
+    } else {
+      const searchBounds = rectToBBox(e.hitbox);
+
+      const hits = this.spatialIndex.getObjects({
+        pos: searchBounds,
+      });
+      if (hits.length > 0) {
+        const obj = hits[0]!;
+        if (isTileGroupInstance(obj)) {
+          const state = store.getState();
+          const tmpl = tsSelectors.templateFromInstanceId(state, obj.tsObjId);
+          if (tmpl) {
+            store.dispatch(actions.setPlace(tmpl));
+          }
+        }
+      }
+    }
   }
 
   public override pointerMove(e: PointerEventData): void {

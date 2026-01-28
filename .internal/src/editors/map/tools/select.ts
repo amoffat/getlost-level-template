@@ -1,12 +1,9 @@
 import { drawRectSelect } from "@/editors/common/select";
-import {
-  actions,
-  selectors as mapEdSelectors,
-  selectors,
-} from "@/slices/mapEditor";
+import { actions, selectors as mapEdSelectors } from "@/slices/mapEditor";
+import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { RootState, store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
-import { MapObj } from "@/types/map";
+import { isTileGroupInstance, MapObj } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";
 import { rectToBBox } from "@/utils/spatial";
@@ -191,6 +188,12 @@ class Selector extends ClickDragListener {
             ? actions.addOneSelected
             : actions.setOneSelected;
           store.dispatch(action(obj.id));
+          if (isTileGroupInstance(obj)) {
+            const tmpl = tsSelectors.templateFromInstanceId(state, obj.tsObjId);
+            if (tmpl) {
+              store.dispatch(actions.setPlace(tmpl));
+            }
+          }
         }
       } else {
         if (!this.addToSelection) {
@@ -200,7 +203,7 @@ class Selector extends ClickDragListener {
           actions.setProposedSelection({
             objects: hits,
             pos: e.pagePos,
-          })
+          }),
         );
       }
     }
@@ -275,8 +278,8 @@ export function clearObjectOutlines() {
  * When the selected objects change, we need to update the outlines.
  */
 subState(
-  [selectors.selectedObjs, (state) => state.mapEditor.zoomPan.zoom],
+  [mapEdSelectors.selectedObjs, (state) => state.mapEditor.zoomPan.zoom],
   (selectedObjs, zoom) => {
     outlineObjects(selectedObjs, zoom);
-  }
+  },
 );

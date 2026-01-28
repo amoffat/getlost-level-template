@@ -11,7 +11,7 @@ import {
 } from "@/types/map";
 import { HasId } from "./misc";
 
-export function resolveTemplate<
+export function resolveTemplateProps<
   TInstance extends MapObj,
   TProps extends ExtractProps<TInstance> = ExtractProps<TInstance> & HasId,
 >(obj: TInstance): TProps | null {
@@ -28,7 +28,7 @@ export function resolveTemplate<
   } else if (isMapObjFromTileset(obj)) {
     return tsSelectors.templateFromInstanceId(
       state,
-      obj.tsObjId
+      obj.tsObjId,
     ) as unknown as TProps;
   }
   return null;

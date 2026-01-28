@@ -61,3 +61,7 @@ export const gameUrls: Record<Env, string> = {
 };
 
 export const maxSliceObjects = 1500;
+export const defaultZIndices = [
+  { x: 0, y: 0.5 },
+  { x: 1, y: 0.5 },
+];

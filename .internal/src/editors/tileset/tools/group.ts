@@ -114,10 +114,7 @@ class Grouper extends ClickDragListener {
 
         // One for the beginning and one for the end of the tile group
         // First point at far left (x=0), last point at far right (x=1)
-        const zIndices: Vector2[] = [
-          { x: 0, y: 0.5 },
-          { x: 1, y: 0.5 },
-        ];
+        const zIndices: Vector2[] = structuredClone(constants.defaultZIndices);
 
         const group: TileGroupTemplate = {
           id,
