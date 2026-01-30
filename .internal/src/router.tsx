@@ -7,6 +7,7 @@ const routes = [
   { path: "/map", element: <ShellApp /> },
   { path: "/tilesets", element: <ShellApp /> },
   { path: "/tilesets/:tsid", element: <ShellApp /> },
+  { path: "/tilesets/:tsid/objects/:objid", element: <ShellApp /> },
   { path: "/npcs", element: <ShellApp /> },
   { path: "/story", element: <ShellApp /> },
   { path: "/dialogue", element: <ShellApp /> },

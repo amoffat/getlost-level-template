@@ -70,14 +70,14 @@ export default function MapEditorTab({
   initPromise: Promise<unknown>;
 }) {
   const selectedToolName = useAppSelector(
-    (state: RootState) => state.mapEditor.selectedTool
+    (state: RootState) => state.mapEditor.selectedTool,
   );
   const paletteSelection = useAppSelector(selectors.paletteSelectedTsObjIds);
   const tilesets = useAppSelector(
-    (state: RootState) => state.tilesetEditor.tilesets
+    (state: RootState) => state.tilesetEditor.tilesets,
   );
   const placeObj = useAppSelector(
-    (state: RootState) => state.mapEditor.place.obj
+    (state: RootState) => state.mapEditor.place.obj,
   );
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -131,10 +131,15 @@ export default function MapEditorTab({
   useEffect(() => {
     const container = containerRef.current!;
     const canvas = g.mapEditorApp!.canvas;
-    g.mapEditorApp!.resizeTo = container;
+
     if (!container.contains(canvas)) {
       container.appendChild(canvas);
     }
+
+    // Set resizeTo after a frame to ensure the container has its final size
+    requestAnimationFrame(() => {
+      g.mapEditorApp!.resizeTo = container;
+    });
   }, []);
 
   const onSelectObject = useCallback(
@@ -176,14 +181,14 @@ export default function MapEditorTab({
             options: {
               candidates: [...curCands, ...toAdd],
             },
-          })
+          }),
         );
       } else {
         dispatch(actions.setPlace(obj));
         dispatch(setToolThunk("paint"));
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   const onDeselectObject = useCallback(() => {
@@ -275,7 +280,7 @@ export default function MapEditorTab({
           options: <PickupTool />,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,
-    []
+    [],
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName];
@@ -285,7 +290,7 @@ export default function MapEditorTab({
     (slug: string) => {
       dispatch(setToolThunk(slug as Mode)).unwrap();
     },
-    [dispatch]
+    [dispatch],
   );
 
   const onToolDeactivated = useCallback(() => {

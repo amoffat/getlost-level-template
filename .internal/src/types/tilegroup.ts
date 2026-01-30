@@ -18,6 +18,7 @@ export interface TileGroupTemplate extends TileGroupProps {
   // The grid size this object is aligned to
   gridSize: Vector2;
   tilesetId: string;
+  // The position of the tilegroup within the tileset
   pos: Rect;
   pinned: boolean;
   zIndices: Vector2[];

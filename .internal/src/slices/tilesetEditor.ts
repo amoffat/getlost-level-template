@@ -75,7 +75,7 @@ export interface TilesetEditorState {
 
 const activeTileset = createTsSelector(
   [(state) => state.activeTilesetId, (state) => state.tilesets],
-  (tsId, tilesets): Tileset | null => (tsId ? (tilesets[tsId] ?? null) : null)
+  (tsId, tilesets): Tileset | null => (tsId ? (tilesets[tsId] ?? null) : null),
 );
 
 export const slice = createSlice({
@@ -134,7 +134,7 @@ export const slice = createSlice({
 
     setToolOptions<K extends ToolWithOptions>(
       state: TilesetEditorState,
-      action: PayloadAction<{ tool: K; options: Partial<ToolOptMapping[K]> }>
+      action: PayloadAction<{ tool: K; options: Partial<ToolOptMapping[K]> }>,
     ) {
       const { tool, options } = action.payload;
       state.toolOptions[tool] = { ...state.toolOptions[tool], ...options };
@@ -145,7 +145,7 @@ export const slice = createSlice({
       const newLength = frames.length + 1;
       const weights = resizeWeights(
         frames.map((f) => f.weight),
-        newLength
+        newLength,
       );
       // Update existing frames with rebalanced weights
       for (let i = 0; i < frames.length; i++) {
@@ -167,7 +167,7 @@ export const slice = createSlice({
       if (newLength > 0) {
         const weights = resizeWeights(
           frames.map((f) => f.weight),
-          newLength
+          newLength,
         );
         for (let i = 0; i < newLength; i++) {
           frames[i].weight = weights[i];
@@ -181,7 +181,7 @@ export const slice = createSlice({
 
     reorderCandAnimFrames(
       state,
-      action: PayloadAction<{ from: number; to: number }>
+      action: PayloadAction<{ from: number; to: number }>,
     ) {
       const { from, to } = action.payload;
       const frames = state.toolOptions.animator.frames;
@@ -200,7 +200,7 @@ export const slice = createSlice({
 
     updateCandAnimFrameWeight(
       state,
-      action: PayloadAction<{ idx: number; weight: number }>
+      action: PayloadAction<{ idx: number; weight: number }>,
     ) {
       const { idx, weight } = action.payload;
       const frames = state.toolOptions.animator.frames;
@@ -251,7 +251,7 @@ export const slice = createSlice({
         action: PayloadAction<{
           obj: TemplateObject;
           changes: Partial<TemplateObject>;
-        }>
+        }>,
       ) {
         const { obj, changes } = action.payload;
         const ts = state.tilesets[obj.tilesetId];
@@ -277,7 +277,7 @@ export const slice = createSlice({
         action: PayloadAction<{
           tsId: string;
           changes: { id: string; changes: Partial<TemplateObject> }[];
-        }>
+        }>,
       ) {
         const { tsId, changes } = action.payload;
         if (changes.length === 0) return;
@@ -299,23 +299,23 @@ export const slice = createSlice({
     },
     setCanvasSize(
       state,
-      action: PayloadAction<{ width: number; height: number }>
+      action: PayloadAction<{ width: number; height: number }>,
     ) {
       const { width, height } = action.payload;
       state.canvas.width = width;
       state.canvas.height = height;
     },
     setActiveTileset: {
-      prepare: (payload: Tileset | null) => ({
+      prepare: (payload: { ts: Tileset | null }) => ({
         meta: {
           reconcilePrefix,
           reconcileType: "setAll" as const,
-          reconcile: payload ? Object.values(payload.tiles.entities) : [],
+          reconcile: payload.ts ? Object.values(payload.ts.tiles.entities) : [],
         },
         payload,
       }),
-      reducer: (state, action: PayloadAction<Tileset | null>) => {
-        const ts = action.payload;
+      reducer: (state, action: PayloadAction<{ ts: Tileset | null }>) => {
+        const { ts } = action.payload;
         state.activeTilesetId = ts?.id ?? null;
 
         let zoomPan = DEFAULT_ZOOMPAN;
@@ -326,8 +326,9 @@ export const slice = createSlice({
               state.canvas.width,
               state.canvas.height,
               ts.width,
-              ts.height
+              ts.height,
             );
+
           state.grid.size = ts.gridSize;
         }
         state.activeZoomPan = zoomPan;
@@ -338,7 +339,7 @@ export const slice = createSlice({
       action: PayloadAction<{
         tsId: string;
         ts: Tileset;
-      }>
+      }>,
     ) => {
       const { ts } = action.payload;
       state.tilesets[ts.id] = ts;
@@ -379,6 +380,27 @@ export const slice = createSlice({
     setScanPos: (state, action: PayloadAction<Rect | null>) => {
       state.scanPos = action.payload;
     },
+    setFocusedObj(state, action: PayloadAction<string>) {
+      const objId = action.payload;
+      const tsId = state.activeTilesetId;
+      if (!tsId) return;
+      const ts = state.tilesets[tsId];
+      const obj = ts.tiles.entities[objId];
+
+      if (obj && isTileGroupTemplate(obj)) {
+        // Center zoomPan on the object
+        const objCenterX = obj.pos.x + obj.pos.width / 2;
+        const objCenterY = obj.pos.y + obj.pos.height / 2;
+
+        const zoom = 2; // Zoom in 2x to focus on the object
+        // Pan positions the container, so we need: canvasCenter - (worldObjectCenter * zoom)
+        const panX = state.canvas.width / 2 - objCenterX * zoom;
+        const panY = state.canvas.height / 2 - objCenterY * zoom;
+
+        const zoomPan = { zoom, pan: { x: panX, y: panY } };
+        state.activeZoomPan = zoomPan;
+      }
+    },
     setZoom: (state, action: PayloadAction<Zoom>) => {
       const zoom = action.payload;
       const tsId = state.activeTilesetId;
@@ -406,7 +428,7 @@ export const slice = createSlice({
 
     setTilesetGridSize(
       state,
-      action: PayloadAction<{ tsId: string; gridSize: number }>
+      action: PayloadAction<{ tsId: string; gridSize: number }>,
     ) {
       const { tsId, gridSize } = action.payload;
       const ts = state.tilesets[tsId];
@@ -431,7 +453,7 @@ export const slice = createSlice({
       }),
       reducer(
         state,
-        action: PayloadAction<{ tsId: string; objs: TemplateObject[] }>
+        action: PayloadAction<{ tsId: string; objs: TemplateObject[] }>,
       ) {
         const { tsId, objs } = action.payload;
         const ts = state.tilesets[tsId];
@@ -494,7 +516,7 @@ export const slice = createSlice({
 
     updateManySelected: (
       state,
-      action: PayloadAction<{ id: string; changes: Partial<TemplateObject> }[]>
+      action: PayloadAction<{ id: string; changes: Partial<TemplateObject> }[]>,
     ) => {
       selectedAdapter.updateMany(state.selectedTiles, action.payload);
     },
@@ -517,7 +539,7 @@ export const slice = createSlice({
         (state) => {
           state.loadingTilesets = true;
           state.tilesetsError = null;
-        }
+        },
       )
       .addMatcher(
         (action): action is any =>
@@ -525,7 +547,7 @@ export const slice = createSlice({
         (state) => {
           state.loadingTilesets = false;
           state.tilesetsLoaded = true;
-        }
+        },
       )
       .addMatcher(
         (action): action is any =>
@@ -534,13 +556,13 @@ export const slice = createSlice({
           state.loadingTilesets = false;
           state.tilesetsError =
             action.error?.message ?? "Failed to load tilesets";
-        }
+        },
       );
   },
   selectors: {
     selectTileset: createTsSelector(
       [(state, tsId: string) => state.tilesets[tsId]],
-      (ts): Tileset | null => (ts ? ts : null)
+      (ts): Tileset | null => (ts ? ts : null),
     ),
     activeTileset,
     activeTilesetGroups: createTsSelector(
@@ -551,21 +573,21 @@ export const slice = createSlice({
           .map((id) => ts.tiles.entities[id])
           .filter(isTileGroupTemplate);
         const broken = ts.tiles.ids.filter(
-          (id) => ts.tiles.entities[id] === undefined
+          (id) => ts.tiles.entities[id] === undefined,
         );
         if (broken.length) {
           log.warn({ broken }, "Broken tile ids detected");
         }
         return objs;
-      }
+      },
     ),
     selectMode: createTsSelector(
       [(state) => state.activeModeStack],
-      (activeModeStack): Mode => activeModeStack.at(-1) ?? "select"
+      (activeModeStack): Mode => activeModeStack.at(-1) ?? "select",
     ),
     paletteSelectedIds: createTsSelector(
       [(state) => state.selectedTiles.ids],
-      (selectedIds): Set<string> => new Set(selectedIds as string[])
+      (selectedIds): Set<string> => new Set(selectedIds as string[]),
     ),
     selectedObjects: createTsSelector(
       [(state) => state.selectedTiles, activeTileset],
@@ -585,7 +607,7 @@ export const slice = createSlice({
             return true;
           },
         },
-      }
+      },
     ),
     templatesFromInstanceIds: createTsSelector(
       [
@@ -596,7 +618,7 @@ export const slice = createSlice({
       (
         tilesets: Record<string, Tileset>,
         objIdToTs: Record<string, string>,
-        instanceIds: string[]
+        instanceIds: string[],
       ): (TileGroupTemplate | null)[] => {
         return instanceIds.map((instanceId) => {
           const tsId = objIdToTs[instanceId];
@@ -607,7 +629,7 @@ export const slice = createSlice({
           if (!obj || !isTileGroupTemplate(obj)) return null;
           return obj;
         });
-      }
+      },
     ),
     templateFromInstanceId: createTsSelector(
       [
@@ -618,7 +640,7 @@ export const slice = createSlice({
       (
         tilesets: Record<string, Tileset>,
         objIdToTs: Record<string, string>,
-        instanceId: string
+        instanceId: string,
       ): TemplateObject | null => {
         const tsId = objIdToTs[instanceId];
         if (!tsId) return null;
@@ -626,7 +648,7 @@ export const slice = createSlice({
         if (!ts) return null;
         const obj = ts.tiles.entities[instanceId];
         return obj ?? null;
-      }
+      },
     ),
     animations: createTsSelector(
       [(state, tsId) => state.tilesets[tsId]],
@@ -638,7 +660,7 @@ export const slice = createSlice({
           }
         }
         return animations;
-      }
+      },
     ),
     npcs: createTsSelector(
       [(state, tsId) => state.tilesets[tsId]],
@@ -650,7 +672,7 @@ export const slice = createSlice({
           }
         }
         return npcs;
-      }
+      },
     ),
   },
 });
@@ -670,8 +692,8 @@ const selectTilesets = createRootSelector(
           acc[ts.id] = ts;
           return acc;
         },
-        {} as Record<string, Tileset>
-      )
+        {} as Record<string, Tileset>,
+      ),
 );
 
 export const selectors = { ...slice.selectors, selectTilesets };

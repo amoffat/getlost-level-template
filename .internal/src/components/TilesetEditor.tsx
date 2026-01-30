@@ -3,11 +3,9 @@ import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
-import { store } from "@/store/store";
 import {
   clearCandAnimFramesThunk,
-  loadTilesetThunk,
-  selectTilesetThunk,
+  setActiveTilesetThunk,
   setAnimationFramesThunk,
   setNpcThunk,
   setToolThunk,
@@ -68,7 +66,10 @@ export default function TilesetEditorTab({
 }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { tsid: tsId } = useParams<{ tsid?: string }>();
+  const { tsid: tsId, objid: objId } = useParams<{
+    tsid?: string;
+    objid?: string;
+  }>();
   const location = useLocation();
   const selectedToolName = useAppSelector(
     (state) => state.tilesetEditor.selectedTool,
@@ -87,8 +88,26 @@ export default function TilesetEditorTab({
   const [selectedAnimation, setSelectedAnimation] =
     useState<AnimationTemplate>();
 
+  // This promise is created in the ShellApp and ensures the tileset editor (the
+  // pixi.js canvas) is loaded and ready.
   use(initPromise);
 
+  // Ensure the canvas is mounted in our container
+  useEffect(() => {
+    const container = containerRef.current!;
+    const canvas = g.tilesetEditorApp!.canvas;
+
+    if (!container.contains(canvas)) {
+      container.appendChild(canvas);
+    }
+
+    // Set resizeTo after a frame to ensure the container has its final size
+    requestAnimationFrame(() => {
+      g.tilesetEditorApp!.resizeTo = container;
+    });
+  }, []);
+
+  // Derive a tileset object from the active tileset id
   const ts = useMemo(() => {
     if (!activeTilesetId) return null;
     return tilesets[activeTilesetId] || null;
@@ -96,7 +115,7 @@ export default function TilesetEditorTab({
 
   const deferredTs = useDeferredValue(ts);
 
-  const setActiveTab = useCallback(
+  const setActivePaletteTab = useCallback(
     (tab: string | null) => {
       if (!tab) return;
       dispatch(uiActions.setTilesetTab(tab as TilesetTabName));
@@ -104,50 +123,25 @@ export default function TilesetEditorTab({
     [dispatch],
   );
 
+  // Select the tileset once it's available and not already active. This is
+  // primarily called in response to URL changes.
   useEffect(() => {
-    const container = containerRef.current!;
-    const canvas = g.tilesetEditorApp!.canvas;
-    g.tilesetEditorApp!.resizeTo = container;
-    if (!container.contains(canvas)) {
-      container.appendChild(canvas);
-    }
-  }, []);
-
-  // Ensure the tileset for the current URL is loaded
-  useEffect(() => {
-    if (!tsId) return;
-    if (!tilesets[tsId]) {
-      dispatch(loadTilesetThunk({ tsId }));
-    }
-  }, [tsId, tilesets, dispatch]);
-
-  // Select the tileset once it's available and not already active
-  useEffect(() => {
-    const samePage = location.pathname.startsWith("/tilesets");
+    // If there's no tileset ID in the URL, clear the active tileset
     if (!tsId) {
       // If we're navigating away don't clear our tools, selection, tileset,
       // etc, because we may want to jump back. We only want to clear those
       // things if the tileset is deleted.
+      const samePage = location.pathname.startsWith("/tilesets");
       if (!samePage) return;
 
-      dispatch(actions.setActiveTool(null));
-      dispatch(actions.clearSelection());
-      dispatch(clearCandAnimFramesThunk());
-      dispatch(selectTilesetThunk(null)).unwrap();
+      dispatch(setActiveTilesetThunk({ tsId: null }));
       return;
     }
-    const ts = tilesets[tsId];
-    if (ts && activeTilesetId !== tsId) {
-      queueMicrotask(() => {
-        setSelectedAnimation(undefined);
-      });
-      dispatch(actions.setActiveTool(null));
-      dispatch(actions.clearSelection());
-      dispatch(clearCandAnimFramesThunk());
-      dispatch(selectTilesetThunk(ts)).unwrap();
-    }
-  }, [tsId, tilesets, activeTilesetId, dispatch, location]);
 
+    dispatch(setActiveTilesetThunk({ tsId, objId }));
+  }, [tsId, dispatch, location, objId]);
+
+  // This renders our list of tileset images for the left panel
   const tilesetImages = useMemo(
     () =>
       Object.values(tilesets).map((ts) => (
@@ -248,16 +242,7 @@ export default function TilesetEditorTab({
     async (obj: TemplateObject, e: React.MouseEvent) => {
       if (e.button === 2) return;
 
-      // If we don't have the tileset loaded, load the tileset associated with
-      // the object we just selected.
-      if (!ts) {
-        const state = store.getState();
-        const tilesets = selectors.selectTilesets(state);
-
-        const ts = tilesets[obj.tilesetId];
-        await dispatch(selectTilesetThunk(ts)).unwrap();
-        await navigate(`/tilesets/${ts.id}`);
-      }
+      await navigate(`/tilesets/${obj.tilesetId}/objects/${obj.id}`);
 
       setSelectedAnimation(undefined);
       dispatch(actions.setOneSelected(obj));
@@ -392,7 +377,7 @@ export default function TilesetEditorTab({
               <Stack style={{ height: "100%" }} p={0}>
                 <Tabs
                   value={curTab}
-                  onChange={setActiveTab}
+                  onChange={setActivePaletteTab}
                   className="flex-overflow"
                 >
                   <Tabs.List>

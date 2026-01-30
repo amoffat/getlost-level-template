@@ -19,6 +19,11 @@ export async function loadTilesets(): Promise<LoadTilesetsResponse> {
   return resp;
 }
 
+/**
+ * Loads a single tileset by id, applying migrations as needed.
+ * @param id The tileset id
+ * @returns The loaded Tileset
+ */
 export async function loadTileset(id: string): Promise<Tileset> {
   const res = await fetch(`/level/tilesets/${encodeURIComponent(id)}.cbor.gz`, {
     method: "GET",
@@ -37,7 +42,7 @@ export async function loadTileset(id: string): Promise<Tileset> {
     if (!isNaN(versionOverride)) {
       baseDecoded.version = versionOverride;
       log.info(
-        `Tileset ${id} version overridden to ${versionOverride} via querystring`
+        `Tileset ${id} version overridden to ${versionOverride} via querystring`,
       );
     }
   }
@@ -45,7 +50,7 @@ export async function loadTileset(id: string): Promise<Tileset> {
   const migrated = await applyMigrations(
     baseDecoded,
     migrations,
-    latestVersion
+    latestVersion,
   );
 
   const decoded = baseDecoded as LatestTilesetDoc;
@@ -127,7 +132,7 @@ export async function saveTileset(ts: Tileset) {
     {
       method: "PUT",
       body: form,
-    }
+    },
   );
   if (!res.ok) throw new Error(`saveMeta failed: ${res.status}`);
 }

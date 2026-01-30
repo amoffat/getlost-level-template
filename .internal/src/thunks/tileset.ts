@@ -29,20 +29,36 @@ import { genTilesetId, loadTilesetImage } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
-export const selectTilesetThunk = createAsyncThunk(
-  "tilesetEditor/selectTilesetThunk",
-  async (ts: Tileset | null, { dispatch, getState }) => {
+export const setActiveTilesetThunk = createAsyncThunk(
+  "tilesetEditor/setActiveTilesetThunk",
+  async (
+    { tsId, objId }: { tsId: string | null; objId?: string },
+    { dispatch, getState },
+  ) => {
     const state = getState() as RootState;
+    const tilesets = state.tilesetEditor.tilesets;
+    const ts = tsId ? (tilesets[tsId] ?? null) : null;
+
+    if (tsId && ts === null) {
+      await dispatch(loadTilesetThunk({ tsId })).unwrap();
+    }
 
     // Already active?
-    if (ts?.id === state.tilesetEditor.activeTilesetId) {
+    if (tsId && tsId === state.tilesetEditor.activeTilesetId) {
+      if (objId) {
+        dispatch(tsActions.setFocusedObj(objId));
+      }
       return true;
     }
+
+    dispatch(tsActions.setActiveTool(null));
+    dispatch(tsActions.clearSelection());
+    dispatch(clearCandAnimFramesThunk());
 
     // Add it to pixi.js
     await setCanvasTileset(ts);
     // Set it as active, which loads its zoom/pan state
-    dispatch(tsActions.setActiveTileset(ts));
+    dispatch(tsActions.setActiveTileset({ ts }));
 
     if (ts) {
       const tex = await loadTilesetImage(ts);
@@ -52,6 +68,10 @@ export const selectTilesetThunk = createAsyncThunk(
           height: tex.height,
         }),
       );
+    }
+
+    if (objId) {
+      dispatch(tsActions.setFocusedObj(objId));
     }
   },
 );
@@ -111,7 +131,9 @@ export const uploadTilesetThunk = createAsyncThunk(
   },
 );
 
-// New thunk that loads a single tileset and performs all related side effects
+// Loads a single tileset and performs all related side effects. This does not
+// make it the active tileset, this just does all the loading to prepare it for
+// use.
 export const loadTilesetThunk = createAsyncThunk(
   "tilesetEditor/loadTilesetThunk",
   async ({ tsId }: { tsId: string }, { dispatch }) => {
@@ -128,6 +150,7 @@ export const loadTilesetThunk = createAsyncThunk(
     // Preload its texture
     const tex = await loadTilesetImage(ts);
 
+    // Reuse the old canvas if possible to save memory
     if (oldSource) {
       oldSource.context2D.clearRect(0, 0, oldSource.width, oldSource.height);
       oldSource.context2D.drawImage(
