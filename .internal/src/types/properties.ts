@@ -1,8 +1,8 @@
 import { WalkSound } from "@/constants";
+import type { LightFlicker } from "./lights";
 import type { NpcAnimationRecord } from "./npc";
 
 type InstanceStatus = "error" | "warning";
-type LightFlicker = "constant" | "campfire" | "fluorescent";
 
 export interface EntranceProps {
   name: string;

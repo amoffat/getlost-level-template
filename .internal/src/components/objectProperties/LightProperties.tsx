@@ -1,6 +1,7 @@
 import * as constants from "@/constants";
 import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
+import { LightFlicker, lightFlickerTypes } from "@/types/lights";
 import { LightObj } from "@/types/map";
 import { LightProps } from "@/types/properties";
 import {
@@ -11,6 +12,7 @@ import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
 import {
   ColorInput,
   Fieldset,
+  Select,
   Slider,
   Stack,
   Switch,
@@ -20,7 +22,13 @@ import { memo, ReactNode, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
 
 // Properties that collectPropertyValues needs to access
-const COLLECTED_PROPS = ["color", "intensity", "name", "offDuringDay"] as const;
+const COLLECTED_PROPS = [
+  "color",
+  "intensity",
+  "name",
+  "offDuringDay",
+  "flicker",
+] as const;
 
 // Additional properties needed for identification
 const TEMPLATE_PROPS = ["id"] as const;
@@ -175,6 +183,39 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
     />
   );
 
+  const flickerInput = (
+    <PropertyValue
+      label="Flicker"
+      description="The flicker pattern of the light"
+      noTemplate
+      values={toCollect.flicker}
+      defaultValue={constants.defaultLightFlicker}
+      onValueChange={(
+        level: PropertyValueLevel,
+        value: LightFlicker | undefined,
+      ): void => {
+        updateProps(level, { flicker: value });
+      }}
+      renderInput={(
+        value: LightFlicker | undefined,
+        onChange: (value: LightFlicker) => void,
+      ): ReactNode => {
+        return (
+          <Select
+            data={lightFlickerTypes.map((type) => ({
+              value: type,
+              label: type.charAt(0).toUpperCase() + type.slice(1),
+            }))}
+            value={value}
+            onChange={(val) => {
+              if (val) onChange(val as LightFlicker);
+            }}
+          />
+        );
+      }}
+    />
+  );
+
   return (
     <Fieldset legend="Light properties" mt="md" p="xs">
       <Stack p={0} gap="xl">
@@ -182,6 +223,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
         {colorInput}
         {intensityInput}
         {offDuringDayInput}
+        {flickerInput}
       </Stack>
     </Fieldset>
   );

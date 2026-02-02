@@ -29,13 +29,13 @@ export interface SetAudioModeRequest {
 export type DebugFlagKey =
   | "collisions"
   | "pathfinding"
-  | "charDetails"
+  | "objDetails"
   | "zSorting";
 
 export interface DebugFlag {
   type: "debug-flag";
   data: {
-    flag: string;
+    flag: DebugFlagKey;
     value: boolean;
   };
 }

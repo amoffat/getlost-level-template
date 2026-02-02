@@ -243,7 +243,7 @@ export default function PreviewTab() {
     });
   }, [audioMode, comms, iframeLoaded]);
 
-  const toggleDebug = (flag: string, enabled: boolean) => {
+  const toggleDebug = (flag: DebugFlagKey, enabled: boolean) => {
     setDebugFlags((prev) => ({ ...prev, [flag]: enabled }));
 
     if (!comms || !iframeLoaded) return;
@@ -675,11 +675,8 @@ export default function PreviewTab() {
               <Stack gap="sm" p={0} mt="md">
                 {createDebugSwitch("Show collisions", "collisions")}
                 {createDebugSwitch("Show pathfinding", "pathfinding")}
-                {createDebugSwitch(
-                  "Show character bounding boxes",
-                  "charSprites",
-                )}
-                {createDebugSwitch("Show z-sorting bounding boxes", "zSorting")}
+                {createDebugSwitch("Show scene depth", "zSorting")}
+                {createDebugSwitch("Show object details", "objDetails")}
               </Stack>
             </Fieldset>
           </Stack>

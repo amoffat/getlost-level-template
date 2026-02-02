@@ -43,6 +43,7 @@ export const defaultNpcWalkSpeed = 0.5;
 export const defaultExitSensorRadius = 16;
 export const defaultLightIntensity = 1.0;
 export const defaultLightColor = "ffffff";
+export const defaultLightFlicker = "constant" as const;
 
 export const lightTemplateId = "lightsTemplate";
 export const entryTemplateId = "entryGatewaysTemplate";
