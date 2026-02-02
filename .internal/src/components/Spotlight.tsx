@@ -52,7 +52,7 @@ export default function Spotlight() {
                 });
 
                 const tilesets = Object.keys(
-                  state.tilesetEditor.tilesets
+                  state.tilesetEditor.tilesets,
                 ).length;
                 items.push({
                   ok: tilesets === 0,
@@ -150,7 +150,7 @@ export default function Spotlight() {
             },
             leftSection: <IconTrash />,
           },
-        ]
+        ],
       );
     } else if (activeTab === "tileset-editor") {
       actions.push(
@@ -197,12 +197,12 @@ export default function Spotlight() {
                 });
               }
               dispatch(
-                tsActions.updateManyTilesetObjects({ tsId: ts.id, changes })
+                tsActions.updateManyTilesetObjects({ tsId: ts.id, changes }),
               );
               dispatch(tsActions.clearSelection());
             },
           },
-        ]
+        ],
       );
     }
 
@@ -214,6 +214,7 @@ export default function Spotlight() {
   return (
     <MantineSpotlight
       actions={actions}
+      shortcut={["mod + K", "ctrl + K"]}
       centered
       nothingFound="Nothing found..."
       highlightQuery
