@@ -51,15 +51,15 @@ export default function Spotlight() {
                       : `${mapObjs} map objects will be deleted.`,
                 });
 
-                const tilesets = Object.keys(
+                const numTilesets = Object.values(
                   state.tilesetEditor.tilesets,
-                ).length;
+                ).filter((ts) => !ts.hidden).length;
                 items.push({
-                  ok: tilesets === 0,
+                  ok: numTilesets === 0,
                   message:
-                    tilesets === 0
+                    numTilesets === 0
                       ? "You have no tilesets."
-                      : `${tilesets} tilesets will be deleted.`,
+                      : `${numTilesets} tilesets will be deleted.`,
                 });
 
                 const dialogues = state.dialogue.nodes.length;

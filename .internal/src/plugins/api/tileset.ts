@@ -41,10 +41,15 @@ function readDir(path: string): string[] {
   return ids;
 }
 
-function pathForId(
-  id: string,
-  restricted?: boolean
-): { cbor: string; png: string } | null {
+function pathForId({
+  id,
+  restricted,
+  checkSystem,
+}: {
+  id: string;
+  restricted?: boolean;
+  checkSystem?: boolean;
+}): { cbor: string; png: string } | null {
   // Check level directory (with or without restricted subdirectory)
   const levelCborPath = resolve(levelTsDir, `${id}.cbor.gz`);
   const levelPngPath = restricted
@@ -54,13 +59,15 @@ function pathForId(
     return { cbor: levelCborPath, png: levelPngPath };
   }
 
-  // Check system directory (with or without restricted subdirectory)
-  const systemCborPath = resolve(systemTsDir, `${id}.cbor.gz`);
-  const systemPngPath = restricted
-    ? resolve(systemTsDir, "restricted", `${id}.png`)
-    : resolve(systemTsDir, `${id}.png`);
-  if (fs.existsSync(systemCborPath)) {
-    return { cbor: systemCborPath, png: systemPngPath };
+  if (checkSystem ?? true) {
+    // Check system directory (with or without restricted subdirectory)
+    const systemCborPath = resolve(systemTsDir, `${id}.cbor.gz`);
+    const systemPngPath = restricted
+      ? resolve(systemTsDir, "restricted", `${id}.png`)
+      : resolve(systemTsDir, `${id}.png`);
+    if (fs.existsSync(systemCborPath)) {
+      return { cbor: systemCborPath, png: systemPngPath };
+    }
   }
 
   return null;
@@ -92,7 +99,7 @@ router.get("/:id.cbor.gz", (req, res) => {
     console.log(`Serving tileset ${id}`);
 
     // First try to read the CBOR to check if restricted property is set
-    const initialPaths = pathForId(id, false);
+    const initialPaths = pathForId({ id, restricted: false });
     if (!initialPaths || !fs.existsSync(initialPaths.cbor)) {
       res.sendStatus(404);
       return;
@@ -105,7 +112,7 @@ router.get("/:id.cbor.gz", (req, res) => {
       const doc = decode(cborData) as TilesetDoc;
 
       // Now get the correct paths based on restricted property
-      const paths = pathForId(id, doc.tileset.restricted);
+      const paths = pathForId({ id, restricted: doc.tileset.restricted });
       if (!paths) {
         res.sendStatus(404);
         return;
@@ -134,7 +141,7 @@ router.get("/:id.cbor.gz", (req, res) => {
       res.setHeader("Vary", "Accept-Encoding");
       res.setHeader(
         tilesetSourceHeader,
-        paths.cbor.startsWith(levelTsDir) ? "level" : "system"
+        paths.cbor.startsWith(levelTsDir) ? "level" : "system",
       );
       res.send(cborGz);
     } catch (err) {
@@ -156,7 +163,7 @@ router.delete("/:id.cbor.gz", (req, res) => {
       return;
     }
 
-    const paths = pathForId(id);
+    const paths = pathForId({ id, checkSystem: false });
     if (paths) {
       if (fs.existsSync(paths.cbor)) fs.unlinkSync(paths.cbor);
       if (fs.existsSync(paths.png)) fs.unlinkSync(paths.png);
@@ -206,7 +213,7 @@ router.put("/:id.cbor.gz", (req, res) => {
       delete doc.imageData;
 
       // Determine output paths
-      let paths = pathForId(id, doc.tileset.restricted);
+      let paths = pathForId({ id, restricted: doc.tileset.restricted });
       if (!paths) {
         fs.mkdirSync(levelTsDir, { recursive: true });
         if (doc.tileset.restricted) {

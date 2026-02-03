@@ -26,6 +26,7 @@ export interface Tileset {
   // A composite tileset combines multiple source tilesets into one, which
   // implies that it has no innate grid size (a grid size of 1x1)
   composite: boolean;
+  // An alias for an internal/system tileset
   hidden?: boolean;
   restricted?: boolean;
 }
