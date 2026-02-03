@@ -66,3 +66,6 @@ export const defaultZIndices = [
   { x: 0, y: 0.5 },
   { x: 1, y: 0.5 },
 ];
+
+export const minBoundsSize = 128;
+export const maxBoundsArea = 1750 * 1750;

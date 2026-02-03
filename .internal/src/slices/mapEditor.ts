@@ -191,6 +191,16 @@ export const slice = createSlice({
       state.zoomPan = action.payload;
     },
 
+    setBounds: {
+      prepare: (payload: Rect) => ({
+        meta: { reconcilePrefix, reconcileType: "misc" as const },
+        payload,
+      }),
+      reducer: (state, action: PayloadAction<Rect>) => {
+        state.bounds = action.payload;
+      },
+    },
+
     setGridSnap(state, action: { payload: boolean }) {
       state.grid.snap = action.payload;
     },

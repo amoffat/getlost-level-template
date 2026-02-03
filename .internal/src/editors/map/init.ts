@@ -21,6 +21,7 @@ import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
 import { initLayerVisibility } from "./layers";
 import { setupAutotiler } from "./tools/autotiler";
+import { setupBoundsDragger } from "./tools/bounds";
 import { setupFill } from "./tools/fill";
 import { setupMover } from "./tools/move";
 import { setupPlacer } from "./tools/place";
@@ -173,6 +174,7 @@ export async function init(): Promise<P.Application> {
   g.mover = setupMover(cd);
   setupPlacer({ cd, spatialIndex });
   setupAutotiler({ cd, spatialIndex });
+  setupBoundsDragger(cd);
   setupWheelZoom({
     canvas,
     stage,

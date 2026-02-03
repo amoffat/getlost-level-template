@@ -19,7 +19,7 @@ export const setActiveLayerThunk = createAsyncThunk(
   "mapEditor/setActiveLayerThunk",
   async (
     { layer, notify }: { layer: MapLayerName; notify?: boolean },
-    { dispatch, getState }
+    { dispatch, getState },
   ) => {
     const state = getState() as RootState;
     if (state.mapEditor.layers.active === layer) return;
@@ -34,7 +34,7 @@ export const setActiveLayerThunk = createAsyncThunk(
         autoClose: 3000,
       });
     }
-  }
+  },
 );
 
 export const loadMapThunk = createAsyncThunk(
@@ -49,9 +49,10 @@ export const loadMapThunk = createAsyncThunk(
         if (obj) objs.push(obj);
       }
       dispatch(mapActions.setAll(objs));
+      dispatch(mapActions.setBounds(persisted.bounds));
     }
     dispatch(uiActions.popLoadingMessage());
-  }
+  },
 );
 
 export const resetMapThunk = createAsyncThunk(
@@ -66,7 +67,7 @@ export const resetMapThunk = createAsyncThunk(
       autoClose: 3000,
     });
     router.navigate("/map");
-  }
+  },
 );
 
 export const resetAllThunk = createAsyncThunk(
@@ -87,7 +88,7 @@ export const resetAllThunk = createAsyncThunk(
       autoClose: 3000,
     });
     router.navigate("/");
-  }
+  },
 );
 
 export const duplicateSelectionThunk = createAsyncThunk(
@@ -117,7 +118,7 @@ export const duplicateSelectionThunk = createAsyncThunk(
     dispatch(mapActions.setManySelected(newObjs.map((o) => o.id)));
     // Switch to "duplicate" mode which will allow immediate moving
     dispatch(mapActions.setMode("duplicate"));
-  }
+  },
 );
 
 export const setToolThunk = createAsyncThunk(
@@ -145,7 +146,7 @@ export const setToolThunk = createAsyncThunk(
 
     dispatch(mapActions.setMode(tool));
     dispatch(mapActions.setActiveTool(tool));
-  }
+  },
 );
 
 export const bringToTopThunk = createAsyncThunk(
@@ -174,7 +175,7 @@ export const bringToTopThunk = createAsyncThunk(
     }
 
     dispatch(mapActions.updateMany(changeList));
-  }
+  },
 );
 
 export const sendToBottomThunk = createAsyncThunk(
@@ -203,7 +204,7 @@ export const sendToBottomThunk = createAsyncThunk(
     }
 
     dispatch(mapActions.updateMany(changeList));
-  }
+  },
 );
 
 export const setUncommittedObjIdsThunk = createAsyncThunk(
@@ -212,7 +213,7 @@ export const setUncommittedObjIdsThunk = createAsyncThunk(
     await dispatch(clearUncommittedThunk()).unwrap();
     dispatch(mapActions.setUncommittedObjIds(obs.map((o) => o.id)));
     dispatch(mapActions.addMany(obs));
-  }
+  },
 );
 
 export const clearUncommittedThunk = createAsyncThunk(
@@ -223,12 +224,12 @@ export const clearUncommittedThunk = createAsyncThunk(
     if (uncommitted.length) {
       dispatch(mapActions.removeMany(uncommitted));
     }
-  }
+  },
 );
 
 export const commitObjectsThunk = createAsyncThunk(
   "mapEditor/commitObjectsThunk",
   async (_, { dispatch }) => {
     dispatch(mapActions.setUncommittedObjIds([]));
-  }
+  },
 );

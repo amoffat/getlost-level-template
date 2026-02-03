@@ -29,6 +29,7 @@ import {
   IconCarCrash,
   IconDoorExit,
   IconEar,
+  IconFrame,
   IconGift,
   IconInputSpark,
   IconMapPin,
@@ -60,6 +61,7 @@ import AutotilerTool from "./tools/map/AutotilerTool";
 import ColliderTool from "./tools/map/ColliderTool";
 import FillTool from "./tools/map/FillTool";
 import GatewayTool from "./tools/map/GatewayTool";
+import MapBoundsTool from "./tools/map/MapBoundsTool";
 import PaintTool from "./tools/map/PaintTool";
 import PickupTool from "./tools/map/PickupTool";
 import SelectTool from "./tools/map/SelectTool";
@@ -278,6 +280,11 @@ export default function MapEditorTab({
           icon: <IconGift size={16} />,
           layerConstraints: [MapLayerName.Special],
           options: <PickupTool />,
+        },
+        "set-bounds": {
+          name: "Set bounds",
+          icon: <IconFrame size={16} />,
+          options: <MapBoundsTool />,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,
     [],
