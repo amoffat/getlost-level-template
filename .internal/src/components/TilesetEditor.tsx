@@ -255,7 +255,7 @@ export default function TilesetEditorTab({
         dispatch(setNpcThunk(obj));
       }
     },
-    [dispatch, ts, navigate],
+    [dispatch, navigate],
   );
 
   const onToolActivated = useCallback(

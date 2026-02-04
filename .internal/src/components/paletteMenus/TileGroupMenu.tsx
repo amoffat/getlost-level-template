@@ -3,7 +3,7 @@ import { Vector2 } from "@/vec";
 import { Menu } from "@mantine/core";
 import { IconCopy } from "@tabler/icons-react";
 import { useCallback } from "react";
-import ObjectMenu from "../ObjectMenu";
+import FloatingMenu from "../FloatingMenu";
 
 interface TileGroupMenuProps {
   pos: Vector2 | null;
@@ -26,12 +26,12 @@ export default function TileGroupMenu({
 
   return (
     <>
-      <ObjectMenu pos={pos} opened={pos !== null}>
+      <FloatingMenu pos={pos} opened={pos !== null} withArrow>
         <Menu.Label>Tile Group Actions</Menu.Label>
         <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
           Copy object id
         </Menu.Item>
-      </ObjectMenu>
+      </FloatingMenu>
     </>
   );
 }

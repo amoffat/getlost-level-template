@@ -1,17 +1,35 @@
 import { Vector2 } from "@/vec";
-import { Menu } from "@mantine/core";
+import { Menu, MenuProps } from "@mantine/core";
 
-interface ObjectMenuProps {
+interface FloatingMenuProps {
   pos: Vector2 | null;
   opened: boolean;
   children: React.ReactNode;
+  shadow?: MenuProps["shadow"];
+  position?: MenuProps["position"];
+  withArrow?: MenuProps["withArrow"];
+  width?: number | string;
 }
 
-export default function ObjectMenu({ pos, opened, children }: ObjectMenuProps) {
+export default function FloatingMenu({
+  pos,
+  opened,
+  children,
+  shadow = "md",
+  position = "top",
+  withArrow = false,
+  width = 200,
+}: FloatingMenuProps) {
   if (!pos) return null;
 
   return (
-    <Menu shadow="md" width={200} opened={opened} position="top" withArrow>
+    <Menu
+      shadow={shadow}
+      width={width}
+      opened={opened}
+      position={position}
+      withArrow={withArrow}
+    >
       <Menu.Target>
         <div
           // Key forces the target element to remount when coordinates change,

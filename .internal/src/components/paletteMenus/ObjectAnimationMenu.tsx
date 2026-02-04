@@ -14,7 +14,7 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { IconCopy, IconTrash } from "@tabler/icons-react";
 import { useCallback } from "react";
-import ObjectMenu from "../ObjectMenu";
+import FloatingMenu from "../FloatingMenu";
 
 interface ObjectAnimationMenuProps {
   pos: Vector2 | null;
@@ -50,7 +50,9 @@ export default function ObjectAnimationMenu({
       if (isNpcTemplate(maybeNpc)) {
         const objFrames = new Set(obj.frames.map((frame) => frame.tg.id));
         for (const anim of Object.values(maybeNpc.animations)) {
-          if (anim.animation.frames.some((frame) => objFrames.has(frame.tg.id))) {
+          if (
+            anim.animation.frames.some((frame) => objFrames.has(frame.tg.id))
+          ) {
             npcs.add(maybeNpc.id);
           }
         }
@@ -88,7 +90,7 @@ export default function ObjectAnimationMenu({
         tsActions.deletePaletteObjects({
           tsId: obj.tilesetId,
           ids: [obj.id],
-        })
+        }),
       );
       notifications.show({
         title: "Animation deleted",
@@ -119,7 +121,7 @@ export default function ObjectAnimationMenu({
 
   return (
     <>
-      <ObjectMenu pos={pos} opened={pos !== null}>
+      <FloatingMenu pos={pos} opened={pos !== null} withArrow>
         <Menu.Label>Object Animation Actions</Menu.Label>
         <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
           Copy object id
@@ -139,7 +141,7 @@ export default function ObjectAnimationMenu({
             </Menu.Item>
           </>
         )}
-      </ObjectMenu>
+      </FloatingMenu>
     </>
   );
 }

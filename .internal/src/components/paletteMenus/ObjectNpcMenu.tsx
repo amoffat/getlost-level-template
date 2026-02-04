@@ -10,7 +10,7 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { IconCopy, IconTrash } from "@tabler/icons-react";
 import { useCallback } from "react";
-import ObjectMenu from "../ObjectMenu";
+import FloatingMenu from "../FloatingMenu";
 
 interface ObjectNpcMenuProps {
   pos: Vector2 | null;
@@ -60,7 +60,7 @@ export default function ObjectNpcMenu({
         tsActions.deletePaletteObjects({
           tsId: obj.tilesetId,
           ids: [obj.id],
-        })
+        }),
       );
       notifications.show({
         title: "NPC deleted",
@@ -89,7 +89,7 @@ export default function ObjectNpcMenu({
 
   return (
     <>
-      <ObjectMenu pos={pos} opened={pos !== null}>
+      <FloatingMenu pos={pos} opened={pos !== null} withArrow>
         <Menu.Label>Object Npc Actions</Menu.Label>
         <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
           Copy object id
@@ -105,7 +105,7 @@ export default function ObjectNpcMenu({
         >
           Delete
         </Menu.Item>
-      </ObjectMenu>
+      </FloatingMenu>
     </>
   );
 }
