@@ -24,7 +24,7 @@ export const loadStoryThunk = createAsyncThunk(
     } finally {
       dispatch(setLoading(false));
     }
-  }
+  },
 );
 
 export const reflowStoryThunk = createAsyncThunk(
@@ -35,9 +35,9 @@ export const reflowStoryThunk = createAsyncThunk(
     const { nodes: laidOutNodes, edges: laidOutEdges } = await layoutStory(
       nodes,
       edges,
-      { rankdir: "TB" }
+      { rankdir: "TB" },
     );
     dispatch(setNodes(laidOutNodes));
     dispatch(setEdges(laidOutEdges));
-  }
+  },
 );

@@ -7,13 +7,14 @@ import { Handle, Position, type NodeProps } from "@xyflow/react";
 export default function StoryNode({ data }: NodeProps<DNode>) {
   const sData = (data as StoryNodeData) ?? ({} as StoryNodeData);
   const label = sData.label ?? "(unnamed)";
+  const affectedNpcs = [];
 
   return (
     <div>
       <Handle type="target" position={Position.Top} />
       <Stack>
         {label}
-        <Group></Group>
+        {affectedNpcs.length > 0 && <Group></Group>}
       </Stack>
       <Handle type="source" position={Position.Bottom} />
     </div>

@@ -1,9 +1,17 @@
 import type { StoryNode as DNode } from "@/slices/story";
 import { setEdges, setNodes } from "@/slices/story";
 import { loadStoryThunk, reflowStoryThunk } from "@/thunks/story";
+import { showNotification } from "@/utils/notifications";
 import { Vector2 } from "@/vec";
 import { Split } from "@gfazioli/mantine-split-pane";
-import { Flex, Menu, ScrollArea, Stack } from "@mantine/core";
+import {
+  Fieldset,
+  Flex,
+  Menu,
+  ScrollArea,
+  Stack,
+  TextInput,
+} from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import {
   addEdge,
@@ -13,22 +21,34 @@ import {
   BackgroundVariant,
   ControlButton,
   Controls,
+  getOutgoers,
+  IsValidConnection,
   MiniMap,
   OnConnect,
   OnEdgesChange,
   OnNodesChange,
   ReactFlow,
   SelectionMode,
+  useReactFlow,
   type Edge,
+  type OnConnectEnd,
   type ReactFlowInstance,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../hooks/redux";
 import type { RootState } from "../store/store";
 import FloatingMenu from "./FloatingMenu";
 import StoryNode from "./StoryNode";
+import Tip from "./Tip";
 
 export default function StoryTab() {
   const [_nodeId, setNodeId] = useState<string | null>(null);
@@ -40,6 +60,10 @@ export default function StoryTab() {
   const reactFlowInstanceRef = useRef<ReactFlowInstance<DNode, Edge> | null>(
     null,
   );
+  const { screenToFlowPosition, getNodes, getEdges } = useReactFlow<
+    DNode,
+    Edge
+  >();
 
   // Selection state can be used later for editing panel
 
@@ -60,6 +84,87 @@ export default function StoryTab() {
       dispatch(setEdges(addEdge(connection, edges)));
     },
     [dispatch, edges],
+  );
+
+  const isValidConnection: IsValidConnection<Edge> = useCallback(
+    (connection): boolean => {
+      // we are using getNodes and getEdges helpers here
+      // to make sure we create isValidConnection function only once
+      const nodes = getNodes();
+      const edges = getEdges();
+      const target = nodes.find((node) => node.id === connection.target)!;
+
+      const hasCycle = (node: DNode, visited = new Set()) => {
+        if (visited.has(node.id)) return false;
+
+        visited.add(node.id);
+
+        for (const outgoer of getOutgoers(node, nodes, edges)) {
+          if (outgoer.id === connection.source) return true;
+          if (hasCycle(outgoer, visited)) return true;
+        }
+      };
+
+      let isValid: boolean;
+      if (target.id === connection.source) {
+        isValid = false;
+      } else {
+        isValid = !hasCycle(target);
+      }
+      if (!isValid) {
+        showNotification({
+          key: "story-connection-cycle",
+          title: "Invalid connection",
+          message: "Creating this connection would create a cycle.",
+          color: "red",
+          autoClose: 5000,
+        });
+      }
+      return isValid;
+    },
+    [getNodes, getEdges],
+  );
+
+  const onConnectEnd: OnConnectEnd = useCallback(
+    (event, connectionState) => {
+      // when a connection is dropped on the pane it's not valid
+      if (!connectionState.isValid) {
+        const { clientX, clientY } =
+          "changedTouches" in event ? event.changedTouches[0] : event;
+        const position = screenToFlowPosition({
+          x: clientX,
+          y: clientY,
+        });
+
+        // Create a new node at this position
+        const newNodeId = `node-${Date.now()}`;
+        const newNode: DNode = {
+          id: newNodeId,
+          position,
+          type: "default",
+          data: {
+            id: newNodeId,
+            label: `Milestone ${nodes.length + 1}`,
+            npcs: [],
+          },
+        };
+        const fromNodeId = connectionState.fromNode!.id;
+
+        // Add the new node and edge
+        dispatch(setNodes([...nodes, newNode]));
+        dispatch(
+          setEdges([
+            ...edges,
+            {
+              id: `edge-${fromNodeId}-${newNodeId}`,
+              source: fromNodeId,
+              target: newNodeId,
+            },
+          ]),
+        );
+      }
+    },
+    [nodes, edges, dispatch, screenToFlowPosition],
   );
 
   const onSelectNode = useCallback(
@@ -107,6 +212,14 @@ export default function StoryTab() {
     });
   };
 
+  const tips: ReactNode[] = useMemo(() => {
+    const tips = [];
+
+    tips.push("Create new story milestone nodes.");
+
+    return tips;
+  }, []);
+
   return (
     <>
       <Split h="100dvh" style={{ flex: 1 }}>
@@ -139,6 +252,7 @@ export default function StoryTab() {
                 //   snapToGrid={true}
                 snapGrid={[20, 20]}
                 panOnDrag={[2]}
+                deleteKeyCode={["Delete", "Backspace"]}
                 nodeTypes={{ default: StoryNode }}
                 nodes={nodes}
                 edges={edges}
@@ -148,10 +262,12 @@ export default function StoryTab() {
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
+                onConnectEnd={onConnectEnd}
                 onPaneClick={handlePaneClick}
                 onInit={(instance: ReactFlowInstance<DNode, Edge>) =>
                   (reactFlowInstanceRef.current = instance)
                 }
+                isValidConnection={isValidConnection}
                 selectionOnDrag
                 selectionMode={SelectionMode.Partial}
                 minZoom={0.1}
@@ -183,9 +299,15 @@ export default function StoryTab() {
           onResizeEnd={handlePaneResize}
         >
           <Stack h="100%" style={{ overflow: "hidden" }}>
+            <Tip tips={tips} />
             <ScrollArea type="never" style={{ flex: 1 }}>
               <Stack p={0} pb={50}>
-                {/* Right panel content will go here */}
+                <Fieldset legend="Properties">
+                  <TextInput
+                    label="Dialogue title"
+                    description="A summary or title for this dialogue node."
+                  />
+                </Fieldset>
               </Stack>
             </ScrollArea>
           </Stack>

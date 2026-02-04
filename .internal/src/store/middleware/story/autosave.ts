@@ -21,15 +21,15 @@ saveRequests$
           log.info(
             "[autosave] Story saved (nodes: %d, edges: %d)",
             story.nodes.length,
-            story.edges.length
+            story.edges.length,
           );
         }),
         catchError((e) => {
           log.error({ e }, "Story autosave failed");
           return EMPTY;
-        })
-      )
-    )
+        }),
+      ),
+    ),
   )
   .subscribe();
 
@@ -37,9 +37,7 @@ const startAppListening =
   listenerMiddleware.startListening as AppStartListening;
 
 startAppListening({
-  predicate: (action) =>
-    action.type.startsWith(slice.name) &&
-    (action.meta as any)?.reconcileType !== undefined,
+  predicate: (action) => action.type.startsWith(slice.name),
   effect: async (_action, { getState }) => {
     const state = getState();
     saveRequests$.next({ story: state.story });
