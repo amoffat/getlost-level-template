@@ -1,5 +1,5 @@
 import type { StoryNode as DNode } from "@/slices/story";
-import { setEdges, setNodes } from "@/slices/story";
+import { setEdges, setNodeData, setNodes } from "@/slices/story";
 import { loadStoryThunk, reflowStoryThunk } from "@/thunks/story";
 import { showNotification } from "@/utils/notifications";
 import { Vector2 } from "@/vec";
@@ -23,7 +23,6 @@ import {
   Controls,
   getOutgoers,
   IsValidConnection,
-  MiniMap,
   OnConnect,
   OnEdgesChange,
   OnNodesChange,
@@ -51,9 +50,10 @@ import StoryNode from "./StoryNode";
 import Tip from "./Tip";
 
 export default function StoryTab() {
-  const [_nodeId, setNodeId] = useState<string | null>(null);
+  const [nodeId, setNodeId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<Vector2 | null>(null);
   const dispatch = useAppDispatch();
+
   const dState = useSelector((state: RootState) => state.story);
   const { nodes, edges } = dState;
   const flowContainerRef = useRef<HTMLDivElement>(null);
@@ -65,7 +65,17 @@ export default function StoryTab() {
     Edge
   >();
 
-  // Selection state can be used later for editing panel
+  const node = nodes.find((n) => n.id === nodeId) || null;
+  const nd = node?.data;
+
+  const onIdChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (!node) return;
+      const label = event.currentTarget.value;
+      dispatch(setNodeData({ id: node.id, data: { label } }));
+    },
+    [node, dispatch],
+  );
 
   const onNodesChange: OnNodesChange<DNode> = useCallback(
     (changes) => {
@@ -145,7 +155,7 @@ export default function StoryTab() {
           data: {
             id: newNodeId,
             label: `Milestone ${nodes.length + 1}`,
-            npcs: [],
+            npcs: {},
           },
         };
         const fromNodeId = connectionState.fromNode!.id;
@@ -274,7 +284,6 @@ export default function StoryTab() {
                 maxZoom={2}
                 fitView
               >
-                <MiniMap pannable zoomable />
                 <Background
                   color="#505050ff"
                   variant={BackgroundVariant.Dots}
@@ -304,8 +313,10 @@ export default function StoryTab() {
               <Stack p={0} pb={50}>
                 <Fieldset legend="Properties">
                   <TextInput
-                    label="Dialogue title"
-                    description="A summary or title for this dialogue node."
+                    label="Milestone name"
+                    description="A name to reference this milestone"
+                    value={nd?.id ?? ""}
+                    onChange={onIdChange}
                   />
                 </Fieldset>
               </Stack>

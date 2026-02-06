@@ -6,7 +6,7 @@ import { Handle, Position, type NodeProps } from "@xyflow/react";
 // Displays the node label and exposes top/bottom handles for connections.
 export default function StoryNode({ data }: NodeProps<DNode>) {
   const sData = (data as StoryNodeData) ?? ({} as StoryNodeData);
-  const label = sData.label ?? "(unnamed)";
+  const label = sData.id ?? "(unnamed)";
   const affectedNpcs = [];
 
   return (

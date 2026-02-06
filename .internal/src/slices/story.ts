@@ -3,8 +3,7 @@ import type { Edge, Node } from "@xyflow/react";
 
 export interface StoryNodeData extends Record<string, unknown> {
   id: string;
-  label: string;
-  npcs: string[];
+  npcs: Record<string, string>;
 }
 
 export type StoryNode = Node<StoryNodeData>;
@@ -35,7 +34,7 @@ export const slice = createSlice({
     },
     setNodeData(
       state,
-      action: PayloadAction<{ id: string; data: Partial<StoryNodeData> }>
+      action: PayloadAction<{ id: string; data: Partial<StoryNodeData> }>,
     ) {
       const { id, data } = action.payload;
       const node = state.nodes.find((n) => n.id === id);

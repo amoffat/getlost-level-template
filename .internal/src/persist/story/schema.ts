@@ -18,5 +18,12 @@ export interface StoryDocV2 extends BaseStoryDoc {
   edges: Edge[];
 }
 
-export type LatestStoryDoc = StoryDocV2;
-export const latestVersion = 2;
+// Version 3: Moved label property to id in StoryNodeData
+export interface StoryDocV3 extends BaseStoryDoc {
+  version: 3;
+  nodes: StoryNode[];
+  edges: Edge[];
+}
+
+export type LatestStoryDoc = StoryDocV3;
+export const latestVersion = 3;
