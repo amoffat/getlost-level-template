@@ -158,6 +158,14 @@ export default function StoryTab() {
           },
         };
         const fromNodeId = connectionState.fromNode!.id;
+        const fromPosition = connectionState.fromHandle?.position;
+
+        // Determine source and target based on connection origin
+        // If connecting from bottom handle, existing node → new node
+        // If connecting from top handle, new node → existing node
+        const isFromBottom = fromPosition === "bottom";
+        const source = isFromBottom ? fromNodeId : newNodeId;
+        const target = isFromBottom ? newNodeId : fromNodeId;
 
         // Add the new node and edge
         dispatch(setNodes([...nodes, newNode]));
@@ -166,8 +174,8 @@ export default function StoryTab() {
             ...edges,
             {
               id: crypto.randomUUID(),
-              source: fromNodeId,
-              target: newNodeId,
+              source,
+              target,
             },
           ]),
         );
@@ -310,14 +318,15 @@ export default function StoryTab() {
             <Tip tips={tips} />
             <ScrollArea type="never" style={{ flex: 1 }}>
               <Stack p={0} pb={50}>
-                <Fieldset legend="Properties">
+                <Fieldset legend="Milestone Details">
                   <TextInput
-                    label="Milestone name"
-                    description="A name to reference this milestone"
+                    label="Name"
+                    description="A name to reference this milestone. Must be unique."
                     value={nd?.id ?? ""}
                     onChange={onIdChange}
                   />
                 </Fieldset>
+                <Fieldset legend="NPC Dialogue"></Fieldset>
               </Stack>
             </ScrollArea>
           </Stack>
