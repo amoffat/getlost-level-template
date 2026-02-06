@@ -71,8 +71,8 @@ export default function StoryTab() {
   const onIdChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (!node) return;
-      const label = event.currentTarget.value;
-      dispatch(setNodeData({ id: node.id, data: { label } }));
+      const id = event.currentTarget.value;
+      dispatch(setNodeData({ id: node.id, data: { id } }));
     },
     [node, dispatch],
   );
@@ -147,14 +147,13 @@ export default function StoryTab() {
         });
 
         // Create a new node at this position
-        const newNodeId = `node-${Date.now()}`;
+        const newNodeId = crypto.randomUUID();
         const newNode: DNode = {
           id: newNodeId,
           position,
           type: "default",
           data: {
-            id: newNodeId,
-            label: `Milestone ${nodes.length + 1}`,
+            id: `milestone-${nodes.length + 1}`,
             npcs: {},
           },
         };
@@ -166,7 +165,7 @@ export default function StoryTab() {
           setEdges([
             ...edges,
             {
-              id: `edge-${fromNodeId}-${newNodeId}`,
+              id: crypto.randomUUID(),
               source: fromNodeId,
               target: newNodeId,
             },

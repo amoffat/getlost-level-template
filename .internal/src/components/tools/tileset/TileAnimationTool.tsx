@@ -65,7 +65,7 @@ function computeFrameTimes(
   count: number,
   weights: Weights,
   totalTime: number,
-  minFrameMs: number
+  minFrameMs: number,
 ): { frames: { idx: number; time: number }[]; byIdx: FrameMsMap } {
   const eps = 1e-9;
   const indices = Array.from({ length: count }, (_, i) => i);
@@ -146,10 +146,10 @@ export default function TileAnimationTool({
 }: TileAnimationToolProps) {
   const ts = useAppSelector(selectors.activeTileset);
   const candFrames = useAppSelector(
-    (state) => state.tilesetEditor.toolOptions.animator.frames
+    (state) => state.tilesetEditor.toolOptions.animator.frames,
   );
   const totalTime = useAppSelector(
-    (state) => state.tilesetEditor.toolOptions.animator.totalTime
+    (state) => state.tilesetEditor.toolOptions.animator.totalTime,
   );
   const dispatch = useAppDispatch();
   // Store fractional weights per frame (0..1), always normalized so sum == 1
@@ -211,7 +211,7 @@ export default function TileAnimationTool({
       (candFrame, idx) => ({
         tg: candFrame.tileGroup,
         time: result.byIdx[idx] ?? 0,
-      })
+      }),
     );
     return { frames: framesForAnim, frameTimeByIdx: result.byIdx };
   }, [n, candFrames, weights, totalTime]);
@@ -248,8 +248,10 @@ export default function TileAnimationTool({
         message: `Saved animation "${values.names.join(", ")}".`,
         autoClose: 3000,
       });
+
+      form.reset();
     },
-    [frames, ts, candFrames, dispatch, selectedAnimation]
+    [frames, ts, candFrames, dispatch, selectedAnimation, form],
   );
 
   const formSubmit = form.onSubmit(saveAnimation);
@@ -305,17 +307,17 @@ export default function TileAnimationTool({
       t.push("You may only select objects that are the same size.");
     } else {
       t.push(
-        "Adjust the sliders to set how long each frame appears in the animation."
+        "Adjust the sliders to set how long each frame appears in the animation.",
       );
       t.push("Drag the frame to reorder it in the animation sequence.");
       t.push(
-        "You can duplicate a frame by clicking the same tile again in the tile editor."
+        "You can duplicate a frame by clicking the same tile again in the tile editor.",
       );
     }
 
     if (hasAllNpcAnims) {
       t.push(
-        "When all required NPC animations are present, you can create an NPC with the NPC tool."
+        "When all required NPC animations are present, you can create an NPC with the NPC tool.",
       );
     }
 
@@ -378,7 +380,7 @@ export default function TileAnimationTool({
                       onChangeEnd={() => {
                         // Sync weights to Redux when drag completes
                         dispatch(
-                          actions.updateAllCandAnimFrameWeights(weights)
+                          actions.updateAllCandAnimFrameWeights(weights),
                         );
                       }}
                       labelMs={frameTimeByIdx[idx]}
@@ -421,7 +423,7 @@ export default function TileAnimationTool({
               renderOption={(item) => {
                 const label = item.option.value;
                 const isNpcAnim = requiredNpcAnimations.includes(
-                  label as NpcRequiredAnimation
+                  label as NpcRequiredAnimation,
                 );
                 if (!isNpcAnim) {
                   return label;

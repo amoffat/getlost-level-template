@@ -63,8 +63,8 @@ export default function UploadAssetModal({
 
   // Set the default creation option based on image area (only once)
   useEffect(() => {
+    form.reset();
     if (files.length > 1 && opened) {
-      form.reset();
       chooseDefaultCreationOption(files).then((defaultOption) => {
         form.setFieldValue("creationOption", defaultOption);
       });
