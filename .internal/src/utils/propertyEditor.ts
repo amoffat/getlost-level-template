@@ -1,6 +1,6 @@
 import {
   PropertyValueInfo,
-  PropertyValueLevel,
+  PropertyValueScope,
 } from "@/components/PropertyValue";
 import { globals } from "@/globals";
 import { actions as mapActions } from "@/slices/mapEditor";
@@ -46,13 +46,13 @@ export function collectPropertyValues<
         valuesArray.push({
           key: obj.id,
           value: templateValue as TProps[typeof propName],
-          level: "template",
+          scope: "template",
         });
       } else {
         valuesArray.push({
           key: obj.id,
           value: instanceValue as TProps[typeof propName],
-          level: "instance",
+          scope: "instance",
         });
       }
     }
@@ -80,17 +80,17 @@ export function updateObjectProperties<
   TInstance extends MapObj,
   TProps extends ExtractProps<TInstance> = ExtractProps<TInstance>,
 >({
-  level,
+  scope,
   objs,
   props,
   templateUpdate,
 }: {
-  level: PropertyValueLevel;
+  scope: PropertyValueScope;
   objs: TInstance[];
   props: Partial<TInstance>;
   templateUpdate: (objs: TInstance[], props: Partial<TProps>) => void;
 }): void {
-  if (level === "template") {
+  if (scope === "template") {
     // Filter out undefined props before passing to templateUpdate. A value may
     // be undefined if we're switching from instance to template level.
     const definedProps = Object.entries(props).reduce((acc, [key, value]) => {

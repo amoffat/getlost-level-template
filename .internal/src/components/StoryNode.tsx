@@ -1,17 +1,19 @@
+import { storyStartId } from "@/constants";
 import type { StoryNode as DNode, StoryNodeData } from "@/slices/story";
 import { Group, Stack } from "@mantine/core";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 
 // Simple stub node component for story graph nodes.
 // Displays the node label and exposes top/bottom handles for connections.
-export default function StoryNode({ data }: NodeProps<DNode>) {
+export default function StoryNode({ id, data }: NodeProps<DNode>) {
   const sData = (data as StoryNodeData) ?? ({} as StoryNodeData);
   const label = sData.id ?? "(unnamed)";
   const affectedNpcs = [];
+  const isStart = id === storyStartId;
 
   return (
     <div>
-      <Handle type="target" position={Position.Top} />
+      {!isStart && <Handle type="target" position={Position.Top} />}
       <Stack>
         {label}
         {affectedNpcs.length > 0 && <Group></Group>}

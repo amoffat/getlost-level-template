@@ -15,7 +15,7 @@ import {
 import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
 import { Fieldset, Stack, Switch, TagsInput, TextInput } from "@mantine/core";
 import { memo, ReactNode, useCallback, useMemo } from "react";
-import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
+import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import TilesetGroup from "../TilesetGroup";
 import { requiredUniqueName } from "./validators/name";
 
@@ -31,7 +31,7 @@ const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 function PickupProperties({ objs }: { objs: PickupObj[] }) {
   const dispatch = useAppDispatch();
   const objsByTemplateId = useAppSelector((state) =>
-    mapSelectors.objectsByTemplateId(state, constants.pickupTemplateId)
+    mapSelectors.objectsByTemplateId(state, constants.pickupTemplateId),
   );
 
   // Create a key based only on relevant properties
@@ -44,22 +44,22 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
         mapEditorActions.updateTemplate({
           name: "pickups",
           updates: props,
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<PickupProps>) => {
+    (scope: PropertyValueScope, props: Partial<PickupProps>) => {
       updateObjectProperties({
-        level,
+        scope,
         objs,
         props,
         templateUpdate,
       });
     },
-    [objs, templateUpdate]
+    [objs, templateUpdate],
   );
 
   const toCollect = useMemo(() => {
@@ -86,7 +86,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
     (value: string | undefined) => {
       return requiredUniqueName(existingNames, value);
     },
-    [existingNames]
+    [existingNames],
   );
 
   const nameInput = (
@@ -97,17 +97,17 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       values={toCollect.name}
       defaultValue=""
       onValueChange={(
-        level: PropertyValueLevel,
-        value: string | undefined
+        scope: PropertyValueScope,
+        value: string | undefined,
       ): void => {
-        updateProps(level, {
+        updateProps(scope, {
           name: value,
           status: nameValidator(value) ? "error" : null,
         });
       }}
       renderInput={(
         value: string | undefined,
-        onChange: (value: string) => void
+        onChange: (value: string) => void,
       ): ReactNode => {
         return (
           <TextInput
@@ -129,12 +129,12 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       values={toCollect.tags}
       defaultValue={[]}
       areEqual={arrayEquals}
-      onValueChange={(level, value: string[] | undefined) => {
-        updateProps(level, { tags: value });
+      onValueChange={(scope, value: string[] | undefined) => {
+        updateProps(scope, { tags: value });
       }}
       renderInput={(
         value: string[] | undefined,
-        onChange: (value: string[]) => void
+        onChange: (value: string[]) => void,
       ): ReactNode => {
         return (
           <TagsInput
@@ -163,7 +163,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       }
       return null;
     },
-    [tilesets]
+    [tilesets],
   );
 
   const tgIdInput = (
@@ -174,14 +174,14 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       defaultValue={null}
       noTemplate={true}
       onValueChange={(
-        level: PropertyValueLevel,
-        value: string | null | undefined
+        scope: PropertyValueScope,
+        value: string | null | undefined,
       ): void => {
-        updateProps(level, { assetId: value });
+        updateProps(scope, { assetId: value });
       }}
       renderInput={(
         value: string | null | undefined,
-        onChange: (value: string) => void
+        onChange: (value: string) => void,
       ): ReactNode => {
         const tilegroup = findTileGroup(value);
         return (
@@ -208,14 +208,14 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       defaultValue={false}
       noTemplate
       onValueChange={(
-        level: PropertyValueLevel,
-        value: boolean | undefined
+        scope: PropertyValueScope,
+        value: boolean | undefined,
       ): void => {
-        updateProps(level, { hidden: value });
+        updateProps(scope, { hidden: value });
       }}
       renderInput={(
         value: boolean | undefined,
-        onChange: (value: boolean) => void
+        onChange: (value: boolean) => void,
       ): ReactNode => {
         return (
           <Switch
@@ -241,5 +241,5 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
 
 export default memo(
   PickupProperties,
-  createPropsEqualFn<PickupObj>(RELEVANT_PROPS)
+  createPropsEqualFn<PickupObj>(RELEVANT_PROPS),
 );

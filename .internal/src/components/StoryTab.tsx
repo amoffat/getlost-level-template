@@ -1,3 +1,4 @@
+import { selectors } from "@/slices/mapEditor";
 import type { StoryNode as DNode } from "@/slices/story";
 import { setEdges, setNodeData, setNodes } from "@/slices/story";
 import { loadStoryThunk, reflowStoryThunk } from "@/thunks/story";
@@ -7,8 +8,8 @@ import { Split } from "@gfazioli/mantine-split-pane";
 import {
   Fieldset,
   Flex,
-  Menu,
   ScrollArea,
+  Select,
   Stack,
   TextInput,
 } from "@mantine/core";
@@ -45,7 +46,6 @@ import {
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../hooks/redux";
 import type { RootState } from "../store/store";
-import FloatingMenu from "./FloatingMenu";
 import StoryNode from "./StoryNode";
 import Tip from "./Tip";
 
@@ -60,6 +60,7 @@ export default function StoryTab() {
   const reactFlowInstanceRef = useRef<ReactFlowInstance<DNode, Edge> | null>(
     null,
   );
+  const npcs = useSelector(selectors.selectNpcs);
   const { screenToFlowPosition, getNodes, getEdges } = useReactFlow<
     DNode,
     Edge
@@ -229,6 +230,15 @@ export default function StoryTab() {
     });
   };
 
+  const npcOptions = useMemo(() => {
+    return npcs
+      .filter((npc) => npc.name)
+      .map((npc) => ({
+        value: npc.id,
+        label: npc.name!,
+      }));
+  }, [npcs]);
+
   const tips: ReactNode[] = useMemo(() => {
     const tips = [];
 
@@ -318,7 +328,7 @@ export default function StoryTab() {
             <Tip tips={tips} />
             <ScrollArea type="never" style={{ flex: 1 }}>
               <Stack p={0} pb={50}>
-                <Fieldset legend="Milestone Details">
+                <Fieldset legend="Milestone Details" p="xs">
                   <TextInput
                     label="Name"
                     description="A name to reference this milestone. Must be unique."
@@ -326,14 +336,21 @@ export default function StoryTab() {
                     onChange={onIdChange}
                   />
                 </Fieldset>
-                <Fieldset legend="NPC Dialogue"></Fieldset>
+                <Fieldset legend="NPC Dialogue" p="xs">
+                  <Select
+                    label="NPC"
+                    description="Whose dialogue should change at this milestone?"
+                    placeholder="Choose an NPC"
+                    data={npcOptions}
+                  />
+                </Fieldset>
               </Stack>
             </ScrollArea>
           </Stack>
         </Split.Pane>
       </Split>
 
-      <FloatingMenu
+      {/* <FloatingMenu
         pos={contextMenu}
         opened={contextMenu !== null}
         position="bottom"
@@ -341,7 +358,7 @@ export default function StoryTab() {
       >
         <Menu.Label>Story Node Actions</Menu.Label>
         <Menu.Item onClick={handleAddDialogue}>Link NPC dialogue</Menu.Item>
-      </FloatingMenu>
+      </FloatingMenu> */}
     </>
   );
 }

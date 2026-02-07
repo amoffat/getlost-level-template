@@ -20,9 +20,9 @@ import {
 import { x64 } from "murmurhash3js";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
-export type PropertyValueLevel = "template" | "instance" | "mixed";
-export type SelectableLevel = Extract<
-  PropertyValueLevel,
+export type PropertyValueScope = "template" | "instance" | "mixed";
+export type SelectableScope = Extract<
+  PropertyValueScope,
   "template" | "instance"
 >;
 
@@ -32,7 +32,7 @@ export interface PropertyValueInfo<T> {
   /** The actual value */
   value: T;
   /** Whether this value is inherited from a template or set on the instance */
-  level: SelectableLevel;
+  scope: SelectableScope;
 }
 
 interface PropertyValueProps<T> {
@@ -45,10 +45,10 @@ interface PropertyValueProps<T> {
   /** The input component to render. Receives the effective value and onChange callback */
   renderInput: (
     value: T | undefined,
-    onChange: (value: T) => void
+    onChange: (value: T) => void,
   ) => ReactNode;
   /** Callback when the user changes the value */
-  onValueChange: (level: PropertyValueLevel, value: T | undefined) => void;
+  onValueChange: (scope: PropertyValueScope, value: T | undefined) => void;
   /** Optional function to determine if two values are equal (defaults to ===) */
   areEqual?: (a: T, b: T) => boolean;
   /**
@@ -88,19 +88,19 @@ function PropertyValueInner<T>({
     if (values.length === 0) {
       return {
         hasMixedValues: false,
-        hasMixedLevels: false,
+        hasMixedScopes: false,
         effectiveValue: undefined,
         uniqueValues: [],
-        levels: new Set<SelectableLevel>(),
+        scopes: new Set<SelectableScope>(),
       };
     }
 
     const uniqueValues: T[] = [];
-    const levels = new Set<SelectableLevel>();
+    const scopes = new Set<SelectableScope>();
 
-    // Collect unique values and levels
+    // Collect unique values and scopes
     for (const info of values) {
-      levels.add(info.level);
+      scopes.add(info.scope);
 
       // Check if this value is already in our unique list
       const exists = uniqueValues.some((v) => areEqual(v, info.value));
@@ -110,7 +110,7 @@ function PropertyValueInner<T>({
     }
 
     const hasMixedValues = uniqueValues.length > 1;
-    const hasMixedLevels = levels.size > 1;
+    const hasMixedScopes = scopes.size > 1;
 
     // For the effective value:
     // - If all values are the same, use that value
@@ -119,41 +119,41 @@ function PropertyValueInner<T>({
 
     return {
       hasMixedValues,
-      hasMixedLevels,
+      hasMixedScopes,
       effectiveValue,
       uniqueValues,
-      levels,
+      scopes: scopes,
     };
   }, [values, areEqual]);
 
-  // Determine the current state for the SegmentedControl (based only on levels,
+  // Determine the current state for the SegmentedControl (based only on scopes,
   // not values)
-  const computedLevel = useMemo(() => {
-    if (analysis.hasMixedLevels) {
+  const computedScope = useMemo(() => {
+    if (analysis.hasMixedScopes) {
       return "mixed";
     }
-    if (analysis.levels.has("template")) {
+    if (analysis.scopes.has("template")) {
       return "template";
     }
-    if (analysis.levels.has("instance")) {
+    if (analysis.scopes.has("instance")) {
       return "instance";
     }
     return "instance"; // default fallback
   }, [analysis]);
 
-  const [localLevel, setLocalLevel] =
-    useState<PropertyValueLevel>(computedLevel);
+  const [localScope, setLocalScope] =
+    useState<PropertyValueScope>(computedScope);
   const [localValue, setLocalValue] = useState<T | undefined>(
-    analysis.effectiveValue
+    analysis.effectiveValue,
   );
 
   const [hasPendingValue, setHasPendingValue] = useState(false);
 
   const setValue = useCallback(
     (value: T) => {
-      onValueChange(noTemplate ? "instance" : localLevel, value);
+      onValueChange(noTemplate ? "instance" : localScope, value);
     },
-    [localLevel, noTemplate, onValueChange]
+    [localScope, noTemplate, onValueChange],
   );
 
   const debouncedSetValue = useDebouncedCallback((value: T) => {
@@ -165,22 +165,22 @@ function PropertyValueInner<T>({
     setLocalValue(analysis.effectiveValue);
   }, [analysis.effectiveValue]);
 
-  // When the segmented control changes, update level and trigger onValueChange
-  const setLevel = useCallback(
-    (strLevel: string) => {
-      const level = strLevel as PropertyValueLevel;
+  // When the segmented control changes, update scope and trigger onValueChange
+  const setScope = useCallback(
+    (strScope: string) => {
+      const scope = strScope as PropertyValueScope;
       // Update local state immediately for responsive UI
-      setLocalLevel(level);
+      setLocalScope(scope);
 
-      setHasPendingValue(level === "template");
+      setHasPendingValue(scope === "template");
 
       // This triggers an expensive operation in parent, so defer it
       requestIdleCallback(() => {
-        onValueChange(level, level === "template" ? undefined : localValue);
+        onValueChange(scope, scope === "template" ? undefined : localValue);
         setHasPendingValue(false);
       });
     },
-    [localValue, onValueChange]
+    [localValue, onValueChange],
   );
 
   // The widget for the input field, passed in from props
@@ -189,8 +189,8 @@ function PropertyValueInner<T>({
       renderInput(localValue, (value) => {
         setLocalValue(value);
 
-        if (analysis.hasMixedValues && analysis.hasMixedLevels) {
-          setLocalLevel("instance");
+        if (analysis.hasMixedValues && analysis.hasMixedScopes) {
+          setLocalScope("instance");
         }
 
         // Often the input can have rapid changes, like text inputs, so debounce
@@ -205,11 +205,11 @@ function PropertyValueInner<T>({
       renderInput,
       localValue,
       analysis.hasMixedValues,
-      analysis.hasMixedLevels,
+      analysis.hasMixedScopes,
       debouncedSetValue,
       debounceMs,
       setValue,
-    ]
+    ],
   );
 
   const handleReset = useCallback(() => {
@@ -225,7 +225,7 @@ function PropertyValueInner<T>({
 
   const scopes = useMemo(() => {
     const scopes = [];
-    if (localLevel === "mixed") {
+    if (localScope === "mixed") {
       scopes.push({
         label: (
           <Group gap={4} wrap="nowrap">
@@ -257,10 +257,10 @@ function PropertyValueInner<T>({
           ),
           value: "template",
         },
-      ]
+      ],
     );
     return scopes;
-  }, [localLevel]);
+  }, [localScope]);
 
   return (
     <Stack gap="xs" p={0}>
@@ -280,14 +280,14 @@ function PropertyValueInner<T>({
       {!noTemplate && (
         <SegmentedControl
           p={0}
-          value={localLevel}
-          onChange={setLevel}
+          value={localScope}
+          onChange={setScope}
           size="xs"
           data={scopes}
           color={
-            localLevel === "mixed"
+            localScope === "mixed"
               ? "orange"
-              : localLevel === "template"
+              : localScope === "template"
                 ? "grape"
                 : "cyan"
           }

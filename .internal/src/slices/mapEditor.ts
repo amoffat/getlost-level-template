@@ -7,6 +7,7 @@ import {
   isNpcInstance,
   isTileGroupInstance,
   MapObj,
+  NpcInstance,
 } from "@/types/map";
 import {
   EntranceProps,
@@ -451,6 +452,13 @@ export const slice = createSlice({
       [(state) => state.selectedIds, (state) => state.objects.entities],
       (selectedIds, entities): MapObj[] =>
         selectedIds.map((id) => entities[id]),
+    ),
+    selectNpcs: createMapSelector(
+      [(state) => state.objects.entities],
+      (entities): NpcInstance[] =>
+        Object.values(entities).filter((obj): obj is NpcInstance =>
+          isNpcInstance(obj),
+        ),
     ),
     numSelectedTgInstances: createMapSelector(
       [(state) => state.selectedIds, (state) => state.objects.entities],

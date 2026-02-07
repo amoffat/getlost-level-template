@@ -19,7 +19,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { memo, ReactNode, useCallback, useMemo } from "react";
-import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
+import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
@@ -56,9 +56,9 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
   );
 
   const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<LightProps>) => {
+    (scope: PropertyValueScope, props: Partial<LightProps>) => {
       updateObjectProperties({
-        level,
+        scope,
         objs,
         props,
         templateUpdate,
@@ -80,10 +80,10 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       values={toCollect.name}
       defaultValue=""
       onValueChange={(
-        level: PropertyValueLevel,
+        scope: PropertyValueScope,
         value: string | undefined,
       ): void => {
-        updateProps(level, { name: value });
+        updateProps(scope, { name: value });
       }}
       renderInput={(
         value: string | undefined,
@@ -107,8 +107,8 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       description="The RGB color of the light"
       values={toCollect.color}
       defaultValue={constants.defaultLightColor}
-      onValueChange={(level, value: string | undefined) => {
-        updateProps(level, { color: value });
+      onValueChange={(scope, value: string | undefined) => {
+        updateProps(scope, { color: value });
       }}
       renderInput={(
         value: string | undefined,
@@ -136,8 +136,8 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       noTemplate
       values={toCollect.intensity}
       defaultValue={constants.defaultLightIntensity}
-      onValueChange={(level, value: number | undefined) => {
-        updateProps(level, { intensity: value });
+      onValueChange={(scope, value: number | undefined) => {
+        updateProps(scope, { intensity: value });
       }}
       renderInput={(
         value: number | undefined,
@@ -164,10 +164,10 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       values={toCollect.offDuringDay}
       defaultValue={false}
       onValueChange={(
-        level: PropertyValueLevel,
+        scope: PropertyValueScope,
         value: boolean | undefined,
       ): void => {
-        updateProps(level, { offDuringDay: value });
+        updateProps(scope, { offDuringDay: value });
       }}
       renderInput={(
         value: boolean | undefined,
@@ -191,10 +191,10 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       values={toCollect.flicker}
       defaultValue={constants.defaultLightFlicker}
       onValueChange={(
-        level: PropertyValueLevel,
+        scope: PropertyValueScope,
         value: LightFlicker | undefined,
       ): void => {
-        updateProps(level, { flicker: value });
+        updateProps(scope, { flicker: value });
       }}
       renderInput={(
         value: LightFlicker | undefined,

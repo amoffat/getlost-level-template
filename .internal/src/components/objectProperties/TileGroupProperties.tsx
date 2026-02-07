@@ -21,7 +21,7 @@ import {
 } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { memo, ReactNode, useCallback, useMemo } from "react";
-import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
+import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
@@ -42,7 +42,7 @@ const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
   const groundLayer = useAppSelector(
-    (state) => state.mapEditor.layers.active === MapLayerName.Ground
+    (state) => state.mapEditor.layers.active === MapLayerName.Ground,
   );
 
   // Create a key based only on relevant properties
@@ -54,15 +54,15 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
   }, [propertyKey]);
 
   const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<TileGroupProps>) => {
+    (scope: PropertyValueScope, props: Partial<TileGroupProps>) => {
       updateObjectProperties({
-        level,
+        scope,
         objs,
         props,
         templateUpdate: updateTilesetTemplates,
       });
     },
-    [objs]
+    [objs],
   );
 
   const nameInput = (
@@ -71,15 +71,15 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       description="A name for this object. Does not have to be unique."
       values={toCollect.name}
       onValueChange={(
-        level: PropertyValueLevel,
-        value: string | undefined
+        scope: PropertyValueScope,
+        value: string | undefined,
       ): void => {
-        updateProps(level, { name: value });
+        updateProps(scope, { name: value });
       }}
       defaultValue=""
       renderInput={(
         value: string | undefined,
-        onChange: (value: string) => void
+        onChange: (value: string) => void,
       ): ReactNode => {
         return (
           <TextInput
@@ -99,15 +99,15 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       description="The sound that will play when a character walks on this tile"
       values={toCollect.walkSound}
       onValueChange={function (
-        level: PropertyValueLevel,
-        value: WalkSound | undefined
+        scope: PropertyValueScope,
+        value: WalkSound | undefined,
       ): void {
-        updateProps(level, { walkSound: value });
+        updateProps(scope, { walkSound: value });
       }}
       defaultValue={constants.defaultWalkSound}
       renderInput={(
         value: WalkSound | undefined,
-        onChange: (value: WalkSound) => void
+        onChange: (value: WalkSound) => void,
       ): ReactNode => {
         return (
           <Select
@@ -132,15 +132,15 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       description="How many seconds it takes for the player's speed to reduce by half."
       values={toCollect.friction}
       onValueChange={function (
-        level: PropertyValueLevel,
-        value: number | undefined
+        scope: PropertyValueScope,
+        value: number | undefined,
       ): void {
-        updateProps(level, { friction: value });
+        updateProps(scope, { friction: value });
       }}
       defaultValue={constants.defaultFriction}
       renderInput={(
         value: number | undefined,
-        onChange: (value: number) => void
+        onChange: (value: number) => void,
       ): ReactNode => {
         return (
           <Slider
@@ -160,13 +160,13 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       label="Traction"
       description="How much grip this tile provides. Higher values make it easier to change direction."
       values={toCollect.traction}
-      onValueChange={(level: PropertyValueLevel, value: number | undefined) => {
-        updateProps(level, { traction: value });
+      onValueChange={(scope: PropertyValueScope, value: number | undefined) => {
+        updateProps(scope, { traction: value });
       }}
       defaultValue={constants.defaultTraction}
       renderInput={(
         value: number | undefined,
-        onChange: (value: number) => void
+        onChange: (value: number) => void,
       ): ReactNode => {
         return (
           <Slider
@@ -186,13 +186,13 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       label="Tint"
       description="A color tint to apply to this tile"
       values={toCollect.tint}
-      onValueChange={(level, value: string | null | undefined) => {
-        updateProps(level, { tint: value });
+      onValueChange={(scope, value: string | null | undefined) => {
+        updateProps(scope, { tint: value });
       }}
       defaultValue={null}
       renderInput={(
         value: string | null | undefined,
-        onChange: (value: string) => void
+        onChange: (value: string) => void,
       ): ReactNode => {
         const hexColor = value ? `#${value}` : "";
 
@@ -217,14 +217,14 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       values={toCollect.hidden}
       defaultValue={false}
       onValueChange={(
-        level: PropertyValueLevel,
-        value: boolean | undefined
+        scope: PropertyValueScope,
+        value: boolean | undefined,
       ): void => {
-        updateProps(level, { hidden: value });
+        updateProps(scope, { hidden: value });
       }}
       renderInput={(
         value: boolean | undefined,
-        onChange: (value: boolean) => void
+        onChange: (value: boolean) => void,
       ): ReactNode => {
         return (
           <Switch
@@ -243,14 +243,14 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       values={toCollect.groundOffset}
       defaultValue={0}
       onValueChange={(
-        level: PropertyValueLevel,
-        value: number | undefined
+        scope: PropertyValueScope,
+        value: number | undefined,
       ): void => {
-        updateProps(level, { groundOffset: value });
+        updateProps(scope, { groundOffset: value });
       }}
       renderInput={(
         value: number | undefined,
-        onChange: (value: number) => void
+        onChange: (value: number) => void,
       ): ReactNode => {
         return (
           <Slider
@@ -282,5 +282,5 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
 
 export default memo(
   TileGroupProperties,
-  createPropsEqualFn<TileGroupInstance>(RELEVANT_PROPS)
+  createPropsEqualFn<TileGroupInstance>(RELEVANT_PROPS),
 );

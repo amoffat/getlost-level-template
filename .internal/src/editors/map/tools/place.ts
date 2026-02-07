@@ -342,7 +342,7 @@ export class Placer extends ClickDragListener {
     } else if (isNpcTemplate(obj)) {
       inst = {
         id,
-        name: undefined,
+        name: obj.name,
         tags: undefined,
         type: MapObjType.NpcInstance,
         tsObjId: obj.id,
@@ -360,6 +360,7 @@ export class Placer extends ClickDragListener {
         defaultAnimation: undefined,
         groundOffset: undefined,
         dampenWalkCollisions: undefined,
+        status: undefined,
       } satisfies NpcInstance;
     }
 

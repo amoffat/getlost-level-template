@@ -1,4 +1,5 @@
 import * as constants from "@/constants";
+import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { NpcInstance } from "@/types/map";
 import { NpcProps } from "@/types/properties";
 import {
@@ -9,7 +10,9 @@ import {
 import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
 import { Fieldset, Slider, Stack, TextInput } from "@mantine/core";
 import { memo, ReactNode, useCallback, useMemo } from "react";
-import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
+import { useSelector } from "react-redux";
+import PropertyValue, { PropertyValueScope } from "../PropertyValue";
+import { requiredUniqueName } from "./validators/name";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
@@ -34,38 +37,60 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyKey]);
 
+  const npcs = useSelector(mapSelectors.selectNpcs);
+
   const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<NpcProps>) => {
+    (scope: PropertyValueScope, props: Partial<NpcProps>) => {
       updateObjectProperties({
-        level,
+        scope,
         objs,
         props,
         templateUpdate: updateTilesetTemplates,
       });
     },
-    [objs]
+    [objs],
+  );
+
+  const existingNames = useMemo(() => {
+    const skipIds = new Set(objs.map((obj) => obj.id));
+    const names = npcs
+      .filter((npc) => !skipIds.has(npc.id))
+      .map((npc) => npc.name!);
+    return new Set<string>(names);
+  }, [npcs, objs]);
+
+  const nameValidator = useCallback(
+    (value: string | undefined) => {
+      return requiredUniqueName(existingNames, value);
+    },
+    [existingNames],
   );
 
   const nameInput = (
     <PropertyValue
       label="Name"
-      description="A name for the NPC. Does not have to be unique."
+      description="A name for the NPC. Must be unique."
       values={toCollect.name}
+      noTemplate
       defaultValue=""
       onValueChange={(
-        level: PropertyValueLevel,
-        value: string | undefined
+        scope: PropertyValueScope,
+        value: string | undefined,
       ): void => {
-        updateProps(level, { name: value });
+        updateProps(scope, {
+          name: value,
+          status: nameValidator(value) ? "error" : null,
+        });
       }}
       renderInput={(
         value: string | undefined,
-        onChange: (value: string) => void
+        onChange: (value: string) => void,
       ): ReactNode => {
         return (
           <TextInput
             value={value ?? ""}
             placeholder="Enter name"
+            error={nameValidator(value)}
             onChange={(e) => onChange(e.target.value)}
           />
         );
@@ -80,14 +105,14 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       values={toCollect.walkSpeed}
       defaultValue={constants.defaultNpcWalkSpeed}
       onValueChange={(
-        level: PropertyValueLevel,
-        value: number | undefined
+        scope: PropertyValueScope,
+        value: number | undefined,
       ): void => {
-        updateProps(level, { walkSpeed: value });
+        updateProps(scope, { walkSpeed: value });
       }}
       renderInput={(
         value: number | undefined,
-        onChange: (value: number) => void
+        onChange: (value: number) => void,
       ): ReactNode => {
         return (
           <Slider
@@ -109,14 +134,14 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       values={toCollect.dampenWalkCollisions}
       defaultValue={0}
       onValueChange={(
-        level: PropertyValueLevel,
-        value: number | undefined
+        scope: PropertyValueScope,
+        value: number | undefined,
       ): void => {
-        updateProps(level, { dampenWalkCollisions: value });
+        updateProps(scope, { dampenWalkCollisions: value });
       }}
       renderInput={(
         value: number | undefined,
-        onChange: (value: number) => void
+        onChange: (value: number) => void,
       ): ReactNode => {
         return (
           <Slider
@@ -138,14 +163,14 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       values={toCollect.groundOffset}
       defaultValue={0}
       onValueChange={(
-        level: PropertyValueLevel,
-        value: number | undefined
+        scope: PropertyValueScope,
+        value: number | undefined,
       ): void => {
-        updateProps(level, { groundOffset: value });
+        updateProps(scope, { groundOffset: value });
       }}
       renderInput={(
         value: number | undefined,
-        onChange: (value: number) => void
+        onChange: (value: number) => void,
       ): ReactNode => {
         return (
           <Slider
@@ -174,5 +199,5 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
 
 export default memo(
   NpcProperties,
-  createPropsEqualFn<NpcInstance>(RELEVANT_PROPS)
+  createPropsEqualFn<NpcInstance>(RELEVANT_PROPS),
 );

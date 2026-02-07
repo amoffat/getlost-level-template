@@ -22,7 +22,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { memo, ReactNode, useCallback, useMemo } from "react";
 import GatewayModal from "../GatewayModal";
-import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
+import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import { requiredUniqueName } from "./validators/name";
 
 // Properties that collectPropertyValues needs to access
@@ -42,7 +42,7 @@ const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 function ExitProperties({ objs }: { objs: ExitObj[] }) {
   const dispatch = useAppDispatch();
   const objsByTemplateId = useAppSelector((state) =>
-    mapSelectors.objectsByTemplateId(state, constants.exitTemplateId)
+    mapSelectors.objectsByTemplateId(state, constants.exitTemplateId),
   );
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
@@ -57,22 +57,22 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
         mapEditorActions.updateTemplate({
           name: "exitGateways",
           updates: props,
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<ExitProps>) => {
+    (scope: PropertyValueScope, props: Partial<ExitProps>) => {
       updateObjectProperties({
-        level,
+        scope,
         objs,
         props,
         templateUpdate,
       });
     },
-    [objs, templateUpdate]
+    [objs, templateUpdate],
   );
 
   const toCollect = useMemo(() => {
@@ -89,7 +89,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
       updateProps("instance", { preferredEntranceId: formattedEntranceId });
     },
-    [updateProps]
+    [updateProps],
   );
 
   const existingNames = useMemo(() => {
@@ -111,7 +111,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
     (value: string | undefined) => {
       return requiredUniqueName(existingNames, value);
     },
-    [existingNames]
+    [existingNames],
   );
 
   const nameInput = (
@@ -122,17 +122,17 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       values={toCollect.name}
       defaultValue=""
       onValueChange={(
-        level: PropertyValueLevel,
-        value: string | undefined
+        scope: PropertyValueScope,
+        value: string | undefined,
       ): void => {
-        updateProps(level, {
+        updateProps(scope, {
           name: value,
           status: nameValidator(value) ? "error" : null,
         });
       }}
       renderInput={(
         value: string | undefined,
-        onChange: (value: string) => void
+        onChange: (value: string) => void,
       ): ReactNode => {
         return (
           <TextInput
@@ -157,14 +157,14 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       values={toCollect.preferredEntranceId}
       defaultValue={null}
       onValueChange={(
-        level: PropertyValueLevel,
-        value: string | null | undefined
+        scope: PropertyValueScope,
+        value: string | null | undefined,
       ): void => {
-        updateProps(level, { preferredEntranceId: value });
+        updateProps(scope, { preferredEntranceId: value });
       }}
       renderInput={(
         value: string | null | undefined,
-        onChange: (value: string) => void
+        onChange: (value: string) => void,
       ): ReactNode => {
         return (
           <Stack gap="xs" p={0}>
@@ -197,14 +197,14 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       values={toCollect.force}
       defaultValue={false}
       onValueChange={(
-        level: PropertyValueLevel,
-        value: boolean | undefined
+        scope: PropertyValueScope,
+        value: boolean | undefined,
       ): void => {
-        updateProps(level, { force: value });
+        updateProps(scope, { force: value });
       }}
       renderInput={(
         value: boolean | undefined,
-        onChange: (value: boolean) => void
+        onChange: (value: boolean) => void,
       ): ReactNode => {
         return (
           <Switch
@@ -224,14 +224,14 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       defaultValue={constants.defaultExitSensorRadius}
       noTemplate
       onValueChange={(
-        level: PropertyValueLevel,
-        value: number | undefined
+        scope: PropertyValueScope,
+        value: number | undefined,
       ): void => {
-        updateProps(level, { sensorRadius: value });
+        updateProps(scope, { sensorRadius: value });
       }}
       renderInput={(
         value: number | undefined,
-        onChange: (value: number) => void
+        onChange: (value: number) => void,
       ): ReactNode => {
         return (
           <Slider
@@ -273,5 +273,5 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
 export default memo(
   ExitProperties,
-  createPropsEqualFn<ExitObj>(RELEVANT_PROPS)
+  createPropsEqualFn<ExitObj>(RELEVANT_PROPS),
 );

@@ -69,4 +69,5 @@ export interface NpcProps {
   defaultAnimation: keyof NpcAnimationRecord;
   groundOffset: number;
   dampenWalkCollisions: number;
+  status: InstanceStatus | null;
 }

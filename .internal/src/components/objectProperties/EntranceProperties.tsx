@@ -22,7 +22,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { memo, ReactNode, useCallback, useMemo } from "react";
 import GatewayModal from "../GatewayModal";
-import PropertyValue, { PropertyValueLevel } from "../PropertyValue";
+import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import { requiredUniqueName } from "./validators/name";
 
 // Properties that collectPropertyValues needs to access
@@ -39,7 +39,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
   const objsByTemplateId = useAppSelector((state) =>
-    mapSelectors.objectsByTemplateId(state, entryTemplateId)
+    mapSelectors.objectsByTemplateId(state, entryTemplateId),
   );
 
   // Create a key based only on relevant properties
@@ -52,22 +52,22 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
         mapEditorActions.updateTemplate({
           name: "entryGateways",
           updates: props,
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const updateProps = useCallback(
-    (level: PropertyValueLevel, props: Partial<EntranceProps>) => {
+    (scope: PropertyValueScope, props: Partial<EntranceProps>) => {
       updateObjectProperties({
-        level,
+        scope: scope,
         objs,
         props,
         templateUpdate,
       });
     },
-    [objs, templateUpdate]
+    [objs, templateUpdate],
   );
 
   const toCollect = useMemo(() => {
@@ -87,7 +87,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       const newExitIds = [...currentExitIds, formattedExitId];
       updateProps("instance", { exitIds: newExitIds });
     },
-    [toCollect.exitIds, updateProps]
+    [toCollect.exitIds, updateProps],
   );
 
   const filterGateway = useCallback(
@@ -97,7 +97,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       // Return true to include, false to filter out
       return !currentExitIds.includes(formattedExitId);
     },
-    [toCollect.exitIds]
+    [toCollect.exitIds],
   );
 
   const existingNames = useMemo(() => {
@@ -119,7 +119,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
     (value: string | undefined) => {
       return requiredUniqueName(existingNames, value);
     },
-    [existingNames]
+    [existingNames],
   );
 
   const nameInput = (
@@ -130,17 +130,17 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       values={toCollect.name}
       defaultValue=""
       onValueChange={(
-        level: PropertyValueLevel,
-        value: string | undefined
+        scope: PropertyValueScope,
+        value: string | undefined,
       ): void => {
-        updateProps(level, {
+        updateProps(scope, {
           name: value,
           status: nameValidator(value) ? "error" : null,
         });
       }}
       renderInput={(
         value: string | undefined,
-        onChange: (value: string) => void
+        onChange: (value: string) => void,
       ): ReactNode => {
         return (
           <TextInput
@@ -164,14 +164,14 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
         noTemplate
         values={toCollect.exitIds}
         onValueChange={(
-          level: PropertyValueLevel,
-          value: string[] | undefined
+          scope: PropertyValueScope,
+          value: string[] | undefined,
         ): void => {
-          updateProps(level, { exitIds: value });
+          updateProps(scope, { exitIds: value });
         }}
         renderInput={(
           value: string[] | undefined,
-          onChange: (value: string[]) => void
+          onChange: (value: string[]) => void,
         ): ReactNode => {
           const exitIds = value ?? [];
 
@@ -236,5 +236,5 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
 
 export default memo(
   EntranceProperties,
-  createPropsEqualFn<EntranceObj>(RELEVANT_PROPS)
+  createPropsEqualFn<EntranceObj>(RELEVANT_PROPS),
 );

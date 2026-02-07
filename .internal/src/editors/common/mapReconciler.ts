@@ -331,6 +331,13 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       spriteContainer.eventMode = "static";
       spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
 
+      const errorIndicator = this.createErrorIndicator(
+        sprite,
+        obj.status === "error",
+      );
+      errorIndicator.zIndex = 20;
+      spriteContainer.addChild(errorIndicator);
+
       return spriteContainer;
     } else if (isMapObjFromTileset(obj)) {
       const tsTex = this.getTilesetTex(obj.tilesetId);
@@ -411,17 +418,13 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         );
         errorIndicator.zIndex = 20;
         spriteContainer.addChild(errorIndicator);
-      }
-
-      if (isEntranceObj(obj)) {
+      } else if (isEntranceObj(obj)) {
         const errorIndicator = this.createErrorIndicator(
           sprite,
           obj.status === "error",
         );
         spriteContainer.addChild(errorIndicator);
-      }
-
-      if (isPickupObj(obj)) {
+      } else if (isPickupObj(obj)) {
         const errorIndicator = this.createErrorIndicator(
           sprite,
           obj.status === "error",
