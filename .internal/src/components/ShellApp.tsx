@@ -27,12 +27,12 @@ import {
 } from "react";
 import { shallowEqual } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import DialogueTab from "./Dialogue";
 import MapEditorTab from "./MapEditor";
 import PanelLoader from "./PanelLoader";
 import PreviewTab from "./Preview";
 import Spotlight from "./Spotlight";
-import StoryTab from "./StoryTab";
+import DialogueTab from "./tabs/DialogueTab";
+import StoryTab from "./tabs/StoryTab";
 import TilesetEditorTab from "./TilesetEditor";
 import UploadAssetModal from "./UploadAssetModal";
 

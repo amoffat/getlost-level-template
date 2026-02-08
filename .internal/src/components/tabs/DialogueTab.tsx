@@ -24,10 +24,10 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useCallback, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { useAppDispatch } from "../hooks/redux";
-import { setEdges, setNodeData, setNodes } from "../slices/dialogue";
-import type { RootState } from "../store/store";
-import type { DNode } from "../types/dialogue";
+import { useAppDispatch } from "../../hooks/redux";
+import { setEdges, setNodeData, setNodes } from "../../slices/dialogue";
+import type { RootState } from "../../store/store";
+import type { DNode } from "../../types/dialogue";
 
 export default function DialogueTab() {
   const [nodeId, setNodeId] = useState<string | null>(null);
@@ -44,19 +44,19 @@ export default function DialogueTab() {
     (changes) => {
       dispatch(setNodes(applyNodeChanges(changes, nodes)));
     },
-    [dispatch, nodes]
+    [dispatch, nodes],
   );
   const onEdgesChange: OnEdgesChange = useCallback(
     (changes) => {
       dispatch(setEdges(applyEdgeChanges(changes, edges)));
     },
-    [dispatch, edges]
+    [dispatch, edges],
   );
   const onConnect: OnConnect = useCallback(
     (connection) => {
       dispatch(setEdges(addEdge(connection, edges)));
     },
-    [dispatch, edges]
+    [dispatch, edges],
   );
 
   const createNode = useCallback(() => {
@@ -84,7 +84,7 @@ export default function DialogueTab() {
     (_event: React.MouseEvent, node: DNode) => {
       setNodeId(node.id);
     },
-    [setNodeId]
+    [setNodeId],
   );
 
   const onSwitchAnimated = useCallback(
@@ -93,7 +93,7 @@ export default function DialogueTab() {
       const animated = event.currentTarget.checked;
       dispatch(setNodeData({ id: node.id, data: { animated } }));
     },
-    [node, dispatch]
+    [node, dispatch],
   );
 
   const onTitleChange = useCallback(
@@ -102,7 +102,7 @@ export default function DialogueTab() {
       const label = event.currentTarget.value;
       dispatch(setNodeData({ id: node.id, data: { label } }));
     },
-    [node, dispatch]
+    [node, dispatch],
   );
 
   const onContentChange = useCallback(
@@ -111,7 +111,7 @@ export default function DialogueTab() {
       const content = event.currentTarget.value;
       dispatch(setNodeData({ id: node.id, data: { content } }));
     },
-    [node, dispatch]
+    [node, dispatch],
   );
 
   return (

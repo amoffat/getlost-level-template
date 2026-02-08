@@ -50,8 +50,6 @@ export const entryTemplateId = "entryGatewaysTemplate";
 export const exitTemplateId = "exitGatewaysTemplate";
 export const pickupTemplateId = "pickupsTemplate";
 
-export const storyStartId = "816f213d-1a2f-40a2-b777-f98194e882e3";
-
 export const defaultTileSize = 16;
 export const defaultAnimTime = 1000;
 export const autosaveMapDebounce = 1000; // ms

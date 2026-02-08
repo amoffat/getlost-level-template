@@ -619,16 +619,18 @@ export const slice = createSlice({
         tilesets: Record<string, Tileset>,
         objIdToTs: Record<string, string>,
         instanceIds: string[],
-      ): (TileGroupTemplate | null)[] => {
-        return instanceIds.map((instanceId) => {
-          const tsId = objIdToTs[instanceId];
-          if (!tsId) return null;
-          const ts = tilesets[tsId];
-          if (!ts) return null;
-          const obj = ts.tiles.entities[instanceId];
-          if (!obj || !isTileGroupTemplate(obj)) return null;
-          return obj;
-        });
+      ): { inst: string; tmpl: TemplateObject }[] => {
+        return instanceIds
+          .map((instanceId) => {
+            const tsId = objIdToTs[instanceId];
+            if (!tsId) return null;
+            const ts = tilesets[tsId];
+            if (!ts) return null;
+            const obj = ts.tiles.entities[instanceId];
+            if (!obj) return null;
+            return { inst: instanceId, tmpl: obj };
+          })
+          .filter((x) => x !== null);
       },
     ),
     templateFromInstanceId: createTsSelector(

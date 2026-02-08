@@ -44,10 +44,10 @@ import {
   useState,
 } from "react";
 import { useSelector } from "react-redux";
-import { useAppDispatch } from "../hooks/redux";
-import type { RootState } from "../store/store";
-import StoryNode from "./StoryNode";
-import Tip from "./Tip";
+import { useAppDispatch } from "../../hooks/redux";
+import type { RootState } from "../../store/store";
+import StoryNode from "../flowNodes/StoryNode";
+import Tip from "../Tip";
 
 export default function StoryTab() {
   const [nodeId, setNodeId] = useState<string | null>(null);
@@ -152,7 +152,7 @@ export default function StoryTab() {
         const newNode: DNode = {
           id: newNodeId,
           position,
-          type: "default",
+          type: "story",
           data: {
             id: `milestone-${nodes.length + 1}`,
             npcs: {},
@@ -280,7 +280,7 @@ export default function StoryTab() {
                 snapGrid={[20, 20]}
                 panOnDrag={[2]}
                 deleteKeyCode={["Delete", "Backspace"]}
-                nodeTypes={{ default: StoryNode }}
+                nodeTypes={{ story: StoryNode }}
                 nodes={nodes}
                 edges={edges}
                 onNodeClick={onSelectNode}

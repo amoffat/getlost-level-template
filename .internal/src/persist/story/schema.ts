@@ -3,27 +3,23 @@ import type { Edge } from "@xyflow/react";
 
 export interface BaseStoryDoc {
   version: number;
-}
-
-// Legacy CBOR doc (not used by loader): stored DOT text
-export interface StoryDocV1 extends BaseStoryDoc {
-  version: 1;
-  dot: string;
+  nodes: StoryNode[];
+  edges: Edge[];
 }
 
 // New doc: persist nodes and edges from slice state
 export interface StoryDocV2 extends BaseStoryDoc {
   version: 2;
-  nodes: StoryNode[];
-  edges: Edge[];
 }
 
 // Version 3: Moved label property to id in StoryNodeData
-export interface StoryDocV3 extends BaseStoryDoc {
+export interface StoryDocV3 extends Omit<StoryDocV2, "version"> {
   version: 3;
-  nodes: StoryNode[];
-  edges: Edge[];
 }
 
-export type LatestStoryDoc = StoryDocV3;
-export const latestVersion = 3;
+export interface StoryDocV4 extends Omit<StoryDocV3, "version"> {
+  version: 4;
+}
+
+export type LatestStoryDoc = StoryDocV4;
+export const latestVersion = 4;
