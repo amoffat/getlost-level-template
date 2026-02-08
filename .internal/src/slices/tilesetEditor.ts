@@ -609,7 +609,7 @@ export const slice = createSlice({
         },
       },
     ),
-    templatesFromInstanceIds: createTsSelector(
+    templatesFromIds: createTsSelector(
       [
         (state) => state.tilesets,
         (state) => state.objIdToTs,
@@ -633,7 +633,7 @@ export const slice = createSlice({
           .filter((x) => x !== null);
       },
     ),
-    templateFromInstanceId: createTsSelector(
+    templateFromId: createTsSelector(
       [
         (state) => state.tilesets,
         (state) => state.objIdToTs,

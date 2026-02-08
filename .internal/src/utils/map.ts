@@ -26,10 +26,7 @@ export function resolveTemplateProps<
   } else if (isPickupObj(obj)) {
     return state.mapEditor.templates.pickups as unknown as TProps;
   } else if (isMapObjFromTileset(obj)) {
-    return tsSelectors.templateFromInstanceId(
-      state,
-      obj.tsObjId,
-    ) as unknown as TProps;
+    return tsSelectors.templateFromId(state, obj.tsObjId) as unknown as TProps;
   }
   return null;
 }

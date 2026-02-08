@@ -101,7 +101,7 @@ export class Placer extends ClickDragListener {
         const obj = hits[0]!;
         if (isTileGroupInstance(obj)) {
           const state = store.getState();
-          const tmpl = tsSelectors.templateFromInstanceId(state, obj.tsObjId);
+          const tmpl = tsSelectors.templateFromId(state, obj.tsObjId);
           if (tmpl) {
             store.dispatch(actions.setPlace(tmpl));
           }

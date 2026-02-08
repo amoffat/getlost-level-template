@@ -231,7 +231,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       }
 
       const state = store.getState();
-      const tsObj = tsSelectors.templateFromInstanceId(
+      const tsObj = tsSelectors.templateFromId(
         state,
         obj.tsObjId,
       ) as AnimationTemplate | null;
@@ -285,7 +285,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       }
 
       const state = store.getState();
-      const tsObj = tsSelectors.templateFromInstanceId(
+      const tsObj = tsSelectors.templateFromId(
         state,
         obj.tsObjId,
       ) as NpcTemplate | null;
@@ -346,7 +346,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       }
 
       const state = store.getState();
-      const tsObj = tsSelectors.templateFromInstanceId(
+      const tsObj = tsSelectors.templateFromId(
         state,
         obj.tsObjId,
       ) as TileGroupTemplate;
@@ -503,7 +503,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
     // Add warning triangle icon sprite in top-right corner
     const iconTsTex = this.getTilesetTex(iconTsId)!;
-    const iconTsObj = tsSelectors.templateFromInstanceId(
+    const iconTsObj = tsSelectors.templateFromId(
       state,
       errorIcon,
     ) as TileGroupTemplate;

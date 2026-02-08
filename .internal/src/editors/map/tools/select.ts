@@ -189,7 +189,7 @@ class Selector extends ClickDragListener {
             : actions.setOneSelected;
           store.dispatch(action(obj.id));
           if (isTileGroupInstance(obj)) {
-            const tmpl = tsSelectors.templateFromInstanceId(state, obj.tsObjId);
+            const tmpl = tsSelectors.templateFromId(state, obj.tsObjId);
             if (tmpl) {
               store.dispatch(actions.setPlace(tmpl));
             }

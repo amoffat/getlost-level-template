@@ -8,7 +8,17 @@ import {
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
 import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
-import { Fieldset, Slider, Stack, TextInput } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Fieldset,
+  Group,
+  Slider,
+  Stack,
+  TextInput,
+  Tooltip,
+} from "@mantine/core";
+import { IconCopy } from "@tabler/icons-react";
 import { memo, ReactNode, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
@@ -185,9 +195,35 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
     />
   );
 
+  let idInput;
+  if (objs.length === 1) {
+    const copyId = () => {
+      navigator.clipboard.writeText(objs[0].id);
+    };
+
+    idInput = (
+      <Group gap="xs" wrap="nowrap">
+        <Box style={{ flex: 1 }}>
+          <TextInput
+            label="ID"
+            description="The object's unique identifier. Cannot be changed."
+            value={objs[0].id}
+            disabled
+          />
+        </Box>
+        <Tooltip label="Copy id">
+          <ActionIcon onClick={copyId} variant="subtle" color="gray" size="sm">
+            <IconCopy size={16} />
+          </ActionIcon>
+        </Tooltip>
+      </Group>
+    );
+  }
+
   return (
     <Fieldset legend="NPC properties" mt="md" p="xs">
       <Stack p={0} gap="xl">
+        {idInput}
         {nameInput}
         {walkSpeedInput}
         {groundOffsetInput}

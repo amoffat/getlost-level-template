@@ -12,6 +12,7 @@ let tilesetInitPromiseCache: Promise<
 > | null = null;
 let mapInitPromiseCache: Promise<Awaited<ReturnType<typeof mapInit>>> | null =
   null;
+let storyInitPromiseCache: Promise<void> | null = null;
 
 export function getTilesetInitPromise() {
   if (!tilesetInitPromiseCache) {
@@ -29,8 +30,8 @@ export function getMapInitPromise() {
     mapInitPromiseCache = (async () => {
       await getTilesetInitPromise();
       const app = await mapInit();
-      // This has to happen after the app is initialized, because it depends on
-      // the map reconciler existing.
+      // This has to happen after the pixi app is initialized, because it
+      // depends on the map reconciler existing.
       try {
         await store.dispatch(loadMapThunk()).unwrap();
       } catch (e) {
@@ -42,8 +43,18 @@ export function getMapInitPromise() {
   return mapInitPromiseCache;
 }
 
+export async function getStoryInitPromise() {
+  if (!storyInitPromiseCache) {
+    storyInitPromiseCache = (async () => {
+      await getMapInitPromise();
+    })();
+  }
+  return storyInitPromiseCache;
+}
+
 // Export reset functions for when we actually want to reinitialize (e.g., map reset)
 export function resetInitPromises() {
   tilesetInitPromiseCache = null;
   mapInitPromiseCache = null;
+  storyInitPromiseCache = null;
 }

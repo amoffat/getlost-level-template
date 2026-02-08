@@ -89,7 +89,7 @@ export class Mover extends ClickDragListener {
       if (snap) {
         let gridSnap = defaultSnapSize;
         if (isMapObjFromTileset(obj)) {
-          const tmpl = tsSelectors.templateFromInstanceId(state, obj.tsObjId);
+          const tmpl = tsSelectors.templateFromId(state, obj.tsObjId);
           gridSnap = tmpl?.gridSize ?? defaultSnapSize;
         }
         newPos.x = Math.floor(newPos.x / gridSnap.x) * gridSnap.x;

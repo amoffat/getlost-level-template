@@ -31,7 +31,7 @@ export default function ObjSelHover() {
         dispatch(actions.removeOneSelected(obj.id));
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   const items: ReactNode[] | undefined = useMemo(() => {
@@ -40,17 +40,17 @@ export default function ObjSelHover() {
     return proposed?.objects.map((obj) => {
       let view: ReactNode | null = null;
       if (isTileGroupInstance(obj)) {
-        const tsObj = tsSelectors.templateFromInstanceId(
+        const tsObj = tsSelectors.templateFromId(
           state,
-          obj.tsObjId
+          obj.tsObjId,
         ) as TileGroupTemplate | null;
         if (!tsObj) return null;
 
         view = <TilesetGroup group={tsObj} scale={2} bounded />;
       } else if (isAnimatedInstance(obj)) {
-        const tsObj = tsSelectors.templateFromInstanceId(
+        const tsObj = tsSelectors.templateFromId(
           state,
-          obj.tsObjId
+          obj.tsObjId,
         ) as AnimationTemplate | null;
         if (!tsObj) return null;
 
@@ -59,9 +59,9 @@ export default function ObjSelHover() {
         });
         view = <TileAnimation frames={frames} scale={2} bounded />;
       } else if (isNpcInstance(obj)) {
-        const tsObj = tsSelectors.templateFromInstanceId(
+        const tsObj = tsSelectors.templateFromId(
           state,
-          obj.tsObjId
+          obj.tsObjId,
         ) as NpcTemplate | null;
         if (!tsObj) return null;
 

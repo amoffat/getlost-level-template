@@ -37,6 +37,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import {
   ReactNode,
+  use,
   useCallback,
   useEffect,
   useMemo,
@@ -49,7 +50,13 @@ import type { RootState } from "../../store/store";
 import StoryNode from "../flowNodes/StoryNode";
 import Tip from "../Tip";
 
-export default function StoryTab() {
+export default function StoryTab({
+  initPromise,
+}: {
+  initPromise: Promise<unknown>;
+}) {
+  use(initPromise);
+
   const [nodeId, setNodeId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<Vector2 | null>(null);
   const dispatch = useAppDispatch();

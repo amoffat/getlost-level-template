@@ -99,7 +99,7 @@ export const duplicateSelectionThunk = createAsyncThunk(
     selectors.selectedObjs(state).forEach((obj) => {
       let gridSize = state.mapEditor.grid.size;
       if (isMapObjFromTileset(obj)) {
-        const tmpl = tsSelectors.templateFromInstanceId(state, obj.tsObjId);
+        const tmpl = tsSelectors.templateFromId(state, obj.tsObjId);
         gridSize = tmpl?.gridSize ?? gridSize;
       }
 

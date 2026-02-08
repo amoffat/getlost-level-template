@@ -3,7 +3,11 @@ import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { getMapInitPromise, getTilesetInitPromise } from "@/init/editorInit";
+import {
+  getMapInitPromise,
+  getStoryInitPromise,
+  getTilesetInitPromise,
+} from "@/init/editorInit";
 import { pathToTab, tabToPath } from "@/routes/tabs";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
@@ -209,6 +213,7 @@ const ShellAppContent = memo(function ShellAppContent({
   // Get the cached init promises that persist across HMR
   const tilesetInitPromise = useMemo(() => getTilesetInitPromise(), []);
   const mapInitPromise = useMemo(() => getMapInitPromise(), []);
+  const storyInitPromise = useMemo(() => getStoryInitPromise(), []);
 
   return (
     <>
@@ -290,17 +295,25 @@ const ShellAppContent = memo(function ShellAppContent({
 
             {mountedTabs["dialogue-editor"] && (
               <Tabs.Panel value="dialogue-editor">
-                <ReactFlowProvider>
-                  <DialogueTab />
-                </ReactFlowProvider>
+                <Suspense
+                  fallback={<PanelLoader message={loadingMessages.at(-1)} />}
+                >
+                  <ReactFlowProvider>
+                    <DialogueTab initPromise={storyInitPromise} />
+                  </ReactFlowProvider>
+                </Suspense>
               </Tabs.Panel>
             )}
 
             {mountedTabs["story-editor"] && (
               <Tabs.Panel value="story-editor">
-                <ReactFlowProvider>
-                  <StoryTab />
-                </ReactFlowProvider>
+                <Suspense
+                  fallback={<PanelLoader message={loadingMessages.at(-1)} />}
+                >
+                  <ReactFlowProvider>
+                    <StoryTab initPromise={storyInitPromise} />
+                  </ReactFlowProvider>
+                </Suspense>
               </Tabs.Panel>
             )}
           </Tabs>
