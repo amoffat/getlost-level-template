@@ -2,8 +2,6 @@ import { trackKeyPresses } from "@/editors/common/keypress";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
 import {
-  Button,
-  Collapse,
   Fieldset,
   Group,
   Kbd,
@@ -13,7 +11,6 @@ import {
   Switch,
   Text,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
 import {
   IconBrush,
   IconCircleFilled,
@@ -21,6 +18,7 @@ import {
   IconSquareFilled,
 } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
+import AdvancedSection from "../../common/AdvancedSection";
 import Tip from "../../Tip";
 
 export default function ColliderTool() {
@@ -34,7 +32,6 @@ export default function ColliderTool() {
     showColliders,
     simplify,
   } = useAppSelector((state) => state.tilesetEditor.toolOptions.collider);
-  const [advancedOpen, { toggle }] = useDisclosure(false);
   const [isControlPressed, setIsControlPressed] = useState(false);
 
   const objKey = useAppSelector((state) => {
@@ -53,7 +50,7 @@ export default function ColliderTool() {
             actions.setToolOptions({
               tool: "collider",
               options: { mode: effectiveMode },
-            })
+            }),
           );
         },
         s: (pressed: boolean) => {
@@ -63,7 +60,7 @@ export default function ColliderTool() {
               actions.setToolOptions({
                 tool: "collider",
                 options: { brushShape: newShape },
-              })
+              }),
             );
           }
         },
@@ -84,7 +81,7 @@ export default function ColliderTool() {
           actions.setToolOptions({
             tool: "collider",
             options: { brushSize: newSize },
-          })
+          }),
         );
       }
     };
@@ -100,10 +97,10 @@ export default function ColliderTool() {
         actions.setToolOptions({
           tool: "collider",
           options: { brushSize: value },
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleModeChange = useCallback(
@@ -112,10 +109,10 @@ export default function ColliderTool() {
         actions.setToolOptions({
           tool: "collider",
           options: { mode: value as "paint" | "erase" },
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleBrushShapeChange = useCallback(
@@ -124,10 +121,10 @@ export default function ColliderTool() {
         actions.setToolOptions({
           tool: "collider",
           options: { brushShape: value as "square" | "circle" },
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleDrawOnOpaqueOnlyChange = useCallback(
@@ -136,10 +133,10 @@ export default function ColliderTool() {
         actions.setToolOptions({
           tool: "collider",
           options: { drawOnOpaqueOnly: event.currentTarget.checked },
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleOverlayOpacityChange = useCallback(
@@ -149,10 +146,10 @@ export default function ColliderTool() {
         actions.setToolOptions({
           tool: "collider",
           options: { overlayOpacity: value },
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleShowCollidersChange = useCallback(
@@ -161,10 +158,10 @@ export default function ColliderTool() {
         actions.setToolOptions({
           tool: "collider",
           options: { showColliders: event.currentTarget.checked },
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleSimplifyChange = useCallback(
@@ -175,10 +172,10 @@ export default function ColliderTool() {
         actions.setToolOptions({
           tool: "collider",
           options: { simplify: value, showColliders: true },
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   return (
@@ -270,11 +267,7 @@ export default function ColliderTool() {
             />
           </Stack>
 
-          <Button variant="subtle" size="xs" onClick={toggle} fullWidth>
-            {advancedOpen ? "Hide" : "Show"} Advanced
-          </Button>
-
-          <Collapse in={advancedOpen}>
+          <AdvancedSection>
             <Stack gap="md" p={0}>
               <Switch
                 label="Draw on opaque pixels only"
@@ -315,7 +308,7 @@ export default function ColliderTool() {
                 />
               </Stack>
             </Stack>
-          </Collapse>
+          </AdvancedSection>
         </Stack>
       </Fieldset>
     </>

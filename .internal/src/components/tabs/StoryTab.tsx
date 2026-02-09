@@ -1,7 +1,7 @@
 import { selectors } from "@/slices/mapEditor";
 import type { StoryNode as DNode } from "@/slices/story";
 import { setEdges, setNodeData, setNodes } from "@/slices/story";
-import { loadStoryThunk, reflowStoryThunk } from "@/thunks/story";
+import { reflowStoryThunk } from "@/thunks/story";
 import { showNotification } from "@/utils/notifications";
 import { Vector2 } from "@/vec";
 import { Split } from "@gfazioli/mantine-split-pane";
@@ -35,15 +35,7 @@ import {
   type ReactFlowInstance,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import {
-  ReactNode,
-  use,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { ReactNode, use, useCallback, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../../hooks/redux";
 import type { RootState } from "../../store/store";
@@ -198,10 +190,6 @@ export default function StoryTab({
     },
     [setNodeId],
   );
-
-  useEffect(() => {
-    dispatch(loadStoryThunk()).unwrap();
-  }, [dispatch]);
 
   const handleReflow = useCallback(async () => {
     await dispatch(reflowStoryThunk()).unwrap();

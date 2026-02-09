@@ -2,13 +2,12 @@ import { Split } from "@gfazioli/mantine-split-pane";
 import {
   Box,
   Button,
-  Fieldset,
   Flex,
   Group,
+  MultiSelect,
   RenderTreeNodePayload,
   ScrollArea,
   Stack,
-  Switch,
   Text,
   Textarea,
   TextInput,
@@ -34,12 +33,13 @@ import { use, useCallback, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../../hooks/redux";
 import { setEdges, setNodeData, setNodes } from "../../slices/dialogue";
-import { selectors } from "../../slices/mapEditor";
+import { selectors as mapSelectors } from "../../slices/mapEditor";
 import { selectors as tsSelectors } from "../../slices/tilesetEditor";
 import type { RootState } from "../../store/store";
 import { store } from "../../store/store";
 import type { DNode } from "../../types/dialogue";
 import type { NpcTemplate } from "../../types/npc";
+import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
 
 export default function DialogueTab({
@@ -55,7 +55,8 @@ export default function DialogueTab({
   const { nodes, edges } = dState;
   const { screenToFlowPosition } = useReactFlow();
   const flowContainerRef = useRef<HTMLDivElement>(null);
-  const npcs = useSelector(selectors.selectNpcs);
+  const npcs = useSelector(mapSelectors.selectNpcs);
+  const milestones = useSelector((state: RootState) => state.story.nodes);
 
   const node = nodes.find((n) => n.id === nodeId) || null;
   const nd = node?.data;
@@ -152,14 +153,12 @@ export default function DialogueTab({
           state,
           npc.tsObjId,
         ) as NpcTemplate;
-        const tg = npcTemplate.animations.Idle.animation.frames[0]!.tg;
-        const icon = <TilesetGroup key={npc.id} scale={2} group={tg} />;
 
         return {
           value: npc.id,
           label: npc.name,
           nodeProps: {
-            icon,
+            npcTemplate,
           },
           children: [
             {
@@ -187,13 +186,11 @@ export default function DialogueTab({
         <Stack h="100%" style={{ overflow: "hidden" }}>
           <ScrollArea type="never" style={{ flex: 1 }}>
             <Stack p={0}>
-              <Fieldset legend="NPCs" p="xs">
-                <Tree
-                  data={treeData}
-                  selectOnClick
-                  renderNode={(payload) => <Leaf {...payload} />}
-                />
-              </Fieldset>
+              <Tree
+                data={treeData}
+                selectOnClick
+                renderNode={(payload) => <Leaf {...payload} />}
+              />
             </Stack>
           </ScrollArea>
         </Stack>
@@ -248,6 +245,14 @@ export default function DialogueTab({
         <Stack h="100%" style={{ overflow: "hidden" }}>
           <ScrollArea type="never" style={{ flex: 1 }}>
             <Stack p={0} pb={50}>
+              <MultiSelect
+                label="Milestones"
+                description="Which story milestones activate this dialogue?"
+                searchable
+                defaultValue={["default"]}
+                data={["default", ...milestones.map((m) => m.data.id)]}
+                nothingFoundMessage="No milestones found"
+              />
               <TextInput
                 label="Dialogue title"
                 description="A summary or title for this dialogue node."
@@ -261,12 +266,6 @@ export default function DialogueTab({
                 description="The text that will be displayed to the player."
                 onChange={onContentChange}
               />
-              <Switch
-                label="Animated"
-                checked={nd?.animated ?? false}
-                onChange={onSwitchAnimated}
-                description="If enabled, the text will appear with a typewriter animation."
-              />
             </Stack>
           </ScrollArea>
         </Stack>
@@ -279,14 +278,41 @@ function Leaf({
   node,
   expanded,
   hasChildren,
+  selected,
   elementProps,
 }: RenderTreeNodePayload) {
-  return (
-    <Box p="xs" {...elementProps}>
-      <Group gap="md" mb="xs">
-        <Text fz="sm">{node.nodeProps?.icon}</Text>
+  const npcTemplate = node.nodeProps?.npcTemplate as NpcTemplate | undefined;
+
+  let icon: React.ReactNode;
+  if (npcTemplate) {
+    if (selected) {
+      icon = (
+        <TileAnimation
+          frames={npcTemplate.animations.WalkDown.animation.frames}
+          scale={2}
+        />
+      );
+    } else {
+      const tg = npcTemplate.animations.Idle.animation.frames[0]!.tg;
+      icon = <TilesetGroup scale={2} group={tg} />;
+    }
+  }
+  const isNpc = !!icon;
+
+  if (isNpc) {
+    return (
+      <Box p="xs" {...elementProps}>
+        <Group gap="md">
+          {icon}
+          <Text fz="sm">{node.label}</Text>
+        </Group>
+      </Box>
+    );
+  } else {
+    return (
+      <Box p="xs" {...elementProps} pl="md">
         <Text fz="sm">{node.label}</Text>
-      </Group>
-    </Box>
-  );
+      </Box>
+    );
+  }
 }

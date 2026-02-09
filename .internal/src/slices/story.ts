@@ -47,6 +47,7 @@ export const slice = createSlice({
       state.error = action.payload;
     },
   },
+  selectors: {},
 });
 
 export const { setNodes, setEdges, setNodeData, setLoading, setError } =

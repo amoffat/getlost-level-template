@@ -193,8 +193,7 @@ const ShellAppContent = memo(function ShellAppContent({
   const [draggedFiles, setDraggedFiles] = useState<File[] | null>(null);
   const [assetTypeOpened, { open: openAssetType, close: closeAssetType }] =
     useDisclosure(false);
-  const [isPending, startTransition] = useTransition();
-  const [pendingTab, setPendingTab] = useState<MainTabName | null>(null);
+  const [isPendingTab, startTransition] = useTransition();
 
   const { activeTab, mountedTabs, loadingMessages } = useAppSelector(
     (state) => ({
@@ -216,11 +215,8 @@ const ShellAppContent = memo(function ShellAppContent({
   const handleTabChangeWithFeedback = useCallback(
     (tab: MainTabName | null) => {
       if (tab && tab !== activeTab) {
-        setPendingTab(tab);
         startTransition(() => {
           onTabChange(tab);
-          // Clear pending after the transition
-          setPendingTab(null);
         });
       } else {
         onTabChange(tab);
@@ -233,8 +229,6 @@ const ShellAppContent = memo(function ShellAppContent({
   const tilesetInitPromise = useMemo(() => getTilesetInitPromise(), []);
   const mapInitPromise = useMemo(() => getMapInitPromise(), []);
   const storyInitPromise = useMemo(() => getStoryInitPromise(), []);
-
-  const showLoadingOverlay = !!(isPending || pendingTab) && !!pendingTab;
 
   return (
     <>
@@ -290,7 +284,7 @@ const ShellAppContent = memo(function ShellAppContent({
               <Tabs.Tab value="preview">Preview</Tabs.Tab>
             </Tabs.List>
 
-            <PanelLoader visible={showLoadingOverlay} />
+            <PanelLoader visible={isPendingTab} />
 
             {mountedTabs["preview"] && (
               <Tabs.Panel value="preview">

@@ -21,6 +21,7 @@ import {
 import { IconCopy } from "@tabler/icons-react";
 import { memo, ReactNode, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
+import AdvancedSection from "../common/AdvancedSection";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import { requiredUniqueName } from "./validators/name";
 
@@ -206,7 +207,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
         <Box style={{ flex: 1 }}>
           <TextInput
             label="ID"
-            description="The object's unique identifier. Cannot be changed."
+            description="The object's unique identifier."
             value={objs[0].id}
             disabled
           />
@@ -223,11 +224,11 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
   return (
     <Fieldset legend="NPC properties" mt="md" p="xs">
       <Stack p={0} gap="xl">
-        {idInput}
         {nameInput}
         {walkSpeedInput}
         {groundOffsetInput}
         {dampenWalkCollisionsInput}
+        <AdvancedSection>{idInput}</AdvancedSection>
       </Stack>
     </Fieldset>
   );

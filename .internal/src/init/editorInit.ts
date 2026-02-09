@@ -2,6 +2,7 @@ import { init as mapInit } from "@/editors/map/init";
 import { init as tsInit } from "@/editors/tileset/init";
 import { store } from "@/store/store";
 import { loadMapThunk } from "@/thunks/map";
+import { loadStoryThunk } from "@/thunks/story";
 import { loadTilesetsThunk } from "@/thunks/tileset";
 import { log } from "../log";
 
@@ -47,6 +48,7 @@ export async function getStoryInitPromise() {
   if (!storyInitPromiseCache) {
     storyInitPromiseCache = (async () => {
       await getMapInitPromise();
+      await store.dispatch(loadStoryThunk()).unwrap();
     })();
   }
   return storyInitPromiseCache;
