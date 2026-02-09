@@ -1,5 +1,6 @@
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
+  Box,
   Button,
   Fieldset,
   Flex,
@@ -8,9 +9,11 @@ import {
   ScrollArea,
   Stack,
   Switch,
+  Text,
   Textarea,
   TextInput,
   Tree,
+  TreeNodeData,
 } from "@mantine/core";
 import {
   addEdge,
@@ -139,7 +142,7 @@ export default function DialogueTab({
     });
   };
 
-  const treeData = useMemo(() => {
+  const treeData: TreeNodeData[] = useMemo(() => {
     const state = store.getState();
 
     return npcs
@@ -150,7 +153,7 @@ export default function DialogueTab({
           npc.tsObjId,
         ) as NpcTemplate;
         const tg = npcTemplate.animations.Idle.animation.frames[0]!.tg;
-        const icon = <TilesetGroup key={npc.id} scale={3} group={tg} />;
+        const icon = <TilesetGroup key={npc.id} scale={2} group={tg} />;
 
         return {
           value: npc.id,
@@ -158,6 +161,16 @@ export default function DialogueTab({
           nodeProps: {
             icon,
           },
+          children: [
+            {
+              value: "dialogue1",
+              label: "Dialogue 1",
+            },
+            {
+              value: "dialogue2",
+              label: "Dialogue 2",
+            },
+          ],
         };
       });
   }, [npcs]);
@@ -177,6 +190,7 @@ export default function DialogueTab({
               <Fieldset legend="NPCs" p="xs">
                 <Tree
                   data={treeData}
+                  selectOnClick
                   renderNode={(payload) => <Leaf {...payload} />}
                 />
               </Fieldset>
@@ -268,9 +282,11 @@ function Leaf({
   elementProps,
 }: RenderTreeNodePayload) {
   return (
-    <Group gap="md" {...elementProps} mb="xs">
-      {node.nodeProps?.icon}
-      <span>{node.label}</span>
-    </Group>
+    <Box p="xs" {...elementProps}>
+      <Group gap="md" mb="xs">
+        <Text fz="sm">{node.nodeProps?.icon}</Text>
+        <Text fz="sm">{node.label}</Text>
+      </Group>
+    </Box>
   );
 }

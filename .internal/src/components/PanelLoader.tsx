@@ -1,8 +1,8 @@
-import { Box, Loader, Text } from "@mantine/core";
+import { LoadingOverlay, Text } from "@mantine/core";
 
 interface PanelLoaderProps {
   message?: string;
-  fullHeight?: boolean;
+  visible?: boolean;
 }
 
 /**
@@ -11,36 +11,20 @@ interface PanelLoaderProps {
  */
 export default function PanelLoader({
   message,
-  fullHeight = true,
+  visible = true,
 }: PanelLoaderProps) {
   return (
-    <Box
-      pos="relative"
-      style={{
-        height: fullHeight ? "100dvh" : "100%",
+    <LoadingOverlay
+      visible={visible}
+      zIndex={1000}
+      overlayProps={{ blur: 3 }}
+      loaderProps={{
+        children: (
+          <Text c="white" fw={500} mt="md">
+            {message ?? "Loading..."}
+          </Text>
+        ),
       }}
-    >
-      <Box
-        pos="absolute"
-        top={0}
-        left={0}
-        right={0}
-        bottom={0}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-          justifyContent: "center",
-          alignItems: "center",
-          background: "rgba(0 0 0 / 0.35)",
-          backdropFilter: "blur(2px)",
-        }}
-      >
-        <Loader size="lg" />
-        <Text c="white" fw={500} ta="center">
-          {message ?? "Loading..."}
-        </Text>
-      </Box>
-    </Box>
+    />
   );
 }

@@ -28,6 +28,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useTransition,
 } from "react";
 import { shallowEqual } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -192,6 +193,8 @@ const ShellAppContent = memo(function ShellAppContent({
   const [draggedFiles, setDraggedFiles] = useState<File[] | null>(null);
   const [assetTypeOpened, { open: openAssetType, close: closeAssetType }] =
     useDisclosure(false);
+  const [isPending, startTransition] = useTransition();
+  const [pendingTab, setPendingTab] = useState<MainTabName | null>(null);
 
   const { activeTab, mountedTabs, loadingMessages } = useAppSelector(
     (state) => ({
@@ -210,10 +213,28 @@ const ShellAppContent = memo(function ShellAppContent({
     [openAssetType],
   );
 
+  const handleTabChangeWithFeedback = useCallback(
+    (tab: MainTabName | null) => {
+      if (tab && tab !== activeTab) {
+        setPendingTab(tab);
+        startTransition(() => {
+          onTabChange(tab);
+          // Clear pending after the transition
+          setPendingTab(null);
+        });
+      } else {
+        onTabChange(tab);
+      }
+    },
+    [activeTab, onTabChange],
+  );
+
   // Get the cached init promises that persist across HMR
   const tilesetInitPromise = useMemo(() => getTilesetInitPromise(), []);
   const mapInitPromise = useMemo(() => getMapInitPromise(), []);
   const storyInitPromise = useMemo(() => getStoryInitPromise(), []);
+
+  const showLoadingOverlay = !!(isPending || pendingTab) && !!pendingTab;
 
   return (
     <>
@@ -257,7 +278,9 @@ const ShellAppContent = memo(function ShellAppContent({
         <AppShell.Main>
           <Tabs
             value={activeTab}
-            onChange={(tab) => onTabChange(tab as MainTabName | null)}
+            onChange={(tab) =>
+              handleTabChangeWithFeedback(tab as MainTabName | null)
+            }
           >
             <Tabs.List style={{ alignItems: "center" }}>
               <Tabs.Tab value="map-editor">Map</Tabs.Tab>
@@ -266,6 +289,8 @@ const ShellAppContent = memo(function ShellAppContent({
               <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
               <Tabs.Tab value="preview">Preview</Tabs.Tab>
             </Tabs.List>
+
+            <PanelLoader visible={showLoadingOverlay} />
 
             {mountedTabs["preview"] && (
               <Tabs.Panel value="preview">
