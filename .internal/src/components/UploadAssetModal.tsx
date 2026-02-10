@@ -1,4 +1,3 @@
-import { overlayProps } from "@/constants";
 import { sliceTileset } from "@/editors/tileset/loader";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors } from "@/slices/tilesetEditor";
@@ -216,7 +215,6 @@ export default function UploadAssetModal({
       opened={opened}
       onClose={closeModal}
       title="Tileset upload"
-      overlayProps={overlayProps}
       closeOnClickOutside={false}
     >
       <form onSubmit={formSubmit}>

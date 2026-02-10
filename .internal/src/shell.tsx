@@ -28,6 +28,9 @@ const theme: MantineThemeOverride = {
     // TextInput: { defaultProps: { size: "xs" } },
     // Textarea: { defaultProps: { size: "xs" } },
     // Switch: { defaultProps: { size: "xs" } },
+    Modal: {
+      defaultProps: { overlayProps },
+    },
     // Title: { defaultProps: { order: 3 } },
   },
 };

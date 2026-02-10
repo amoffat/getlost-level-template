@@ -1,4 +1,3 @@
-import { overlayProps } from "@/constants";
 import { extractRepoId } from "@/utils/github";
 import { loadLevel } from "@/utils/glApi/client";
 import { Button, Loader, Modal, Select, Stack, TextInput } from "@mantine/core";
@@ -61,7 +60,7 @@ export default function GatewayModal({
     const numericId = await extractRepoId(repoId);
     if (!numericId) {
       setValidationError(
-        "Must be in format: owner/repo, numeric ID, GitHub URL, or Get Lost URL"
+        "Must be in format: owner/repo, numeric ID, GitHub URL, or Get Lost URL",
       );
     } else {
       setValidationError(null);
@@ -101,7 +100,7 @@ export default function GatewayModal({
         setLoadingGateways(false);
       }
     },
-    1000
+    1000,
   );
 
   const resetAndCloseModal = useCallback(() => {
@@ -122,7 +121,6 @@ export default function GatewayModal({
       opened={opened}
       onClose={resetAndCloseModal}
       title="Gateway lookup"
-      overlayProps={overlayProps}
       centered
     >
       <form onSubmit={handleModalSubmit}>
@@ -158,7 +156,7 @@ export default function GatewayModal({
             data={
               filterGateway && numericRepoId
                 ? availableGateways.filter((gatewayId) =>
-                    filterGateway(numericRepoId, gatewayId)
+                    filterGateway(numericRepoId, gatewayId),
                   )
                 : availableGateways
             }

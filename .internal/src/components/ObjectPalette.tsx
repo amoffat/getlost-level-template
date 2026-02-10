@@ -1,3 +1,4 @@
+import { overlayProps } from "@/constants";
 import { useAppSelector } from "@/hooks/redux";
 import { selectors } from "@/slices/tilesetEditor";
 import { RootState, store } from "@/store/store";
@@ -231,7 +232,7 @@ function ObjectPalette<ObjType extends TemplateObject>({
         <LoadingOverlay
           visible={loadingPalette}
           zIndex={1000}
-          overlayProps={{ blur: 2 }}
+          overlayProps={overlayProps}
         />
         <div
           onPointerDown={onPointerDown}

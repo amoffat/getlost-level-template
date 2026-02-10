@@ -1,3 +1,4 @@
+import { overlayProps } from "@/constants";
 import { LoadingOverlay, Text } from "@mantine/core";
 
 interface PanelLoaderProps {
@@ -17,7 +18,7 @@ export default function PanelLoader({
     <LoadingOverlay
       visible={visible}
       zIndex={1000}
-      overlayProps={{ blur: 3 }}
+      overlayProps={overlayProps}
       loaderProps={{
         children: (
           <Text c="white" fw={500} mt="md">

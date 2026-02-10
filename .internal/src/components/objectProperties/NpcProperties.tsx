@@ -143,7 +143,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       label="Dampen walk collisions"
       description="How much to slow the player's movement when colliding with this NPC."
       values={toCollect.dampenWalkCollisions}
-      defaultValue={0}
+      defaultValue={constants.defaultNpcDampen}
       onValueChange={(
         scope: PropertyValueScope,
         value: number | undefined,
@@ -171,6 +171,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
     <PropertyValue
       label="Ground offset"
       description="Vertical offset of the NPC from the ground."
+      tooltip="The ground offset adjusts the NPC's vertical position relative to the ground. Positive values will raise the NPC above the ground, while negative values will sink it below. This can be useful for NPCs that need to appear to be floating or partially submerged. Normally, this should be set to 0 for most NPCs."
       values={toCollect.groundOffset}
       defaultValue={0}
       onValueChange={(

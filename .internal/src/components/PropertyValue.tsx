@@ -20,6 +20,7 @@ import {
 } from "@tabler/icons-react";
 import { x64 } from "murmurhash3js";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import InfoTooltip from "./common/InfoTooltip";
 
 export type PropertyValueScope = "template" | "instance" | "mixed";
 export type SelectableScope = Extract<
@@ -62,6 +63,7 @@ interface PropertyValueProps<T> {
   noTemplate?: boolean;
   /** Optional default value to reset to when the reset button is clicked */
   defaultValue?: T;
+  tooltip?: ReactNode;
 }
 
 /**
@@ -84,6 +86,7 @@ function PropertyValueInner<T>({
   debounceMs,
   noTemplate = false,
   defaultValue,
+  tooltip,
 }: PropertyValueProps<T>) {
   const analysis = useMemo(() => {
     if (values.length === 0) {
@@ -275,6 +278,7 @@ function PropertyValueInner<T>({
       {label && (
         <div>
           <Input.Label>{label}</Input.Label>
+          {tooltip && <InfoTooltip>{tooltip}</InfoTooltip>}
           {description && <Input.Description>{description}</Input.Description>}
         </div>
       )}

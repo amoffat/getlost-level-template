@@ -272,6 +272,7 @@ export const slice = createSlice({
 
     clearSelection: (state) => {
       state.selectedIds = [];
+      state.place.obj = null;
     },
 
     setProposedSelection(

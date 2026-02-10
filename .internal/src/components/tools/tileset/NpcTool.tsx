@@ -1,3 +1,4 @@
+import * as constants from "@/constants";
 import { requiredNpcAnimations } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
@@ -91,12 +92,12 @@ export default function NpcTool() {
     if (!ts) return {};
 
     const allAnimations = Object.values(ts.tiles.entities).filter(
-      isAnimationTemplate
+      isAnimationTemplate,
     );
     const matches: Partial<NpcAnimationRecord> = {};
     for (const requiredName of requiredNpcAnimations) {
       const match = allAnimations.find((anim) =>
-        anim.names.includes(requiredName)
+        anim.names.includes(requiredName),
       );
       if (match) {
         matches[requiredName] = {
@@ -129,13 +130,14 @@ export default function NpcTool() {
         gridSize: animations["Idle"].animation.gridSize,
         name: "",
         tags: [],
-        walkSpeed: 0.5,
+        walkSpeed: constants.defaultNpcWalkSpeed,
         flipX: false,
         tint: null,
         hidden: false,
         groundOffset: 0,
         defaultAnimation: "Idle",
-        dampenWalkCollisions: 0.5,
+        dampenWalkCollisions: constants.defaultNpcDampen,
+        status: null,
       };
       // Merge in existing properties of existing
       Object.assign(npc, existingNpc ?? {});
@@ -151,7 +153,7 @@ export default function NpcTool() {
         autoClose: 3000,
       });
     },
-    [animationMatches, existingNpc, ts, dispatch]
+    [animationMatches, existingNpc, ts, dispatch],
   );
 
   const formSubmit = form.onSubmit(saveNpc);
@@ -180,7 +182,7 @@ export default function NpcTool() {
 
     if (hasAll) {
       t.push(
-        "Once every animation is assigned, enter a name and click 'Create NPC' to finalize."
+        "Once every animation is assigned, enter a name and click 'Create NPC' to finalize.",
       );
     } else if (hasNone || hasSome) {
       t.push("Create an NPC by defining its required animations.");
@@ -190,7 +192,7 @@ export default function NpcTool() {
           <Anchor underline="hover" onClick={activateAnimationTool}>
             Animator tool.
           </Anchor>
-        </>
+        </>,
       );
     }
 
