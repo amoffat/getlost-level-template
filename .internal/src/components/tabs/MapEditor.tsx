@@ -46,25 +46,25 @@ import {
   useMemo,
   useRef,
 } from "react";
-import LayerList from "./LayerList";
-import ObjectPalette from "./ObjectPalette";
-import ObjSelHover from "./ObjSelHoverMenu";
-import AnimationsPaletteFilters from "./paletteFilters/Animations";
-import ObjectsPaletteFilters from "./paletteFilters/Objects";
-import { renderNpc } from "./paletteObjects/Npc";
-import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
-import { renderTileGroup } from "./paletteObjects/TileGroup";
-import PositionsFieldset from "./PositionsFieldset";
-import Tip from "./Tip";
-import ToolPalette, { ToolDescriptor } from "./ToolPalette";
-import AutotilerTool from "./tools/map/AutotilerTool";
-import ColliderTool from "./tools/map/ColliderTool";
-import FillTool from "./tools/map/FillTool";
-import GatewayTool from "./tools/map/GatewayTool";
-import MapBoundsTool from "./tools/map/MapBoundsTool";
-import PaintTool from "./tools/map/PaintTool";
-import PickupTool from "./tools/map/PickupTool";
-import SelectTool from "./tools/map/SelectTool";
+import LayerList from "../LayerList";
+import ObjectPalette from "../ObjectPalette";
+import ObjSelHover from "../ObjSelHoverMenu";
+import AnimationsPaletteFilters from "../paletteFilters/Animations";
+import ObjectsPaletteFilters from "../paletteFilters/Objects";
+import { renderNpc } from "../paletteObjects/Npc";
+import { renderObjectAnimation } from "../paletteObjects/ObjectAnimation";
+import { renderTileGroup } from "../paletteObjects/TileGroup";
+import PositionsFieldset from "../PositionsFieldset";
+import Tip from "../Tip";
+import ToolPalette, { ToolDescriptor } from "../ToolPalette";
+import AutotilerTool from "../tools/map/AutotilerTool";
+import ColliderTool from "../tools/map/ColliderTool";
+import FillTool from "../tools/map/FillTool";
+import GatewayTool from "../tools/map/GatewayTool";
+import MapBoundsTool from "../tools/map/MapBoundsTool";
+import PaintTool from "../tools/map/PaintTool";
+import PickupTool from "../tools/map/PickupTool";
+import SelectTool from "../tools/map/SelectTool";
 
 export default function MapEditorTab({
   initPromise,

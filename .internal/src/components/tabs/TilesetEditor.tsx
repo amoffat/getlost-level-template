@@ -45,19 +45,19 @@ import React, {
   useState,
 } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import ObjectPalette from "./ObjectPalette";
-import TilesetButton from "./TilesetButton";
-import Tip from "./Tip";
-import ToolPalette, { ToolDescriptor } from "./ToolPalette";
-import { renderNpc } from "./paletteObjects/Npc";
-import { renderObjectAnimation } from "./paletteObjects/ObjectAnimation";
-import { renderTileGroup } from "./paletteObjects/TileGroup";
-import ColliderTool from "./tools/tileset/ColliderTool";
-import NpcTool from "./tools/tileset/NpcTool";
-import TileAnimationTool from "./tools/tileset/TileAnimationTool";
-import TileReplaceTool from "./tools/tileset/TileReplaceTool";
-import TileReslicerTool from "./tools/tileset/TileReslicerTool";
-import ZIndexTool from "./tools/tileset/ZIndexTool";
+import ObjectPalette from "../ObjectPalette";
+import TilesetButton from "../TilesetButton";
+import Tip from "../Tip";
+import ToolPalette, { ToolDescriptor } from "../ToolPalette";
+import { renderNpc } from "../paletteObjects/Npc";
+import { renderObjectAnimation } from "../paletteObjects/ObjectAnimation";
+import { renderTileGroup } from "../paletteObjects/TileGroup";
+import ColliderTool from "../tools/tileset/ColliderTool";
+import NpcTool from "../tools/tileset/NpcTool";
+import TileAnimationTool from "../tools/tileset/TileAnimationTool";
+import TileReplaceTool from "../tools/tileset/TileReplaceTool";
+import TileReslicerTool from "../tools/tileset/TileReslicerTool";
+import ZIndexTool from "../tools/tileset/ZIndexTool";
 
 export default function TilesetEditorTab({
   initPromise,

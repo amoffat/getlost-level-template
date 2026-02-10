@@ -32,13 +32,13 @@ import {
 } from "react";
 import { shallowEqual } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import MapEditorTab from "./MapEditor";
+import MapEditorTab from "./tabs/MapEditor";
 import PanelLoader from "./PanelLoader";
 import PreviewTab from "./Preview";
 import Spotlight from "./Spotlight";
 import DialogueTab from "./tabs/DialogueTab";
 import StoryTab from "./tabs/StoryTab";
-import TilesetEditorTab from "./TilesetEditor";
+import TilesetEditorTab from "./tabs/TilesetEditor";
 import UploadAssetModal from "./UploadAssetModal";
 
 declare global {
