@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "dead-code": "knip",
-    "license-check": "license-checker-rseidelsohn --production --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;EPL-2.0;' --excludePackages 'getlost-level-template@4.0.0'"
+    "license-check": "license-checker-rseidelsohn --production --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;EPL-2.0;' --excludePackages 'getlost-level-template'"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
