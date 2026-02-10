@@ -5,6 +5,27 @@ on:
       - main
 
 jobs:
+  license-check:
+    name: Check Licenses
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: .internal
+
+      - name: Check licenses
+        run: |
+          npm run license-check
+        working-directory: .internal
+
   notify:
     if: github.repository == 'amoffat/getlost-level-template'
     name: Send Discord Notification
