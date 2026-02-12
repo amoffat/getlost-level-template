@@ -31,7 +31,7 @@ export interface Tool {
    * @param event The pointer event
    * @returns The cursor style to use, or null/undefined to not change the cursor
    */
-  getCursor?(event: P.FederatedPointerEvent): string | null | undefined;
+  getCursor?(event: P.FederatedPointerEvent): string | null;
 }
 
 /**
@@ -135,14 +135,6 @@ export class ToolDispatcher {
         }
       }
     }
-  }
-
-  /**
-   * Sets the default cursor style to use when no tool requests a specific cursor.
-   * @param cursor The default cursor style
-   */
-  public setDefaultCursor(cursor: string): void {
-    this.defaultCursor = cursor;
   }
 
   /**

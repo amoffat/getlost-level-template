@@ -1,3 +1,4 @@
+import { Tool } from "@/editors/common/tooldispatch";
 import { selectors as tilesetSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import {
@@ -6,6 +7,7 @@ import {
 } from "@/thunks/tileset";
 import { SpatialIndex } from "@/types/spatial";
 import { isTileGroupTemplate } from "@/types/tilegroup";
+import { Mode } from "@/types/tileset";
 import { TemplateObject } from "@/types/tilesetobject";
 import { rectToBBox } from "@/utils/spatial";
 import {
@@ -14,15 +16,17 @@ import {
   PointerEventData,
 } from "../../common/drag";
 
-class FrameSelector extends ClickDragListener {
+class FrameSelector extends ClickDragListener<Mode> implements Tool {
   constructor(private spatialIndex: SpatialIndex<TemplateObject>) {
-    super();
+    super((state) => tilesetSelectors.selectMode(state));
   }
 
-  override pointerDown(e: PointerEventData) {
-    const state = store.getState();
-    const mode = tilesetSelectors.selectMode(state);
-    if (mode !== "animate") return;
+  protected override get providedModes(): Set<Mode> {
+    return new Set(["animate"]);
+  }
+
+  override pointerDown(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
 
     const searchBounds = rectToBBox(e.hitbox);
 
@@ -37,6 +41,7 @@ class FrameSelector extends ClickDragListener {
     } else {
       store.dispatch(clearCandAnimFramesThunk());
     }
+    return true;
   }
 }
 
@@ -44,7 +49,7 @@ export function setupFrameSelector({
   cd,
   spatialIndex,
 }: {
-  cd: ClickDragger;
+  cd: ClickDragger<Mode>;
   spatialIndex: SpatialIndex<TemplateObject>;
 }) {
   cd.addListener(new FrameSelector(spatialIndex));

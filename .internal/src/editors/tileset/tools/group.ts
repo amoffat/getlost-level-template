@@ -1,4 +1,5 @@
 import * as constants from "@/constants";
+import { Tool } from "@/editors/common/tooldispatch";
 import { globals as gApp } from "@/globals";
 import { selectors, actions as tsActions } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
@@ -7,6 +8,7 @@ import { snap } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { TemplateType } from "@/types/templates";
 import { TileGroupTemplate } from "@/types/tilegroup";
+import { Mode } from "@/types/tileset";
 import { TemplateObject } from "@/types/tilesetobject";
 import { averageOklab } from "@/utils/color";
 import { oklabHilbertIndex } from "@/utils/hilbert";
@@ -36,23 +38,23 @@ function getGridSize(): Vector2 {
   return { x: size, y: size };
 }
 
-function isGroupActionMode(mode: string | null): boolean {
-  return (
-    mode === "add-group" || mode === "delete-group" || mode === "replace-group"
-  );
-}
-
-class Grouper extends ClickDragListener {
-  private spatialIndex: SpatialIndex<TemplateObject>;
+class Grouper extends ClickDragListener<Mode> implements Tool {
+  private _spatialIndex: SpatialIndex<TemplateObject>;
 
   constructor(spatialIndex: SpatialIndex<TemplateObject>) {
-    super();
-    this.spatialIndex = spatialIndex;
+    super((state) => selectors.selectMode(state));
+    this._spatialIndex = spatialIndex;
   }
 
-  override pointerDown(_e: PointerEventData) {
+  protected override get providedModes(): Set<Mode> {
+    return new Set(["add-group", "delete-group", "replace-group"]);
+  }
+
+  public override pointerDown(_e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
+
     const state = store.getState();
-    if (!state.tilesetEditor.activeTilesetId) return;
+    if (!state.tilesetEditor.activeTilesetId) return false;
     const mode = state.tilesetEditor.selectedTool;
     if (mode === "add-group") {
       store.dispatch(tsActions.setMode("add-group"));
@@ -61,9 +63,12 @@ class Grouper extends ClickDragListener {
     } else if (mode === "replace-group") {
       store.dispatch(tsActions.setMode("replace-group"));
     }
+    return true;
   }
 
-  override async pointerUp(e: PointerEventData) {
+  override pointerUp(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
+
     const state = store.getState();
     const tsState = state.tilesetEditor;
     const mode = selectors.selectMode(state);
@@ -77,7 +82,7 @@ class Grouper extends ClickDragListener {
       const tsId = tsState.activeTilesetId!;
 
       const searchBounds = rectToBBox(coords, 1);
-      const hitIds = this.spatialIndex.search(searchBounds).map((h) => h.id);
+      const hitIds = this._spatialIndex.search(searchBounds).map((h) => h.id);
 
       store.dispatch(tsActions.deletePaletteObjects({ tsId, ids: hitIds }));
       finishMode = true;
@@ -105,45 +110,49 @@ class Grouper extends ClickDragListener {
 
       if (imgData) {
         const coverage = amountOpaquePixels(imgData);
-        const imageId = await genImageId(imgData);
-        const id = await genTileId({
-          tsId,
-          pos: coords,
-        });
-        const avgColor = averageOklab(imgData);
+        (async () => {
+          const imageId = await genImageId(imgData);
+          const id = await genTileId({
+            tsId,
+            pos: coords,
+          });
+          const avgColor = averageOklab(imgData);
 
-        // One for the beginning and one for the end of the tile group
-        // First point at far left (x=0), last point at far right (x=1)
-        const zIndices: Vector2[] = structuredClone(constants.defaultZIndices);
+          // One for the beginning and one for the end of the tile group
+          // First point at far left (x=0), last point at far right (x=1)
+          const zIndices: Vector2[] = structuredClone(
+            constants.defaultZIndices,
+          );
 
-        const group: TileGroupTemplate = {
-          id,
-          type: TemplateType.TileGroup,
-          imageId,
-          tilesetId: tsId,
-          pos: coords,
-          gridSize: { x: gridSize, y: gridSize },
-          zIndices,
-          name: "",
-          tags: [],
-          pinned: true,
-          coverage,
-          avgColor,
-          hilbertIndex: oklabHilbertIndex(avgColor),
-          walkSound: constants.defaultWalkSound,
-          friction: constants.defaultFriction,
-          traction: constants.defaultTraction,
-          hidden: false,
-          flipX: false,
-          tint: null,
-          groundOffset: 0,
-          collisions: {
-            mask: null,
-            shapes: [],
-            simplify: 1.0,
-          },
-        };
-        store.dispatch(addPaletteObjectsThunk({ tsId, objs: [group] }));
+          const group: TileGroupTemplate = {
+            id,
+            type: TemplateType.TileGroup,
+            imageId,
+            tilesetId: tsId,
+            pos: coords,
+            gridSize: { x: gridSize, y: gridSize },
+            zIndices,
+            name: "",
+            tags: [],
+            pinned: true,
+            coverage,
+            avgColor,
+            hilbertIndex: oklabHilbertIndex(avgColor),
+            walkSound: constants.defaultWalkSound,
+            friction: constants.defaultFriction,
+            traction: constants.defaultTraction,
+            hidden: false,
+            flipX: false,
+            tint: null,
+            groundOffset: 0,
+            collisions: {
+              mask: null,
+              shapes: [],
+              simplify: 1.0,
+            },
+          };
+          store.dispatch(addPaletteObjectsThunk({ tsId, objs: [group] }));
+        })();
         finishMode = true;
       }
     }
@@ -151,15 +160,12 @@ class Grouper extends ClickDragListener {
     if (finishMode) {
       g.groupSelGraphics.visible = false;
       g.groupSelContainer.setSize(0);
-      store.dispatch(tsActions.setMode(null));
     }
+    return true;
   }
 
-  override pointerDrag(e: PointerEventData) {
-    const state = store.getState();
-    const mode = selectors.selectMode(state);
-
-    if (!isGroupActionMode(mode)) return;
+  public override pointerDrag(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
 
     g.groupSelGraphics.visible = true;
     const c = g.groupSelContainer;
@@ -168,6 +174,11 @@ class Grouper extends ClickDragListener {
     c.position.set(hb.x, hb.y);
     c.width = hb.width;
     c.height = hb.height;
+    return true;
+  }
+
+  public override getCursor(_e: P.FederatedPointerEvent): string | null {
+    return "crosshair";
   }
 }
 
@@ -175,7 +186,7 @@ export function setupGrouper({
   cd,
   spatialIndex,
 }: {
-  cd: ClickDragger;
+  cd: ClickDragger<Mode>;
   spatialIndex: SpatialIndex<TemplateObject>;
 }) {
   cd.addListener(new Grouper(spatialIndex));

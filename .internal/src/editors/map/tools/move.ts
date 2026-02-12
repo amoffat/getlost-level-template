@@ -1,26 +1,33 @@
+import { Tool } from "@/editors/common/tooldispatch";
 import {
   actions as mapEdActions,
   selectors as mapEdSelectors,
 } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
+import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { isMapObjFromTileset } from "@/types/map";
 import { Vector2 } from "@/vec";
+import * as P from "pixi.js";
 import {
   ClickDragger,
   ClickDragListener,
   PointerEventData,
 } from "../../common/drag";
 
-export class Mover extends ClickDragListener {
+export class Mover extends ClickDragListener<Mode> implements Tool {
   private _moveEnabled = false;
-  private _cd: ClickDragger;
+  private _cd: ClickDragger<Mode>;
   private startPositions: Map<string, Vector2> = new Map();
 
-  constructor(cd: ClickDragger) {
-    super();
+  constructor(cd: ClickDragger<Mode>) {
+    super((state) => mapEdSelectors.selectMode(state));
     this._cd = cd;
+  }
+
+  protected override get providedModes(): Set<Mode> {
+    return new Set(["move"]);
   }
 
   /**
@@ -37,31 +44,40 @@ export class Mover extends ClickDragListener {
     this._cd.syncDragStart();
   }
 
-  public override pointerDown(e: PointerEventData): void {
+  public override pointerDown(e: PointerEventData): boolean {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
-    if (!(mode === "select" || mode === "move")) return;
+    if (!(mode === "select" || mode === "move")) return false;
 
     const selIds = new Set(state.mapEditor.selectedIds);
     const shouldMove = e.hoverIds.some((id) => selIds.has(id));
 
     if (shouldMove || mode === "move") {
       this._moveEnabled = true;
+      return true;
     } else {
       this._moveEnabled = false;
+      return false;
     }
   }
 
-  public override pointerUp(_e: PointerEventData): void {
-    if (!this._moveEnabled) return;
+  public override pointerUp(_e: PointerEventData): boolean {
+    if (!this._moveEnabled) return false;
 
     this._moveEnabled = false;
-    store.dispatch(mapEdActions.popMode());
+
+    const state = store.getState();
+    const mode = mapEdSelectors.selectMode(state);
+    if (mode === "move") {
+      store.dispatch(mapEdActions.popMode());
+    }
+
     this.startPositions.clear();
+    return true;
   }
 
-  public override pointerDrag(e: PointerEventData): void {
-    if (!this._moveEnabled) return;
+  public override pointerDrag(e: PointerEventData): boolean {
+    if (!this._moveEnabled) return false;
 
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
@@ -114,10 +130,15 @@ export class Mover extends ClickDragListener {
       });
     }
     store.dispatch(mapEdActions.updateMany(updates));
+    return true;
+  }
+
+  public override getCursor(_e: P.FederatedPointerEvent): string | null {
+    return "move";
   }
 }
 
-export function setupMover(cd: ClickDragger): Mover {
+export function setupMover(cd: ClickDragger<Mode>): Mover {
   const mover = new Mover(cd);
   cd.addListener(mover);
   return mover;

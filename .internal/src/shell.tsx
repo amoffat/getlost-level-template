@@ -48,7 +48,7 @@ export default function App() {
   return (
     <ReduxProvider store={store}>
       <MantineProvider defaultColorScheme="dark" theme={theme}>
-        <Notifications position="top-center" containerWidth={"40%"} />
+        <Notifications position="top-center" containerWidth={"30%"} />
         <ModalsProvider
           modals={modals}
           modalProps={{ overlayProps: overlayProps }}

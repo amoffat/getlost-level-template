@@ -72,7 +72,7 @@ export default function MapEditorTab({
   initPromise: Promise<unknown>;
 }) {
   const selectedToolName = useAppSelector(
-    (state: RootState) => state.mapEditor.selectedTool,
+    (state: RootState) => state.mapEditor.activeTool,
   );
   const paletteSelection = useAppSelector(selectors.paletteSelectedTsObjIds);
   const tilesets = useAppSelector(
@@ -145,7 +145,7 @@ export default function MapEditorTab({
   }, []);
 
   const onSelectObject = useCallback(
-    (obj: TemplateObject, e: React.MouseEvent) => {
+    async (obj: TemplateObject, e: React.MouseEvent) => {
       if (e.button === 2) return;
 
       const state = store.getState();
@@ -186,8 +186,8 @@ export default function MapEditorTab({
           }),
         );
       } else {
+        await dispatch(setToolThunk("paint")).unwrap();
         dispatch(actions.setPlace(obj));
-        dispatch(setToolThunk("paint"));
       }
     },
     [dispatch],

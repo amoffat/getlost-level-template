@@ -12,6 +12,7 @@ import {
 } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { clearUncommittedThunk, setUncommittedObjIdsThunk } from "@/thunks/map";
+import { Mode } from "@/types/editor";
 import { MapObjType, TileGroupInstance } from "@/types/map";
 import { Rect, snap } from "@/types/rect";
 import { weightedIndex } from "@/utils/rand";
@@ -20,78 +21,85 @@ import { shallowEqual } from "react-redux";
 import { concatMap, Subject, Subscription } from "rxjs";
 import { globals as g } from "../globals";
 
-class Filler extends ClickDragListener {
-  private marquee: Rect | null = null;
-  private fillObjects$ = new Subject<void>();
-  private subscription: Subscription;
+class Filler extends ClickDragListener<Mode> {
+  private _marquee: Rect | null = null;
+  private _fillObjects$ = new Subject<void>();
+  private _subscription: Subscription;
 
   constructor() {
-    super();
+    super((state) => mapSelectors.selectMode(state));
+
     // Set up the RxJS pipeline to serialize fillObjects calls exhaustMap will
     // drop new emissions while the previous async operation is still running
-    this.subscription = this.fillObjects$
+    this._subscription = this._fillObjects$
       .pipe(concatMap(() => this._fillObjects()))
       .subscribe();
   }
 
-  destroy() {
-    this.subscription.unsubscribe();
-    this.fillObjects$.complete();
+  protected override get providedModes(): Set<Mode> {
+    return new Set(["fill"]);
   }
 
-  override pointerDown(_e: PointerEventData) {
+  destroy() {
+    this._subscription.unsubscribe();
+    this._fillObjects$.complete();
+  }
+
+  override pointerDown(_e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
+
     this.clear();
+    return true;
   }
 
   clear() {
-    this.marquee = null;
+    this._marquee = null;
     g.rectSelect.clear();
     store.dispatch(clearUncommittedThunk());
   }
 
-  override pointerUp(_e: PointerEventData) {
-    const state = store.getState();
-    const mode = mapSelectors.selectMode(state);
-    if (mode !== "fill") return;
+  override pointerUp(_e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
 
     store.dispatch(
       mapActions.setToolOptions({
         tool: "fill",
-        options: { bounds: this.marquee },
-      })
+        options: { bounds: this._marquee },
+      }),
     );
+    return true;
   }
 
-  override pointerDrag(e: PointerEventData) {
-    const state = store.getState();
-    const mode = mapSelectors.selectMode(state);
-    if (mode !== "fill") return;
+  override pointerDrag(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
 
+    const state = store.getState();
     const gridSize = state.mapEditor.grid.size;
-    this.marquee = snap(e.hitbox, gridSize);
+    this._marquee = snap(e.hitbox, gridSize);
 
     this.drawMarquee();
+    return true;
   }
 
-  drawMarquee() {
-    if (!this.marquee) return;
+  public drawMarquee() {
+    if (!this._marquee) return;
 
     const state = store.getState();
     drawRectSelect({
       gfx: g.rectSelect,
-      rect: this.marquee,
+      rect: this._marquee,
       zoom: state.mapEditor.zoomPan.zoom,
       stroke: fillStroke,
       fill: null,
     });
   }
 
-  fillObjects() {
-    this.fillObjects$.next();
+  public fillObjects() {
+    this._fillObjects$.next();
   }
 
   private async _fillObjects() {
-    const bounds = this.marquee;
+    const bounds = this._marquee;
     if (!bounds) return;
 
     const state = store.getState();
@@ -170,7 +178,7 @@ class Filler extends ClickDragListener {
   }
 }
 
-export function setupFill({ cd }: { cd: ClickDragger }) {
+export function setupFill({ cd }: { cd: ClickDragger<Mode> }) {
   const fill = new Filler();
   cd.addListener(fill);
 
@@ -183,14 +191,14 @@ export function setupFill({ cd }: { cd: ClickDragger }) {
         fill.fillObjects();
       }
     },
-    shallowEqual
+    shallowEqual,
   );
 
   subState([(state) => state.mapEditor.zoomPan.zoom], () => {
     fill.drawMarquee();
   });
 
-  subState([(state) => state.mapEditor.selectedTool], (tool) => {
+  subState([(state) => state.mapEditor.activeTool], (tool) => {
     if (tool !== "fill") {
       fill.clear();
     }

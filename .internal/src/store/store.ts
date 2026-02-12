@@ -20,12 +20,12 @@ export const rootReducer = combineReducers({
 
 const mapSyncMiddleware = makeEditorSyncMiddleware(
   "map",
-  () => g.mapEditorReconciler
+  () => g.mapEditorReconciler,
 );
 
 const tileSyncMiddleware = makeEditorSyncMiddleware(
   "tilesetEditor",
-  () => g.tilesetEditorReconciler
+  () => g.tilesetEditorReconciler,
 );
 
 // const collisionMiddleware = makeEditorSyncMiddleware(
@@ -34,6 +34,7 @@ const tileSyncMiddleware = makeEditorSyncMiddleware(
 // );
 
 export const store = configureStore({
+  devTools: import.meta.env.DEV,
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     // We also add our middleware for the RTK Query API slices here, which
@@ -46,7 +47,7 @@ export const store = configureStore({
       autosaveMapMiddleware,
       autosaveStoryMiddleware,
       mapSyncMiddleware,
-      tileSyncMiddleware
+      tileSyncMiddleware,
 
       // collisionMiddleware
     ),

@@ -69,7 +69,7 @@ interface MapEditorState {
   };
   bounds: Rect;
   zoomPan: ZoomPan;
-  selectedTool: Mode | null;
+  activeTool: Mode | null;
   toolOptions: {
     [K in ToolWithOptions]: ToolOptMapping[K];
   };
@@ -80,6 +80,8 @@ interface MapEditorState {
   };
   objects: ReturnType<typeof objectsAdapter.getInitialState>;
   selectedIds: string[];
+  // These are objects that are being hovered over, but not yet selected. Used
+  // for showing the proposed selection menu.
   proposedSelection: {
     objects: MapObj[];
     pos: Vector2;
@@ -117,7 +119,7 @@ export const slice = createSlice({
     objects: objectsAdapter.getInitialState(),
     selectedIds: [],
     proposedSelection: null,
-    selectedTool: null,
+    activeTool: null,
     toolOptions: {
       paint: { mode: "place-once", size: 1, snap: "object" },
       autotiler: { candidates: [], gridPosFreeze: null },
@@ -212,10 +214,10 @@ export const slice = createSlice({
       state.selectedIds = [];
 
       if (
-        state.selectedTool === "autotiler" &&
+        state.activeTool === "autotiler" &&
         newLayer !== MapLayerName.Ground
       ) {
-        state.selectedTool = null;
+        state.activeTool = null;
         state.modeStack = [];
       }
     },
@@ -300,12 +302,12 @@ export const slice = createSlice({
       }
 
       state.modeStack = [mode];
-      state.selectedTool = null;
+      state.activeTool = null;
     },
 
     setActiveTool(state, action: PayloadAction<Mode | null>) {
       const mode = action.payload;
-      state.selectedTool = mode;
+      state.activeTool = mode;
     },
 
     setToolOptions<K extends ToolWithOptions>(

@@ -7,9 +7,10 @@ import {
   pickDirectionWeights,
 } from "@/editors/map/utils/autotile";
 import { globals as appG } from "@/globals";
-import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
+import { actions as mapEdActions } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
+import { Mode } from "@/types/editor";
 import { isTileGroupInstance, MapObj, TileGroupInstance } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
@@ -49,30 +50,31 @@ class Painter extends Placer {
       },
     );
   }
-  public pointerUp(_e: PointerEventData): void {
-    const state = store.getState();
-    const mode = selectors.selectMode(state);
-    if (mode !== "autotiler") return;
+
+  protected override get providedModes(): Set<Mode> {
+    return new Set(["autotiler"]);
+  }
+
+  public pointerUp(_e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
 
     this.instantiatePlacable("overwrite");
     this.paint = false;
+    return true;
   }
 
-  public pointerDown(_e: PointerEventData): void {
-    const state = store.getState();
-    const mode = selectors.selectMode(state);
-    if (mode !== "autotiler") return;
+  public pointerDown(_e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
 
     this.paint = true;
     this.dragSessionIndex.clear();
     this.tempSpatialIndex.clear();
+    return true;
   }
 
-  public pointerMove(e: PointerEventData): void {
+  public pointerMove(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
     const state = store.getState();
-    const mode = selectors.selectMode(state);
-
-    if (mode !== "autotiler") return;
 
     // Determine the snapped center tile position from the cursor using gridSnap
     const step = state.mapEditor.grid.size;
@@ -84,7 +86,7 @@ class Painter extends Placer {
       // If the candidate freeze position is set and matches our current grid pos,
       // then don't do anything more here.
       if (freezeCand.x === snappedX && freezeCand.y === snappedY) {
-        return;
+        return false;
       } else {
         store.dispatch(
           mapEdActions.setToolOptions({
@@ -144,7 +146,7 @@ class Painter extends Placer {
     if (!hasAdjacentTiles) {
       if (curObj) this.placeDispatcher(null);
       this.candidateDispatcher([]);
-      return;
+      return false;
     }
 
     const dirWeights = pickDirectionWeights(e.localPos, step);
@@ -203,12 +205,16 @@ class Painter extends Placer {
       g.placableOutline.position = { x: snappedX, y: snappedY };
       g.placableContainer.position = { x: snappedX, y: snappedY };
     }
+
+    return true;
   }
 
-  public pointerDrag(_e: PointerEventData): void {
+  public pointerDrag(_e: PointerEventData): boolean {
     if (this.paint) {
       this.instantiatePlacable("overwrite");
+      return true;
     }
+    return false;
   }
 }
 
@@ -216,7 +222,7 @@ export function setupAutotiler({
   cd,
   spatialIndex,
 }: {
-  cd: ClickDragger;
+  cd: ClickDragger<Mode>;
   spatialIndex: SpatialIndex<MapObj>;
 }) {
   cd.addListener(new Painter(spatialIndex));

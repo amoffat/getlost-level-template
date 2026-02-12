@@ -125,7 +125,7 @@ export const setToolThunk = createAsyncThunk(
   "mapEditor/setToolThunk",
   async (tool: Mode | null, { dispatch }) => {
     if (tool === null) tool = "select";
-    dispatch(clearUncommittedThunk());
+    await dispatch(clearUncommittedThunk()).unwrap();
     dispatch(mapActions.clearSelection());
 
     if (tool === "add-light") {

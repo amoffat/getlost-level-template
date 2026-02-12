@@ -27,7 +27,7 @@ interface LayerListProps {
 
 export default function LayerList({ layerConstraints }: LayerListProps) {
   const layerState = useAppSelector(
-    (state: RootState) => state.mapEditor.layers
+    (state: RootState) => state.mapEditor.layers,
   );
   const dispatch = useAppDispatch();
 
@@ -35,7 +35,7 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
     (id: number) => {
       dispatch(setActiveLayerThunk({ layer: id as MapLayerName }));
     },
-    [dispatch]
+    [dispatch],
   );
 
   const layers: Layer[] = useMemo(() => {

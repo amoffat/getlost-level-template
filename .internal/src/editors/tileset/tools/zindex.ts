@@ -193,6 +193,11 @@ export class ZIndexTool implements Tool {
    * Returns "ns-resize" when hovering over a handle or line segment.
    */
   public getCursor(e: P.FederatedPointerEvent): string | null {
+    // Check if we're in z-index mode
+    const state = store.getState();
+    const mode = selectors.selectMode(state);
+    if (mode !== "z-index") return null;
+
     // Always show resize cursor while dragging
     if (this.isDragging) {
       // Check if this is the first or last handle (vertical only)
@@ -207,11 +212,6 @@ export class ZIndexTool implements Tool {
     if (this.isDraggingLineSegment) {
       return "ns-resize";
     }
-
-    // Check if we're in z-index mode
-    const state = store.getState();
-    const mode = selectors.selectMode(state);
-    if (mode !== "z-index") return null;
 
     // Get local position relative to tilesetContainer
     const localPos = g.tilesetContainer.toLocal(e.global);

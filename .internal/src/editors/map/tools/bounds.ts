@@ -1,35 +1,41 @@
 import { maxBoundsArea, minBoundsSize } from "@/constants";
+import { Tool } from "@/editors/common/tooldispatch";
 import {
   actions as mapEdActions,
   selectors as mapEdSelectors,
 } from "@/slices/mapEditor";
 import { store } from "@/store/store";
+import { Mode } from "@/types/editor";
 import { Rect } from "@/types/rect";
+import { showNotification } from "@/utils/notifications";
 import { Vector2 } from "@/vec";
 import {
   ClickDragger,
   ClickDragListener,
   PointerEventData,
 } from "../../common/drag";
-import { globals as g } from "../globals";
 
 type EdgeType = "top" | "bottom" | "left" | "right" | null;
 type CornerType = "tl" | "tr" | "bl" | "br" | null;
 
 const EDGE_THRESHOLD = 100; // pixels from edge to consider hovering
 
-export class BoundsDragger extends ClickDragListener {
+export class BoundsDragger extends ClickDragListener<Mode> implements Tool {
   private _dragEnabled = false;
   private _hoveredEdge: EdgeType = null;
   private _hoveredCorner: CornerType = null;
   private _startBounds: Rect | null = null;
 
-  public override pointerMove(e: PointerEventData): void {
+  constructor() {
+    super((state) => mapEdSelectors.selectMode(state));
+  }
+
+  public override pointerMove(e: PointerEventData): boolean {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
 
     // Only handle bounds editing in set-bounds mode when not dragging
-    if (mode !== "set-bounds" || this._dragEnabled) return;
+    if (mode !== "set-bounds" || this._dragEnabled) return false;
 
     const bounds = state.mapEditor.bounds;
     const pos = e.localPos;
@@ -39,15 +45,17 @@ export class BoundsDragger extends ClickDragListener {
     this._hoveredEdge = result.edge;
     this._hoveredCorner = result.corner;
 
-    // Update cursor based on what's being hovered
-    this.updateCursor();
+    return true;
   }
 
-  public override pointerDown(e: PointerEventData): void {
-    const state = store.getState();
-    const mode = mapEdSelectors.selectMode(state);
-    if (mode !== "set-bounds") return;
+  protected override get providedModes(): Set<Mode> {
+    return new Set(["set-bounds"]);
+  }
 
+  public override pointerDown(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
+
+    const state = store.getState();
     const bounds = state.mapEditor.bounds;
     const pos = e.localPos;
 
@@ -57,21 +65,23 @@ export class BoundsDragger extends ClickDragListener {
       this._hoveredEdge = result.edge;
       this._hoveredCorner = result.corner;
       this._startBounds = { ...bounds };
+      return true;
     }
+    return false;
   }
 
-  public override pointerUp(_e: PointerEventData): void {
-    if (!this._dragEnabled) return;
+  public override pointerUp(_e: PointerEventData): boolean {
+    if (!this._dragEnabled) return false;
 
     this._dragEnabled = false;
     this._startBounds = null;
     this._hoveredEdge = null;
     this._hoveredCorner = null;
-    this.updateCursor();
+    return true;
   }
 
-  public override pointerDrag(e: PointerEventData): void {
-    if (!this._dragEnabled || !this._startBounds) return;
+  public override pointerDrag(e: PointerEventData): boolean {
+    if (!this._dragEnabled || !this._startBounds) return false;
 
     const state = store.getState();
     const snap = state.mapEditor.grid.snap;
@@ -117,10 +127,17 @@ export class BoundsDragger extends ClickDragListener {
     const area = newBounds.width * newBounds.height;
     if (area > maxBoundsArea) {
       // Revert to start bounds if it would exceed max area
-      return;
+      showNotification({
+        key: "bounds-too-large",
+        title: "Bounds too large",
+        message: `The maximum allowed area is ${maxBoundsArea} pixels.`,
+        color: "red",
+      });
+      return true;
     }
 
     store.dispatch(mapEdActions.setBounds(newBounds));
+    return true;
   }
 
   private dragEdge(
@@ -276,10 +293,8 @@ export class BoundsDragger extends ClickDragListener {
     return { edge: null, corner: null };
   }
 
-  private updateCursor(): void {
-    if (this._dragEnabled) return; // Don't change cursor while dragging
-
-    let cursor = "default";
+  public getCursor(): string | null {
+    let cursor = null;
 
     if (this._hoveredCorner) {
       switch (this._hoveredCorner) {
@@ -305,11 +320,11 @@ export class BoundsDragger extends ClickDragListener {
       }
     }
 
-    g.canvas.style.cursor = cursor;
+    return cursor;
   }
 }
 
-export function setupBoundsDragger(cd: ClickDragger): BoundsDragger {
+export function setupBoundsDragger(cd: ClickDragger<Mode>): BoundsDragger {
   const boundsDragger = new BoundsDragger();
   cd.addListener(boundsDragger);
   return boundsDragger;

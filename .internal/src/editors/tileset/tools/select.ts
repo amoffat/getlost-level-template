@@ -1,3 +1,4 @@
+import { Tool } from "@/editors/common/tooldispatch";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { Rect, snap } from "@/types/rect";
@@ -18,31 +19,30 @@ import { selectStroke, tileSelectFill } from "../../common/strokes";
 import { globals as g } from "../globals";
 import { pressedKeys } from "../keys";
 
-const selectionModes: Set<Mode> = new Set([
-  "select",
-  "z-index",
-  "draw-colliders",
-] as Mode[]);
+const multiSelectModes: Set<Mode> = new Set(["select"]);
 
-const multiSelectModes: Set<Mode> = new Set(["select"] as Mode[]);
-
-class Selector extends ClickDragListener {
-  private marqueeEnabled = false;
+class Selector extends ClickDragListener<Mode> implements Tool {
+  private _marqueeEnabled = false;
+  private _hoveringObjects = false;
 
   constructor(private spatialIndex: SpatialIndex<TemplateObject>) {
-    super();
+    super((state) => selectors.selectMode(state));
   }
 
-  private get addToSelection(): boolean {
+  protected override get providedModes(): Set<Mode> {
+    return new Set(["select", "z-index", "draw-colliders"]);
+  }
+
+  private get _addToSelection(): boolean {
     const state = store.getState();
     const mode = selectors.selectMode(state);
     return multiSelectModes.has(mode) && (pressedKeys["Control"] ?? false);
   }
 
-  override pointerDown(e: PointerEventData) {
+  public override pointerDown(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
     const state = store.getState();
     const mode = selectors.selectMode(state);
-    if (!selectionModes.has(mode)) return;
 
     // If we're over something, it means we want to select it directly, not
     // start a marquee.
@@ -54,38 +54,70 @@ class Selector extends ClickDragListener {
       // not deselecting it, abort our select logic so that the Mover can handle
       // what to do.
       const isOverSelected = e.hoverIds.some((id) => selIds.has(id));
-      if (isOverSelected && !this.addToSelection) return;
+      if (isOverSelected && !this._addToSelection) return false;
 
       if (!isOverSelected && multiSelectModes.has(mode)) {
-        this.marqueeEnabled = true;
+        this._marqueeEnabled = true;
       } else {
-        this.marqueeEnabled = false;
+        this._marqueeEnabled = false;
         this.doSelection(e);
       }
     } else if (multiSelectModes.has(mode)) {
-      this.marqueeEnabled = true;
+      this._marqueeEnabled = true;
     }
+    return true;
   }
 
-  override pointerUp(e: PointerEventData) {
-    const state = store.getState();
-    const mode = selectors.selectMode(state);
-    if (!selectionModes.has(mode)) return;
+  public override pointerUp(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
 
     // In pointerDown, we may have deferred to our mover if we clicked "over" an
     // element. However, if we've now determined that we never moved, we should
     // handle the click selection here. We should be able to trigger this branch
     // by simply clicking on an object.
-    if (e.hoverIds.length > 0 && !e.moved && !this.addToSelection) {
-      this.marqueeEnabled = false;
+    if (e.hoverIds.length > 0 && !e.moved && !this._addToSelection) {
+      this._marqueeEnabled = false;
       this.doSelection(e);
-      return;
+      return true;
     }
 
-    if (!this.marqueeEnabled) return;
+    if (!this._marqueeEnabled) return false;
 
     this.doSelection(e);
-    this.marqueeEnabled = false;
+    this._marqueeEnabled = false;
+    return true;
+  }
+
+  public override pointerDrag(e: PointerEventData): boolean {
+    if (!this._marqueeEnabled) return false;
+    if (!this.modeMatches()) return false;
+
+    const state = store.getState();
+
+    if (this._marqueeEnabled) {
+      const hb = snap(e.hitbox, { x: 1, y: 1 });
+      drawRectSelect(hb, state.tilesetEditor.activeZoomPan.zoom);
+      if (state.tilesetEditor.selectedTool !== "select") {
+        store.dispatch(actions.setActiveTool("select"));
+      }
+    }
+    return true;
+  }
+
+  public override pointerMove(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
+    this._hoveringObjects = e.hoverIds.length > 0;
+    return true;
+  }
+
+  public override getCursor(_e: P.FederatedPointerEvent): string | null {
+    if (this._marqueeEnabled) {
+      return "crosshair";
+    }
+    if (this._hoveringObjects) {
+      return "pointer";
+    }
+    return null;
   }
 
   /**
@@ -112,8 +144,8 @@ class Selector extends ClickDragListener {
     }
     // Group select means we shouldn't use proposed selection at all. Just add
     // everything in the rect to the selection.
-    else if (this.marqueeEnabled) {
-      const action = this.addToSelection
+    else if (this._marqueeEnabled) {
+      const action = this._addToSelection
         ? actions.addManySelected
         : actions.setManySelected;
       store.dispatch(action(hits));
@@ -127,12 +159,12 @@ class Selector extends ClickDragListener {
         const curSelected = state.tilesetEditor.selectedTiles;
         const alreadySelected = curSelected.ids.includes(obj.id);
 
-        if (alreadySelected && this.addToSelection) {
+        if (alreadySelected && this._addToSelection) {
           // If the object is already selected, and we're adding to selection,
           // just deselect it.
           store.dispatch(actions.removeOneSelected(obj.id));
         } else {
-          const action = this.addToSelection
+          const action = this._addToSelection
             ? actions.addOneSelected
             : actions.setOneSelected;
           store.dispatch(action(obj));
@@ -142,31 +174,15 @@ class Selector extends ClickDragListener {
               actions.setToolOptions({
                 tool: "collider",
                 options: { simplify: obj.collisions.simplify },
-              })
+              }),
             );
           }
         }
       } else {
-        const action = this.addToSelection
+        const action = this._addToSelection
           ? actions.addManySelected
           : actions.setManySelected;
         store.dispatch(action(hits));
-      }
-    }
-  }
-
-  override pointerDrag(e: PointerEventData) {
-    if (!this.marqueeEnabled) return;
-
-    const state = store.getState();
-    const mode = selectors.selectMode(state);
-    if (!selectionModes.has(mode)) return;
-
-    if (this.marqueeEnabled) {
-      const hb = snap(e.hitbox, { x: 1, y: 1 });
-      drawRectSelect(hb, state.tilesetEditor.activeZoomPan.zoom);
-      if (state.tilesetEditor.selectedTool !== "select") {
-        store.dispatch(actions.setActiveTool("select"));
       }
     }
   }
@@ -176,7 +192,7 @@ export function setupSelector({
   cd,
   spatialIndex,
 }: {
-  cd: ClickDragger;
+  cd: ClickDragger<Mode>;
   spatialIndex: SpatialIndex<TemplateObject>;
 }) {
   cd.addListener(new Selector(spatialIndex));
@@ -253,5 +269,5 @@ subState(
   (objs, zoom) => {
     if (!g.selectionOutlines) return;
     outlineObjects(objs, zoom);
-  }
+  },
 );

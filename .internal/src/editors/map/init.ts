@@ -2,6 +2,7 @@ import * as constants from "@/constants";
 import { globals as gApp } from "@/globals";
 import { actions, mapSelectors, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
+import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { MapObj } from "@/types/map";
 import { SpatialIndex } from "@/types/spatial";
@@ -11,7 +12,6 @@ import { Vector2 } from "@/vec";
 import { DropShadowFilter } from "pixi-filters";
 import * as P from "pixi.js";
 import { makeCheckerboard } from "../common/bg";
-import { getCursorForMode } from "../common/cursor";
 import { ClickDragger } from "../common/drag";
 import { setupPanControls } from "../common/pan";
 import { ToolDispatcher } from "../common/tooldispatch";
@@ -57,9 +57,10 @@ export async function init(): Promise<P.Application> {
   const spatialIndex = new SpatialIndex<MapObj>({
     selectById: (state, id) =>
       mapSelectors.selectById(state.mapEditor.objects, id),
-    filterLayer: (state, layer) => {
+    filterLayer: ({ state, layer }) => {
       const ms = state.mapEditor;
-      return !ms.layers.lockInactive || layer === ms.layers.active;
+      const layerMatches = layer === ms.layers.active;
+      return !ms.layers.lockInactive || layerMatches;
     },
   });
   g.spatialIndex = spatialIndex;
@@ -74,22 +75,8 @@ export async function init(): Promise<P.Application> {
   g.mapContainer.eventMode = "static";
 
   stage.on("pointermove", (e) => {
-    const state = store.getState();
-    const mode = selectors.selectMode(state);
-    let cursor = getCursorForMode(mode);
-
     const localPos = e.getLocalPosition(g.mapContainer);
     g.mousePos = { x: localPos.x, y: localPos.y };
-
-    const hits = spatialIndex.getObjects({
-      pos: localPos,
-    });
-    const isOverObject = hits.length > 0;
-
-    if (isOverObject && mode === "select") {
-      cursor = "pointer";
-    }
-    canvas.style.cursor = cursor;
   });
 
   // Build checkerboard background
@@ -156,7 +143,7 @@ export async function init(): Promise<P.Application> {
   setupKeys(canvas);
 
   const toolDispatcher = new ToolDispatcher(app);
-  const cd = new ClickDragger({
+  const cd = new ClickDragger<Mode>({
     app,
     container: stage,
     coordsRelativeTo: g.mapContainer,
@@ -184,7 +171,6 @@ export async function init(): Promise<P.Application> {
     },
   });
   const panner = setupPanControls({
-    stage,
     panContainer: g.mapContainer,
     onPanningStart: () => {
       const mode = selectors.selectMode(store.getState());
@@ -196,6 +182,7 @@ export async function init(): Promise<P.Application> {
       store.dispatch(actions.popMode());
     },
   });
+  toolDispatcher.registerTool(panner);
 
   initLayerVisibility();
 
@@ -241,8 +228,6 @@ export async function init(): Promise<P.Application> {
 }
 
 subState([selectors.selectMode], (mode) => {
-  const canvas = g.app.canvas;
-  canvas.style.cursor = getCursorForMode(mode);
   if (mode === "duplicate") {
     g.mover.startDuplicateMove();
   }

@@ -1,6 +1,8 @@
+import { RootState, store } from "@/store/store";
 import { Rect } from "@/types/rect";
 import { Vec2, Vector2 } from "@/vec";
 import * as P from "pixi.js";
+import { Tool } from "./tooldispatch";
 
 const MOVE_THRESHOLD = 10;
 
@@ -15,15 +17,28 @@ export interface PointerEventData {
   localMoveVector: Vec2;
 }
 
-export abstract class ClickDragListener {
+export abstract class ClickDragListener<ModeType extends string> {
+  private _modeSelector: (state: RootState) => ModeType;
+
+  constructor(modeSelector: (state: RootState) => ModeType) {
+    this._modeSelector = modeSelector;
+  }
+
   immediateDrag?: boolean;
-  pointerDown?(e: PointerEventData): void;
-  pointerUp?(e: PointerEventData): void;
-  pointerDrag?(e: PointerEventData): void;
-  pointerMove?(e: PointerEventData): void;
+  pointerDown?(e: PointerEventData): boolean;
+  pointerUp?(e: PointerEventData): boolean;
+  pointerDrag?(e: PointerEventData): boolean;
+  pointerMove?(e: PointerEventData): boolean;
+  getCursor?(e: P.FederatedPointerEvent): string | null;
+  protected abstract get providedModes(): Set<ModeType>;
+
+  protected modeMatches(): boolean {
+    const state = store.getState();
+    return this.providedModes.has(this._modeSelector(state));
+  }
 }
 
-export class ClickDragger {
+export class ClickDragger<ModeType extends string> implements Tool {
   private readonly app: P.Application;
   public readonly container: P.Container;
   private readonly coordsRelativeTo: P.Container;
@@ -31,8 +46,10 @@ export class ClickDragger {
 
   private dragStart: Vec2 | null = null;
   private dragEnd: Vec2 | null = null;
-  private listeners: ClickDragListener[] = [];
+  private listeners: ClickDragListener<ModeType>[] = [];
   private moved = false;
+
+  private _lastActiveListener: ClickDragListener<ModeType> | null = null;
 
   constructor({
     app,
@@ -72,7 +89,14 @@ export class ClickDragger {
         y: e.pageY,
       },
     };
-    this.listeners.forEach((listener) => listener.pointerDown?.(ev));
+
+    this._lastActiveListener = null;
+    for (const listener of this.listeners) {
+      if (listener.pointerDown?.(ev)) {
+        this._lastActiveListener = listener;
+        break;
+      }
+    }
 
     return true;
   }
@@ -94,7 +118,14 @@ export class ClickDragger {
         y: e.pageY,
       },
     };
-    this.listeners.forEach((listener) => listener.pointerUp?.(ev));
+
+    this._lastActiveListener = null;
+    for (const listener of this.listeners) {
+      if (listener.pointerUp?.(ev)) {
+        this._lastActiveListener = listener;
+        break;
+      }
+    }
     this.moved = false;
     this.dragStart = null;
     this.dragEnd = null;
@@ -115,16 +146,29 @@ export class ClickDragger {
         y: e.pageY,
       },
     };
+    let handled = false;
+    this._lastActiveListener = null;
 
     for (const listener of this.listeners) {
-      listener.pointerMove?.(ev);
+      if (listener.pointerMove?.(ev)) {
+        this._lastActiveListener = listener;
+        handled = true;
+        break;
+      }
     }
 
     if (this.dragStart) {
+      handled = false;
+      this._lastActiveListener = null;
+
       if (this.globalMoveVector.magnitude < MOVE_THRESHOLD && !this.moved) {
         for (const listener of this.listeners) {
           if (listener.immediateDrag) {
-            listener.pointerDrag?.(ev);
+            if (listener.pointerDrag?.(ev)) {
+              this._lastActiveListener = listener;
+              handled = true;
+              break;
+            }
           }
         }
         return true;
@@ -132,15 +176,26 @@ export class ClickDragger {
         this.moved = true;
 
         for (const listener of this.listeners) {
-          listener.pointerDrag?.(ev);
+          if (listener.pointerDrag?.(ev)) {
+            this._lastActiveListener = listener;
+            handled = true;
+            break;
+          }
         }
       }
     }
 
-    return false;
+    return handled;
   }
 
-  public addListener(listener: ClickDragListener) {
+  public getCursor(e: P.FederatedPointerEvent): string | null {
+    if (this._lastActiveListener?.getCursor) {
+      return this._lastActiveListener.getCursor(e);
+    }
+    return null;
+  }
+
+  public addListener(listener: ClickDragListener<ModeType>) {
     this.listeners.push(listener);
   }
 
@@ -180,10 +235,10 @@ export class ClickDragger {
     // Important that we do this in screen space, so that zoom doesn't affect
     // the drag threshold.
     const globalStart = Vec2.fromPoint(
-      this.coordsRelativeTo.toGlobal(this.dragStart)
+      this.coordsRelativeTo.toGlobal(this.dragStart),
     );
     const globalEnd = Vec2.fromPoint(
-      this.coordsRelativeTo.toGlobal(this.dragEnd)
+      this.coordsRelativeTo.toGlobal(this.dragEnd),
     );
     return globalEnd.subbed(globalStart);
   }

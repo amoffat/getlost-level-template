@@ -6,6 +6,7 @@ import {
 } from "@/constants/tsObjs";
 import { drawOutline } from "@/editors/common/outline";
 import { selectStroke } from "@/editors/common/strokes";
+import { Tool } from "@/editors/common/tooldispatch";
 import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import { actions, selectors } from "@/slices/mapEditor";
@@ -42,7 +43,6 @@ import {
 } from "../../common/drag";
 import { globals as g } from "../globals";
 
-// Modes that will allow placement of objects
 const placeModes: Set<Mode> = new Set([
   "paint",
   "set-waypoint",
@@ -57,9 +57,10 @@ const placeIconModes: Set<Mode> = new Set([...placeModes, "autotiler"]);
 // Modes that allow dragging to paint/place objects
 const draggableModes: Set<Mode> = new Set(["paint"]);
 
-export class Placer extends ClickDragListener {
+export class Placer extends ClickDragListener<Mode> implements Tool {
   public immediateDrag = true;
   protected paint = false;
+  private _hoveringObjects = false;
 
   // This exists purely because we want to paint fast if the user is dragging,
   // and our full spatial index is only updated by the reconciler, which is too
@@ -68,24 +69,29 @@ export class Placer extends ClickDragListener {
   protected dragSessionIndex: Set<string> = new Set();
 
   constructor(protected spatialIndex: SpatialIndex<MapObj>) {
-    super();
+    super((state) => selectors.selectMode(state));
   }
 
-  public override pointerUp(_e: PointerEventData): void {
-    if (!this.paint) return;
+  protected override get providedModes(): Set<Mode> {
+    return placeModes;
+  }
+
+  public override pointerUp(_e: PointerEventData): boolean {
+    if (!this.paint) return false;
+    if (!this.modeMatches()) return false;
 
     const state = store.getState();
-    const mode = selectors.selectMode(state);
-    if (!placeModes.has(mode)) return;
-
     const ms = state.mapEditor;
     const paintMode = ms.toolOptions.paint.mode;
     this.instantiatePlacable(paintMode);
 
     this.paint = false;
+    return true;
   }
 
-  public override pointerDown(e: PointerEventData): void {
+  public override pointerDown(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
+
     this.dragSessionIndex.clear();
     this.tempSpatialIndex.clear();
 
@@ -108,14 +114,17 @@ export class Placer extends ClickDragListener {
         }
       }
     }
+    return true;
   }
 
-  public override pointerMove(e: PointerEventData): void {
+  public override pointerMove(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
     const state = store.getState();
-    const mode = selectors.selectMode(state);
-    if (!placeModes.has(mode)) return;
 
-    if (!g.placableSprite) return;
+    if (!g.placableSprite) {
+      this._hoveringObjects = e.hoverIds.length > 0;
+      return true;
+    }
 
     const gridSize = state.mapEditor.place.obj!.gridSize;
     const rawPos = e.localPos;
@@ -135,9 +144,10 @@ export class Placer extends ClickDragListener {
 
     g.placableOutline.position = finalPos;
     g.placableContainer.position = finalPos;
+    return true;
   }
 
-  public override pointerDrag(_e: PointerEventData): void {
+  public override pointerDrag(_e: PointerEventData): boolean {
     const state = store.getState();
     const mode = selectors.selectMode(state);
 
@@ -146,7 +156,10 @@ export class Placer extends ClickDragListener {
       const ms = state.mapEditor;
       const paintMode = ms.toolOptions.paint.mode;
       this.instantiatePlacable(paintMode);
+      return true;
     }
+
+    return false;
   }
 
   protected instantiatePlacable(paintMode: PaintOpts["mode"]): void {
@@ -367,13 +380,23 @@ export class Placer extends ClickDragListener {
     console.assert(!!inst, "No instance created for placer");
     store.dispatch(actions.addOne(inst));
   }
+
+  public override getCursor(_e: P.FederatedPointerEvent): string | null {
+    if (g.placableSprite) {
+      return "crosshair";
+    }
+    if (this._hoveringObjects) {
+      return "pointer";
+    }
+    return null;
+  }
 }
 
 export function setupPlacer({
   cd,
   spatialIndex,
 }: {
-  cd: ClickDragger;
+  cd: ClickDragger<Mode>;
   spatialIndex: SpatialIndex<MapObj>;
 }) {
   cd.addListener(new Placer(spatialIndex));

@@ -1,86 +1,78 @@
 import { Vector2 } from "@/vec";
 import * as P from "pixi.js";
+import { Tool } from "./tooldispatch";
 
-export class Panner {
-  private stage: P.Container;
-  private panContainer: P.Container;
-  private onPanningStart?: VoidFunction;
-  private onPanningEnd?: (panPos: Vector2) => void;
+export class Panner implements Tool {
+  private _panContainer: P.Container;
+  private _onPanningStart?: VoidFunction;
+  private _onPanningEnd?: (panPos: Vector2) => void;
 
   // Panning state
-  private panStartGlobal = { x: 0, y: 0 };
-  private panStartContainer = { x: 0, y: 0 };
-  private panning = false;
+  private _panStartGlobal = { x: 0, y: 0 };
+  private _panStartContainer = { x: 0, y: 0 };
+  private _panning = false;
 
   constructor({
-    stage,
     panContainer,
     onPanningStart,
     onPanningEnd,
   }: {
-    stage: P.Container;
     panContainer: P.Container;
     onPanningStart?: VoidFunction;
     onPanningEnd?: (panPos: Vector2) => void;
   }) {
-    this.stage = stage;
-    this.panContainer = panContainer;
-    this.onPanningStart = onPanningStart;
-    this.onPanningEnd = onPanningEnd;
-
-    this.setupEventListeners();
+    this._panContainer = panContainer;
+    this._onPanningStart = onPanningStart;
+    this._onPanningEnd = onPanningEnd;
   }
 
-  private setupEventListeners() {
-    this.stage.on("pointerdown", (e: P.FederatedPointerEvent) => {
-      if (e.button !== 2) return;
+  public onPointerDown(e: P.FederatedPointerEvent): boolean {
+    if (e.button !== 2) return false;
 
-      this.panStartGlobal = { x: e.global.x, y: e.global.y };
-      this.panStartContainer = {
-        x: this.panContainer.position.x,
-        y: this.panContainer.position.y,
-      };
-      this.panning = true;
-      this.onPanningStart?.();
-    });
-
-    this.stage.on("pointermove", (e: P.FederatedPointerEvent) => {
-      if (!this.panning) return;
-      const dx = e.global.x - this.panStartGlobal.x;
-      const dy = e.global.y - this.panStartGlobal.y;
-      const totalDx = dx;
-      const totalDy = dy;
-
-      // Use setPosition to apply the pan from the start position
-      this.setPosition(
-        {
-          x: this.panStartContainer.x + totalDx,
-          y: this.panStartContainer.y + totalDy,
-        },
-        false // Don't trigger callbacks during interactive panning
-      );
-    });
-
-    const endPan = (_e: P.FederatedPointerEvent) => {
-      if (!this.panning) return;
-      this.panning = false;
-
-      // Trigger the end callback with final position
-      this.onPanningEnd?.(this.getPosition());
+    this._panStartGlobal = { x: e.global.x, y: e.global.y };
+    this._panStartContainer = {
+      x: this._panContainer.position.x,
+      y: this._panContainer.position.y,
     };
+    this._panning = true;
+    this._onPanningStart?.();
+    return true;
+  }
 
-    this.stage.on("pointerup", endPan);
-    this.stage.on("pointerupoutside", endPan);
-    this.stage.on("pointercancel", endPan);
+  public onPointerMove(e: P.FederatedPointerEvent): boolean {
+    if (!this._panning) return false;
+    const dx = e.global.x - this._panStartGlobal.x;
+    const dy = e.global.y - this._panStartGlobal.y;
+    const totalDx = dx;
+    const totalDy = dy;
+
+    // Use setPosition to apply the pan from the start position
+    this.setPosition(
+      {
+        x: this._panStartContainer.x + totalDx,
+        y: this._panStartContainer.y + totalDy,
+      },
+      false, // Don't trigger callbacks during interactive panning
+    );
+    return true;
+  }
+
+  public onPointerUp(_e: P.FederatedPointerEvent): boolean {
+    if (!this._panning) return false;
+    this._panning = false;
+
+    // Trigger the end callback with final position
+    this._onPanningEnd?.(this.getPosition());
+    return true;
   }
 
   /**
    * Get the current pan position
    */
-  getPosition(): Vector2 {
+  public getPosition(): Vector2 {
     return {
-      x: this.panContainer.position.x,
-      y: this.panContainer.position.y,
+      x: this._panContainer.position.x,
+      y: this._panContainer.position.y,
     };
   }
 
@@ -89,24 +81,30 @@ export class Panner {
    * @param pos - The new position
    * @param triggerCallbacks - Whether to trigger onPanningEnd callback
    */
-  setPosition(pos: Vector2, triggerCallbacks = true) {
-    this.panContainer.position.set(pos.x, pos.y);
+  public setPosition(pos: Vector2, triggerCallbacks = true) {
+    this._panContainer.position.set(pos.x, pos.y);
     if (triggerCallbacks) {
-      this.onPanningEnd?.(pos);
+      this._onPanningEnd?.(pos);
     }
+  }
+
+  public getCursor(_e: P.FederatedPointerEvent): string | null {
+    return this._panning ? "grabbing" : null;
   }
 }
 
 export function setupPanControls({
-  stage,
   panContainer,
   onPanningStart,
   onPanningEnd,
 }: {
-  stage: P.Container;
   panContainer: P.Container;
   onPanningStart?: VoidFunction;
   onPanningEnd?: (panPos: Vector2) => void;
 }): Panner {
-  return new Panner({ stage, panContainer, onPanningStart, onPanningEnd });
+  return new Panner({
+    panContainer,
+    onPanningStart,
+    onPanningEnd,
+  });
 }

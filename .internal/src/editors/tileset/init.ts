@@ -4,13 +4,13 @@ import { actions, selectors, tileAdapter } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
+import { Mode } from "@/types/tileset";
 import { subState } from "@/utils/redux";
 import { onVisible } from "@/utils/visible";
 import { Vector2 } from "@/vec";
 import debounce from "debounce";
 import * as P from "pixi.js";
 import { makeCheckerboard } from "../common/bg";
-import { getCursorForMode } from "../common/cursor";
 import { ClickDragger } from "../common/drag";
 import { setupPanControls } from "../common/pan";
 import { ToolDispatcher } from "../common/tooldispatch";
@@ -158,8 +158,7 @@ export async function init(): Promise<P.Application> {
       store.dispatch(actions.setPan(zoomPan.pan));
     }, 50),
   });
-  setupPanControls({
-    stage,
+  const panner = setupPanControls({
     panContainer: g.tilesetContainer,
     onPanningStart: () => {
       store.dispatch(actions.pushMode("pan"));
@@ -171,8 +170,9 @@ export async function init(): Promise<P.Application> {
   });
 
   const toolDispatcher = new ToolDispatcher(app);
+  toolDispatcher.registerTool(panner);
 
-  const cd = new ClickDragger({
+  const cd = new ClickDragger<Mode>({
     app,
     container: stage,
     coordsRelativeTo: g.tilesetContainer,
@@ -218,7 +218,7 @@ export async function init(): Promise<P.Application> {
     drawBounds();
 
     store.dispatch(
-      actions.setCanvasSize({ width: rect.width, height: rect.height })
+      actions.setCanvasSize({ width: rect.width, height: rect.height }),
     );
   }
   window.addEventListener("resize", redrawLayout);
@@ -230,11 +230,6 @@ export async function init(): Promise<P.Application> {
 
 subState([(state) => state.tilesetEditor.grid.visible], (visible) => {
   g.grid.visible = visible;
-});
-
-subState([selectors.selectMode], (mode) => {
-  const canvas = g.app.canvas;
-  canvas.style.cursor = getCursorForMode(mode);
 });
 
 subState([(state) => state.tilesetEditor.scanPos], (scanPos) => {

@@ -10,17 +10,23 @@ export interface IndexItem {
   maxY: number;
 }
 
+type LayerFilter = (params: {
+  state: RootState;
+  layer: number;
+  hits: IndexItem[];
+}) => boolean;
+
 export class SpatialIndex<Obj> extends RBush<IndexItem> {
   private indexItems = new Map<string, IndexItem>();
   private selectById: (state: RootState, id: string) => Obj | undefined;
-  private filterLayer: (state: RootState, layer: number) => boolean;
+  private filterLayer: LayerFilter;
 
   constructor({
     selectById,
     filterLayer,
   }: {
     selectById: (state: RootState, id: string) => Obj | undefined;
-    filterLayer: (state: RootState, layer: number) => boolean;
+    filterLayer: LayerFilter;
   }) {
     super();
     this.selectById = selectById;
@@ -56,7 +62,13 @@ export class SpatialIndex<Obj> extends RBush<IndexItem> {
     return this;
   }
 
-  public getObjects({ pos }: { pos: Vector2 | BBox }): Obj[] {
+  public getObjects({
+    pos,
+    filterByLayer = true,
+  }: {
+    pos: Vector2 | BBox;
+    filterByLayer?: boolean;
+  }): Obj[] {
     let hits: IndexItem[];
     if (isVector(pos)) {
       hits = this.searchByPos(pos);
@@ -78,8 +90,13 @@ export class SpatialIndex<Obj> extends RBush<IndexItem> {
       .filter((obj) => obj !== undefined)
       .filter(
         (obj) =>
+          filterByLayer === false ||
           (obj as any).layer === undefined ||
-          this.filterLayer(state, (obj as any).layer)
+          this.filterLayer({
+            state,
+            layer: (obj as any).layer,
+            hits,
+          }),
       )
       .sort((a, b) => ((a as any).z ?? 0) - ((b as any).z ?? 0));
     return objs;
