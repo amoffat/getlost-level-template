@@ -5,12 +5,13 @@ import { TilesetMapObj } from "@/types/map";
 import { NpcTemplate } from "@/types/npc";
 import { Group, Stack } from "@mantine/core";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
+import classNames from "classnames";
 import TilesetGroup from "../TilesetGroup";
 import styles from "./styles/StoryNode.module.css";
 
 // Simple stub node component for story graph nodes.
 // Displays the node label and exposes top/bottom handles for connections.
-export default function StoryNode({ data }: NodeProps<DNode>) {
+export default function StoryNode({ data, selected }: NodeProps<DNode>) {
   const sData = (data as StoryNodeData) ?? ({} as StoryNodeData);
   const label = sData.id;
   const affectedNpcs = ["3a9518d4-fe74-4000-ac10-70b837241bed"];
@@ -32,8 +33,13 @@ export default function StoryNode({ data }: NodeProps<DNode>) {
     npcNode = <Group>{affectedNpcs.map(npcToTg)}</Group>;
   }
 
+  const cls = classNames(styles.node, {
+    "react-flow__node-default": true,
+    [styles.selected]: selected,
+  });
+
   return (
-    <div className={`react-flow__node-default ${styles.node}`}>
+    <div className={cls}>
       <Handle type="target" position={Position.Top} />
       <Stack p={0}>
         {label}

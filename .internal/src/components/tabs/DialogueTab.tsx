@@ -1,3 +1,11 @@
+import { useAppDispatch } from "@/hooks/redux";
+import { actions as dActions } from "@/slices/dialogue";
+import { selectors as mapSelectors } from "@/slices/mapEditor";
+import { selectors as tsSelectors } from "@/slices/tilesetEditor";
+import type { RootState } from "@/store/store";
+import { store } from "@/store/store";
+import type { DNode } from "@/types/dialogue";
+import type { NpcTemplate } from "@/types/npc";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
   Box,
@@ -9,11 +17,10 @@ import {
   ScrollArea,
   Stack,
   Text,
-  Textarea,
-  TextInput,
   Tree,
   TreeNodeData,
 } from "@mantine/core";
+import { useDebouncedCallback } from "@mantine/hooks";
 import {
   addEdge,
   applyEdgeChanges,
@@ -21,26 +28,22 @@ import {
   Background,
   BackgroundVariant,
   Controls,
+  Edge,
   OnConnect,
   OnEdgesChange,
   OnNodesChange,
   Panel,
   ReactFlow,
+  SelectionMode,
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { use, useCallback, useMemo, useRef, useState } from "react";
+import { use, useCallback, useMemo, useRef } from "react";
 import { useSelector } from "react-redux";
-import { useAppDispatch } from "../../hooks/redux";
-import { setEdges, setNodeData, setNodes } from "../../slices/dialogue";
-import { selectors as mapSelectors } from "../../slices/mapEditor";
-import { selectors as tsSelectors } from "../../slices/tilesetEditor";
-import type { RootState } from "../../store/store";
-import { store } from "../../store/store";
-import type { DNode } from "../../types/dialogue";
-import type { NpcTemplate } from "../../types/npc";
 import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
+import DialogueNode from "../flowNodes/DialogueNode";
+import dialogueStyles from "../flowNodes/styles/DialogueNode.module.css";
 
 export default function DialogueTab({
   initPromise,
@@ -49,33 +52,31 @@ export default function DialogueTab({
 }) {
   use(initPromise);
 
-  const [nodeId, setNodeId] = useState<string | null>(null);
+  const reactFlowInstance = useReactFlow<DNode, Edge>();
   const dispatch = useAppDispatch();
-  const dState = useSelector((state: RootState) => state.dialogue);
-  const { nodes, edges } = dState;
-  const { screenToFlowPosition } = useReactFlow();
-  const flowContainerRef = useRef<HTMLDivElement>(null);
   const npcs = useSelector(mapSelectors.selectNpcs);
   const milestones = useSelector((state: RootState) => state.story.nodes);
+  const nodes = useSelector((state: RootState) => state.dialogue.nodes);
+  const edges = useSelector((state: RootState) => state.dialogue.edges);
+  const { screenToFlowPosition } = useReactFlow();
+  const flowContainerRef = useRef<HTMLDivElement>(null);
 
-  const node = nodes.find((n) => n.id === nodeId) || null;
-  const nd = node?.data;
+  const onNodesChange: OnNodesChange<DNode> = useDebouncedCallback(
+    (changes) => {
+      const nodes = reactFlowInstance.getNodes();
+      dispatch(dActions.syncFromRF(applyNodeChanges(changes, nodes)));
+    },
+    500,
+  );
 
-  const onNodesChange: OnNodesChange<DNode> = useCallback(
-    (changes) => {
-      dispatch(setNodes(applyNodeChanges(changes, nodes)));
-    },
-    [dispatch, nodes],
-  );
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => {
-      dispatch(setEdges(applyEdgeChanges(changes, edges)));
-    },
-    [dispatch, edges],
-  );
+  const onEdgesChange: OnEdgesChange = useDebouncedCallback((changes) => {
+    const edges = reactFlowInstance.getEdges();
+    dispatch(dActions.setEdges(applyEdgeChanges(changes, edges)));
+  }, 500);
+
   const onConnect: OnConnect = useCallback(
     (connection) => {
-      dispatch(setEdges(addEdge(connection, edges)));
+      dispatch(dActions.setEdges(addEdge(connection, edges)));
     },
     [dispatch, edges],
   );
@@ -92,48 +93,32 @@ export default function DialogueTab({
       position = screenToFlowPosition(centerScreen);
     }
 
+    const id = crypto.randomUUID();
     const newNode: DNode = {
-      id: (nodes.length + 1).toString(),
+      id,
       position,
-      type: "default",
-      data: { label: `Node ${nodes.length + 1}`, content: "", animated: false },
+      selected: true,
+      type: "dialogue",
+      dragHandle: `.${dialogueStyles.dragHandle}`,
+      data: {
+        id,
+        label: "TODO",
+        content: undefined,
+        animated: true,
+        choices: [],
+      },
     };
-    dispatch(setNodes(nodes.concat(newNode)));
-  }, [nodes, dispatch, screenToFlowPosition]);
 
-  const onSelectNode = useCallback(
-    (_event: React.MouseEvent, node: DNode) => {
-      setNodeId(node.id);
-    },
-    [setNodeId],
-  );
+    const updatedNodes: DNode[] = [
+      ...reactFlowInstance
+        .getNodes()
+        .map((existingNode) => ({ ...existingNode, selected: false })),
+      { ...newNode, selected: true },
+    ];
 
-  const onSwitchAnimated = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (!node) return;
-      const animated = event.currentTarget.checked;
-      dispatch(setNodeData({ id: node.id, data: { animated } }));
-    },
-    [node, dispatch],
-  );
-
-  const onTitleChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (!node) return;
-      const label = event.currentTarget.value;
-      dispatch(setNodeData({ id: node.id, data: { label } }));
-    },
-    [node, dispatch],
-  );
-
-  const onContentChange = useCallback(
-    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      if (!node) return;
-      const content = event.currentTarget.value;
-      dispatch(setNodeData({ id: node.id, data: { content } }));
-    },
-    [node, dispatch],
-  );
+    reactFlowInstance.setNodes(updatedNodes);
+    dispatch(dActions.syncFromRF(updatedNodes));
+  }, [dispatch, screenToFlowPosition, reactFlowInstance]);
 
   const handlePaneResize = () => {
     // Trigger redrawLayout when panels are resized
@@ -178,9 +163,9 @@ export default function DialogueTab({
     <Split h="100dvh" style={{ flex: 1 }}>
       {/* Left panel */}
       <Split.Pane
-        initialWidth={300}
-        minWidth={200}
-        maxWidth={500}
+        initialWidth="15%"
+        minWidth={250}
+        maxWidth="45%"
         onResizeEnd={handlePaneResize}
       >
         <Stack h="100%" style={{ overflow: "hidden" }}>
@@ -209,16 +194,21 @@ export default function DialogueTab({
               id="dialogue-flow"
               colorMode="dark"
               //   snapToGrid={true}
+              nodeTypes={{
+                dialogue: DialogueNode,
+                sign: DialogueNode,
+              }}
               snapGrid={[20, 20]}
               panOnDrag={[2]}
-              nodes={nodes}
-              edges={edges}
-              onNodeClick={onSelectNode}
-              onNodeDragStart={onSelectNode}
+              deleteKeyCode={["Delete", "Backspace"]}
+              multiSelectionKeyCode={null}
+              defaultNodes={Object.values(nodes)}
+              defaultEdges={edges}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
-              onPaneClick={() => setNodeId(null)}
+              selectionOnDrag={false}
+              selectionMode={SelectionMode.Partial}
               fitView
             >
               <Background color="#505050ff" variant={BackgroundVariant.Dots} />
@@ -237,14 +227,14 @@ export default function DialogueTab({
 
       {/* Right panel */}
       <Split.Pane
-        initialWidth={300}
-        minWidth={200}
-        maxWidth={500}
+        initialWidth="20%"
+        minWidth={250}
+        maxWidth="45%"
         onResizeEnd={handlePaneResize}
       >
         <Stack h="100%" style={{ overflow: "hidden" }}>
           <ScrollArea type="never" style={{ flex: 1 }}>
-            <Stack p={0} pb={50}>
+            <Stack p={0} pb="md">
               <MultiSelect
                 label="Milestones"
                 description="Which story milestones activate this dialogue?"
@@ -252,19 +242,6 @@ export default function DialogueTab({
                 defaultValue={["default"]}
                 data={["default", ...milestones.map((m) => m.data.id)]}
                 nothingFoundMessage="No milestones found"
-              />
-              <TextInput
-                label="Dialogue title"
-                description="A summary or title for this dialogue node."
-                value={nd?.label ?? ""}
-                onChange={onTitleChange}
-              />
-              <Textarea
-                rows={10}
-                label="Dialogue content"
-                value={nd?.content ?? ""}
-                description="The text that will be displayed to the player."
-                onChange={onContentChange}
               />
             </Stack>
           </ScrollArea>
@@ -274,13 +251,7 @@ export default function DialogueTab({
   );
 }
 
-function Leaf({
-  node,
-  expanded,
-  hasChildren,
-  selected,
-  elementProps,
-}: RenderTreeNodePayload) {
+function Leaf({ node, selected, elementProps }: RenderTreeNodePayload) {
   const npcTemplate = node.nodeProps?.npcTemplate as NpcTemplate | undefined;
 
   let icon: React.ReactNode;

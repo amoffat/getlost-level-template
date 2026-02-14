@@ -1,8 +1,20 @@
 import { Node } from "@xyflow/react";
 
-interface NodeData extends Record<string, unknown> {
-  label: string;
-  content: string;
-  animated: boolean;
+export interface Choice {
+  id: string;
+  text: string | undefined;
 }
-export type DNode = Node<NodeData>;
+export interface DialogueData extends Record<string, unknown> {
+  id: string;
+  label: string;
+  content: string | undefined;
+  animated: boolean;
+  choices: Choice[];
+}
+
+export interface SignData extends Record<string, unknown> {
+  id: string;
+  content: string | undefined;
+}
+
+export type DNode = Node<DialogueData | SignData>;

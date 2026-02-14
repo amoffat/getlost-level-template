@@ -70,3 +70,5 @@ export const defaultZIndices = [
 
 export const minBoundsSize = 128;
 export const maxBoundsArea = 1750 * 1750;
+
+export const maxDialogueChoices = 5;

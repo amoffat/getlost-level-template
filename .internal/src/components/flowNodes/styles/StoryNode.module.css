@@ -1,2 +1,6 @@
 .node {
 }
+
+.node.selected {
+  outline: 3px solid rgb(0, 255, 0);
+}

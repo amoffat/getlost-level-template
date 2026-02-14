@@ -1,0 +1,31 @@
+.node {
+  width: 40em;
+  text-align: initial;
+  padding: 1.5em;
+}
+
+.node.selected {
+  outline: 3px solid rgb(0, 255, 0);
+  padding: 1em;
+}
+
+.dragHandle {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: move;
+  background: var(--mantine-color-blue-6);
+  border-radius: 4px;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+:global(.react-flow__handle) {
+  background: var(--mantine-color-blue-6);
+  width: 1em;
+  height: 1em;
+}

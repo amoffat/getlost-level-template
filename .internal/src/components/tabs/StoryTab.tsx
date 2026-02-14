@@ -3,7 +3,6 @@ import type { StoryNode as DNode } from "@/slices/story";
 import { setEdges, setNodeData, setNodes } from "@/slices/story";
 import { reflowStoryThunk } from "@/thunks/story";
 import { showNotification } from "@/utils/notifications";
-import { Vector2 } from "@/vec";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
   Fieldset,
@@ -13,6 +12,7 @@ import {
   Stack,
   TextInput,
 } from "@mantine/core";
+import { useDebouncedCallback } from "@mantine/hooks";
 import { IconRefresh } from "@tabler/icons-react";
 import {
   addEdge,
@@ -32,13 +32,13 @@ import {
   useReactFlow,
   type Edge,
   type OnConnectEnd,
-  type ReactFlowInstance,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { ReactNode, use, useCallback, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../../hooks/redux";
 import type { RootState } from "../../store/store";
+import { store } from "../../store/store";
 import StoryNode from "../flowNodes/StoryNode";
 import Tip from "../Tip";
 
@@ -50,20 +50,14 @@ export default function StoryTab({
   use(initPromise);
 
   const [nodeId, setNodeId] = useState<string | null>(null);
-  const [contextMenu, setContextMenu] = useState<Vector2 | null>(null);
   const dispatch = useAppDispatch();
 
   const dState = useSelector((state: RootState) => state.story);
   const { nodes, edges } = dState;
   const flowContainerRef = useRef<HTMLDivElement>(null);
-  const reactFlowInstanceRef = useRef<ReactFlowInstance<DNode, Edge> | null>(
-    null,
-  );
   const npcs = useSelector(selectors.selectNpcs);
-  const { screenToFlowPosition, getNodes, getEdges } = useReactFlow<
-    DNode,
-    Edge
-  >();
+  const reactFlowInstance = useReactFlow<DNode, Edge>();
+  const { screenToFlowPosition, getNodes, getEdges } = reactFlowInstance;
 
   const node = nodes.find((n) => n.id === nodeId) || null;
   const nd = node?.data;
@@ -77,23 +71,22 @@ export default function StoryTab({
     [node, dispatch],
   );
 
-  const onNodesChange: OnNodesChange<DNode> = useCallback(
+  const onNodesChange: OnNodesChange<DNode> = useDebouncedCallback(
     (changes) => {
-      dispatch(setNodes(applyNodeChanges(changes, nodes)));
+      const currentNodes = reactFlowInstance.getNodes();
+      dispatch(setNodes(applyNodeChanges(changes, currentNodes)));
     },
-    [dispatch, nodes],
+    500,
   );
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => {
-      dispatch(setEdges(applyEdgeChanges(changes, edges)));
-    },
-    [dispatch, edges],
-  );
+  const onEdgesChange: OnEdgesChange = useDebouncedCallback((changes) => {
+    const currentEdges = reactFlowInstance.getEdges();
+    dispatch(setEdges(applyEdgeChanges(changes, currentEdges)));
+  }, 500);
   const onConnect: OnConnect = useCallback(
     (connection) => {
-      dispatch(setEdges(addEdge(connection, edges)));
+      dispatch(setEdges(addEdge(connection, reactFlowInstance.getEdges())));
     },
-    [dispatch, edges],
+    [dispatch, reactFlowInstance],
   );
 
   const isValidConnection: IsValidConnection<Edge> = useCallback(
@@ -148,12 +141,13 @@ export default function StoryTab({
 
         // Create a new node at this position
         const newNodeId = crypto.randomUUID();
+        const currentNodes = reactFlowInstance.getNodes();
         const newNode: DNode = {
           id: newNodeId,
           position,
           type: "story",
           data: {
-            id: `milestone-${nodes.length + 1}`,
+            id: `milestone-${currentNodes.length + 1}`,
             npcs: {},
           },
         };
@@ -167,21 +161,20 @@ export default function StoryTab({
         const source = isFromBottom ? fromNodeId : newNodeId;
         const target = isFromBottom ? newNodeId : fromNodeId;
 
-        // Add the new node and edge
-        dispatch(setNodes([...nodes, newNode]));
-        dispatch(
-          setEdges([
-            ...edges,
-            {
-              id: crypto.randomUUID(),
-              source,
-              target,
-            },
-          ]),
-        );
+        const newEdge: Edge = {
+          id: crypto.randomUUID(),
+          source,
+          target,
+        };
+
+        // Add to flow immediately, then sync Redux.
+        reactFlowInstance.addNodes(newNode);
+        reactFlowInstance.addEdges(newEdge);
+        dispatch(setNodes(reactFlowInstance.getNodes()));
+        dispatch(setEdges(reactFlowInstance.getEdges()));
       }
     },
-    [nodes, edges, dispatch, screenToFlowPosition],
+    [dispatch, reactFlowInstance, screenToFlowPosition],
   );
 
   const onSelectNode = useCallback(
@@ -193,28 +186,16 @@ export default function StoryTab({
 
   const handleReflow = useCallback(async () => {
     await dispatch(reflowStoryThunk()).unwrap();
-  }, [dispatch]);
-
-  const handleNodeContextMenu = useCallback(
-    (event: React.MouseEvent, _node: DNode) => {
-      event.preventDefault();
-      setContextMenu({
-        x: event.clientX,
-        y: event.clientY,
-      });
-    },
-    [],
-  );
+    const { nodes: laidOutNodes, edges: laidOutEdges } = store.getState().story;
+    reactFlowInstance.setNodes(laidOutNodes);
+    reactFlowInstance.setEdges(laidOutEdges);
+    requestAnimationFrame(() => {
+      reactFlowInstance.fitView({ duration: 250, padding: 0.2 });
+    });
+  }, [dispatch, reactFlowInstance]);
 
   const handlePaneClick = useCallback(() => {
     setNodeId(null);
-    setContextMenu(null);
-  }, []);
-
-  const handleAddDialogue = useCallback(() => {
-    // TODO: Implement add dialogue functionality
-    console.log("Add dialogue stub function called");
-    setContextMenu(null);
   }, []);
 
   const handlePaneResize = () => {
@@ -276,19 +257,15 @@ export default function StoryTab({
                 panOnDrag={[2]}
                 deleteKeyCode={["Delete", "Backspace"]}
                 nodeTypes={{ story: StoryNode }}
-                nodes={nodes}
-                edges={edges}
+                defaultNodes={nodes}
+                defaultEdges={edges}
                 onNodeClick={onSelectNode}
                 onNodeDragStart={onSelectNode}
-                onNodeContextMenu={handleNodeContextMenu}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onConnectEnd={onConnectEnd}
                 onPaneClick={handlePaneClick}
-                onInit={(instance: ReactFlowInstance<DNode, Edge>) =>
-                  (reactFlowInstanceRef.current = instance)
-                }
                 isValidConnection={isValidConnection}
                 selectionOnDrag
                 selectionMode={SelectionMode.Partial}
