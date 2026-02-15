@@ -43,7 +43,6 @@ import { useSelector } from "react-redux";
 import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
 import DialogueNode from "../flowNodes/DialogueNode";
-import dialogueStyles from "../flowNodes/styles/DialogueNode.module.css";
 
 export default function DialogueTab({
   initPromise,
@@ -99,7 +98,6 @@ export default function DialogueTab({
       position,
       selected: true,
       type: "dialogue",
-      dragHandle: `.${dialogueStyles.dragHandle}`,
       data: {
         id,
         label: "TODO",
