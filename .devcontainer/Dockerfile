@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/javascript-node:latest
+FROM mcr.microsoft.com/devcontainers/javascript-node:4.0.8-24-trixie
 
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \

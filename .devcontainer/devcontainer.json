@@ -9,7 +9,6 @@
   //
   // "dockerComposeFile": "docker-compose.yml", "service": "preview",
   "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {},
     // If I uncomment this, for some reason, my ssh agent socket from the host
     // no longer works.
     // "ghcr.io/devcontainers/features/docker-in-docker:2": {},
@@ -51,11 +50,9 @@
         "github.vscode-github-actions",
         "ms-python.python",
         "ms-python.black-formatter",
-        // "ms-azuretools.vscode-docker",
         "ms-python.mypy-type-checker",
         "ms-python.isort",
-        "ms-python.flake8",
-        "tintinweb.graphviz-interactive-preview"
+        "ms-python.flake8"
       ]
     }
   },
