@@ -1,0 +1,38 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Launch Chrome",
+      "url": "http://localhost:${input:port}",
+      "webRoot": "${workspaceFolder}/.internal/src",
+      "sourceMaps": true,
+      "trace": true
+    },
+    {
+      "type": "firefox",
+      "request": "launch",
+      "name": "Launch Firefox",
+      "url": "http://localhost:${input:port}",
+      "webRoot": "${workspaceFolder}/.internal/src",
+      "pathMappings": [
+        {
+          "url": "http://localhost:5173/src",
+          "path": "${workspaceFolder}/.internal/src"
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "port",
+      "type": "promptString",
+      "description": "Enter the frontend port",
+      "default": "5173"
+    }
+  ]
+}
