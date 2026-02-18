@@ -19,7 +19,15 @@ import {
   IconRestore,
 } from "@tabler/icons-react";
 import { x64 } from "murmurhash3js";
-import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import InfoTooltip from "./common/InfoTooltip";
 
 export type PropertyValueScope = "template" | "instance" | "mixed";
@@ -46,9 +54,10 @@ interface PropertyValueProps<T> {
   values: PropertyValueInfo<T>[];
   /** The input component to render. Receives the effective value and onChange callback */
   renderInput: (
-    value: T | undefined,
+    key: string,
+    defaultValue: T | undefined,
     onChange: (value: T) => void,
-  ) => ReactNode;
+  ) => ReactElement;
   /** Callback when the user changes the value */
   onValueChange: (scope: PropertyValueScope, value: T | undefined) => void;
   /** Optional function to determine if two values are equal (defaults to ===) */
@@ -87,7 +96,16 @@ function PropertyValueInner<T>({
   noTemplate = false,
   defaultValue,
   tooltip,
-}: PropertyValueProps<T>) {
+  refreshKey,
+}: PropertyValueProps<T> & { refreshKey: string }) {
+  const [resetCounter, setResetCounter] = useState(0);
+
+  // Because the component returned from renderInput is an uncontrolled
+  // component, we need a way to reset it. This key does that.
+  const inputKey = useMemo(() => {
+    return `${refreshKey}/${resetCounter}`;
+  }, [resetCounter, refreshKey]);
+
   const analysis = useMemo(() => {
     if (values.length === 0) {
       return {
@@ -190,7 +208,7 @@ function PropertyValueInner<T>({
   // The widget for the input field, passed in from props
   const inputField = useMemo(
     () =>
-      renderInput(localValue, (value) => {
+      renderInput(inputKey, localValue, (value) => {
         setLocalValue(value);
 
         if (analysis.hasMixedValues && analysis.hasMixedScopes) {
@@ -206,6 +224,7 @@ function PropertyValueInner<T>({
         }
       }),
     [
+      inputKey,
       renderInput,
       localValue,
       analysis.hasMixedValues,
@@ -219,6 +238,7 @@ function PropertyValueInner<T>({
   const handleReset = useCallback(() => {
     if (defaultValue !== undefined) {
       setLocalValue(defaultValue);
+      setResetCounter((prev) => prev + 1);
       if (debounceMs !== undefined) {
         debouncedSetValue(defaultValue);
       } else {
@@ -271,6 +291,12 @@ function PropertyValueInner<T>({
   // have different values.
   if (noTemplate && values.length > 1) {
     return null;
+  }
+
+  // Uncontrolled = more performant
+  const isControlled = "value" in (inputField.props as any);
+  if (isControlled) {
+    throw new Error("renderInput should only return uncontrolled components.");
   }
 
   return (
@@ -352,7 +378,7 @@ function PropertyValueInner<T>({
 export default function PropertyValue<T>(props: PropertyValueProps<T>) {
   // Generate a stable key based on the values array and label
   // This will change whenever the selection changes, forcing a remount
-  const autoKey = useMemo(() => {
+  const key = useMemo(() => {
     const keyParts = props.values.map((v) => v.key);
     // Include the label to distinguish between different properties
     if (props.label) {
@@ -361,5 +387,15 @@ export default function PropertyValue<T>(props: PropertyValueProps<T>) {
     return keyParts.length > 0 ? x64.hash128(keyParts.join(",")) : "empty";
   }, [props.values, props.label]);
 
-  return <PropertyValueInner key={autoKey} {...props} />;
+  return (
+    <ErrorBoundary
+      fallback={
+        <Alert variant="filled" color="pink" title="Error">
+          {props.label ?? "Property"} failed to render, see dev console.
+        </Alert>
+      }
+    >
+      <PropertyValueInner key={key} refreshKey={key} {...props} />
+    </ErrorBoundary>
+  );
 }

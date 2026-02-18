@@ -127,6 +127,8 @@ export type MapObj =
   | ExitObj
   | PickupObj;
 
+export type SpeakableMapObj = Extract<MapObj, TileGroupInstance | NpcInstance>;
+
 export type MapObjProps =
   | LightProps
   | EntranceProps
@@ -153,7 +155,7 @@ export type ExtractProps<T extends MapObj> = T extends LightObj
               : never;
 
 export function isTileGroupInstance(
-  obj: Partial<BaseMapObj>
+  obj: Partial<BaseMapObj>,
 ): obj is TileGroupInstance {
   return obj.type === MapObjType.TileGroupInstance;
 }
@@ -168,7 +170,7 @@ export function isColliderBox(obj: Partial<BaseMapObj>): obj is BoxObj {
 }
 
 export function isAnimatedInstance(
-  obj: Partial<BaseMapObj>
+  obj: Partial<BaseMapObj>,
 ): obj is AnimationInstance {
   return obj.type === MapObjType.AnimationInstance;
 }
@@ -178,7 +180,7 @@ export function isNpcInstance(obj: Partial<MapObj>): obj is NpcInstance {
 }
 
 export function isMapObjFromTileset(
-  obj: Partial<BaseMapObj>
+  obj: Partial<BaseMapObj>,
 ): obj is TilesetMapObj {
   return Object.hasOwn(obj, "tsObjId") && Object.hasOwn(obj, "tilesetId");
 }

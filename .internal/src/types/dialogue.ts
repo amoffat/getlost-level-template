@@ -1,12 +1,13 @@
-import { Node } from "@xyflow/react";
+import { EntityState } from "@reduxjs/toolkit";
+import { Edge, Node } from "@xyflow/react";
 
 export interface Choice {
   id: string;
   text: string | undefined;
 }
-export interface DialogueData extends Record<string, unknown> {
+export interface SpeechData extends Record<string, unknown> {
   id: string;
-  label: string;
+  label: string | undefined;
   content: string | undefined;
   animated: boolean;
   choices: Choice[];
@@ -17,4 +18,12 @@ export interface SignData extends Record<string, unknown> {
   content: string | undefined;
 }
 
-export type DNode = Node<DialogueData | SignData>;
+export type DNode = Node<SpeechData | SignData>;
+
+export interface Dialogue {
+  id: string;
+  subjectId: string | null;
+  milestones: string[];
+  nodes: EntityState<DNode, string>;
+  edges: EntityState<Edge, string>;
+}

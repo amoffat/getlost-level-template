@@ -23,7 +23,6 @@ import {
   IconArrowBarToUp,
 } from "@tabler/icons-react";
 import { ReactNode, useDeferredValue, useMemo } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 import EntranceProperties from "../../objectProperties/EntranceProperties";
 import ExitProperties from "../../objectProperties/ExitProperties";
 import LightProperties from "../../objectProperties/LightProperties";
@@ -38,7 +37,7 @@ export default function SelectTool() {
 
   const dispatch = useAppDispatch();
   const groundLayer = useAppSelector(
-    (state) => state.mapEditor.layers.active === MapLayerName.Ground
+    (state) => state.mapEditor.layers.active === MapLayerName.Ground,
   );
 
   const selectedTgInstances = useMemo(() => {
@@ -170,16 +169,7 @@ export default function SelectTool() {
         </Fieldset>
       )}
 
-      <ErrorBoundary
-        resetKeys={[deferredSelectedObjs]}
-        fallback={
-          <Alert variant="filled" color="pink" title="Error">
-            Properties failed to render
-          </Alert>
-        }
-      >
-        {props}
-      </ErrorBoundary>
+      {props}
     </>
   );
 }

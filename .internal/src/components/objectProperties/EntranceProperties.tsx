@@ -20,7 +20,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { memo, ReactNode, useCallback, useMemo } from "react";
+import { memo, ReactElement, useCallback, useMemo } from "react";
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import { requiredUniqueName } from "./validators/name";
@@ -138,13 +138,16 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
           status: nameValidator(value) ? "error" : null,
         });
       }}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: string | undefined,
         onChange: (value: string) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <TextInput
-            value={value ?? ""}
+            key={key}
+            defaultValue={value ?? ""}
             placeholder="Enter name"
             error={nameValidator(value)}
             onChange={(e) => onChange(e.target.value)}
@@ -170,13 +173,14 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
           updateProps(scope, { exitIds: value });
         }}
         renderInput={(
+          key: string,
           value: string[] | undefined,
           onChange: (value: string[]) => void,
-        ): ReactNode => {
+        ): ReactElement => {
           const exitIds = value ?? [];
 
           return (
-            <Stack gap="xs" p={0}>
+            <Stack key={key} gap="xs" p={0}>
               {exitIds.map((exitId, index) => (
                 <Group key={index} gap="xs" wrap="nowrap">
                   <TextInput

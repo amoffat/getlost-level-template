@@ -14,7 +14,7 @@ import {
 } from "@/utils/propertyEditor";
 import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
 import { Fieldset, Stack, Switch, TagsInput, TextInput } from "@mantine/core";
-import { memo, ReactNode, useCallback, useMemo } from "react";
+import { memo, ReactElement, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import TilesetGroup from "../TilesetGroup";
 import { requiredUniqueName } from "./validators/name";
@@ -105,13 +105,16 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
           status: nameValidator(value) ? "error" : null,
         });
       }}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: string | undefined,
         onChange: (value: string) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <TextInput
-            value={value ?? ""}
+            key={key}
+            defaultValue={value ?? ""}
             placeholder="Enter pickup name"
             error={nameValidator(value)}
             onChange={(e) => onChange(e.target.value)}
@@ -132,13 +135,16 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       onValueChange={(scope, value: string[] | undefined) => {
         updateProps(scope, { tags: value });
       }}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: string[] | undefined,
         onChange: (value: string[]) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <TagsInput
-            value={value}
+            key={key}
+            defaultValue={value}
             onChange={onChange}
             placeholder="Enter tags"
             splitChars={[",", " ", "|"]}
@@ -179,18 +185,20 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       ): void => {
         updateProps(scope, { assetId: value });
       }}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: string | null | undefined,
         onChange: (value: string) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         const tilegroup = findTileGroup(value);
         return (
-          <Stack gap="xs" p={0}>
+          <Stack key={key} gap="xs" p={0}>
             {value && tilegroup && (
               <TilesetGroup group={tilegroup} scale={4} bounded={false} />
             )}
             <TextInput
-              value={value ?? ""}
+              defaultValue={value ?? ""}
               placeholder="Paste object ID"
               onChange={(e) => onChange(e.target.value)}
             />
@@ -207,6 +215,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       values={toCollect.hidden}
       defaultValue={false}
       noTemplate
+      debounceMs={100}
       onValueChange={(
         scope: PropertyValueScope,
         value: boolean | undefined,
@@ -214,12 +223,14 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
         updateProps(scope, { hidden: value });
       }}
       renderInput={(
+        key: string,
         value: boolean | undefined,
         onChange: (value: boolean) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Switch
-            checked={value ?? false}
+            key={key}
+            defaultChecked={value ?? false}
             onChange={(e) => onChange(e.currentTarget.checked)}
           />
         );

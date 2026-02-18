@@ -20,7 +20,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
-import { memo, ReactNode, useCallback, useMemo } from "react";
+import { memo, ReactElement, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 
 // Properties that collectPropertyValues needs to access
@@ -76,15 +76,18 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       ): void => {
         updateProps(scope, { name: value });
       }}
+      debounceMs={100}
       defaultValue=""
       renderInput={(
+        key: string,
         value: string | undefined,
         onChange: (value: string) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <TextInput
+            key={key}
             leftSection={value === undefined && <IconAlertTriangle size={14} />}
-            value={value ?? ""}
+            defaultValue={value ?? ""}
             placeholder={value === undefined ? "Mixed values" : "Enter name"}
             onChange={(e) => onChange(e.target.value)}
           />
@@ -105,15 +108,18 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
         updateProps(scope, { walkSound: value });
       }}
       defaultValue={constants.defaultWalkSound}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: WalkSound | undefined,
         onChange: (value: WalkSound) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Select
+            key={key}
             data={walkSounds}
             leftSection={value === undefined && <IconAlertTriangle size={14} />}
-            value={value ?? undefined}
+            defaultValue={value ?? undefined}
             placeholder={
               value === undefined ? "Mixed values" : "Select walk sound"
             }
@@ -137,14 +143,17 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       ): void {
         updateProps(scope, { friction: value });
       }}
+      debounceMs={100}
       defaultValue={constants.defaultFriction}
       renderInput={(
+        key: string,
         value: number | undefined,
         onChange: (value: number) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Slider
-            value={value}
+            key={key}
+            defaultValue={value}
             min={0}
             max={1}
             step={0.01}
@@ -163,14 +172,17 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       onValueChange={(scope: PropertyValueScope, value: number | undefined) => {
         updateProps(scope, { traction: value });
       }}
+      debounceMs={100}
       defaultValue={constants.defaultTraction}
       renderInput={(
+        key: string,
         value: number | undefined,
         onChange: (value: number) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Slider
-            value={value}
+            key={key}
+            defaultValue={value}
             min={0}
             max={1}
             step={0.01}
@@ -190,16 +202,19 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
         updateProps(scope, { tint: value });
       }}
       defaultValue={null}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: string | null | undefined,
         onChange: (value: string) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         const hexColor = value ? `#${value}` : "";
 
         return (
           <ColorInput
+            key={key}
             format="hex"
-            value={hexColor}
+            defaultValue={hexColor}
             onChange={(hex) => {
               // Remove the hash symbol before storing
               onChange(hex.replace("#", ""));
@@ -223,12 +238,14 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
         updateProps(scope, { hidden: value });
       }}
       renderInput={(
+        key: string,
         value: boolean | undefined,
         onChange: (value: boolean) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Switch
-            checked={value ?? false}
+            key={key}
+            defaultChecked={value ?? false}
             onChange={(e) => onChange(e.currentTarget.checked)}
           />
         );
@@ -242,6 +259,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       description="Vertical offset of the object from the ground."
       values={toCollect.groundOffset}
       defaultValue={0}
+      debounceMs={100}
       onValueChange={(
         scope: PropertyValueScope,
         value: number | undefined,
@@ -249,12 +267,14 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
         updateProps(scope, { groundOffset: value });
       }}
       renderInput={(
+        key: string,
         value: number | undefined,
         onChange: (value: number) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Slider
-            value={value ?? 0}
+            key={key}
+            defaultValue={value ?? 0}
             onChange={onChange}
             min={0}
             max={16}

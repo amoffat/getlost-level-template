@@ -20,7 +20,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { memo, ReactNode, useCallback, useMemo } from "react";
+import { memo, ReactElement, useCallback, useMemo } from "react";
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import { requiredUniqueName } from "./validators/name";
@@ -130,13 +130,16 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
           status: nameValidator(value) ? "error" : null,
         });
       }}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: string | undefined,
         onChange: (value: string) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <TextInput
-            value={value ?? ""}
+            key={key}
+            defaultValue={value ?? ""}
             placeholder="Enter name"
             error={nameValidator(value)}
             onChange={(e) => onChange(e.target.value)}
@@ -156,6 +159,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       noTemplate
       values={toCollect.preferredEntranceId}
       defaultValue={null}
+      debounceMs={100}
       onValueChange={(
         scope: PropertyValueScope,
         value: string | null | undefined,
@@ -163,14 +167,15 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
         updateProps(scope, { preferredEntranceId: value });
       }}
       renderInput={(
+        key: string,
         value: string | null | undefined,
         onChange: (value: string) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
-          <Stack gap="xs" p={0}>
+          <Stack key={key} gap="xs" p={0}>
             {value && (
               <TextInput
-                value={value}
+                defaultValue={value}
                 placeholder="Enter entrance id"
                 onChange={(e) => {
                   onChange(e.target.value);
@@ -196,6 +201,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       noTemplate
       values={toCollect.force}
       defaultValue={false}
+      debounceMs={100}
       onValueChange={(
         scope: PropertyValueScope,
         value: boolean | undefined,
@@ -203,12 +209,14 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
         updateProps(scope, { force: value });
       }}
       renderInput={(
+        key: string,
         value: boolean | undefined,
         onChange: (value: boolean) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Switch
-            checked={value ?? false}
+            key={key}
+            defaultChecked={value ?? false}
             onChange={(e) => onChange(e.currentTarget.checked)}
           />
         );
@@ -230,12 +238,14 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
         updateProps(scope, { sensorRadius: value });
       }}
       renderInput={(
+        key: string,
         value: number | undefined,
         onChange: (value: number) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Slider
-            value={value}
+            key={key}
+            defaultValue={value}
             min={8}
             max={64}
             step={0.01}

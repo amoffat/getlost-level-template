@@ -19,7 +19,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { IconCopy } from "@tabler/icons-react";
-import { memo, ReactNode, useCallback, useMemo } from "react";
+import { memo, ReactElement, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import AdvancedSection from "../common/AdvancedSection";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
@@ -84,6 +84,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       values={toCollect.name}
       noTemplate
       defaultValue=""
+      debounceMs={100}
       onValueChange={(
         scope: PropertyValueScope,
         value: string | undefined,
@@ -94,12 +95,14 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
         });
       }}
       renderInput={(
+        key: string,
         value: string | undefined,
         onChange: (value: string) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <TextInput
-            value={value ?? ""}
+            key={key}
+            defaultValue={value ?? ""}
             placeholder="Enter name"
             error={nameValidator(value)}
             onChange={(e) => onChange(e.target.value)}
@@ -121,13 +124,16 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       ): void => {
         updateProps(scope, { walkSpeed: value });
       }}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: number | undefined,
         onChange: (value: number) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Slider
-            value={value ?? 0}
+            key={key}
+            defaultValue={value ?? 0}
             onChange={onChange}
             min={0}
             max={1}
@@ -150,13 +156,16 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       ): void => {
         updateProps(scope, { dampenWalkCollisions: value });
       }}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: number | undefined,
         onChange: (value: number) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Slider
-            value={value ?? 0}
+            key={key}
+            defaultValue={value ?? 0}
             onChange={onChange}
             min={0}
             max={1}
@@ -180,13 +189,16 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       ): void => {
         updateProps(scope, { groundOffset: value });
       }}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: number | undefined,
         onChange: (value: number) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Slider
-            value={value ?? 0}
+            key={key}
+            defaultValue={value ?? 0}
             onChange={onChange}
             min={-16}
             max={16}

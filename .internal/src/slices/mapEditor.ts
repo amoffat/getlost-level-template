@@ -451,6 +451,10 @@ export const slice = createSlice({
       [(state) => state.modeStack],
       (modeStack): Mode => modeStack.at(-1) ?? "select",
     ),
+    selectObject: createMapSelector(
+      [(state) => state.objects.entities, (_, id: string) => id],
+      (entities, id): MapObj | undefined => entities[id],
+    ),
     selectedObjs: createMapSelector(
       [(state) => state.selectedIds, (state) => state.objects.entities],
       (selectedIds, entities): MapObj[] =>

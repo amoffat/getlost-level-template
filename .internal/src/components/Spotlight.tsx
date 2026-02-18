@@ -62,7 +62,7 @@ export default function Spotlight() {
                       : `${numTilesets} tilesets will be deleted.`,
                 });
 
-                const dialogues = state.dialogue.nodes.length;
+                const dialogues = state.dialogue.dialogues.ids.length;
                 items.push({
                   ok: dialogues === 0,
                   message:

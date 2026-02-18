@@ -1,8 +1,10 @@
 import * as constants from "@/constants";
 import { useAppDispatch } from "@/hooks/redux";
 import { actions, selectors as dSelectors } from "@/slices/dialogue";
+import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
-import { Choice, DialogueData, DNode } from "@/types/dialogue";
+import { Choice, DNode, SpeechData } from "@/types/dialogue";
+import { SpeakableMapObj } from "@/types/map";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
   restrictToParentElement,
@@ -25,6 +27,7 @@ import {
   Textarea,
   TextInput,
 } from "@mantine/core";
+import { useDebouncedCallback } from "@mantine/hooks";
 import { IconGripVertical } from "@tabler/icons-react";
 import {
   Handle,
@@ -58,68 +61,119 @@ export default function DialogueNode({
   const [handleTopByChoiceId, setHandleTopByChoiceId] = useState<
     Record<string, number>
   >({}); // Measured pixel positions for each handle
+  const activeDialogueId = useSelector(
+    (state: RootState) => state.dialogue.activeDialogueId,
+  )!;
   const node = useSelector((state: RootState) =>
     dSelectors.selectNode(state, id),
   );
 
-  const data = node?.data as DialogueData | undefined;
+  const data = node?.data as SpeechData | undefined;
   const choicesData = useMemo(() => data?.choices ?? [], [data?.choices]);
 
-  const onTextChange = useCallback(
-    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const content = event.currentTarget.value;
-      dispatch(actions.setNodeData({ id, data: { content } }));
-    },
-    [id, dispatch],
-  );
+  const dialogue = useSelector((state: RootState) =>
+    dSelectors.selectDialogue(state, activeDialogueId),
+  )!;
+
+  // Let's determine the label for this dialogue node. We'll prefer an explicit
+  // label from the node data, but if that's not set, we'll try to find the
+  // associated map object (like an NPC) and use its name.
+  const obj = useSelector((state: RootState) => {
+    if (!dialogue?.subjectId) return undefined;
+    return mapSelectors.selectObject(state, dialogue.subjectId);
+  }) as SpeakableMapObj | undefined;
+  const label = data?.label ?? obj?.name ?? "Sign";
+
+  const onTextChange = useDebouncedCallback((content: string) => {
+    if (!activeDialogueId) return;
+    dispatch(
+      actions.setNodeData({
+        dialogueId: activeDialogueId,
+        id,
+        data: { content },
+      }),
+    );
+  }, 300);
 
   const addChoice = useCallback(() => {
+    if (!activeDialogueId) return;
     const newChoice: Choice = {
       id: crypto.randomUUID(),
       text: undefined,
     };
     const choices = [...choicesData, newChoice];
-    dispatch(actions.setNodeData({ id, data: { choices } }));
-  }, [id, dispatch, choicesData]);
+    dispatch(
+      actions.setNodeData({
+        dialogueId: activeDialogueId,
+        id,
+        data: { choices },
+      }),
+    );
+  }, [id, dispatch, choicesData, activeDialogueId]);
 
   const removeChoice = useCallback(
     (choiceId: string) => {
+      if (!activeDialogueId) return;
       const choices = choicesData.filter((c) => c.id !== choiceId);
-      dispatch(actions.setNodeData({ id, data: { choices } }));
+      dispatch(
+        actions.setNodeData({
+          dialogueId: activeDialogueId,
+          id,
+          data: { choices },
+        }),
+      );
     },
-    [id, dispatch, choicesData],
+    [id, dispatch, choicesData, activeDialogueId],
   );
 
-  const updateChoiceText = useCallback(
+  const updateChoiceText = useDebouncedCallback(
     (choiceId: string, text: string) => {
+      if (!activeDialogueId) return;
       const choices = choicesData.map((c) =>
         c.id === choiceId ? { ...c, text } : c,
       );
-      dispatch(actions.setNodeData({ id, data: { choices } }));
+      dispatch(
+        actions.setNodeData({
+          dialogueId: activeDialogueId,
+          id,
+          data: { choices },
+        }),
+      );
     },
-    [id, dispatch, choicesData],
+    300,
   );
 
   const reorderChoices = useCallback(
     (fromIndex: number, toIndex: number) => {
+      if (!activeDialogueId) return;
       const newChoices = [...choicesData];
       const [removed] = newChoices.splice(fromIndex, 1);
       newChoices.splice(toIndex, 0, removed);
-      dispatch(actions.setNodeData({ id, data: { choices: newChoices } }));
+      dispatch(
+        actions.setNodeData({
+          dialogueId: activeDialogueId,
+          id,
+          data: { choices: newChoices },
+        }),
+      );
     },
-    [id, dispatch, choicesData],
+    [id, dispatch, choicesData, activeDialogueId],
   );
 
   useEffect(() => {
     if (!selected) {
       const filteredChoices = choicesData.filter((c) => Boolean(c.text));
-      if (filteredChoices.length !== choicesData.length) {
+      if (filteredChoices.length !== choicesData.length && activeDialogueId) {
         dispatch(
-          actions.setNodeData({ id, data: { choices: filteredChoices } }),
+          actions.setNodeData({
+            dialogueId: activeDialogueId,
+            id,
+            data: { choices: filteredChoices },
+          }),
         );
       }
     }
-  }, [selected, choicesData, dispatch, id]);
+  }, [selected, choicesData, dispatch, id, activeDialogueId]);
 
   // Measures the vertical center of each choice TextInput and calculates the
   // handle position. This runs whenever the layout changes (resize, selection
@@ -258,7 +312,7 @@ export default function DialogueNode({
     );
   }
 
-  let title: ReactNode = <Text>{data.label}</Text>;
+  let title: ReactNode = <Text>{label}</Text>;
   if (selected) {
     choicesContainer = (
       <Fieldset legend="Responses" p="xs">
@@ -303,15 +357,22 @@ export default function DialogueNode({
         </DndContext>
       </Fieldset>
     );
-    title = <TextInput className="nodrag" defaultValue={data.label} />;
+    title = (
+      <TextInput
+        label="Speaker"
+        description="The character speaking this dialogue."
+        className="nodrag"
+        defaultValue={label}
+      />
+    );
     content = (
       <Textarea
         classNames={{ input: "nodrag" }}
         rows={4}
-        label="Dialogue content"
+        label="Content"
         description="The text that will be displayed to the player."
         defaultValue={data?.content ?? ""}
-        onChange={onTextChange}
+        onChange={(event) => onTextChange(event.currentTarget.value)}
       />
     );
   }
@@ -376,6 +437,7 @@ function SortableChoice({
           {...listeners}
         />
         <TextInput
+          className="nodrag"
           defaultValue={choice.text}
           style={{ flex: 1 }}
           placeholder="Type response"

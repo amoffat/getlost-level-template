@@ -18,7 +18,7 @@ import {
   Switch,
   TextInput,
 } from "@mantine/core";
-import { memo, ReactNode, useCallback, useMemo } from "react";
+import { memo, ReactElement, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 
 // Properties that collectPropertyValues needs to access
@@ -79,6 +79,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       noTemplate
       values={toCollect.name}
       defaultValue=""
+      debounceMs={100}
       onValueChange={(
         scope: PropertyValueScope,
         value: string | undefined,
@@ -86,12 +87,14 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
         updateProps(scope, { name: value });
       }}
       renderInput={(
+        key: string,
         value: string | undefined,
         onChange: (value: string) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <TextInput
-            value={value ?? ""}
+            key={key}
+            defaultValue={value ?? ""}
             placeholder="Enter name"
             onChange={(e) => onChange(e.target.value)}
           />
@@ -110,16 +113,19 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       onValueChange={(scope, value: string | undefined) => {
         updateProps(scope, { color: value });
       }}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: string | undefined,
         onChange: (value: string) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         const hexColor = value ? `#${value}` : undefined;
 
         return (
           <ColorInput
+            key={key}
             format="hex"
-            value={hexColor}
+            defaultValue={hexColor}
             onChange={(hex) => {
               onChange(hex.replace("#", ""));
             }}
@@ -139,13 +145,16 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       onValueChange={(scope, value: number | undefined) => {
         updateProps(scope, { intensity: value });
       }}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: number | undefined,
         onChange: (value: number) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Slider
-            value={value}
+            key={key}
+            defaultValue={value}
             min={0}
             max={3}
             step={0.01}
@@ -163,6 +172,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       noTemplate
       values={toCollect.offDuringDay}
       defaultValue={false}
+      debounceMs={100}
       onValueChange={(
         scope: PropertyValueScope,
         value: boolean | undefined,
@@ -170,12 +180,14 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
         updateProps(scope, { offDuringDay: value });
       }}
       renderInput={(
+        key: string,
         value: boolean | undefined,
         onChange: (value: boolean) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Switch
-            checked={value ?? false}
+            key={key}
+            defaultChecked={value ?? false}
             onChange={(e) => onChange(e.currentTarget.checked)}
           />
         );
@@ -196,17 +208,20 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       ): void => {
         updateProps(scope, { flicker: value });
       }}
+      debounceMs={100}
       renderInput={(
+        key: string,
         value: LightFlicker | undefined,
         onChange: (value: LightFlicker) => void,
-      ): ReactNode => {
+      ): ReactElement => {
         return (
           <Select
+            key={key}
             data={lightFlickerTypes.map((type) => ({
               value: type,
               label: type.charAt(0).toUpperCase() + type.slice(1),
             }))}
-            value={value}
+            defaultValue={value}
             onChange={(val) => {
               if (val) onChange(val as LightFlicker);
             }}
