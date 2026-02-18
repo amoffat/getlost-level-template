@@ -16,9 +16,11 @@ import {
   ActionIcon,
   Box,
   Button,
+  Fieldset,
   Flex,
   Group,
   MultiSelect,
+  Overlay,
   RenderTreeNodePayload,
   ScrollArea,
   Stack,
@@ -50,6 +52,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { use, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSelector } from "react-redux";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
 import DialogueNode from "../flowNodes/DialogueNode";
@@ -68,12 +71,6 @@ function isNpcNode(props: Record<string, any>): props is NpcNodeProps {
   return "npcId" in props;
 }
 
-function isDialogueNode(
-  props: Record<string, any>,
-): props is DialogueNodeProps {
-  return "dialogue" in props;
-}
-
 export default function DialogueTab({
   initPromise,
 }: {
@@ -83,12 +80,29 @@ export default function DialogueTab({
 
   const reactFlowInstance = useReactFlow<DNode, Edge>();
   const dispatch = useAppDispatch();
+  const { dlgid: dlgId } = useParams<{ dlgid?: string }>();
+  const location = useLocation();
   const npcs = useSelector(mapSelectors.selectNpcs);
   const milestones = useSelector((state: RootState) => state.story.nodes);
   const allDialogues = useSelector(dSelectors.allDialogues);
   const activeDialogueId = useSelector(
     (state: RootState) => state.dialogue.activeDialogueId,
   );
+
+  // Sync activeDialogueId from URL parameter
+  useEffect(() => {
+    if (!dlgId) {
+      // Only clear if we're still on the dialogue page
+      const samePage = location.pathname.startsWith("/dialogues");
+      if (!samePage) return;
+      dispatch(dActions.setActiveDialogue(null));
+      return;
+    }
+
+    if (dlgId !== activeDialogueId) {
+      dispatch(dActions.setActiveDialogue(dlgId));
+    }
+  }, [dlgId, dispatch, location, activeDialogueId]);
   const nodes = useSelector((state: RootState) =>
     dSelectors.activeNodes(state),
   );
@@ -330,7 +344,7 @@ export default function DialogueTab({
       {/* Center panel - ReactFlow */}
       <Split.Pane grow>
         <Flex
-          style={{ height: "100%" }}
+          style={{ height: "100%", position: "relative" }}
           onContextMenu={(e) => e.preventDefault()}
         >
           <div ref={flowContainerRef} style={{ flex: 1, width: "100%" }}>
@@ -365,6 +379,16 @@ export default function DialogueTab({
               </Panel>
             </ReactFlow>
           </div>
+
+          {!activeDialogueId && (
+            <Overlay color="#000" backgroundOpacity={0.65} blur={4} zIndex={10}>
+              <Stack align="center" justify="center" style={{ height: "100%" }}>
+                <Text size="lg" c="dimmed">
+                  Select a dialogue from the panel on the left to begin editing.
+                </Text>
+              </Stack>
+            </Overlay>
+          )}
         </Flex>
       </Split.Pane>
 
@@ -379,16 +403,18 @@ export default function DialogueTab({
       >
         <Stack h="100%" style={{ overflow: "hidden" }}>
           <ScrollArea type="never" style={{ flex: 1 }}>
-            <Stack p={0} pb="md">
-              <MultiSelect
-                label="Milestones"
-                description="Which story milestones activate this dialogue?"
-                searchable
-                defaultValue={["default"]}
-                data={["default", ...milestones.map((m) => m.data.id)]}
-                nothingFoundMessage="No milestones found"
-              />
-            </Stack>
+            <Fieldset legend="Dialogue" p="xs">
+              <Stack p={0}>
+                <MultiSelect
+                  label="Milestones"
+                  description="Which story milestones activate this dialogue?"
+                  searchable
+                  defaultValue={["default"]}
+                  data={["default", ...milestones.map((m) => m.data.id)]}
+                  nothingFoundMessage="No milestones found"
+                />
+              </Stack>
+            </Fieldset>
           </ScrollArea>
         </Stack>
       </Split.Pane>
@@ -411,6 +437,7 @@ function NpcLeaf({
   tree,
 }: LeafProps & NpcNodeProps) {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   let icon: React.ReactNode;
   if (selected) {
     icon = (
@@ -433,6 +460,9 @@ function NpcLeaf({
     tree.expand(npcId);
     tree.select(dId);
 
+    // Navigate to the new dialogue URL
+    navigate(`/dialogues/${dId}`);
+
     onCreate(dId);
   };
 
@@ -442,24 +472,26 @@ function NpcLeaf({
         {icon}
         <Text fz="sm">{node.label}</Text>
         <Box style={{ flexGrow: 1 }} />
-        <Tooltip label="Add new dialogue for this NPC">
-          <ActionIcon variant="default" onClick={handleAddDialogue}>
-            <IconPlus size={16} />
-          </ActionIcon>
-        </Tooltip>
+        {selected && (
+          <Tooltip label="Add new dialogue for this NPC">
+            <ActionIcon variant="default" onClick={handleAddDialogue}>
+              <IconPlus size={16} />
+            </ActionIcon>
+          </Tooltip>
+        )}
       </Group>
     </Box>
   );
 }
 
 function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
-  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const props = node.nodeProps as DialogueNodeProps;
 
   const selectDialogue = useCallback(() => {
     if (!props.dialogue) return;
-    dispatch(dActions.setActiveDialogue(props.dialogue.id));
-  }, [dispatch, props.dialogue]);
+    navigate(`/dialogues/${props.dialogue.id}`);
+  }, [navigate, props.dialogue]);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -468,12 +500,6 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
     },
     [elementProps, selectDialogue],
   );
-
-  useEffect(() => {
-    if (selected) {
-      selectDialogue();
-    }
-  }, [selected, selectDialogue]);
 
   let content = <Text fz="sm">{node.label}</Text>;
   if ((props.dialogue as Dialogue | undefined)?.milestones.length === 0) {

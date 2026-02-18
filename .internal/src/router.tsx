@@ -10,7 +10,8 @@ const routes = [
   { path: "/tilesets/:tsid/objects/:objid", element: <ShellApp /> },
   { path: "/npcs", element: <ShellApp /> },
   { path: "/story", element: <ShellApp /> },
-  { path: "/dialogue", element: <ShellApp /> },
+  { path: "/dialogues", element: <ShellApp /> },
+  { path: "/dialogues/:dlgid", element: <ShellApp /> },
   { path: "/preview", element: <ShellApp /> },
 ];
 

@@ -11,7 +11,7 @@ export const tabToPath = (tab: MainTabName): string => {
     case "story-editor":
       return "/story";
     case "dialogue-editor":
-      return "/dialogue";
+      return "/dialogues";
     case "preview":
       return "/preview";
   }
@@ -28,13 +28,15 @@ export const pathToTab = (path: string): MainTabName => {
       return "tileset-editor";
     case "/story":
       return "story-editor";
-    case "/dialogue":
+    case "/dialogues":
       return "dialogue-editor";
     case "/preview":
       return "preview";
     default:
       // Treat any nested tilesets path (e.g., /tilesets/:tsid) as the tileset editor tab
       if (clean.startsWith("/tilesets/")) return "tileset-editor";
+      // Treat any nested dialogue path (e.g., /dialogues/:dlgid) as the dialogue editor tab
+      if (clean.startsWith("/dialogues/")) return "dialogue-editor";
       return DEFAULT_TAB;
   }
 };
