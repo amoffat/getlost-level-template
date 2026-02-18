@@ -1,5 +1,4 @@
 import { useAppDispatch } from "@/hooks/redux";
-import { log } from "@/log";
 import {
   createDialogue,
   actions as dActions,
@@ -47,12 +46,14 @@ import {
   Panel,
   ReactFlow,
   SelectionMode,
+  useOnSelectionChange,
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { use, useCallback, useEffect, useMemo, useRef } from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import SpeechEditor from "../SpeechEditor";
 import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
 import DialogueNode from "../flowNodes/DialogueNode";
@@ -88,6 +89,8 @@ export default function DialogueTab({
   const activeDialogueId = useSelector(
     (state: RootState) => state.dialogue.activeDialogueId,
   );
+  const tree = useTree();
+  const navigate = useNavigate();
 
   // Sync activeDialogueId from URL parameter
   useEffect(() => {
@@ -101,8 +104,31 @@ export default function DialogueTab({
 
     if (dlgId !== activeDialogueId) {
       dispatch(dActions.setActiveDialogue(dlgId));
+      tree.select(dlgId);
     }
-  }, [dlgId, dispatch, location, activeDialogueId]);
+  }, [dlgId, dispatch, location, activeDialogueId, tree]);
+
+  // Sync ReactFlow when the active dialogue changes
+  useEffect(() => {
+    if (!activeDialogueId) return;
+    const state = store.getState();
+    const dlg = state.dialogue.dialogues.entities[activeDialogueId];
+    if (!dlg) {
+      navigate("/dialogues");
+      return;
+    }
+
+    const newNodes = Object.values(dlg.nodes.entities) as DNode[];
+    reactFlowInstance.setNodes(newNodes);
+
+    const newEdges = dlg.edges.ids.map((id) => dlg.edges.entities[id] as Edge);
+    reactFlowInstance.setEdges(newEdges);
+
+    requestAnimationFrame(() => {
+      reactFlowInstance.fitView({ padding: "25%" });
+    });
+  }, [activeDialogueId, reactFlowInstance, navigate]);
+
   const nodes = useSelector((state: RootState) =>
     dSelectors.activeNodes(state),
   );
@@ -111,7 +137,19 @@ export default function DialogueTab({
   );
   const { screenToFlowPosition } = useReactFlow();
   const flowContainerRef = useRef<HTMLDivElement>(null);
-  const tree = useTree();
+
+  // Track the currently selected node for the right-pane editor
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  useOnSelectionChange({
+    onChange: ({ nodes: selectedNodes }) => {
+      if (selectedNodes.length === 1) {
+        setSelectedNodeId(selectedNodes[0].id);
+      } else {
+        setSelectedNodeId(null);
+      }
+    },
+  });
 
   const onNodesChange: OnNodesChange<DNode> = useDebouncedCallback(
     (changes) => {
@@ -174,12 +212,14 @@ export default function DialogueTab({
   );
 
   const createSpeech = useCallback(
-    (dId: string | undefined = undefined) => {
-      const dialogueId = dId ?? activeDialogueId;
-      if (!dialogueId) {
-        log.error("No active dialogue to add a node to");
-        return;
-      }
+    ({
+      dialogueId,
+      clear = false,
+    }: {
+      dialogueId: string | null;
+      clear?: boolean;
+    }) => {
+      if (!dialogueId) return;
 
       // Compute the center of the visible flow viewport and convert to flow coordinates
       const rect = flowContainerRef.current?.getBoundingClientRect();
@@ -207,10 +247,10 @@ export default function DialogueTab({
         },
       };
 
+      // Deselect all existing nodes and add the new node as selected
+      const existingNodes = clear ? [] : reactFlowInstance.getNodes();
       const updatedNodes: DNode[] = [
-        ...reactFlowInstance
-          .getNodes()
-          .map((existingNode) => ({ ...existingNode, selected: false })),
+        ...existingNodes.map((n) => ({ ...n, selected: false })),
         { ...newNode, selected: true },
       ];
 
@@ -221,27 +261,19 @@ export default function DialogueTab({
           nodes: updatedNodes,
         }),
       );
+      setSelectedNodeId(id);
     },
-    [dispatch, screenToFlowPosition, reactFlowInstance, activeDialogueId],
+    [dispatch, screenToFlowPosition, reactFlowInstance],
   );
 
-  // Sync ReactFlow when the active dialogue changes
-  useEffect(() => {
-    if (!activeDialogueId) return;
-    const state = store.getState();
-    const dlg = state.dialogue.dialogues.entities[activeDialogueId];
-    if (!dlg) return;
-
-    const newNodes = Object.values(dlg.nodes.entities) as DNode[];
-    reactFlowInstance.setNodes(newNodes);
-
-    const newEdges = dlg.edges.ids.map((id) => dlg.edges.entities[id] as Edge);
-    reactFlowInstance.setEdges(newEdges);
-
-    requestAnimationFrame(() => {
-      reactFlowInstance.fitView({ padding: "25%" });
-    });
-  }, [activeDialogueId, reactFlowInstance]);
+  const onCreateDialogue = useCallback(
+    (dialogueId: string) => {
+      createSpeech({ dialogueId, clear: true });
+      // Navigate to the new dialogue URL
+      navigate(`/dialogues/${dialogueId}`);
+    },
+    [navigate, createSpeech],
+  );
 
   const handlePaneResize = () => {
     // Trigger redrawLayout when panels are resized
@@ -294,7 +326,7 @@ export default function DialogueTab({
           nodeProps: {
             npcTemplate,
             npcId: npc.id,
-            onCreate: createSpeech,
+            onCreate: onCreateDialogue,
           } satisfies NpcNodeProps,
           children,
         };
@@ -314,7 +346,7 @@ export default function DialogueTab({
       })),
     });
     return tree;
-  }, [npcs, allDialogues, createSpeech]);
+  }, [npcs, allDialogues, onCreateDialogue]);
 
   return (
     <Split h="100dvh" style={{ flex: 1 }}>
@@ -373,7 +405,10 @@ export default function DialogueTab({
               <Background color="#505050ff" variant={BackgroundVariant.Dots} />
               <Controls position="top-left"></Controls>
               <Panel position="top-center">
-                <Button variant="filled" onClick={() => createSpeech()}>
+                <Button
+                  variant="filled"
+                  onClick={() => createSpeech({ dialogueId: activeDialogueId })}
+                >
                   New Speech
                 </Button>
               </Panel>
@@ -403,18 +438,24 @@ export default function DialogueTab({
       >
         <Stack h="100%" style={{ overflow: "hidden" }}>
           <ScrollArea type="never" style={{ flex: 1 }}>
-            <Fieldset legend="Dialogue" p="xs">
-              <Stack p={0}>
-                <MultiSelect
-                  label="Milestones"
-                  description="Which story milestones activate this dialogue?"
-                  searchable
-                  defaultValue={["default"]}
-                  data={["default", ...milestones.map((m) => m.data.id)]}
-                  nothingFoundMessage="No milestones found"
-                />
-              </Stack>
-            </Fieldset>
+            <Stack p={0} gap="md">
+              <Fieldset legend="Dialogue" p="xs">
+                <Stack p={0}>
+                  <MultiSelect
+                    label="Milestones"
+                    description="Which story milestones activate this dialogue?"
+                    searchable
+                    defaultValue={["default"]}
+                    data={["default", ...milestones.map((m) => m.data.id)]}
+                    nothingFoundMessage="No milestones found"
+                  />
+                </Stack>
+              </Fieldset>
+
+              {selectedNodeId && (
+                <SpeechEditor key={selectedNodeId} nodeId={selectedNodeId} />
+              )}
+            </Stack>
           </ScrollArea>
         </Stack>
       </Split.Pane>
@@ -424,20 +465,20 @@ export default function DialogueTab({
 
 type LeafProps = Pick<
   RenderTreeNodePayload,
-  "node" | "selected" | "elementProps" | "tree"
+  "node" | "selected" | "elementProps" | "tree" | "expanded"
 >;
 
 function NpcLeaf({
   node,
   selected,
   elementProps,
+  expanded,
   npcTemplate,
   onCreate,
   npcId,
   tree,
 }: LeafProps & NpcNodeProps) {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   let icon: React.ReactNode;
   if (selected) {
     icon = (
@@ -451,20 +492,18 @@ function NpcLeaf({
     icon = <TilesetGroup scale={2} group={tg} />;
   }
 
-  const handleAddDialogue = (e: React.MouseEvent) => {
+  const handleAddDialogue = async (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    tree.expand(npcId);
+
     const dId = crypto.randomUUID();
     dispatch(dActions.addDialogue(createDialogue(dId, npcId)));
 
-    // Expand and select the parent NPC node
-    tree.expand(npcId);
-    tree.select(dId);
-
-    // Navigate to the new dialogue URL
-    navigate(`/dialogues/${dId}`);
-
     onCreate(dId);
   };
+
+  const showAddDialogue = expanded || selected;
 
   return (
     <Box p="xs" {...elementProps}>
@@ -472,7 +511,7 @@ function NpcLeaf({
         {icon}
         <Text fz="sm">{node.label}</Text>
         <Box style={{ flexGrow: 1 }} />
-        {selected && (
+        {showAddDialogue && (
           <Tooltip label="Add new dialogue for this NPC">
             <ActionIcon variant="default" onClick={handleAddDialogue}>
               <IconPlus size={16} />
@@ -484,7 +523,7 @@ function NpcLeaf({
   );
 }
 
-function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
+function DialogueLeaf({ node, elementProps }: LeafProps) {
   const navigate = useNavigate();
   const props = node.nodeProps as DialogueNodeProps;
 
@@ -517,29 +556,19 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
   );
 }
 
-function Leaf({ node, selected, elementProps, tree }: RenderTreeNodePayload) {
-  const props = node.nodeProps!;
+function Leaf(payload: RenderTreeNodePayload) {
+  const props = payload.node.nodeProps!;
 
   if (isNpcNode(props)) {
     return (
       <NpcLeaf
-        node={node}
-        selected={selected}
-        elementProps={elementProps}
         npcTemplate={props.npcTemplate}
         npcId={props.npcId}
         onCreate={props.onCreate}
-        tree={tree}
+        {...payload}
       />
     );
   }
 
-  return (
-    <DialogueLeaf
-      node={node}
-      selected={selected}
-      elementProps={elementProps}
-      tree={tree}
-    />
-  );
+  return <DialogueLeaf {...payload} />;
 }

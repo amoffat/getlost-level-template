@@ -1,34 +1,10 @@
-import * as constants from "@/constants";
 import { useAppDispatch } from "@/hooks/redux";
 import { actions, selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
-import { Choice, DNode, SpeechData } from "@/types/dialogue";
+import { DNode, SpeechData } from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
-import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
-import {
-  restrictToParentElement,
-  restrictToVerticalAxis,
-} from "@dnd-kit/modifiers";
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
-  Button,
-  CloseButton,
-  Fieldset,
-  Group,
-  Input,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
-} from "@mantine/core";
-import { useDebouncedCallback } from "@mantine/hooks";
-import { IconGripVertical } from "@tabler/icons-react";
+import { Fieldset, Stack, Text } from "@mantine/core";
 import {
   Handle,
   NodeToolbar,
@@ -38,7 +14,6 @@ import {
 } from "@xyflow/react";
 import classNames from "classnames";
 import {
-  ReactNode,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -60,7 +35,8 @@ export default function DialogueNode({
   const choiceRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [handleTopByChoiceId, setHandleTopByChoiceId] = useState<
     Record<string, number>
-  >({}); // Measured pixel positions for each handle
+  >({});
+
   const activeDialogueId = useSelector(
     (state: RootState) => state.dialogue.activeDialogueId,
   )!;
@@ -75,91 +51,13 @@ export default function DialogueNode({
     dSelectors.selectDialogue(state, activeDialogueId),
   )!;
 
-  // Let's determine the label for this dialogue node. We'll prefer an explicit
-  // label from the node data, but if that's not set, we'll try to find the
-  // associated map object (like an NPC) and use its name.
   const obj = useSelector((state: RootState) => {
     if (!dialogue?.subjectId) return undefined;
     return mapSelectors.selectObject(state, dialogue.subjectId);
   }) as SpeakableMapObj | undefined;
   const label = data?.label ?? obj?.name ?? "Sign";
 
-  const onTextChange = useDebouncedCallback((content: string) => {
-    if (!activeDialogueId) return;
-    dispatch(
-      actions.setNodeData({
-        dialogueId: activeDialogueId,
-        id,
-        data: { content },
-      }),
-    );
-  }, 300);
-
-  const addChoice = useCallback(() => {
-    if (!activeDialogueId) return;
-    const newChoice: Choice = {
-      id: crypto.randomUUID(),
-      text: undefined,
-    };
-    const choices = [...choicesData, newChoice];
-    dispatch(
-      actions.setNodeData({
-        dialogueId: activeDialogueId,
-        id,
-        data: { choices },
-      }),
-    );
-  }, [id, dispatch, choicesData, activeDialogueId]);
-
-  const removeChoice = useCallback(
-    (choiceId: string) => {
-      if (!activeDialogueId) return;
-      const choices = choicesData.filter((c) => c.id !== choiceId);
-      dispatch(
-        actions.setNodeData({
-          dialogueId: activeDialogueId,
-          id,
-          data: { choices },
-        }),
-      );
-    },
-    [id, dispatch, choicesData, activeDialogueId],
-  );
-
-  const updateChoiceText = useDebouncedCallback(
-    (choiceId: string, text: string) => {
-      if (!activeDialogueId) return;
-      const choices = choicesData.map((c) =>
-        c.id === choiceId ? { ...c, text } : c,
-      );
-      dispatch(
-        actions.setNodeData({
-          dialogueId: activeDialogueId,
-          id,
-          data: { choices },
-        }),
-      );
-    },
-    300,
-  );
-
-  const reorderChoices = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      if (!activeDialogueId) return;
-      const newChoices = [...choicesData];
-      const [removed] = newChoices.splice(fromIndex, 1);
-      newChoices.splice(toIndex, 0, removed);
-      dispatch(
-        actions.setNodeData({
-          dialogueId: activeDialogueId,
-          id,
-          data: { choices: newChoices },
-        }),
-      );
-    },
-    [id, dispatch, choicesData, activeDialogueId],
-  );
-
+  // Clean up empty choices when deselected
   useEffect(() => {
     if (!selected) {
       const filteredChoices = choicesData.filter((c) => Boolean(c.text));
@@ -175,10 +73,7 @@ export default function DialogueNode({
     }
   }, [selected, choicesData, dispatch, id, activeDialogueId]);
 
-  // Measures the vertical center of each choice TextInput and calculates the
-  // handle position. This runs whenever the layout changes (resize, selection
-  // state, etc.) to keep handles perfectly aligned with their associated
-  // choices.
+  // Measure handle positions for choice handles
   const measureHandlePositions = useCallback(() => {
     const container = nodeRef.current;
     if (!container) return;
@@ -189,13 +84,11 @@ export default function DialogueNode({
       const choiceElement = choiceRefs.current[choice.id];
       if (!choiceElement) continue;
 
-      // Use offsetTop for position relative to the node container
       const offsetTop = choiceElement.offsetTop;
       const offsetHeight = choiceElement.offsetHeight;
       nextHandleTopByChoiceId[choice.id] = offsetTop + offsetHeight / 2;
     }
 
-    // Only update state if positions actually changed to avoid unnecessary re-renders
     setHandleTopByChoiceId((prev) => {
       const prevIds = Object.keys(prev);
       const nextIds = Object.keys(nextHandleTopByChoiceId);
@@ -214,18 +107,14 @@ export default function DialogueNode({
     updateNodeInternals(id);
   }, [choicesData, id, updateNodeInternals]);
 
-  // Set up ResizeObserver to automatically remeasure handle positions whenever
-  // the layout changes.
   useLayoutEffect(() => {
     const container = nodeRef.current;
     if (!container) return;
 
-    // Initial measurement after DOM has updated
     const frameId = requestAnimationFrame(() => {
       measureHandlePositions();
     });
 
-    // Watch for any size changes in the node or its children
     const observer = new ResizeObserver(() => {
       measureHandlePositions();
     });
@@ -241,15 +130,9 @@ export default function DialogueNode({
   if (!node) return null;
   if (!data) return null;
 
-  // Render handles with measured positions. Each handle needs a unique id for
-  // React Flow to route edges correctly. Fallback to percentage positioning
-  // until measurement completes.
   const handles = choicesData.map((c) => {
-    if (!c.text) {
-      return null;
-    }
+    if (!c.text) return null;
     const measuredTop = handleTopByChoiceId[c.id];
-
     return (
       <Handle
         key={c.id}
@@ -267,113 +150,25 @@ export default function DialogueNode({
     nowheel: true,
   });
 
-  // Wrap each choice in a div with a ref so we can measure its position.
-  // The wrapper is needed because Mantine's TextInput doesn't expose a ref to its root element.
-  const choices = choicesData.map((c) => {
-    const text: ReactNode = c.text;
-    if (selected) {
-      return (
-        <SortableChoice
-          key={c.id}
-          id={c.id}
-          choice={c}
-          onRefChange={(element) => {
-            choiceRefs.current[c.id] = element;
-          }}
-          updateChoiceText={updateChoiceText}
-          removeChoice={removeChoice}
-        />
-      );
-    }
-    return (
-      <div
-        key={c.id}
-        ref={(element) => {
-          choiceRefs.current[c.id] = element;
-        }}
-      >
-        {text}
-      </div>
-    );
-  });
+  const visibleChoices = choicesData.filter((c) => Boolean(c.text));
 
-  const canAddChoice = choicesData.length < constants.maxDialogueChoices;
-
-  let content: ReactNode = <Text>{data.content}</Text>;
-  let choicesContainer: ReactNode;
-
-  if (choices.length > 0) {
+  let choicesContainer = null;
+  if (visibleChoices.length > 0) {
     choicesContainer = (
       <Fieldset legend="Player responds..." p="xs">
         <Stack p={0} gap="xs">
-          {choices}
+          {visibleChoices.map((c) => (
+            <div
+              key={c.id}
+              ref={(element) => {
+                choiceRefs.current[c.id] = element;
+              }}
+            >
+              <Text size="sm">{c.text}</Text>
+            </div>
+          ))}
         </Stack>
       </Fieldset>
-    );
-  }
-
-  let title: ReactNode = <Text>{label}</Text>;
-  if (selected) {
-    choicesContainer = (
-      <Fieldset legend="Responses" p="xs">
-        <Input.Description mb="xs">
-          These are possible responses the player can choose from.
-        </Input.Description>
-        <DndContext
-          collisionDetection={closestCenter}
-          modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-          onDragEnd={(event: DragEndEvent) => {
-            const { active, over } = event;
-            if (!over || active.id === over.id) return;
-            const fromIndex = choicesData.findIndex((c) => c.id === active.id);
-            const toIndex = choicesData.findIndex((c) => c.id === over.id);
-            if (fromIndex !== -1 && toIndex !== -1) {
-              reorderChoices(fromIndex, toIndex);
-            }
-          }}
-        >
-          <Stack p={0}>
-            <SortableContext
-              items={choicesData.map((c) => c.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <Stack p={0} gap="xs">
-                {choices}
-              </Stack>
-            </SortableContext>
-
-            {canAddChoice && (
-              <Button
-                className="nodrag"
-                variant="subtle"
-                size="xs"
-                fullWidth
-                onClick={addChoice}
-              >
-                Add response
-              </Button>
-            )}
-          </Stack>
-        </DndContext>
-      </Fieldset>
-    );
-    title = (
-      <TextInput
-        label="Speaker"
-        description="The character speaking this dialogue."
-        className="nodrag"
-        defaultValue={label}
-      />
-    );
-    content = (
-      <Textarea
-        classNames={{ input: "nodrag" }}
-        rows={4}
-        label="Content"
-        description="The text that will be displayed to the player."
-        defaultValue={data?.content ?? ""}
-        onChange={(event) => onTextChange(event.currentTarget.value)}
-      />
     );
   }
 
@@ -383,68 +178,17 @@ export default function DialogueNode({
         position={Position.Bottom}
         align="start"
         className="nowheel"
-      ></NodeToolbar>
+      />
 
       <div ref={nodeRef} className={cls}>
         <Handle type="target" position={Position.Left} />
         <Stack p={0}>
-          {title}
-          {content}
+          <Text fw={600}>{label}</Text>
+          <Text>{data.content}</Text>
           {choicesContainer}
         </Stack>
         {handles}
       </div>
     </>
-  );
-}
-
-type SortableChoiceProps = {
-  id: string;
-  choice: Choice;
-  onRefChange: (element: HTMLDivElement | null) => void;
-  updateChoiceText: (choiceId: string, text: string) => void;
-  removeChoice: (choiceId: string) => void;
-};
-
-function SortableChoice({
-  id,
-  choice,
-  onRefChange,
-  updateChoiceText,
-  removeChoice,
-}: SortableChoiceProps) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id });
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  return (
-    <div
-      ref={(element) => {
-        setNodeRef(element);
-        onRefChange(element);
-      }}
-      style={style}
-    >
-      <Group gap="xs" wrap="nowrap">
-        <IconGripVertical
-          className="nodrag"
-          size={16}
-          style={{ cursor: "grab" }}
-          {...attributes}
-          {...listeners}
-        />
-        <TextInput
-          className="nodrag"
-          defaultValue={choice.text}
-          style={{ flex: 1 }}
-          placeholder="Type response"
-          onChange={(event) => updateChoiceText(id, event.currentTarget.value)}
-        />
-        <CloseButton size="xs" onClick={() => removeChoice(id)} />
-      </Group>
-    </div>
   );
 }

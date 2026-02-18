@@ -6,7 +6,6 @@
 
 .node.selected {
   outline: 3px solid rgb(0, 255, 0);
-  padding: 1em;
 }
 
 :global(.react-flow__handle) {
