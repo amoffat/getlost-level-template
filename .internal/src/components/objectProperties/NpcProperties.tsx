@@ -1,4 +1,5 @@
 import * as constants from "@/constants";
+import { useAppSelector } from "@/hooks/redux";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { NpcInstance } from "@/types/map";
 import { NpcProps } from "@/types/properties";
@@ -20,7 +21,6 @@ import {
 } from "@mantine/core";
 import { IconCopy } from "@tabler/icons-react";
 import { memo, ReactElement, useCallback, useMemo } from "react";
-import { useSelector } from "react-redux";
 import AdvancedSection from "../common/AdvancedSection";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import { requiredUniqueName } from "./validators/name";
@@ -48,7 +48,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyKey]);
 
-  const npcs = useSelector(mapSelectors.selectNpcs);
+  const npcs = useAppSelector(mapSelectors.selectNpcs);
 
   const updateProps = useCallback(
     (scope: PropertyValueScope, props: Partial<NpcProps>) => {

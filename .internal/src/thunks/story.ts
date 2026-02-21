@@ -1,9 +1,15 @@
 import { loadStory } from "@/persist/story/api";
-import { setEdges, setError, setLoading, setNodes } from "@/slices/story";
+import {
+  setEdges,
+  setError,
+  setLoading,
+  setNodes,
+  StoryNode,
+} from "@/slices/story";
 import type { RootState } from "@/store/store";
-import { layoutStory } from "@/utils/story";
+import { layoutGraph } from "@/utils/story";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-// ELK layout logic was extracted into utils; thunk now just loads nodes/edges
+import type { Edge } from "@xyflow/react";
 
 export const loadStoryThunk = createAsyncThunk(
   "story/loadStory",
@@ -29,15 +35,19 @@ export const loadStoryThunk = createAsyncThunk(
 
 export const reflowStoryThunk = createAsyncThunk(
   "story/reflow",
-  async (_, { getState, dispatch }) => {
+  async (
+    _,
+    { getState, dispatch },
+  ): Promise<{ nodes: StoryNode[]; edges: Edge[] } | undefined> => {
     const state = getState() as RootState;
     const { nodes, edges } = state.story;
-    const { nodes: laidOutNodes, edges: laidOutEdges } = await layoutStory(
+    const { nodes: laidOutNodes, edges: laidOutEdges } = await layoutGraph(
       nodes,
       edges,
-      { rankdir: "TB" },
+      { rankdir: "DOWN" },
     );
     dispatch(setNodes(laidOutNodes));
     dispatch(setEdges(laidOutEdges));
+    return { nodes: laidOutNodes, edges: laidOutEdges };
   },
 );

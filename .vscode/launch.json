@@ -11,7 +11,9 @@
       "url": "http://localhost:${input:port}",
       "webRoot": "${workspaceFolder}/.internal/src",
       "sourceMaps": true,
-      "trace": true
+      "trace": true,
+      // This lets us have persistent extensions, like React Devtools
+      "userDataDir": "~/.config/chrome-debug"
     },
     {
       "type": "firefox",

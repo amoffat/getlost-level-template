@@ -32,11 +32,11 @@ import {
 } from "react";
 import { shallowEqual } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import MapEditorTab from "./tabs/MapEditor";
 import PanelLoader from "./PanelLoader";
 import PreviewTab from "./Preview";
 import Spotlight from "./Spotlight";
 import DialogueTab from "./tabs/DialogueTab";
+import MapEditorTab from "./tabs/MapEditor";
 import StoryTab from "./tabs/StoryTab";
 import TilesetEditorTab from "./tabs/TilesetEditor";
 import UploadAssetModal from "./UploadAssetModal";
@@ -168,6 +168,12 @@ export function ShellApp() {
         const tsId = state.tilesetEditor?.activeTilesetId;
         if (tsId) {
           canonical += `/${tsId}`;
+        }
+      } else if (value === "dialogue-editor") {
+        const state = store.getState();
+        const dlgId = state.dialogue.activeDialogueId;
+        if (dlgId) {
+          canonical += `/${dlgId}`;
         }
       }
 

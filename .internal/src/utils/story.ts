@@ -1,9 +1,8 @@
-import type { StoryNode } from "@/slices/story";
-import type { Edge } from "@xyflow/react";
+import type { Edge, Node } from "@xyflow/react";
 import ELK from "elkjs/lib/elk.bundled.js";
 
 export interface LayoutOptions {
-  rankdir?: "TB" | "LR" | "BT" | "RL";
+  rankdir?: "DOWN" | "RIGHT" | "UP" | "LEFT";
   ranksep?: number;
   nodesep?: number;
   marginx?: number;
@@ -11,40 +10,36 @@ export interface LayoutOptions {
 }
 
 // Re-layout story nodes and edges using ELK, returning updated node positions.
-export async function layoutStory(
-  nodes: StoryNode[],
-  edges: Edge[],
-  options: LayoutOptions = {}
-): Promise<{ nodes: StoryNode[]; edges: Edge[] }> {
+export async function layoutGraph<
+  NodeType extends Node = Node,
+  EdgeType extends Edge = Edge,
+>(
+  nodes: NodeType[],
+  edges: EdgeType[],
+  options: LayoutOptions = {},
+): Promise<{ nodes: NodeType[]; edges: EdgeType[] }> {
   const {
-    rankdir = "TB",
+    rankdir = "DOWN",
     ranksep = 120,
     nodesep = 80,
     marginx = 20,
     marginy = 20,
   } = options;
 
-  const dirMap: Record<string, string> = {
-    TB: "DOWN",
-    LR: "RIGHT",
-    BT: "UP",
-    RL: "LEFT",
-  };
-
   const elk = new ELK();
   const elkGraph: any = {
     id: "root",
     layoutOptions: {
       "elk.algorithm": "layered",
-      "elk.direction": dirMap[rankdir] ?? "DOWN",
+      "elk.direction": rankdir,
       "elk.layered.spacing.nodeNodeBetweenLayers": String(ranksep),
       "elk.spacing.nodeNode": String(nodesep),
       "elk.padding": `${marginy} ${marginx} ${marginy} ${marginx}`,
     },
     children: nodes.map((n) => ({
       id: n.id,
-      width: (n as any).width ?? 180,
-      height: (n as any).height ?? 48,
+      width: n.width ?? n.measured?.width ?? 150,
+      height: n.height ?? n.measured?.height ?? 50,
       label: n.data?.label ?? n.id,
     })),
     edges: edges.map((e, i) => ({
@@ -55,11 +50,11 @@ export async function layoutStory(
   };
 
   const result = await elk.layout(elkGraph);
-  const laidOutNodes: StoryNode[] = (result.children ?? []).map((n: any) => {
+  const laidOutNodes: NodeType[] = (result.children ?? []).map((n) => {
     const x = n.x ?? 0;
     const y = n.y ?? 0;
     // preserve other node fields
-    const original = nodes.find((o) => o.id === n.id) as StoryNode;
+    const original = nodes.find((o) => o.id === n.id) as NodeType;
     return {
       ...original,
       id: n.id,

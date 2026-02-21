@@ -11,6 +11,7 @@ export interface SpeechData extends Record<string, unknown> {
   content: string | undefined;
   animated: boolean;
   choices: Choice[];
+  isOrigin: boolean;
 }
 
 export interface SignData extends Record<string, unknown> {
@@ -18,7 +19,7 @@ export interface SignData extends Record<string, unknown> {
   content: string | undefined;
 }
 
-export type DNode = Node<SpeechData | SignData>;
+export type DNode = Node<SpeechData>;
 
 export interface Dialogue {
   id: string;

@@ -16,6 +16,7 @@ import { overlayProps } from "./constants";
 
 const theme: MantineThemeOverride = {
   components: {
+    Alert: { defaultProps: { variant: "filled", color: "pink" } },
     // Container: { defaultProps: { p: "xs" } },
     // Paper: { defaultProps: { p: "xs" } },
     // Button: { defaultProps: { p: "xs" } },

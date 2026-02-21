@@ -1,6 +1,5 @@
 import { overlayProps } from "@/constants";
 import {
-  ActionIcon,
   Alert,
   Box,
   Group,
@@ -9,14 +8,12 @@ import {
   SegmentedControl,
   Stack,
   Text,
-  Tooltip,
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
 import {
   IconAlertTriangle,
   IconCircleFilled,
   IconCirclesFilled,
-  IconRestore,
 } from "@tabler/icons-react";
 import { x64 } from "murmurhash3js";
 import {
@@ -29,6 +26,7 @@ import {
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import InfoTooltip from "./common/InfoTooltip";
+import ResettableInput from "./ResettableInput";
 
 export type PropertyValueScope = "template" | "instance" | "mixed";
 export type SelectableScope = Extract<
@@ -350,22 +348,16 @@ function PropertyValueInner<T>({
           overlayProps={overlayProps}
           loaderProps={{ type: "bars", size: "xs" }}
         />
-        <Group gap="xs" wrap="nowrap">
-          <Box style={{ flex: 1 }}>{inputField}</Box>
-          {defaultValue !== undefined && (
-            <Tooltip label="Reset to default">
-              <ActionIcon
-                onClick={handleReset}
-                disabled={defaultValue === localValue}
-                variant="subtle"
-                color="gray"
-                size="sm"
-              >
-                <IconRestore size={16} />
-              </ActionIcon>
-            </Tooltip>
-          )}
-        </Group>
+        <ResettableInput
+          disabled={
+            localValue !== undefined
+              ? areEqual(defaultValue!, localValue)
+              : defaultValue === localValue
+          }
+          onReset={handleReset}
+        >
+          {inputField}
+        </ResettableInput>
       </Box>
     </Stack>
   );
@@ -390,7 +382,7 @@ export default function PropertyValue<T>(props: PropertyValueProps<T>) {
   return (
     <ErrorBoundary
       fallback={
-        <Alert variant="filled" color="pink" title="Error">
+        <Alert title="Error">
           {props.label ?? "Property"} failed to render, see dev console.
         </Alert>
       }

@@ -38,9 +38,12 @@ export default function ItemizedConfirmModal({
     const timers: NodeJS.Timeout[] = [];
 
     items.forEach((_, index) => {
-      const timer = setTimeout(() => {
-        setVisibleItems((prev) => [...prev, index]);
-      }, index * itemDelayValue);
+      const timer = setTimeout(
+        () => {
+          setVisibleItems((prev) => [...prev, index]);
+        },
+        index * itemDelayValue + animateDuration,
+      );
       timers.push(timer);
     });
 
@@ -49,7 +52,7 @@ export default function ItemizedConfirmModal({
       () => {
         setButtonEnabled(true);
       },
-      items.length * itemDelayValue + itemDelayValue
+      items.length * itemDelayValue + itemDelayValue + animateDuration,
     );
     timers.push(buttonTimer);
 
@@ -64,7 +67,7 @@ export default function ItemizedConfirmModal({
         <IconCheck size={16} />
       </ThemeIcon>
     ),
-    []
+    [],
   );
   const warnIcon = useMemo(
     () => (
@@ -72,7 +75,7 @@ export default function ItemizedConfirmModal({
         <IconAlertTriangle size={16} />
       </ThemeIcon>
     ),
-    []
+    [],
   );
 
   const handleConfirm = () => {

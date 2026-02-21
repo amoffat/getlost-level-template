@@ -1,10 +1,10 @@
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
 import { DNode, SpeechData } from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
-import { Fieldset, Stack, Text } from "@mantine/core";
+import { Fieldset, Stack, Text, Title } from "@mantine/core";
 import {
   Handle,
   NodeToolbar,
@@ -21,7 +21,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { useSelector } from "react-redux";
 import styles from "./styles/DialogueNode.module.css";
 
 export default function DialogueNode({
@@ -37,21 +36,21 @@ export default function DialogueNode({
     Record<string, number>
   >({});
 
-  const activeDialogueId = useSelector(
+  const activeDialogueId = useAppSelector(
     (state: RootState) => state.dialogue.activeDialogueId,
   )!;
-  const node = useSelector((state: RootState) =>
+  const node = useAppSelector((state: RootState) =>
     dSelectors.selectNode(state, id),
   );
 
   const data = node?.data as SpeechData | undefined;
   const choicesData = useMemo(() => data?.choices ?? [], [data?.choices]);
 
-  const dialogue = useSelector((state: RootState) =>
+  const dialogue = useAppSelector((state: RootState) =>
     dSelectors.selectDialogue(state, activeDialogueId),
   )!;
 
-  const obj = useSelector((state: RootState) => {
+  const obj = useAppSelector((state: RootState) => {
     if (!dialogue?.subjectId) return undefined;
     return mapSelectors.selectObject(state, dialogue.subjectId);
   }) as SpeakableMapObj | undefined;
@@ -147,7 +146,6 @@ export default function DialogueNode({
   const cls = classNames(styles.node, {
     "react-flow__node-default": true,
     [styles.selected]: selected,
-    nowheel: true,
   });
 
   const visibleChoices = choicesData.filter((c) => Boolean(c.text));
@@ -172,19 +170,24 @@ export default function DialogueNode({
     );
   }
 
+  let content = <Text>{data.content}</Text>;
+  if (!data.content || data.content.trim() === "") {
+    content = (
+      <Text ta="center" pb="lg" c="red">
+        Missing content
+      </Text>
+    );
+  }
+
   return (
     <>
-      <NodeToolbar
-        position={Position.Bottom}
-        align="start"
-        className="nowheel"
-      />
+      <NodeToolbar position={Position.Bottom} align="start" />
 
       <div ref={nodeRef} className={cls}>
-        <Handle type="target" position={Position.Left} />
+        {!data.isOrigin && <Handle type="target" position={Position.Left} />}
         <Stack p={0}>
-          <Text fw={600}>{label}</Text>
-          <Text>{data.content}</Text>
+          <Title order={4}>{label}</Title>
+          {content}
           {choicesContainer}
         </Stack>
         {handles}

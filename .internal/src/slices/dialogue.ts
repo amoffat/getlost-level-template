@@ -22,8 +22,9 @@ const createDlgSelector = createSelector.withTypes<DialogueState>();
 
 const activeDialogue = createDlgSelector(
   [(state) => state.activeDialogueId, (state) => state.dialogues],
-  (id, dialogues): Dialogue | null =>
-    id ? (dialogues.entities[id] ?? null) : null,
+  (id, dialogues): Dialogue | null => {
+    return id ? (dialogues.entities[id] ?? null) : null;
+  },
 );
 
 export const slice = createSlice({
@@ -66,7 +67,7 @@ export const slice = createSlice({
     // nodes, because we want to preserve the data of the nodes. This is because
     // the redux store has the authoritative data, and RF just manages the
     // positions, sizes, connections, etc.
-    setFromRF(
+    setNodes(
       state,
       action: PayloadAction<{ dialogueId: string; nodes: DNode[] }>,
     ) {
@@ -106,6 +107,16 @@ export const slice = createSlice({
       const node = dlg.nodes.entities[id];
       if (node) {
         node.data = { ...node.data, ...data };
+      }
+    },
+    setMilestones(
+      state,
+      action: PayloadAction<{ dialogueId: string; milestones: string[] }>,
+    ) {
+      const { dialogueId, milestones } = action.payload;
+      const dlg = state.dialogues.entities[dialogueId];
+      if (dlg) {
+        dlg.milestones = milestones;
       }
     },
   },
@@ -178,6 +189,10 @@ export const slice = createSlice({
       if (!dlg) return [];
       return dlg.edges.ids.map((id) => dlg.edges.entities[id] as Edge);
     }),
+    activeMilestones: createDlgSelector(
+      [activeDialogue],
+      (dlg): string[] => dlg?.milestones ?? [],
+    ),
     allDialogues: createDlgSelector(
       [(state) => state.dialogues],
       (dialogues): Dialogue[] =>
@@ -207,12 +222,13 @@ export const actions = slice.actions;
 export function createDialogue(
   id: string,
   subjectId: string | null = null,
+  milestones: string[] = [],
 ): Dialogue {
   return {
     id,
     subjectId,
     nodes: nodeAdapter.getInitialState(),
     edges: edgeAdapter.getInitialState(),
-    milestones: [],
+    milestones,
   };
 }

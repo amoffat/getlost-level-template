@@ -11,7 +11,7 @@ const routes = [
   { path: "/npcs", element: <ShellApp /> },
   { path: "/story", element: <ShellApp /> },
   { path: "/dialogues", element: <ShellApp /> },
-  { path: "/dialogues/:dlgid", element: <ShellApp /> },
+  { path: "/dialogues/:dlgid/:milestone?", element: <ShellApp /> },
   { path: "/preview", element: <ShellApp /> },
 ];
 

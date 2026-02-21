@@ -1,5 +1,5 @@
 import * as constants from "@/constants";
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
@@ -29,8 +29,9 @@ import {
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
 import { IconGripVertical } from "@tabler/icons-react";
-import { useCallback, useMemo } from "react";
-import { useSelector } from "react-redux";
+import { useCallback, useMemo, useState } from "react";
+import InfoTooltip from "./common/InfoTooltip";
+import ResettableInput from "./ResettableInput";
 
 interface SpeechEditorProps {
   nodeId: string;
@@ -43,37 +44,40 @@ interface SpeechEditorProps {
 export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
   const dispatch = useAppDispatch();
 
-  const activeDialogueId = useSelector(
+  const [resetKey, setResetKey] = useState(0);
+  const activeDialogueId = useAppSelector(
     (state: RootState) => state.dialogue.activeDialogueId,
   )!;
 
-  const node = useSelector((state: RootState) =>
+  const node = useAppSelector((state: RootState) =>
     dSelectors.selectNode(state, nodeId),
   );
 
   const data = node?.data as SpeechData | undefined;
   const choicesData = useMemo(() => data?.choices ?? [], [data?.choices]);
 
-  const dialogue = useSelector((state: RootState) =>
+  const dialogue = useAppSelector((state: RootState) =>
     dSelectors.selectDialogue(state, activeDialogueId),
   );
 
-  const obj = useSelector((state: RootState) => {
+  const obj = useAppSelector((state: RootState) => {
     if (!dialogue?.subjectId) return undefined;
     return mapSelectors.selectObject(state, dialogue.subjectId);
   }) as SpeakableMapObj | undefined;
   const label = data?.label ?? obj?.name ?? "Sign";
 
-  const onLabelChange = useDebouncedCallback((newLabel: string) => {
+  const onLabelChange = (newLabel: string | undefined) => {
     if (!activeDialogueId) return;
     dispatch(
       actions.setNodeData({
         dialogueId: activeDialogueId,
         id: nodeId,
-        data: { label: newLabel || undefined },
+        data: { label: newLabel },
       }),
     );
-  }, 300);
+  };
+
+  const onLabelChangeDebounce = useDebouncedCallback(onLabelChange, 300);
 
   const onTextChange = useDebouncedCallback((content: string) => {
     if (!activeDialogueId) return;
@@ -167,18 +171,41 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
     <Stack p={0} gap="md">
       <Fieldset legend="Speech" p="xs">
         <Stack gap="sm" p={0}>
-          <TextInput
-            key={`label-${nodeId}`}
-            label="Speaker"
-            description="The character speaking this dialogue."
-            defaultValue={label}
-            onChange={(event) => onLabelChange(event.currentTarget.value)}
-          />
+          <ResettableInput
+            onReset={() => {
+              onLabelChange(undefined);
+              setResetKey((k) => k + 1);
+            }}
+          >
+            <TextInput
+              required
+              key={`label-${nodeId}-${resetKey}`}
+              label={
+                <>
+                  Speaker
+                  <InfoTooltip>
+                    By default, the speaker name is the NPC's name, but you can
+                    change it per-node. For example, instead of "Guard", you
+                    could set it to "Guard (angry)" to indicate a change in
+                    tone.
+                  </InfoTooltip>
+                </>
+              }
+              description="The character speaking this dialogue."
+              defaultValue={label}
+              onChange={(event) =>
+                onLabelChangeDebounce(event.currentTarget.value)
+              }
+            />
+          </ResettableInput>
+
           <Textarea
-            key={`content-${nodeId}`}
-            rows={4}
+            required
+            key={`content-${nodeId}-${resetKey}`}
+            rows={5}
             label="Content"
             description="The text that will be displayed to the player."
+            placeholder="Please write NPC dialogue here..."
             defaultValue={data.content ?? ""}
             onChange={(event) => onTextChange(event.currentTarget.value)}
           />

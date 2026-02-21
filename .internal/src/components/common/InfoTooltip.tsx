@@ -1,4 +1,4 @@
-import { ActionIcon, Modal } from "@mantine/core";
+import { ActionIcon, Box, Group, Modal } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { ReactNode } from "react";
@@ -22,8 +22,18 @@ export default function InfoTooltip({
         <IconInfoCircle size={14} />
       </ActionIcon>
 
-      <Modal opened={opened} onClose={close} title={title} centered size="lg">
-        {children}
+      <Modal
+        opened={opened}
+        onClose={close}
+        title={
+          <Group gap="xs">
+            <IconInfoCircle size={20} /> {title}
+          </Group>
+        }
+        centered
+        size="lg"
+      >
+        <Box p="md">{children}</Box>
       </Modal>
     </>
   );

@@ -35,10 +35,8 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { ReactNode, use, useCallback, useMemo, useRef, useState } from "react";
-import { useSelector } from "react-redux";
-import { useAppDispatch } from "../../hooks/redux";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import type { RootState } from "../../store/store";
-import { store } from "../../store/store";
 import StoryNode from "../flowNodes/StoryNode";
 import Tip from "../Tip";
 
@@ -52,10 +50,10 @@ export default function StoryTab({
   const [nodeId, setNodeId] = useState<string | null>(null);
   const dispatch = useAppDispatch();
 
-  const dState = useSelector((state: RootState) => state.story);
+  const dState = useAppSelector((state: RootState) => state.story);
   const { nodes, edges } = dState;
   const flowContainerRef = useRef<HTMLDivElement>(null);
-  const npcs = useSelector(selectors.selectNpcs);
+  const npcs = useAppSelector(selectors.selectNpcs);
   const reactFlowInstance = useReactFlow<DNode, Edge>();
   const { screenToFlowPosition, getNodes, getEdges } = reactFlowInstance;
 
@@ -185,8 +183,9 @@ export default function StoryTab({
   );
 
   const handleReflow = useCallback(async () => {
-    await dispatch(reflowStoryThunk()).unwrap();
-    const { nodes: laidOutNodes, edges: laidOutEdges } = store.getState().story;
+    const resp = await dispatch(reflowStoryThunk()).unwrap();
+    if (!resp) return;
+    const { nodes: laidOutNodes, edges: laidOutEdges } = resp;
     reactFlowInstance.setNodes(laidOutNodes);
     reactFlowInstance.setEdges(laidOutEdges);
     requestAnimationFrame(() => {

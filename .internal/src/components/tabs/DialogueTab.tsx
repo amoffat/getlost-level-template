@@ -1,4 +1,5 @@
-import { useAppDispatch } from "@/hooks/redux";
+import { defaultMilestone } from "@/constants";
+import { shallowEqual, useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
   createDialogue,
   actions as dActions,
@@ -6,13 +7,20 @@ import {
 } from "@/slices/dialogue";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
-import { store, type RootState } from "@/store/store";
+import { store } from "@/store/store";
+import {
+  reflowDialogueThunk,
+  setDefaultDialogueThunk,
+  unlinkDialogueThunk,
+} from "@/thunks/dialogue";
 import type { Dialogue, DNode } from "@/types/dialogue";
-import type { NpcTemplate } from "@/types/npc";
+import type { NpcRequiredAnimation, NpcTemplate } from "@/types/npc";
+import { createUrlPath } from "@/utils/dialogue";
 import { showNotification } from "@/utils/notifications";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
   ActionIcon,
+  Alert,
   Box,
   Button,
   Fieldset,
@@ -27,10 +35,19 @@ import {
   Tooltip,
   Tree,
   TreeNodeData,
+  Typography,
   useTree,
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
-import { IconAlertTriangle, IconPlus } from "@tabler/icons-react";
+import { modals } from "@mantine/modals";
+import {
+  IconAlertTriangle,
+  IconBubbleText,
+  IconPlus,
+  IconSitemap,
+  IconTrash,
+  IconUnlink,
+} from "@tabler/icons-react";
 import {
   addEdge,
   applyEdgeChanges,
@@ -41,6 +58,7 @@ import {
   Edge,
   OnBeforeDelete,
   OnConnect,
+  OnConnectEnd,
   OnEdgesChange,
   OnNodesChange,
   Panel,
@@ -50,13 +68,25 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import {
+  ReactNode,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import InfoTooltip from "../common/InfoTooltip";
+import DialogueNode from "../flowNodes/DialogueNode";
+import { ItemStatus } from "../modals/ItemizedConfirmModal";
+import PanelLoader from "../PanelLoader";
 import SpeechEditor from "../SpeechEditor";
 import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
-import DialogueNode from "../flowNodes/DialogueNode";
+import Tip from "../Tip";
 
 interface NpcNodeProps {
   npcTemplate: NpcTemplate;
@@ -66,6 +96,7 @@ interface NpcNodeProps {
 
 interface DialogueNodeProps {
   dialogue: Dialogue;
+  onSelect?: (value: string) => void;
 }
 
 function isNpcNode(props: Record<string, any>): props is NpcNodeProps {
@@ -81,15 +112,28 @@ export default function DialogueTab({
 
   const reactFlowInstance = useReactFlow<DNode, Edge>();
   const dispatch = useAppDispatch();
-  const { dlgid: dlgId } = useParams<{ dlgid?: string }>();
+  const { dlgid: dlgId, milestone: msId } = useParams<{
+    dlgid?: string;
+    milestone?: string;
+  }>();
   const location = useLocation();
-  const npcs = useSelector(mapSelectors.selectNpcs);
-  const milestones = useSelector((state: RootState) => state.story.nodes);
-  const allDialogues = useSelector(dSelectors.allDialogues);
-  const activeDialogueId = useSelector(
-    (state: RootState) => state.dialogue.activeDialogueId,
+  const npcs = useAppSelector(mapSelectors.selectNpcs);
+  const allMilestones = useAppSelector((state) => state.story.nodes);
+  const allDialogues = useAppSelector(dSelectors.allDialogues);
+  const activeDialogueId = useAppSelector(
+    (state) => state.dialogue.activeDialogueId,
+  );
+  const { activeMilestones, activeNodes, activeEdges } = useAppSelector(
+    (state) => ({
+      activeMilestones: dSelectors.activeMilestones(state),
+      activeNodes: dSelectors.activeNodes(state),
+      activeEdges: dSelectors.activeEdges(state),
+    }),
+    shallowEqual,
   );
   const tree = useTree();
+  const treeSelectRef = useRef(tree.select);
+  treeSelectRef.current = tree.select;
   const navigate = useNavigate();
 
   // Sync activeDialogueId from URL parameter
@@ -102,41 +146,52 @@ export default function DialogueTab({
       return;
     }
 
-    if (dlgId !== activeDialogueId) {
-      dispatch(dActions.setActiveDialogue(dlgId));
-      tree.select(dlgId);
-    }
-  }, [dlgId, dispatch, location, activeDialogueId, tree]);
-
-  // Sync ReactFlow when the active dialogue changes
-  useEffect(() => {
-    if (!activeDialogueId) return;
     const state = store.getState();
-    const dlg = state.dialogue.dialogues.entities[activeDialogueId];
-    if (!dlg) {
+    const dialogue = dSelectors.selectDialogue(state, dlgId);
+    if (!dialogue) {
       navigate("/dialogues");
       return;
     }
 
-    const newNodes = Object.values(dlg.nodes.entities) as DNode[];
+    if (dlgId !== activeDialogueId) {
+      dispatch(dActions.setActiveDialogue(dlgId));
+      tree.select(createUrlPath(dlgId, msId ?? null));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dlgId, msId, dispatch, location, activeDialogueId]);
+
+  // Sync ReactFlow when the active dialogue changes
+  useEffect(() => {
+    if (!activeDialogueId) {
+      reactFlowInstance.setNodes([]);
+      reactFlowInstance.setEdges([]);
+      return;
+    }
+
+    const state = store.getState();
+    const activeDialogue = dSelectors.selectDialogue(state, activeDialogueId);
+    if (!activeDialogue) return;
+
+    const newNodes = Object.values(activeDialogue.nodes.entities) as DNode[];
     reactFlowInstance.setNodes(newNodes);
 
-    const newEdges = dlg.edges.ids.map((id) => dlg.edges.entities[id] as Edge);
+    const newEdges = activeDialogue.edges.ids.map(
+      (id) => activeDialogue.edges.entities[id] as Edge,
+    );
     reactFlowInstance.setEdges(newEdges);
+  }, [activeDialogueId, reactFlowInstance]);
 
+  // Fit view only when switching to a different dialogue, not on every data
+  // change
+  useEffect(() => {
+    if (!activeDialogueId) return;
     requestAnimationFrame(() => {
-      reactFlowInstance.fitView({ padding: "25%" });
+      reactFlowInstance.fitView({ padding: 0.25 });
     });
-  }, [activeDialogueId, reactFlowInstance, navigate]);
-
-  const nodes = useSelector((state: RootState) =>
-    dSelectors.activeNodes(state),
-  );
-  const edges = useSelector((state: RootState) =>
-    dSelectors.activeEdges(state),
-  );
+  }, [activeDialogueId, reactFlowInstance]);
   const { screenToFlowPosition } = useReactFlow();
   const flowContainerRef = useRef<HTMLDivElement>(null);
+  const [isPendingDialogue, startDialogueTransition] = useTransition();
 
   // Track the currently selected node for the right-pane editor
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -156,7 +211,7 @@ export default function DialogueTab({
       if (!activeDialogueId) return;
       const nodes = reactFlowInstance.getNodes();
       dispatch(
-        dActions.setFromRF({
+        dActions.setNodes({
           dialogueId: activeDialogueId,
           nodes: applyNodeChanges(changes, nodes),
         }),
@@ -165,7 +220,7 @@ export default function DialogueTab({
     200,
   );
 
-  // Prevent deletion if it would leave the dialogue with no speeches
+  // Prevent deletion of the origin node
   const onBeforeDelete: OnBeforeDelete<DNode, Edge> = useCallback(
     async ({
       nodes: nodesToDelete,
@@ -173,18 +228,18 @@ export default function DialogueTab({
       nodes: DNode[];
       edges: Edge[];
     }): Promise<boolean> => {
-      const currentNodes = reactFlowInstance.getNodes();
-      if (currentNodes.length - nodesToDelete.length < 1) {
+      const hasOrigin = nodesToDelete.some((n) => n.data.isOrigin);
+      if (hasOrigin) {
         showNotification({
           title: "Cannot delete",
-          message: "At least one speech must remain in the dialogue",
+          message: "The origin speech cannot be deleted",
           color: "orange",
         });
-        return false; // Prevent deletion
+        return false;
       }
-      return true; // Allow deletion
+      return true;
     },
-    [reactFlowInstance],
+    [],
   );
 
   const onEdgesChange: OnEdgesChange = useDebouncedCallback((changes) => {
@@ -201,30 +256,40 @@ export default function DialogueTab({
   const onConnect: OnConnect = useCallback(
     (connection) => {
       if (!activeDialogueId) return;
+      const state = store.getState();
+      const activeDialogue = dSelectors.selectDialogue(state, activeDialogueId);
+      if (!activeDialogue) return;
+
+      const edges = reactFlowInstance.getEdges();
       dispatch(
         dActions.setEdges({
-          dialogueId: activeDialogueId,
+          dialogueId: activeDialogue.id,
           edges: addEdge(connection, edges),
         }),
       );
     },
-    [dispatch, edges, activeDialogueId],
+    [dispatch, activeDialogueId, reactFlowInstance],
   );
 
   const createSpeech = useCallback(
     ({
       dialogueId,
       clear = false,
+      position,
+      connectTo,
     }: {
       dialogueId: string | null;
       clear?: boolean;
+      position?: { x: number; y: number } | undefined;
+      connectTo?: {
+        nodeId: string;
+        handleId: string | null | undefined;
+      };
     }) => {
       if (!dialogueId) return;
 
-      // Compute the center of the visible flow viewport and convert to flow coordinates
-      const rect = flowContainerRef.current?.getBoundingClientRect();
-      let position = { x: 0, y: 0 };
-      if (rect) {
+      if (!position) {
+        const rect = flowContainerRef.current!.getBoundingClientRect();
         const centerScreen = {
           x: rect.left + rect.width / 2,
           y: rect.top + rect.height / 2,
@@ -244,6 +309,7 @@ export default function DialogueTab({
           content: undefined,
           animated: true,
           choices: [],
+          isOrigin: clear,
         },
       };
 
@@ -256,23 +322,90 @@ export default function DialogueTab({
 
       reactFlowInstance.setNodes(updatedNodes);
       dispatch(
-        dActions.setFromRF({
+        dActions.setNodes({
           dialogueId,
           nodes: updatedNodes,
         }),
       );
+
+      // Optionally connect the new node to an existing one
+      if (connectTo) {
+        const source = connectTo.nodeId;
+        const target = id;
+
+        const newEdge: Edge = {
+          id: crypto.randomUUID(),
+          source,
+          target,
+          sourceHandle: connectTo.handleId,
+        };
+
+        const updatedEdges = [...reactFlowInstance.getEdges(), newEdge];
+        reactFlowInstance.setEdges(updatedEdges);
+        dispatch(
+          dActions.setEdges({
+            dialogueId,
+            edges: updatedEdges,
+          }),
+        );
+      }
+
       setSelectedNodeId(id);
     },
     [dispatch, screenToFlowPosition, reactFlowInstance],
   );
 
+  const onConnectEnd: OnConnectEnd = useCallback(
+    (event, connectionState) => {
+      if (!activeDialogueId || connectionState.isValid) return;
+
+      const { clientX, clientY } =
+        "changedTouches" in event ? event.changedTouches[0] : event;
+
+      if (connectionState.fromHandle?.position === "right") {
+        const connectTo = {
+          nodeId: connectionState.fromNode!.id,
+          handleId: connectionState.fromHandle?.id,
+        };
+
+        createSpeech({
+          dialogueId: activeDialogueId,
+          position: screenToFlowPosition({ x: clientX, y: clientY }),
+          connectTo,
+        });
+      }
+    },
+    [activeDialogueId, createSpeech, screenToFlowPosition],
+  );
+
   const onCreateDialogue = useCallback(
     (dialogueId: string) => {
+      const state = store.getState();
+      const dialogue = dSelectors.selectDialogue(state, dialogueId)!;
+
       createSpeech({ dialogueId, clear: true });
+
       // Navigate to the new dialogue URL
-      navigate(`/dialogues/${dialogueId}`);
+      const milestone = dialogue.milestones[0] ?? null;
+      const path = createUrlPath(dialogueId, milestone);
+      navigate(`/dialogues/${path}`);
     },
-    [navigate, createSpeech],
+    [navigate, createSpeech, flowContainerRef],
+  );
+
+  const onSelectDialogue = useCallback(
+    (value: string) => {
+      // Select immediately (outside the transition) so the tree highlight
+      // updates before React renders the "pending" transition state.
+      // Use a ref to avoid adding `tree` as a dep (useTree returns a new
+      // object reference each render, which would make this callback and
+      // treeData unstable and cause an infinite update loop).
+      treeSelectRef.current(value);
+      startDialogueTransition(() => {
+        navigate(`/dialogues/${value}`);
+      });
+    },
+    [navigate],
   );
 
   const handlePaneResize = () => {
@@ -306,16 +439,18 @@ export default function DialogueTab({
                 label: dlg.id,
                 nodeProps: {
                   dialogue: dlg,
+                  onSelect: onSelectDialogue,
                 } satisfies DialogueNodeProps,
               },
             ];
           }
 
           return dlg.milestones.map((ms) => ({
-            value: `${dlg.id}/${ms}`,
+            value: createUrlPath(dlg.id, ms),
             label: ms,
             nodeProps: {
               dialogue: dlg,
+              onSelect: onSelectDialogue,
             } satisfies DialogueNodeProps,
           }));
         });
@@ -342,11 +477,62 @@ export default function DialogueTab({
         label: dlg.id,
         nodeProps: {
           dialogue: dlg,
+          onSelect: onSelectDialogue,
         },
       })),
     });
     return tree;
-  }, [npcs, allDialogues, onCreateDialogue]);
+  }, [npcs, allDialogues, onCreateDialogue, onSelectDialogue]);
+
+  const onMilestoneChange = useCallback(
+    (milestones: string[]) => {
+      if (!activeDialogueId) return;
+
+      dispatch(
+        dActions.setMilestones({
+          dialogueId: activeDialogueId,
+          milestones,
+        }),
+      );
+
+      const existing = new Set(activeMilestones);
+      const current = new Set(milestones);
+      const defaultAdded =
+        !existing.has(defaultMilestone) && current.has(defaultMilestone);
+
+      // If "default" was just added, remove it from all sibling dialogues
+      if (defaultAdded) {
+        dispatch(setDefaultDialogueThunk(activeDialogueId));
+      }
+    },
+    [activeDialogueId, activeMilestones, dispatch],
+  );
+
+  const handleReflow = useCallback(async () => {
+    if (!activeDialogueId) return;
+    const resp = await dispatch(reflowDialogueThunk(activeDialogueId)).unwrap();
+
+    if (!resp) return;
+    const { nodes: laidOutNodes, edges: laidOutEdges } = resp;
+
+    reactFlowInstance.setNodes(laidOutNodes);
+    reactFlowInstance.setEdges(laidOutEdges);
+    requestAnimationFrame(() => {
+      reactFlowInstance.fitView({ duration: 250, padding: 0.25 });
+    });
+  }, [dispatch, reactFlowInstance, activeDialogueId]);
+
+  const tips: ReactNode[] = useMemo(() => {
+    const t: ReactNode[] = [];
+
+    if (Object.values(activeNodes).length === 1) {
+      t.push(
+        "Click 'New Speech' to add a new speech node connected to this one.",
+      );
+    }
+
+    return t;
+  }, [activeNodes]);
 
   return (
     <Split h="100dvh" style={{ flex: 1 }}>
@@ -392,34 +578,46 @@ export default function DialogueTab({
               panOnDrag={[2]}
               deleteKeyCode={["Delete", "Backspace"]}
               multiSelectionKeyCode={null}
-              defaultNodes={Object.values(nodes)}
-              defaultEdges={edges}
+              defaultNodes={Object.values(activeNodes)}
+              defaultEdges={Object.values(activeEdges)}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
+              onConnectEnd={onConnectEnd}
               onBeforeDelete={onBeforeDelete}
               selectionOnDrag={false}
               selectionMode={SelectionMode.Partial}
               fitView
             >
               <Background color="#505050ff" variant={BackgroundVariant.Dots} />
-              <Controls position="top-left"></Controls>
+              <Controls position="top-left" showInteractive={false}></Controls>
               <Panel position="top-center">
                 <Button
                   variant="filled"
                   onClick={() => createSpeech({ dialogueId: activeDialogueId })}
+                  leftSection={<IconBubbleText size={20} />}
                 >
                   New Speech
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleReflow}
+                  ml="xs"
+                  leftSection={<IconSitemap size={20} />}
+                >
+                  Organize
                 </Button>
               </Panel>
             </ReactFlow>
           </div>
 
-          {!activeDialogueId && (
+          <PanelLoader visible={isPendingDialogue} />
+
+          {!activeDialogueId && !isPendingDialogue && (
             <Overlay color="#000" backgroundOpacity={0.65} blur={4} zIndex={10}>
               <Stack align="center" justify="center" style={{ height: "100%" }}>
                 <Text size="lg" c="dimmed">
-                  Select a dialogue from the panel on the left to begin editing.
+                  Please select a dialogue from the left panel.
                 </Text>
               </Stack>
             </Overlay>
@@ -437,23 +635,75 @@ export default function DialogueTab({
         onResizeEnd={handlePaneResize}
       >
         <Stack h="100%" style={{ overflow: "hidden" }}>
+          <Tip tips={tips} />
+
           <ScrollArea type="never" style={{ flex: 1 }}>
             <Stack p={0} gap="md">
-              <Fieldset legend="Dialogue" p="xs">
-                <Stack p={0}>
-                  <MultiSelect
-                    label="Milestones"
-                    description="Which story milestones activate this dialogue?"
-                    searchable
-                    defaultValue={["default"]}
-                    data={["default", ...milestones.map((m) => m.data.id)]}
-                    nothingFoundMessage="No milestones found"
-                  />
-                </Stack>
-              </Fieldset>
+              {activeDialogueId && (
+                <>
+                  <Fieldset legend="Dialogue" p="xs">
+                    <Stack p={0}>
+                      {activeMilestones.length > 1 && (
+                        <Alert title="Linked Dialogue">
+                          There are multiple milestones attached to this
+                          dialogue.
+                        </Alert>
+                      )}
+                      <MultiSelect
+                        required
+                        label={
+                          <>
+                            Milestones
+                            <InfoTooltip>
+                              <Typography>
+                                <p>
+                                  When these story milestones are triggered in
+                                  the game, this dialogue becomes active for
+                                  this NPC. Interacting with the NPC will then
+                                  show this dialogue. You should write distinct
+                                  dialogues for different story milestones to
+                                  make the NPC feel more responsive to the
+                                  player's progress.
+                                </p>
+                                <p>
+                                  Usually, you only want one milestone per
+                                  dialogue, but you can assign multiple
+                                  milestones if you want the same dialogue to be
+                                  used in different parts of the story.
+                                </p>
+                                <p>
+                                  The "default" milestone is a special milestone
+                                  that applies when no other milestones are
+                                  active. You can use it to create a fallback
+                                  dialogue that will always have something to
+                                  say, even if you forget to assign milestones
+                                  to a new dialogue.
+                                </p>
+                              </Typography>
+                            </InfoTooltip>
+                          </>
+                        }
+                        description="Which story milestones activate this dialogue?"
+                        searchable
+                        value={activeMilestones}
+                        onChange={onMilestoneChange}
+                        data={[
+                          defaultMilestone,
+                          ...allMilestones.map((m) => m.data.id),
+                        ]}
+                        nothingFoundMessage="No milestones found"
+                        disabled={!activeDialogueId}
+                      />
+                    </Stack>
+                  </Fieldset>
 
-              {selectedNodeId && (
-                <SpeechEditor key={selectedNodeId} nodeId={selectedNodeId} />
+                  {selectedNodeId && (
+                    <SpeechEditor
+                      key={selectedNodeId}
+                      nodeId={selectedNodeId}
+                    />
+                  )}
+                </>
               )}
             </Stack>
           </ScrollArea>
@@ -479,16 +729,32 @@ function NpcLeaf({
   tree,
 }: LeafProps & NpcNodeProps) {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const npcDialogues = useAppSelector((state) =>
+    dSelectors.dialoguesForNpc(state, npcId),
+  );
+  const hasDefaultMilestone = npcDialogues.some((dlg) =>
+    dlg.milestones.includes(defaultMilestone),
+  );
+  const activeDialogueId = useAppSelector(
+    (state) => state.dialogue.activeDialogueId,
+  );
+  const isChildSelected = npcDialogues.some(
+    (dlg) => dlg.id === activeDialogueId,
+  );
+  const activeNpc = selected || isChildSelected;
+
   let icon: React.ReactNode;
-  if (selected) {
+  const animations = npcTemplate.animations;
+  let animName: NpcRequiredAnimation = "WalkRight";
+  if (expanded) animName = "WalkDown";
+
+  if (activeNpc) {
     icon = (
-      <TileAnimation
-        frames={npcTemplate.animations.WalkDown.animation.frames}
-        scale={2}
-      />
+      <TileAnimation frames={animations[animName].animation.frames} scale={2} />
     );
   } else {
-    const tg = npcTemplate.animations.Idle.animation.frames[0]!.tg;
+    const tg = animations[animName].animation.frames[0]!.tg;
     icon = <TilesetGroup scale={2} group={tg} />;
   }
 
@@ -498,60 +764,187 @@ function NpcLeaf({
     tree.expand(npcId);
 
     const dId = crypto.randomUUID();
-    dispatch(dActions.addDialogue(createDialogue(dId, npcId)));
-
+    const milestones = hasDefaultMilestone ? [] : [defaultMilestone];
+    dispatch(dActions.addDialogue(createDialogue(dId, npcId, milestones)));
     onCreate(dId);
   };
 
-  const showAddDialogue = expanded || selected;
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      elementProps.onClick?.(e);
+      navigate("/dialogues");
+    },
+    [elementProps, navigate],
+  );
 
   return (
-    <Box p="xs" {...elementProps}>
+    <Box p="xs" {...elementProps} onClick={handleClick}>
       <Group gap="md">
         {icon}
         <Text fz="sm">{node.label}</Text>
         <Box style={{ flexGrow: 1 }} />
-        {showAddDialogue && (
-          <Tooltip label="Add new dialogue for this NPC">
-            <ActionIcon variant="default" onClick={handleAddDialogue}>
-              <IconPlus size={16} />
-            </ActionIcon>
-          </Tooltip>
-        )}
+        <Tooltip label="Add new dialogue for this NPC">
+          <ActionIcon variant="default" onClick={handleAddDialogue}>
+            <IconPlus size={16} />
+          </ActionIcon>
+        </Tooltip>
       </Group>
     </Box>
   );
 }
 
-function DialogueLeaf({ node, elementProps }: LeafProps) {
+function DialogueLeaf({ node, elementProps, selected, expanded }: LeafProps) {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const activeDialogueId = useAppSelector(
+    (state) => state.dialogue.activeDialogueId,
+  );
   const props = node.nodeProps as DialogueNodeProps;
-
-  const selectDialogue = useCallback(() => {
-    if (!props.dialogue) return;
-    navigate(`/dialogues/${props.dialogue.id}`);
-  }, [navigate, props.dialogue]);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       elementProps.onClick?.(e);
-      selectDialogue();
+      props.onSelect?.(node.value);
     },
-    [elementProps, selectDialogue],
+    [elementProps, props, node.value],
   );
 
-  let content = <Text fz="sm">{node.label}</Text>;
-  if ((props.dialogue as Dialogue | undefined)?.milestones.length === 0) {
+  const dialogue = props.dialogue as Dialogue | undefined;
+  const milestoneCount = dialogue?.milestones.length ?? 0;
+  const isDefault = node.label === defaultMilestone;
+
+  let content: React.ReactNode;
+  if (milestoneCount === 0) {
     content = (
-      <Group gap="md">
+      <Group gap="xs">
         <IconAlertTriangle size={16} color="orange" />
-        <Text variant="dimmed">No milestone</Text>
+        <Text fz="sm" variant="dimmed">
+          No milestone
+        </Text>
+      </Group>
+    );
+  } else {
+    content = (
+      <Group gap="xs">
+        <Text fz="sm">{node.label}</Text>
       </Group>
     );
   }
+
+  const handleUnlink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!dialogue) return;
+
+    modals.openContextModal({
+      modal: "confirm",
+      title: "Unlink dialogue?",
+      centered: true,
+      withCloseButton: true,
+      innerProps: {
+        makeItems: () => [
+          {
+            ok: true,
+            message: `A new copy of this dialogue will be created for the "${node.label}" milestone.`,
+          },
+          {
+            ok: true,
+            message: `The original dialogue will keep its remaining ${milestoneCount - 1} milestone(s).`,
+          },
+        ],
+        confirmLabel: "Yes, unlink",
+        msg: "Are you sure you want to unlink this milestone into its own separate dialogue?",
+        onConfirm: () => {
+          const newId = dispatch(
+            unlinkDialogueThunk(dialogue.id, node.label as string),
+          );
+          if (newId) {
+            navigate(
+              `/dialogues/${createUrlPath(newId, node.label as string)}`,
+            );
+          }
+        },
+      },
+    });
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!dialogue) return;
+
+    const items: ItemStatus[] = [];
+
+    if (milestoneCount > 1) {
+      items.push({
+        ok: true,
+        message: `This dialogue belongs to ${milestoneCount - 1} other milestones.`,
+      });
+      items.push({
+        ok: true,
+        message:
+          "Deleting it will only remove the dialogue from the current milestone.",
+      });
+    } else {
+      items.push({
+        ok: false,
+        message: "This dialogue does not belong to any other milestones.",
+      });
+      items.push({
+        ok: false,
+        message: "Deleting it will remove the dialogue permanently.",
+      });
+    }
+
+    modals.openContextModal({
+      modal: "confirm",
+      title: "Delete dialogue?",
+      centered: true,
+      withCloseButton: true,
+      innerProps: {
+        makeItems: () => items,
+        confirmLabel: "Yes, delete",
+        msg: "Are you sure you want to delete this dialogue? This action cannot be undone.",
+        onConfirm: () => {
+          if (milestoneCount > 1) {
+            // Remove only this milestone from the dialogue
+            dispatch(
+              dActions.setMilestones({
+                dialogueId: dialogue.id,
+                milestones: dialogue.milestones.filter(
+                  (ms) => ms !== node.label,
+                ),
+              }),
+            );
+          } else {
+            // Last (or no) milestone — remove the dialogue entirely
+            dispatch(dActions.removeDialogue(dialogue.id));
+          }
+          if (activeDialogueId === dialogue.id) {
+            navigate("/dialogues");
+          }
+        },
+      },
+    });
+  };
+
   return (
     <Box p="xs" {...elementProps} onClick={handleClick} pl="lg">
-      {content}
+      <Group gap="xs" wrap="nowrap">
+        <Box style={{ flexGrow: 1 }}>{content}</Box>
+        {selected && (
+          <Tooltip label="Delete this dialogue">
+            <ActionIcon variant="default" size="sm" onClick={handleDelete}>
+              <IconTrash size={14} />
+            </ActionIcon>
+          </Tooltip>
+        )}
+        {selected && milestoneCount > 1 && (
+          <Tooltip label="Unlink from active dialogue">
+            <ActionIcon variant="default" size="sm" onClick={handleUnlink}>
+              <IconUnlink size={14} />
+            </ActionIcon>
+          </Tooltip>
+        )}
+      </Group>
     </Box>
   );
 }
