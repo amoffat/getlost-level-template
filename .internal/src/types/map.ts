@@ -127,7 +127,7 @@ export type MapObj =
   | ExitObj
   | PickupObj;
 
-export type SpeakableMapObj = Extract<MapObj, TileGroupInstance | NpcInstance>;
+export type SpeakableMapObj = MapObj & { name: string };
 
 export type MapObjProps =
   | LightProps

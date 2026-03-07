@@ -1,4 +1,6 @@
 .node {
+  width: 20em;
+  padding: 1.5em;
 }
 
 .node.selected {

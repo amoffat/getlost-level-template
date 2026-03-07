@@ -1,3 +1,5 @@
+import { defaultMilestone } from "@/constants";
+import type { RootState } from "@/store/store";
 import {
   createEntityAdapter,
   createSelector,
@@ -198,12 +200,12 @@ export const slice = createSlice({
       (dialogues): Dialogue[] =>
         dialogues.ids.map((id) => dialogues.entities[id] as Dialogue),
     ),
-    dialoguesForNpc: createDlgSelector(
-      [(state) => state.dialogues, (_: DialogueState, npcId: string) => npcId],
-      (dialogues, npcId): Dialogue[] =>
+    dialoguesForObj: createDlgSelector(
+      [(state) => state.dialogues, (_: DialogueState, objId: string) => objId],
+      (dialogues, objId): Dialogue[] =>
         (dialogues.ids as string[])
           .map((id) => dialogues.entities[id] as Dialogue)
-          .filter((dlg) => dlg.subjectId === npcId),
+          .filter((dlg) => dlg.subjectId === objId),
     ),
     unassignedDialogues: createDlgSelector(
       [(state) => state.dialogues],
@@ -215,7 +217,72 @@ export const slice = createSlice({
   },
 });
 
-export const selectors = slice.selectors;
+/**
+ * Returns milestone IDs available for the active dialogue.
+ * "Available" = all story milestones minus those already claimed by
+ * *other* dialogues belonging to the same NPC.
+ */
+const availableMilestones = createSelector(
+  [
+    (state: RootState) => state.story.nodes,
+    (state: RootState) => state.dialogue.activeDialogueId,
+    (state: RootState) => state.dialogue.dialogues,
+  ],
+  (storyNodes, activeDialogueId, dialogues): string[] => {
+    const allIds = [defaultMilestone, ...storyNodes.map((n) => n.data.id)];
+
+    if (!activeDialogueId) return allIds;
+
+    const activeDlg = dialogues.entities[activeDialogueId];
+    if (!activeDlg?.subjectId) return allIds;
+
+    const npcId = activeDlg.subjectId;
+
+    // Collect milestones used by sibling dialogues (same NPC, different dialogue)
+    const usedByOthers = new Set<string>();
+    for (const id of dialogues.ids) {
+      if (id === activeDialogueId) continue;
+      const dlg = dialogues.entities[id as string];
+      if (dlg && dlg.subjectId === npcId) {
+        for (const ms of dlg.milestones) {
+          usedByOthers.add(ms);
+        }
+      }
+    }
+
+    return allIds.filter((id) => !usedByOthers.has(id));
+  },
+);
+
+/**
+ * Returns the dialogues for a given milestone.
+ */
+const dialogueForMilestone = createSelector(
+  [
+    (state: RootState) => state.dialogue.dialogues,
+    (_: RootState, milestoneId: string) => milestoneId,
+  ],
+  (dialogues, milestoneId): Dialogue[] => {
+    const msDialogues: Dialogue[] = [];
+    for (const id of dialogues.ids) {
+      const dlg = dialogues.entities[id as string];
+      if (
+        dlg &&
+        dlg.subjectId !== null &&
+        dlg.milestones.includes(milestoneId)
+      ) {
+        msDialogues.push(dlg);
+      }
+    }
+    return msDialogues;
+  },
+);
+
+export const selectors = {
+  ...slice.selectors,
+  availableMilestones,
+  dialogueForMilestone,
+};
 export const actions = slice.actions;
 
 /** Helper to create a new empty Dialogue entity. */

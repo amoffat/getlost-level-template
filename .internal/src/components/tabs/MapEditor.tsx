@@ -1,10 +1,13 @@
+import { ItemStatus } from "@/components/modals/ItemizedConfirmModal";
 import * as constants from "@/constants";
 import { iconTsId, transparentIcon } from "@/constants/tsObjs";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useSpotlightActions } from "@/hooks/useSpotlightActions";
+import { brokenTileGroups } from "@/selectors/map";
 import { actions, selectors } from "@/slices/mapEditor";
 import { RootState, store } from "@/store/store";
-import { setToolThunk } from "@/thunks/map";
+import { resetMapThunk, setToolThunk } from "@/thunks/map";
 import { isAnimationTemplate } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
@@ -21,7 +24,16 @@ import {
 } from "@/utils/palette/sort";
 import { loadTileGroup } from "@/utils/tileset";
 import { Split } from "@gfazioli/mantine-split-pane";
-import { Badge, Group, Portal, ScrollArea, Stack, Tabs } from "@mantine/core";
+import {
+  Badge,
+  Group,
+  Portal,
+  ScrollArea,
+  Stack,
+  Tabs,
+  Text,
+} from "@mantine/core";
+import { modals } from "@mantine/modals";
 import {
   IconBucketDroplet,
   IconBulb,
@@ -36,6 +48,8 @@ import {
   IconPaint,
   IconPointer,
   IconRipple,
+  IconTrash,
+  IconUnlink,
   IconWand,
 } from "@tabler/icons-react";
 import {
@@ -71,6 +85,7 @@ export default function MapEditorTab({
 }: {
   initPromise: Promise<unknown>;
 }) {
+  const activeTab = useAppSelector((state: RootState) => state.ui.activeTab);
   const selectedToolName = useAppSelector(
     (state: RootState) => state.mapEditor.activeTool,
   );
@@ -126,6 +141,73 @@ export default function MapEditorTab({
   }, [paletteSelection, tilesets, placeObj]);
 
   const dispatch = useAppDispatch();
+
+  // Register map-editor spotlight actions
+  const mapSpotlightActions = useMemo(
+    () => [
+      {
+        id: "clear-broken",
+        label: "Clear broken objects",
+        description:
+          "Remove references to missing tilesets or objects from the map",
+        onClick: () => {
+          modals.openContextModal({
+            modal: "confirm",
+            title: "Clear broken references?",
+            centered: true,
+            withCloseButton: true,
+            innerProps: {
+              makeItems: () => {
+                const items: ItemStatus[] = [];
+                const state = store.getState();
+                const broken = brokenTileGroups(state);
+                items.push({
+                  ok: broken.length === 0,
+                  message:
+                    broken.length === 0
+                      ? "No broken tiles found."
+                      : `Found ${broken.length} broken tiles`,
+                });
+                return items;
+              },
+              confirmLabel: "Yes, clear references",
+              msg: "Are you sure you want to clear all broken references? This will delete all map objects that are not backed by a tileset. This action cannot be undone.",
+              onConfirm: () => {},
+            },
+          });
+        },
+        leftSection: <IconUnlink />,
+      },
+      {
+        id: "reset-map",
+        label: "Reset map",
+        description: "Delete all objects in the current map",
+        onClick: () => {
+          modals.openConfirmModal({
+            title: "Reset map?",
+            children: (
+              <Text size="sm">
+                This will delete everything in the map. This action cannot be
+                undone.
+              </Text>
+            ),
+            labels: { confirm: "Reset map", cancel: "Cancel" },
+            confirmProps: { color: "red" },
+            centered: true,
+            withCloseButton: false,
+            onConfirm: () => dispatch(resetMapThunk()),
+          });
+        },
+        leftSection: <IconTrash />,
+      },
+    ],
+    [dispatch],
+  );
+  useSpotlightActions(
+    "map-editor",
+    mapSpotlightActions,
+    activeTab === "map-editor",
+  );
 
   // This waits for our tileset and map to load from the shell.
   use(initPromise);

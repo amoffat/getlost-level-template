@@ -8,6 +8,7 @@ import {
   isTileGroupInstance,
   MapObj,
   NpcInstance,
+  SpeakableMapObj,
 } from "@/types/map";
 import {
   EntranceProps,
@@ -466,6 +467,20 @@ export const slice = createSlice({
         Object.values(entities).filter((obj): obj is NpcInstance =>
           isNpcInstance(obj),
         ),
+    ),
+    // Objects that are able to speak in dialogue
+    speakers: createMapSelector(
+      [(state) => state.objects.entities],
+      (entities): SpeakableMapObj[] => {
+        const npcs = Object.values(entities).filter((obj) => {
+          const validClass = isNpcInstance(obj) || isTileGroupInstance(obj);
+          if (validClass && obj.name && obj.name.trim() !== "") {
+            return true;
+          }
+          return false;
+        });
+        return npcs as SpeakableMapObj[];
+      },
     ),
     numSelectedTgInstances: createMapSelector(
       [(state) => state.selectedIds, (state) => state.objects.entities],

@@ -1,10 +1,12 @@
 import type { StoryNode } from "@/slices/story";
+import { Dialogue } from "@/types/dialogue";
 import type { Edge } from "@xyflow/react";
 
 export interface BaseStoryDoc {
   version: number;
   nodes: StoryNode[];
   edges: Edge[];
+  dialogues: Record<string, Dialogue>;
 }
 
 // New doc: persist nodes and edges from slice state

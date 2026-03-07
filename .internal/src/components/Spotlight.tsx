@@ -1,32 +1,21 @@
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { brokenTileGroups } from "@/selectors/map";
-import { selectors, actions as tsActions } from "@/slices/tilesetEditor";
-import { actions as uiActions } from "@/slices/ui";
+import { useAppDispatch } from "@/hooks/redux";
+import {
+  useSpotlightActions,
+  useSpotlightActionsStore,
+} from "@/hooks/useSpotlightActions";
 import { store } from "@/store/store";
-import { resetAllThunk, resetMapThunk } from "@/thunks/map";
-import { isTileGroupTemplate } from "@/types/tilegroup";
-import { collisionMaskStore } from "@/utils/maskStore";
-import { Text } from "@mantine/core";
+import { resetAllThunk } from "@/thunks/map";
 import { modals } from "@mantine/modals";
-import {
-  Spotlight as MantineSpotlight,
-  SpotlightActionData,
-} from "@mantine/spotlight";
-import {
-  IconEye,
-  IconSearch,
-  IconTrash,
-  IconUnlink,
-} from "@tabler/icons-react";
+import { Spotlight as MantineSpotlight } from "@mantine/spotlight";
+import { IconBiohazard, IconSearch } from "@tabler/icons-react";
 import { useMemo } from "react";
 import { ItemStatus } from "./modals/ItemizedConfirmModal";
 
 export default function Spotlight() {
   const dispatch = useAppDispatch();
-  const activeTab = useAppSelector((state) => state.ui.activeTab);
 
-  const actions: SpotlightActionData[] = useMemo(() => {
-    const actions = [
+  const globalActions = useMemo(
+    () => [
       {
         id: "reset-all",
         label: "Reset all",
@@ -88,128 +77,15 @@ export default function Spotlight() {
             },
           });
         },
-        leftSection: <IconTrash />,
+        leftSection: <IconBiohazard />,
       },
-    ];
+    ],
+    [dispatch],
+  );
 
-    if (activeTab === "map-editor") {
-      actions.push(
-        ...[
-          {
-            id: "clear-broken",
-            label: "Clear broken objects",
-            description:
-              "Remove references to missing tilesets or objects from the map",
-            onClick: () => {
-              modals.openContextModal({
-                modal: "confirm",
-                title: "Clear broken references?",
-                centered: true,
-                withCloseButton: true,
-                innerProps: {
-                  makeItems: () => {
-                    const items: ItemStatus[] = [];
-                    const state = store.getState();
-                    const broken = brokenTileGroups(state);
-                    items.push({
-                      ok: broken.length === 0,
-                      message:
-                        broken.length === 0
-                          ? "No broken tiles found."
-                          : `Found ${broken.length} broken tiles`,
-                    });
-                    return items;
-                  },
-                  confirmLabel: "Yes, clear references",
-                  msg: "Are you sure you want to clear all broken references? This will delete all map objects that are not backed by a tileset. This action cannot be undone.",
-                  onConfirm: () => {},
-                },
-              });
-            },
-            leftSection: <IconUnlink />,
-          },
-          {
-            id: "reset-map",
-            label: "Reset map",
-            description: "Delete all objects in the current map",
-            onClick: () => {
-              modals.openConfirmModal({
-                title: "Reset map?",
-                children: (
-                  <Text size="sm">
-                    This will delete everything in the map. This action cannot
-                    be undone.
-                  </Text>
-                ),
-                labels: { confirm: "Reset map", cancel: "Cancel" },
-                confirmProps: { color: "red" },
-                centered: true,
-                withCloseButton: false,
-                onConfirm: () => dispatch(resetMapThunk()),
-              });
-            },
-            leftSection: <IconTrash />,
-          },
-        ],
-      );
-    } else if (activeTab === "tileset-editor") {
-      actions.push(
-        ...[
-          {
-            id: "toggle-hidden-tilesets",
-            label: "Toggle hidden tilesets",
-            description: "Toggle hidden tilesets",
-            leftSection: <IconEye />,
-            onClick: () => {
-              const state = store.getState();
-              const current = state.ui.flags.showHiddenTilesets;
-              dispatch(uiActions.setFlags({ showHiddenTilesets: !current }));
-            },
-          },
-          {
-            id: "reset-colliders",
-            label: "Reset tileset's colliders",
-            description: "Remove all collider data from the active tileset",
-            leftSection: <IconTrash />,
-            onClick: () => {
-              const state = store.getState();
-              const ts = selectors.activeTileset(state);
-              if (!ts) return;
+  useSpotlightActions("global", globalActions);
 
-              const changes = [];
-              for (const id of ts.tiles.ids) {
-                const obj = ts.tiles.entities[id];
-                if (!isTileGroupTemplate(obj)) continue;
-
-                if (obj.collisions.mask) {
-                  collisionMaskStore.delete(obj.collisions.mask);
-                }
-
-                changes.push({
-                  id: obj.id,
-                  changes: {
-                    collisions: {
-                      mask: null,
-                      shapes: [],
-                      simplify: 1,
-                    },
-                  },
-                });
-              }
-              dispatch(
-                tsActions.updateManyTilesetObjects({ tsId: ts.id, changes }),
-              );
-              dispatch(tsActions.clearSelection());
-            },
-          },
-        ],
-      );
-    }
-
-    actions.sort((a, b) => a.label.localeCompare(b.label));
-
-    return actions;
-  }, [dispatch, activeTab]);
+  const actions = useSpotlightActionsStore();
 
   return (
     <MantineSpotlight

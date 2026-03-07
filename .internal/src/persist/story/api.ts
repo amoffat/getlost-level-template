@@ -9,7 +9,7 @@ export async function loadStory(): Promise<{
   nodes: StoryNode[];
   edges: Edge[];
 }> {
-  const res = await fetch("/level/story", { method: "GET" });
+  const res = await fetch("/level/story.cbor.gz", { method: "GET" });
   if (res.status === 404) {
     // No story persisted yet
     return { nodes: [], edges: [] };
@@ -21,7 +21,7 @@ export async function loadStory(): Promise<{
   const migrated = await applyMigrations(
     baseDecoded,
     migrations,
-    latestVersion
+    latestVersion,
   );
 
   const decoded = baseDecoded as LatestStoryDoc;
@@ -37,7 +37,7 @@ export async function loadStory(): Promise<{
 
 export async function saveStory(
   nodes: StoryNode[],
-  edges: Edge[]
+  edges: Edge[],
 ): Promise<void> {
   const doc: LatestStoryDoc = {
     version: latestVersion,
@@ -51,7 +51,7 @@ export async function saveStory(
   new Uint8Array(ab).set(payload);
   const blob = new Blob([ab], { type: "application/cbor" });
 
-  const res = await fetch("/level/story", {
+  const res = await fetch("/level/story.cbor.gz", {
     method: "PUT",
     headers: { "content-type": "application/cbor" },
     body: blob,

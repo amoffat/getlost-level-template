@@ -5,28 +5,28 @@ import { reflowStoryThunk } from "@/thunks/story";
 import { showNotification } from "@/utils/notifications";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
+  Button,
   Fieldset,
   Flex,
   ScrollArea,
-  Select,
   Stack,
   TextInput,
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
-import { IconRefresh } from "@tabler/icons-react";
+import { IconSitemap } from "@tabler/icons-react";
 import {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
   Background,
   BackgroundVariant,
-  ControlButton,
   Controls,
   getOutgoers,
   IsValidConnection,
   OnConnect,
   OnEdgesChange,
   OnNodesChange,
+  Panel,
   ReactFlow,
   SelectionMode,
   useReactFlow,
@@ -146,7 +146,7 @@ export default function StoryTab({
           type: "story",
           data: {
             id: `milestone-${currentNodes.length + 1}`,
-            npcs: {},
+            npcs: [],
           },
         };
         const fromNodeId = connectionState.fromNode!.id;
@@ -204,15 +204,6 @@ export default function StoryTab({
       window.dispatchEvent(new Event("resize"));
     });
   };
-
-  const npcOptions = useMemo(() => {
-    return npcs
-      .filter((npc) => npc.name)
-      .map((npc) => ({
-        value: npc.id,
-        label: npc.name!,
-      }));
-  }, [npcs]);
 
   const tips: ReactNode[] = useMemo(() => {
     const tips = [];
@@ -276,11 +267,20 @@ export default function StoryTab({
                   color="#505050ff"
                   variant={BackgroundVariant.Dots}
                 />
-                <Controls position="top-left">
-                  <ControlButton onClick={handleReflow} title="Auto layout">
-                    <IconRefresh size={16} />
-                  </ControlButton>
-                </Controls>
+                <Controls
+                  position="top-left"
+                  showInteractive={false}
+                ></Controls>
+                <Panel position="top-center">
+                  <Button
+                    variant="outline"
+                    onClick={handleReflow}
+                    ml="xs"
+                    leftSection={<IconSitemap size={20} />}
+                  >
+                    Organize
+                  </Button>
+                </Panel>
               </ReactFlow>
             </div>
           </Flex>
@@ -307,14 +307,7 @@ export default function StoryTab({
                     onChange={onIdChange}
                   />
                 </Fieldset>
-                <Fieldset legend="NPC Dialogue" p="xs">
-                  <Select
-                    label="NPC"
-                    description="Whose dialogue should change at this milestone?"
-                    placeholder="Choose an NPC"
-                    data={npcOptions}
-                  />
-                </Fieldset>
+                <Fieldset legend="Dialogues" p="xs"></Fieldset>
               </Stack>
             </ScrollArea>
           </Stack>

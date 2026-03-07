@@ -1,8 +1,10 @@
 import * as constants from "@/constants";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useSpotlightActions } from "@/hooks/useSpotlightActions";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
+import { store } from "@/store/store";
 import {
   clearCandAnimFramesThunk,
   setActiveTilesetThunk,
@@ -16,6 +18,7 @@ import { TilesetTabName } from "@/types/tab";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Mode } from "@/types/tileset";
 import { TemplateObject } from "@/types/tilesetobject";
+import { collisionMaskStore } from "@/utils/maskStore";
 import {
   npcSort,
   objectAnimationSort,
@@ -24,6 +27,7 @@ import {
 import { Split } from "@gfazioli/mantine-split-pane";
 import { Anchor, Group, ScrollArea, Stack, Tabs } from "@mantine/core";
 import {
+  IconEye,
   IconLetterZ,
   IconReplace,
   IconRun,
@@ -65,6 +69,61 @@ export default function TilesetEditorTab({
   initPromise: Promise<unknown>;
 }) {
   const dispatch = useAppDispatch();
+  const activeTab = useAppSelector((state) => state.ui.activeTab);
+
+  // Register tileset-editor spotlight actions
+  const tilesetSpotlightActions = useMemo(
+    () => [
+      {
+        id: "toggle-hidden-tilesets",
+        label: "Toggle hidden tilesets",
+        description: "Toggle hidden tilesets",
+        leftSection: <IconEye />,
+        onClick: () => {
+          const state = store.getState();
+          const current = state.ui.flags.showHiddenTilesets;
+          dispatch(uiActions.setFlags({ showHiddenTilesets: !current }));
+        },
+      },
+      {
+        id: "reset-colliders",
+        label: "Reset tileset's colliders",
+        description: "Remove all collider data from the active tileset",
+        leftSection: <IconTrash />,
+        onClick: () => {
+          const state = store.getState();
+          const ts = selectors.activeTileset(state);
+          if (!ts) return;
+
+          const changes = [];
+          for (const id of ts.tiles.ids) {
+            const obj = ts.tiles.entities[id];
+            if (!isTileGroupTemplate(obj)) continue;
+
+            if (obj.collisions.mask) {
+              collisionMaskStore.delete(obj.collisions.mask);
+            }
+
+            changes.push({
+              id: obj.id,
+              changes: {
+                collisions: {
+                  mask: null,
+                  shapes: [],
+                  simplify: 1,
+                },
+              },
+            });
+          }
+          dispatch(actions.updateManyTilesetObjects({ tsId: ts.id, changes }));
+          dispatch(actions.clearSelection());
+        },
+      },
+    ],
+    [dispatch],
+  );
+  useSpotlightActions("tileset-editor", tilesetSpotlightActions, activeTab === "tileset-editor");
+
   const navigate = useNavigate();
   const { tsid: tsId, objid: objId } = useParams<{
     tsid?: string;

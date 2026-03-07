@@ -14,13 +14,14 @@ import {
   unlinkDialogueThunk,
 } from "@/thunks/dialogue";
 import type { Dialogue, DNode } from "@/types/dialogue";
+import { isNpcInstance, isTileGroupInstance } from "@/types/map";
 import type { NpcRequiredAnimation, NpcTemplate } from "@/types/npc";
+import { TileGroupTemplate } from "@/types/tilegroup";
 import { createUrlPath } from "@/utils/dialogue";
 import { showNotification } from "@/utils/notifications";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
   ActionIcon,
-  Alert,
   Box,
   Button,
   Fieldset,
@@ -69,6 +70,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import {
+  ReactElement,
   ReactNode,
   use,
   useCallback,
@@ -88,9 +90,9 @@ import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
 import Tip from "../Tip";
 
-interface NpcNodeProps {
-  npcTemplate: NpcTemplate;
-  npcId: string;
+interface ObjNodeProps {
+  getIcon: (isActive: boolean, expanded: boolean) => ReactElement;
+  objId: string;
   onCreate: (dialogueId: string) => void;
 }
 
@@ -99,8 +101,8 @@ interface DialogueNodeProps {
   onSelect?: (value: string) => void;
 }
 
-function isNpcNode(props: Record<string, any>): props is NpcNodeProps {
-  return "npcId" in props;
+function isObjNode(props: Record<string, any>): props is ObjNodeProps {
+  return "objId" in props;
 }
 
 export default function DialogueTab({
@@ -117,8 +119,8 @@ export default function DialogueTab({
     milestone?: string;
   }>();
   const location = useLocation();
-  const npcs = useAppSelector(mapSelectors.selectNpcs);
-  const allMilestones = useAppSelector((state) => state.story.nodes);
+  const speakers = useAppSelector(mapSelectors.speakers);
+  const availableMilestones = useAppSelector(dSelectors.availableMilestones);
   const allDialogues = useAppSelector(dSelectors.allDialogues);
   const activeDialogueId = useAppSelector(
     (state) => state.dialogue.activeDialogueId,
@@ -135,6 +137,10 @@ export default function DialogueTab({
   const treeSelectRef = useRef(tree.select);
   treeSelectRef.current = tree.select;
   const navigate = useNavigate();
+
+  const sortedSpeakers = useMemo(() => {
+    return [...speakers].sort((a, b) => a.name.localeCompare(b.name));
+  }, [speakers]);
 
   // Sync activeDialogueId from URL parameter
   useEffect(() => {
@@ -153,7 +159,10 @@ export default function DialogueTab({
       return;
     }
 
-    if (dlgId !== activeDialogueId) {
+    if (
+      dlgId !== activeDialogueId ||
+      !tree.selectedState.includes(createUrlPath(dlgId, msId ?? null))
+    ) {
       dispatch(dActions.setActiveDialogue(dlgId));
       tree.select(createUrlPath(dlgId, msId ?? null));
     }
@@ -390,7 +399,7 @@ export default function DialogueTab({
       const path = createUrlPath(dialogueId, milestone);
       navigate(`/dialogues/${path}`);
     },
-    [navigate, createSpeech, flowContainerRef],
+    [navigate, createSpeech],
   );
 
   const onSelectDialogue = useCallback(
@@ -419,70 +428,91 @@ export default function DialogueTab({
   const treeData: TreeNodeData[] = useMemo(() => {
     const state = store.getState();
 
-    const tree: TreeNodeData[] = npcs
-      .filter((npc) => npc.name && npc.name.length > 0)
-      .map((npc) => {
+    const tree: TreeNodeData[] = sortedSpeakers.map((obj) => {
+      let getIcon: (
+        isActive: boolean,
+        expanded: boolean,
+      ) => ReactElement = () => <></>;
+      const label = obj.name;
+
+      if (isNpcInstance(obj)) {
         const npcTemplate = tsSelectors.templateFromId(
           state,
-          npc.tsObjId,
+          obj.tsObjId,
         ) as NpcTemplate;
 
-        const npcDialogues = allDialogues.filter(
-          (dlg) => dlg.subjectId === npc.id,
-        );
+        getIcon = (isActive: boolean, expanded: boolean) => {
+          let icon: ReactNode;
+          const animations = npcTemplate.animations;
+          let animName: NpcRequiredAnimation = "WalkRight";
+          if (expanded) animName = "WalkDown";
 
-        const children = npcDialogues.flatMap((dlg) => {
-          if (dlg.milestones.length === 0) {
-            return [
-              {
-                value: dlg.id,
-                label: dlg.id,
-                nodeProps: {
-                  dialogue: dlg,
-                  onSelect: onSelectDialogue,
-                } satisfies DialogueNodeProps,
-              },
-            ];
+          if (isActive) {
+            icon = (
+              <TileAnimation
+                frames={animations[animName].animation.frames}
+                scale={2}
+                bounded
+              />
+            );
+          } else {
+            const tg = animations[animName].animation.frames[0]!.tg;
+            icon = <TilesetGroup scale={2} group={tg} bounded />;
           }
-
-          return dlg.milestones.map((ms) => ({
-            value: createUrlPath(dlg.id, ms),
-            label: ms,
-            nodeProps: {
-              dialogue: dlg,
-              onSelect: onSelectDialogue,
-            } satisfies DialogueNodeProps,
-          }));
-        });
-
-        return {
-          value: npc.id,
-          label: npc.name,
-          nodeProps: {
-            npcTemplate,
-            npcId: npc.id,
-            onCreate: onCreateDialogue,
-          } satisfies NpcNodeProps,
-          children,
+          return icon;
         };
+      } else if (isTileGroupInstance(obj)) {
+        getIcon = () => {
+          const template = tsSelectors.templateFromId(
+            state,
+            obj.tsObjId,
+          ) as TileGroupTemplate;
+          return <TilesetGroup scale={2} group={template} bounded />;
+        };
+      }
+
+      const objDialogues = allDialogues.filter(
+        (dlg) => dlg.subjectId === obj.id,
+      );
+
+      const children = objDialogues.flatMap((dlg) => {
+        if (dlg.milestones.length === 0) {
+          return [
+            {
+              value: dlg.id,
+              label: dlg.id,
+              nodeProps: {
+                dialogue: dlg,
+                onSelect: onSelectDialogue,
+              } satisfies DialogueNodeProps,
+            },
+          ];
+        }
+
+        return dlg.milestones.map((ms) => ({
+          value: createUrlPath(dlg.id, ms),
+          label: ms,
+          nodeProps: {
+            dialogue: dlg,
+            onSelect: onSelectDialogue,
+          } satisfies DialogueNodeProps,
+        }));
       });
 
-    const unassigned = allDialogues.filter((dlg) => dlg.subjectId === null);
-    tree.push({
-      value: "unassigned",
-      label: "Unassigned",
-      nodeProps: {},
-      children: unassigned.map((dlg) => ({
-        value: dlg.id,
-        label: dlg.id,
+      return {
+        value: obj.id,
+        label,
         nodeProps: {
-          dialogue: dlg,
-          onSelect: onSelectDialogue,
-        },
-      })),
+          getIcon,
+          objId: obj.id,
+          onCreate: onCreateDialogue,
+        } satisfies ObjNodeProps,
+        children,
+      };
     });
+
     return tree;
-  }, [npcs, allDialogues, onCreateDialogue, onSelectDialogue]);
+  }, [sortedSpeakers, allDialogues, onCreateDialogue, onSelectDialogue]);
 
   const onMilestoneChange = useCallback(
     (milestones: string[]) => {
@@ -529,10 +559,23 @@ export default function DialogueTab({
       t.push(
         "Click 'New Speech' to add a new speech node connected to this one.",
       );
+      t.push(
+        "If your node has responses, you can drag a connection from the right handle to create a new connected node.",
+      );
+    }
+
+    if (!activeDialogueId) {
+      if (speakers.length === 0) {
+        t.push("No named NPCs or tile groups found in the map.");
+      } else {
+        t.push(
+          "Select a dialogue from the left panel, or create a new one by clicking the '+' icon next to an NPC or tile group.",
+        );
+      }
     }
 
     return t;
-  }, [activeNodes]);
+  }, [activeNodes, activeDialogueId, speakers.length]);
 
   return (
     <Split h="100dvh" style={{ flex: 1 }}>
@@ -643,12 +686,6 @@ export default function DialogueTab({
                 <>
                   <Fieldset legend="Dialogue" p="xs">
                     <Stack p={0}>
-                      {activeMilestones.length > 1 && (
-                        <Alert title="Linked Dialogue">
-                          There are multiple milestones attached to this
-                          dialogue.
-                        </Alert>
-                      )}
                       <MultiSelect
                         required
                         label={
@@ -687,10 +724,7 @@ export default function DialogueTab({
                         searchable
                         value={activeMilestones}
                         onChange={onMilestoneChange}
-                        data={[
-                          defaultMilestone,
-                          ...allMilestones.map((m) => m.data.id),
-                        ]}
+                        data={availableMilestones}
                         nothingFoundMessage="No milestones found"
                         disabled={!activeDialogueId}
                       />
@@ -718,20 +752,20 @@ type LeafProps = Pick<
   "node" | "selected" | "elementProps" | "tree" | "expanded"
 >;
 
-function NpcLeaf({
+function ObjLeaf({
   node,
   selected,
   elementProps,
   expanded,
-  npcTemplate,
+  getIcon,
   onCreate,
-  npcId,
+  objId,
   tree,
-}: LeafProps & NpcNodeProps) {
+}: LeafProps & ObjNodeProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const npcDialogues = useAppSelector((state) =>
-    dSelectors.dialoguesForNpc(state, npcId),
+    dSelectors.dialoguesForObj(state, objId),
   );
   const hasDefaultMilestone = npcDialogues.some((dlg) =>
     dlg.milestones.includes(defaultMilestone),
@@ -742,30 +776,17 @@ function NpcLeaf({
   const isChildSelected = npcDialogues.some(
     (dlg) => dlg.id === activeDialogueId,
   );
-  const activeNpc = selected || isChildSelected;
-
-  let icon: React.ReactNode;
-  const animations = npcTemplate.animations;
-  let animName: NpcRequiredAnimation = "WalkRight";
-  if (expanded) animName = "WalkDown";
-
-  if (activeNpc) {
-    icon = (
-      <TileAnimation frames={animations[animName].animation.frames} scale={2} />
-    );
-  } else {
-    const tg = animations[animName].animation.frames[0]!.tg;
-    icon = <TilesetGroup scale={2} group={tg} />;
-  }
+  const isActive = selected || isChildSelected;
+  const icon = getIcon(isActive, expanded);
 
   const handleAddDialogue = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    tree.expand(npcId);
+    tree.expand(objId);
 
     const dId = crypto.randomUUID();
     const milestones = hasDefaultMilestone ? [] : [defaultMilestone];
-    dispatch(dActions.addDialogue(createDialogue(dId, npcId, milestones)));
+    dispatch(dActions.addDialogue(createDialogue(dId, objId, milestones)));
     onCreate(dId);
   };
 
@@ -780,7 +801,7 @@ function NpcLeaf({
   return (
     <Box p="xs" {...elementProps} onClick={handleClick}>
       <Group gap="md">
-        {icon}
+        <Box w="15%">{icon}</Box>
         <Text fz="sm">{node.label}</Text>
         <Box style={{ flexGrow: 1 }} />
         <Tooltip label="Add new dialogue for this NPC">
@@ -793,7 +814,7 @@ function NpcLeaf({
   );
 }
 
-function DialogueLeaf({ node, elementProps, selected, expanded }: LeafProps) {
+function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const activeDialogueId = useAppSelector(
@@ -811,7 +832,6 @@ function DialogueLeaf({ node, elementProps, selected, expanded }: LeafProps) {
 
   const dialogue = props.dialogue as Dialogue | undefined;
   const milestoneCount = dialogue?.milestones.length ?? 0;
-  const isDefault = node.label === defaultMilestone;
 
   let content: React.ReactNode;
   if (milestoneCount === 0) {
@@ -952,11 +972,11 @@ function DialogueLeaf({ node, elementProps, selected, expanded }: LeafProps) {
 function Leaf(payload: RenderTreeNodePayload) {
   const props = payload.node.nodeProps!;
 
-  if (isNpcNode(props)) {
+  if (isObjNode(props)) {
     return (
-      <NpcLeaf
-        npcTemplate={props.npcTemplate}
-        npcId={props.npcId}
+      <ObjLeaf
+        getIcon={props.getIcon}
+        objId={props.objId}
         onCreate={props.onCreate}
         {...payload}
       />

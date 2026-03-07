@@ -33,6 +33,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import LogPane from "./LogPane";
 import { MarkdownModal } from "./MarkdownModal";
 import TimeDisplay from "./TimeDisplay";
+import AdvancedSection from "./common/AdvancedSection";
 
 export default function PreviewTab() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -679,6 +680,16 @@ export default function PreviewTab() {
                 {createDebugSwitch("Show object details", "objDetails")}
               </Stack>
             </Fieldset>
+
+            <AdvancedSection>
+              <Fieldset legend="Developer Tools">
+                <Stack gap="xs" p={0}>
+                  <Anchor href="/main.js" target="_blank" size="xs">
+                    Open compiled level js
+                  </Anchor>
+                </Stack>
+              </Fieldset>
+            </AdvancedSection>
           </Stack>
         </Split.Pane>
       </Split>

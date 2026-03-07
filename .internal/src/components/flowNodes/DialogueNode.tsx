@@ -54,7 +54,8 @@ export default function DialogueNode({
     if (!dialogue?.subjectId) return undefined;
     return mapSelectors.selectObject(state, dialogue.subjectId);
   }) as SpeakableMapObj | undefined;
-  const label = data?.label ?? obj?.name ?? "Sign";
+
+  const label = data?.label ?? obj?.name;
 
   // Clean up empty choices when deselected
   useEffect(() => {

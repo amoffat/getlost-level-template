@@ -1,3 +1,5 @@
+import { choose } from "./rand";
+
 interface State {
   id: string;
 
@@ -22,8 +24,14 @@ interface State {
  * for NPCs, and can also be used for other things like unlocking certain paths
  * in the level.
  */
-class StateMachine {
+export class StoryStateMachine {
   private _states: Record<string, State> = {};
+
+  constructor(states: State[]) {
+    for (const state of states) {
+      this._states[state.id] = state;
+    }
+  }
 
   public get current(): Set<State> | null {
     const satisfiedStates: Set<State> = new Set();
@@ -83,13 +91,14 @@ class StateMachine {
 
   /**
    * Based on the current satisfied dependencies, returns the dialogue ids for
-   * the given NPC, if they exist. Multiple ids may be returned if there are
-   * multiple states satisfied. In which case, you should pick one randomly.
+   * the given NPC, if they exist. Multiple ids may be be found, in which case
+   * one is chosen at random.
    *
    * @param npcId The id of the NPC to retrieve dialogue for
-   * @returns The dialogue ids, if they exists
+   * @returns A dialogue id, or null if no dialogue is available for the given
+   * NPC
    */
-  public dialogueFor(npcId: string): Set<string> | null {
+  public dialogueFor(npcId: string): string | null {
     const currentStates = this.current;
     if (!currentStates) return null;
 
@@ -102,7 +111,7 @@ class StateMachine {
     }
 
     if (dialogueIds.size > 0) {
-      return dialogueIds;
+      return choose(Array.from(dialogueIds));
     }
     return null;
   }

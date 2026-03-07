@@ -32,7 +32,7 @@ router.get("/", (_req, res) => {
           console.error("Error sending gzipped story:", err);
           if (!res.headersSent) res.sendStatus(500);
         }
-      }
+      },
     );
   } catch (error) {
     console.error("Error handling story get:", error);
@@ -40,7 +40,7 @@ router.get("/", (_req, res) => {
   }
 });
 
-// PUT "/" — save DOT text body
+// PUT "/" — save CBOR story file
 router.put(
   "/",
   express.raw({
@@ -58,5 +58,5 @@ router.put(
       console.error("Error saving story:", error);
       res.sendStatus(500);
     }
-  }
+  },
 );

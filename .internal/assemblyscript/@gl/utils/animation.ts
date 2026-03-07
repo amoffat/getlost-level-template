@@ -1,3 +1,4 @@
+import { globalTicker } from "../ticker";
 import { addListener } from "./callbacks";
 import { type EasingFunction, Easings } from "./easing";
 
@@ -20,7 +21,6 @@ export class Animator {
   private _reverseCurve: EasingFunction;
   private _direction: 1 | -1 = 1; // 1 for forward, -1 for backward
   private _isPlaying: boolean = false;
-  private _lastTickTime: number | null = null;
   // Number of additional passes to run after the initial pass.
   // 0 => play once, Infinity => loop forever, N => play N additional passes.
   repeat: number;
@@ -28,7 +28,7 @@ export class Animator {
   private _repeatsLeft: number = 0;
 
   private _selfTick: boolean;
-  private _rafId: number | null = null;
+  private _tickCallback: ((deltaMs: number) => void) | null = null;
 
   constructor({
     durationMs,
@@ -54,17 +54,8 @@ export class Animator {
     this._repeatsLeft = this.repeat;
 
     if (selfTick) {
-      const tick = (timestamp: number) => {
-        if (this._lastTickTime === null) {
-          this._lastTickTime = timestamp;
-        } else {
-          const deltaMs = timestamp - this._lastTickTime;
-          this.tick(deltaMs);
-          this._lastTickTime = timestamp;
-        }
-        this._rafId = requestAnimationFrame(tick);
-      };
-      this._rafId = requestAnimationFrame(tick);
+      this._tickCallback = (deltaMs) => this.tick(deltaMs);
+      globalTicker.subscribe(this._tickCallback);
     }
   }
 
@@ -111,7 +102,7 @@ export class Animator {
     this._elapsedTime += deltaMS * this._direction;
     const progress = Math.max(
       0,
-      Math.min(this._elapsedTime / this._adjustedDuration, 1)
+      Math.min(this._elapsedTime / this._adjustedDuration, 1),
     );
 
     const valueFn =
@@ -132,6 +123,10 @@ export class Animator {
 
       if (!canRepeat) {
         this._isPlaying = false;
+        if (this._tickCallback) {
+          globalTicker.unsubscribe(this._tickCallback);
+          this._tickCallback = null;
+        }
         if (naturalEnd) {
           for (const callback of this._completeCallbacks) {
             callback(atForwardEnd);
@@ -179,6 +174,10 @@ export class Animator {
     this._isPlaying = true;
     this._elapsedTime = 0;
     this._repeatsLeft = this.repeat;
+    if (this._selfTick && !this._tickCallback) {
+      this._tickCallback = (deltaMs) => this.tick(deltaMs);
+      globalTicker.subscribe(this._tickCallback);
+    }
     for (const callback of this._startCallbacks) {
       callback(true);
     }
@@ -189,6 +188,10 @@ export class Animator {
     this._isPlaying = true;
     this._elapsedTime = this._adjustedDuration;
     this._repeatsLeft = this.repeat;
+    if (this._selfTick && !this._tickCallback) {
+      this._tickCallback = (deltaMs) => this.tick(deltaMs);
+      globalTicker.subscribe(this._tickCallback);
+    }
     for (const callback of this._startCallbacks) {
       callback(false);
     }
@@ -196,9 +199,9 @@ export class Animator {
 
   stop() {
     this._isPlaying = false;
-    if (this._rafId) {
-      cancelAnimationFrame(this._rafId);
-      this._rafId = null;
+    if (this._tickCallback) {
+      globalTicker.unsubscribe(this._tickCallback);
+      this._tickCallback = null;
     }
   }
 

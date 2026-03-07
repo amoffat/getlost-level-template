@@ -28,7 +28,7 @@ export default function expressApi(): Plugin {
       levelRouter.use("/pathgraph.gz", pathgraphRouter);
       levelRouter.use("/tilesets", tilesetRouter);
       levelRouter.use("/map.cbor.gz", mapRouter);
-      levelRouter.use("/story", storyRouter);
+      levelRouter.use("/story.cbor.gz", storyRouter);
       levelRouter.use("/locales", localeRouter);
 
       rootRouter.use("/files", filesRouter);

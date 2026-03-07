@@ -19,7 +19,7 @@ export function randIndex(count: number): number {
  */
 export function randIndexAvoid(
   count: number,
-  avoidIndex?: number | null
+  avoidIndex?: number | null,
 ): number {
   if (count <= 1) return 0;
   const avoid =
@@ -40,7 +40,7 @@ export function randIndexAvoid(
  */
 export function randIndexAvoidMany(
   count: number,
-  avoid: ReadonlySet<number> | ReadonlyArray<number>
+  avoid: ReadonlySet<number> | ReadonlyArray<number>,
 ): number {
   if (count <= 0) return -1;
   let avoidSet: ReadonlySet<number>;
@@ -79,7 +79,7 @@ export function sample<T>(arr: readonly T[]): T | undefined {
 export function sampleAvoid<T>(
   arr: readonly T[],
   avoid: T,
-  eq: (a: T, b: T) => boolean = (a, b) => a === b
+  eq: (a: T, b: T) => boolean = (a, b) => a === b,
 ): T | undefined {
   if (!arr.length) return undefined;
   const candidates = arr.filter((x) => !eq(x, avoid));
@@ -117,9 +117,7 @@ export function randFloat(min = 0, max = 1): number {
  */
 export function randInt(min: number, max: number): number {
   if (max < min) {
-    const t = min;
-    min = max;
-    max = t;
+    [min, max] = [max, min];
   }
   const span = max - min + 1;
   return min + Math.floor(float01() * span);
@@ -189,9 +187,7 @@ export function inRing(minRadius: number, maxRadius: number): Vector {
   let r0 = minRadius;
   let r1 = maxRadius;
   if (r1 < r0) {
-    const t = r0;
-    r0 = r1;
-    r1 = t;
+    [r0, r1] = [r1, r0];
   }
   if (r0 < 0) r0 = 0;
   if (r1 < 0) r1 = 0;
@@ -265,7 +261,7 @@ export function gaussianVec2(meanX = 0, meanY = 0, std = 1): Vector {
 export function triangular(
   min: number,
   max: number,
-  mode: number = (min + max) * 0.5
+  mode: number = (min + max) * 0.5,
 ): number {
   const u = float01();
   const c = (mode - min) / (max - min);
@@ -295,7 +291,7 @@ export function exponential(lambda = 1): number {
  */
 export function weightedIndex(weights: ReadonlyArray<number>): number {
   let total = 0;
-  for (let i = 0; i < weights.length; i++) total += weights[i]!;
+  for (const w of weights) total += w;
   if (total <= 0) return -1;
   const r = randFloat(0, total);
   let acc = 0;
@@ -307,28 +303,13 @@ export function weightedIndex(weights: ReadonlyArray<number>): number {
 }
 
 /**
- * Pick an index from non-negative weights (StaticArray equivalent). Returns -1 if all zero.
- * Useful for: fixed-size tables, performance-critical sampling.
- */
-export const weightedIndexS = weightedIndex;
-
-/**
  * Choose a random element from a non-empty Array.
  * Useful for: picking random prefab, sound, or waypoint.
  */
 export function choose<T>(arr: ReadonlyArray<T>): T {
   if (arr.length === 0) throw new Error("choose() on empty array");
-  // Delegate to sample to keep a single selection logic
-  const v = sample(arr);
-  // sample on non-empty array always returns a value
-  return v as T;
+  return arr[randInt(0, arr.length - 1)]!;
 }
-
-/**
- * Choose a random element from a non-empty StaticArray equivalent.
- * Useful for: fixed pools like preallocated particles or colors.
- */
-export const chooseS = choose as <T>(arr: ReadonlyArray<T>) => T;
 
 // Shuffles (Fisher–Yates)
 /**
@@ -345,9 +326,3 @@ export function shuffle<T>(arr: T[]): void {
     }
   }
 }
-
-/**
- * In-place Fisher–Yates shuffle for StaticArray equivalent.
- * Useful for: randomizing fixed buffers like tile variants or color ramps.
- */
-export const shuffleS = shuffle as <T>(arr: T[]) => void;

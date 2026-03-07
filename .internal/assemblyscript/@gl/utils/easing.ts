@@ -29,6 +29,22 @@ export const Easings = {
   easeInSine: (t: number): number => -Math.cos((t * Math.PI) / 2) + 1,
   easeOutSine: (t: number): number => Math.sin((t * Math.PI) / 2),
   easeInOutSine: (t: number): number => -(Math.cos(Math.PI * t) - 1) / 2,
+
+  /**
+   * Models game-feel gravity for use with the parabolic arc formula 4t(1-t).
+   * The peak is reached at ~40% of elapsed time (fast rise, easeOutSine),
+   * followed by an accelerating descent (easeInQuad) for a snappy fast-fall.
+   */
+  jumpGravity: (t: number): number => {
+    const peakAt = 0.4;
+    if (t <= peakAt) {
+      const u = t / peakAt;
+      return Math.sin((u * Math.PI) / 2) * 0.5;
+    } else {
+      const u = (t - peakAt) / (1 - peakAt);
+      return 0.5 + u * u * 0.5;
+    }
+  },
 } as const;
 
 /**
@@ -45,7 +61,7 @@ export function rampHoldRamp(
   n: number,
   t: number,
   lpad: number,
-  rpad: number = -1.0
+  rpad: number = -1.0,
 ): number {
   // Degenerate and boundary cases
   if (n <= 0.0) return 0.0;

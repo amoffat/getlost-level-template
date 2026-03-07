@@ -68,10 +68,23 @@ function forceExportPlugin(exports: ForceExportConfig[]): Plugin {
         // Inject at the top of the file
         const injectedCode = `${imports}
 
+let player;
+let states;
+let story;
+
 // Force-exported symbols - prevents tree-shaking
 export const __internal__ = {
-${references}
+  ${references}
 };
+
+export function __internal__init() {
+  player = new __internal__.Player();
+  states = [];
+  story = new __internal__.StoryStateMachine(states);
+  for (const name of __internal__.getAllChars()) {
+    new __internal__.Character(name);
+  }
+}
 
 ${code}`;
         return {
@@ -169,7 +182,9 @@ export async function bundleWithRollup(
   // are included in the final bundle and are therefore accessible.
   const forceExports: ForceExportConfig[] = [
     { symbolNames: ["Player"], importPath: "@gl/utils/player" },
+    { symbolNames: ["StoryStateMachine"], importPath: "@gl/utils/state" },
     { symbolNames: ["Character", "chars"], importPath: "@gl/utils/character" },
+    { symbolNames: ["globalTicker"], importPath: "@gl/ticker" },
     {
       symbolNames: [{ name: "getAll", alias: "getAllChars" }],
       importPath: "@gl/api/w2h/char",
@@ -191,9 +206,11 @@ export async function bundleWithRollup(
       throw new Error("No output generated from Rollup");
     }
 
+    const code = output[0].code;
+
     // Inject metadata as a global object at the beginning of the bundle
     const metadataComment = `// ${JSON.stringify(metadata, null, 0)}\n\n`;
-    return metadataComment + output[0].code;
+    return metadataComment + code;
   } finally {
     bundle.close();
   }

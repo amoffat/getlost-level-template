@@ -1,3 +1,4 @@
+import { globalTicker } from "@gl/ticker";
 import * as char from "../api/w2h/char";
 import * as navigation from "../api/w2h/navigation";
 
@@ -74,6 +75,10 @@ export class Character {
     this._sourcePos = this._pos;
     this._isPlayer = this.name == "player";
     chars.set(name, this);
+
+    globalTicker.subscribe((deltaMs) => {
+      this.tick(deltaMs);
+    });
   }
 
   static get(name: string): Character {

@@ -3,7 +3,6 @@ import type { Edge, Node } from "@xyflow/react";
 
 export interface StoryNodeData extends Record<string, unknown> {
   id: string;
-  npcs: Record<string, string>;
 }
 
 export type StoryNode = Node<StoryNodeData>;

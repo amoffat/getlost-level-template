@@ -10,12 +10,12 @@ import { catchError, concatMap, debounceTime, tap } from "rxjs/operators";
 const listenerMiddleware = createListenerMiddleware();
 
 // Stream of save requests for the single story
-const saveRequests$ = new Subject<{ story: RootState["story"] }>();
+const saveRequests$ = new Subject<{ story: RootState["story"]; dialogues: RootState["dialogue"]["dialogues"]["entities"] }>();
 
 saveRequests$
   .pipe(
     debounceTime(500), // collapse rapid bursts of actions
-    concatMap(({ story }) =>
+    concatMap(({ story, dialogues }) =>
       from(saveStory(story.nodes, story.edges)).pipe(
         tap(() => {
           log.info(
@@ -40,7 +40,7 @@ startAppListening({
   predicate: (action) => action.type.startsWith(slice.name),
   effect: async (_action, { getState }) => {
     const state = getState();
-    saveRequests$.next({ story: state.story });
+    saveRequests$.next({ story: state.story, dialogues: state.dialogue.dialogues.entities });
   },
 });
 
