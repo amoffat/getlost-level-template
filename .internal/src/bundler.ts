@@ -77,7 +77,7 @@ export const __internal__ = {
   ${references}
 };
 
-export function __internal__init() {
+export function __internal__init(story) {
   player = new __internal__.Player();
   states = [];
   story = new __internal__.StoryStateMachine(states);

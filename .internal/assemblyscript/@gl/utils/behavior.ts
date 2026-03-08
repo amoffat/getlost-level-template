@@ -1,5 +1,5 @@
-import { globalTicker } from "@gl/ticker";
 import { type Vector } from "../api/types/vector";
+import { globalTicker } from "../ticker";
 
 export interface Entity {
   getPos: () => Vector;
@@ -8,7 +8,15 @@ export interface Entity {
 
 export type ActionCallback = () => void;
 
-export abstract class Action {
+/**
+ * A bag of key→value parameters forwarded to every {@link Action.tick} call
+ * when a {@link Behavior} is performed.  Actions can query these at
+ * perform-time to adjust their logic (e.g. a DashAction reading a
+ * `"target"` parameter to change dash direction).
+ */
+export type BehaviorParams = Record<string, unknown>;
+
+export abstract class Action<Params extends object = BehaviorParams> {
   /**
    * A unique identifier for this type of action, used as part of the key
    * when registering listeners on a {@link BehaviorInProgress}.
@@ -18,9 +26,14 @@ export abstract class Action {
   /**
    * @param subject The subject to operate on
    * @param delta The timestep in ms
+   * @param params Perform-time parameters supplied via {@link Behavior.performOn}
    * @return Whether the behavior is complete and should transition to the next one
    */
-  abstract tick(subject: Entity, delta: number): boolean;
+  abstract tick(args: {
+    subject: Entity;
+    delta: number;
+    params: Params;
+  }): boolean;
 }
 
 export class Behavior extends Action {
@@ -76,16 +89,23 @@ export class Behavior extends Action {
     this._endListeners = endListeners;
   }
 
-  public tick(subject: Entity, delta: number): boolean {
+  public tick({
+    subject,
+    delta,
+    params,
+  }: {
+    subject: Entity;
+    delta: number;
+    params: BehaviorParams;
+  }): boolean {
     if (this.inProgress === null) {
-      this.inProgress = new BehaviorInProgress(
-        subject,
-        this.actions,
-        this.sideActions,
-        this._listenerPrefix,
-        this._startListeners ?? new Map(),
-        this._endListeners ?? new Map(),
-      );
+      this.inProgress = new BehaviorInProgress({
+        entity: subject,
+        actions: this.actions,
+        sideActions: this.sideActions,
+        prefix: this._listenerPrefix,
+        params,
+      });
     }
     this.inProgress.tick(delta);
     if (this.inProgress.isDone) {
@@ -95,8 +115,16 @@ export class Behavior extends Action {
     return false;
   }
 
-  public performOn(entity: Entity): BehaviorInProgress {
-    const bip = new BehaviorInProgress(entity, this.actions, this.sideActions);
+  public performOn(
+    entity: Entity,
+    params: BehaviorParams = {},
+  ): BehaviorInProgress {
+    const bip = new BehaviorInProgress({
+      entity,
+      actions: this.actions,
+      sideActions: this.sideActions,
+      params,
+    });
     const tick = (delta: number) => bip.tick(delta);
     globalTicker.subscribe(tick);
     bip.onBehaviorEnd(() => {
@@ -114,27 +142,32 @@ export class BehaviorInProgress {
   private firedSidesForIndex: number = -1;
   private backgroundActions: Action[] = [];
   private prefix: string;
-  private startListeners: Map<string, ActionCallback[]>;
-  private endListeners: Map<string, ActionCallback[]>;
+  private startListeners: Map<string, ActionCallback[]> = new Map();
+  private endListeners: Map<string, ActionCallback[]> = new Map();
   private actionKeys: string[];
   private validKeys: Set<string>;
   private behaviorEndListeners: ActionCallback[] = [];
   private behaviorEndFired: boolean = false;
+  private params: BehaviorParams;
 
-  constructor(
-    entity: Entity,
-    actions: Action[],
-    sideActions: Map<number, Action[]> = new Map(),
-    prefix: string = "",
-    startListeners: Map<string, ActionCallback[]> = new Map(),
-    endListeners: Map<string, ActionCallback[]> = new Map(),
-  ) {
+  constructor({
+    entity,
+    actions,
+    sideActions = new Map(),
+    prefix = "",
+    params = {},
+  }: {
+    entity: Entity;
+    actions: Action[];
+    sideActions?: Map<number, Action[]>;
+    prefix?: string;
+    params?: BehaviorParams;
+  }) {
     this.entity = entity;
     this.actions = actions;
     this.sideActions = sideActions;
     this.prefix = prefix;
-    this.startListeners = startListeners;
-    this.endListeners = endListeners;
+    this.params = params;
     this.actionKeys = this.computeActionKeys();
     this.validKeys = new Set<string>();
     this.collectValidKeys(this.actions, this.prefix, this.validKeys);
@@ -211,7 +244,8 @@ export class BehaviorInProgress {
   public tick(delta: number): void {
     // Tick background (also) actions, removing completed ones
     this.backgroundActions = this.backgroundActions.filter(
-      (action) => !action.tick(this.entity, delta),
+      (action) =>
+        !action.tick({ subject: this.entity, delta, params: this.params }),
     );
 
     if (this.currentIndex >= this.actions.length) return;
@@ -240,7 +274,9 @@ export class BehaviorInProgress {
       const sides = this.sideActions.get(this.currentIndex);
       if (sides) {
         for (const side of sides) {
-          if (!side.tick(this.entity, delta)) {
+          if (
+            !side.tick({ subject: this.entity, delta, params: this.params })
+          ) {
             this.backgroundActions.push(side);
           }
         }
@@ -249,7 +285,11 @@ export class BehaviorInProgress {
 
     // Tick the main sequential action
     const action = this.actions[this.currentIndex]!;
-    const complete = action.tick(this.entity, delta);
+    const complete = action.tick({
+      subject: this.entity,
+      delta,
+      params: this.params,
+    });
     if (complete) {
       // Fire end listeners for this action
       this.fireListeners(

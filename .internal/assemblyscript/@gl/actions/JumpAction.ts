@@ -2,7 +2,11 @@ import { Animator } from "../utils/animation";
 import { Action, type Entity } from "../utils/behavior";
 import { type EasingFunction, Easings } from "../utils/easing";
 
-export class JumpAction extends Action {
+interface JumpParams {
+  direction?: { x: number; y: number };
+}
+
+export class JumpAction extends Action<JumpParams> {
   private readonly _name: string;
 
   public get name(): string {
@@ -47,7 +51,15 @@ export class JumpAction extends Action {
     });
   }
 
-  public tick(subject: Entity, delta: number): boolean {
+  public tick({
+    subject,
+    delta,
+    params,
+  }: {
+    subject: Entity;
+    delta: number;
+    params: JumpParams;
+  }): boolean {
     if (!this._started) {
       const pos = subject.getPos();
       this._startX = pos.x;
@@ -55,6 +67,8 @@ export class JumpAction extends Action {
       this._started = true;
       this._animator.play();
     }
+
+    const direction = params.direction ?? this._direction;
 
     this._animator.tick(delta);
 
@@ -65,8 +79,8 @@ export class JumpAction extends Action {
     const t = this._animator.value;
     const arc = 4 * t * (1 - t);
     subject.setPos(
-      this._startX + this._direction.x * arc,
-      this._startY - this._direction.y * arc,
+      this._startX + direction.x * arc,
+      this._startY - direction.y * arc,
     );
 
     if (!this._animator.isAnimating) {

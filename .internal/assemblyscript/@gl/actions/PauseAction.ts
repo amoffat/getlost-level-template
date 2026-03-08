@@ -1,4 +1,4 @@
-import { Action, type Entity } from "../utils/behavior";
+import { Action, type BehaviorParams, type Entity } from "../utils/behavior";
 
 export class PauseAction extends Action {
   private readonly _name: string;
@@ -22,7 +22,13 @@ export class PauseAction extends Action {
     this.duration = duration;
   }
 
-  public tick(_subject: Entity, delta: number): boolean {
+  public tick({
+    delta,
+  }: {
+    subject: Entity;
+    delta: number;
+    params: BehaviorParams;
+  }): boolean {
     this.elapsed += delta;
     if (this.elapsed >= this.duration) {
       return true;

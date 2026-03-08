@@ -2,7 +2,10 @@ import { Animator } from "../utils/animation";
 import { Action, type Entity } from "../utils/behavior";
 import { type EasingFunction, Easings } from "../utils/easing";
 
-export class DashAction extends Action {
+interface DashParams {
+  distance?: number;
+}
+export class DashAction extends Action<DashParams> {
   private readonly _name: string;
 
   public get name(): string {
@@ -42,7 +45,15 @@ export class DashAction extends Action {
     });
   }
 
-  public tick(subject: Entity, delta: number): boolean {
+  public tick({
+    subject,
+    delta,
+    params,
+  }: {
+    subject: Entity;
+    delta: number;
+    params: DashParams;
+  }): boolean {
     if (!this._started) {
       const pos = subject.getPos();
       this._startX = pos.x;
@@ -51,9 +62,11 @@ export class DashAction extends Action {
       this._animator.play();
     }
 
+    const distance = params.distance ?? this._distance;
+
     this._animator.tick(delta);
     subject.setPos(
-      this._startX + this._animator.value * this._distance,
+      this._startX + this._animator.value * distance,
       this._startY,
     );
 
