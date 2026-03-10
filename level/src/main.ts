@@ -169,7 +169,7 @@ export function sunChangedEvent(event: SunEvent): void {
 }
 
 /**
- * Called when the game is paused, `tickRoom` stops ticking and this function
+ * Called when the game is paused, `tick` stops ticking and this function
  * starts. Use this to advance things that you want to keep moving while the
  * game is paused.
  *

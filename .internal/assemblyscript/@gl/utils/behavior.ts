@@ -4,6 +4,8 @@ import { globalTicker } from "../ticker";
 export interface Entity {
   getPos: () => Vector;
   setPos: (x: number, y: number) => void;
+  getHeight: () => number;
+  setHeight: (height: number) => void;
 }
 
 export type ActionCallback = () => void;

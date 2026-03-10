@@ -4,6 +4,7 @@ set -euo pipefail
 WORKSPACE_DIR=$(realpath /workspaces/*)
 INTERNAL_DIR="$WORKSPACE_DIR/.internal"
 
+npm update -g
 npm install --prefix "$INTERNAL_DIR"
 
 uv self update

@@ -45,14 +45,8 @@
       },
       "extensions": [
         "esbenp.prettier-vscode",
-        "eamodio.gitlens",
         "dbaeumer.vscode-eslint",
-        "github.vscode-github-actions",
-        "ms-python.python",
-        "ms-python.black-formatter",
-        "ms-python.mypy-type-checker",
-        "ms-python.isort",
-        "ms-python.flake8"
+        "github.vscode-github-actions"
       ]
     }
   },
