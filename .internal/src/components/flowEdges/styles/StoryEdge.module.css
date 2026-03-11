@@ -1,0 +1,30 @@
+.notToggle {
+  position: absolute;
+  pointer-events: all;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3em;
+  height: 2em;
+  border-radius: 10%;
+  font-size: 0.5em;
+  font-weight: 700;
+  user-select: none;
+}
+
+.notToggle.active {
+  background: var(--mantine-color-red-7);
+  border: 2px solid var(--mantine-color-red-4);
+  color: var(--mantine-color-red-0);
+}
+
+.notToggle.inactive {
+  background: var(--mantine-color-dark-5);
+  border: 2px solid var(--mantine-color-dark-3);
+  color: var(--mantine-color-dark-1);
+}
+
+.negatedEdge {
+  stroke: var(--mantine-color-red-5) !important;
+}

@@ -66,8 +66,14 @@ function SpeakerIcon({
 
 // Simple stub node component for story graph nodes.
 // Displays the node label and exposes top/bottom handles for connections.
-export default function StoryNode({ data, selected }: NodeProps<DNode>) {
-  const milestoneId = data.id;
+export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
+  // Read node data from Redux so the label stays in sync when edited via
+  // MilestoneEditor (which writes to Redux without going through ReactFlow's
+  // internal state, just like DialogueNode does).
+  const reduxNode = useAppSelector((state: RootState) =>
+    state.story.nodes.find((n) => n.id === id),
+  );
+  const milestoneId = reduxNode?.data.id ?? data.id;
 
   const dialogues = useAppSelector((state: RootState) =>
     dSelectors.dialogueForMilestone(state, milestoneId),

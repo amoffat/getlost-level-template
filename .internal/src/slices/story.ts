@@ -7,6 +7,17 @@ export interface StoryNodeData extends Record<string, unknown> {
 
 export type StoryNode = Node<StoryNodeData>;
 
+export interface JunctionNodeData extends Record<string, unknown> {
+  id: string;
+  kind: "or";
+}
+
+export type JunctionNode = Node<JunctionNodeData>;
+
+export interface StoryEdgeData extends Record<string, unknown> {
+  negated: boolean;
+}
+
 interface StoryState {
   nodes: StoryNode[];
   edges: Edge[];

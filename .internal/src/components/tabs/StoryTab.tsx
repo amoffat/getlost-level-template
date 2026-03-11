@@ -1,19 +1,13 @@
-import { selectors } from "@/slices/mapEditor";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import type { StoryNode as DNode } from "@/slices/story";
-import { setEdges, setNodeData, setNodes } from "@/slices/story";
+import { setEdges, setNodes } from "@/slices/story";
+import type { RootState } from "@/store/store";
 import { reflowStoryThunk } from "@/thunks/story";
 import { showNotification } from "@/utils/notifications";
 import { Split } from "@gfazioli/mantine-split-pane";
-import {
-  Button,
-  Fieldset,
-  Flex,
-  ScrollArea,
-  Stack,
-  TextInput,
-} from "@mantine/core";
+import { Button, Flex, ScrollArea, Stack } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
-import { IconSitemap } from "@tabler/icons-react";
+import { IconLogicOr, IconScriptPlus, IconSitemap } from "@tabler/icons-react";
 import {
   addEdge,
   applyEdgeChanges,
@@ -29,15 +23,17 @@ import {
   Panel,
   ReactFlow,
   SelectionMode,
+  useOnSelectionChange,
   useReactFlow,
   type Edge,
   type OnConnectEnd,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { ReactNode, use, useCallback, useMemo, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import type { RootState } from "../../store/store";
+import StoryEdge from "../flowEdges/StoryEdge";
+import OrNode from "../flowNodes/OrNode";
 import StoryNode from "../flowNodes/StoryNode";
+import MilestoneEditor from "../MilestoneEditor";
 import Tip from "../Tip";
 
 export default function StoryTab({
@@ -47,27 +43,14 @@ export default function StoryTab({
 }) {
   use(initPromise);
 
-  const [nodeId, setNodeId] = useState<string | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const dispatch = useAppDispatch();
 
   const dState = useAppSelector((state: RootState) => state.story);
   const { nodes, edges } = dState;
   const flowContainerRef = useRef<HTMLDivElement>(null);
-  const npcs = useAppSelector(selectors.selectNpcs);
   const reactFlowInstance = useReactFlow<DNode, Edge>();
   const { screenToFlowPosition, getNodes, getEdges } = reactFlowInstance;
-
-  const node = nodes.find((n) => n.id === nodeId) || null;
-  const nd = node?.data;
-
-  const onIdChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (!node) return;
-      const id = event.currentTarget.value;
-      dispatch(setNodeData({ id: node.id, data: { id } }));
-    },
-    [node, dispatch],
-  );
 
   const onNodesChange: OnNodesChange<DNode> = useDebouncedCallback(
     (changes) => {
@@ -126,38 +109,53 @@ export default function StoryTab({
     [getNodes, getEdges],
   );
 
-  const onConnectEnd: OnConnectEnd = useCallback(
-    (event, connectionState) => {
-      // when a connection is dropped on the pane it's not valid
-      if (!connectionState.isValid) {
-        const { clientX, clientY } =
-          "changedTouches" in event ? event.changedTouches[0] : event;
-        const position = screenToFlowPosition({
-          x: clientX,
-          y: clientY,
-        });
+  const createMilestone = useCallback(
+    ({
+      position,
+      connectTo,
+    }: {
+      position?: { x: number; y: number };
+      connectTo?: {
+        nodeId: string;
+        handlePosition: string | null | undefined;
+      };
+    } = {}) => {
+      if (!position) {
+        const rect = flowContainerRef.current?.getBoundingClientRect();
+        const centerScreen = rect
+          ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+          : { x: 0, y: 0 };
+        position = screenToFlowPosition(centerScreen);
+      }
 
-        // Create a new node at this position
-        const newNodeId = crypto.randomUUID();
-        const currentNodes = reactFlowInstance.getNodes();
-        const newNode: DNode = {
+      const newNodeId = crypto.randomUUID();
+      const currentNodes = reactFlowInstance.getNodes();
+      const newNode: DNode = {
+        id: newNodeId,
+        position,
+        type: "story",
+        selected: true,
+        data: {
           id: newNodeId,
-          position,
-          type: "story",
-          data: {
-            id: `milestone-${currentNodes.length + 1}`,
-            npcs: [],
-          },
-        };
-        const fromNodeId = connectionState.fromNode!.id;
-        const fromPosition = connectionState.fromHandle?.position;
+          npcs: [],
+        },
+      };
 
-        // Determine source and target based on connection origin
+      const updatedNodes: DNode[] = [
+        ...currentNodes.map((n) => ({ ...n, selected: false })),
+        newNode,
+      ];
+
+      reactFlowInstance.setNodes(updatedNodes);
+      dispatch(setNodes(updatedNodes));
+
+      // Optionally connect the new node to an existing one
+      if (connectTo) {
         // If connecting from bottom handle, existing node → new node
         // If connecting from top handle, new node → existing node
-        const isFromBottom = fromPosition === "bottom";
-        const source = isFromBottom ? fromNodeId : newNodeId;
-        const target = isFromBottom ? newNodeId : fromNodeId;
+        const isFromBottom = connectTo.handlePosition === "bottom";
+        const source = isFromBottom ? connectTo.nodeId : newNodeId;
+        const target = isFromBottom ? newNodeId : connectTo.nodeId;
 
         const newEdge: Edge = {
           id: crypto.randomUUID(),
@@ -165,22 +163,76 @@ export default function StoryTab({
           target,
         };
 
-        // Add to flow immediately, then sync Redux.
-        reactFlowInstance.addNodes(newNode);
-        reactFlowInstance.addEdges(newEdge);
-        dispatch(setNodes(reactFlowInstance.getNodes()));
-        dispatch(setEdges(reactFlowInstance.getEdges()));
+        const updatedEdges = [...reactFlowInstance.getEdges(), newEdge];
+        reactFlowInstance.setEdges(updatedEdges);
+        dispatch(setEdges(updatedEdges));
       }
+
+      setSelectedNodeId(newNodeId);
     },
     [dispatch, reactFlowInstance, screenToFlowPosition],
   );
 
-  const onSelectNode = useCallback(
-    (_event: React.MouseEvent, node: DNode) => {
-      setNodeId(node.id);
+  const createJunction = useCallback(
+    (kind: "and" | "or") => {
+      const rect = flowContainerRef.current?.getBoundingClientRect();
+      const centerScreen = rect
+        ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+        : { x: 0, y: 0 };
+      const position = screenToFlowPosition(centerScreen);
+
+      const newNodeId = crypto.randomUUID();
+      const currentNodes = reactFlowInstance.getNodes();
+      const newNode: DNode = {
+        id: newNodeId,
+        position,
+        type: kind,
+        selected: true,
+        data: {
+          id: newNodeId,
+          kind,
+        },
+      };
+
+      const updatedNodes: DNode[] = [
+        ...currentNodes.map((n) => ({ ...n, selected: false })),
+        newNode,
+      ];
+
+      reactFlowInstance.setNodes(updatedNodes);
+      dispatch(setNodes(updatedNodes));
+      setSelectedNodeId(newNodeId);
     },
-    [setNodeId],
+    [dispatch, reactFlowInstance, screenToFlowPosition],
   );
+
+  const onConnectEnd: OnConnectEnd = useCallback(
+    (event, connectionState) => {
+      if (connectionState.isValid) return;
+
+      const { clientX, clientY } =
+        "changedTouches" in event ? event.changedTouches[0] : event;
+
+      createMilestone({
+        position: screenToFlowPosition({ x: clientX, y: clientY }),
+        connectTo: {
+          nodeId: connectionState.fromNode!.id,
+          handlePosition: connectionState.fromHandle?.position,
+        },
+      });
+    },
+    [createMilestone, screenToFlowPosition],
+  );
+
+  useOnSelectionChange({
+    onChange: ({ nodes: selectedNodes }) => {
+      if (selectedNodes.length === 1) {
+        setSelectedNodeId(selectedNodes[0].id);
+      } else {
+        setSelectedNodeId(null);
+      }
+    },
+  });
 
   const handleReflow = useCallback(async () => {
     const resp = await dispatch(reflowStoryThunk()).unwrap();
@@ -192,10 +244,6 @@ export default function StoryTab({
       reactFlowInstance.fitView({ duration: 250, padding: 0.2 });
     });
   }, [dispatch, reactFlowInstance]);
-
-  const handlePaneClick = useCallback(() => {
-    setNodeId(null);
-  }, []);
 
   const handlePaneResize = () => {
     // Trigger redrawLayout when panels are resized
@@ -246,16 +294,14 @@ export default function StoryTab({
                 snapGrid={[20, 20]}
                 panOnDrag={[2]}
                 deleteKeyCode={["Delete", "Backspace"]}
-                nodeTypes={{ story: StoryNode }}
+                nodeTypes={{ story: StoryNode, or: OrNode }}
+                edgeTypes={{ default: StoryEdge }}
                 defaultNodes={nodes}
                 defaultEdges={edges}
-                onNodeClick={onSelectNode}
-                onNodeDragStart={onSelectNode}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onConnectEnd={onConnectEnd}
-                onPaneClick={handlePaneClick}
                 isValidConnection={isValidConnection}
                 selectionOnDrag
                 selectionMode={SelectionMode.Partial}
@@ -272,6 +318,24 @@ export default function StoryTab({
                   showInteractive={false}
                 ></Controls>
                 <Panel position="top-center">
+                  <Button
+                    variant="filled"
+                    onClick={() => createMilestone()}
+                    leftSection={<IconScriptPlus size={20} />}
+                  >
+                    New Milestone
+                  </Button>
+
+                  <Button
+                    variant="filled"
+                    color="teal"
+                    onClick={() => createJunction("or")}
+                    ml="xs"
+                    leftSection={<IconLogicOr size={20} />}
+                  >
+                    OR
+                  </Button>
+
                   <Button
                     variant="outline"
                     onClick={handleReflow}
@@ -299,15 +363,12 @@ export default function StoryTab({
             <Tip tips={tips} />
             <ScrollArea type="never" style={{ flex: 1 }}>
               <Stack p={0} pb={50}>
-                <Fieldset legend="Milestone Details" p="xs">
-                  <TextInput
-                    label="Name"
-                    description="A name to reference this milestone. Must be unique."
-                    value={nd?.id ?? ""}
-                    onChange={onIdChange}
+                {selectedNodeId && (
+                  <MilestoneEditor
+                    key={selectedNodeId}
+                    nodeId={selectedNodeId}
                   />
-                </Fieldset>
-                <Fieldset legend="Dialogues" p="xs"></Fieldset>
+                )}
               </Stack>
             </ScrollArea>
           </Stack>

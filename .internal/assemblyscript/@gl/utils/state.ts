@@ -1,6 +1,6 @@
 import { choose } from "./rand";
 
-interface State {
+export interface State {
   id: string;
 
   // The ids of any states that this state depends on in order to be satisfied.

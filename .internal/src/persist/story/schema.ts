@@ -2,6 +2,12 @@ import type { StoryNode } from "@/slices/story";
 import { Dialogue } from "@/types/dialogue";
 import type { Edge } from "@xyflow/react";
 
+export interface StoryState {
+  id: string;
+  dependencies: string[];
+  dependents: string[];
+}
+
 export interface BaseStoryDoc {
   version: number;
   nodes: StoryNode[];
@@ -23,5 +29,11 @@ export interface StoryDocV4 extends Omit<StoryDocV3, "version"> {
   version: 4;
 }
 
-export type LatestStoryDoc = StoryDocV4;
-export const latestVersion = 4;
+export interface StoryDocV5 extends Omit<StoryDocV4, "version"> {
+  version: 5;
+  states: StoryState[];
+  dialogues: Record<string, Dialogue>;
+}
+
+export type LatestStoryDoc = StoryDocV5;
+export const latestVersion = 5;
