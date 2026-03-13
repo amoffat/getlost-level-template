@@ -28,3 +28,16 @@
 .negatedEdge {
   stroke: var(--mantine-color-red-5) !important;
 }
+
+.ancestorEdge {
+  stroke: var(--mantine-color-blue-5) !important;
+  stroke-width: 3 !important;
+  stroke-dasharray: 8 4 !important;
+  animation: dashFlow 0.6s linear infinite !important;
+}
+
+@keyframes dashFlow {
+  to {
+    stroke-dashoffset: -12;
+  }
+}

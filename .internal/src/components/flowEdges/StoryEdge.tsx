@@ -1,3 +1,4 @@
+import { useAncestorHighlight } from "@/contexts/AncestorHighlightContext";
 import { useAppDispatch } from "@/hooks/redux";
 import type { StoryEdgeData } from "@/slices/story";
 import { setEdges } from "@/slices/story";
@@ -9,6 +10,7 @@ import {
   type Edge,
   type EdgeProps,
 } from "@xyflow/react";
+import classNames from "classnames";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./styles/StoryEdge.module.css";
 
@@ -32,8 +34,10 @@ export default function StoryEdge({
   markerEnd,
   data,
   selected,
+  interactionWidth,
 }: EdgeProps<StoryEdge>) {
   const dispatch = useAppDispatch();
+  const { edgeIds: ancestorEdgeIds } = useAncestorHighlight();
   const { getEdges, setEdges: setFlowEdges } = useReactFlow();
 
   const [edgePath, labelX, labelY] = getBezierPath({
@@ -46,6 +50,7 @@ export default function StoryEdge({
   });
 
   const negated = data?.negated ?? false;
+  const isAncestor = ancestorEdgeIds.has(id);
   const [hovered, setHovered] = useState(false);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showToggle = negated || hovered || selected;
@@ -87,7 +92,13 @@ export default function StoryEdge({
           path={edgePath}
           markerEnd={markerEnd}
           style={style}
-          className={negated ? styles.negatedEdge : undefined}
+          interactionWidth={interactionWidth}
+          className={
+            classNames({
+              [styles.negatedEdge]: negated,
+              [styles.ancestorEdge]: isAncestor,
+            }) || undefined
+          }
         />
       </g>
       {showToggle && (

@@ -1,3 +1,4 @@
+import { useAncestorHighlight } from "@/contexts/AncestorHighlightContext";
 import type { JunctionNode as JNode } from "@/slices/story";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import classNames from "classnames";
@@ -8,9 +9,11 @@ import styles from "./styles/JunctionNode.module.css";
  * is enough to activate the outgoing connection.
  * Has a single target (top) and a single source (bottom) handle.
  */
-export default function OrNode({ selected }: NodeProps<JNode>) {
+export default function OrNode({ id, selected }: NodeProps<JNode>) {
+  const { nodeIds: ancestorNodeIds } = useAncestorHighlight();
   const cls = classNames(styles.node, styles.or, {
     [styles.selected]: selected,
+    [styles.ancestorHighlight]: !selected && ancestorNodeIds.has(id),
   });
 
   return (

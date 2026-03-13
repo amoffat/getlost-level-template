@@ -36,8 +36,17 @@ export const slice = createSlice({
   name: "story",
   initialState,
   reducers: {
+    // Syncing from React Flow: preserve the data of the nodes, because
+    // the redux store has the authoritative data and RF just manages
+    // positions, sizes, connections, etc.
     setNodes(state, action: PayloadAction<StoryNode[]>) {
-      state.nodes = action.payload;
+      state.nodes = action.payload.map((node) => {
+        const oldNode = state.nodes.find((n) => n.id === node.id);
+        if (oldNode) {
+          return { ...node, data: oldNode.data };
+        }
+        return node;
+      });
     },
     setEdges(state, action: PayloadAction<Edge[]>) {
       state.edges = action.payload;

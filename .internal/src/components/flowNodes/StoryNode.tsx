@@ -7,6 +7,7 @@ import type { RootState } from "@/store/store";
 import { isNpcInstance, isTileGroupInstance, type MapObj } from "@/types/map";
 import { NpcTemplate } from "@/types/npc";
 import { TileGroupTemplate } from "@/types/tilegroup";
+import { useAncestorHighlight } from "@/contexts/AncestorHighlightContext";
 import { Box, Flex, Stack, UnstyledButton } from "@mantine/core";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import classNames from "classnames";
@@ -67,6 +68,7 @@ function SpeakerIcon({
 // Simple stub node component for story graph nodes.
 // Displays the node label and exposes top/bottom handles for connections.
 export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
+  const { nodeIds: ancestorNodeIds } = useAncestorHighlight();
   // Read node data from Redux so the label stays in sync when edited via
   // MilestoneEditor (which writes to Redux without going through ReactFlow's
   // internal state, just like DialogueNode does).
@@ -99,6 +101,7 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
   const cls = classNames(styles.node, {
     "react-flow__node-default": true,
     [styles.selected]: selected,
+    [styles.ancestorHighlight]: !selected && ancestorNodeIds.has(id),
   });
 
   return (

@@ -68,7 +68,6 @@ import {
   useOnSelectionChange,
   useReactFlow,
 } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import {
   ReactElement,
   ReactNode,
@@ -89,6 +88,8 @@ import SpeechEditor from "../SpeechEditor";
 import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
 import Tip from "../Tip";
+
+import "@/styles/react-flow.css";
 
 interface ObjNodeProps {
   getIcon: (isActive: boolean, expanded: boolean) => ReactElement;

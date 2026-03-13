@@ -6,3 +6,14 @@
 .node.selected {
   outline: 3px solid rgb(0, 255, 0);
 }
+
+.node.ancestorHighlight {
+  outline: 3px solid var(--mantine-color-blue-5);
+  box-shadow: 0 0 12px var(--mantine-color-blue-5);
+}
+
+.node :global(.react-flow__handle) {
+  background: var(--mantine-color-blue-6);
+  width: 1em;
+  height: 1em;
+}

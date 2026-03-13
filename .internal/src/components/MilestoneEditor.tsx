@@ -13,13 +13,17 @@ import { useNavigate } from "react-router-dom";
 
 interface MilestoneEditorProps {
   nodeId: string;
+  autoFocus?: boolean;
 }
 
 /**
  * Editing panel for a selected story milestone node.
  * Renders in the right pane of the StoryTab.
  */
-export default function MilestoneEditor({ nodeId }: MilestoneEditorProps) {
+export default function MilestoneEditor({
+  nodeId,
+  autoFocus,
+}: MilestoneEditorProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -39,7 +43,8 @@ export default function MilestoneEditor({ nodeId }: MilestoneEditorProps) {
   );
 
   const [localName, setLocalName] = useState(milestoneId);
-  const isDuplicate = localName !== "" && otherIdsSet.has(localName);
+  const isEmpty = localName === "";
+  const isDuplicate = !isEmpty && otherIdsSet.has(localName);
 
   const dialogues = useAppSelector((state: RootState) =>
     dSelectors.dialogueForMilestone(state, milestoneId),
@@ -49,15 +54,27 @@ export default function MilestoneEditor({ nodeId }: MilestoneEditorProps) {
     dispatch(setNodeData({ id: nodeId, data: { id: value } }));
   }, 300);
 
+  const sanitizeName = useCallback((value: string) => {
+    return (
+      value
+        .toLowerCase()
+        // Replace spaces and non-ASCII characters with dashes
+        .replace(/[^\x21-\x7e]/g, "-")
+        // Replace any remaining non-alphanumeric/dash characters with dashes
+        .replace(/[^a-z0-9-]/g, "-")
+    );
+  }, []);
+
   const onNameChange = useCallback(
     (value: string) => {
-      setLocalName(value);
-      // Only persist if the name is unique
-      if (!otherIdsSet.has(value)) {
-        debouncedDispatch(value);
+      const sanitized = sanitizeName(value);
+      setLocalName(sanitized);
+      // Only persist if non-empty and unique
+      if (sanitized !== "" && !otherIdsSet.has(sanitized)) {
+        debouncedDispatch(sanitized);
       }
     },
-    [otherIdsSet, debouncedDispatch],
+    [sanitizeName, otherIdsSet, debouncedDispatch],
   );
 
   if (!node) {
@@ -70,17 +87,23 @@ export default function MilestoneEditor({ nodeId }: MilestoneEditorProps) {
     );
   }
 
+  const nameError = isEmpty
+    ? "Name cannot be empty."
+    : isDuplicate
+      ? "This milestone name is already in use."
+      : undefined;
+
   return (
     <Stack p={0} gap="md">
       <Fieldset legend="Milestone Details" p="xs">
         <TextInput
           label="Name"
           description="A name to reference this milestone. Must be unique."
-          defaultValue={milestoneId}
+          value={localName}
           onChange={(e) => onNameChange(e.currentTarget.value)}
-          error={
-            isDuplicate ? "This milestone name is already in use." : undefined
-          }
+          error={nameError}
+          autoFocus={autoFocus}
+          onFocus={(e) => autoFocus && e.currentTarget.select()}
         />
       </Fieldset>
 

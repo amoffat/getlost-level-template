@@ -1,0 +1,6 @@
+.react-flow,
+.react-flow.dark {
+  --xy-node-border-default: 3px solid var(--mantine-color-dark-5);
+  --xy-edge-stroke-width-default: 3px;
+  --xy-connectionline-stroke-width-default: 3px;
+}
