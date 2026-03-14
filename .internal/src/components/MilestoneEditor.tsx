@@ -103,7 +103,7 @@ export default function MilestoneEditor({
           onChange={(e) => onNameChange(e.currentTarget.value)}
           error={nameError}
           autoFocus={autoFocus}
-          onFocus={(e) => autoFocus && e.currentTarget.select()}
+          onFocus={(e) => e.currentTarget.select()}
         />
       </Fieldset>
 

@@ -38,6 +38,7 @@ import StoryEdge from "../flowEdges/StoryEdge";
 import OrNode from "../flowNodes/OrNode";
 import StoryNode from "../flowNodes/StoryNode";
 import MilestoneEditor from "../MilestoneEditor";
+import MilestoneList from "../MilestoneList";
 import Tip from "../Tip";
 
 import "@/styles/react-flow.css";
@@ -385,19 +386,17 @@ export default function StoryTab({
     },
   });
 
-  // Compute ancestor nodes and edges for the selected node
+  // Compute ancestor nodes and edges for the selected node via BFS
   const ancestorHighlight = useMemo(() => {
     const nodeIds = new Set<string>();
     const edgeIds = new Set<string>();
     if (!selectedNodeId) return { nodeIds, edgeIds };
 
-    const currentEdges = edges;
-    // BFS backwards through edges to find all ancestors
     const nodeQueue = [selectedNodeId];
     const visited = new Set<string>([selectedNodeId]);
     while (nodeQueue.length > 0) {
       const currentNode = nodeQueue.shift()!;
-      for (const edge of currentEdges) {
+      for (const edge of edges) {
         if (edge.target === currentNode) {
           visited.add(edge.source);
           nodeIds.add(edge.source);
@@ -408,6 +407,32 @@ export default function StoryTab({
     }
     return { nodeIds, edgeIds };
   }, [selectedNodeId, edges]);
+
+  const handleMilestoneSelect = useCallback(
+    (nodeId: string | null) => {
+      const currentNodes = reactFlowInstance.getNodes();
+      const updatedNodes = currentNodes.map((n) => ({
+        ...n,
+        selected: nodeId !== null && n.id === nodeId,
+      }));
+      reactFlowInstance.setNodes(updatedNodes);
+      // setSelectedNodeId is also updated via useOnSelectionChange,
+      // but set it immediately so ancestorHighlight reacts without delay.
+      setSelectedNodeId(nodeId);
+
+      if (nodeId) {
+        requestAnimationFrame(() => {
+          reactFlowInstance.fitView({
+            nodes: [{ id: nodeId }],
+            duration: 300,
+            padding: 1.5,
+            maxZoom: 1,
+          });
+        });
+      }
+    },
+    [reactFlowInstance],
+  );
 
   const handleReflow = useCallback(async () => {
     const resp = await dispatch(reflowStoryThunk()).unwrap();
@@ -428,7 +453,15 @@ export default function StoryTab({
     });
   };
 
-  const tips: ReactNode[] = useMemo(() => {
+  const isStoryNode = useMemo(() => {
+    const selectedNode = nodes.find((n) => n.id === selectedNodeId);
+    return selectedNode?.type === "story";
+  }, [nodes, selectedNodeId]);
+
+  const showMilestoneEditor = selectedNodeId && isStoryNode;
+  const showDependencyMilestones = nodes.length > 0;
+
+  const rightTips: ReactNode[] = useMemo(() => {
     const tips = [];
 
     tips.push("Create new story milestone nodes.");
@@ -448,7 +481,13 @@ export default function StoryTab({
         >
           <Stack h="100%" style={{ overflow: "hidden" }}>
             <ScrollArea type="never" style={{ flex: 1 }}>
-              <Stack pb={50}>{/* Left panel content will go here */}</Stack>
+              {showDependencyMilestones && (
+                <MilestoneList
+                  selectedNodeId={selectedNodeId}
+                  ancestorHighlight={ancestorHighlight}
+                  onSelect={handleMilestoneSelect}
+                />
+              )}
             </ScrollArea>
           </Stack>
         </Split.Pane>
@@ -542,10 +581,10 @@ export default function StoryTab({
           onResizeEnd={handlePaneResize}
         >
           <Stack h="100%" style={{ overflow: "hidden" }}>
-            <Tip tips={tips} />
+            <Tip tips={rightTips} />
             <ScrollArea type="never" style={{ flex: 1 }}>
               <Stack p={0} pb={50}>
-                {selectedNodeId && (
+                {showMilestoneEditor && (
                   <MilestoneEditor
                     key={selectedNodeId}
                     nodeId={selectedNodeId}

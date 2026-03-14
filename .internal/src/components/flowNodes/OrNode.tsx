@@ -1,5 +1,6 @@
 import { useAncestorHighlight } from "@/contexts/AncestorHighlightContext";
 import type { JunctionNode as JNode } from "@/slices/story";
+import { Stack } from "@mantine/core";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import classNames from "classnames";
 import styles from "./styles/JunctionNode.module.css";
@@ -12,6 +13,7 @@ import styles from "./styles/JunctionNode.module.css";
 export default function OrNode({ id, selected }: NodeProps<JNode>) {
   const { nodeIds: ancestorNodeIds } = useAncestorHighlight();
   const cls = classNames(styles.node, styles.or, {
+    "react-flow__node-default": true,
     [styles.selected]: selected,
     [styles.ancestorHighlight]: !selected && ancestorNodeIds.has(id),
   });
@@ -19,7 +21,7 @@ export default function OrNode({ id, selected }: NodeProps<JNode>) {
   return (
     <div className={cls}>
       <Handle type="target" position={Position.Top} />
-      OR
+      <Stack p={0}>OR</Stack>
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
