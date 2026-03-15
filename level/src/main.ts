@@ -21,6 +21,8 @@ let tiltShift!: number;
  */
 export async function init(): Promise<void> {
   tiltShift = addTiltShift(0.06);
+
+  console.log(story.current);
 }
 
 /**
@@ -36,31 +38,6 @@ export function movePlayer(dir: Vec2): void {
   player.direction.x = dir.x;
   player.direction.y = dir.y;
 }
-
-/**
- * Called when a user-created timer is triggered.
- *
- * @param id The id of the timer created by `timer.start`.
- */
-export function timerEvent(id: number): void {
-  console.log(`Timer event: ${id}`);
-}
-
-/**
- * Called when an async asset has been loaded.
- *
- * @param id The ID of the asset that was loaded.
- */
-export function assetLoadedEvent(id: number): void {}
-
-/**
- * Called when an async event is triggered. This is usually used for things like
- * animations being finished. This is to support the fact that AS doesn't yet
- * support promises or async/await.
- *
- * @param id The async event id.
- */
-export function asyncEvent(id: number): void {}
 
 /**
  * Called when a pickup event occurs.

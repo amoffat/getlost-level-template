@@ -1,85 +1,62 @@
-import type { StoryNode } from "@/slices/story";
+import type { StoryEdge, StoryNode } from "@/slices/story";
 import { applyMigrations } from "@/utils/migrations";
-import type { Edge } from "@xyflow/react";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
 import {
   BaseStoryDoc,
   LatestStoryDoc,
-  StoryState,
+  SerializedState,
   latestVersion,
 } from "./schema";
 
 /**
  * Converts ReactFlow nodes and edges into an array of serialized State objects.
- * Each node becomes a State, and edges define dependency/dependent relationships.
+ * Each node becomes a StoryState or OrState, and edges define
+ * dependency/dependent relationships.
  */
 export function serializeToStates(
   nodes: StoryNode[],
-  edges: Edge[],
-): StoryState[] {
-  const stateMap = new Map<string, StoryState>();
+  edges: StoryEdge[],
+): SerializedState[] {
+  const stateMap = new Map<string, SerializedState>();
 
   for (const node of nodes) {
-    stateMap.set(node.id, {
-      id: node.id,
-      dependencies: [],
-      dependents: [],
-    });
+    const kind = node.data?.kind === "or" ? "or" : "story";
+    if (kind === "story") {
+      stateMap.set(node.id, {
+        id: node.id,
+        kind,
+        dependencies: [],
+        dependents: [],
+      });
+    } else {
+      stateMap.set(node.id, {
+        id: node.id,
+        kind,
+        dependencies: [],
+        dependents: [],
+      });
+    }
   }
 
   for (const edge of edges) {
-    const source = stateMap.get(edge.source);
-    const target = stateMap.get(edge.target);
-    if (target && !target.dependencies.includes(edge.source)) {
-      target.dependencies.push(edge.source);
+    const source = stateMap.get(edge.source)!;
+    const target = stateMap.get(edge.target)!;
+    const negated = edge.data?.negated ?? false;
+    if (!target.dependencies.some((d) => d.stateId === edge.source)) {
+      target.dependencies.push({ stateId: edge.source, negated });
     }
-    if (source && !source.dependents.includes(edge.target)) {
-      source.dependents.push(edge.target);
+    if (!source.dependents.some((d) => d.stateId === edge.target)) {
+      source.dependents.push({ stateId: edge.target, negated });
     }
   }
 
   return Array.from(stateMap.values());
 }
 
-/**
- * Converts an array of serialized State objects back into ReactFlow nodes and edges.
- * Nodes are created with default positions; edges are derived from dependency relationships.
- */
-export function deserializeFromStates(states: StoryState[]): {
-  nodes: StoryNode[];
-  edges: Edge[];
-} {
-  const nodes: StoryNode[] = states.map((state) => ({
-    id: state.id,
-    type: "story",
-    position: { x: 0, y: 0 },
-    data: { id: state.id },
-  }));
-
-  const edgeSet = new Set<string>();
-  const edges: Edge[] = [];
-
-  for (const state of states) {
-    for (const depId of state.dependencies) {
-      const edgeId = `${depId}-${state.id}`;
-      if (!edgeSet.has(edgeId)) {
-        edgeSet.add(edgeId);
-        edges.push({
-          id: edgeId,
-          source: depId,
-          target: state.id,
-        });
-      }
-    }
-  }
-
-  return { nodes, edges };
-}
-
 export async function loadStory(): Promise<{
   nodes: StoryNode[];
-  edges: Edge[];
+  edges: StoryEdge[];
 }> {
   const res = await fetch("/level/story.cbor.gz", { method: "GET" });
   if (res.status === 404) {
@@ -107,7 +84,7 @@ export async function loadStory(): Promise<{
 
 export async function saveStory(
   nodes: StoryNode[],
-  edges: Edge[],
+  edges: StoryEdge[],
 ): Promise<void> {
   const states = serializeToStates(nodes, edges);
   const doc: LatestStoryDoc = {

@@ -1,13 +1,23 @@
 import { choose } from "./rand";
 
-export interface State {
+export interface StateEdge {
+  stateId: string;
+  negated: boolean;
+}
+
+export interface StoryState {
   id: string;
+  kind: "story" | "or";
+  // The edges representing states that this state depends on in order to be
+  // satisfied. If an edge is negated, the dependency must NOT be satisfied for
+  // this state to be satisfied.
+  dependencies: StateEdge[];
+  // The edges representing states that depend on this state in order to be satisfied.
+  dependents: StateEdge[];
+}
 
-  // The ids of any states that this state depends on in order to be satisfied.
-  dependencies: Set<string>;
-
-  // The ids of any states that depend on this state in order to be satisfied.
-  dependents: Set<string>;
+export interface MilestoneState extends StoryState {
+  kind: "story";
 
   // A state can be explicitly satisfied, meaning that it is satisfied
   // regardless of whether its dependencies are satisfied.
@@ -15,6 +25,23 @@ export interface State {
 
   // Map of NPC id to dialogue id
   npcDialogue: Record<string, string>;
+}
+
+export interface OrState extends StoryState {
+  kind: "or";
+}
+
+/** Union of all state node types in the story graph. */
+export type State = MilestoneState | OrState;
+
+/** Type guard: returns true if the state is a MilestoneState (AND logic). */
+export function isMilestoneState(state: State): state is MilestoneState {
+  return state.kind === "story";
+}
+
+/** Type guard: returns true if the state is an OrState (OR logic). */
+export function isOrState(state: State): state is OrState {
+  return state.kind === "or";
 }
 
 /**
@@ -33,7 +60,12 @@ export class StoryStateMachine {
     }
   }
 
-  public get current(): Set<State> | null {
+  public get available(): Set<State> {
+    const states: Set<State> = new Set();
+    return states;
+  }
+
+  public get current(): Set<State> {
     const satisfiedStates: Set<State> = new Set();
 
     // Find all satisfied states
@@ -41,8 +73,8 @@ export class StoryStateMachine {
       if (this.isSatisfied(state.id)) {
         // Check if any of this state's dependents are also satisfied
         let hasNoSatisfiedDependents = true;
-        for (const dependentId of state.dependents) {
-          if (this.isSatisfied(dependentId)) {
+        for (const dep of state.dependents) {
+          if (this.isSatisfied(dep.stateId)) {
             hasNoSatisfiedDependents = false;
             break;
           }
@@ -55,38 +87,52 @@ export class StoryStateMachine {
       }
     }
 
-    return satisfiedStates.size > 0 ? satisfiedStates : null;
+    return satisfiedStates;
   }
 
   /**
-   * Satisfies or unsatisfies the given state. This will also recursively satisfy
-   * or unsatisfy any dependencies/dependents of the given state, as appropriate.
+   * Satisfies or unsatisfies the given state. Only applies to MilestoneState
+   * nodes; OrState nodes derive satisfaction purely from their dependencies.
    *
    * @param stateId The state to satisfy/unsatisfy
    * @param value Whether to satisfy/unsatisfy
    */
   public satisfy(stateId: string, value: boolean | null): void {
     const state = this._states[stateId];
-    if (state) {
+    if (state && isMilestoneState(state)) {
       state.explicitlySatisfied = value;
     }
   }
 
   public isSatisfied(stateId: string): boolean {
     const state = this._states[stateId];
-    if (state) {
-      if (state.explicitlySatisfied !== null) {
-        return state.explicitlySatisfied;
-      }
+    if (!state) return false;
 
-      for (const depId of state.dependencies) {
-        if (!this.isSatisfied(depId)) {
-          return false;
+    // MilestoneState nodes can be explicitly satisfied
+    if (isMilestoneState(state) && state.explicitlySatisfied !== null) {
+      return state.explicitlySatisfied;
+    }
+
+    if (isOrState(state)) {
+      // OR logic: at least one dependency must be satisfied (respecting negation)
+      if (state.dependencies.length === 0) return true;
+      for (const dep of state.dependencies) {
+        const depSatisfied = this.isSatisfied(dep.stateId);
+        if (dep.negated ? !depSatisfied : depSatisfied) {
+          return true;
         }
       }
-      return true;
+      return false;
     }
-    return false;
+
+    // AND logic (default for StoryState): all dependencies must be satisfied
+    for (const dep of state.dependencies) {
+      const depSatisfied = this.isSatisfied(dep.stateId);
+      if (dep.negated ? depSatisfied : !depSatisfied) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -104,9 +150,11 @@ export class StoryStateMachine {
 
     const dialogueIds: Set<string> = new Set();
     for (const state of currentStates) {
-      const dialogueId = state.npcDialogue[npcId];
-      if (dialogueId) {
-        dialogueIds.add(dialogueId);
+      if (isMilestoneState(state)) {
+        const dialogueId = state.npcDialogue[npcId];
+        if (dialogueId) {
+          dialogueIds.add(dialogueId);
+        }
       }
     }
 

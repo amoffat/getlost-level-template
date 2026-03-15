@@ -4,12 +4,12 @@ import {
   setError,
   setLoading,
   setNodes,
+  StoryEdge,
   StoryNode,
 } from "@/slices/story";
 import type { RootState } from "@/store/store";
 import { layoutGraph } from "@/utils/story";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { Edge } from "@xyflow/react";
 
 export const loadStoryThunk = createAsyncThunk(
   "story/loadStory",
@@ -38,7 +38,7 @@ export const reflowStoryThunk = createAsyncThunk(
   async (
     _,
     { getState, dispatch },
-  ): Promise<{ nodes: StoryNode[]; edges: Edge[] } | undefined> => {
+  ): Promise<{ nodes: StoryNode[]; edges: StoryEdge[] } | undefined> => {
     const state = getState() as RootState;
     const { nodes, edges } = state.story;
     const { nodes: laidOutNodes, edges: laidOutEdges } = await layoutGraph(

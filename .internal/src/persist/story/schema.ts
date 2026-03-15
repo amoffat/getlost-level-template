@@ -1,39 +1,50 @@
-import type { StoryNode } from "@/slices/story";
+import type { StoryEdge, StoryNode } from "@/slices/story";
 import { Dialogue } from "@/types/dialogue";
-import type { Edge } from "@xyflow/react";
+
+export interface StateEdge {
+  stateId: string;
+  negated: boolean;
+}
 
 export interface StoryState {
   id: string;
-  dependencies: string[];
-  dependents: string[];
+  kind: "story" | "or";
+  dependencies: StateEdge[];
+  dependents: StateEdge[];
+}
+
+export interface MilestoneState extends StoryState {
+  kind: "story";
+}
+
+export interface OrState extends StoryState {
+  kind: "or";
+}
+
+export type SerializedState = MilestoneState | OrState;
+
+export function isMilestoneState(
+  state: SerializedState,
+): state is MilestoneState {
+  return state.kind === "story";
+}
+
+export function isOrState(state: SerializedState): state is OrState {
+  return state.kind === "or";
 }
 
 export interface BaseStoryDoc {
   version: number;
   nodes: StoryNode[];
-  edges: Edge[];
+  edges: StoryEdge[];
   dialogues: Record<string, Dialogue>;
 }
 
-// New doc: persist nodes and edges from slice state
-export interface StoryDocV2 extends BaseStoryDoc {
-  version: 2;
-}
-
-// Version 3: Moved label property to id in StoryNodeData
-export interface StoryDocV3 extends Omit<StoryDocV2, "version"> {
-  version: 3;
-}
-
-export interface StoryDocV4 extends Omit<StoryDocV3, "version"> {
-  version: 4;
-}
-
-export interface StoryDocV5 extends Omit<StoryDocV4, "version"> {
-  version: 5;
-  states: StoryState[];
+export interface StoryDocV6 extends Omit<BaseStoryDoc, "version"> {
+  version: 6;
+  states: SerializedState[];
   dialogues: Record<string, Dialogue>;
 }
 
-export type LatestStoryDoc = StoryDocV5;
-export const latestVersion = 5;
+export type LatestStoryDoc = StoryDocV6;
+export const latestVersion = 6;

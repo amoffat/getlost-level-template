@@ -1,20 +1,16 @@
 import { useAncestorHighlight } from "@/contexts/AncestorHighlightContext";
 import { useAppDispatch } from "@/hooks/redux";
-import type { StoryEdgeData } from "@/slices/story";
-import { setEdges } from "@/slices/story";
+import { setEdges, StoryNode, type StoryEdge } from "@/slices/story";
 import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
   useReactFlow,
-  type Edge,
   type EdgeProps,
 } from "@xyflow/react";
 import classNames from "classnames";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./styles/StoryEdge.module.css";
-
-type StoryEdge = Edge<StoryEdgeData>;
 
 /**
  * Custom edge for the story graph.
@@ -38,7 +34,10 @@ export default function StoryEdge({
 }: EdgeProps<StoryEdge>) {
   const dispatch = useAppDispatch();
   const { edgeIds: ancestorEdgeIds } = useAncestorHighlight();
-  const { getEdges, setEdges: setFlowEdges } = useReactFlow();
+  const { getEdges, setEdges: setFlowEdges } = useReactFlow<
+    StoryNode,
+    StoryEdge
+  >();
 
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,

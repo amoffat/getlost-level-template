@@ -5,22 +5,21 @@ export interface StoryNodeData extends Record<string, unknown> {
   id: string;
 }
 
-export type StoryNode = Node<StoryNodeData>;
-
+export interface StoryEdgeData extends Record<string, unknown> {
+  negated: boolean;
+}
 export interface JunctionNodeData extends Record<string, unknown> {
   id: string;
   kind: "or";
 }
 
+export type StoryNode = Node<StoryNodeData>;
+export type StoryEdge = Edge<StoryEdgeData>;
 export type JunctionNode = Node<JunctionNodeData>;
-
-export interface StoryEdgeData extends Record<string, unknown> {
-  negated: boolean;
-}
 
 interface StoryState {
   nodes: StoryNode[];
-  edges: Edge[];
+  edges: StoryEdge[];
   loading: boolean;
   error?: string;
 }
@@ -48,7 +47,7 @@ export const slice = createSlice({
         return node;
       });
     },
-    setEdges(state, action: PayloadAction<Edge[]>) {
+    setEdges(state, action: PayloadAction<StoryEdge[]>) {
       state.edges = action.payload;
     },
     setNodeData(

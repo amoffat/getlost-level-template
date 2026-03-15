@@ -1,7 +1,12 @@
 import { AncestorHighlightContext } from "@/contexts/AncestorHighlightContext";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import type { StoryNode as DNode } from "@/slices/story";
-import { setEdges, setNodes } from "@/slices/story";
+import {
+  JunctionNode,
+  setEdges,
+  setNodes,
+  StoryEdge,
+  StoryNode,
+} from "@/slices/story";
 import type { RootState } from "@/store/store";
 import { reflowStoryThunk } from "@/thunks/story";
 import { showNotification } from "@/utils/notifications";
@@ -18,6 +23,7 @@ import {
   Controls,
   getOutgoers,
   IsValidConnection,
+  Node,
   OnConnect,
   OnEdgesChange,
   OnNodeDrag,
@@ -34,9 +40,9 @@ import {
   type OnConnectEnd,
 } from "@xyflow/react";
 import { ReactNode, use, useCallback, useMemo, useRef, useState } from "react";
-import StoryEdge from "../flowEdges/StoryEdge";
+import StoryEdgeComponent from "../flowEdges/StoryEdge";
 import OrNode from "../flowNodes/OrNode";
-import StoryNode from "../flowNodes/StoryNode";
+import StoryNodeComponent from "../flowNodes/StoryNode";
 import MilestoneEditor from "../MilestoneEditor";
 import MilestoneList from "../MilestoneList";
 import Tip from "../Tip";
@@ -59,21 +65,21 @@ export default function StoryTab({
   const dState = useAppSelector((state: RootState) => state.story);
   const { nodes, edges } = dState;
   const flowContainerRef = useRef<HTMLDivElement>(null);
-  const reactFlowInstance = useReactFlow<DNode, Edge>();
+  const reactFlowInstance = useReactFlow<StoryNode, StoryEdge>();
   const { screenToFlowPosition, getNodes, getEdges } = reactFlowInstance;
   const overlappedEdgeRef = useRef<string | null>(null);
-  const pendingBridgingEdgesRef = useRef<Edge[]>([]);
+  const pendingBridgingEdgesRef = useRef<StoryEdge[]>([]);
 
   // Compute bridging edges before deletion while the graph is still intact.
   // We'll use these edges later to "bridge" any gaps in the graph left by the
   // deleted nodes, so the user doesn't have to manually reconnect everything
   // that was connected to the deleted node(s).
-  const onBeforeDelete: OnBeforeDelete<DNode, Edge> = useCallback(
+  const onBeforeDelete: OnBeforeDelete<StoryNode, StoryEdge> = useCallback(
     async ({ nodes: nodesToDelete }) => {
       const currentEdges = reactFlowInstance.getEdges();
       const removedIds = new Set(nodesToDelete.map((n) => n.id));
 
-      const bridgingEdges: Edge[] = [];
+      const bridgingEdges: StoryEdge[] = [];
       for (const node of nodesToDelete) {
         const incoming = currentEdges.filter(
           (e) => e.target === node.id && !removedIds.has(e.source),
@@ -110,7 +116,7 @@ export default function StoryTab({
   );
 
   // After deletion completes, inject the bridging edges
-  const onNodesDelete: OnNodesDelete<DNode> = useCallback(() => {
+  const onNodesDelete: OnNodesDelete<StoryNode> = useCallback(() => {
     const bridging = pendingBridgingEdgesRef.current;
     pendingBridgingEdgesRef.current = [];
     if (bridging.length === 0) return;
@@ -121,7 +127,7 @@ export default function StoryTab({
     dispatch(setEdges(updatedEdges));
   }, [reactFlowInstance, dispatch]);
 
-  const onNodesChange: OnNodesChange<DNode> = useDebouncedCallback(
+  const onNodesChange: OnNodesChange<StoryNode> = useDebouncedCallback(
     (changes) => {
       const currentNodes = reactFlowInstance.getNodes();
       const updatedNodes = applyNodeChanges(changes, currentNodes);
@@ -148,7 +154,7 @@ export default function StoryTab({
       const edges = getEdges();
       const target = nodes.find((node) => node.id === connection.target)!;
 
-      const hasCycle = (node: DNode, visited = new Set()) => {
+      const hasCycle = (node: StoryNode, visited = new Set()) => {
         if (visited.has(node.id)) return false;
 
         visited.add(node.id);
@@ -200,7 +206,7 @@ export default function StoryTab({
 
       const newNodeId = crypto.randomUUID();
       const currentNodes = reactFlowInstance.getNodes();
-      const newNode: DNode = {
+      const newNode: StoryNode = {
         id: newNodeId,
         position,
         type: "story",
@@ -211,7 +217,7 @@ export default function StoryTab({
         },
       };
 
-      const updatedNodes: DNode[] = [
+      const updatedNodes: StoryNode[] = [
         ...currentNodes.map((n) => ({ ...n, selected: false })),
         newNode,
       ];
@@ -227,10 +233,13 @@ export default function StoryTab({
         const source = isFromBottom ? connectTo.nodeId : newNodeId;
         const target = isFromBottom ? newNodeId : connectTo.nodeId;
 
-        const newEdge: Edge = {
+        const newEdge: StoryEdge = {
           id: crypto.randomUUID(),
           source,
           target,
+          data: {
+            negated: false,
+          },
         };
 
         const updatedEdges = [...reactFlowInstance.getEdges(), newEdge];
@@ -245,7 +254,7 @@ export default function StoryTab({
   );
 
   const createJunction = useCallback(
-    (kind: "and" | "or") => {
+    (kind: "or") => {
       const rect = flowContainerRef.current?.getBoundingClientRect();
       const centerScreen = rect
         ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
@@ -254,7 +263,7 @@ export default function StoryTab({
 
       const newNodeId = crypto.randomUUID();
       const currentNodes = reactFlowInstance.getNodes();
-      const newNode: DNode = {
+      const newNode: JunctionNode = {
         id: newNodeId,
         position,
         type: kind,
@@ -265,7 +274,7 @@ export default function StoryTab({
         },
       };
 
-      const updatedNodes: DNode[] = [
+      const updatedNodes: Node<any>[] = [
         ...currentNodes.map((n) => ({ ...n, selected: false })),
         newNode,
       ];
@@ -419,17 +428,6 @@ export default function StoryTab({
       // setSelectedNodeId is also updated via useOnSelectionChange,
       // but set it immediately so ancestorHighlight reacts without delay.
       setSelectedNodeId(nodeId);
-
-      if (nodeId) {
-        requestAnimationFrame(() => {
-          reactFlowInstance.fitView({
-            nodes: [{ id: nodeId }],
-            duration: 300,
-            padding: 1.5,
-            maxZoom: 1,
-          });
-        });
-      }
     },
     [reactFlowInstance],
   );
@@ -509,8 +507,8 @@ export default function StoryTab({
                   snapGrid={[20, 20]}
                   panOnDrag={[2]}
                   deleteKeyCode={["Delete", "Backspace"]}
-                  nodeTypes={{ story: StoryNode, or: OrNode }}
-                  edgeTypes={{ default: StoryEdge }}
+                  nodeTypes={{ story: StoryNodeComponent, or: OrNode }}
+                  edgeTypes={{ default: StoryEdgeComponent }}
                   defaultNodes={nodes}
                   defaultEdges={edges}
                   onNodesChange={onNodesChange}
