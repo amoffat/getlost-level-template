@@ -118,7 +118,7 @@ export function createRollupConfig(
       entries: [
         {
           find: "@gl",
-          replacement: path.resolve(internalDir, "assemblyscript/@gl"),
+          replacement: path.resolve(internalDir, "@gl"),
         },
       ],
     }),
@@ -131,7 +131,7 @@ export function createRollupConfig(
       tsconfig: path.resolve(levelDir, "tsconfig.json"),
       include: [
         path.resolve(levelDir, "src/**/*.ts"),
-        path.resolve(internalDir, "assemblyscript/@gl/**/*.ts"),
+        path.resolve(internalDir, "@gl/**/*.ts"),
       ],
       // Just in case there are type errors, still emit JS so Rollup can run:
       noEmitOnError: false,

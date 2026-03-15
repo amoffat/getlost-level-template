@@ -43,7 +43,7 @@ export default function levelWatcher() {
           }
 
           // If it's in the /assemblyscript directory, reload the game
-          if (changed.startsWith(`${internalDir}/assemblyscript/@gl/`)) {
+          if (changed.startsWith(`${internalDir}/@gl/`)) {
             gameReload = true;
           }
 
