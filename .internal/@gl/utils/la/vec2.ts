@@ -151,8 +151,8 @@ export class Vec2 implements Vector {
     return new Vec2(this.x * scale, this.y * scale);
   }
 
-  normalize(): Vec2 {
-    const mag = this.magnitude;
+  normalize(scale: number = 1): Vec2 {
+    const mag = this.magnitude / scale;
     if (mag === 0) {
       return this;
     }
@@ -161,8 +161,8 @@ export class Vec2 implements Vector {
     return this;
   }
 
-  normalized(): Vec2 {
-    return this.clone().normalize();
+  normalized(scale: number = 1): Vec2 {
+    return this.clone().normalize(scale);
   }
 
   lerp(v2: Vector, t: number): Vec2 {

@@ -29,11 +29,12 @@ import {
   IconDeviceMobile,
   IconRocket,
 } from "@tabler/icons-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import AdvancedSection from "./common/AdvancedSection";
 import LogPane from "./LogPane";
 import { MarkdownModal } from "./MarkdownModal";
 import TimeDisplay from "./TimeDisplay";
-import AdvancedSection from "./common/AdvancedSection";
+import Tip from "./Tip";
 
 export default function PreviewTab() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -255,6 +256,16 @@ export default function PreviewTab() {
     });
   };
 
+  const leftTips = useMemo(() => {
+    const tips = [];
+    if (!enableOverlays) {
+      tips.push(
+        "No audio? Enable overlays to allow audio to pass through to the iframe.",
+      );
+    }
+    return tips;
+  }, [enableOverlays]);
+
   const createDebugSwitch = (
     label: string,
     key: DebugFlagKey,
@@ -408,6 +419,7 @@ export default function PreviewTab() {
           onResizeEnd={handlePaneResizeEnd}
         >
           <Stack h="100%" style={{ overflow: "hidden" }}>
+            <Tip tips={leftTips} />
             <Fieldset legend="Engine">
               <Stack p={0}>
                 <Select

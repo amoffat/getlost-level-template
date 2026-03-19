@@ -23,6 +23,11 @@ interface ForceExportConfig {
   symbolNames: (string | { name: string; alias: string })[];
   /** The file to import from, relative to the level/src directory (e.g., "./player") */
   importPath: string;
+  /**
+   * If true (default), the forced export is set on the `__internal__` object.
+   * If false, the forced export is set on the global scope exported from the module.
+   */
+  internal?: boolean;
 }
 
 /**
@@ -48,9 +53,13 @@ function forceExportPlugin(exports: ForceExportConfig[]): Plugin {
               name,
               alias,
               importPath: exp.importPath,
+              internal: exp.internal !== false,
             };
           });
         });
+
+        const internalExports = normalizedExports.filter((exp) => exp.internal);
+        const globalExports = normalizedExports.filter((exp) => !exp.internal);
 
         // Generate import statements with aliased names to avoid conflicts
         const imports = normalizedExports
@@ -61,25 +70,32 @@ function forceExportPlugin(exports: ForceExportConfig[]): Plugin {
           .join("\n");
 
         // Generate a statement that prevents tree-shaking by referencing the symbols
-        const references = normalizedExports
+        const references = internalExports
           .map((exp) => `  ${exp.alias}: __forceExport_${exp.alias}__`)
           .join(",\n");
 
+        // Generate direct exports for symbols not going into __internal__
+        const directExports = globalExports
+          .map(
+            (exp) => `export { __forceExport_${exp.alias}__ as ${exp.alias} };`,
+          )
+          .join("\n");
+
         // Inject at the top of the file
         const injectedCode = `${imports}
-
-let player;
-let states;
-let story;
 
 // Force-exported symbols - prevents tree-shaking
 export const __internal__ = {
   ${references}
 };
 
+${directExports}
+
 export function __internal__init(states) {
   player = new __internal__.Player();
   story = new __internal__.StoryStateMachine(states);
+  events = new __internal__.EventDispatcher();
+
   for (const name of __internal__.getAllChars()) {
     new __internal__.Character(name);
   }
@@ -147,11 +163,20 @@ export function createRollupConfig(
     );
   }
 
+  // Our globals from globals.d.ts that we want to be accessible in the bundle.
+  const intro = `
+    let player;
+    let states;
+    let story;
+    let events;
+  `;
+
   return {
     input: path.resolve(levelDir, "src/main.ts"),
     output: {
       name: "Level",
       format: "iife",
+      intro,
       sourcemap: false,
       inlineDynamicImports: true,
       compact: true,
@@ -182,11 +207,20 @@ export async function bundleWithRollup(
   const forceExports: ForceExportConfig[] = [
     { symbolNames: ["Player"], importPath: "@gl/utils/player" },
     { symbolNames: ["StoryStateMachine"], importPath: "@gl/utils/state" },
+    {
+      symbolNames: ["EventDispatcher"],
+      importPath: "@gl/events",
+    },
     { symbolNames: ["Character", "chars"], importPath: "@gl/utils/character" },
     { symbolNames: ["globalTicker"], importPath: "@gl/ticker" },
     {
       symbolNames: [{ name: "getAll", alias: "getAllChars" }],
       importPath: "@gl/api/w2h/char",
+    },
+    {
+      symbolNames: ["dispatchEvent"],
+      importPath: "@gl/events",
+      internal: false,
     },
   ];
   const rollupConfig = createRollupConfig(forceExports, options);

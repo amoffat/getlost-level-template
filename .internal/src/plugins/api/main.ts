@@ -6,6 +6,7 @@ import { router as gitRouter } from "./git";
 import { router as localeRouter } from "./locale";
 import { router as mapRouter } from "./map";
 import { router as pathgraphRouter } from "./pathgraph";
+import { router as scriptRouter } from "./script";
 import { router as storyRouter } from "./story";
 import { router as tilesetRouter } from "./tileset";
 
@@ -30,6 +31,7 @@ export default function expressApi(): Plugin {
       levelRouter.use("/map.cbor.gz", mapRouter);
       levelRouter.use("/story.cbor.gz", storyRouter);
       levelRouter.use("/locales", localeRouter);
+      levelRouter.use("/main.js", scriptRouter);
 
       rootRouter.use("/files", filesRouter);
 
