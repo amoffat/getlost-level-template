@@ -11,12 +11,12 @@ export declare function playSound(opts: PlayOpts): number;
 export declare function pauseSound(
   audible: boolean,
   assetId: number,
-  soundId: number
+  soundId: number,
 ): void;
 export declare function stopSound(assetId: number, soundId: number): void;
 export declare function setVolume(
   assetId: number,
   soundId: number,
-  volume: number
+  volume: number,
 ): void;
 export declare function crossfade(opts: CrossFadeSpec): void;

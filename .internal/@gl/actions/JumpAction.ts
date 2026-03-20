@@ -1,26 +1,19 @@
-import { Animator } from "../utils/animation";
-import { Action, type Entity } from "../utils/behavior";
+import { Action } from "../utils/behavior";
 import { type EasingFunction, Easings } from "../utils/easing";
 
-interface JumpParams {
-  direction?: { x: number; y: number };
-  height?: number;
+interface Subject {
+  setPos(x: number, y: number): void;
+  getPos(): { x: number; y: number };
+  setHeight(height: number): void;
+  getHeight(): number;
 }
 
-export class JumpAction extends Action<JumpParams> {
-  private readonly _name: string;
-
-  public get name(): string {
-    return this._name;
-  }
-
-  private _animator: Animator;
+export class JumpAction extends Action<Subject> {
   private _direction: { x: number; y: number };
   private _height: number;
   private _startX: number = 0;
   private _startY: number = 0;
   private _startHeight: number = 0;
-  private _started: boolean = false;
 
   /**
    * @param duration   Duration of the jump in milliseconds.
@@ -52,58 +45,40 @@ export class JumpAction extends Action<JumpParams> {
     height?: number;
     direction?: { x: number; y: number };
   } = {}) {
-    super();
-    this._name = name;
+    super({ name, duration, easing: curve });
     this._height = height;
     this._direction = direction;
-    this._animator = new Animator({
-      durationMs: duration,
-      forwardCurve: curve,
-    });
   }
 
-  public tick({
+  public override get name(): string {
+    return this._name;
+  }
+
+  public override onStart({ subject }: { subject: Subject }): void {
+    const pos = subject.getPos();
+    this._startX = pos.x;
+    this._startY = pos.y;
+    this._startHeight = subject.getHeight();
+  }
+
+  public override tick({
     subject,
-    delta,
-    params,
+    progress,
   }: {
-    subject: Entity;
-    delta: number;
-    params: JumpParams;
-  }): boolean {
-    if (!this._started) {
-      const pos = subject.getPos();
-      this._startX = pos.x;
-      this._startY = pos.y;
-      this._startHeight = subject.getHeight();
-      this._started = true;
-      this._animator.play();
-    }
-
-    const direction = params.direction ?? this._direction;
-    const height = params.height ?? this._height;
-
-    this._animator.tick(delta);
-
-    const t = this._animator.value;
-
+    subject: Subject;
+    progress: number;
+  }): void {
     // Parabolic arc for height above ground: peaks at t=0.5, returns to
     // origin at t=1. Applied via setHeight so the entity visually lifts
     // off the ground plane in 2.5D.
-    const arc = 4 * t * (1 - t);
-    subject.setHeight(this._startHeight + height * arc);
+    const arc = 4 * progress * (1 - progress);
+    subject.setHeight(this._startHeight + this._height * arc);
 
     // Linear interpolation for ground-plane position: moves the entity's
     // shadow/feet along the 2.5D ground from start toward start+direction.
     subject.setPos(
-      this._startX + direction.x * t,
-      this._startY + direction.y * t,
+      this._startX + this._direction.x * progress,
+      this._startY + this._direction.y * progress,
     );
-
-    if (!this._animator.isAnimating) {
-      this._started = false;
-      return true;
-    }
-    return false;
   }
 }

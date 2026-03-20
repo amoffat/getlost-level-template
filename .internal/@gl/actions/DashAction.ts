@@ -1,79 +1,30 @@
-import { Animator } from "../utils/animation";
-import { Action, type Entity } from "../utils/behavior";
-import { type EasingFunction, Easings } from "../utils/easing";
+import { Action } from "../utils/behavior";
+import { Vec2 } from "../utils/la/vec2";
 
-interface DashParams {
-  distance?: number;
+interface Subject {
+  addImpulse(impulse: Vec2): void;
 }
-export class DashAction extends Action<DashParams> {
-  private readonly _name: string;
 
-  public get name(): string {
-    return this._name;
-  }
-
-  private _animator: Animator;
-  private _distance: number;
-  private _startX: number = 0;
-  private _startY: number = 0;
-  private _started: boolean = false;
+export class DashAction extends Action<Subject> {
+  private readonly _direction: Vec2;
 
   /**
-   * @param duration  Duration of the dash in milliseconds.
-   * @param distance  Horizontal distance (pixels) to travel.
-   * @param curve     Easing applied to the 0→1 progress, controlling how the
-   *                  displacement accelerates/decelerates (default: easeOutQuad
-   *                  for a quick burst that naturally decelerates).
+   * @param direction  Impulse vector applied to the subject (direction and magnitude).
    */
   constructor({
     name = "dash",
-    duration = 200,
-    distance = 150,
-    curve = Easings.easeOutQuad,
+    direction,
+    duration = 0,
   }: {
     name?: string;
+    direction: Vec2;
     duration?: number;
-    distance?: number;
-    curve?: EasingFunction;
-  } = {}) {
-    super();
-    this._name = name;
-    this._distance = distance;
-    this._animator = new Animator({
-      durationMs: duration,
-      forwardCurve: curve,
-    });
+  }) {
+    super({ name, duration });
+    this._direction = direction;
   }
 
-  public tick({
-    subject,
-    delta,
-    params,
-  }: {
-    subject: Entity;
-    delta: number;
-    params: DashParams;
-  }): boolean {
-    if (!this._started) {
-      const pos = subject.getPos();
-      this._startX = pos.x;
-      this._startY = pos.y;
-      this._started = true;
-      this._animator.play();
-    }
-
-    const distance = params.distance ?? this._distance;
-
-    this._animator.tick(delta);
-    subject.setPos(
-      this._startX + this._animator.value * distance,
-      this._startY,
-    );
-
-    if (!this._animator.isAnimating) {
-      this._started = false;
-      return true;
-    }
-    return false;
+  public override onStart({ subject }: { subject: Subject }): void {
+    subject.addImpulse(this._direction);
   }
 }

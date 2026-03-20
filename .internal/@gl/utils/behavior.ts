@@ -1,65 +1,141 @@
-import { type Vector } from "../api/types/vector";
 import { globalTicker } from "../ticker";
-
-export interface Entity {
-  getPos: () => Vector;
-  setPos: (x: number, y: number) => void;
-  getHeight: () => number;
-  setHeight: (height: number) => void;
-}
+import { Animator } from "./animation";
+import { type EasingFunction } from "./easing";
 
 export type ActionCallback = () => void;
 
-/**
- * A bag of key→value parameters forwarded to every {@link Action.tick} call
- * when a {@link Behavior} is performed.  Actions can query these at
- * perform-time to adjust their logic (e.g. a DashAction reading a
- * `"target"` parameter to change dash direction).
- */
-export type BehaviorParams = Record<string, unknown>;
-
-export abstract class Action<Params extends object = BehaviorParams> {
+export abstract class Action<Subject> {
   /**
    * A unique identifier for this type of action, used as part of the key
-   * when registering listeners on a {@link BehaviorInProgress}.
+   * when registering listeners on a {@link Behavior}.
    */
-  abstract get name(): string;
+  protected readonly _name: string;
+  protected readonly duration: number;
+  private _animator: Animator;
 
-  /**
-   * @param subject The subject to operate on
-   * @param delta The timestep in ms
-   * @param params Perform-time parameters supplied via {@link Behavior.performOn}
-   * @return Whether the behavior is complete and should transition to the next one
-   */
-  abstract tick(args: {
-    subject: Entity;
-    delta: number;
-    params: Params;
-  }): boolean;
-}
-
-export class Behavior extends Action {
-  private _name: string;
-  private actions: Action[] = [];
-  private sideActions: Map<number, Action[]> = new Map();
-  private inProgress: BehaviorInProgress | null = null;
-
-  // Listener context forwarded from a parent BehaviorInProgress
-  private _listenerPrefix: string = "";
-  private _startListeners: Map<string, ActionCallback[]> | null = null;
-  private _endListeners: Map<string, ActionCallback[]> | null = null;
-
-  constructor(name: string) {
-    super();
+  constructor({
+    name,
+    duration,
+    easing,
+  }: {
+    name: string;
+    duration: number;
+    easing?: EasingFunction;
+  }) {
     this._name = name;
+    this.duration = duration;
+    this._animator = new Animator({
+      durationMs: duration,
+      forwardCurve: easing,
+    });
   }
 
   public get name(): string {
     return this._name;
   }
 
-  public then(...actions: Action[]): Behavior {
-    this.actions.push(...actions);
+  /**
+   * @param subject The subject to operate on
+   * @param delta The timestep in ms
+   * @param elapsed Total time elapsed in ms since this action started
+   * @param progress The progress of this action as a value between 0 and 1,
+   * calculated as `elapsed / duration` and modified by the internal animator's
+   * easing curve if provided.
+   */
+  tick(args: { subject: Subject; progress: number }): void {}
+
+  /**
+   * Whether this action has completed. By default this is determined by the
+   * internal {@link Animator} finishing playback.
+   */
+  get isDone(): boolean {
+    return !this._animator.isAnimating;
+  }
+
+  /**
+   * @internal Called by {@link Behavior} before {@link onStart} to
+   * start the internal animator.
+   */
+  _initAnimator({ subject }: { subject: Subject }): void {
+    this._animator.addProgressCallback((progress) => {
+      this.tick({ subject, progress });
+    });
+    this._animator.play();
+  }
+
+  /**
+   * @internal Called by {@link Behavior} each frame. Ticks the
+   * internal animator, then calls {@link tick}.
+   */
+  _internalTick({
+    subject,
+    deltaMs,
+  }: {
+    subject: Subject;
+    deltaMs: number;
+  }): void {
+    this._animator.tick(deltaMs);
+  }
+
+  /**
+   * Called once when this action first becomes the active action.
+   */
+  onStart(_args: { subject: Subject }): void {}
+
+  /**
+   * Called once when this action completes.
+   */
+  onEnd(_args: { subject: Subject }): void {}
+}
+
+export class Behavior<Subject> extends Action<Subject> {
+  // Build-time state
+  private _actions: Action<Subject>[] = [];
+  private _sideActions: Map<number, Action<Subject>[]> = new Map();
+
+  // Execution state (initialised in onStart)
+  private _entity: Subject | null = null;
+  private _started: boolean = false;
+  private _currentIndex: number = 0;
+  private _firedSidesForIndex: number = -1;
+  private _backgroundActions: Action<Subject>[] = [];
+
+  // Listener state
+  private _prefix: string = "";
+  private _startListeners: Map<string, ActionCallback[]> = new Map();
+  private _endListeners: Map<string, ActionCallback[]> = new Map();
+  private _actionKeys: string[] = [];
+  private _validKeys: Set<string> = new Set();
+  private _behaviorEndListeners: ActionCallback[] = [];
+  private _behaviorEndFired: boolean = false;
+
+  constructor(name: string) {
+    super({ name, duration: 0 });
+  }
+
+  /** @internal Behavior manages its own lifecycle; no animator needed. */
+  override _initAnimator(): void {}
+
+  override get isDone(): boolean {
+    return (
+      this._started &&
+      this._currentIndex >= this._actions.length &&
+      this._backgroundActions.length === 0
+    );
+  }
+
+  /** @internal When used as a sub-behavior, the parent drives ticking here. */
+  override _internalTick({
+    deltaMs,
+  }: {
+    subject: Subject;
+    deltaMs: number;
+  }): void {
+    this._tickBehavior(deltaMs);
+  }
+
+  public then(...actions: Action<Subject>[]): Behavior<Subject> {
+    this._actions.push(...actions);
     return this;
   }
 
@@ -67,112 +143,44 @@ export class Behavior extends Action {
    * Runs the given actions concurrently alongside the previously chained action.
    * The side actions start when the preceding action starts and do not block it.
    */
-  public also(...actions: Action[]): Behavior {
-    const prevIndex = this.actions.length - 1;
-    if (!this.sideActions.has(prevIndex)) {
-      this.sideActions.set(prevIndex, []);
+  public also(...actions: Action<Subject>[]): Behavior<Subject> {
+    const prevIndex = this._actions.length - 1;
+    if (!this._sideActions.has(prevIndex)) {
+      this._sideActions.set(prevIndex, []);
     }
-    this.sideActions.get(prevIndex)!.push(...actions);
+    this._sideActions.get(prevIndex)!.push(...actions);
     return this;
   }
 
   /**
-   * @internal Called by a parent {@link BehaviorInProgress} to forward its
-   * listener maps so that actions inside this sub-behavior can fire
-   * callbacks registered on the root.
+   * @internal Called by a parent {@link Behavior} to forward its listener
+   * maps so that actions inside this sub-behavior can fire callbacks
+   * registered on the root.
    */
   _setListenerContext(
     prefix: string,
     startListeners: Map<string, ActionCallback[]>,
     endListeners: Map<string, ActionCallback[]>,
   ): void {
-    this._listenerPrefix = prefix;
+    this._prefix = prefix;
     this._startListeners = startListeners;
     this._endListeners = endListeners;
   }
 
-  public tick({
-    subject,
-    delta,
-    params,
-  }: {
-    subject: Entity;
-    delta: number;
-    params: BehaviorParams;
-  }): boolean {
-    if (this.inProgress === null) {
-      this.inProgress = new BehaviorInProgress({
-        entity: subject,
-        actions: this.actions,
-        sideActions: this.sideActions,
-        prefix: this._listenerPrefix,
-        params,
-      });
+  /**
+   * Called once when this behavior starts.
+   * @param param0 The subject on which the behavior is performed.
+   */
+  public override onStart({ subject }: { subject: Subject }): void {
+    if (this._started) {
+      throw new Error(
+        `Behavior "${this._name}" can only be used once. Create a new instance to perform it again.`,
+      );
     }
-    this.inProgress.tick(delta);
-    if (this.inProgress.isDone) {
-      this.inProgress = null;
-      return true;
-    }
-    return false;
-  }
-
-  public performOn(
-    entity: Entity,
-    params: BehaviorParams = {},
-  ): BehaviorInProgress {
-    const bip = new BehaviorInProgress({
-      entity,
-      actions: this.actions,
-      sideActions: this.sideActions,
-      params,
-    });
-    const tick = (delta: number) => bip.tick(delta);
-    globalTicker.subscribe(tick);
-    bip.onBehaviorEnd(() => {
-      globalTicker.unsubscribe(tick);
-    });
-    return bip;
-  }
-}
-
-export class BehaviorInProgress {
-  private entity: Entity;
-  private actions: Action[];
-  private sideActions: Map<number, Action[]>;
-  private currentIndex: number = 0;
-  private firedSidesForIndex: number = -1;
-  private backgroundActions: Action[] = [];
-  private prefix: string;
-  private startListeners: Map<string, ActionCallback[]> = new Map();
-  private endListeners: Map<string, ActionCallback[]> = new Map();
-  private actionKeys: string[];
-  private validKeys: Set<string>;
-  private behaviorEndListeners: ActionCallback[] = [];
-  private behaviorEndFired: boolean = false;
-  private params: BehaviorParams;
-
-  constructor({
-    entity,
-    actions,
-    sideActions = new Map(),
-    prefix = "",
-    params = {},
-  }: {
-    entity: Entity;
-    actions: Action[];
-    sideActions?: Map<number, Action[]>;
-    prefix?: string;
-    params?: BehaviorParams;
-  }) {
-    this.entity = entity;
-    this.actions = actions;
-    this.sideActions = sideActions;
-    this.prefix = prefix;
-    this.params = params;
-    this.actionKeys = this.computeActionKeys();
-    this.validKeys = new Set<string>();
-    this.collectValidKeys(this.actions, this.prefix, this.validKeys);
+    this._started = true;
+    this._entity = subject;
+    this._actionKeys = this._computeActionKeys();
+    this._collectValidKeys(this._actions, this._prefix, this._validKeys);
   }
 
   /**
@@ -187,23 +195,23 @@ export class BehaviorInProgress {
    * `behaviorName[idx].actionName[subIdx]`.
    */
   public onActionStart(key: string, callback: ActionCallback): this {
-    if (!this.validKeys.has(key)) {
+    if (!this._validKeys.has(key)) {
       console.error(
         `onActionStart: key "${key}" does not match any action. ` +
-          `Valid keys: ${[...this.validKeys].join(", ")}`,
+          `Valid keys: ${[...this._validKeys].join(", ")}`,
       );
       return this;
     }
-    if (!this.startListeners.has(key)) {
-      this.startListeners.set(key, []);
+    if (!this._startListeners.has(key)) {
+      this._startListeners.set(key, []);
     }
-    this.startListeners.get(key)!.push(callback);
+    this._startListeners.get(key)!.push(callback);
     return this;
   }
 
   /**
    * Registers a callback to be invoked when the action identified by `key`
-   * completes (its tick returns `true`).
+   * completes.
    *
    * Keys use the format `name[idx]` where `name` is the action's
    * {@link Action.name} and `idx` is its zero-based occurrence index among
@@ -212,112 +220,123 @@ export class BehaviorInProgress {
    * For actions inside a sub-behavior, extend the key with a dot:
    * `behaviorName[idx].actionName[subIdx]`.
    */
+  public onActionEnd(key: string, callback: ActionCallback): this {
+    if (!this._validKeys.has(key)) {
+      console.error(
+        `onActionEnd: key "${key}" does not match any action. ` +
+          `Valid keys: ${[...this._validKeys].join(", ")}`,
+      );
+      return this;
+    }
+    if (!this._endListeners.has(key)) {
+      this._endListeners.set(key, []);
+    }
+    this._endListeners.get(key)!.push(callback);
+    return this;
+  }
+
   /**
    * Registers a callback to be invoked once when the entire behavior
    * finishes (all sequential and background actions are complete).
    */
   public onBehaviorEnd(callback: ActionCallback): this {
-    this.behaviorEndListeners.push(callback);
+    this._behaviorEndListeners.push(callback);
     return this;
   }
 
-  public onActionEnd(key: string, callback: ActionCallback): this {
-    if (!this.validKeys.has(key)) {
-      console.error(
-        `onActionEnd: key "${key}" does not match any action. ` +
-          `Valid keys: ${[...this.validKeys].join(", ")}`,
-      );
-      return this;
-    }
-    if (!this.endListeners.has(key)) {
-      this.endListeners.set(key, []);
-    }
-    this.endListeners.get(key)!.push(callback);
+  public performOn(subject: Subject): Behavior<Subject> {
+    this.onStart({ subject });
+    const tick = (deltaMs: number) => this._tickBehavior(deltaMs);
+    globalTicker.subscribe(tick);
+    this.onBehaviorEnd(() => {
+      globalTicker.unsubscribe(tick);
+    });
     return this;
   }
 
-  public get isDone(): boolean {
-    return (
-      this.currentIndex >= this.actions.length &&
-      this.backgroundActions.length === 0
-    );
-  }
+  private _tickBehavior(deltaMs: number): void {
+    const entity = this._entity!;
 
-  public tick(delta: number): void {
     // Tick background (also) actions, removing completed ones
-    this.backgroundActions = this.backgroundActions.filter(
-      (action) =>
-        !action.tick({ subject: this.entity, delta, params: this.params }),
-    );
-
-    if (this.currentIndex >= this.actions.length) return;
-
-    // On the first tick of a new main action, fire its also-side actions
-    if (this.currentIndex !== this.firedSidesForIndex) {
-      this.firedSidesForIndex = this.currentIndex;
-
-      // If this action is a sub-behavior, forward listener context so its
-      // internal BehaviorInProgress can fire callbacks registered on the root.
-      const currentAction = this.actions[this.currentIndex]!;
-      if (currentAction instanceof Behavior) {
-        currentAction._setListenerContext(
-          this.actionKeys[this.currentIndex] + ".",
-          this.startListeners,
-          this.endListeners,
-        );
+    this._backgroundActions = this._backgroundActions.filter((entry) => {
+      entry._internalTick({ subject: entity, deltaMs });
+      if (entry.isDone) {
+        entry.onEnd({ subject: entity });
+        return false;
       }
+      return true;
+    });
 
-      // Fire start listeners for this action
-      this.fireListeners(
-        this.startListeners,
-        this.actionKeys[this.currentIndex]!,
-      );
+    if (this._currentIndex < this._actions.length) {
+      // On the first tick of a new main action, fire its also-side actions
+      if (this._currentIndex !== this._firedSidesForIndex) {
+        this._firedSidesForIndex = this._currentIndex;
 
-      const sides = this.sideActions.get(this.currentIndex);
-      if (sides) {
-        for (const side of sides) {
-          if (
-            !side.tick({ subject: this.entity, delta, params: this.params })
-          ) {
-            this.backgroundActions.push(side);
+        // If this action is a sub-behavior, forward listener context so its
+        // actions can fire callbacks registered on the root.
+        const currentAction = this._actions[this._currentIndex]!;
+        if (currentAction instanceof Behavior) {
+          currentAction._setListenerContext(
+            this._actionKeys[this._currentIndex] + ".",
+            this._startListeners,
+            this._endListeners,
+          );
+        }
+
+        // Start the action's internal animator, then notify it
+        currentAction._initAnimator({ subject: entity });
+        currentAction.onStart({ subject: entity });
+
+        // Fire start listeners for this action
+        this._fireListeners(
+          this._startListeners,
+          this._actionKeys[this._currentIndex]!,
+        );
+
+        const sides = this._sideActions.get(this._currentIndex);
+        if (sides) {
+          for (const side of sides) {
+            side._initAnimator({ subject: entity });
+            side.onStart({ subject: entity });
+            side._internalTick({ subject: entity, deltaMs });
+            if (side.isDone) {
+              side.onEnd({ subject: entity });
+            } else {
+              this._backgroundActions.push(side);
+            }
           }
         }
       }
-    }
 
-    // Tick the main sequential action
-    const action = this.actions[this.currentIndex]!;
-    const complete = action.tick({
-      subject: this.entity,
-      delta,
-      params: this.params,
-    });
-    if (complete) {
-      // Fire end listeners for this action
-      this.fireListeners(
-        this.endListeners,
-        this.actionKeys[this.currentIndex]!,
-      );
-      this.currentIndex++;
+      const action = this._actions[this._currentIndex]!;
+      action._internalTick({ subject: entity, deltaMs });
+      if (action.isDone) {
+        action.onEnd({ subject: entity });
+        this._fireListeners(
+          this._endListeners,
+          this._actionKeys[this._currentIndex]!,
+        );
+        this._currentIndex++;
+      }
     }
 
     // Fire behavior-end callbacks once the entire behavior is done
-    if (this.isDone && !this.behaviorEndFired) {
-      this.behaviorEndFired = true;
-      for (const cb of this.behaviorEndListeners) {
+    if (this.isDone && !this._behaviorEndFired) {
+      this._behaviorEndFired = true;
+      for (const cb of this._behaviorEndListeners) {
         cb();
       }
     }
   }
 
   /** Pre-compute the listener key for every action in the chain. */
-  private computeActionKeys(): string[] {
+  private _computeActionKeys(): string[] {
     const counters = new Map<string, number>();
-    return this.actions.map((action) => {
+    return this._actions.map((action) => {
       const name = action.name;
       const idx = counters.get(name) ?? 0;
       counters.set(name, idx + 1);
-      return `${this.prefix}${name}[${idx}]`;
+      return `${this._prefix}${name}[${idx}]`;
     });
   }
 
@@ -325,8 +344,8 @@ export class BehaviorInProgress {
    * Collect every valid key, recursing into sub-behaviors so that nested
    * action keys are also recognised.
    */
-  private collectValidKeys(
-    actions: Action[],
+  private _collectValidKeys(
+    actions: Action<Subject>[],
     prefix: string,
     into: Set<string>,
   ): void {
@@ -338,8 +357,8 @@ export class BehaviorInProgress {
       const key = `${prefix}${name}[${idx}]`;
       into.add(key);
       if (action instanceof Behavior) {
-        this.collectValidKeys(
-          (action as any).actions as Action[],
+        this._collectValidKeys(
+          (action as any)._actions as Action<Subject>[],
           key + ".",
           into,
         );
@@ -347,7 +366,10 @@ export class BehaviorInProgress {
     }
   }
 
-  private fireListeners(map: Map<string, ActionCallback[]>, key: string): void {
+  private _fireListeners(
+    map: Map<string, ActionCallback[]>,
+    key: string,
+  ): void {
     const callbacks = map.get(key);
     if (callbacks) {
       for (const cb of callbacks) {

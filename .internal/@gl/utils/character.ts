@@ -1,9 +1,16 @@
-import { globalTicker } from "@gl/ticker";
+import { AlphaOscillateAction } from "../actions/AlphaAction";
+import { ColorFadeAction } from "../actions/ColorAction";
+import { DashAction } from "../actions/DashAction";
+import { SoundAction } from "../actions/SoundAction";
+import { SpriteChangeAction } from "../actions/SpriteChangeAction";
 import * as char from "../api/w2h/char";
 import * as navigation from "../api/w2h/navigation";
+import { globalTicker } from "../ticker";
+import { Behavior } from "./behavior";
 
 import { Delay } from "./delay";
 import * as easing from "./easing";
+import { Easings } from "./easing";
 import { Vec2 } from "./la/vec2";
 import { NavPlan, StationaryPlan } from "./navigation";
 import { deriveTargetIndex, type TrackResult } from "./paths";
@@ -103,8 +110,16 @@ export class Character {
     return this._pos;
   }
 
+  public getPos(): Vec2 {
+    return this._pos;
+  }
+
   public set pos(newPos: Vec2) {
     this._pos = newPos.clone();
+  }
+
+  public setPos(newPos: Vec2): void {
+    this._pos = newPos;
   }
 
   public get velocity(): Vec2 {
@@ -119,16 +134,24 @@ export class Character {
     this._velocity.add(impulse);
   }
 
+  public setColorOverlay(color: number, alpha: number): void {
+    char.setColorOverlay({ name: this.name, color, alpha });
+  }
+
+  public setAlpha(alpha: number): void {
+    char.setAlpha({ name: this.name, alpha });
+  }
+
   public get action(): CharAction {
     return this._action;
   }
 
-  public setAction(newAction: CharAction, time: number = -1): void {
+  public setAction(newAction: CharAction, duration: number = -1): void {
     if (this._action === newAction) return;
     if (!this._persistAction.done) return;
 
     this._action = newAction;
-    this._persistAction = new Delay(time);
+    this._persistAction = new Delay(duration);
     char.setAction(this.name, this._action);
   }
 
@@ -202,7 +225,7 @@ export class Character {
     volume: number = 1.0,
     onlyWhileMoving: boolean = false,
   ): void {
-    char.setMoveSound(this.name, sound, volume, onlyWhileMoving);
+    char.setMoveSound({ name: this.name, sound, volume, onlyWhileMoving });
   }
 
   private set state(state: NavState) {
@@ -395,13 +418,11 @@ export class Character {
 
       // Check for collisions and adjust proposed translation
       if (needsCollisionCheck) {
-        const correctedTrans = char.checkCollision(
-          this.name,
-          this._pos.x,
-          this._pos.y,
-          proposedTrans.x,
-          proposedTrans.y,
-        );
+        const correctedTrans = char.checkCollision({
+          name: this.name,
+          pos: this._pos,
+          translation: proposedTrans,
+        });
         // Update position
         this._pos.x += correctedTrans.x;
         this._pos.y += correctedTrans.y;
@@ -424,13 +445,11 @@ export class Character {
 
       // Check for collisions and adjust proposed translation
       if (needsCollisionCheck) {
-        const correctedTrans = char.checkCollision(
-          this.name,
-          this._pos.x,
-          this._pos.y,
-          proposedTrans.x,
-          proposedTrans.y,
-        );
+        const correctedTrans = char.checkCollision({
+          name: this.name,
+          pos: this._pos,
+          translation: proposedTrans,
+        });
         // Update position
         this._pos.x += correctedTrans.x;
         this._pos.y += correctedTrans.y;
@@ -451,5 +470,31 @@ export class Character {
     char.setSpeed(this.name, animSpeed);
     char.setPos(this.name, this._pos.x, this._pos.y);
     this.setAction(moveAction);
+  }
+
+  public hurt(dir: Vec2) {
+    const hurtDuration = 500;
+    const colorDuration = hurtDuration * 0.25;
+    const alphaDuration = hurtDuration * 0.75;
+
+    const hurtBehavior = new Behavior<Character>("hurt");
+    hurtBehavior
+      .then(
+        new SpriteChangeAction({
+          action: CharAction.HurtLeft,
+          duration: hurtDuration,
+        }),
+      )
+      .also(new DashAction({ direction: dir.scaled(-150) }))
+      .also(new ColorFadeAction({ color: 0xff0000, duration: colorDuration }))
+      .also(
+        new AlphaOscillateAction({
+          duration: alphaDuration,
+          cycles: Math.round(alphaDuration / 100),
+          easing: Easings.easeOutQuad,
+        }),
+      )
+      .also(new SoundAction({ key: "gl:hurt" }));
+    hurtBehavior.performOn(this);
   }
 }

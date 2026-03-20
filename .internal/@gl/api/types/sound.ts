@@ -11,17 +11,17 @@ export interface LoadOpts {
   /** The name of the sound to load from your `sounds` folder */
   name: string;
   /** Whether the sound should autoplay on loads. Good for music. */
-  autoplay: boolean;
+  autoplay?: boolean;
   /** Whether the sound should loop. Also good for music. */
-  loop: boolean;
+  loop?: boolean;
   /** The volume of the sound. */
-  volume: number;
-  sprites: Sprite[];
+  volume?: number;
+  sprites?: Sprite[];
 }
 
 export interface PlayOpts {
   assetId: number;
-  spriteId: number;
+  spriteId?: number;
 }
 
 export interface CrossFadeSpec {

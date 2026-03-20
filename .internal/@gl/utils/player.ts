@@ -16,11 +16,11 @@ export class Player extends Character {
     return velocity.x < 0 ? CharAction.WalkLeft : CharAction.WalkRight;
   }
 
-  public hurt(dir: Vec2): boolean {
+  public override hurt(dir: Vec2): boolean {
     if (this._invincible) return false;
 
-    this.setAction(CharAction.HurtLeft, 200);
-    this.addImpulse(dir.scaled(-150));
+    super.hurt(dir);
+
     this._invincible = true;
     this._hurtCooldown.reset();
     return true;
