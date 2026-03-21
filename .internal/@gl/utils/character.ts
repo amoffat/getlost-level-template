@@ -475,9 +475,9 @@ export class Character {
   public hurt(dir: Vec2) {
     const hurtDuration = 500;
     const colorDuration = hurtDuration * 0.25;
-    const alphaDuration = hurtDuration * 0.75;
+    const alphaDuration = hurtDuration - colorDuration;
 
-    const hurtBehavior = new Behavior<Character>("hurt");
+    const hurtBehavior = new Behavior("hurt", this);
     hurtBehavior
       .then(
         new SpriteChangeAction({
@@ -495,6 +495,6 @@ export class Character {
         }),
       )
       .also(new SoundAction({ key: "gl:hurt" }));
-    hurtBehavior.performOn(this);
+    hurtBehavior.perform();
   }
 }

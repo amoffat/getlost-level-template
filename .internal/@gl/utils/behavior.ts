@@ -94,7 +94,7 @@ export class Behavior<Subject> extends Action<Subject> {
   private _sideActions: Map<number, Action<Subject>[]> = new Map();
 
   // Execution state (initialised in onStart)
-  private _entity: Subject | null = null;
+  private _subject: Subject;
   private _started: boolean = false;
   private _currentIndex: number = 0;
   private _firedSidesForIndex: number = -1;
@@ -109,8 +109,9 @@ export class Behavior<Subject> extends Action<Subject> {
   private _behaviorEndListeners: ActionCallback[] = [];
   private _behaviorEndFired: boolean = false;
 
-  constructor(name: string) {
+  constructor(name: string, subject: Subject) {
     super({ name, duration: 0 });
+    this._subject = subject;
   }
 
   /** @internal Behavior manages its own lifecycle; no animator needed. */
@@ -178,7 +179,7 @@ export class Behavior<Subject> extends Action<Subject> {
       );
     }
     this._started = true;
-    this._entity = subject;
+    this._subject = subject;
     this._actionKeys = this._computeActionKeys();
     this._collectValidKeys(this._actions, this._prefix, this._validKeys);
   }
@@ -244,8 +245,8 @@ export class Behavior<Subject> extends Action<Subject> {
     return this;
   }
 
-  public performOn(subject: Subject): Behavior<Subject> {
-    this.onStart({ subject });
+  public perform(): Behavior<Subject> {
+    this.onStart({ subject: this._subject });
     const tick = (deltaMs: number) => this._tickBehavior(deltaMs);
     globalTicker.subscribe(tick);
     this.onBehaviorEnd(() => {
@@ -255,7 +256,7 @@ export class Behavior<Subject> extends Action<Subject> {
   }
 
   private _tickBehavior(deltaMs: number): void {
-    const entity = this._entity!;
+    const entity = this._subject!;
 
     // Tick background (also) actions, removing completed ones
     this._backgroundActions = this._backgroundActions.filter((entry) => {
