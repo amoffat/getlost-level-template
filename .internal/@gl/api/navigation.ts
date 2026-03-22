@@ -1,5 +1,5 @@
-import { type Vector } from "../types/vector";
-import { Waypoint } from "../types/waypoint";
+import { type Vector } from "@gl/types/api/vector";
+import { Waypoint } from "@gl/types/api/waypoint";
 
 export declare function getWaypoint(name: string): Waypoint;
 export declare function findPath(
@@ -7,6 +7,6 @@ export declare function findPath(
   startPos: Vector,
   endPos: Vector,
   nearestIsOk: boolean,
-  max: number
+  max: number,
 ): Promise<Vector[]>;
 export declare function clearPath(key: string): void;

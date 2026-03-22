@@ -1,5 +1,5 @@
-// import { MapSize } from "../api/types/map";
-// import * as host from "../api/w2h/host";
+// import { MapSize } from "@gl/api/types/map";
+// import * as host from "@gl/api/host";
 // import { Animator, AnimatorOpts } from "./animation";
 // import { Box } from "./box";
 // import { easeInOutQuad } from "./easing";

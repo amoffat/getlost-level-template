@@ -1,8 +1,8 @@
-import * as filters from "@gl/api/w2h/filters";
+import * as filters from "@gl/api/filters";
 
-import { addTiltShift } from "@gl/api/w2h/filters";
-import { setSunTime } from "@gl/api/w2h/time";
-import { Vec2 } from "@gl/utils/la/vec2";
+import { addTiltShift } from "@gl/api/filters";
+import { setSunTime } from "@gl/api/time";
+import { Vec2 } from "@gl/utils/vec2";
 
 export { card } from "./card";
 export { entrances, exits } from "./gateways";
@@ -14,18 +14,18 @@ let tiltShift!: number;
 /**
  * This function initializes your level. It's called once when the level is
  * loaded. Use it to set up your level, like setting the time of day, or adding
- * filters.
+ * filters, or setting up event handlers.
  */
 export async function init(): Promise<void> {
   tiltShift = addTiltShift(0.06);
 
-  // console.log(story.current);
   events.on(
     "collision",
-    { character: "player", collider: "barn" },
+    { character: "player", enter: true },
     ({ direction }) => {
       const hurtDirection = Vec2.fromVector(direction).normalize().flip();
       player.hurt(hurtDirection);
+      // prepare("abcd", true);
     },
   );
 }

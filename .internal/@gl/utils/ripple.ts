@@ -1,5 +1,5 @@
-import type { RippleFilterOpts } from "../api/types/filter";
-import * as filters from "../api/w2h/filters";
+import * as filters from "@gl/api/filters";
+import type { RippleFilterOpts } from "@gl/types/api/filter";
 
 export class RippleFilter {
   private _size: number;
@@ -57,7 +57,7 @@ export class RippleFilter {
 export function createUnderwaterFilter(
   size: number = 0.9,
   speed: number = 0.2,
-  strength: number = 0.7
+  strength: number = 0.7,
 ): RippleFilter {
   return new RippleFilter({ size, speed, strength });
 }
@@ -65,7 +65,7 @@ export function createUnderwaterFilter(
 export function createHeatFilter(
   size: number = 0.18,
   speed: number = 1.7,
-  strength: number = 0.14
+  strength: number = 0.14,
 ): RippleFilter {
   return new RippleFilter({ size, speed, strength });
 }

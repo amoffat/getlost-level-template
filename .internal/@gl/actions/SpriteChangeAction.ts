@@ -1,5 +1,5 @@
-import { Action } from "../utils/behavior";
-import { CharAction } from "../utils/character";
+import { CharAction } from "@gl/types/character";
+import { Action } from "@gl/utils/behavior";
 
 interface Subject {
   get action(): CharAction;

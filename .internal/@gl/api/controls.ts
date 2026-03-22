@@ -1,4 +1,4 @@
-import { Button } from "../types/controls";
+import { Button } from "@gl/types/api/controls";
 
 /**
  * Alters the player's UI to display the given list of buttons.

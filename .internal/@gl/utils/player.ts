@@ -1,7 +1,8 @@
-import * as player from "../api/w2h/player";
-import { Character, CharAction } from "./character";
+import * as player from "@gl/api/player";
+import { CharAction } from "@gl/types/character";
+import { Character } from "./character";
 import { Delay } from "./delay";
-import { Vec2 } from "./la/vec2";
+import { Vec2 } from "./vec2";
 
 export class Player extends Character {
   private _hurtCooldown: Delay = new Delay(1000);

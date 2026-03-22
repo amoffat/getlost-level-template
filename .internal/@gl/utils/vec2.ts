@@ -1,5 +1,5 @@
-import { type Vector } from "../../api/types/vector";
-import type { EasingFunction } from "../easing";
+import { type Vector } from "@gl/types/api/vector";
+import type { EasingFunction } from "./easing";
 
 export class Vec2 implements Vector {
   x: number;

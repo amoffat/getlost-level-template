@@ -1,5 +1,5 @@
-import { Action } from "../utils/behavior";
-import { Easings } from "../utils/easing";
+import { Action } from "@gl/utils/behavior";
+import { Easings } from "@gl/utils/easing";
 
 interface Subject {
   setAlpha(alpha: number): void;

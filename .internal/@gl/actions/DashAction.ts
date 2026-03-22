@@ -1,5 +1,5 @@
-import { Action } from "../utils/behavior";
-import { Vec2 } from "../utils/la/vec2";
+import { Action } from "@gl/utils/behavior";
+import { Vec2 } from "@gl/utils/vec2";
 
 interface Subject {
   addImpulse(impulse: Vec2): void;

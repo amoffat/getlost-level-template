@@ -1,4 +1,4 @@
-import { Matrix } from "../../utils/la/mat";
+import { Matrix } from "@gl/utils/mat";
 
 export declare function setPosition(x: number, y: number): void;
 export declare function zoom(scale: number): void;

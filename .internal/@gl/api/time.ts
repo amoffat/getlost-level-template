@@ -1,4 +1,4 @@
-import { SunEvent } from "../../types/time";
+import { SunEvent } from "@gl/types/time";
 
 /**
  * Positions the sun at the given time, according to the player's physical

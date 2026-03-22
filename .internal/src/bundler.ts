@@ -10,6 +10,17 @@ import { OutputOptions, Plugin, rollup, RollupOptions } from "rollup";
 const internalDir = process.cwd();
 const repoDir = resolve(internalDir, "..");
 const levelDir = resolve(repoDir, "level");
+// Absolute path prefix for the @gl/api directory (includes trailing separator)
+const glApiDir = path.resolve(internalDir, "@gl", "api") + path.sep;
+
+/**
+ * Returns true for any module id that refers to a @gl/api/* module, whether
+ * expressed as a canonical "@gl/api/..." import or as a fully-resolved
+ * absolute path (the form Rollup uses when re-checking after resolution).
+ */
+function isGlApiModule(id: string): boolean {
+  return id.startsWith("@gl/api/") || id.startsWith(glApiDir);
+}
 
 interface BundleOptions {
   minify?: boolean;
@@ -91,9 +102,8 @@ export const __internal__ = {
 
 ${directExports}
 
-export function __internal__init(states) {
+export function __internal__init() {
   player = new __internal__.Player();
-  story = new __internal__.StoryStateMachine(states);
   events = new __internal__.EventDispatcher();
 
   for (const name of __internal__.getAllChars()) {
@@ -181,8 +191,8 @@ export function createRollupConfig(
       inlineDynamicImports: true,
       compact: true,
       globals: (id) => {
-        // Map w2h API modules to their global names provided by the host
-        if (id.includes("/api/w2h/")) {
+        // Map API modules to their global names provided by the host
+        if (isGlApiModule(id)) {
           const moduleName = id.split("/").pop();
           return `__host_${moduleName}__`;
         }
@@ -190,8 +200,9 @@ export function createRollupConfig(
       },
     },
     external: (id) => {
-      // Treat w2h API modules as external since they're provided by the host
-      return id.includes("/api/w2h/");
+      // Treat API modules as external since they're provided by the host.
+      // Handles both "@gl/api/..." imports and absolute resolved paths.
+      return isGlApiModule(id);
     },
     plugins,
   };
@@ -206,7 +217,6 @@ export async function bundleWithRollup(
   // are included in the final bundle and are therefore accessible.
   const forceExports: ForceExportConfig[] = [
     { symbolNames: ["Player"], importPath: "@gl/utils/player" },
-    { symbolNames: ["StoryStateMachine"], importPath: "@gl/utils/state" },
     {
       symbolNames: ["EventDispatcher"],
       importPath: "@gl/events",
@@ -215,7 +225,7 @@ export async function bundleWithRollup(
     { symbolNames: ["globalTicker"], importPath: "@gl/ticker" },
     {
       symbolNames: [{ name: "getAll", alias: "getAllChars" }],
-      importPath: "@gl/api/w2h/char",
+      importPath: "@gl/api/char",
     },
     {
       symbolNames: ["dispatchEvent"],

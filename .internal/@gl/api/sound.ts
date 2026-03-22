@@ -1,4 +1,4 @@
-import type { CrossFadeSpec, LoadOpts, PlayOpts } from "../types/sound";
+import type { CrossFadeSpec, LoadOpts, PlayOpts } from "@gl/types/api/sound";
 
 /**
  * Loads a sound and returns its ID.

@@ -1,8 +1,8 @@
-import { CollisionResult } from "../../types/collision";
-import { Tuple2 } from "../../types/tuple";
+import { CollisionResult } from "@gl/types/collision";
+import { Tuple2 } from "@gl/types/tuple";
 import { Box } from "../box";
-import { Vec2 } from "../la/vec2";
 import { Polygon } from "../polygon";
+import { Vec2 } from "../vec2";
 
 export function aabbCollision(box1: Box, box2: Box): boolean {
   const pos1 = box1.upperLeft;
@@ -41,14 +41,14 @@ function projectPolygon(polygon: Polygon, axis: Vec2): Tuple2<number, number> {
 
 function overlap(
   proj1: Tuple2<number, number>,
-  proj2: Tuple2<number, number>
+  proj2: Tuple2<number, number>,
 ): boolean {
   return proj1.second >= proj2.first && proj2.second >= proj1.first;
 }
 
 export function polygonCollision(
   polygon1: Polygon,
-  polygon2: Polygon
+  polygon2: Polygon,
 ): CollisionResult {
   const edges: Vec2[] = [];
   let minOverlap = Number.POSITIVE_INFINITY as number;

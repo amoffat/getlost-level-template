@@ -1,5 +1,5 @@
-// import * as camera from "../api/w2h/camera";
-// import * as particles from "../api/w2h/particles";
+// import * as camera from "@gl/api/camera";
+// import * as particles from "@gl/api/particles";
 // import { Vec2 } from "./la/vec2";
 
 // const numComponents: u32 = 4;

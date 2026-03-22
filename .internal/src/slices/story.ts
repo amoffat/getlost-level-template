@@ -48,7 +48,9 @@ export const slice = createSlice({
       });
     },
     setEdges(state, action: PayloadAction<StoryEdge[]>) {
-      state.edges = action.payload;
+      // Strip transient visual state (e.g. drag-highlight styles) so they are
+      // never persisted and cannot reappear on page reload.
+      state.edges = action.payload.map(({ style: _style, ...edge }) => edge as StoryEdge);
     },
     setNodeData(
       state,

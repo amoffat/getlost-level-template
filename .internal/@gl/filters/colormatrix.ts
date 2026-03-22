@@ -1,4 +1,4 @@
-import * as filters from "../api/w2h/filters";
+import * as filters from "@gl/api/filters";
 
 // prettier-ignore
 type ColorMatrix = [number, number, number, number, number,
@@ -66,7 +66,7 @@ export class ColorMatrixFilter {
     r: number,
     g: number,
     b: number,
-    multiply: boolean = false
+    multiply: boolean = false,
   ): void {
     // prettier-ignore
     const matrix: ColorMatrix = [
@@ -83,7 +83,7 @@ export class ColorMatrixFilter {
     r: number,
     g: number,
     b: number,
-    multiply: boolean = false
+    multiply: boolean = false,
   ): void {
     // prettier-ignore
     const matrix: ColorMatrix = [
@@ -303,7 +303,7 @@ export class ColorMatrixFilter {
   private _multiply(
     out: ColorMatrix,
     a: ColorMatrix,
-    b: ColorMatrix
+    b: ColorMatrix,
   ): ColorMatrix {
     // Red Channel
     out[0] = a[0] * b[0] + a[1] * b[5] + a[2] * b[10] + a[3] * b[15];

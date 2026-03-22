@@ -1,6 +1,6 @@
-import type { MapSize } from "../types/map";
-import type { TileProperties } from "../types/tile";
-import type { Vector } from "../types/vector";
+import type { MapSize } from "@gl/types/api/map";
+import type { TileProperties } from "@gl/types/api/tile";
+import type { Vector } from "@gl/types/api/vector";
 
 /**
  * Exits the player from the current map. The name must have already been
@@ -22,7 +22,7 @@ export declare function exit(name: string, force: boolean): Promise<boolean>;
  */
 export declare function getTileProps(
   posX: number,
-  posY: number
+  posY: number,
 ): TileProperties;
 
 /**

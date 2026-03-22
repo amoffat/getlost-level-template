@@ -1,11 +1,11 @@
-import * as navigation from "../api/w2h/navigation";
+import * as navigation from "@gl/api/navigation";
 
-import { type Vector } from "../api/types/vector";
+import { type Vector } from "@gl/types/api/vector";
 import type { Character } from "./character";
 import { Delay } from "./delay";
 import { Easings } from "./easing";
-import { Vec2 } from "./la/vec2";
 import { chance, inCircle, inRing, randFloat, randInt } from "./rand";
+import { Vec2 } from "./vec2";
 import { Waypoint } from "./waypoint";
 
 const tryToFindValid: number = 10;
@@ -26,14 +26,14 @@ export abstract class NavPlan {
     start: Vec2,
     end: Vec2,
     nearestIsOk: boolean,
-    lengthBound: number = Number.POSITIVE_INFINITY as number
+    lengthBound: number = Number.POSITIVE_INFINITY as number,
   ): Promise<boolean> {
     const path = await navigation.findPath(
       "",
       start.toVector(),
       end.toVector(),
       nearestIsOk,
-      lengthBound
+      lengthBound,
     );
     const hasPath = path.length > 0;
     return hasPath;
@@ -51,7 +51,7 @@ export abstract class NavPlan {
 
   protected async _randomInCircle(
     curPos: Vec2,
-    maxDistance: number
+    maxDistance: number,
   ): Promise<Waypoint> {
     let wp = Waypoint.null();
 
@@ -158,7 +158,7 @@ export class PatrolRandomDetours extends PatrolPlan {
   constructor(
     waypoints: Waypoint[],
     maxDistance: number,
-    maxRandom: number = 3
+    maxRandom: number = 3,
   ) {
     super(waypoints);
     this._maxDistance = maxDistance;
@@ -203,7 +203,7 @@ export class FollowPlan extends NavPlan {
     target: Character,
     minDistance: number = 0,
     maxDistance: number = 0,
-    pause: number = 0
+    pause: number = 0,
   ) {
     super();
     this._target = target;
@@ -259,7 +259,7 @@ abstract class AggressiveBasePlan extends NavPlan {
         pos,
         this._target.pos,
         true,
-        this._attackDistance
+        this._attackDistance,
       );
     }
     return false;
@@ -313,7 +313,7 @@ export class RandomThenAttackPlan extends AggressiveBasePlan {
   constructor(
     target: Character,
     attackDistance: number,
-    randMoveDistance: number
+    randMoveDistance: number,
   ) {
     super(target, attackDistance);
     this._randMoveDistance = randMoveDistance;

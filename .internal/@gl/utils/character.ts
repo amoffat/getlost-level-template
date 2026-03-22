@@ -1,19 +1,14 @@
-import { AlphaOscillateAction } from "../actions/AlphaAction";
-import { ColorFadeAction } from "../actions/ColorAction";
-import { DashAction } from "../actions/DashAction";
-import { SoundAction } from "../actions/SoundAction";
-import { SpriteChangeAction } from "../actions/SpriteChangeAction";
-import * as char from "../api/w2h/char";
-import * as navigation from "../api/w2h/navigation";
-import { globalTicker } from "../ticker";
-import { Behavior } from "./behavior";
+import * as char from "@gl/api/char";
+import * as navigation from "@gl/api/navigation";
+import { hurt } from "@gl/behaviors/hurt";
+import { globalTicker } from "@gl/ticker";
+import { CharAction } from "@gl/types/character";
 
 import { Delay } from "./delay";
 import * as easing from "./easing";
-import { Easings } from "./easing";
-import { Vec2 } from "./la/vec2";
 import { NavPlan, StationaryPlan } from "./navigation";
 import { deriveTargetIndex, type TrackResult } from "./paths";
+import { Vec2 } from "./vec2";
 import { Waypoint } from "./waypoint";
 
 export enum Direction {
@@ -21,16 +16,6 @@ export enum Direction {
   South,
   East,
   West,
-}
-
-export enum CharAction {
-  Idle,
-  WalkRight,
-  WalkLeft,
-  WalkUp,
-  WalkDown,
-  HurtLeft,
-  HurtRight,
 }
 
 export const chars: Map<string, Character> = new Map();
@@ -473,28 +458,7 @@ export class Character {
   }
 
   public hurt(dir: Vec2) {
-    const hurtDuration = 500;
-    const colorDuration = hurtDuration * 0.25;
-    const alphaDuration = hurtDuration - colorDuration;
-
-    const hurtBehavior = new Behavior("hurt", this);
-    hurtBehavior
-      .then(
-        new SpriteChangeAction({
-          action: CharAction.HurtLeft,
-          duration: hurtDuration,
-        }),
-      )
-      .also(new DashAction({ direction: dir.scaled(-150) }))
-      .also(new ColorFadeAction({ color: 0xff0000, duration: colorDuration }))
-      .also(
-        new AlphaOscillateAction({
-          duration: alphaDuration,
-          cycles: Math.round(alphaDuration / 100),
-          easing: Easings.easeOutQuad,
-        }),
-      )
-      .also(new SoundAction({ key: "gl:hurt" }));
-    hurtBehavior.perform();
+    const behavior = hurt(this, dir);
+    behavior.perform();
   }
 }

@@ -14,7 +14,7 @@ export class Matrix {
     m21: number,
     m22: number,
     dx: number,
-    dy: number
+    dy: number,
   ): void {
     this.a = m11;
     this.b = m12;

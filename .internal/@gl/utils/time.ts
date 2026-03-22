@@ -1,4 +1,4 @@
-import { SunEvent } from "../types/time";
+import { SunEvent } from "@gl/types/time";
 import { mod } from "./math";
 
 /**

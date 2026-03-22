@@ -1,4 +1,4 @@
-import type { Vector } from "./api/types/vector";
+import type { Vector } from "./types/api/vector";
 
 /**
  * Called when the player interacts with a pickup

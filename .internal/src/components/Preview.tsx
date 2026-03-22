@@ -633,7 +633,7 @@ export default function PreviewTab() {
 
             {/* Bottom pane */}
             <Split.Pane
-              initialHeight={300}
+              initialHeight={350}
               minHeight={100}
               maxHeight={500}
               onResizeStart={handlePaneResizeStart}
@@ -696,7 +696,7 @@ export default function PreviewTab() {
             <AdvancedSection>
               <Fieldset legend="Developer Tools">
                 <Stack gap="xs" p={0}>
-                  <Anchor href="/main.js" target="_blank" size="xs">
+                  <Anchor href="/level/main.js" target="_blank" size="xs">
                     Open compiled level js
                   </Anchor>
                 </Stack>

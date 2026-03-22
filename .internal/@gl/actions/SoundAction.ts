@@ -1,5 +1,5 @@
-import { loadSound, playSound } from "../api/w2h/sound";
-import { Action } from "../utils/behavior";
+import { loadSound, playSound } from "@gl/api/sound";
+import { Action } from "@gl/utils/behavior";
 
 export class SoundAction extends Action<unknown> {
   private static _loadedSounds: Map<string, Promise<number>> = new Map();

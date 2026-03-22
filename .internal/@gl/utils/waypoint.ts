@@ -1,7 +1,7 @@
-import { type Vector } from "../api/types/vector";
-import { Waypoint as ApiWaypoint } from "../api/types/waypoint";
-import * as navigation from "../api/w2h/navigation";
-import { Vec2 } from "./la/vec2";
+import * as navigation from "@gl/api/navigation";
+import { type Vector } from "@gl/types/api/vector";
+import { Waypoint as ApiWaypoint } from "@gl/types/api/waypoint";
+import { Vec2 } from "./vec2";
 
 export class Waypoint {
   public pos: Vec2;
@@ -24,7 +24,7 @@ export class Waypoint {
   public static fromName(
     name: string,
     pause: number = 1000,
-    speed: number = 1.0
+    speed: number = 1.0,
   ): Waypoint {
     const awp = navigation.getWaypoint(name);
     const wp = Waypoint.fromApi(awp);

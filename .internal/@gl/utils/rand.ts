@@ -2,7 +2,7 @@
  * Random utilities for sampling elements and indices with optional avoidance.
  */
 
-import { type Vector } from "../api/types/vector";
+import { type Vector } from "@gl/types/api/vector";
 
 // NOTE: int(min,max) is defined later; functions below delegate to it to avoid duplication.
 /**

@@ -1,4 +1,4 @@
-import { Box } from "../utils/box";
+import { Box } from "@gl/utils/box";
 
 export interface Tile {
   gid: number;

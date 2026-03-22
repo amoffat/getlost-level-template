@@ -1,4 +1,4 @@
-import { Vec2 } from "./la/vec2";
+import { Vec2 } from "./vec2";
 
 // Catmull–Rom spline interpolation for 2D vectors. p0, p1, p2, p3 are
 // consecutive control points. t is in [0, 1] between p1 and p2. Returns the
@@ -8,7 +8,7 @@ export function catmullRom(
   p1: Vec2,
   p2: Vec2,
   p3: Vec2,
-  t: number
+  t: number,
 ): Vec2 {
   // Clamp t to [0,1] to avoid surprises
   if (t < 0) t = 0;
@@ -60,7 +60,7 @@ export function catmullRom(
 export function catmullRomAt(
   points: Vec2[],
   endIndex: number,
-  t: number
+  t: number,
 ): Vec2 {
   const n = points.length;
   if (n == 0) return new Vec2(0, 0);

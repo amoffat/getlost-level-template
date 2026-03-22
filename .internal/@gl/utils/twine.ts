@@ -1,8 +1,8 @@
-import * as map from "../api/w2h/map";
-import * as markers from "../api/w2h/markers";
-import * as pickup from "../api/w2h/pickup";
-import * as time from "../api/w2h/time";
-import * as timeUtils from "../utils/time";
+import * as map from "@gl/api/map";
+import * as markers from "@gl/api/markers";
+import * as pickup from "@gl/api/pickup";
+import * as time from "@gl/api/time";
+import * as timeUtils from "./time";
 
 const visitCount = new Map<string, number>();
 

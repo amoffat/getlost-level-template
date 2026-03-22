@@ -1,4 +1,4 @@
-import type { RippleFilterOpts } from "../types/filter";
+import type { RippleFilterOpts } from "@gl/types/api/filter";
 
 /**
  * Create a new tilt shift effect.
@@ -28,7 +28,7 @@ export declare function setTiltShiftY(id: number, y: number): void;
 export declare function addRippleFilter(opts: RippleFilterOpts): number;
 export declare function updateRippleFilter(
   id: number,
-  opts: RippleFilterOpts
+  opts: RippleFilterOpts,
 ): void;
 
 /** Do not use these directly. Use the ColorMatrixFilter class */

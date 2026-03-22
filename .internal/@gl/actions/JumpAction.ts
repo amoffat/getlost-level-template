@@ -1,5 +1,5 @@
-import { Action } from "../utils/behavior";
-import { type EasingFunction, Easings } from "../utils/easing";
+import { Action } from "@gl/utils/behavior";
+import { type EasingFunction, Easings } from "@gl/utils/easing";
 
 interface Subject {
   setPos(x: number, y: number): void;

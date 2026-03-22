@@ -1,5 +1,5 @@
-import { Vec2 } from "./la/vec2";
 import { Polygon } from "./polygon";
+import { Vec2 } from "./vec2";
 
 export class Box {
   upperLeft: Vec2;
@@ -18,7 +18,7 @@ export class Box {
     x: number,
     y: number,
     width: number,
-    height: number
+    height: number,
   ): Box {
     const upperLeft = new Vec2(x, y);
     return new Box(upperLeft, upperLeft.added(new Vec2(width, height)));

@@ -1,4 +1,4 @@
-import { loadSound } from "../api/w2h/sound";
+import { loadSound } from "@gl/api/sound";
 
 export function loadMusic(name: string, volume: number = 1.0): Promise<number> {
   const assetId = loadSound({

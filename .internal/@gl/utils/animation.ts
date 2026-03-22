@@ -1,4 +1,4 @@
-import { globalTicker } from "../ticker";
+import { globalTicker } from "@gl/ticker";
 import { addListener } from "./callbacks";
 import { type EasingFunction, Easings } from "./easing";
 

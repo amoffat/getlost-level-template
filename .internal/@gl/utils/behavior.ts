@@ -1,6 +1,6 @@
-import { globalTicker } from "../ticker";
+import { globalTicker } from "@gl/ticker";
 import { Animator } from "./animation";
-import { type EasingFunction } from "./easing";
+import { Easings, type EasingFunction } from "./easing";
 
 export type ActionCallback = () => void;
 
@@ -16,7 +16,7 @@ export abstract class Action<Subject> {
   constructor({
     name,
     duration,
-    easing,
+    easing = Easings.linear,
   }: {
     name: string;
     duration: number;

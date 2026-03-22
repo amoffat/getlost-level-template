@@ -1,7 +1,7 @@
-import type { CharAction } from "../../utils/character";
-import type { SetAnimationOpts } from "../types/animation";
-import type { CharProps } from "../types/char";
-import type { Vector } from "../types/vector";
+import type { SetAnimationOpts } from "@gl/types/api/animation";
+import type { CharProps } from "@gl/types/api/char";
+import type { Vector } from "@gl/types/api/vector";
+import type { CharAction } from "@gl/types/character";
 
 /**
  * Fetches the merged stack of properties for a character. This is currently

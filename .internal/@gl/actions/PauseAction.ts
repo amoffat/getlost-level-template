@@ -1,4 +1,4 @@
-import { Action } from "../utils/behavior";
+import { Action } from "@gl/utils/behavior";
 
 export class PauseAction extends Action<unknown> {
   constructor({
