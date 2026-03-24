@@ -176,8 +176,6 @@ export function createRollupConfig(
   // Our globals from globals.d.ts that we want to be accessible in the bundle.
   const intro = `
     let player;
-    let states;
-    let story;
     let events;
   `;
 

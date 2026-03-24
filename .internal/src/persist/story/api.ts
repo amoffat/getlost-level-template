@@ -19,12 +19,14 @@ export function serializeToStates(
   edges: StoryEdge[],
 ): SerializedState[] {
   const stateMap = new Map<string, SerializedState>();
+  const nodeIdtoStateId = new Map<string, string>();
 
   for (const node of nodes) {
-    const kind = node.data?.kind === "or" ? "or" : "story";
+    const kind = node.type === "or" ? "or" : "story";
     if (kind === "story") {
+      nodeIdtoStateId.set(node.id, node.data.id);
       stateMap.set(node.id, {
-        id: node.id,
+        id: node.data.id,
         kind,
         dependencies: [],
         dependents: [],
@@ -44,10 +46,12 @@ export function serializeToStates(
     const target = stateMap.get(edge.target)!;
     const negated = edge.data?.negated ?? false;
     if (!target.dependencies.some((d) => d.stateId === edge.source)) {
-      target.dependencies.push({ stateId: edge.source, negated });
+      const stateId = nodeIdtoStateId.get(edge.source) ?? edge.source;
+      target.dependencies.push({ stateId, negated });
     }
     if (!source.dependents.some((d) => d.stateId === edge.target)) {
-      source.dependents.push({ stateId: edge.target, negated });
+      const stateId = nodeIdtoStateId.get(edge.target) ?? edge.target;
+      source.dependents.push({ stateId, negated });
     }
   }
 

@@ -57,39 +57,57 @@ export interface TileCollisionEvent {
   };
 }
 
+export interface StateChangeEvent {
+  type: "state-change";
+  data: {
+    added: Set<string>;
+    removed: Set<string>;
+    ready: Set<string>;
+    satisfied: Set<string>;
+  };
+}
+
 export type AnyEvent =
   | PickupEvent
   | SensorEvent
   | CharacterCollisionEvent
   | TimerCompletedEvent
   | TileCollisionEvent
+  | StateChangeEvent
   | ChoiceMadeEvent;
 
 interface Listener<T extends EventName> {
-  key: Record<string, unknown> | null;
+  filter: EventFilter<T>;
   callback: (event: EventData<T>) => void;
 }
 
 type EventName = AnyEvent["type"];
 type EventType<T extends EventName> = Extract<AnyEvent, { type: T }>;
 type EventData<T extends EventName> = EventType<T>["data"];
-type FilterKey<T extends EventName> = Partial<EventData<T>> | null;
+type EventFilter<T extends EventName> =
+  | Partial<EventData<T>>
+  | ((data: EventData<T>) => boolean)
+  | null;
 
 type EventHandlerFunction<T extends EventName> = (data: EventData<T>) => void;
 
 export class EventDispatcher {
   private _listeners = new Map<string, Listener<any>[]>();
 
-  public on<T extends EventName>(
-    type: T,
-    key: FilterKey<T>,
-    callback: EventHandlerFunction<T>,
-  ): () => void {
+  public on<T extends EventName>({
+    type,
+    filter: filter = null,
+    callback,
+  }: {
+    type: T;
+    filter?: EventFilter<T>;
+    callback: EventHandlerFunction<T>;
+  }): () => void {
     if (!this._listeners.has(type)) {
       this._listeners.set(type, []);
     }
     const listener: Listener<T> = {
-      key: key as Record<string, unknown> | null,
+      filter,
       callback: callback as (event: EventData<T>) => void,
     };
     this._listeners.get(type)!.push(listener);
@@ -107,20 +125,22 @@ export class EventDispatcher {
     const list = this._listeners.get(event.type);
     if (!list) return;
 
-    for (const { key, callback } of list) {
-      if (key === null || matchesKey(event.data, key)) {
+    for (const { filter, callback } of list) {
+      if (eventMatches(filter, event.data)) {
         callback(event.data);
       }
     }
   }
 }
 
-function matchesKey(
-  data: Record<string, unknown>,
-  key: Record<string, unknown>,
+function eventMatches<T extends EventName>(
+  filter: EventFilter<T>,
+  data: EventData<T>,
 ): boolean {
-  for (const k in key) {
-    if (data[k] !== key[k]) return false;
+  if (filter === null) return true;
+  if (typeof filter === "function") return filter(data);
+  for (const k in filter) {
+    if (data[k] !== filter[k]) return false;
   }
   return true;
 }

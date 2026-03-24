@@ -1,4 +1,5 @@
 import * as filters from "@gl/api/filters";
+import * as story from "@gl/api/story";
 
 import { addTiltShift } from "@gl/api/filters";
 import { setSunTime } from "@gl/api/time";
@@ -19,15 +20,31 @@ let tiltShift!: number;
 export async function init(): Promise<void> {
   tiltShift = addTiltShift(0.06);
 
-  events.on(
-    "collision",
-    { character: "player", enter: true },
-    ({ direction }) => {
+  events.on({
+    type: "collision",
+    filter: { character: "player", enter: true },
+    callback: ({ direction }) => {
       const hurtDirection = Vec2.fromVector(direction).normalize().flip();
       player.hurt(hurtDirection);
       // prepare("abcd", true);
     },
-  );
+  });
+
+  events.on({
+    type: "collision",
+    filter: { character: "player", collider: "Jim", enter: true },
+    callback: ({ collider }) => {
+      story.satisfy("help-wizard", true);
+    },
+  });
+
+  events.on({
+    type: "state-change",
+    filter: ({ satisfied }) => satisfied.has("help-wizard"),
+    callback: ({ ready, satisfied }) => {
+      console.log("DID IT");
+    },
+  });
 }
 
 /**
