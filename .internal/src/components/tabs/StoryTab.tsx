@@ -13,7 +13,12 @@ import { showNotification } from "@/utils/notifications";
 import { Split } from "@gfazioli/mantine-split-pane";
 import { Button, Flex, ScrollArea, Stack } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
-import { IconLogicOr, IconScriptPlus, IconSitemap } from "@tabler/icons-react";
+import {
+  IconLogicOr,
+  IconScriptPlus,
+  IconSitemap,
+  IconStarFilled,
+} from "@tabler/icons-react";
 import {
   addEdge,
   applyEdgeChanges,
@@ -62,8 +67,7 @@ export default function StoryTab({
   );
   const dispatch = useAppDispatch();
 
-  const dState = useAppSelector((state: RootState) => state.story);
-  const { nodes, edges } = dState;
+  const { nodes, edges } = useAppSelector((state: RootState) => state.story);
   const flowContainerRef = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useReactFlow<StoryNode, StoryEdge>();
   const { screenToFlowPosition, getNodes, getEdges } = reactFlowInstance;
@@ -418,16 +422,17 @@ export default function StoryTab({
   }, [selectedNodeId, edges]);
 
   const handleMilestoneSelect = useCallback(
-    (nodeId: string | null) => {
+    (nodeIds: string[]) => {
       const currentNodes = reactFlowInstance.getNodes();
+      const selectedSet = new Set(nodeIds);
       const updatedNodes = currentNodes.map((n) => ({
         ...n,
-        selected: nodeId !== null && n.id === nodeId,
+        selected: selectedSet.has(n.id),
       }));
       reactFlowInstance.setNodes(updatedNodes);
       // setSelectedNodeId is also updated via useOnSelectionChange,
       // but set it immediately so ancestorHighlight reacts without delay.
-      setSelectedNodeId(nodeId);
+      setSelectedNodeId(nodeIds.length === 1 ? nodeIds[0] : null);
     },
     [reactFlowInstance],
   );
@@ -481,9 +486,10 @@ export default function StoryTab({
             <ScrollArea type="never" style={{ flex: 1 }}>
               {showDependencyMilestones && (
                 <MilestoneList
-                  selectedNodeId={selectedNodeId}
+                  selectedNodeIds={selectedNodeId ? [selectedNodeId] : []}
                   ancestorHighlight={ancestorHighlight}
                   onSelect={handleMilestoneSelect}
+                  selectedIcon={IconStarFilled}
                 />
               )}
             </ScrollArea>

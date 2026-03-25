@@ -7,8 +7,8 @@ import {
   Stack,
   TextInput,
 } from "@mantine/core";
-import { IconFilter, IconStarFilled } from "@tabler/icons-react";
-import { useMemo, useState } from "react";
+import { IconFilter } from "@tabler/icons-react";
+import { ComponentType, FC, useMemo, useState } from "react";
 
 interface AncestorHighlight {
   nodeIds: Set<string>;
@@ -16,9 +16,11 @@ interface AncestorHighlight {
 }
 
 interface MilestoneListProps {
-  selectedNodeId: string | null;
-  ancestorHighlight: AncestorHighlight;
-  onSelect?: (nodeId: string | null) => void;
+  legend?: string;
+  selectedNodeIds: string[];
+  ancestorHighlight?: AncestorHighlight;
+  onSelect?: (nodeIds: string[]) => void;
+  selectedIcon?: ComponentType<{ size?: number }>;
 }
 
 /**
@@ -28,9 +30,11 @@ interface MilestoneListProps {
  * Returns null when there are no milestone nodes in the story.
  */
 export default function MilestoneList({
-  selectedNodeId,
+  legend = "Milestones",
+  selectedNodeIds,
   ancestorHighlight,
   onSelect,
+  selectedIcon: SelectedIcon,
 }: MilestoneListProps) {
   const nodes = useAppSelector((state: RootState) => state.story.nodes);
   const [filter, setFilter] = useState("");
@@ -72,7 +76,7 @@ export default function MilestoneList({
   }
 
   return (
-    <Fieldset legend="Milestones" p="xs">
+    <Fieldset legend={legend} p="xs">
       <Stack gap="xs" p={0}>
         <TextInput
           mb="xs"
@@ -88,23 +92,31 @@ export default function MilestoneList({
           size="xs"
         />
         {filteredMilestoneIds.map((nodeId) => {
-          const isSelected = nodeId === selectedNodeId;
-          const cProps = isSelected
-            ? { color: "green", icon: IconStarFilled }
-            : {};
+          const isSelected = selectedNodeIds.includes(nodeId);
           return (
             <Checkbox
               key={nodeId}
               label={nodeIdToMilestoneId.get(nodeId) ?? nodeId}
-              checked={isSelected || ancestorHighlight.nodeIds.has(nodeId)}
+              checked={isSelected || ancestorHighlight?.nodeIds.has(nodeId)}
               onChange={() => {
                 if (onSelect) {
-                  onSelect(isSelected ? null : nodeId);
+                  const next = isSelected
+                    ? selectedNodeIds.filter((id) => id !== nodeId)
+                    : [...selectedNodeIds, nodeId];
+                  onSelect(next);
                 }
               }}
               size="sm"
               style={{ cursor: onSelect ? "pointer" : "default" }}
-              {...cProps}
+              color={isSelected ? "green" : undefined}
+              icon={
+                isSelected
+                  ? (SelectedIcon as unknown as FC<{
+                      indeterminate: boolean | undefined;
+                      className: string;
+                    }>)
+                  : undefined
+              }
             />
           );
         })}

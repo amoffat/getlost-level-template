@@ -47,6 +47,20 @@ export interface SetGameSpeedRequest {
   };
 }
 
+export interface SatisfyMilestonesRequest {
+  type: "satisfy-milestones";
+  data: {
+    milestones: Record<string, boolean>;
+  };
+}
+
+export interface MilestonesSatisfiedMessage {
+  type: "milestones-satisfied";
+  data: {
+    milestones: Record<string, boolean>;
+  };
+}
+
 export interface AdvanceGameTimeRequest {
   type: "advance-game-time";
   data: {
@@ -71,15 +85,17 @@ export interface SetWindowGeomRequest {
 }
 
 export type AnyRequest =
-  | DebugFlag
   | AdvanceGameTimeRequest
-  | GetTimeRequest
-  | SetGameSpeedRequest
-  | RecordMarkerMessage
   | ClearMarkerMessage
+  | DebugFlag
+  | GetTimeRequest
+  | MilestonesSatisfiedMessage
+  | RecordMarkerMessage
+  | SatisfyMilestonesRequest
   | SavePathGraphRequest
-  | SetWindowGeomRequest
-  | SetAudioModeRequest;
+  | SetAudioModeRequest
+  | SetGameSpeedRequest
+  | SetWindowGeomRequest;
 
 export type RequestType = AnyRequest["type"];
 export type ResponseFor<R extends AnyRequest> = R extends {

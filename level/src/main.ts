@@ -22,27 +22,39 @@ export async function init(): Promise<void> {
 
   events.on({
     type: "collision",
-    filter: { character: "player", enter: true },
+    filter: { character: "player", collider: "Jim", enter: true },
     callback: ({ direction }) => {
       const hurtDirection = Vec2.fromVector(direction).normalize().flip();
       player.hurt(hurtDirection);
+
+      if (story.isSatisfied("talk-to-wizard")) {
+        story.satisfy("destroy-portal", true);
+      } else {
+        story.bulkSatisfy({ "help-wizard": true, "find-spells": true });
+      }
       // prepare("abcd", true);
     },
   });
 
   events.on({
     type: "collision",
-    filter: { character: "player", collider: "Jim", enter: true },
-    callback: ({ collider }) => {
-      story.satisfy("help-wizard", true);
+    filter: { character: "player", collider: "barn", enter: true },
+    callback: ({ direction }) => {
+      if (story.isSatisfied("find-spells")) {
+        const hurtDirection = Vec2.fromVector(direction).normalize().flip();
+        player.hurt(hurtDirection);
+        story.satisfy("talk-to-wizard", true);
+      }
     },
   });
 
   events.on({
     type: "state-change",
-    filter: ({ satisfied }) => satisfied.has("help-wizard"),
     callback: ({ ready, satisfied }) => {
-      console.log("DID IT");
+      console.log("DID IT", {
+        ready: Array.from(ready),
+        satisfied: Array.from(satisfied),
+      });
     },
   });
 }

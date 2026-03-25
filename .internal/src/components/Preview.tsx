@@ -3,8 +3,13 @@ import { useCommsContext } from "@/context/comms";
 import { useAppSelector } from "@/hooks/redux";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Comms } from "@/iframe";
-import { DebugFlagKey, SavePathGraphRequest } from "@/iframe/request";
+import {
+  DebugFlagKey,
+  MilestonesSatisfiedMessage,
+  SavePathGraphRequest,
+} from "@/iframe/request";
 import { log } from "@/log";
+import { RootState } from "@/store/store";
 import { Env } from "@/types/env";
 import { encodeForUrl } from "@/utils/url";
 import { Split } from "@gfazioli/mantine-split-pane";
@@ -33,10 +38,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AdvancedSection from "./common/AdvancedSection";
 import LogPane from "./LogPane";
 import { MarkdownModal } from "./MarkdownModal";
+import MilestoneList from "./MilestoneList";
 import TimeDisplay from "./TimeDisplay";
 import Tip from "./Tip";
 
 export default function PreviewTab() {
+  const { nodes } = useAppSelector((state: RootState) => state.story);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const frameContainerRef = useRef<HTMLDivElement>(null);
   const { comms, setComms } = useCommsContext();
@@ -81,6 +88,7 @@ export default function PreviewTab() {
   const [storyGuidelinesContent, setStoryGuidelinesContent] =
     useState<Promise<string>>();
   const [isPublishing, setIsPublishing] = useState(false);
+  const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
 
   const publishForm = useForm({
     initialValues: {
@@ -141,10 +149,22 @@ export default function PreviewTab() {
     }
   }, [activeTab, pendingReload]);
 
+  const [milestoneIdsToNodeIds, nodeIdsToMilestoneIds] = useMemo(() => {
+    const m2n = new Map<string, string>();
+    const n2m = new Map<string, string>();
+    for (const node of nodes) {
+      if (node.type === "story") {
+        m2n.set(node.data.id, node.id);
+        n2m.set(node.id, node.data.id);
+      }
+    }
+    return [m2n, n2m] as const;
+  }, [nodes]);
+
   useEffect(() => {
     if (!comms) return;
 
-    comms.addMessageListener<SavePathGraphRequest>({
+    const cleanup = comms.addMessageListener<SavePathGraphRequest>({
       type: "save-path-graph",
       callback: async ({ graph }) => {
         await fetch("/api/pathgraph", {
@@ -154,7 +174,23 @@ export default function PreviewTab() {
         });
       },
     });
+
+    return cleanup;
   }, [comms]);
+
+  useEffect(() => {
+    const cleanup = comms?.addMessageListener<MilestonesSatisfiedMessage>({
+      type: "milestones-satisfied",
+      callback: async ({ milestones }) => {
+        const nodeIds = Object.entries(milestones)
+          .filter(([_, satisfied]) => satisfied)
+          .map(([mId, _]) => milestoneIdsToNodeIds.get(mId)!);
+        setSelectedNodeIds(nodeIds);
+      },
+    });
+
+    return cleanup;
+  }, [comms, nodes, milestoneIdsToNodeIds]);
 
   const loadIframe = () => {
     if (!iframeLoaded) {
@@ -407,6 +443,26 @@ export default function PreviewTab() {
     setIsDragging(false);
   };
 
+  const handleMilestoneSelect = useCallback(
+    (nodeIds: string[]) => {
+      setSelectedNodeIds(nodeIds);
+
+      const selectedNodeIds = new Set(nodeIds);
+      const allNodeIds = nodes.map((n) => n.id);
+      const milestoneValues: Record<string, boolean> = {};
+      for (const id of allNodeIds) {
+        const mId = nodeIdsToMilestoneIds.get(id)!;
+        milestoneValues[mId] = selectedNodeIds.has(id);
+      }
+
+      comms?.request({
+        type: "satisfy-milestones",
+        data: { milestones: milestoneValues },
+      });
+    },
+    [comms, nodeIdsToMilestoneIds, nodes],
+  );
+
   return (
     <>
       <Split h="100dvh" style={{ flex: 1 }}>
@@ -657,6 +713,14 @@ export default function PreviewTab() {
           onResizeEnd={handlePaneResizeEnd}
         >
           <Stack h="100%" style={{ overflow: "hidden" }}>
+            <Stack gap="xs" p={0}>
+              <MilestoneList
+                legend="Story progress"
+                selectedNodeIds={selectedNodeIds}
+                onSelect={handleMilestoneSelect}
+              />
+            </Stack>
+
             <Fieldset legend="Time Control">
               <Stack gap="xs" p={0} mb="lg">
                 <Text size="sm" fw={500}>
