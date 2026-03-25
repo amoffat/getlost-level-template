@@ -34,7 +34,7 @@ import {
   IconDeviceMobile,
   IconRocket,
 } from "@tabler/icons-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AdvancedSection from "./common/AdvancedSection";
 import LogPane from "./LogPane";
 import { MarkdownModal } from "./MarkdownModal";
@@ -42,7 +42,13 @@ import MilestoneList from "./MilestoneList";
 import TimeDisplay from "./TimeDisplay";
 import Tip from "./Tip";
 
-export default function PreviewTab() {
+export default function PreviewTab({
+  initPromise,
+}: {
+  initPromise: Promise<unknown>;
+}) {
+  use(initPromise);
+
   const { nodes } = useAppSelector((state: RootState) => state.story);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const frameContainerRef = useRef<HTMLDivElement>(null);
@@ -749,7 +755,7 @@ export default function PreviewTab() {
             </Fieldset>
 
             <Fieldset legend="Visualization">
-              <Stack gap="sm" p={0} mt="md">
+              <Stack gap="sm" p={0}>
                 {createDebugSwitch("Show collisions", "collisions")}
                 {createDebugSwitch("Show pathfinding", "pathfinding")}
                 {createDebugSwitch("Show scene depth", "zSorting")}

@@ -14,6 +14,7 @@ let tilesetInitPromiseCache: Promise<
 let mapInitPromiseCache: Promise<Awaited<ReturnType<typeof mapInit>>> | null =
   null;
 let storyInitPromiseCache: Promise<void> | null = null;
+let previewInitPromiseCache: Promise<void> | null = null;
 
 export function getTilesetInitPromise() {
   if (!tilesetInitPromiseCache) {
@@ -48,10 +49,19 @@ export async function getStoryInitPromise() {
   if (!storyInitPromiseCache) {
     storyInitPromiseCache = (async () => {
       await getMapInitPromise();
-      await store.dispatch(loadStoryThunk()).unwrap();
+      await getPreviewInitPromise();
     })();
   }
   return storyInitPromiseCache;
+}
+
+export async function getPreviewInitPromise() {
+  if (!previewInitPromiseCache) {
+    previewInitPromiseCache = (async () => {
+      await store.dispatch(loadStoryThunk()).unwrap();
+    })();
+  }
+  return previewInitPromiseCache;
 }
 
 // Export reset functions for when we actually want to reinitialize (e.g., map reset)

@@ -6,6 +6,7 @@ import "@xyflow/react/dist/style.css";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
   getMapInitPromise,
+  getPreviewInitPromise,
   getStoryInitPromise,
   getTilesetInitPromise,
 } from "@/init/editorInit";
@@ -236,6 +237,7 @@ const ShellAppContent = memo(function ShellAppContent({
   const tilesetInitPromise = useMemo(() => getTilesetInitPromise(), []);
   const mapInitPromise = useMemo(() => getMapInitPromise(), []);
   const storyInitPromise = useMemo(() => getStoryInitPromise(), []);
+  const previewInitPromise = useMemo(() => getPreviewInitPromise(), []);
 
   return (
     <>
@@ -295,7 +297,11 @@ const ShellAppContent = memo(function ShellAppContent({
 
             {mountedTabs["preview"] && (
               <Tabs.Panel value="preview">
-                <PreviewTab />
+                <Suspense
+                  fallback={<PanelLoader message={loadingMessages.at(-1)} />}
+                >
+                  <PreviewTab initPromise={previewInitPromise} />
+                </Suspense>
               </Tabs.Panel>
             )}
 
