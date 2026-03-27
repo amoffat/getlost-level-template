@@ -8,6 +8,7 @@ import {
   SegmentedControl,
   Stack,
   Text,
+  Tooltip,
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
 import {
@@ -263,19 +264,36 @@ function PropertyValueInner<T>({
       ...[
         {
           label: (
-            <Group gap={4} wrap="nowrap">
-              <IconCircleFilled size={14} />
-              <Text size="xs">Unique</Text>
-            </Group>
+            <Tooltip
+              label="This property is unique to each object. Changing it will only affect the currently selected objects."
+              withArrow
+              multiline
+              openDelay={500}
+              w={200}
+            >
+              <Group gap={4} wrap="nowrap">
+                <IconCircleFilled size={14} />
+                <Text size="xs">Unique</Text>
+              </Group>
+            </Tooltip>
           ),
           value: "instance",
         },
         {
           label: (
-            <Group gap={4} wrap="nowrap">
-              <IconCirclesFilled size={14} />
-              <Text size="xs">Shared</Text>
-            </Group>
+            <Tooltip
+              label="This property is shared across multiple objects. Changing it will affect all objects that share this value."
+              withArrow
+              multiline
+              openDelay={500}
+              w={200}
+            >
+              <Group gap={4} wrap="nowrap">
+                <IconCirclesFilled size={14} />
+
+                <Text size="xs">Shared</Text>
+              </Group>
+            </Tooltip>
           ),
           value: "template",
         },
