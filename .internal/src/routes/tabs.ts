@@ -37,6 +37,7 @@ export const pathToTab = (path: string): MainTabName => {
       if (clean.startsWith("/tilesets/")) return "tileset-editor";
       // Treat any nested dialogue path (e.g., /dialogues/:dlgid) as the dialogue editor tab
       if (clean.startsWith("/dialogues/")) return "dialogue-editor";
+      if (clean.startsWith("/story/nodes/")) return "story-editor";
       return DEFAULT_TAB;
   }
 };

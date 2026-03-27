@@ -44,7 +44,16 @@ import {
   type OnBeforeDelete,
   type OnConnectEnd,
 } from "@xyflow/react";
-import { ReactNode, use, useCallback, useMemo, useRef, useState } from "react";
+import {
+  ReactNode,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import StoryEdgeComponent from "../flowEdges/StoryEdge";
 import OrNode from "../flowNodes/OrNode";
 import StoryNodeComponent from "../flowNodes/StoryNode";
@@ -61,6 +70,8 @@ export default function StoryTab({
 }) {
   use(initPromise);
 
+  const { nodeid: nodeIdParam } = useParams<{ nodeid?: string }>();
+  const navigate = useNavigate();
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [newlyCreatedNodeId, setNewlyCreatedNodeId] = useState<string | null>(
     null,
@@ -387,6 +398,29 @@ export default function StoryTab({
     [createMilestone, screenToFlowPosition],
   );
 
+  // Sync node selection from URL parameter on first load.
+  useEffect(() => {
+    if (!nodeIdParam) {
+      setSelectedNodeId(null);
+      return;
+    }
+    const currentNodes = reactFlowInstance.getNodes();
+    if (!currentNodes.some((n) => n.id === nodeIdParam)) return;
+    reactFlowInstance.setNodes(
+      currentNodes.map((n) => ({ ...n, selected: n.id === nodeIdParam })),
+    );
+    setSelectedNodeId(nodeIdParam);
+    requestAnimationFrame(() => {
+      reactFlowInstance.fitView({
+        nodes: [{ id: nodeIdParam }],
+        padding: 0.5,
+        maxZoom: 1,
+      });
+    });
+    // Don't depend on nodeIdParam, so that this only runs once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useOnSelectionChange({
     onChange: ({ nodes: selectedNodes }) => {
       if (selectedNodes.length === 1) {
@@ -394,9 +428,11 @@ export default function StoryTab({
         setSelectedNodeId(id);
         // Clear newly-created tracking when user manually selects a different node
         setNewlyCreatedNodeId((prev) => (prev === id ? prev : null));
+        navigate(`/story/nodes/${id}`, { replace: true });
       } else {
         setSelectedNodeId(null);
         setNewlyCreatedNodeId(null);
+        navigate("/story", { replace: true });
       }
     },
   });
