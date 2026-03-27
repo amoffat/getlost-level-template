@@ -14,7 +14,6 @@ import { resolveTemplateProps } from "./map";
  * Returns a mapping of property names to their values across all objects.
  *
  * @param objs - Array of instance objects
- * @param resolveTemplate - Function that resolves an instance to its template (or null)
  * @param propertyNames - Array of property names to collect
  * @returns Object mapping property names to arrays of PropertyValueInfo
  */
@@ -59,6 +58,32 @@ export function collectPropertyValues<
   });
 
   return collected;
+}
+
+/**
+ * Resolves the effective value of a single property on a single instance
+ * object, falling back to the template value if the instance has no override.
+ *
+ * @param obj - The instance object
+ * @param propName - The property name to resolve
+ * @returns The resolved property value
+ */
+export function resolvePropertyValue<
+  TInstance extends MapObj,
+  TProps extends ExtractProps<TInstance> = ExtractProps<TInstance>,
+  K extends keyof TProps = keyof TProps,
+>(obj: TInstance, propName: K): TProps[K] {
+  const instanceValue = obj[propName as keyof TInstance];
+
+  if (instanceValue === undefined) {
+    const tmpl = resolveTemplateProps(obj) as MapObjProps | null;
+    const templateValue = tmpl
+      ? tmpl[propName as keyof MapObjProps]
+      : undefined;
+    return templateValue as TProps[K];
+  }
+
+  return instanceValue as TProps[K];
 }
 
 /**

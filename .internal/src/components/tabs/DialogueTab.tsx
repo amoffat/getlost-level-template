@@ -581,7 +581,9 @@ export default function DialogueTab({
 
     if (!activeDialogueId) {
       if (speakers.length === 0) {
-        t.push("No named NPCs or tile groups found in the map.");
+        t.push(
+          "No named NPCs or tile groups found in the map. Go name something in the map.",
+        );
       } else {
         t.push(
           "Select a dialogue from the left panel, or create a new one by clicking the '+' icon next to an NPC or tile group.",

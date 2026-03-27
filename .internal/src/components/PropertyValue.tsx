@@ -251,10 +251,18 @@ function PropertyValueInner<T>({
     if (localScope === "mixed") {
       scopes.push({
         label: (
-          <Group gap={4} wrap="nowrap">
-            <IconAlertTriangle size={14} />
-            <Text size="xs">Mixed</Text>
-          </Group>
+          <Tooltip
+            label="Some objects have a unique value, while others share a value. Changing this will set the same value for all selected objects."
+            withArrow
+            multiline
+            openDelay={500}
+            w={200}
+          >
+            <Group gap={4} wrap="nowrap">
+              <IconAlertTriangle size={14} />
+              <Text size="xs">Mixed</Text>
+            </Group>
+          </Tooltip>
         ),
         value: "mixed",
       });

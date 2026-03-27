@@ -474,8 +474,10 @@ export const slice = createSlice({
       (entities): SpeakableMapObj[] => {
         const npcs = Object.values(entities).filter((obj) => {
           const validClass = isNpcInstance(obj) || isTileGroupInstance(obj);
-          if (validClass && obj.name && obj.name.trim() !== "") {
-            return true;
+          if (validClass) {
+            if (obj.name && obj.name.trim() !== "") {
+              return true;
+            }
           }
           return false;
         });
