@@ -33,13 +33,13 @@ export const setDefaultDialogueThunk =
         (d) =>
           d.id !== dialogueId &&
           d.subjectId === npcId &&
-          d.milestones.includes(defaultMilestone),
+          d.milestoneNodeIds.includes(defaultMilestone),
       )
       .forEach((d) => {
         dispatch(
           dActions.setMilestones({
             dialogueId: d.id,
-            milestones: d.milestones.filter((ms) => ms !== defaultMilestone),
+            milestoneNodeIds: d.milestoneNodeIds.filter((ms) => ms !== defaultMilestone),
           }),
         );
       });
@@ -82,7 +82,7 @@ export const unlinkDialogueThunk =
     dispatch(
       dActions.setMilestones({
         dialogueId: original.id,
-        milestones: original.milestones.filter((ms) => ms !== milestone),
+        milestoneNodeIds: original.milestoneNodeIds.filter((ms) => ms !== milestone),
       }),
     );
 

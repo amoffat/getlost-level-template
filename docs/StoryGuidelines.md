@@ -1,28 +1,34 @@
-# Story Submission Guidelines
+# Level Submission Guidelines
 
-## 1. Purpose of the Contest
+## 1\. Purpose of Get Lost
 
-This contest celebrates stories that reveal something true about the human experience. We welcome all genres and styles—from playful to profound, lighthearted to intense—as long as the story ultimately enriches the reader’s understanding of themselves, others, or the world.
+Get Lost celebrates stories that reveal something true about the human experience. We welcome all genres and styles, from playful to profound, lighthearted to intense, as long as the story ultimately enriches the reader’s understanding of themselves, others, or the world.
 
-Your story does **not** need to be cheerful, tidy, or overtly inspirational. What matters most is **authenticity**, **meaning**, and **emotional honesty**—expressed in a way that can be shared safely with a broad, family audience.
+Your story does not need to be cheerful, tidy, or overtly inspirational. What matters most is **authenticity**, **meaning**, and **emotional honesty**, expressed in a way that can be shared safely with a broad, family audience.
 
-## 2. Audience & Maturity Level
+If your story would feel at home beside a **Pixar or Disney film**, it likely belongs here.
 
-Submissions must be suitable for a **PG / family-friendly audience**, comparable in tone and maturity to **Disney or Pixar storytelling**.
+## 2\. Audience & Maturity Level
+
+Submissions must be suitable for a **PG / family-friendly audience**.
 
 This means:
 
 - Children should be able to engage with the story safely
 - Adults should still find depth, nuance, and meaning
-- Complex themes are welcome, but they must be handled with restraint, care, and imagination
+- Difficult themes are welcome, but they must be handled with restraint, care, and imagination
 
-Rich emotional storytelling does **not** require explicit language, graphic imagery, or adult-only themes. If it walks the line, err on the side of caution.
+Stories may include serious or challenging experiences—such as loss, conflict, injustice, or fear—**when these elements serve a meaningful narrative** and are presented thoughtfully rather than graphically.
 
-## 3. What We’re Looking For
+Many beloved stories explore grief, failure, loneliness, or moral struggle. What matters is how these themes are handled: with empathy, restraint, and a sense that goodness still matters.
+
+If it walks the line, err on the side of care and thoughtfulness.
+
+## 3\. What We’re Looking For
 
 ### A. Human Depth & Authenticity
 
-Stories should show genuine human feeling.
+Stories should show genuine human feelings.
 
 We value:
 
@@ -30,11 +36,11 @@ We value:
 - Emotions and choices that resonate
 - Writing that reflects the messiness and beauty of being human
 
-This can be achieved through drama, imagination, humor, adventure, or quiet reflection—without explicit content.
+This can be achieved through drama, imagination, humor, adventure, or quiet reflection.
 
-### B. Honesty Over Positivity
+### B. Honesty About Difficulty
 
-Meaningful stories are not always sweet or cheerful.
+Meaningful stories are not always cheerful.
 
 Stories may explore:
 
@@ -44,11 +50,13 @@ Stories may explore:
 - Mistakes and consequences
 - Emotional struggle or inner tension
 
-These themes should be presented in a **PG-appropriate** way: implied, symbolic, or thoughtfully framed rather than explicit, graphic, or shocking.
+These themes should be presented in a **PG-appropriate way**: implied, symbolic, or thoughtfully framed rather than explicit or graphic.
+
+Difficult experiences are welcome when they serve the larger story and deepen understanding rather than existing only for shock or spectacle.
 
 ### C. Moral Imagination (Without Preachiness)
 
-We appreciate stories that engage—subtly or directly—with questions of:
+We appreciate stories that engage (subtly or directly) with questions of:
 
 - Courage
 - Kindness
@@ -59,30 +67,104 @@ We appreciate stories that engage—subtly or directly—with questions of:
 - Forgiveness
 - Hope
 
-As in Pixar films, these ideas should emerge naturally through character choices, relationships, and consequences—not through lectures or moralizing.
+These ideas should emerge naturally through character choices, relationships, and consequences—not through lectures or moralizing.
 
-### D. Transformation
+### D. Mercy, Forgiveness, and Reconciliation
 
-We are drawn to stories where something changes:
+Stories are encouraged to explore moments where:
 
-- A character grows—even slightly
-- A relationship shifts
-- A moment of clarity or compassion emerges
-- A small light appears in a dark place
+- Someone chooses mercy instead of revenge
+- A character admits a mistake and seeks forgiveness
+- A relationship heals after conflict
+- An unexpected act of grace changes someone
 
-Transformation may be subtle, incomplete, or ambiguous, but it should feel meaningful.
+Stories do **not** need tidy resolutions, but cruelty or vengeance should not be portrayed as the highest good.
 
-### E. The Dignity of Every Person
+### E. Transformation
 
-Stories should honor the inherent worth of individuals, including flawed or struggling characters. Even antagonists should feel like people, not caricatures.
+We are drawn to stories where something meaningful changes.
 
-## 4. Stories of All Tones Are Welcome
+This may include:
 
-Meaning can come through many emotional colors—_within PG boundaries_.
+- A character discovering compassion where there was once indifference
+- Someone choosing courage over fear
+- A hardened heart becoming softer
+- A small act of goodness breaking a cycle of harm
+- A character learning humility or understanding
+
+Transformation may be subtle, incomplete, or ambiguous, but it should feel sincere.
+
+### F. The Dignity of Every Person
+
+Stories should reflect the idea that people have inherent worth. We especially welcome stories that explore:
+
+- Compassion toward the poor, weak, lonely, or forgotten
+- Kindness toward strangers or outsiders
+- The possibility that people can change
+- Mercy toward those who have failed
+- The humanity of those we disagree with
+- Courage to stand up for others when they are threatened
+- Doing what is right even when it is difficult or costly
+
+Stories may include antagonists, injustice, or people who cause harm. In such cases, it is often necessary for characters to confront wrongdoing or protect others from it. However, stories should avoid portraying people as disposable, purely monstrous, or beyond all humanity. Even those who do wrong should be portrayed as people rather than caricatures.
+
+### G. Humility and Honest Self-Reflection
+
+We value stories where characters:
+
+- Recognize their own flaws
+- Learn from mistakes
+- Grow in wisdom or compassion
+- Choose humility instead of arrogance
+
+Many meaningful stories begin when a character realizes they were wrong.
+
+### H. Stories of the Overlooked
+
+We especially welcome stories that explore the lives and dignity of people who are often overlooked or underestimated.
+
+This may include characters who are:
+
+- Lonely or misunderstood
+- Poor or struggling
+- Outsiders in their community
+- Quietly doing good without recognition
+
+Small acts of goodness in ordinary lives can carry great meaning.
+
+### I. Conflict With Purpose
+
+Stories may include conflict, danger, or antagonists.
+
+However, the ultimate meaning of the story should not celebrate domination, humiliation, or destruction for its own sake.
+
+Whenever possible, conflict should reveal:
+
+- Courage
+- Sacrifice
+- Compassion
+- Justice tempered with mercy
+- The cost and importance of doing what is right
+
+### J. Symbolism
+
+Stories that reveal deeper truths through simple or symbolic events are especially welcome.
+
+Like classic storytelling traditions, these stories may be:
+
+- Short and deceptively simple
+- Playful or imaginative
+- Focused on one powerful insight about human behavior
+
+The meaning may emerge naturally rather than being explained directly.
+
+## 4\. Stories of All Tones Are Welcome
+
+Meaning can come through many emotional colors, _within PG boundaries_.
 
 ### A. Deep and Reflective
 
-Stories that explore emotional growth, moral choices, or difficult situations, handled with care and restraint.
+Stories that explore emotional growth, moral choices, or difficult situations handled with care and restraint.
 
 ### B. Lighthearted and Imaginative
 
@@ -107,23 +189,30 @@ Stories may involve:
 - Loss or hardship
 - Moral tension
 
-Think **implied rather than explicit**, **symbolic rather than sensational**.
+These elements should serve the larger story and help reveal character, meaning, or compassion.
+
+Think **implied rather than explicit**, **symbolic rather than sensational**, similar to how difficult subjects are handled in Pixar storytelling.
 
 ### D. Quiet or Ambiguous
 
-Stories that resolve gently or imperfectly—without despair or nihilism.
+Stories that resolve gently or imperfectly, without despair or nihilism.
 
 Each story is judged according to what it aims to be.
 
-## 5. Content Guidelines (PG Standard)
+## 5\. Content Guidelines (PG Standard)
 
 ### Allowed
 
 - Emotional intensity
-- Sadness, fear, or loss (handled gently)
+- Sadness, fear, or loss (handled thoughtfully)
 - Conflict or danger without graphic detail
-- Villains or antagonists without cruelty for cruelty’s sake
+- Villains or antagonists
 - Complex moral situations expressed symbolically
+- Difficult experiences that serve a meaningful story
+
+Stories should be **honest rather than preachy**, allowing themes to emerge naturally through characters and events.
+
+Stories do not need happy endings, but they should avoid leaving the audience in despair. Even a small gesture of resilience, compassion, or hope can provide meaningful resolution.
 
 ### Not Allowed
 
@@ -132,89 +221,49 @@ Each story is judged according to what it aims to be.
 - Graphic violence or gore
 - Substance abuse portrayed explicitly or glamorized
 - Adult-only themes children cannot reasonably process
-- Shock value or cynicism for its own sake
+- Shock value or cruelty used primarily for entertainment
 
 If a theme would feel out of place in a Pixar film, it likely does not belong here.
 
-## 6. Tone & Approach
+### Strongly Discouraged
 
-### A. Honest, Not Preachy
+Stories may be removed or scored lower if they include:
 
-We are not looking for lessons or sermons. We want stories that feel natural, human, and emotionally sincere.
-
-### B. Hope Without Sentimentality
-
-A story does not need a happy ending, but it should not leave the reader in despair. Even a small gesture of meaning or resilience is enough.
-
-### C. Beauty in Craft
-
-We value:
-
-- Clear, engaging prose
-- Thoughtful structure
-- Purposeful imagery
-- Strong voice
-
-Beauty may be playful, rugged, simple, or lyrical.
-
-## 7. Genres & Formats
-
-All genres are welcome—fantasy, sci-fi, literary, historical, mystery, surreal, humorous, adventurous, or experimental—so long as the story:
-
-- Is PG-appropriate
-- Centers on human experience
-- Offers insight, goodness, or meaning
-
-## 8. Judging Criteria
-
-Stories will be evaluated according to their own goals and tone.
-
-- **Emotional Resonance** — Does the story engage or move the reader?
-- **Insight & Meaning** — Does it reveal something true, even in a small way?
-- **Craft & Clarity** — Is the writing clear, intentional, and well constructed?
-- **Thematic Integrity** — Does it embody virtues such as courage, honesty, compassion, mercy, justice, or hope?
-- **Lasting Impact** — Does the story linger after the final line?
-
-## 9. Encouraged Story Elements
-
-Optional, but often effective:
-
-- A character facing a hard but age-appropriate choice
-- A moment of courage or kindness
-- Friendship tested and strengthened
-- A playful adventure with emotional meaning
-- A mistake followed by growth
-- Light emerging gently from difficulty
-
-## 10. Discouraged Elements
-
-Stories may be scored lower if they include:
-
-- Adult themes unsuitable for children
-- Graphic or explicit material
 - Hopeless or nihilistic conclusions
 - Cruelty without meaningful framing
-- Sentimental preaching or shock tactics
+- Mockery or contempt toward vulnerable people
+- Stories that celebrate selfishness or indifference to others' suffering
+- Sentimental preaching or manipulative moralizing
+- Shock tactics designed primarily to provoke or disturb
 
-## 11. Special Recognition
+Stories may acknowledge darkness, but they should not insist that goodness is meaningless.
 
-Judges may offer additional acknowledgments for:
+## 6\. Good-Faith Participation
 
-- **Stories of Wonder & Imagination**
-- **Stories of Emotional Honesty (PG-Appropriate)**
-- **Stories of Light Emerging from Darkness**
-- **Stories of Heartfelt Simplicity**
+These guidelines are meant to encourage thoughtful storytelling, not to serve as a checklist for testing how close a story can come to crossing the line.
 
-## 12. Submission Requirements
+Submissions should follow the **spirit of the guidelines**, not just their literal wording.
 
-- Word count: _[insert]_
-- Format: _[insert]_
-- Original, unpublished work only
-- All ages welcome
-- Optional author bio
+Stories that appear to intentionally push boundaries, by attempting to include the most extreme content that might technically be allowed, may be excluded from consideration even if they do not violate a specific rule.
+
+Examples include stories that:
+
+- Attempt to include borderline inappropriate material while avoiding explicit wording
+- Use shock, provocation, or controversy primarily to test the limits of the guidelines
+- Frame harmful or degrading situations in a way that technically avoids prohibited content but clearly aims to circumvent the intent of the rules
+
+We ask authors to approach this level creation in **good faith**, focusing on meaningful storytelling rather than boundary-testing. If a story feels like it is trying to **get away with something**, it likely does not belong here.
+
+Stories that clearly aim to contribute positively to the shared creative space will always be welcomed.
+
+Attempts to bypass moderation will result in a permanent ban from the Get Lost platform.
 
 ## Closing Note
 
-We invite stories that are meaningful without being explicit, honest without being harsh, and deep without being inaccessible.
+We invite stories that reflect the goodness and complexity of being human.
 
-If your story feels at home beside a Pixar film—rich in heart, imagination, and humanity—it belongs here.
+Stories may explore hardship, mistakes, fear, injustice, or loss, but they should also leave room for compassion, courage, mercy, or hope.
+
+Even the smallest act of kindness can carry great meaning.
+
+If your story would feel at home beside a Pixar film—honest about difficulty yet rich in humanity and heart—it belongs here.

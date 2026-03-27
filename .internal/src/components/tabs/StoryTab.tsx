@@ -67,7 +67,9 @@ export default function StoryTab({
   );
   const dispatch = useAppDispatch();
 
-  const { nodes, edges } = useAppSelector((state: RootState) => state.story);
+  const { nodes, edges, instanceKey } = useAppSelector(
+    (state: RootState) => state.story,
+  );
   const flowContainerRef = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useReactFlow<StoryNode, StoryEdge>();
   const { screenToFlowPosition, getNodes, getEdges } = reactFlowInstance;
@@ -507,6 +509,7 @@ export default function StoryTab({
             <div ref={flowContainerRef} style={{ flex: 1, width: "100%" }}>
               <AncestorHighlightContext.Provider value={ancestorHighlight}>
                 <ReactFlow
+                  key={instanceKey}
                   id="story-flow"
                   colorMode="dark"
                   //   snapToGrid={true}

@@ -13,6 +13,7 @@ import { loadTileGroup } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { globals as g } from "../editors/map/globals";
+import { resetStoryThunk } from "./story";
 import { removeTilesetThunk } from "./tileset";
 
 export const setActiveLayerThunk = createAsyncThunk(
@@ -76,10 +77,13 @@ export const resetAllThunk = createAsyncThunk(
     const state = getState() as RootState;
 
     dispatch(uiActions.pushLoadingMessage("Resetting all data..."));
-    dispatch(resetMapThunk());
+
+    await dispatch(resetStoryThunk()).unwrap();
+    await dispatch(resetMapThunk()).unwrap();
     for (const tsId of state.tilesetEditor.tilesetIds) {
-      dispatch(removeTilesetThunk(tsId));
+      await dispatch(removeTilesetThunk(tsId)).unwrap();
     }
+
     // TODO Potentially other slices to reset in the future
     dispatch(uiActions.popLoadingMessage());
     notifications.show({

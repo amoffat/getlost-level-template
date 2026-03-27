@@ -125,12 +125,14 @@ export default function PreviewTab({
           return;
         }
         if (activeTab !== "preview") {
-          // Queue up the reload for when the tab becomes active
-          setPendingReload(true);
-          log.info(
-            { dev: true, color: "yellow" },
-            "Reload queued (tab inactive)",
-          );
+          if (!pendingReload) {
+            // Queue up the reload for when the tab becomes active
+            setPendingReload(true);
+            log.info(
+              { dev: true, color: "yellow" },
+              "Reload queued (tab inactive)",
+            );
+          }
           return;
         }
         log.info({ dev: true, color: "green" }, "Reloading level");
@@ -216,6 +218,11 @@ export default function PreviewTab({
 
   const restartIframe = () => {
     setReloadCount((c) => c + 1);
+  };
+
+  const handleIframeLoad = () => {
+    if (iframeRef.current?.src === "about:blank") return;
+    setSelectedNodeIds([]);
   };
 
   useEffect(() => {
@@ -673,6 +680,7 @@ export default function PreviewTab({
                   id="dev-frame"
                   allow="cross-origin-isolated"
                   allowFullScreen
+                  onLoad={handleIframeLoad}
                 ></iframe>
                 {/* Overlay to block pointer events on iframe during drag */}
                 {isDragging && (

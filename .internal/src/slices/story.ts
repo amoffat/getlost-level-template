@@ -22,6 +22,10 @@ interface StoryState {
   edges: StoryEdge[];
   loading: boolean;
   error?: string;
+  /** Incremented on hard reset; used as the `key` for the ReactFlow instance
+   *  so it fully remounts with empty defaultNodes/defaultEdges and cannot
+   *  write stale internal state back to Redux via onNodesChange/onEdgesChange. */
+  instanceKey: number;
 }
 
 const initialState: StoryState = {
@@ -29,6 +33,7 @@ const initialState: StoryState = {
   edges: [],
   loading: false,
   error: undefined,
+  instanceKey: 0,
 };
 
 export const slice = createSlice({
@@ -50,7 +55,9 @@ export const slice = createSlice({
     setEdges(state, action: PayloadAction<StoryEdge[]>) {
       // Strip transient visual state (e.g. drag-highlight styles) so they are
       // never persisted and cannot reappear on page reload.
-      state.edges = action.payload.map(({ style: _style, ...edge }) => edge as StoryEdge);
+      state.edges = action.payload.map(
+        ({ style: _style, ...edge }) => edge as StoryEdge,
+      );
     },
     setNodeData(
       state,
@@ -66,11 +73,22 @@ export const slice = createSlice({
     setError(state, action: PayloadAction<string | undefined>) {
       state.error = action.payload;
     },
+    resetInstance(state) {
+      state.nodes = [];
+      state.edges = [];
+      state.instanceKey += 1;
+    },
   },
   selectors: {},
 });
 
-export const { setNodes, setEdges, setNodeData, setLoading, setError } =
-  slice.actions;
+export const {
+  setNodes,
+  setEdges,
+  setNodeData,
+  setLoading,
+  setError,
+  resetInstance,
+} = slice.actions;
 
 export type { StoryState };

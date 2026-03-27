@@ -31,6 +31,8 @@ export default function MilestoneEditor({
     state.story.nodes.find((n) => n.id === nodeId),
   );
 
+  // data.id is the human-readable milestone name shown in the UI.
+  // node.id (nodeId) is the stable UUID used for dialogue linkage.
   const milestoneId = node?.data.id ?? "";
 
   // Collect all other milestone IDs for uniqueness checking
@@ -47,7 +49,7 @@ export default function MilestoneEditor({
   const isDuplicate = !isEmpty && otherIdsSet.has(localName);
 
   const dialogues = useAppSelector((state: RootState) =>
-    dSelectors.dialogueForMilestone(state, milestoneId),
+    dSelectors.dialogueForMilestone(state, nodeId),
   );
 
   const debouncedDispatch = useDebouncedCallback((value: string) => {
@@ -114,8 +116,8 @@ export default function MilestoneEditor({
               <DialogueRow
                 key={dlg.id}
                 dialogue={dlg}
-                milestoneId={milestoneId}
-                onNavigate={(path) => navigate(`/dialogues/${path}`)}
+                milestoneNodeId={nodeId}
+                onNavigate={(path) => navigate(path)}
               />
             ))}
           </Stack>
@@ -127,11 +129,11 @@ export default function MilestoneEditor({
 
 function DialogueRow({
   dialogue,
-  milestoneId,
+  milestoneNodeId,
   onNavigate,
 }: {
   dialogue: Dialogue;
-  milestoneId: string;
+  milestoneNodeId: string;
   onNavigate: (path: string) => void;
 }) {
   const obj = useAppSelector((state: RootState) =>
@@ -141,7 +143,7 @@ function DialogueRow({
   ) as SpeakableMapObj | undefined;
 
   const name = obj?.name ?? dialogue.id;
-  const path = createUrlPath(dialogue.id, milestoneId);
+  const path = createUrlPath(dialogue.id, milestoneNodeId);
 
   return (
     <Group gap="xs" wrap="nowrap">

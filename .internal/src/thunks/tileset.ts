@@ -387,7 +387,6 @@ export const clearCandAnimFramesThunk = createAsyncThunk(
   "tilesetEditor/clearCandAnimFramesThunk",
   async (_, { dispatch }) => {
     dispatch(tsActions.clearCandAnimFrames());
-    dispatch(tsActions.clearSelection());
   },
 );
 

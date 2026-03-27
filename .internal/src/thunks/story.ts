@@ -1,5 +1,7 @@
 import { loadStory } from "@/persist/story/api";
+import { actions as dActions } from "@/slices/dialogue";
 import {
+  resetInstance,
   setEdges,
   setError,
   setLoading,
@@ -17,7 +19,7 @@ export const loadStoryThunk = createAsyncThunk(
     try {
       dispatch(setLoading(true));
       dispatch(setError(undefined));
-      const { nodes, edges } = await loadStory();
+      const { nodes, edges, dialogues } = await loadStory();
       if (!nodes.length && !edges.length) {
         dispatch(setNodes([]));
         dispatch(setEdges([]));
@@ -25,6 +27,7 @@ export const loadStoryThunk = createAsyncThunk(
       }
       dispatch(setNodes(nodes));
       dispatch(setEdges(edges));
+      dispatch(dActions.setDialogues(dialogues));
     } catch (err: any) {
       dispatch(setError(err?.message ?? String(err)));
     } finally {
@@ -49,5 +52,12 @@ export const reflowStoryThunk = createAsyncThunk(
     dispatch(setNodes(laidOutNodes));
     dispatch(setEdges(laidOutEdges));
     return { nodes: laidOutNodes, edges: laidOutEdges };
+  },
+);
+
+export const resetStoryThunk = createAsyncThunk(
+  "story/resetStory",
+  async (_, { dispatch }) => {
+    dispatch(resetInstance());
   },
 );

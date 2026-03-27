@@ -51,10 +51,7 @@ export async function init(): Promise<void> {
   events.on({
     type: "state-change",
     callback: ({ ready, satisfied }) => {
-      console.log("DID IT", {
-        ready: Array.from(ready),
-        satisfied: Array.from(satisfied),
-      });
+      //
     },
   });
 }

@@ -46,5 +46,15 @@ export interface StoryDocV6 extends Omit<BaseStoryDoc, "version"> {
   dialogues: Record<string, Dialogue>;
 }
 
-export type LatestStoryDoc = StoryDocV6;
-export const latestVersion = 6;
+/**
+ * v7: dialogues field is now Record<objectId, Record<storyNodeId, Dialogue>>
+ * where storyNodeId is the stable ReactFlow node UUID (not the user-editable
+ * milestone name), so renames don't break linkages.
+ */
+export interface StoryDocV7 extends Omit<StoryDocV6, "version" | "dialogues"> {
+  version: 7;
+  dialogues: Record<string, Record<string, Dialogue>>;
+}
+
+export type LatestStoryDoc = StoryDocV7;
+export const latestVersion = 7;

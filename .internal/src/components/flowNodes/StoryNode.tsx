@@ -1,3 +1,4 @@
+import { useAncestorHighlight } from "@/contexts/AncestorHighlightContext";
 import { useAppSelector } from "@/hooks/redux";
 import { selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
@@ -7,7 +8,7 @@ import type { RootState } from "@/store/store";
 import { isNpcInstance, isTileGroupInstance, type MapObj } from "@/types/map";
 import { NpcTemplate } from "@/types/npc";
 import { TileGroupTemplate } from "@/types/tilegroup";
-import { useAncestorHighlight } from "@/contexts/AncestorHighlightContext";
+import { createUrlPath } from "@/utils/dialogue";
 import { Box, Flex, Stack, UnstyledButton } from "@mantine/core";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import classNames from "classnames";
@@ -19,11 +20,11 @@ import styles from "./styles/StoryNode.module.css";
 function SpeakerIcon({
   objId,
   dialogueId,
-  milestoneId,
+  milestoneNodeId,
 }: {
   objId: string;
   dialogueId: string;
-  milestoneId: string;
+  milestoneNodeId: string;
 }) {
   const obj = useAppSelector((state: RootState) =>
     mapSelectors.selectObject(state, objId),
@@ -39,9 +40,10 @@ function SpeakerIcon({
   const onSpeakerClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
-      navigate(`/dialogues/${dialogueId}/${milestoneId}`);
+      // milestoneId in the URL is the stable story-node UUID, not the display name
+      navigate(createUrlPath(dialogueId, milestoneNodeId));
     },
-    [navigate, dialogueId, milestoneId],
+    [navigate, dialogueId, milestoneNodeId],
   );
 
   if (!obj || !tmpl) return null;
@@ -75,10 +77,12 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
   const reduxNode = useAppSelector((state: RootState) =>
     state.story.nodes.find((n) => n.id === id),
   );
-  const milestoneId = reduxNode?.data.id ?? data.id;
+  // data.id is the human-readable milestone name; use it only for display.
+  const milestoneName = reduxNode?.data.id ?? data.id;
 
+  // Use the stable ReactFlow node UUID for dialogue lookups and navigation.
   const dialogues = useAppSelector((state: RootState) =>
-    dSelectors.dialogueForMilestone(state, milestoneId),
+    dSelectors.dialogueForMilestone(state, id),
   );
 
   let npcNode = null;
@@ -90,7 +94,7 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
             <SpeakerIcon
               objId={dlg.subjectId!}
               dialogueId={dlg.id}
-              milestoneId={milestoneId}
+              milestoneNodeId={id}
             />
           </Box>
         ))}
@@ -108,7 +112,7 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
     <div className={cls}>
       <Handle type="target" position={Position.Top} />
       <Stack p={0}>
-        {milestoneId}
+        {milestoneName}
         {npcNode}
       </Stack>
       <Handle type="source" position={Position.Bottom} />

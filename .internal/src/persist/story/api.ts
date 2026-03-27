@@ -1,4 +1,5 @@
 import type { StoryEdge, StoryNode } from "@/slices/story";
+import type { Dialogue } from "@/types/dialogue";
 import { applyMigrations } from "@/utils/migrations";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
@@ -61,10 +62,11 @@ export function serializeToStates(
 export async function loadStory(): Promise<{
   nodes: StoryNode[];
   edges: StoryEdge[];
+  dialogues: Dialogue[];
 }> {
   const res = await fetch("/level/story.cbor.gz", { method: "GET" });
   if (res.status === 404) {
-    return { nodes: [], edges: [] };
+    return { nodes: [], edges: [], dialogues: [] };
   }
   if (!res.ok) throw new Error(`loadStory failed: ${res.status}`);
 
@@ -79,22 +81,77 @@ export async function loadStory(): Promise<{
   const decoded = baseDecoded as unknown as LatestStoryDoc;
   const { nodes, edges } = decoded;
 
+  // Extract unique Dialogue objects from the nested record
+  const dialogues = extractDialogues(decoded.dialogues);
+
   if (migrated) {
-    await saveStory(nodes, edges);
+    await saveStory(nodes, edges, dialogues);
   }
 
-  return { nodes, edges };
+  return { nodes, edges, dialogues };
+}
+
+/**
+ * Flattens the nested Record<objectId, Record<storyNodeId, Dialogue>> into a
+ * deduplicated array of Dialogue objects.
+ */
+function extractDialogues(
+  dialoguesRecord: Record<string, Record<string, Dialogue>>,
+): Dialogue[] {
+  const seen = new Set<string>();
+  const result: Dialogue[] = [];
+  for (const perObj of Object.values(dialoguesRecord)) {
+    for (const dlg of Object.values(perObj)) {
+      if (!seen.has(dlg.id)) {
+        seen.add(dlg.id);
+        result.push(dlg);
+      }
+    }
+  }
+  return result;
+}
+
+/**
+ * Builds the nested dialogues record for the story doc.
+ *
+ * Structure: Record<objectId, Record<storyNodeId, Dialogue>>
+ *
+ * - Top-level key: the NPC / tile-group object ID (dialogue.subjectId).
+ * - Second-level key: the stable ReactFlow story-node UUID stored in
+ *   dialogue.milestoneNodeIds.  Using the UUID (not the user-editable milestone
+ *   name) means that renaming a milestone does not break existing linkages.
+ * - A dialogue with multiple milestones is stored under each of those keys so
+ *   any (objectId, milestoneNodeId) pair resolves to the right dialogue.
+ *
+ * Dialogues without a subjectId or without any milestones are omitted because
+ * they have no addressable location in the record.
+ */
+function buildDialoguesRecord(
+  dialogues: Dialogue[],
+): Record<string, Record<string, Dialogue>> {
+  const result: Record<string, Record<string, Dialogue>> = {};
+  for (const dlg of dialogues) {
+    if (!dlg.subjectId || dlg.milestoneNodeIds.length === 0) continue;
+    for (const milestoneId of dlg.milestoneNodeIds) {
+      if (!result[dlg.subjectId]) {
+        result[dlg.subjectId] = {};
+      }
+      result[dlg.subjectId][milestoneId] = dlg;
+    }
+  }
+  return result;
 }
 
 export async function saveStory(
   nodes: StoryNode[],
   edges: StoryEdge[],
+  dialogues: Dialogue[] = [],
 ): Promise<void> {
   const states = serializeToStates(nodes, edges);
   const doc: LatestStoryDoc = {
     version: latestVersion,
     states,
-    dialogues: {},
+    dialogues: buildDialoguesRecord(dialogues),
     nodes,
     edges,
   };

@@ -35,9 +35,13 @@ export const slice = createSlice({
     dialogues: dialogueAdapter.getInitialState(),
     activeDialogueId: null,
   } as DialogueState,
+
   reducers: {
     addDialogue(state, action: PayloadAction<Dialogue>) {
       dialogueAdapter.setOne(state.dialogues, action.payload);
+    },
+    setDialogues(state, action: PayloadAction<Dialogue[]>) {
+      dialogueAdapter.setAll(state.dialogues, action.payload);
     },
     removeDialogue(state, action: PayloadAction<string>) {
       const dlgId = action.payload;
@@ -113,16 +117,24 @@ export const slice = createSlice({
     },
     setMilestones(
       state,
-      action: PayloadAction<{ dialogueId: string; milestones: string[] }>,
+      action: PayloadAction<{ dialogueId: string; milestoneNodeIds: string[] }>,
     ) {
-      const { dialogueId, milestones } = action.payload;
+      const { dialogueId, milestoneNodeIds } = action.payload;
       const dlg = state.dialogues.entities[dialogueId];
       if (dlg) {
-        dlg.milestones = milestones;
+        dlg.milestoneNodeIds = milestoneNodeIds;
       }
     },
   },
   extraReducers: (builder) => {
+    // Also listen for a story/resetStory thunk, and reset our dialogue nodes
+    builder.addCase("story/resetStory", (state) => {
+      state.dialogues = dialogueAdapter.getInitialState();
+      state.activeDialogueId = null;
+      state.dialogues.ids = [];
+      state.dialogues.entities = {};
+    });
+
     // Listen for NPC deletions from mapEditor
     builder.addMatcher(
       (action): action is PayloadAction<string> => {
@@ -193,7 +205,7 @@ export const slice = createSlice({
     }),
     activeMilestones: createDlgSelector(
       [activeDialogue],
-      (dlg): string[] => dlg?.milestones ?? [],
+      (dlg): string[] => dlg?.milestoneNodeIds ?? [],
     ),
     allDialogues: createDlgSelector(
       [(state) => state.dialogues],
@@ -218,7 +230,14 @@ export const slice = createSlice({
 });
 
 /**
- * Returns milestone IDs available for the active dialogue.
+ * Returns milestone items available for the active dialogue as
+ * `{ value, label }` pairs where `value` is the stable ReactFlow node UUID
+ * (or the special "default" sentinel) and `label` is the human-readable
+ * milestone name.
+ *
+ * Using the node UUID as the value means that renaming a milestone does not
+ * invalidate existing dialogue linkages.
+ *
  * "Available" = all story milestones minus those already claimed by
  * *other* dialogues belonging to the same NPC.
  */
@@ -228,13 +247,20 @@ const availableMilestones = createSelector(
     (state: RootState) => state.dialogue.activeDialogueId,
     (state: RootState) => state.dialogue.dialogues,
   ],
-  (storyNodes, activeDialogueId, dialogues): string[] => {
-    const allIds = [defaultMilestone, ...storyNodes.map((n) => n.data.id)];
+  (
+    storyNodes,
+    activeDialogueId,
+    dialogues,
+  ): { value: string; label: string }[] => {
+    const allItems: { value: string; label: string }[] = [
+      { value: defaultMilestone, label: "Default" },
+      ...storyNodes.map((n) => ({ value: n.id, label: n.data.id })),
+    ];
 
-    if (!activeDialogueId) return allIds;
+    if (!activeDialogueId) return allItems;
 
     const activeDlg = dialogues.entities[activeDialogueId];
-    if (!activeDlg?.subjectId) return allIds;
+    if (!activeDlg?.subjectId) return allItems;
 
     const npcId = activeDlg.subjectId;
 
@@ -244,13 +270,13 @@ const availableMilestones = createSelector(
       if (id === activeDialogueId) continue;
       const dlg = dialogues.entities[id as string];
       if (dlg && dlg.subjectId === npcId) {
-        for (const ms of dlg.milestones) {
+        for (const ms of dlg.milestoneNodeIds) {
           usedByOthers.add(ms);
         }
       }
     }
 
-    return allIds.filter((id) => !usedByOthers.has(id));
+    return allItems.filter((item) => !usedByOthers.has(item.value));
   },
 );
 
@@ -269,7 +295,7 @@ const dialogueForMilestone = createSelector(
       if (
         dlg &&
         dlg.subjectId !== null &&
-        dlg.milestones.includes(milestoneId)
+        dlg.milestoneNodeIds.includes(milestoneId)
       ) {
         msDialogues.push(dlg);
       }
@@ -289,13 +315,13 @@ export const actions = slice.actions;
 export function createDialogue(
   id: string,
   subjectId: string | null = null,
-  milestones: string[] = [],
+  milestoneNodeIds: string[] = [],
 ): Dialogue {
   return {
     id,
     subjectId,
     nodes: nodeAdapter.getInitialState(),
     edges: edgeAdapter.getInitialState(),
-    milestones,
+    milestoneNodeIds,
   };
 }

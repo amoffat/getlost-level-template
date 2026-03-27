@@ -24,7 +24,16 @@ export type DNode = Node<SpeechData>;
 export interface Dialogue {
   id: string;
   subjectId: string | null;
-  milestones: string[];
+  /** Stable ReactFlow node UUIDs (or "default") that activate this dialogue. */
+  milestoneNodeIds: string[];
   nodes: EntityState<DNode, string>;
   edges: EntityState<Edge, string>;
+}
+
+export interface SerializedDialogue {
+  id: string;
+  subjectId: string | null;
+  // Milestone NAMES, not node IDs
+  milestones: string[];
+  dependents: SerializedDialogue[];
 }

@@ -97,7 +97,7 @@ export default function MilestoneList({
             <Checkbox
               key={nodeId}
               label={nodeIdToMilestoneId.get(nodeId) ?? nodeId}
-              checked={isSelected || ancestorHighlight?.nodeIds.has(nodeId)}
+              checked={!!(isSelected || ancestorHighlight?.nodeIds.has(nodeId))}
               onChange={() => {
                 if (onSelect) {
                   const next = isSelected

@@ -123,6 +123,7 @@ export default function DialogueTab({
   const speakers = useAppSelector(mapSelectors.speakers);
   const availableMilestones = useAppSelector(dSelectors.availableMilestones);
   const allDialogues = useAppSelector(dSelectors.allDialogues);
+  const storyNodes = useAppSelector((state) => state.story.nodes);
   const activeDialogueId = useAppSelector(
     (state) => state.dialogue.activeDialogueId,
   );
@@ -396,9 +397,9 @@ export default function DialogueTab({
       createSpeech({ dialogueId, clear: true });
 
       // Navigate to the new dialogue URL
-      const milestone = dialogue.milestones[0] ?? null;
+      const milestone = dialogue.milestoneNodeIds[0] ?? null;
       const path = createUrlPath(dialogueId, milestone);
-      navigate(`/dialogues/${path}`);
+      navigate(path);
     },
     [navigate, createSpeech],
   );
@@ -412,7 +413,7 @@ export default function DialogueTab({
       // treeData unstable and cause an infinite update loop).
       treeSelectRef.current(value);
       startDialogueTransition(() => {
-        navigate(`/dialogues/${value}`);
+        navigate(value);
       });
     },
     [navigate],
@@ -428,6 +429,11 @@ export default function DialogueTab({
 
   const treeData: TreeNodeData[] = useMemo(() => {
     const state = store.getState();
+
+    // Map from ReactFlow node UUID → human-readable milestone name
+    const nodeIdToName = new Map(
+      storyNodes.map((n) => [n.id, n.data.id] as [string, string]),
+    );
 
     const tree: TreeNodeData[] = sortedSpeakers.map((obj) => {
       let getIcon: (
@@ -477,7 +483,7 @@ export default function DialogueTab({
       );
 
       const children = objDialogues.flatMap((dlg) => {
-        if (dlg.milestones.length === 0) {
+        if (dlg.milestoneNodeIds.length === 0) {
           return [
             {
               value: dlg.id,
@@ -490,9 +496,11 @@ export default function DialogueTab({
           ];
         }
 
-        return dlg.milestones.map((ms) => ({
+        return dlg.milestoneNodeIds.map((ms) => ({
           value: createUrlPath(dlg.id, ms),
-          label: ms,
+          // Resolve the human-readable name; fall back to the raw value so
+          // the "default" sentinel and any unknown IDs still display.
+          label: nodeIdToName.get(ms) ?? ms,
           nodeProps: {
             dialogue: dlg,
             onSelect: onSelectDialogue,
@@ -513,7 +521,13 @@ export default function DialogueTab({
     });
 
     return tree;
-  }, [sortedSpeakers, allDialogues, onCreateDialogue, onSelectDialogue]);
+  }, [
+    sortedSpeakers,
+    allDialogues,
+    storyNodes,
+    onCreateDialogue,
+    onSelectDialogue,
+  ]);
 
   const onMilestoneChange = useCallback(
     (milestones: string[]) => {
@@ -522,7 +536,7 @@ export default function DialogueTab({
       dispatch(
         dActions.setMilestones({
           dialogueId: activeDialogueId,
-          milestones,
+          milestoneNodeIds: milestones,
         }),
       );
 
@@ -769,7 +783,7 @@ function ObjLeaf({
     dSelectors.dialoguesForObj(state, objId),
   );
   const hasDefaultMilestone = npcDialogues.some((dlg) =>
-    dlg.milestones.includes(defaultMilestone),
+    dlg.milestoneNodeIds.includes(defaultMilestone),
   );
   const activeDialogueId = useAppSelector(
     (state) => state.dialogue.activeDialogueId,
@@ -832,7 +846,11 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
   );
 
   const dialogue = props.dialogue as Dialogue | undefined;
-  const milestoneCount = dialogue?.milestones.length ?? 0;
+  const milestoneCount = dialogue?.milestoneNodeIds.length ?? 0;
+
+  // node.value is the URL path for this leaf: "{dlgId}" or "{dlgId}/{milestoneNodeId}".
+  // Since the milestone node ID is now stored in the URL, we can read it directly here.
+  const milestoneNodeId = node.value.split("/")[1] as string | undefined;
 
   let content: React.ReactNode;
   if (milestoneCount === 0) {
@@ -854,7 +872,7 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
 
   const handleUnlink = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!dialogue) return;
+    if (!dialogue || !milestoneNodeId) return;
 
     modals.openContextModal({
       modal: "confirm",
@@ -876,12 +894,10 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
         msg: "Are you sure you want to unlink this milestone into its own separate dialogue?",
         onConfirm: () => {
           const newId = dispatch(
-            unlinkDialogueThunk(dialogue.id, node.label as string),
+            unlinkDialogueThunk(dialogue.id, milestoneNodeId),
           );
           if (newId) {
-            navigate(
-              `/dialogues/${createUrlPath(newId, node.label as string)}`,
-            );
+            navigate(createUrlPath(newId, milestoneNodeId));
           }
         },
       },
@@ -930,8 +946,8 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
             dispatch(
               dActions.setMilestones({
                 dialogueId: dialogue.id,
-                milestones: dialogue.milestones.filter(
-                  (ms) => ms !== node.label,
+                milestoneNodeIds: dialogue.milestoneNodeIds.filter(
+                  (ms) => ms !== milestoneNodeId,
                 ),
               }),
             );
