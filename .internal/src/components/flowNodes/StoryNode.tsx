@@ -41,7 +41,7 @@ function SpeakerIcon({
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
       // milestoneId in the URL is the stable story-node UUID, not the display name
-      navigate(createUrlPath(dialogueId, milestoneNodeId));
+      navigate(createUrlPath({ id: dialogueId, milestone: milestoneNodeId }));
     },
     [navigate, dialogueId, milestoneNodeId],
   );

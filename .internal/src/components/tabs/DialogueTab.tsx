@@ -115,18 +115,20 @@ export default function DialogueTab({
 
   const reactFlowInstance = useReactFlow<DNode, Edge>();
   const dispatch = useAppDispatch();
-  const { dlgid: dlgId, milestone: msId } = useParams<{
+  const {
+    dlgid: dlgId,
+    milestone: msId,
+    nodeid: nodeIdParam,
+  } = useParams<{
     dlgid?: string;
     milestone?: string;
+    nodeid?: string;
   }>();
   const location = useLocation();
   const speakers = useAppSelector(mapSelectors.speakers);
   const availableMilestones = useAppSelector(dSelectors.availableMilestones);
   const allDialogues = useAppSelector(dSelectors.allDialogues);
   const storyNodes = useAppSelector((state) => state.story.nodes);
-  const activeDialogueId = useAppSelector(
-    (state) => state.dialogue.activeDialogueId,
-  );
   const { activeMilestones, activeNodes, activeEdges } = useAppSelector(
     (state) => ({
       activeMilestones: dSelectors.activeMilestones(state),
@@ -149,40 +151,23 @@ export default function DialogueTab({
     if (!dlgId) {
       // Only clear if we're still on the dialogue page
       const samePage = location.pathname.startsWith("/dialogues");
-      if (!samePage) return;
-      dispatch(dActions.setActiveDialogue(null));
-      return;
-    }
+      if (samePage) {
+        dispatch(dActions.setActiveDialogue(null));
+      }
 
-    const state = store.getState();
-    const dialogue = dSelectors.selectDialogue(state, dlgId);
-    if (!dialogue) {
-      navigate("/dialogues");
-      return;
-    }
-
-    if (
-      dlgId !== activeDialogueId ||
-      !tree.selectedState.includes(createUrlPath(dlgId, msId ?? null))
-    ) {
-      dispatch(dActions.setActiveDialogue(dlgId));
-      tree.select(createUrlPath(dlgId, msId ?? null));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dlgId, msId, dispatch, location, activeDialogueId]);
-
-  // Sync ReactFlow when the active dialogue changes
-  useEffect(() => {
-    if (!activeDialogueId) {
       reactFlowInstance.setNodes([]);
       reactFlowInstance.setEdges([]);
       return;
     }
 
     const state = store.getState();
-    const activeDialogue = dSelectors.selectDialogue(state, activeDialogueId);
-    if (!activeDialogue) return;
+    const activeDialogue = dSelectors.selectDialogue(state, dlgId);
+    if (!activeDialogue) {
+      navigate("/dialogues");
+      return;
+    }
 
+    // Load our nodes and edges into react flow
     const newNodes = Object.values(activeDialogue.nodes.entities) as DNode[];
     reactFlowInstance.setNodes(newNodes);
 
@@ -190,16 +175,52 @@ export default function DialogueTab({
       (id) => activeDialogue.edges.entities[id] as Edge,
     );
     reactFlowInstance.setEdges(newEdges);
-  }, [activeDialogueId, reactFlowInstance]);
 
-  // Fit view only when switching to a different dialogue, not on every data
-  // change
+    // If the active selected dialogue and node doesn't match the url, update
+    // it.
+    if (
+      dlgId !== state.dialogue.activeDialogueId ||
+      !tree.selectedState.includes(
+        createUrlPath({ id: dlgId, milestone: msId }),
+      )
+    ) {
+      dispatch(dActions.setActiveDialogue(dlgId));
+      tree.select(createUrlPath({ id: dlgId, milestone: msId }));
+
+      if (nodeIdParam) {
+        requestAnimationFrame(() => {
+          reactFlowInstance.fitView({
+            nodes: [{ id: nodeIdParam }],
+            padding: 0.5,
+            maxZoom: 1,
+          });
+        });
+      } else {
+        requestAnimationFrame(() => {
+          reactFlowInstance.fitView({ padding: 0.25 });
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dlgId, msId, dispatch, location, navigate]);
+
+  // Sync node selection from URL parameter. Depends on activeDialogueId so
+  // that it runs after effect #2 has loaded the nodes into ReactFlow.
   useEffect(() => {
-    if (!activeDialogueId) return;
-    requestAnimationFrame(() => {
-      reactFlowInstance.fitView({ padding: 0.25 });
-    });
-  }, [activeDialogueId, reactFlowInstance]);
+    if (!nodeIdParam || !dlgId) {
+      if (!nodeIdParam) setSelectedNodeId(null);
+      return;
+    }
+    const nodes = reactFlowInstance.getNodes();
+    if (!nodes.some((n) => n.id === nodeIdParam)) return;
+    reactFlowInstance.setNodes(
+      nodes.map((n) => ({ ...n, selected: n.id === nodeIdParam })),
+    );
+    setSelectedNodeId(nodeIdParam);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodeIdParam, dlgId]);
+
   const { screenToFlowPosition } = useReactFlow();
   const flowContainerRef = useRef<HTMLDivElement>(null);
   const [isPendingDialogue, startDialogueTransition] = useTransition();
@@ -210,20 +231,31 @@ export default function DialogueTab({
   useOnSelectionChange({
     onChange: ({ nodes: selectedNodes }) => {
       if (selectedNodes.length === 1) {
-        setSelectedNodeId(selectedNodes[0].id);
+        const nodeId = selectedNodes[0].id;
+        setSelectedNodeId(nodeId);
+        if (dlgId && msId) {
+          navigate(createUrlPath({ id: dlgId, milestone: msId, nodeId }), {
+            replace: true,
+          });
+        }
       } else {
         setSelectedNodeId(null);
+        if (dlgId && msId) {
+          navigate(createUrlPath({ id: dlgId, milestone: msId }), {
+            replace: true,
+          });
+        }
       }
     },
   });
 
   const onNodesChange: OnNodesChange<DNode> = useDebouncedCallback(
     (changes) => {
-      if (!activeDialogueId) return;
+      if (!dlgId) return;
       const nodes = reactFlowInstance.getNodes();
       dispatch(
         dActions.setNodes({
-          dialogueId: activeDialogueId,
+          dialogueId: dlgId,
           nodes: applyNodeChanges(changes, nodes),
         }),
       );
@@ -254,11 +286,11 @@ export default function DialogueTab({
   );
 
   const onEdgesChange: OnEdgesChange = useDebouncedCallback((changes) => {
-    if (!activeDialogueId) return;
+    if (!dlgId) return;
     const edges = reactFlowInstance.getEdges();
     dispatch(
       dActions.setEdges({
-        dialogueId: activeDialogueId,
+        dialogueId: dlgId,
         edges: applyEdgeChanges(changes, edges),
       }),
     );
@@ -266,9 +298,9 @@ export default function DialogueTab({
 
   const onConnect: OnConnect = useCallback(
     (connection) => {
-      if (!activeDialogueId) return;
+      if (!dlgId) return;
       const state = store.getState();
-      const activeDialogue = dSelectors.selectDialogue(state, activeDialogueId);
+      const activeDialogue = dSelectors.selectDialogue(state, dlgId);
       if (!activeDialogue) return;
 
       const edges = reactFlowInstance.getEdges();
@@ -279,7 +311,7 @@ export default function DialogueTab({
         }),
       );
     },
-    [dispatch, activeDialogueId, reactFlowInstance],
+    [dispatch, dlgId, reactFlowInstance],
   );
 
   const createSpeech = useCallback(
@@ -289,7 +321,7 @@ export default function DialogueTab({
       position,
       connectTo,
     }: {
-      dialogueId: string | null;
+      dialogueId: string | undefined;
       clear?: boolean;
       position?: { x: number; y: number } | undefined;
       connectTo?: {
@@ -368,7 +400,7 @@ export default function DialogueTab({
 
   const onConnectEnd: OnConnectEnd = useCallback(
     (event, connectionState) => {
-      if (!activeDialogueId || connectionState.isValid) return;
+      if (!dlgId || connectionState.isValid) return;
 
       const { clientX, clientY } =
         "changedTouches" in event ? event.changedTouches[0] : event;
@@ -380,13 +412,13 @@ export default function DialogueTab({
         };
 
         createSpeech({
-          dialogueId: activeDialogueId,
+          dialogueId: dlgId,
           position: screenToFlowPosition({ x: clientX, y: clientY }),
           connectTo,
         });
       }
     },
-    [activeDialogueId, createSpeech, screenToFlowPosition],
+    [dlgId, createSpeech, screenToFlowPosition],
   );
 
   const onCreateDialogue = useCallback(
@@ -398,7 +430,7 @@ export default function DialogueTab({
 
       // Navigate to the new dialogue URL
       const milestone = dialogue.milestoneNodeIds[0] ?? null;
-      const path = createUrlPath(dialogueId, milestone);
+      const path = createUrlPath({ id: dialogueId, milestone });
       navigate(path);
     },
     [navigate, createSpeech],
@@ -497,7 +529,7 @@ export default function DialogueTab({
         }
 
         return dlg.milestoneNodeIds.map((ms) => ({
-          value: createUrlPath(dlg.id, ms),
+          value: createUrlPath({ id: dlg.id, milestone: ms }),
           // Resolve the human-readable name; fall back to the raw value so
           // the "default" sentinel and any unknown IDs still display.
           label: nodeIdToName.get(ms) ?? ms,
@@ -531,11 +563,11 @@ export default function DialogueTab({
 
   const onMilestoneChange = useCallback(
     (milestones: string[]) => {
-      if (!activeDialogueId) return;
+      if (!dlgId) return;
 
       dispatch(
         dActions.setMilestones({
-          dialogueId: activeDialogueId,
+          dialogueId: dlgId,
           milestoneNodeIds: milestones,
         }),
       );
@@ -547,15 +579,15 @@ export default function DialogueTab({
 
       // If "default" was just added, remove it from all sibling dialogues
       if (defaultAdded) {
-        dispatch(setDefaultDialogueThunk(activeDialogueId));
+        dispatch(setDefaultDialogueThunk(dlgId));
       }
     },
-    [activeDialogueId, activeMilestones, dispatch],
+    [dlgId, activeMilestones, dispatch],
   );
 
   const handleReflow = useCallback(async () => {
-    if (!activeDialogueId) return;
-    const resp = await dispatch(reflowDialogueThunk(activeDialogueId)).unwrap();
+    if (!dlgId) return;
+    const resp = await dispatch(reflowDialogueThunk(dlgId)).unwrap();
 
     if (!resp) return;
     const { nodes: laidOutNodes, edges: laidOutEdges } = resp;
@@ -565,7 +597,7 @@ export default function DialogueTab({
     requestAnimationFrame(() => {
       reactFlowInstance.fitView({ duration: 250, padding: 0.25 });
     });
-  }, [dispatch, reactFlowInstance, activeDialogueId]);
+  }, [dispatch, reactFlowInstance, dlgId]);
 
   const tips: ReactNode[] = useMemo(() => {
     const t: ReactNode[] = [];
@@ -579,7 +611,7 @@ export default function DialogueTab({
       );
     }
 
-    if (!activeDialogueId) {
+    if (!dlgId) {
       if (speakers.length === 0) {
         t.push(
           "No named NPCs or tile groups found in the map. Go name something in the map.",
@@ -592,7 +624,7 @@ export default function DialogueTab({
     }
 
     return t;
-  }, [activeNodes, activeDialogueId, speakers.length]);
+  }, [activeNodes, dlgId, speakers.length]);
 
   return (
     <Split h="100dvh" style={{ flex: 1 }}>
@@ -654,7 +686,7 @@ export default function DialogueTab({
               <Panel position="top-center">
                 <Button
                   variant="filled"
-                  onClick={() => createSpeech({ dialogueId: activeDialogueId })}
+                  onClick={() => createSpeech({ dialogueId: dlgId })}
                   leftSection={<IconBubbleText size={20} />}
                 >
                   New Speech
@@ -673,7 +705,7 @@ export default function DialogueTab({
 
           <PanelLoader visible={isPendingDialogue} />
 
-          {!activeDialogueId && !isPendingDialogue && (
+          {!dlgId && !isPendingDialogue && (
             <Overlay color="#000" backgroundOpacity={0.65} blur={4} zIndex={10}>
               <Stack align="center" justify="center" style={{ height: "100%" }}>
                 <Text size="lg" c="dimmed">
@@ -699,7 +731,7 @@ export default function DialogueTab({
 
           <ScrollArea type="never" style={{ flex: 1 }}>
             <Stack p={0} gap="md">
-              {activeDialogueId && (
+              {dlgId && (
                 <>
                   <Fieldset legend="Dialogue" p="xs">
                     <Stack p={0}>
@@ -743,7 +775,7 @@ export default function DialogueTab({
                         onChange={onMilestoneChange}
                         data={availableMilestones}
                         nothingFoundMessage="No milestones found"
-                        disabled={!activeDialogueId}
+                        disabled={!dlgId}
                       />
                     </Stack>
                   </Fieldset>
@@ -899,7 +931,7 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
             unlinkDialogueThunk(dialogue.id, milestoneNodeId),
           );
           if (newId) {
-            navigate(createUrlPath(newId, milestoneNodeId));
+            navigate(createUrlPath({ id: newId, milestone: milestoneNodeId }));
           }
         },
       },

@@ -13,6 +13,7 @@ const routes = [
   { path: "/dialogues", element: <ShellApp /> },
   { path: "/dialogues/:dlgid", element: <ShellApp /> },
   { path: "/dialogues/:dlgid/milestones/:milestone", element: <ShellApp /> },
+  { path: "/dialogues/:dlgid/milestones/:milestone/nodes/:nodeid", element: <ShellApp /> },
   { path: "/preview", element: <ShellApp /> },
 ];
 

@@ -143,7 +143,7 @@ function DialogueRow({
   ) as SpeakableMapObj | undefined;
 
   const name = obj?.name ?? dialogue.id;
-  const path = createUrlPath(dialogue.id, milestoneNodeId);
+  const path = createUrlPath({ id: dialogue.id, milestone: milestoneNodeId });
 
   return (
     <Group gap="xs" wrap="nowrap">
