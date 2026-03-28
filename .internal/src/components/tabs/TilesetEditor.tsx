@@ -122,7 +122,11 @@ export default function TilesetEditorTab({
     ],
     [dispatch],
   );
-  useSpotlightActions("tileset-editor", tilesetSpotlightActions, activeTab === "tileset-editor");
+  useSpotlightActions(
+    "tileset-editor",
+    tilesetSpotlightActions,
+    activeTab === "tileset-editor",
+  );
 
   const navigate = useNavigate();
   const { tsid: tsId, objid: objId } = useParams<{
@@ -236,7 +240,7 @@ export default function TilesetEditorTab({
           name: "Reslicer",
           icon: <IconScissors size={16} />,
           options: <TileReslicerTool />,
-          enabled: enableGroup && !tooLarge,
+          enabled: enableGroup,
         },
 
         select: {
@@ -291,7 +295,7 @@ export default function TilesetEditorTab({
           enabled: hasTsSelected,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,
-    [enableGroup, hasTsSelected, selectedAnimation, tooLarge],
+    [enableGroup, hasTsSelected, selectedAnimation],
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName]!;

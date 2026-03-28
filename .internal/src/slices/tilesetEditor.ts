@@ -57,7 +57,7 @@ export interface TilesetEditorState {
   activeZoomPan: ZoomPan;
   tilesetIds: string[];
   tilesets: Record<string, Tileset>;
-  scanPos: Rect | null;
+  resliceSelection: Rect | null;
   tilesetZoomPans: Record<string, ZoomPan>;
   // Async status flags for initial tileset loading
   loadingTilesets: boolean;
@@ -97,6 +97,7 @@ export const slice = createSlice({
     tilesetIds: [],
     tilesets: {},
     scanPos: null,
+    resliceSelection: null,
     tilesetZoomPans: {},
     loadingTilesets: false,
     tilesetsLoaded: false,
@@ -377,8 +378,8 @@ export const slice = createSlice({
       }
     },
 
-    setScanPos: (state, action: PayloadAction<Rect | null>) => {
-      state.scanPos = action.payload;
+    setResliceSelection: (state, action: PayloadAction<Rect | null>) => {
+      state.resliceSelection = action.payload;
     },
     setFocusedObj(state, action: PayloadAction<string>) {
       const objId = action.payload;

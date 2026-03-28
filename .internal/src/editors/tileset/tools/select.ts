@@ -1,7 +1,8 @@
+import { drawRectSelect } from "@/editors/common/select";
 import { Tool } from "@/editors/common/tooldispatch";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
-import { Rect, snap } from "@/types/rect";
+import { snap } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Mode } from "@/types/tileset";
@@ -15,7 +16,7 @@ import {
   PointerEventData,
 } from "../../common/drag";
 import { drawOutline } from "../../common/outline";
-import { selectStroke, tileSelectFill } from "../../common/strokes";
+import { selectStroke } from "../../common/strokes";
 import { globals as g } from "../globals";
 import { pressedKeys } from "../keys";
 
@@ -96,7 +97,12 @@ class Selector extends ClickDragListener<Mode> implements Tool {
 
     if (this._marqueeEnabled) {
       const hb = snap(e.hitbox, { x: 1, y: 1 });
-      drawRectSelect(hb, state.tilesetEditor.activeZoomPan.zoom);
+
+      drawRectSelect({
+        gfx: g.rectSelect,
+        rect: hb,
+        zoom: state.tilesetEditor.activeZoomPan.zoom,
+      });
       if (state.tilesetEditor.selectedTool !== "select") {
         store.dispatch(actions.setActiveTool("select"));
       }
@@ -127,7 +133,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
    * @param e Event data
    */
   private doSelection(e: PointerEventData) {
-    clearRectSelect();
+    g.rectSelect.clear();
     const state = store.getState();
     const mode = selectors.selectMode(state);
 
@@ -196,30 +202,6 @@ export function setupSelector({
   spatialIndex: SpatialIndex<TemplateObject>;
 }) {
   cd.addListener(new Selector(spatialIndex));
-}
-
-/**
- * Draws a rectangle selection outline. Called frequently during drag.
- * @param rect Rectangle in map container space
- * @param zoom Current zoom level
- */
-function drawRectSelect(rect: Rect, zoom: number) {
-  clearRectSelect();
-
-  // This logic ensures that our rect select hitbox can go "negative" correctly
-  const left = Math.min(rect.x, rect.x + rect.width);
-  const top = Math.min(rect.y, rect.y + rect.height);
-  const width = Math.abs(rect.width);
-  const height = Math.abs(rect.height);
-
-  g.rectSelect
-    .rect(left, top, width, height)
-    .fill(tileSelectFill)
-    .stroke({ ...selectStroke, width: (selectStroke.width ?? 1) / zoom });
-}
-
-function clearRectSelect() {
-  g.rectSelect.clear();
 }
 
 /**

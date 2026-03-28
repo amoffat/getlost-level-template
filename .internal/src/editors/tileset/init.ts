@@ -22,6 +22,7 @@ import { setupKeys } from "./keys";
 import { setupFrameSelector } from "./tools/animator";
 import { setupCollider } from "./tools/collider";
 import { setupGrouper } from "./tools/group";
+import { setupReslicer } from "./tools/reslicer";
 import { setupSelector } from "./tools/select";
 import { setupZIndexer } from "./tools/zindex";
 
@@ -120,6 +121,17 @@ export async function init(): Promise<P.Application> {
   g.groupSelContainer.addChild(gfx);
   g.groupSelGraphics = gfx;
 
+  g.resliceSelContainer = new P.Container();
+  g.resliceSelContainer.label = "Reslice Selection Container";
+  g.resliceSelContainer.zIndex = Number.MAX_SAFE_INTEGER - 31;
+  g.tilesetContainer.addChild(g.resliceSelContainer);
+
+  const resliceGfx = new P.Graphics();
+  resliceGfx.visible = false;
+  resliceGfx.rect(0, 0, 16, 16).fill({ color: 0x00aaff, alpha: 0.3 });
+  g.resliceSelContainer.addChild(resliceGfx);
+  g.resliceSelGraphics = resliceGfx;
+
   g.scanPos = new P.Container();
   g.scanPos.label = "Scan Position";
   g.scanPos.zIndex = 200;
@@ -185,6 +197,7 @@ export async function init(): Promise<P.Application> {
   });
 
   setupGrouper({ cd, spatialIndex });
+  setupReslicer({ cd });
   setupSelector({ cd, spatialIndex });
   setupFrameSelector({ cd, spatialIndex });
   const zIndexTool = setupZIndexer();

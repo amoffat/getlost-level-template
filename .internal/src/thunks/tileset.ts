@@ -20,6 +20,7 @@ import { RootState, store } from "@/store/store";
 import { AnimationTemplate } from "@/types/animation";
 import { TileGroupInstance } from "@/types/map";
 import { NpcTemplate } from "@/types/npc";
+import { Rect } from "@/types/rect";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { TemplateObject } from "@/types/tilesetobject";
@@ -267,7 +268,11 @@ export const removeTilesetThunk = createAsyncThunk(
 export const retileThunk = createAsyncThunk(
   "tilesetEditor/retileThunk",
   async (
-    { tsId, gridSize }: { tsId: string; gridSize: number },
+    {
+      tsId,
+      gridSize,
+      bounds,
+    }: { tsId: string; gridSize: number; bounds: Rect },
     { dispatch },
   ) => {
     const state = store.getState();
@@ -277,14 +282,37 @@ export const retileThunk = createAsyncThunk(
       return;
     }
 
+    const boundsRight = bounds.x + bounds.width;
+    const boundsBottom = bounds.y + bounds.height;
+
     const ids = Object.values(ts.tiles.entities)
       .filter(isTileGroupTemplate)
       .filter((obj) => !obj.pinned)
+      .filter((obj) => {
+        const ox = obj.pos.x;
+        const oy = obj.pos.y;
+        const oRight = ox + obj.pos.width;
+        const oBottom = oy + obj.pos.height;
+        return (
+          ox >= bounds.x &&
+          oy >= bounds.y &&
+          oRight <= boundsRight &&
+          oBottom <= boundsBottom
+        );
+      })
       .map((obj) => obj.id);
     dispatch(tsActions.deletePaletteObjects({ tsId, ids }));
     dispatch(tsActions.setTilesetGridSize({ tsId, gridSize }));
 
-    const coords = generateGridAlignedCoords(tsId, gridSize);
+    const allCoords = generateGridAlignedCoords(tsId, gridSize);
+    const coords = allCoords.filter((c) => {
+      return (
+        c.x >= bounds.x &&
+        c.y >= bounds.y &&
+        c.x + c.width <= boundsRight &&
+        c.y + c.height <= boundsBottom
+      );
+    });
     await sliceTileset(tsId, coords);
   },
 );
@@ -307,6 +335,10 @@ export const setToolThunk = createAsyncThunk(
 
     if (!saveSelection) {
       dispatch(tsActions.clearSelection());
+    }
+
+    if (tool !== "reslice-tiles") {
+      dispatch(tsActions.setResliceSelection(null));
     }
 
     dispatch(tsActions.clearCandAnimFrames());

@@ -19,6 +19,12 @@ interface Globals {
   /** Graphics object that draws the green semi-transparent rectangle showing the area being grouped */
   groupSelGraphics: P.Graphics;
 
+  /** Container for the visual feedback during reslice selection (reslice-tiles mode) */
+  resliceSelContainer: P.Container;
+
+  /** Graphics object that draws the semi-transparent rectangle showing the reslice selection area */
+  resliceSelGraphics: P.Graphics;
+
   /** Container that renders outlines around all existing tile groups in the tileset. */
   allGroupsOverlay: P.Container;
 

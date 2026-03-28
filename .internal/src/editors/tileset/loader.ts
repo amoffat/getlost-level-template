@@ -1,6 +1,5 @@
 import * as constants from "@/constants";
 import { globals as gApp } from "@/globals";
-import { actions as tsActions } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
 import { addPaletteObjectsThunk } from "@/thunks/tileset";
@@ -83,10 +82,9 @@ export async function sliceTileset(tsId: string, coordsList: Rect[]) {
   const chunkIds = new Set<string>();
   const chunkSize = 100;
 
-  const flushChunk = async (currentCoords: Rect | null = null) => {
+  const flushChunk = async (_currentCoords: Rect | null = null) => {
     if (chunk.length > 0) {
       store.dispatch(addPaletteObjectsThunk({ tsId, objs: chunk }));
-      store.dispatch(tsActions.setScanPos(currentCoords));
       chunk = [];
       chunkIds.clear();
       await schedulerYield();
