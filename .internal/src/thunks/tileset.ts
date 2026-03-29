@@ -14,12 +14,13 @@ import { actions as mapActions } from "@/slices/mapEditor";
 import {
   TilesetEditorState,
   actions as tsActions,
+  selectors as tsSelectors,
 } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { RootState, store } from "@/store/store";
-import { AnimationTemplate } from "@/types/animation";
+import { AnimationTemplate, isAnimationTemplate } from "@/types/animation";
 import { TileGroupInstance } from "@/types/map";
-import { NpcTemplate } from "@/types/npc";
+import { isNpcTemplate, NpcTemplate } from "@/types/npc";
 import { Rect } from "@/types/rect";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
@@ -37,42 +38,50 @@ export const setActiveTilesetThunk = createAsyncThunk(
     { dispatch, getState },
   ) => {
     const state = getState() as RootState;
-    const tilesets = state.tilesetEditor.tilesets;
-    const ts = tsId ? (tilesets[tsId] ?? null) : null;
+    const ts = tsId ? tsSelectors.selectTileset(state, tsId) : null;
 
     if (tsId && ts === null) {
       await dispatch(loadTilesetThunk({ tsId })).unwrap();
     }
 
-    // Already active?
-    if (tsId && tsId === state.tilesetEditor.activeTilesetId) {
-      if (objId) {
-        dispatch(tsActions.setFocusedObj(objId));
-      }
-      return true;
-    }
-
-    dispatch(tsActions.setActiveTool(null));
     dispatch(tsActions.clearSelection());
     dispatch(clearCandAnimFramesThunk());
 
-    // Add it to pixi.js
-    await setCanvasTileset(ts);
-    // Set it as active, which loads its zoom/pan state
-    dispatch(tsActions.setActiveTileset({ ts }));
+    const isAlreadyActive =
+      tsId && tsId === state.tilesetEditor.activeTilesetId;
+    if (!isAlreadyActive) {
+      // Add it to pixi.js
+      await setCanvasTileset(ts);
+      // Set it as active, which loads its zoom/pan state
+      dispatch(tsActions.setActiveTileset({ ts }));
 
-    if (ts) {
-      const tex = await loadTilesetImage(ts);
-      dispatch(
-        tsActions.setBounds({
-          width: tex.width,
-          height: tex.height,
-        }),
-      );
+      if (ts) {
+        const tex = await loadTilesetImage(ts);
+        dispatch(
+          tsActions.setBounds({
+            width: tex.width,
+            height: tex.height,
+          }),
+        );
+      }
+
+      dispatch(tsActions.setActiveTool(null));
     }
 
     if (objId) {
+      const obj = tsSelectors.templateFromId(state, objId)!;
       dispatch(tsActions.setFocusedObj(objId));
+      dispatch(tsActions.setOneSelected(obj));
+
+      if (isAnimationTemplate(obj)) {
+        dispatch(setAnimationFramesThunk(obj));
+        dispatch(tsActions.setMode("animate"));
+      } else if (isNpcTemplate(obj)) {
+        dispatch(setNpcThunk(obj));
+        dispatch(tsActions.setMode("make-npc"));
+      } else {
+        dispatch(tsActions.setMode("select"));
+      }
     }
   },
 );
@@ -420,6 +429,7 @@ export const clearCandAnimFramesThunk = createAsyncThunk(
   "tilesetEditor/clearCandAnimFramesThunk",
   async (_, { dispatch }) => {
     dispatch(tsActions.clearCandAnimFrames());
+    dispatch(tsActions.clearSelection());
   },
 );
 

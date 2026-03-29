@@ -78,6 +78,26 @@ const activeTileset = createTsSelector(
   (tsId, tilesets): Tileset | null => (tsId ? (tilesets[tsId] ?? null) : null),
 );
 
+const templateFromId = createTsSelector(
+  [
+    (state) => state.tilesets,
+    (state) => state.objIdToTs,
+    (_, instanceId: string) => instanceId,
+  ],
+  (
+    tilesets: Record<string, Tileset>,
+    objIdToTs: Record<string, string>,
+    instanceId: string,
+  ): TemplateObject | null => {
+    const tsId = objIdToTs[instanceId];
+    if (!tsId) return null;
+    const ts = tilesets[tsId];
+    if (!ts) return null;
+    const obj = ts.tiles.entities[instanceId];
+    return obj ?? null;
+  },
+);
+
 export const slice = createSlice({
   name: "tilesetEditor",
   initialState: {
@@ -382,13 +402,10 @@ export const slice = createSlice({
       state.resliceSelection = action.payload;
     },
     setFocusedObj(state, action: PayloadAction<string>) {
-      const objId = action.payload;
-      const tsId = state.activeTilesetId;
-      if (!tsId) return;
-      const ts = state.tilesets[tsId];
-      const obj = ts.tiles.entities[objId];
+      const obj = templateFromId(state, action.payload);
+      if (!obj) return;
 
-      if (obj && isTileGroupTemplate(obj)) {
+      if (isTileGroupTemplate(obj)) {
         // Center zoomPan on the object
         const objCenterX = obj.pos.x + obj.pos.width / 2;
         const objCenterY = obj.pos.y + obj.pos.height / 2;
@@ -634,25 +651,7 @@ export const slice = createSlice({
           .filter((x) => x !== null);
       },
     ),
-    templateFromId: createTsSelector(
-      [
-        (state) => state.tilesets,
-        (state) => state.objIdToTs,
-        (_, instanceId: string) => instanceId,
-      ],
-      (
-        tilesets: Record<string, Tileset>,
-        objIdToTs: Record<string, string>,
-        instanceId: string,
-      ): TemplateObject | null => {
-        const tsId = objIdToTs[instanceId];
-        if (!tsId) return null;
-        const ts = tilesets[tsId];
-        if (!ts) return null;
-        const obj = ts.tiles.entities[instanceId];
-        return obj ?? null;
-      },
-    ),
+    templateFromId,
     animations: createTsSelector(
       [(state, tsId) => state.tilesets[tsId]],
       (ts): AnimationTemplate[] => {

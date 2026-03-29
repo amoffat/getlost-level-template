@@ -5,14 +5,8 @@ import { useSpotlightActions } from "@/hooks/useSpotlightActions";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
-import {
-  clearCandAnimFramesThunk,
-  setActiveTilesetThunk,
-  setAnimationFramesThunk,
-  setNpcThunk,
-  setToolThunk,
-} from "@/thunks/tileset";
-import { AnimationTemplate, isAnimationTemplate } from "@/types/animation";
+import { setActiveTilesetThunk, setToolThunk } from "@/thunks/tileset";
+import { isAnimationTemplate } from "@/types/animation";
 import { isNpcTemplate } from "@/types/npc";
 import { TilesetTabName } from "@/types/tab";
 import { isTileGroupTemplate } from "@/types/tilegroup";
@@ -46,7 +40,6 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ObjectPalette from "../ObjectPalette";
@@ -148,8 +141,6 @@ export default function TilesetEditorTab({
   const tilesets = useAppSelector(selectors.selectTilesets);
   const containerRef = useRef<HTMLDivElement>(null);
   const curTab = useAppSelector((state) => state.ui.tilesetTab);
-  const [selectedAnimation, setSelectedAnimation] =
-    useState<AnimationTemplate>();
 
   // This promise is created in the ShellApp and ensures the tileset editor (the
   // pixi.js canvas) is loaded and ready.
@@ -226,12 +217,17 @@ export default function TilesetEditorTab({
     });
   };
 
+  const selectedAnimation = useMemo(() => {
+    if (!ts || !objId) return undefined;
+    const obj = ts.tiles.entities[objId];
+    if (isAnimationTemplate(obj)) {
+      return obj;
+    }
+    return undefined;
+  }, [ts, objId]);
+
   const hasTsSelected = ts !== null;
   const enableGroup = ts !== null && !ts.composite;
-  const tooLarge =
-    ts &&
-    (ts.width * ts.height) / (ts.gridSize * ts.gridSize) >
-      constants.maxSliceObjects;
 
   const toolPalette: Partial<Record<Mode, ToolDescriptor>> = useMemo(
     () =>
@@ -304,21 +300,9 @@ export default function TilesetEditorTab({
   const onSelectObject = useCallback(
     async (obj: TemplateObject, e: React.MouseEvent) => {
       if (e.button === 2) return;
-
       await navigate(`/tilesets/${obj.tilesetId}/objects/${obj.id}`);
-
-      setSelectedAnimation(undefined);
-      dispatch(actions.setOneSelected(obj));
-      dispatch(clearCandAnimFramesThunk());
-
-      if (isAnimationTemplate(obj)) {
-        dispatch(setAnimationFramesThunk(obj));
-        setSelectedAnimation(obj);
-      } else if (isNpcTemplate(obj)) {
-        dispatch(setNpcThunk(obj));
-      }
     },
-    [dispatch, navigate],
+    [navigate],
   );
 
   const onToolActivated = useCallback(

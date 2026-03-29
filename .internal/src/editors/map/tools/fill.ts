@@ -6,6 +6,7 @@ import {
 } from "@/editors/common/drag";
 import { drawRectSelect } from "@/editors/common/select";
 import { fillStroke } from "@/editors/common/strokes";
+import { globals as gApp } from "@/globals";
 import {
   actions as mapActions,
   selectors as mapSelectors,
@@ -175,6 +176,14 @@ class Filler extends ClickDragListener<Mode> {
     }
 
     await store.dispatch(setUncommittedObjIdsThunk(toAdd)).unwrap();
+
+    // This is critical. Events can flood in while the async thunk is running,
+    // and if the map reconciler runs before the new objects are added to the
+    // store, it will throw an error since it won't be able to find the objects
+    // by id. By flushing the reconciler here, we ensure that any pending
+    // reconciler operations are applied before we add the new objects,
+    // preventing any reconciliation errors.
+    gApp.mapEditorReconciler.flush();
   }
 }
 

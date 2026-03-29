@@ -88,7 +88,7 @@ export abstract class ReduxReconciler<
     });
   }
 
-  private flush() {
+  public flush() {
     this.assertConnected();
 
     // removes first so re-add in same frame won’t conflict
