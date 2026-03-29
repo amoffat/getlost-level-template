@@ -313,7 +313,8 @@ export const retileThunk = createAsyncThunk(
         c.y + c.height <= boundsBottom
       );
     });
-    await sliceTileset(tsId, coords);
+    const collectionId = crypto.randomUUID();
+    await sliceTileset(tsId, coords, collectionId);
   },
 );
 

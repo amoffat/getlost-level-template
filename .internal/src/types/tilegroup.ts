@@ -26,6 +26,10 @@ export interface TileGroupTemplate extends TileGroupProps {
   coverage: number;
   avgColor: OklabColor;
   hilbertIndex: number;
+  // A random UUID assigned to all tilegroups produced by the same reslicer
+  // action when more than one tile is created. Used to keep co-created tiles
+  // adjacent in the object palette.
+  sliceCollection?: string;
   collisions: {
     // UUID key for looking up collision mask data from the module-level mask
     // store

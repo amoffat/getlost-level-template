@@ -7,7 +7,6 @@ import { Rect } from "@/types/rect";
 import { TemplateType } from "@/types/templates";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
-import { schedulerYield } from "@/utils/async";
 import { averageOklab } from "@/utils/color";
 import { oklabHilbertIndex } from "@/utils/hilbert";
 import { amountOpaquePixels, isTransparent, subImageData } from "@/utils/image";
@@ -73,23 +72,18 @@ export function generateGridAlignedCoords(
  * Slices a tileset by creating tile groups for the specified coordinates.
  * @param tsId - The tileset ID
  * @param coordsList - Array of Rect coordinates to unpack into tile groups
+ * @param sliceCollection - Optional UUID shared by all tiles from the same reslicer action
  */
-export async function sliceTileset(tsId: string, coordsList: Rect[]) {
+export async function sliceTileset(
+  tsId: string,
+  coordsList: Rect[],
+  sliceCollection?: string,
+) {
   const imageData = gApp.tilesetImageDataCache.get(tsId)!;
 
   store.dispatch(uiActions.loadingPalette(true));
-  let chunk: TileGroupTemplate[] = [];
-  const chunkIds = new Set<string>();
-  const chunkSize = 100;
 
-  const flushChunk = async (_currentCoords: Rect | null = null) => {
-    if (chunk.length > 0) {
-      store.dispatch(addPaletteObjectsThunk({ tsId, objs: chunk }));
-      chunk = [];
-      chunkIds.clear();
-      await schedulerYield();
-    }
-  };
+  const tiles: TileGroupTemplate[] = [];
 
   for (const coords of coordsList) {
     const innerPadding = 1;
@@ -122,13 +116,6 @@ export async function sliceTileset(tsId: string, coordsList: Rect[]) {
       pos: coords,
     });
 
-    // This fixes a bug where tiles with the same id, but different positions,
-    // are being added in the same chunk, causing only one of them to be added
-    // to the spatial index in the tileReconciler.
-    if (chunkIds.has(id)) {
-      await flushChunk(coords);
-    }
-
     const avgColor = averageOklab(tileImageData);
     const tg: TileGroupTemplate = {
       id,
@@ -158,15 +145,16 @@ export async function sliceTileset(tsId: string, coordsList: Rect[]) {
       },
     };
 
-    chunk.push(tg);
-    chunkIds.add(id);
+    tiles.push(tg);
+  }
 
-    if (chunk.length > chunkSize) {
-      await flushChunk(coords);
+  if (sliceCollection && tiles.length > 1) {
+    for (const tg of tiles) {
+      tg.sliceCollection = sliceCollection;
     }
   }
 
-  await flushChunk();
+  store.dispatch(addPaletteObjectsThunk({ tsId, objs: tiles }));
   store.dispatch(uiActions.loadingPalette(false));
 }
 

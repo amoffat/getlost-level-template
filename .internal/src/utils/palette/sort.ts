@@ -5,7 +5,7 @@ import { TileGroupTemplate } from "@/types/tilegroup";
 
 export function tileGroupSort(
   a: TileGroupTemplate,
-  b: TileGroupTemplate
+  b: TileGroupTemplate,
 ): number {
   const aArea = area(a.pos);
   const bArea = area(b.pos);
@@ -13,6 +13,12 @@ export function tileGroupSort(
 
   if (a.tilesetId !== b.tilesetId) {
     return a.tilesetId.localeCompare(b.tilesetId);
+  }
+
+  if (a.sliceCollection !== b.sliceCollection) {
+    if (a.sliceCollection !== undefined && b.sliceCollection !== undefined) {
+      return a.sliceCollection.localeCompare(b.sliceCollection);
+    }
   }
 
   if (a.hilbertIndex !== b.hilbertIndex) {
@@ -24,7 +30,7 @@ export function tileGroupSort(
 
 export function objectAnimationSort(
   a: AnimationTemplate,
-  b: AnimationTemplate
+  b: AnimationTemplate,
 ): number {
   const aTg = a.frames[0]!.tg;
   const bTg = b.frames[0]!.tg;
