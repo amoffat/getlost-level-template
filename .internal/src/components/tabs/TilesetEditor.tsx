@@ -218,13 +218,15 @@ export default function TilesetEditorTab({
   };
 
   const selectedAnimation = useMemo(() => {
-    if (!ts || !objId) return undefined;
-    const obj = ts.tiles.entities[objId];
-    if (isAnimationTemplate(obj)) {
+    if (!objId) return undefined;
+
+    const state = store.getState();
+    const obj = selectors.templateFromId(state, objId);
+    if (obj && isAnimationTemplate(obj)) {
       return obj;
     }
     return undefined;
-  }, [ts, objId]);
+  }, [objId]);
 
   const hasTsSelected = ts !== null;
   const enableGroup = ts !== null && !ts.composite;
