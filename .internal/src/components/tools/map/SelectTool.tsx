@@ -1,10 +1,13 @@
+import AnimationProperties from "@/components/objectProperties/AnimationProperties";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { bringToTopThunk, sendToBottomThunk } from "@/thunks/map";
 import { MapLayerName } from "@/types/layer";
 import {
+  AnimationInstance,
   EntranceObj,
   ExitObj,
+  isAnimatedInstance,
   isEntranceObj,
   isExitObj,
   isLightInstance,
@@ -72,6 +75,7 @@ export default function SelectTool() {
     const entrances: EntranceObj[] = [];
     const exits: ExitObj[] = [];
     const pickups: PickupObj[] = [];
+    const animatedInstances: AnimationInstance[] = [];
 
     for (const obj of deferredSelectedObjs) {
       if (isTileGroupInstance(obj)) {
@@ -86,6 +90,8 @@ export default function SelectTool() {
         exits.push(obj);
       } else if (isPickupObj(obj)) {
         pickups.push(obj);
+      } else if (isAnimatedInstance(obj)) {
+        animatedInstances.push(obj);
       }
     }
 
@@ -96,6 +102,7 @@ export default function SelectTool() {
       entrances.length > 0,
       exits.length > 0,
       pickups.length > 0,
+      animatedInstances.length > 0,
     ].filter(Boolean).length;
 
     if (typesCount > 1) {
@@ -133,6 +140,12 @@ export default function SelectTool() {
 
     if (pickups.length > 0) {
       return <PickupProperties key="pickup-props" objs={pickups} />;
+    }
+
+    if (animatedInstances.length > 0) {
+      return (
+        <AnimationProperties key="animation-props" objs={animatedInstances} />
+      );
     }
 
     return null;

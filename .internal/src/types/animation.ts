@@ -11,6 +11,9 @@ export interface TileAnimationFrame {
 export interface AnimationTemplate extends AnimationProps {
   // The unique, stable id which is based on a hash of the frame ids and times
   id: string;
+  // A name for the animation that can be referenced by the NPC, like "WalkLeft"
+  // or "Idle".
+  slotNames: string[];
   type: TemplateType.Animation;
   tilesetId: string;
   // The grid size this object is aligned to
@@ -18,7 +21,7 @@ export interface AnimationTemplate extends AnimationProps {
   frames: TileAnimationFrame[];
 }
 export function isAnimationTemplate(
-  obj: TemplateObject
+  obj: TemplateObject,
 ): obj is AnimationTemplate {
   return obj.type === TemplateType.Animation;
 }

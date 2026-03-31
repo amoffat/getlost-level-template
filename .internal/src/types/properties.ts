@@ -50,7 +50,7 @@ export interface TileGroupProps {
 }
 
 export interface AnimationProps {
-  names: string[];
+  name: string;
   tags: string[];
   flipX: boolean;
   tint: string | null;

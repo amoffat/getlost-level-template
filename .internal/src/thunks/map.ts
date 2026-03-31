@@ -130,7 +130,6 @@ export const setToolThunk = createAsyncThunk(
   async (tool: Mode | null, { dispatch }) => {
     if (tool === null) tool = "select";
     await dispatch(clearUncommittedThunk()).unwrap();
-    dispatch(mapActions.clearSelection());
 
     if (tool === "add-light") {
       const tg = loadTileGroup({
@@ -144,8 +143,6 @@ export const setToolThunk = createAsyncThunk(
         tilesetId: iconTsId,
       });
       dispatch(mapActions.setPlace(tg));
-    } else if (tool === "paint") {
-      dispatch(mapActions.clearSelection());
     }
 
     dispatch(mapActions.setMode(tool));

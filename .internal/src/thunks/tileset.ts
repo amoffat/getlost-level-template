@@ -406,7 +406,7 @@ export const setAnimationFramesThunk = createAsyncThunk(
     dispatch(tsActions.setActiveTool("animate"));
     notifications.show({
       title: "Animation loaded",
-      message: `Loaded ${obj.frames.length} frames for animation "${obj.names.join(", ")}".`,
+      message: `Loaded ${obj.frames.length} frames for animation "${obj.slotNames.join(", ")}".`,
       color: "green",
     });
   },

@@ -163,7 +163,7 @@ export default function TileAnimationTool({
     mode: "controlled",
     onSubmitPreventDefault: "always",
     initialValues: {
-      names: selectedAnimation?.names ?? [],
+      names: selectedAnimation?.slotNames ?? [],
     },
     validate: {
       names: (value) =>
@@ -187,7 +187,7 @@ export default function TileAnimationTool({
     for (const obj of allObjects) {
       if (obj && isAnimationTemplate(obj)) {
         const anim = obj as AnimationTemplate;
-        for (const name of anim.names) {
+        for (const name of anim.slotNames) {
           if (counts.has(name)) {
             counts.set(name, counts.get(name)! + 1);
           }
@@ -223,11 +223,12 @@ export default function TileAnimationTool({
       // Defaults
       const anim: AnimationTemplate = {
         id,
+        name: "",
         type: TemplateType.Animation,
         tilesetId: ts!.id,
         gridSize: candFrames[0]!.tileGroup.gridSize,
         frames,
-        names: [],
+        slotNames: [],
         tags: [],
         loop: true,
         flipX: false,
@@ -238,7 +239,7 @@ export default function TileAnimationTool({
       // Merge in existing properties of existing
       Object.assign(anim, selectedAnimation ?? {});
       // Set creation values
-      Object.assign(anim, { names: values.names });
+      Object.assign(anim, { slotNames: values.names, frames });
 
       dispatch(actions.setPaletteObjects({ tsId: ts!.id, objs: [anim] }));
       dispatch(clearCandAnimFramesThunk());
@@ -264,7 +265,7 @@ export default function TileAnimationTool({
 
   // Update form names when selectedAnimation changes
   useEffect(() => {
-    const names = selectedAnimation?.names ?? [];
+    const names = selectedAnimation?.slotNames ?? [];
     form.setFieldValue("names", names);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAnimation]);

@@ -51,5 +51,15 @@ export interface TilesetDocV18 extends Omit<TilesetDocV17, "version"> {
   version: 18;
 }
 
-export type LatestTilesetDoc = TilesetDocV18;
-export const latestVersion = 18;
+// Version 19: Renamed AnimationTemplate.names to AnimationTemplate.slotNames
+export interface TilesetDocV19 extends Omit<TilesetDocV18, "version"> {
+  version: 19;
+}
+
+// Version 20: Backfill TemplateObject.tilesetId for the player tileset
+export interface TilesetDocV20 extends Omit<TilesetDocV19, "version"> {
+  version: 20;
+}
+
+export type LatestTilesetDoc = TilesetDocV20;
+export const latestVersion = 20;

@@ -1,8 +1,9 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
+import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { setActiveLayerThunk } from "@/thunks/map";
 import { MapLayerName } from "@/types/layer";
-import { isTileGroupTemplate } from "@/types/tilegroup";
+import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { PaintOpts } from "@/types/tools";
 import {
   Alert,
@@ -15,6 +16,7 @@ import {
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useCallback, useEffect } from "react";
 import Tip from "../../Tip";
+import TileContext from "./TileContext";
 
 export default function PaintTool() {
   const dispatch = useAppDispatch();
@@ -42,10 +44,10 @@ export default function PaintTool() {
         actions.setToolOptions({
           tool: "paint",
           options: { mode },
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const onChangeSnap = useCallback(
@@ -55,10 +57,10 @@ export default function PaintTool() {
         actions.setToolOptions({
           tool: "paint",
           options: { snap },
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const onChangeSize = useCallback(
@@ -68,13 +70,30 @@ export default function PaintTool() {
         actions.setToolOptions({
           tool: "paint",
           options: { size: value },
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const isGround = activeLayer === MapLayerName.Ground;
+
+  // Determine if the placed tile is a grid-sized TileGroupTemplate from a
+  // non-composite tileset – only then is tile context meaningful.
+  const tileset = useAppSelector((state) =>
+    placeObj && isTileGroupTemplate(placeObj)
+      ? tsSelectors.selectTileset(state, placeObj.tilesetId)
+      : null,
+  );
+  const contextTile: TileGroupTemplate | null =
+    placeObj &&
+    isTileGroupTemplate(placeObj) &&
+    tileset &&
+    !tileset.composite &&
+    placeObj.pos.width === tileset.gridSize &&
+    placeObj.pos.height === tileset.gridSize
+      ? placeObj
+      : null;
 
   return (
     <>
@@ -93,6 +112,12 @@ export default function PaintTool() {
           >
             Please select an object from the palette.
           </Alert>
+        )}
+
+        {contextTile && (
+          <Fieldset legend="Tile context">
+            <TileContext placeObj={contextTile} />
+          </Fieldset>
         )}
 
         {isGround && (

@@ -1,9 +1,10 @@
 import * as constants from "@/constants";
-import { requiredNpcAnimations } from "@/constants";
+import { requiredNpcAnimations as requiredNpcAnimationSlots } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { setToolThunk } from "@/thunks/tileset";
+import type { AnimationTemplate } from "@/types/animation";
 import { isAnimationTemplate } from "@/types/animation";
 import {
   isNpcTemplate,
@@ -55,7 +56,7 @@ export default function NpcTool() {
     Record<NpcRequiredAnimation, boolean>
   >(() => {
     const state = {} as Record<NpcRequiredAnimation, boolean>;
-    for (const animName of requiredNpcAnimations) {
+    for (const animName of requiredNpcAnimationSlots) {
       state[animName] = existingNpc?.animations[animName]?.flipX ?? false;
     }
     return state;
@@ -87,27 +88,64 @@ export default function NpcTool() {
     },
   });
 
-  // Match each NPC animation name with animations from the tileset
-  const animationMatches = useMemo<Partial<NpcAnimationRecord>>(() => {
-    if (!ts) return {};
-
+  // Collect ALL animations matching each slot (not just the first)
+  const allSlotAnimations = useMemo<
+    Record<NpcRequiredAnimation, AnimationTemplate[]>
+  >(() => {
+    const result = {} as Record<NpcRequiredAnimation, AnimationTemplate[]>;
+    if (!ts) {
+      for (const slot of requiredNpcAnimationSlots) result[slot] = [];
+      return result;
+    }
     const allAnimations = Object.values(ts.tiles.entities).filter(
       isAnimationTemplate,
     );
-    const matches: Partial<NpcAnimationRecord> = {};
-    for (const requiredName of requiredNpcAnimations) {
-      const match = allAnimations.find((anim) =>
-        anim.names.includes(requiredName),
+    for (const slot of requiredNpcAnimationSlots) {
+      result[slot] = allAnimations.filter((anim) =>
+        anim.slotNames.includes(slot),
       );
+    }
+    return result;
+  }, [ts]);
+
+  // Track which animation index is selected per slot
+  const [selectedIndex, setSelectedIndex] = useState<
+    Record<NpcRequiredAnimation, number>
+  >(() => {
+    const state = {} as Record<NpcRequiredAnimation, number>;
+    for (const slot of requiredNpcAnimationSlots) {
+      state[slot] = 0;
+    }
+    return state;
+  });
+
+  const cycleAnimation = useCallback(
+    (slot: NpcRequiredAnimation) => {
+      setSelectedIndex((prev) => {
+        const count = allSlotAnimations[slot].length;
+        if (count <= 1) return prev;
+        return { ...prev, [slot]: (prev[slot] + 1) % count };
+      });
+    },
+    [allSlotAnimations],
+  );
+
+  // Derive current animation matches from selected indices
+  const animationMatches = useMemo<Partial<NpcAnimationRecord>>(() => {
+    const matches: Partial<NpcAnimationRecord> = {};
+    for (const slot of requiredNpcAnimationSlots) {
+      const candidates = allSlotAnimations[slot];
+      const idx = selectedIndex[slot] % Math.max(candidates.length, 1);
+      const match = candidates[idx];
       if (match) {
-        matches[requiredName] = {
+        matches[slot] = {
           animation: match,
-          flipX: flipXState[requiredName],
+          flipX: flipXState[slot],
         };
       }
     }
     return matches;
-  }, [ts, flipXState]);
+  }, [allSlotAnimations, selectedIndex, flipXState]);
 
   const saveNpc = useCallback(
     (values: FormValues) => {
@@ -142,7 +180,7 @@ export default function NpcTool() {
       // Merge in existing properties of existing
       Object.assign(npc, existingNpc ?? {});
       // Set creation values
-      Object.assign(npc, { name: values.name });
+      Object.assign(npc, { name: values.name, animations });
 
       dispatch(actions.setPaletteObjects({ tsId: ts!.id, objs: [npc] }));
       dispatch(uiActions.setTilesetTab("npcs"));
@@ -162,8 +200,8 @@ export default function NpcTool() {
     let hasAll = true;
     let hasSome = false;
     let hasNone = true;
-    for (const requiredName of requiredNpcAnimations) {
-      if (animationMatches[requiredName] === undefined) {
+    for (const requiredSlot of requiredNpcAnimationSlots) {
+      if (animationMatches[requiredSlot] === undefined) {
         hasAll = false;
       } else {
         hasSome = true;
@@ -195,8 +233,6 @@ export default function NpcTool() {
         </>,
       );
     }
-
-    t.push("Only one NPC template can be created per tileset");
     return t;
   }, [activateAnimationTool, hasAll, hasSome, hasNone]);
 
@@ -216,10 +252,10 @@ export default function NpcTool() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {requiredNpcAnimations.map((name) => {
-                  const animRecord = animationMatches[name];
+                {requiredNpcAnimationSlots.map((slot) => {
+                  const animRecord = animationMatches[slot];
                   return (
-                    <Table.Tr key={name}>
+                    <Table.Tr key={slot}>
                       <Table.Td>
                         <Text
                           size="sm"
@@ -234,23 +270,34 @@ export default function NpcTool() {
                           ) : (
                             <IconAlertTriangle size={16} color="orange" />
                           )}
-                          {name}
+                          {slot}
                         </Text>
                       </Table.Td>
                       <Table.Td>
                         {animRecord ? (
                           <Group gap="xs">
-                            <TileAnimation
-                              frames={animRecord.animation.frames}
-                              scale={2}
-                              bounded
-                              flipX={animRecord.flipX}
-                            />
+                            <div
+                              style={{
+                                cursor:
+                                  allSlotAnimations[slot].length > 1
+                                    ? "pointer"
+                                    : "default",
+                              }}
+                              onClick={() => cycleAnimation(slot)}
+                            >
+                              <TileAnimation
+                                frames={animRecord.animation.frames}
+                                scale={2}
+                                bounded
+                                flipX={animRecord.flipX}
+                              />
+                            </div>
+
                             <Tooltip label="Flip horizontally">
                               <ActionIcon
                                 variant={animRecord.flipX ? "filled" : "subtle"}
                                 size="sm"
-                                onClick={() => toggleFlipX(name)}
+                                onClick={() => toggleFlipX(slot)}
                               >
                                 <IconFlipVertical size={14} />
                               </ActionIcon>

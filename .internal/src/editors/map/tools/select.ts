@@ -166,6 +166,12 @@ class Selector extends ClickDragListener<Mode> implements Tool {
           .dispatch(setActiveLayerThunk({ layer: obj.layer, notify: true }))
           .unwrap();
         store.dispatch(actions.setOneSelected(obj.id));
+        if (isTileGroupInstance(obj)) {
+          const tmpl = tsSelectors.templateFromId(state, obj.tsObjId);
+          if (tmpl) {
+            store.dispatch(actions.setPlace(tmpl));
+          }
+        }
       }
       // We just want to clear the "proposed selection" menu or the current
       // selection.

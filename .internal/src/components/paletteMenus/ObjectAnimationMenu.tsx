@@ -94,7 +94,7 @@ export default function ObjectAnimationMenu({
       );
       notifications.show({
         title: "Animation deleted",
-        message: `Deleted animation "${obj.names}".`,
+        message: `Deleted animation "${obj.slotNames}".`,
         autoClose: 3000,
       });
     };
