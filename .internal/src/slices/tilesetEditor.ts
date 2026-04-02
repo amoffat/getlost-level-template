@@ -22,6 +22,67 @@ import {
 
 const DEFAULT_ZOOMPAN: ZoomPan = { zoom: 1, pan: { x: 0, y: 0 } };
 
+/**
+ * Propagate updated AnimationTemplates into any NpcTemplates in the same
+ * tileset that embed those animations. Must be called from within an
+ * Immer-producing reducer so that direct mutations are tracked correctly.
+ */
+function propagateAnimationChangesToNpcs(
+  tiles: EntityState<TemplateObject, string>,
+  animationIds: Set<string> | string[],
+): void {
+  const idSet =
+    animationIds instanceof Set ? animationIds : new Set(animationIds);
+  if (idSet.size === 0) return;
+  for (const obj of Object.values(tiles.entities)) {
+    if (!obj || !isNpcTemplate(obj)) continue;
+    for (const animRecord of Object.values(obj.animations)) {
+      if (!idSet.has(animRecord.animation.id)) continue;
+
+      const updatedAnim = tiles.entities[animRecord.animation.id];
+      if (updatedAnim && isAnimationTemplate(updatedAnim)) {
+        animRecord.animation = updatedAnim;
+      }
+      // else: animation was deleted from the tileset — preserve the existing copy
+    }
+  }
+}
+
+/**
+ * After updating one or more TileGroupTemplates in a tileset, propagate those
+ * changes into any AnimationTemplate frames in the same tileset that reference
+ * the updated tilegroup(s), then propagate the affected animations into any
+ * NpcTemplates that embed them. Must be called from within an Immer-producing
+ * reducer so that direct mutations are tracked correctly.
+ */
+function propagateTileGroupChangesToAnimations(
+  tiles: EntityState<TemplateObject, string>,
+  tileGroupIds: Set<string> | string[],
+): void {
+  const idSet =
+    tileGroupIds instanceof Set ? tileGroupIds : new Set(tileGroupIds);
+  if (idSet.size === 0) return;
+
+  // Replace each matching frame's tilegroup with the current copy from the
+  // tileset, and track which animations were affected.
+  const updatedAnimationIds = new Set<string>();
+  for (const obj of Object.values(tiles.entities)) {
+    if (!obj || !isAnimationTemplate(obj)) continue;
+
+    for (const frame of obj.frames) {
+      if (!idSet.has(frame.tg.id)) continue;
+      const updatedTg = tiles.entities[frame.tg.id];
+      if (updatedTg && isTileGroupTemplate(updatedTg)) {
+        frame.tg = updatedTg;
+        updatedAnimationIds.add(obj.id);
+      }
+      // else: tilegroup was deleted from the tileset — preserve the existing copy
+    }
+  }
+
+  propagateAnimationChangesToNpcs(tiles, updatedAnimationIds);
+}
+
 type ToolOptMapping = {
   animator: AnimatorOpts;
   collider: {
@@ -278,6 +339,11 @@ export const slice = createSlice({
         const ts = state.tilesets[obj.tilesetId];
         if (!ts) return;
         tileAdapter.updateOne(ts.tiles, { id: obj.id, changes: changes });
+        if (isTileGroupTemplate(ts.tiles.entities[obj.id])) {
+          propagateTileGroupChangesToAnimations(ts.tiles, [obj.id]);
+        } else if (isAnimationTemplate(ts.tiles.entities[obj.id])) {
+          propagateAnimationChangesToNpcs(ts.tiles, [obj.id]);
+        }
       },
     },
 
@@ -307,6 +373,14 @@ export const slice = createSlice({
         if (!ts) return;
 
         tileAdapter.updateMany(ts.tiles, changes);
+        const tgIds = changes
+          .filter(({ id }) => isTileGroupTemplate(ts.tiles.entities[id]))
+          .map(({ id }) => id);
+        propagateTileGroupChangesToAnimations(ts.tiles, tgIds);
+        const animIds = changes
+          .filter(({ id }) => isAnimationTemplate(ts.tiles.entities[id]))
+          .map(({ id }) => id);
+        propagateAnimationChangesToNpcs(ts.tiles, animIds);
       },
     },
 

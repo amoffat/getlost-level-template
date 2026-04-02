@@ -61,5 +61,20 @@ export interface TilesetDocV20 extends Omit<TilesetDocV19, "version"> {
   version: 20;
 }
 
-export type LatestTilesetDoc = TilesetDocV20;
-export const latestVersion = 20;
+// Version 21: Convert AnimationTemplate frame `tg` from TileGroupTemplate object to string ID
+export interface TilesetDocV21 extends Omit<TilesetDocV20, "version"> {
+  version: 21;
+}
+
+// Version 22: Convert NpcAnimation.animation from AnimationTemplate object to string ID
+export interface TilesetDocV22 extends Omit<TilesetDocV21, "version"> {
+  version: 22;
+}
+
+// Version 23: Revert string IDs back to full objects for AnimationTemplate.frames[].tg and NpcAnimation.animation
+export interface TilesetDocV23 extends Omit<TilesetDocV22, "version"> {
+  version: 23;
+}
+
+export type LatestTilesetDoc = TilesetDocV23;
+export const latestVersion = 23;

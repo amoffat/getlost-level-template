@@ -56,7 +56,7 @@ const TileAnimation = ({
     // Guard invalid time values
     const delay = Math.max(
       0,
-      Number.isFinite(current?.time) ? current.time : 0
+      Number.isFinite(current?.time) ? current.time : 0,
     );
 
     const tid = window.setTimeout(() => {
