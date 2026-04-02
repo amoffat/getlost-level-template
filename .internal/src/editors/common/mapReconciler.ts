@@ -17,7 +17,11 @@ import {
   MapObj,
 } from "@/types/map";
 import { NpcTemplate } from "@/types/npc";
-import { TileGroupProps } from "@/types/properties";
+import {
+  ANIMATION_PROPS_DEFAULTS,
+  TILE_GROUP_PROPS_DEFAULTS,
+  TileGroupProps,
+} from "@/types/properties";
 import { toPixiRect } from "@/types/rect";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
@@ -133,6 +137,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     const state = store.getState();
     const objId = node.label;
     const obj = state.mapEditor.objects.entities[objId];
+    const sprite = node.getChildByLabel("sprite");
     const tmpl = resolveTemplateProps(obj);
 
     if (props.x !== undefined) {
@@ -145,8 +150,15 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       node.zIndex = props.z;
     }
 
-    if (props.flipX !== undefined) {
-      node.children[0].scale.x = props.flipX ? -1 : 1;
+    if (Object.hasOwn(props, "flipX")) {
+      const flipX = this.resolveWithInheritance<boolean>(
+        props.flipX,
+        tmpl as unknown as TileGroupProps,
+        "flipX",
+        false,
+      );
+
+      node.children[0].scale.x = flipX ? -1 : 1;
     }
 
     if (props.layer !== undefined) {
@@ -173,14 +185,13 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     }
 
     if (Object.hasOwn(props, "groundOffset")) {
-      const sprite = node.getChildByLabel("sprite");
       if (sprite) {
         const normalY = sprite.height / 2 + texAtlasPadding;
         const groundOffset = this.resolveWithInheritance<number>(
           props.groundOffset,
           tmpl,
           "groundOffset",
-          0,
+          TILE_GROUP_PROPS_DEFAULTS.groundOffset,
         );
         sprite.position.y = normalY - groundOffset;
       }
@@ -192,9 +203,25 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         props.hidden,
         tmpl,
         "hidden",
-        false,
+        TILE_GROUP_PROPS_DEFAULTS.hidden,
       );
       node.alpha = hidden ? 0.35 : 1;
+    }
+
+    if (isAnimatedInstance(obj)) {
+      if (Object.hasOwn(props, "autoplay") && sprite) {
+        const autoplay = this.resolveWithInheritance<boolean>(
+          props.autoplay,
+          tmpl,
+          "autoplay",
+          ANIMATION_PROPS_DEFAULTS.autoplay,
+        );
+        if (autoplay) {
+          (sprite as P.AnimatedSprite).play();
+        } else {
+          (sprite as P.AnimatedSprite).gotoAndStop(0);
+        }
+      }
     }
 
     if (isTileGroupInstance(obj)) {
@@ -258,7 +285,6 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       }
       const sprite = new P.AnimatedSprite(pixiFrames, true);
       sprite.label = "sprite";
-      sprite.play();
 
       sprite.position.set(
         sprite.width / 2 + texAtlasPadding,
@@ -266,7 +292,6 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       );
       sprite.eventMode = "passive";
       sprite.anchor.set(0.5);
-      sprite.scale.x = obj.flipX ? -1 : 1;
 
       const spriteContainer = new P.Container();
       spriteContainer.label = obj.id;
@@ -321,7 +346,6 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       );
       sprite.eventMode = "passive";
       sprite.anchor.set(0.5);
-      sprite.scale.x = obj.flipX ? -1 : 1;
 
       const spriteContainer = new P.Container();
       spriteContainer.label = obj.id;
@@ -331,10 +355,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       spriteContainer.eventMode = "static";
       spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
 
-      const errorIndicator = this.createErrorIndicator(
-        sprite,
-        obj.status === "error",
-      );
+      const errorIndicator = this.createErrorIndicator(sprite);
       errorIndicator.zIndex = 20;
       spriteContainer.addChild(errorIndicator);
 
@@ -378,10 +399,6 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       const sprite = new P.Sprite(tileTex);
       sprite.label = "sprite";
 
-      if (isTileGroupInstance(obj)) {
-        sprite.scale.x = obj.flipX ? -1 : 1;
-      }
-
       sprite.position.set(
         sprite.width / 2 + texAtlasPadding,
         sprite.height / 2 + texAtlasPadding,
@@ -412,23 +429,14 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         sensorCircle.zIndex = 9;
         spriteContainer.addChild(sensorCircle);
 
-        const errorIndicator = this.createErrorIndicator(
-          sprite,
-          obj.status === "error",
-        );
+        const errorIndicator = this.createErrorIndicator(sprite);
         errorIndicator.zIndex = 20;
         spriteContainer.addChild(errorIndicator);
       } else if (isEntranceObj(obj)) {
-        const errorIndicator = this.createErrorIndicator(
-          sprite,
-          obj.status === "error",
-        );
+        const errorIndicator = this.createErrorIndicator(sprite);
         spriteContainer.addChild(errorIndicator);
       } else if (isPickupObj(obj)) {
-        const errorIndicator = this.createErrorIndicator(
-          sprite,
-          obj.status === "error",
-        );
+        const errorIndicator = this.createErrorIndicator(sprite);
         errorIndicator.zIndex = 20;
         spriteContainer.addChild(errorIndicator);
       }
@@ -473,20 +481,19 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
   /**
    * Creates an error indicator container with a red border and warning icon.
    * The container includes both visual elements and can be shown/hidden as a unit.
+   * Initial visibility is always hidden; applyProps sets the correct state after creation.
    *
    * @param sprite The sprite to create the error indicator for
-   * @param visible Whether the error indicator should be initially visible
-   * @returns A container with error border and icon, or null if resources unavailable
+   * @returns A container with error border and icon
    */
   private createErrorIndicator(
     sprite: P.Sprite | P.AnimatedSprite,
-    visible: boolean,
   ): P.Container {
     const state = store.getState();
     const errorContainer = new P.Container();
     errorContainer.label = "errorIndicator";
     errorContainer.eventMode = "passive";
-    errorContainer.visible = visible;
+    errorContainer.visible = false;
 
     // Add error border (red rectangle outline)
     const errorBorder = new P.Graphics();

@@ -218,7 +218,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
 
   return (
     <>
-      <Fieldset legend="Entrance properties" mt="md" p="xs">
+      <Fieldset legend="Entrance properties" p="xs">
         <Stack p={0} gap="xl">
           {singleSelected && nameInput}
           {singleSelected && exitIdInput}

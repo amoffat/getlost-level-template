@@ -68,7 +68,7 @@ import ObjectsPaletteFilters from "../paletteFilters/Objects";
 import { renderNpc } from "../paletteObjects/Npc";
 import { renderObjectAnimation } from "../paletteObjects/ObjectAnimation";
 import { renderTileGroup } from "../paletteObjects/TileGroup";
-import PositionsFieldset from "../PositionsFieldset";
+import MapPositions from "../MapPositions";
 import Tip from "../Tip";
 import ToolPalette, { ToolDescriptor } from "../ToolPalette";
 import AutotilerTool from "../tools/map/AutotilerTool";
@@ -411,8 +411,6 @@ export default function MapEditorTab({
         >
           <Stack h="100%" style={{ overflow: "hidden" }}>
             <LayerList layerConstraints={tool?.layerConstraints} />
-
-            <PositionsFieldset />
           </Stack>
         </Split.Pane>
 
@@ -432,14 +430,23 @@ export default function MapEditorTab({
             {/* Top: Editor canvas */}
             <Split.Pane grow minHeight={200} onResizeEnd={handlePaneResize}>
               <div
-                ref={containerRef}
-                id={constants.mapEditorContainerId}
                 style={{
+                  position: "relative",
                   width: "100%",
                   height: "100%",
-                  overflow: "hidden",
                 }}
-              ></div>
+              >
+                <div
+                  ref={containerRef}
+                  id={constants.mapEditorContainerId}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    overflow: "hidden",
+                  }}
+                ></div>
+                <MapPositions />
+              </div>
             </Split.Pane>
 
             <Split.Resizer />

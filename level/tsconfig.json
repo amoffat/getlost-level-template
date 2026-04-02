@@ -43,7 +43,6 @@
     "moduleResolution": "bundler",
     "skipLibCheck": true,
 
-    "baseUrl": ".",
     "paths": {
       "@gl/*": ["../.internal/@gl/*"]
     }

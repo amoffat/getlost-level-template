@@ -16,3 +16,21 @@ export type RequiredButMaybeUndefined<T> = {
   // : T[K] | undefined: If no, make it the original type OR undefined
   [K in keyof T]-?: T[K] extends undefined ? T[K] : T[K] | undefined;
 };
+
+/**
+ * Fills in any missing properties on `target` using values from `defaults`.
+ * Only keys absent from `target` are filled in; existing values are preserved.
+ * Array and object defaults are cloned to avoid shared references between objects.
+ */
+export function applyDefaultProps<T extends object>(
+  target: T,
+  defaults: T,
+): void {
+  for (const key of Object.keys(defaults) as (keyof T)[]) {
+    if (!Object.prototype.hasOwnProperty.call(target, key)) {
+      const val = defaults[key];
+      (target as Record<keyof T, unknown>)[key] =
+        val !== null && typeof val === "object" ? structuredClone(val) : val;
+    }
+  }
+}

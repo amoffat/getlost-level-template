@@ -1,5 +1,6 @@
 import * as constants from "@/constants";
 import { globals } from "@/globals";
+import { Card } from "@/types/card";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import {
@@ -69,6 +70,7 @@ interface MapEditorState {
     curPos: Vector2 | null;
   };
   bounds: Rect;
+  card: Card | null;
   zoomPan: ZoomPan;
   activeTool: Mode | null;
   toolOptions: {
@@ -111,6 +113,7 @@ export const slice = createSlice({
       snap: true,
       curPos: null,
     },
+    card: null,
     bounds: { x: -2048, y: -2048, width: 4096, height: 4096 },
     zoomPan: { zoom: 1, pan: { x: 0, y: 0 } },
     place: {
@@ -446,8 +449,22 @@ export const slice = createSlice({
         objectsAdapter.setAll(state.objects, action.payload);
       },
     },
+
+    setCard: {
+      prepare: (payload: Card) => ({
+        meta: { reconcilePrefix, reconcileType: "misc" as const },
+        payload,
+      }),
+      reducer: (state, action: PayloadAction<Card>) => {
+        state.card = action.payload;
+      },
+    },
   },
   selectors: {
+    selectCard: createMapSelector(
+      [(state) => state.card],
+      (card): Card | null => card,
+    ),
     selectMode: createMapSelector(
       [(state) => state.modeStack],
       (modeStack): Mode => modeStack.at(-1) ?? "select",

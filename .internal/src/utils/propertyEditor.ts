@@ -13,17 +13,19 @@ import { resolveTemplateProps } from "./map";
  * Collects property values from a list of instance objects and their templates.
  * Returns a mapping of property names to their values across all objects.
  *
+ * The return type is narrowed to only the keys in `propertyNames`, so accessing
+ * a property that was not collected is a compile-time error.
+ *
  * @param objs - Array of instance objects
  * @param propertyNames - Array of property names to collect
  * @returns Object mapping property names to arrays of PropertyValueInfo
  */
 export function collectPropertyValues<
   TInstance extends MapObj,
-  TProps extends ExtractProps<TInstance> = ExtractProps<TInstance>,
->(objs: TInstance[], propertyNames: (keyof TProps)[]) {
-  const collected = {} as {
-    [P in keyof TProps]: PropertyValueInfo<TProps[P]>[];
-  };
+  K extends keyof ExtractProps<TInstance>,
+>(objs: TInstance[], propertyNames: K[]) {
+  type TProps = ExtractProps<TInstance>;
+  const collected = {} as { [P in K]: PropertyValueInfo<TProps[P]>[] };
 
   // Initialize arrays for each property
   for (const propName of propertyNames) {

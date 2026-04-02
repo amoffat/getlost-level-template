@@ -11,18 +11,12 @@ import {
   updateObjectProperties,
 } from "@/utils/propertyEditor";
 import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
-import {
-  Button,
-  Fieldset,
-  Slider,
-  Stack,
-  Switch,
-  TextInput,
-} from "@mantine/core";
+import { Button, Fieldset, Slider, Stack, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { memo, ReactElement, useCallback, useMemo } from "react";
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
+import SwitchInput from "./inputs/SwitchInput";
 import { requiredUniqueName } from "./validators/name";
 
 // Properties that collectPropertyValues needs to access
@@ -195,32 +189,13 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
   );
 
   const forceInput = (
-    <PropertyValue<boolean | undefined>
+    <SwitchInput
       label="Force exit?"
       description="A forced exit does not give the player a choice to stay."
-      noTemplate
       values={toCollect.force}
-      defaultValue={false}
+      onValueChange={(scope, value) => updateProps(scope, { force: value })}
+      noTemplate
       debounceMs={100}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: boolean | undefined,
-      ): void => {
-        updateProps(scope, { force: value });
-      }}
-      renderInput={(
-        key: string,
-        value: boolean | undefined,
-        onChange: (value: boolean) => void,
-      ): ReactElement => {
-        return (
-          <Switch
-            key={key}
-            defaultChecked={value ?? false}
-            onChange={(e) => onChange(e.currentTarget.checked)}
-          />
-        );
-      }}
     />
   );
 
@@ -260,7 +235,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
   return (
     <>
-      <Fieldset legend="Exit properties" mt="md" p="xs">
+      <Fieldset legend="Exit properties" p="xs">
         <Stack p={0} gap="xl">
           {singleSelected && nameInput}
           {forceInput}

@@ -9,6 +9,7 @@ import {
   SavePathGraphRequest,
 } from "@/iframe/request";
 import { log } from "@/log";
+import { selectors as mapEditorSelectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
 import { Env } from "@/types/env";
 import { encodeForUrl } from "@/utils/url";
@@ -35,6 +36,7 @@ import {
   IconRocket,
 } from "@tabler/icons-react";
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import CardModal from "./CardModal";
 import AdvancedSection from "./common/AdvancedSection";
 import LogPane from "./LogPane";
 import { MarkdownModal } from "./MarkdownModal";
@@ -53,6 +55,7 @@ export default function PreviewTab({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const frameContainerRef = useRef<HTMLDivElement>(null);
   const { comms, setComms } = useCommsContext();
+  const card = useAppSelector(mapEditorSelectors.selectCard);
   const [reloadCount, setReloadCount] = useState(0);
   const activeTab = useAppSelector((state) => state.ui.activeTab);
   const [gameEnv, setGameEnv] = useLocalStorage<Env>({
@@ -93,6 +96,8 @@ export default function PreviewTab({
   ] = useDisclosure(false);
   const [storyGuidelinesContent, setStoryGuidelinesContent] =
     useState<Promise<string>>();
+  const [cardModalOpened, { open: openCardModal, close: closeCardModal }] =
+    useDisclosure(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
 
@@ -489,7 +494,7 @@ export default function PreviewTab({
         >
           <Stack h="100%" style={{ overflow: "hidden" }}>
             <Tip tips={leftTips} />
-            <Fieldset legend="Engine">
+            <Fieldset legend="Engine" p="xs">
               <Stack p={0}>
                 <Select
                   label="Environment"
@@ -546,7 +551,7 @@ export default function PreviewTab({
               </Stack>
             </Fieldset>
 
-            <Fieldset legend="Device emulation">
+            <Fieldset legend="Device emulation" p="xs">
               <Select
                 defaultValue={deviceType}
                 onChange={(value) =>
@@ -579,7 +584,7 @@ export default function PreviewTab({
                 />
               </Fieldset> */}
 
-            <Fieldset legend="Publish">
+            <Fieldset legend="Publish" p="xs">
               <Stack p={0} gap="sm">
                 <Checkbox
                   {...publishForm.getInputProps("licenseAgreed", {
@@ -612,6 +617,25 @@ export default function PreviewTab({
                     type: "checkbox",
                   })}
                   label="I have disclosed all third-party assets in this level"
+                />
+                <Checkbox
+                  checked={card !== null}
+                  disabled={card === null}
+                  onChange={() => {}}
+                  label={
+                    <>
+                      I have set the{" "}
+                      <Anchor
+                        inherit
+                        onClick={(e) => {
+                          e.preventDefault();
+                          openCardModal();
+                        }}
+                      >
+                        level credits
+                      </Anchor>
+                    </>
+                  }
                 />
 
                 <Textarea
@@ -801,6 +825,7 @@ export default function PreviewTab({
           {storyGuidelinesContent}
         </MarkdownModal>
       )}
+      <CardModal opened={cardModalOpened} onClose={closeCardModal} />
     </>
   );
 }

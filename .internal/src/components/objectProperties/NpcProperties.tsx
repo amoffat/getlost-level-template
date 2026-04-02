@@ -23,6 +23,7 @@ import { IconCopy } from "@tabler/icons-react";
 import { memo, ReactElement, useCallback, useMemo } from "react";
 import AdvancedSection from "../common/AdvancedSection";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
+import GroundOffsetInput from "./inputs/GroundOffsetInput";
 import { requiredUniqueName } from "./validators/name";
 
 // Properties that collectPropertyValues needs to access
@@ -177,35 +178,13 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
   );
 
   const groundOffsetInput = (
-    <PropertyValue
-      label="Ground offset"
+    <GroundOffsetInput
       description="Vertical offset of the NPC from the ground."
       tooltip="The ground offset adjusts the NPC's vertical position relative to the ground. Positive values will raise the NPC above the ground, while negative values will sink it below. This can be useful for NPCs that need to appear to be floating or partially submerged. Normally, this should be set to 0 for most NPCs."
       values={toCollect.groundOffset}
-      defaultValue={0}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: number | undefined,
-      ): void => {
-        updateProps(scope, { groundOffset: value });
-      }}
-      debounceMs={100}
-      renderInput={(
-        key: string,
-        value: number | undefined,
-        onChange: (value: number) => void,
-      ): ReactElement => {
-        return (
-          <Slider
-            key={key}
-            defaultValue={value ?? 0}
-            onChange={onChange}
-            min={-16}
-            max={16}
-            step={1}
-          />
-        );
-      }}
+      onValueChange={(scope, value) =>
+        updateProps(scope, { groundOffset: value })
+      }
     />
   );
 
@@ -235,7 +214,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
   }
 
   return (
-    <Fieldset legend="NPC properties" mt="md" p="xs">
+    <Fieldset legend="NPC properties" p="xs">
       <Stack p={0} gap="xl">
         {nameInput}
         {walkSpeedInput}

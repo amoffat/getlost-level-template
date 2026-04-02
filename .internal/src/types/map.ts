@@ -1,5 +1,6 @@
 import { HasId, RequiredButMaybeUndefined } from "@/utils/misc";
 import { EntityState } from "@reduxjs/toolkit";
+import { Card } from "./card";
 import type { MapLayerName } from "./layer";
 import {
   AnimationProps,
@@ -15,6 +16,7 @@ import { Rect } from "./rect";
 export interface SavedMap {
   tileWidth: number;
   tileHeight: number;
+  card: Card | null;
   bounds: Rect;
   objects: EntityState<MapObj, string>;
   templates: {

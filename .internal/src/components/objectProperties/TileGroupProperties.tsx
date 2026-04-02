@@ -10,22 +10,19 @@ import {
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
 import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
-import {
-  ColorInput,
-  Fieldset,
-  Select,
-  Slider,
-  Stack,
-  Switch,
-  TextInput,
-} from "@mantine/core";
+import { Fieldset, Select, Slider, Stack, TextInput } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { memo, ReactElement, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
+import FlipXInput from "./inputs/FlipXInput";
+import GroundOffsetInput from "./inputs/GroundOffsetInput";
+import HiddenInput from "./inputs/HiddenInput";
+import TintInput from "./inputs/TintInput";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
   "name",
+  "flipX",
   "tint",
   "hidden",
   "walkSound",
@@ -193,102 +190,45 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
     />
   );
 
-  const tintInput = (
-    <PropertyValue
-      label="Tint"
-      description="A color tint to apply to this tile"
-      values={toCollect.tint}
-      onValueChange={(scope, value: string | null | undefined) => {
-        updateProps(scope, { tint: value });
-      }}
-      defaultValue={null}
-      debounceMs={100}
-      renderInput={(
-        key: string,
-        value: string | null | undefined,
-        onChange: (value: string) => void,
-      ): ReactElement => {
-        const hexColor = value ? `#${value}` : "";
+  const flipXInput = (
+    <FlipXInput
+      values={toCollect.flipX}
+      onValueChange={(scope, value) => updateProps(scope, { flipX: value })}
+    />
+  );
 
-        return (
-          <ColorInput
-            key={key}
-            format="hex"
-            defaultValue={hexColor}
-            onChange={(hex) => {
-              // Remove the hash symbol before storing
-              onChange(hex.replace("#", ""));
-            }}
-          />
-        );
-      }}
+  const tintInput = (
+    <TintInput
+      description="A color tint to apply to this tile."
+      values={toCollect.tint}
+      onValueChange={(scope, value) => updateProps(scope, { tint: value })}
     />
   );
 
   const hiddenInput = (
-    <PropertyValue
-      label="Hidden"
+    <HiddenInput
       description="Whether this object starts off hidden on the map."
       values={toCollect.hidden}
-      defaultValue={false}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: boolean | undefined,
-      ): void => {
-        updateProps(scope, { hidden: value });
-      }}
-      renderInput={(
-        key: string,
-        value: boolean | undefined,
-        onChange: (value: boolean) => void,
-      ): ReactElement => {
-        return (
-          <Switch
-            key={key}
-            defaultChecked={value ?? false}
-            onChange={(e) => onChange(e.currentTarget.checked)}
-          />
-        );
-      }}
+      onValueChange={(scope, value) => updateProps(scope, { hidden: value })}
     />
   );
 
   const groundOffsetInput = (
-    <PropertyValue
-      label="Ground offset"
+    <GroundOffsetInput
       description="Vertical offset of the object from the ground."
       values={toCollect.groundOffset}
-      defaultValue={0}
-      debounceMs={100}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: number | undefined,
-      ): void => {
-        updateProps(scope, { groundOffset: value });
-      }}
-      renderInput={(
-        key: string,
-        value: number | undefined,
-        onChange: (value: number) => void,
-      ): ReactElement => {
-        return (
-          <Slider
-            key={key}
-            defaultValue={value ?? 0}
-            onChange={onChange}
-            min={0}
-            max={16}
-            step={1}
-          />
-        );
-      }}
+      onValueChange={(scope, value) =>
+        updateProps(scope, { groundOffset: value })
+      }
+      min={0}
     />
   );
 
   return (
-    <Fieldset legend="Object properties" mt="md" p="xs">
+    <Fieldset legend="Object properties" p="xs">
       <Stack p={0} gap="xl">
         {nameInput}
+        {flipXInput}
         {tintInput}
         {hiddenInput}
         {groundLayer && walkSoundInput}

@@ -15,11 +15,11 @@ import {
   Select,
   Slider,
   Stack,
-  Switch,
   TextInput,
 } from "@mantine/core";
 import { memo, ReactElement, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
+import SwitchInput from "./inputs/SwitchInput";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
@@ -166,32 +166,15 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
   );
 
   const offDuringDayInput = (
-    <PropertyValue
+    <SwitchInput
       label="Off during day"
       description="Whether the light is off during the day"
-      noTemplate
       values={toCollect.offDuringDay}
-      defaultValue={false}
+      onValueChange={(scope, value) =>
+        updateProps(scope, { offDuringDay: value })
+      }
+      noTemplate
       debounceMs={100}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: boolean | undefined,
-      ): void => {
-        updateProps(scope, { offDuringDay: value });
-      }}
-      renderInput={(
-        key: string,
-        value: boolean | undefined,
-        onChange: (value: boolean) => void,
-      ): ReactElement => {
-        return (
-          <Switch
-            key={key}
-            defaultChecked={value ?? false}
-            onChange={(e) => onChange(e.currentTarget.checked)}
-          />
-        );
-      }}
     />
   );
 
@@ -232,7 +215,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
   );
 
   return (
-    <Fieldset legend="Light properties" mt="md" p="xs">
+    <Fieldset legend="Light properties" p="xs">
       <Stack p={0} gap="xl">
         {nameInput}
         {colorInput}

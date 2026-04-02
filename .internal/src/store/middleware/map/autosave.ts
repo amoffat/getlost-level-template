@@ -24,9 +24,9 @@ saveRequests$
         catchError((e) => {
           log.error({ e }, "Map autosave failed");
           return EMPTY;
-        })
-      )
-    )
+        }),
+      ),
+    ),
   )
   .subscribe();
 
@@ -48,6 +48,7 @@ startAppListening({
       objects: ms.objects,
       templates: ms.templates,
       bounds: ms.bounds,
+      card: ms.card,
     } satisfies SavedMap;
 
     saveRequests$.next({ map });

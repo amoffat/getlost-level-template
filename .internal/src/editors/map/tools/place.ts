@@ -319,7 +319,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           tilesetId: obj.tilesetId,
           z,
           layer,
-          flipX: place.flipX,
+          flipX: place.flipX ? true : undefined,
           width: obj.pos.width,
           height: obj.pos.height,
           tint: undefined,
@@ -335,7 +335,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
 
       inst = {
         id,
-        names: undefined,
+        name: undefined,
         tags: undefined,
         type: MapObjType.AnimationInstance,
         tsObjId: obj.id,
@@ -344,12 +344,13 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
         y: pos.y,
         z,
         layer,
-        flipX: place.flipX,
+        flipX: place.flipX ? true : undefined,
         width,
         height,
         tint: undefined,
         hidden: undefined,
         loop: undefined,
+        autoplay: undefined,
         groundOffset: undefined,
       } satisfies AnimationInstance;
     } else if (isNpcTemplate(obj)) {
@@ -364,7 +365,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
         y: pos.y,
         z,
         layer,
-        flipX: place.flipX,
+        flipX: place.flipX ? true : undefined,
         width,
         height,
         tint: undefined,

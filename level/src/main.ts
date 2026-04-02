@@ -5,11 +5,6 @@ import { addTiltShift } from "@gl/api/filters";
 import { setSunTime } from "@gl/api/time";
 import { Vec2 } from "@gl/utils/vec2";
 
-export { card } from "./card";
-export { entrances, exits } from "./gateways";
-export { markers } from "./markers";
-export { pickups } from "./pickups";
-
 let tiltShift!: number;
 
 /**

@@ -13,10 +13,11 @@ import {
   updateObjectProperties,
 } from "@/utils/propertyEditor";
 import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
-import { Fieldset, Stack, Switch, TagsInput, TextInput } from "@mantine/core";
+import { Fieldset, Stack, TagsInput, TextInput } from "@mantine/core";
 import { memo, ReactElement, useCallback, useMemo } from "react";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import TilesetGroup from "../TilesetGroup";
+import HiddenInput from "./inputs/HiddenInput";
 import { requiredUniqueName } from "./validators/name";
 
 // Properties that collectPropertyValues needs to access
@@ -209,32 +210,12 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
   );
 
   const hiddenInput = (
-    <PropertyValue
-      label="Hidden"
+    <HiddenInput
       description="Whether the pickup starts off hidden on the map."
       values={toCollect.hidden}
-      defaultValue={false}
+      onValueChange={(scope, value) => updateProps(scope, { hidden: value })}
       noTemplate
       debounceMs={100}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: boolean | undefined,
-      ): void => {
-        updateProps(scope, { hidden: value });
-      }}
-      renderInput={(
-        key: string,
-        value: boolean | undefined,
-        onChange: (value: boolean) => void,
-      ): ReactElement => {
-        return (
-          <Switch
-            key={key}
-            defaultChecked={value ?? false}
-            onChange={(e) => onChange(e.currentTarget.checked)}
-          />
-        );
-      }}
     />
   );
 

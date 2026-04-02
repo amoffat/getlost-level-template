@@ -1,6 +1,13 @@
 import { log } from "@/log";
 import { SavedMap } from "@/types/map";
+import {
+  ENTRANCE_PROPS_DEFAULTS,
+  EXIT_PROPS_DEFAULTS,
+  LIGHT_PROPS_DEFAULTS,
+  PICKUP_PROPS_DEFAULTS,
+} from "@/types/properties";
 import { applyMigrations } from "@/utils/migrations";
+import { applyDefaultProps } from "@/utils/misc";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
 import { BaseMapDoc, LatestMapDoc, latestVersion } from "./schema";
@@ -22,6 +29,16 @@ export async function loadMap(): Promise<SavedMap | undefined> {
   );
 
   const decoded = baseDecoded as LatestMapDoc;
+
+  // Fill in any properties absent from persisted map templates using their
+  // defaults. This replaces the need for migrations when adding new properties.
+  if (decoded.map?.templates) {
+    const t = decoded.map.templates;
+    applyDefaultProps(t.lights, LIGHT_PROPS_DEFAULTS);
+    applyDefaultProps(t.entryGateways, ENTRANCE_PROPS_DEFAULTS);
+    applyDefaultProps(t.exitGateways, EXIT_PROPS_DEFAULTS);
+    applyDefaultProps(t.pickups, PICKUP_PROPS_DEFAULTS);
+  }
 
   if (migrated) {
     log.info(`Map migrated to version ${latestVersion}, saving...`);

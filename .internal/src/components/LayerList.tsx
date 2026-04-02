@@ -29,6 +29,9 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
   const layerState = useAppSelector(
     (state: RootState) => state.mapEditor.layers,
   );
+  const activeLayer = useAppSelector(
+    (state: RootState) => state.mapEditor.layers.active,
+  );
   const dispatch = useAppDispatch();
 
   const changeActiveLayer = useCallback(
@@ -97,9 +100,11 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
                       <Text className={classes.label}>
                         {mapLayerToName(layer.id)}
                       </Text>
-                      <Text className={classes.description}>
-                        {layer.description}
-                      </Text>
+                      {activeLayer === layer.id && (
+                        <Text className={classes.description}>
+                          {layer.description}
+                        </Text>
+                      )}
                     </div>
                   </Group>
                 </Radio.Card>

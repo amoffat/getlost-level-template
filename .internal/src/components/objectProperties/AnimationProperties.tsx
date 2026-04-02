@@ -9,25 +9,28 @@ import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
 import {
   ActionIcon,
   Box,
-  ColorInput,
   Fieldset,
   Group,
-  Slider,
   Stack,
-  Switch,
   TextInput,
   Tooltip,
 } from "@mantine/core";
 import { IconCopy } from "@tabler/icons-react";
-import { memo, ReactElement, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import AdvancedSection from "../common/AdvancedSection";
-import PropertyValue, { PropertyValueScope } from "../PropertyValue";
+import { PropertyValueScope } from "../PropertyValue";
+import FlipXInput from "./inputs/FlipXInput";
+import GroundOffsetInput from "./inputs/GroundOffsetInput";
+import HiddenInput from "./inputs/HiddenInput";
+import SwitchInput from "./inputs/SwitchInput";
+import TintInput from "./inputs/TintInput";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
   "tags",
   "flipX",
   "tint",
+  "autoplay",
   "loop",
   "hidden",
   "groundOffset",
@@ -37,7 +40,10 @@ const COLLECTED_PROPS = [
 const TEMPLATE_PROPS = ["id", "tsObjId", "tilesetId"] as const;
 
 // All properties relevant for memo comparison
-const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
+const RELEVANT_PROPS: readonly (keyof AnimationInstance)[] = [
+  ...TEMPLATE_PROPS,
+  ...COLLECTED_PROPS,
+];
 
 function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
   // Create a key based only on relevant properties
@@ -61,149 +67,53 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
   );
 
   const flipXInput = (
-    <PropertyValue
-      label="Flip X"
-      description="Whether to flip the animation horizontally."
+    <FlipXInput
       values={toCollect.flipX}
-      defaultValue={false}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: boolean | undefined,
-      ): void => {
-        updateProps(scope, { flipX: value });
-      }}
-      renderInput={(
-        key: string,
-        value: boolean | undefined,
-        onChange: (value: boolean) => void,
-      ): ReactElement => {
-        return (
-          <Switch
-            key={key}
-            defaultChecked={value ?? false}
-            onChange={(e) => onChange(e.currentTarget.checked)}
-          />
-        );
-      }}
+      onValueChange={(scope, value) => updateProps(scope, { flipX: value })}
     />
   );
 
   const tintInput = (
-    <PropertyValue
-      label="Tint"
+    <TintInput
       description="A color tint to apply to this animation."
       values={toCollect.tint}
-      onValueChange={(scope, value: string | null | undefined) => {
-        updateProps(scope, { tint: value });
-      }}
-      defaultValue={null}
-      debounceMs={100}
-      renderInput={(
-        key: string,
-        value: string | null | undefined,
-        onChange: (value: string) => void,
-      ): ReactElement => {
-        const hexColor = value ? `#${value}` : "";
+      onValueChange={(scope, value) => updateProps(scope, { tint: value })}
+    />
+  );
 
-        return (
-          <ColorInput
-            key={key}
-            format="hex"
-            defaultValue={hexColor}
-            onChange={(hex) => {
-              onChange(hex.replace("#", ""));
-            }}
-          />
-        );
-      }}
+  const autoplayInput = (
+    <SwitchInput
+      label="Autoplay"
+      description="Start the animation immediately"
+      values={toCollect.autoplay}
+      onValueChange={(scope, value) => updateProps(scope, { autoplay: value })}
     />
   );
 
   const loopInput = (
-    <PropertyValue
+    <SwitchInput
       label="Loop"
       description="Whether this animation loops continuously."
       values={toCollect.loop}
-      defaultValue={false}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: boolean | undefined,
-      ): void => {
-        updateProps(scope, { loop: value });
-      }}
-      renderInput={(
-        key: string,
-        value: boolean | undefined,
-        onChange: (value: boolean) => void,
-      ): ReactElement => {
-        return (
-          <Switch
-            key={key}
-            defaultChecked={value ?? false}
-            onChange={(e) => onChange(e.currentTarget.checked)}
-          />
-        );
-      }}
+      onValueChange={(scope, value) => updateProps(scope, { loop: value })}
     />
   );
 
   const hiddenInput = (
-    <PropertyValue
-      label="Hidden"
+    <HiddenInput
       description="Whether this animation starts off hidden on the map."
       values={toCollect.hidden}
-      defaultValue={false}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: boolean | undefined,
-      ): void => {
-        updateProps(scope, { hidden: value });
-      }}
-      renderInput={(
-        key: string,
-        value: boolean | undefined,
-        onChange: (value: boolean) => void,
-      ): ReactElement => {
-        return (
-          <Switch
-            key={key}
-            defaultChecked={value ?? false}
-            onChange={(e) => onChange(e.currentTarget.checked)}
-          />
-        );
-      }}
+      onValueChange={(scope, value) => updateProps(scope, { hidden: value })}
     />
   );
 
   const groundOffsetInput = (
-    <PropertyValue
-      label="Ground offset"
+    <GroundOffsetInput
       description="Vertical offset of the animation from the ground."
       values={toCollect.groundOffset}
-      defaultValue={0}
-      debounceMs={100}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: number | undefined,
-      ): void => {
-        updateProps(scope, { groundOffset: value });
-      }}
-      renderInput={(
-        key: string,
-        value: number | undefined,
-        onChange: (value: number) => void,
-      ): ReactElement => {
-        return (
-          <Slider
-            key={key}
-            defaultValue={value ?? 0}
-            onChange={onChange}
-            min={-16}
-            max={16}
-            step={1}
-          />
-        );
-      }}
+      onValueChange={(scope, value) =>
+        updateProps(scope, { groundOffset: value })
+      }
     />
   );
 
@@ -233,10 +143,11 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
   }
 
   return (
-    <Fieldset legend="Animation properties" mt="md" p="xs">
+    <Fieldset legend="Animation properties" p="xs">
       <Stack p={0} gap="xl">
         {flipXInput}
         {tintInput}
+        {autoplayInput}
         {loopInput}
         {hiddenInput}
         {groundOffsetInput}

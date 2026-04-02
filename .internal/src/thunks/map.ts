@@ -51,6 +51,9 @@ export const loadMapThunk = createAsyncThunk(
       }
       dispatch(mapActions.setAll(objs));
       dispatch(mapActions.setBounds(persisted.bounds));
+      if (persisted.card) {
+        dispatch(mapActions.setCard(persisted.card));
+      }
     }
     dispatch(uiActions.popLoadingMessage());
   },

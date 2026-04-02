@@ -1,10 +1,11 @@
 import { globals as gPixi } from "@/editors/map/globals";
 import { useAppSelector } from "@/hooks/redux";
 import { selectors } from "@/slices/mapEditor";
-import { Fieldset, Stack, Text } from "@mantine/core";
+import { Paper, Text } from "@mantine/core";
 import { useEffect, useRef } from "react";
+import classes from "./styles/MapPositions.module.css";
 
-export default function PositionsFieldset() {
+export default function MapPositions() {
   const cursorPosRef = useRef<HTMLSpanElement>(null);
   const cursorPosRaf = useRef<number | null>(null);
 
@@ -43,17 +44,15 @@ export default function PositionsFieldset() {
   }, []);
 
   return (
-    <Fieldset legend="Positions">
-      <Stack p={0}>
-        {objPosX !== null && objPosY !== null && (
-          <Text size="sm" variant="text">
-            Object Pos: {objPosX}, {objPosY}
-          </Text>
-        )}
-        <Text size="sm" variant="text">
-          Cursor Pos: <span ref={cursorPosRef}></span>
+    <Paper className={classes.root} p="xs" withBorder={false} radius={0}>
+      {objPosX !== null && objPosY !== null && (
+        <Text size="xs">
+          Object Pos: {objPosX}, {objPosY}
         </Text>
-      </Stack>
-    </Fieldset>
+      )}
+      <Text size="xs">
+        Cursor Pos: <span ref={cursorPosRef} />
+      </Text>
+    </Paper>
   );
 }

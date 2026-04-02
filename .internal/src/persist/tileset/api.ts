@@ -2,9 +2,17 @@ import { tilesetSourceHeader } from "@/constants/headers";
 import { log } from "@/log";
 import { LoadTilesetsResponse } from "@/types/api/tileset";
 import { isTileGroupTemplate } from "@/types/tilegroup";
+import { isAnimationTemplate } from "@/types/animation";
+import { isNpcTemplate } from "@/types/npc";
+import {
+  ANIMATION_PROPS_DEFAULTS,
+  NPC_PROPS_DEFAULTS,
+  TILE_GROUP_PROPS_DEFAULTS,
+} from "@/types/properties";
 import { SavedTileset, Tileset } from "@/types/tileset";
 import { collisionMaskStore } from "@/utils/maskStore";
 import { applyMigrations } from "@/utils/migrations";
+import { applyDefaultProps } from "@/utils/misc";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
 import { BaseTilesetDoc, LatestTilesetDoc, latestVersion } from "./schema";
@@ -55,6 +63,21 @@ export async function loadTileset(id: string): Promise<Tileset> {
 
   const decoded = baseDecoded as LatestTilesetDoc;
   const ts = decoded.tileset as Tileset;
+
+  // Fill in any properties absent from persisted template objects using their
+  // defaults. This replaces the need for migrations when adding new properties.
+  if (ts.tiles?.entities) {
+    for (const tile of Object.values(ts.tiles.entities)) {
+      if (!tile) continue;
+      if (isTileGroupTemplate(tile)) {
+        applyDefaultProps(tile, TILE_GROUP_PROPS_DEFAULTS);
+      } else if (isAnimationTemplate(tile)) {
+        applyDefaultProps(tile, ANIMATION_PROPS_DEFAULTS);
+      } else if (isNpcTemplate(tile)) {
+        applyDefaultProps(tile, NPC_PROPS_DEFAULTS);
+      }
+    }
+  }
 
   // Hydrate the module-level mask store with this tileset's mask data
   if (decoded.maskData) {

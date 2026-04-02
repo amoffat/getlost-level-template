@@ -1,0 +1,9 @@
+.root {
+  position: absolute;
+  bottom: var(--mantine-spacing-sm);
+  right: var(--mantine-spacing-sm);
+  pointer-events: none;
+  z-index: 10;
+  width: 11rem;
+  font-variant-numeric: tabular-nums;
+}
