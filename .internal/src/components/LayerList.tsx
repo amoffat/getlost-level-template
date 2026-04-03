@@ -53,6 +53,11 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
         description: "Ground objects are always rendered beneath the character",
       },
       {
+        id: MapLayerName.Background,
+        description:
+          "Skies and other parallax background images rendered behind everything else",
+      },
+      {
         id: MapLayerName.Sensors,
         description: "Areas that trigger events or define zones",
       },

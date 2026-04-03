@@ -3,4 +3,5 @@ export enum MapLayerName {
   Exterior,
   Sensors,
   Special,
+  Background,
 }

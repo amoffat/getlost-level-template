@@ -10,6 +10,8 @@ export function mapLayerToName(layer: MapLayerName): string {
       return "Sensors";
     case MapLayerName.Special:
       return "Special";
+    case MapLayerName.Background:
+      return "Background";
     default:
       return "Unknown";
   }
