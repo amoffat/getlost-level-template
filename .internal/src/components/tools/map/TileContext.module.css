@@ -1,6 +1,7 @@
 .emptyCell {
   aspect-ratio: 1;
   background-color: var(--mantine-color-dark-6);
+  position: relative;
 }
 
 .cell {

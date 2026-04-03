@@ -49,25 +49,24 @@ export default function TileContext({ placeObj }: TileContextProps) {
   );
   const [hovered, setHovered] = useState(false);
 
-  const contextTiles = useMemo(() => {
+  const gridData = useMemo(() => {
     if (!tileset) return null;
-
-    // Composite tilesets are excluded
     if (tileset.composite) return null;
-
     const gs = tileset.gridSize;
-
-    // Tile must be grid-sized
     if (placeObj.pos.width !== gs || placeObj.pos.height !== gs) return null;
+    return {
+      gs,
+      totalCols: Math.floor(tileset.width / gs),
+      totalRows: Math.floor(tileset.height / gs),
+      col: Math.round(placeObj.pos.x / gs),
+      row: Math.round(placeObj.pos.y / gs),
+      gridIndex: buildGridIndex(tileset),
+    };
+  }, [tileset, placeObj]);
 
-    const totalCols = Math.floor(tileset.width / gs);
-    const totalRows = Math.floor(tileset.height / gs);
-
-    const col = Math.round(placeObj.pos.x / gs);
-    const row = Math.round(placeObj.pos.y / gs);
-
-    const gridIndex = buildGridIndex(tileset);
-
+  const contextTiles = useMemo(() => {
+    if (!gridData) return null;
+    const { totalCols, totalRows, col, row, gridIndex } = gridData;
     const grid: (TileGroupTemplate | null)[][] = [];
     for (let dy = -DEPTH; dy <= DEPTH; dy++) {
       const rowArr: (TileGroupTemplate | null)[] = [];
@@ -83,16 +82,22 @@ export default function TileContext({ placeObj }: TileContextProps) {
       grid.push(rowArr);
     }
     return grid;
-  }, [tileset, placeObj]);
+  }, [gridData]);
 
-  // Move selection in a cardinal direction via the context grid
+  // Move selection in a cardinal direction, skipping over empty cells.
   const moveSelection = useEffectEvent((dx: number, dy: number) => {
-    if (!contextTiles) return;
-    const targetRow = DEPTH + dy;
-    const targetCol = DEPTH + dx;
-    const tile = contextTiles[targetRow]?.[targetCol];
-    if (tile) {
-      dispatch(mapEdActions.setPlace(tile));
+    if (!gridData) return;
+    const { totalCols, totalRows, col, row, gridIndex } = gridData;
+    let tc = col + dx;
+    let tr = row + dy;
+    while (tc >= 0 && tc < totalCols && tr >= 0 && tr < totalRows) {
+      const tile = gridIndex.get(`${tc},${tr}`);
+      if (tile) {
+        dispatch(mapEdActions.setPlace(tile));
+        return;
+      }
+      tc += dx;
+      tr += dy;
     }
   });
 
@@ -117,19 +122,27 @@ export default function TileContext({ placeObj }: TileContextProps) {
     return cleanup;
   }, []);
 
-  // Build a set of "row,col" keys for cells that should show a WASD hint
+  // Build a set of "row,col" keys for cells that should show a WASD hint.
+  // A hint is shown whenever any tile exists in that direction, even if the
+  // immediate neighbor cell is empty.
   const hintMap = useMemo(() => {
     const map = new Map<string, string>(); // "row,col" -> label
-    if (!contextTiles) return map;
+    if (!gridData) return map;
+    const { totalCols, totalRows, col, row, gridIndex } = gridData;
     for (const { dx, dy, label } of DIRECTION_MAP) {
-      const r = DEPTH + dy;
-      const c = DEPTH + dx;
-      if (contextTiles[r]?.[c]) {
-        map.set(`${r},${c}`, label);
+      let tc = col + dx;
+      let tr = row + dy;
+      while (tc >= 0 && tc < totalCols && tr >= 0 && tr < totalRows) {
+        if (gridIndex.has(`${tc},${tr}`)) {
+          map.set(`${DEPTH + dy},${DEPTH + dx}`, label);
+          break;
+        }
+        tc += dx;
+        tr += dy;
       }
     }
     return map;
-  }, [contextTiles]);
+  }, [gridData]);
 
   if (!contextTiles) return null;
 
@@ -153,7 +166,13 @@ export default function TileContext({ placeObj }: TileContextProps) {
           const hintLabel = hintMap.get(`${rowIdx},${colIdx}`);
           if (!tile) {
             return (
-              <div key={`${rowIdx}-${colIdx}`} className={classes.emptyCell} />
+              <div key={`${rowIdx}-${colIdx}`} className={classes.emptyCell}>
+                {hovered && hintLabel && (
+                  <Kbd className={classes.keyHint} size="md">
+                    {hintLabel}
+                  </Kbd>
+                )}
+              </div>
             );
           }
           return (
