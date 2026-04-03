@@ -169,6 +169,12 @@ router.delete("/:id.cbor.gz", (req, res) => {
       if (fs.existsSync(paths.png)) fs.unlinkSync(paths.png);
     }
 
+    const rPaths = pathForId({ id, restricted: true, checkSystem: false });
+    if (rPaths) {
+      if (fs.existsSync(rPaths.cbor)) fs.unlinkSync(rPaths.cbor);
+      if (fs.existsSync(rPaths.png)) fs.unlinkSync(rPaths.png);
+    }
+
     res.sendStatus(204);
   } catch (error) {
     console.error("Error deleting tileset:", error);
