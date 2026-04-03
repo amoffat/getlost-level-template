@@ -418,6 +418,11 @@ export const slice = createSlice({
           removeFromTemplateIndex(globals.templateIndex, obj);
         }
         objectsAdapter.removeOne(state.objects, action.payload);
+        // Keep selectedIds in sync — a stale ID would cause selectedObjs to
+        // return undefined for the missing entity.
+        state.selectedIds = state.selectedIds.filter(
+          (id) => id !== action.payload,
+        );
       },
     },
     removeMany: {
@@ -433,6 +438,12 @@ export const slice = createSlice({
           }
         }
         objectsAdapter.removeMany(state.objects, action.payload);
+        // Keep selectedIds in sync — a stale ID would cause selectedObjs to
+        // return undefined for the missing entity.
+        const removedSet = new Set(action.payload);
+        state.selectedIds = state.selectedIds.filter(
+          (id) => !removedSet.has(id),
+        );
       },
     },
     setAll: {
@@ -476,7 +487,10 @@ export const slice = createSlice({
     selectedObjs: createMapSelector(
       [(state) => state.selectedIds, (state) => state.objects.entities],
       (selectedIds, entities): MapObj[] =>
-        selectedIds.map((id) => entities[id]),
+        selectedIds
+          .map((id) => entities[id])
+          // Guard against IDs that outlive their entity (e.g. removed mid-drag).
+          .filter((obj): obj is MapObj => obj !== undefined),
     ),
     selectNpcs: createMapSelector(
       [(state) => state.objects.entities],

@@ -7,7 +7,12 @@ import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { isMapObjFromTileset, MapObj, TileGroupInstance } from "@/types/map";
+import {
+  isMapObjFromTileset,
+  isTileGroupInstance,
+  MapObj,
+  TileGroupInstance,
+} from "@/types/map";
 import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
@@ -25,9 +30,33 @@ export const setActiveLayerThunk = createAsyncThunk(
     const state = getState() as RootState;
     if (state.mapEditor.layers.active === layer) return;
 
+    const name = mapLayerToName(layer);
+
+    // Should we move selected objects to the layer?
+    if (layer === MapLayerName.Ground || layer === MapLayerName.Exterior) {
+      const selectedTgInstances = selectors
+        .selectedObjs(state)
+        .filter(isTileGroupInstance);
+      if (selectedTgInstances.length > 0) {
+        dispatch(
+          mapActions.updateMany(
+            selectedTgInstances.map((obj) => ({
+              id: obj.id,
+              changes: { layer },
+            })),
+          ),
+        );
+        notifications.show({
+          title: "Moved objects",
+          message: `${selectedTgInstances.length} objects were moved to the "${name}" layer.`,
+          autoClose: 3000,
+        });
+      }
+    }
+
     dispatch(mapActions.setActiveLayer(layer));
     dispatch(mapActions.setLockInactiveLayer(true));
-    const name = mapLayerToName(layer);
+
     if (notify) {
       notifications.show({
         title: "Layer switched",

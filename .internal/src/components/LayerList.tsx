@@ -87,12 +87,7 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
                   style={{ position: "relative" }}
                 >
                   {isDisabled && (
-                    <Overlay
-                      blur={3}
-                      backgroundOpacity={0.2}
-                      color="#ff0000ff"
-                      radius="md"
-                    />
+                    <Overlay backgroundOpacity={0.2} radius="md" />
                   )}
                   <Group wrap="nowrap" align="flex-start">
                     <Radio.Indicator />

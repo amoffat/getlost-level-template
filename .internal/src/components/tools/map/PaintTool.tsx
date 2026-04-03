@@ -1,7 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
-import { setActiveLayerThunk } from "@/thunks/map";
 import { MapLayerName } from "@/types/layer";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { PaintOpts } from "@/types/tools";
@@ -14,7 +13,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import Tip from "../../Tip";
 import TileContext from "./TileContext";
 
@@ -24,18 +23,6 @@ export default function PaintTool() {
   const activeLayer = useAppSelector((state) => state.mapEditor.layers.active);
   const opts = useAppSelector((state) => state.mapEditor.toolOptions.paint);
   const placeObj = useAppSelector((state) => state.mapEditor.place.obj);
-
-  useEffect(() => {
-    if (placeObj) {
-      let switchTo = MapLayerName.Exterior;
-      if (isTileGroupTemplate(placeObj)) {
-        const isSolidTile = placeObj.coverage === 1.0;
-        switchTo = isSolidTile ? MapLayerName.Ground : MapLayerName.Exterior;
-      }
-
-      dispatch(setActiveLayerThunk({ layer: switchTo, notify: true }));
-    }
-  }, [dispatch, placeObj]);
 
   const onChangeMode = useCallback(
     (value: string) => {
