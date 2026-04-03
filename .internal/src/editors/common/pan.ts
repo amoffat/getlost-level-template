@@ -66,6 +66,13 @@ export class Panner implements Tool {
     return true;
   }
 
+  /** Release an active pan, e.g. when the pointer leaves the canvas. */
+  public release() {
+    if (!this._panning) return;
+    this._panning = false;
+    this._onPanningEnd?.(this.getPosition());
+  }
+
   /**
    * Get the current pan position
    */

@@ -218,6 +218,7 @@ export async function init(): Promise<P.Application> {
   });
   canvas.addEventListener("mouseout", () => {
     canvas.blur();
+    panner.release();
   });
 
   function redrawLayout() {
