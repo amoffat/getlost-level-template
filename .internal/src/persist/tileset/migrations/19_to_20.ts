@@ -30,7 +30,7 @@ export async function migrate(doc: TilesetDocV19) {
   if (doc.tileset.id !== "player") return;
 
   const tiles = doc.tileset.tiles;
-  doc.tileset.restricted = false;
+  (doc.tileset as any).restricted = false;
   if (!tiles?.entities) return;
   return;
 

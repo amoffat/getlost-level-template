@@ -41,7 +41,7 @@ import DialogueTab from "./tabs/DialogueTab";
 import MapEditorTab from "./tabs/MapEditor";
 import StoryTab from "./tabs/StoryTab";
 import TilesetEditorTab from "./tabs/TilesetEditor";
-import UploadAssetModal from "./UploadAssetModal";
+import UploadAssetModal from "./uploadAssets/UploadAssetModal";
 
 declare global {
   interface Window {
@@ -203,14 +203,16 @@ const ShellAppContent = memo(function ShellAppContent({
     useDisclosure(false);
   const [isPendingTab, startTransition] = useTransition();
 
-  const { activeTab, mountedTabs, loadingMessages } = useAppSelector(
-    (state) => ({
-      activeTab: state.ui.activeTab,
-      mountedTabs: state.ui.mountedTabs,
-      loadingMessages: state.ui.loadingMessages,
-    }),
-    shallowEqual,
-  );
+  const { activeTab, mountedTabs, loadingMessages, mapActiveTool } =
+    useAppSelector(
+      (state) => ({
+        activeTab: state.ui.activeTab,
+        mountedTabs: state.ui.mountedTabs,
+        loadingMessages: state.ui.loadingMessages,
+        mapActiveTool: state.mapEditor.activeTool,
+      }),
+      shallowEqual,
+    );
 
   const onDrop = useCallback(
     (files: FileWithPath[]) => {
@@ -244,6 +246,12 @@ const ShellAppContent = memo(function ShellAppContent({
       {draggedFiles && (
         <UploadAssetModal
           files={draggedFiles}
+          mode={
+            activeTab === "map-editor" &&
+            mapActiveTool === "add-background-image"
+              ? "background"
+              : "tileset"
+          }
           opened={assetTypeOpened}
           closeModal={closeAssetType}
         />

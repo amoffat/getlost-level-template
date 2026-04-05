@@ -46,6 +46,7 @@ import {
   IconInputSpark,
   IconMapPin,
   IconPaint,
+  IconPhoto,
   IconPointer,
   IconRipple,
   IconTrash,
@@ -72,6 +73,7 @@ import MapPositions from "../MapPositions";
 import Tip from "../Tip";
 import ToolPalette, { ToolDescriptor } from "../ToolPalette";
 import AutotilerTool from "../tools/map/AutotilerTool";
+import BackgroundTool from "../tools/map/BackgroundTool";
 import ColliderTool from "../tools/map/ColliderTool";
 import FillTool from "../tools/map/FillTool";
 import GatewayTool from "../tools/map/GatewayTool";
@@ -367,6 +369,12 @@ export default function MapEditorTab({
           name: "Set bounds",
           icon: <IconFrame size={16} />,
           options: <MapBoundsTool />,
+        },
+        "add-background-image": {
+          name: "Background images",
+          icon: <IconPhoto size={16} />,
+          layerConstraints: [MapLayerName.Background],
+          options: <BackgroundTool />,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,
     [],

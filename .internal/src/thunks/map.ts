@@ -1,5 +1,6 @@
 import { iconTsId, lightIcon, waypointIcon } from "@/constants/tsObjs";
 import { loadMap } from "@/persist/map/api";
+import { fetchBackgroundImageUrl } from "@/persist/background/api";
 import { router } from "@/router";
 import { actions as mapActions, selectors } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
@@ -8,6 +9,7 @@ import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import {
+  isBackgroundImageObj,
   isMapObjFromTileset,
   isTileGroupInstance,
   MapObj,
@@ -17,6 +19,8 @@ import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import * as P from "pixi.js";
+import { globals as gApp } from "@/globals";
 import { globals as g } from "../editors/map/globals";
 import { resetStoryThunk } from "./story";
 import { removeTilesetThunk } from "./tileset";
@@ -78,6 +82,35 @@ export const loadMapThunk = createAsyncThunk(
         const obj = persisted.objects.entities[id];
         if (obj) objs.push(obj);
       }
+
+      // Pre-populate the background image caches before dispatching objects so
+      // the reconciler can render them on first flush.
+      const bgObjs = objs.filter(isBackgroundImageObj);
+      const seenImageIds = new Set<string>();
+      await Promise.all(
+        bgObjs.map(async (obj) => {
+          if (seenImageIds.has(obj.imageId)) return;
+          seenImageIds.add(obj.imageId);
+          const objectUrl = await fetchBackgroundImageUrl(obj.imageId);
+          gApp.backgroundImageObjectUrlCache.set(obj.imageId, objectUrl);
+          const tex = await P.Assets.load<P.Texture>({
+            src: objectUrl,
+            loadParser: "loadTextures",
+          });
+          const canvas = new P.CanvasSource({
+            width: tex.source.width,
+            height: tex.source.height,
+          });
+          canvas.context2D.drawImage(
+            (tex.source as any).resource as CanvasImageSource,
+            0,
+            0,
+          );
+          canvas.update();
+          gApp.backgroundImageCache.set(obj.imageId, canvas);
+        }),
+      );
+
       dispatch(mapActions.setAll(objs));
       dispatch(mapActions.setBounds(persisted.bounds));
       if (persisted.card) {

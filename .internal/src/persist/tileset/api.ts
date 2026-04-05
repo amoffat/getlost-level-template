@@ -1,4 +1,4 @@
-import { tilesetSourceHeader } from "@/constants/headers";
+import { tilesetRestrictedHeader, tilesetSourceHeader } from "@/constants/headers";
 import { log } from "@/log";
 import { LoadTilesetsResponse } from "@/types/api/tileset";
 import { isTileGroupTemplate } from "@/types/tilegroup";
@@ -90,6 +90,10 @@ export async function loadTileset(id: string): Promise<Tileset> {
   const isSystem = sourceHeader === "system";
   ts.hidden = isSystem;
 
+  // Restricted status is communicated via the GetLost-Tileset-Restricted header
+  // (derived from the .restricted. file naming convention on disk)
+  ts.restricted = res.headers.get(tilesetRestrictedHeader) === "true";
+
   // Recreate an object URL for the tileset image from persisted bytes
   // Copy to a standalone ArrayBuffer to satisfy TS's BlobPart typing
   const ab = new ArrayBuffer(decoded.imageData.byteLength);
@@ -128,7 +132,6 @@ export async function saveTileset(ts: Tileset) {
     gridSize: ts.gridSize,
     composite: ts.composite,
     tiles: ts.tiles,
-    restricted: ts.restricted,
   } satisfies SavedTileset;
 
   const doc: LatestTilesetDoc = {
@@ -149,6 +152,8 @@ export async function saveTileset(ts: Tileset) {
   const file = new Blob([ab], { type: "application/cbor" });
   // Use explicit field name that the server expects
   form.append("tileset", file, `${ts.id}.cbor`);
+  // Per-asset restricted flag: "tileset.restricted" = "1" if restricted
+  if (ts.restricted) form.append("tileset.restricted", "1");
 
   const res = await fetch(
     `/level/tilesets/${encodeURIComponent(ts.id)}.cbor.gz`,

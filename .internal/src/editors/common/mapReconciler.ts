@@ -1,11 +1,13 @@
 import { defaultTint, texAtlasPadding } from "@/constants";
 import { errorIcon, iconTsId } from "@/constants/tsObjs";
+import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { AnimationTemplate } from "@/types/animation";
 import {
   isAnimatedInstance,
+  isBackgroundImageObj,
   isColliderBox,
   isColliderEllipse,
   isEntranceObj,
@@ -175,6 +177,15 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
     if (props.tilesetId !== undefined || props.tsObjId !== undefined) {
       // Recreate the node entirely, since the texture may have changed.
+      recreate = true;
+    }
+
+    if (
+      isBackgroundImageObj(obj) &&
+      (props.imageId !== undefined ||
+        props.width !== undefined ||
+        props.height !== undefined)
+    ) {
       recreate = true;
     }
 
@@ -462,6 +473,27 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       container.position.set(obj.x, obj.y);
       container.zIndex = obj.z;
       container.addChild(gfx);
+      container.eventMode = "static";
+      return container;
+    } else if (isBackgroundImageObj(obj)) {
+      const canvasSource = gApp.backgroundImageCache.get(obj.imageId);
+      if (!canvasSource) {
+        // Cache miss — this can happen in the collision editor context where
+        // background images aren't loaded. Return null silently.
+        return null;
+      }
+      const tex = new P.Texture({ source: canvasSource });
+      const sprite = new P.Sprite(tex);
+      sprite.label = "sprite";
+      sprite.eventMode = "passive";
+      sprite.width = obj.width;
+      sprite.height = obj.height;
+
+      const container = new P.Container();
+      container.label = obj.id;
+      container.position.set(obj.x, obj.y);
+      container.zIndex = obj.z;
+      container.addChild(sprite);
       container.eventMode = "static";
       return container;
     } else {

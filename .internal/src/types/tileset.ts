@@ -31,4 +31,4 @@ export interface Tileset {
   restricted?: boolean;
 }
 
-export type SavedTileset = Omit<Tileset, "objectUrl" | "saved">;
+export type SavedTileset = Omit<Tileset, "objectUrl" | "saved" | "restricted">;

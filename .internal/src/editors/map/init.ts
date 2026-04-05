@@ -117,6 +117,11 @@ export async function init(): Promise<P.Application> {
   g.mapContainer.addChild(g.boundsMask);
   drawBounds();
 
+  // Background layer is added first so it renders behind all other layers
+  const backgroundLayer = new P.Container();
+  g.layerContainers[MapLayerName.Background] = backgroundLayer;
+  g.mapContainer.addChild(backgroundLayer);
+
   const groundLayer = new P.Container();
   groundLayer.sortableChildren = true;
   g.layerContainers[MapLayerName.Ground] = groundLayer;

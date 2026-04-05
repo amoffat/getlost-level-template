@@ -76,5 +76,12 @@ export interface TilesetDocV23 extends Omit<TilesetDocV22, "version"> {
   version: 23;
 }
 
-export type LatestTilesetDoc = TilesetDocV23;
-export const latestVersion = 23;
+// Version 24: Remove `restricted` from CBOR tileset metadata; restricted status
+// is now communicated via file naming (.restricted.cbor.gz) and a response header.
+export interface TilesetDocV24 extends Omit<TilesetDocV23, "version"> {
+  version: 24;
+  tileset: Omit<TilesetDocV23["tileset"], "restricted">;
+}
+
+export type LatestTilesetDoc = TilesetDocV24;
+export const latestVersion = 24;

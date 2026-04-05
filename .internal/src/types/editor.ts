@@ -15,4 +15,5 @@ export type Mode =
   | "add-light"
   | "set-gateway"
   | "add-pickup"
-  | "duplicate";
+  | "duplicate"
+  | "add-background-image";

@@ -12,6 +12,10 @@ interface Globals {
   tilesetTextureCache: Map<string, P.CanvasSource>;
   // Tileset image data cache, keyed by tileset ID
   tilesetImageDataCache: Map<string, ImageData>;
+  // Background image texture cache, keyed by imageId (SHA-1 hash)
+  backgroundImageCache: Map<string, P.CanvasSource>;
+  // Background image blob-URL cache, keyed by imageId (SHA-1 hash), for thumbnails
+  backgroundImageObjectUrlCache: Map<string, string>;
   mapEditorReconciler: MapObjReconciler;
   collisionEditorReconciler: MapObjReconciler;
   tilesetEditorReconciler: TileReconciler;
@@ -29,6 +33,8 @@ export const globals: Globals = {
   tileEdgeSigs: new Map(),
   tilesetTextureCache,
   tilesetImageDataCache: new Map(),
+  backgroundImageCache: new Map(),
+  backgroundImageObjectUrlCache: new Map(),
   mapEditorReconciler: new MapObjReconciler(tilesetTextureCache),
   collisionEditorReconciler: new MapObjReconciler(tilesetTextureCache),
   tilesetEditorReconciler: new TileReconciler(),

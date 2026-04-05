@@ -12,7 +12,6 @@ import {
   TileGroupProps,
 } from "./properties";
 import { Rect } from "./rect";
-
 export interface SavedMap {
   tileWidth: number;
   tileHeight: number;
@@ -39,6 +38,7 @@ export enum MapObjType {
   Exit = 8,
   Waypoint = 9,
   Pickup = 10,
+  BackgroundImage = 11,
 }
 
 // The base interface for all playable map objects
@@ -117,6 +117,12 @@ export interface PickupObj
   type: MapObjType.Pickup;
 }
 
+export interface BackgroundImageObj extends BaseMapObj {
+  type: MapObjType.BackgroundImage;
+  /** SHA-1 hash of the PNG bytes — used as the filename on disk. */
+  imageId: string;
+}
+
 export type MapObj =
   | TileGroupInstance
   | AnimationInstance
@@ -127,7 +133,8 @@ export type MapObj =
   | BoxObj
   | EntranceObj
   | ExitObj
-  | PickupObj;
+  | PickupObj
+  | BackgroundImageObj;
 
 export type SpeakableMapObj = MapObj & { name: string };
 
@@ -201,4 +208,10 @@ export function isExitObj(obj: Partial<MapObj>): obj is ExitObj {
 
 export function isPickupObj(obj: Partial<MapObj>): obj is PickupObj {
   return obj.type === MapObjType.Pickup;
+}
+
+export function isBackgroundImageObj(
+  obj: Partial<MapObj>,
+): obj is BackgroundImageObj {
+  return obj.type === MapObjType.BackgroundImage;
 }

@@ -6,7 +6,10 @@ import formidable from "formidable";
 import * as fs from "fs";
 import { resolve } from "path";
 import { gunzipSync, gzipSync } from "zlib";
-import { tilesetSourceHeader } from "../../constants/headers";
+import {
+  tilesetRestrictedHeader,
+  tilesetSourceHeader,
+} from "../../constants/headers";
 import { LoadTilesetsResponse } from "../../types/api/tileset";
 import { atomicWriteFileSync } from "../../utils/file";
 
@@ -33,43 +36,46 @@ function sanitizeId(raw: unknown): string {
   return (typeof raw === "string" ? raw : "").replace(/[^a-zA-Z0-9._-]/g, "");
 }
 
-function readDir(path: string): string[] {
-  const entries = fs.readdirSync(path, { withFileTypes: true });
-  const ids = entries
+/**
+ * List tileset IDs from a directory.
+ * CBOR files are always plain {id}.cbor.gz — restricted status only affects the PNG.
+ */
+function readDir(dirPath: string): string[] {
+  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+  return entries
     .filter((e) => e.isFile() && e.name.endsWith(".cbor.gz"))
-    .map((e) => e.name.replace(/\.cbor\.gz$/i, ""));
-  return ids;
+    .map((e) => e.name.slice(0, -".cbor.gz".length));
 }
 
-function pathForId({
-  id,
-  restricted,
-  checkSystem,
-}: {
-  id: string;
-  restricted?: boolean;
-  checkSystem?: boolean;
-}): { cbor: string; png: string } | null {
-  // Check level directory (with or without restricted subdirectory)
-  const levelCborPath = resolve(levelTsDir, `${id}.cbor.gz`);
-  const levelPngPath = restricted
-    ? resolve(levelTsDir, "restricted", `${id}.png`)
-    : resolve(levelTsDir, `${id}.png`);
-  if (fs.existsSync(levelCborPath)) {
-    return { cbor: levelCborPath, png: levelPngPath };
+/**
+ * Resolve on-disk paths for a tileset ID in a given directory.
+ * The CBOR is always {id}.cbor.gz. The PNG is {id}.restricted.png if restricted,
+ * otherwise {id}.png. Restricted status is detected by which PNG exists.
+ * Returns null if the CBOR does not exist.
+ */
+function pathForIdInDir(
+  dirPath: string,
+  id: string,
+): { cbor: string; png: string; restricted: boolean } | null {
+  const cbor = resolve(dirPath, `${id}.cbor.gz`);
+  if (!fs.existsSync(cbor)) return null;
+  const restrictedPng = resolve(dirPath, `${id}.restricted.png`);
+  if (fs.existsSync(restrictedPng)) {
+    return { cbor, png: restrictedPng, restricted: true };
   }
+  return { cbor, png: resolve(dirPath, `${id}.png`), restricted: false };
+}
 
-  if (checkSystem ?? true) {
-    // Check system directory (with or without restricted subdirectory)
-    const systemCborPath = resolve(systemTsDir, `${id}.cbor.gz`);
-    const systemPngPath = restricted
-      ? resolve(systemTsDir, "restricted", `${id}.png`)
-      : resolve(systemTsDir, `${id}.png`);
-    if (fs.existsSync(systemCborPath)) {
-      return { cbor: systemCborPath, png: systemPngPath };
-    }
+function pathForId(
+  id: string,
+  checkSystem = true,
+): { cbor: string; png: string; restricted: boolean; dir: string } | null {
+  const level = pathForIdInDir(levelTsDir, id);
+  if (level) return { ...level, dir: levelTsDir };
+  if (checkSystem) {
+    const system = pathForIdInDir(systemTsDir, id);
+    if (system) return { ...system, dir: systemTsDir };
   }
-
   return null;
 }
 
@@ -88,7 +94,7 @@ router.get("/", (_req, res) => {
   }
 });
 
-// GET "/:id" — serve the CBOR metadata combined with PNG image data
+// GET "/:id.cbor.gz" — serve the CBOR metadata combined with PNG image data
 router.get("/:id.cbor.gz", (req, res) => {
   try {
     const id = sanitizeId((req.params as any)["id"]);
@@ -98,51 +104,37 @@ router.get("/:id.cbor.gz", (req, res) => {
     }
     console.log(`Serving tileset ${id}`);
 
-    // First try to read the CBOR to check if restricted property is set
-    const initialPaths = pathForId({ id, restricted: false });
-    if (!initialPaths || !fs.existsSync(initialPaths.cbor)) {
+    const paths = pathForId(id);
+    if (!paths) {
       res.sendStatus(404);
       return;
     }
 
     try {
-      // Read and decompress the CBOR metadata to check restricted flag
-      let cborGz = fs.readFileSync(initialPaths.cbor);
+      let cborGz = fs.readFileSync(paths.cbor);
       const cborData = gunzipSync(cborGz);
       const doc = decode(cborData) as TilesetDoc;
 
-      // Now get the correct paths based on restricted property
-      const paths = pathForId({ id, restricted: doc.tileset.restricted });
-      if (!paths) {
-        res.sendStatus(404);
+      console.log(`Loading image data from PNG file ${paths.png}`);
+      if (!fs.existsSync(paths.png)) {
+        res.status(404).send("Tileset image data missing");
         return;
       }
-
-      if (doc.imageData === undefined) {
-        console.log("Loading image data from PNG file");
-
-        if (!fs.existsSync(paths.png)) {
-          res.status(404).send("Tileset image data missing");
-          return;
-        }
-        // Read the PNG image data (fs.readFileSync returns Buffer, convert to Uint8Array)
-        const imageBuffer = fs.readFileSync(paths.png);
-
-        // Combine metadata with image data (convert Buffer to Uint8Array for consistency)
-        doc.imageData = new Uint8Array(imageBuffer);
-
-        // Re-encode and send the combined data
-        const combined = encode(doc);
-        cborGz = gzipSync(combined);
-      }
+      const imageBuffer = fs.readFileSync(paths.png);
+      doc.imageData = new Uint8Array(imageBuffer);
+      const combined = encode(doc);
+      cborGz = gzipSync(combined);
 
       res.setHeader("Content-Type", "application/cbor");
       res.setHeader("Content-Encoding", "gzip");
       res.setHeader("Vary", "Accept-Encoding");
       res.setHeader(
         tilesetSourceHeader,
-        paths.cbor.startsWith(levelTsDir) ? "level" : "system",
+        paths.dir === levelTsDir ? "level" : "system",
       );
+      if (paths.restricted) {
+        res.setHeader(tilesetRestrictedHeader, "true");
+      }
       res.send(cborGz);
     } catch (err) {
       console.error("Error sending gzipped tileset:", err);
@@ -163,16 +155,14 @@ router.delete("/:id.cbor.gz", (req, res) => {
       return;
     }
 
-    const paths = pathForId({ id, checkSystem: false });
-    if (paths) {
-      if (fs.existsSync(paths.cbor)) fs.unlinkSync(paths.cbor);
-      if (fs.existsSync(paths.png)) fs.unlinkSync(paths.png);
-    }
-
-    const rPaths = pathForId({ id, restricted: true, checkSystem: false });
-    if (rPaths) {
-      if (fs.existsSync(rPaths.cbor)) fs.unlinkSync(rPaths.cbor);
-      if (fs.existsSync(rPaths.png)) fs.unlinkSync(rPaths.png);
+    // Delete the CBOR and both PNG naming variants from the level directory
+    for (const filename of [
+      `${id}.cbor.gz`,
+      `${id}.png`,
+      `${id}.restricted.png`,
+    ]) {
+      const p = resolve(levelTsDir, filename);
+      if (fs.existsSync(p)) fs.unlinkSync(p);
     }
 
     res.sendStatus(204);
@@ -187,7 +177,7 @@ router.put("/:id.cbor.gz", (req, res) => {
     multiples: false,
     maxFileSize: 10 * 1024 * 1024,
   });
-  form.parse(req, (err, _fields, files) => {
+  form.parse(req, (err, fields, files) => {
     try {
       if (err) {
         console.error("Form parse error:", err);
@@ -210,6 +200,9 @@ router.put("/:id.cbor.gz", (req, res) => {
         return;
       }
 
+      // Read restricted flag from per-asset form field "tileset.restricted"
+      const isRestricted = fields["tileset.restricted"]?.[0] === "1";
+
       // Read and decode the incoming CBOR data
       const buf = fs.readFileSync(incoming.filepath);
       const doc = decode(buf) as TilesetDoc;
@@ -218,29 +211,23 @@ router.put("/:id.cbor.gz", (req, res) => {
       const imageData = doc.imageData;
       delete doc.imageData;
 
-      // Determine output paths
-      let paths = pathForId({ id, restricted: doc.tileset.restricted });
-      if (!paths) {
-        fs.mkdirSync(levelTsDir, { recursive: true });
-        if (doc.tileset.restricted) {
-          fs.mkdirSync(resolve(levelTsDir, "restricted"), { recursive: true });
-        }
-        paths = {
-          cbor: resolve(levelTsDir, `${id}.cbor.gz`),
-          png: doc.tileset.restricted
-            ? resolve(levelTsDir, "restricted", `${id}.png`)
-            : resolve(levelTsDir, `${id}.png`),
-        };
-      }
+      // Determine output directory: write back to whichever directory already owns this tileset.
+      // Falls back to levelTsDir for new uploads.
+      const existing = pathForId(id);
+      const targetDir = existing?.dir ?? levelTsDir;
+      fs.mkdirSync(targetDir, { recursive: true });
+      const cborPath = resolve(targetDir, `${id}.cbor.gz`);
+      const pngFilename = isRestricted ? `${id}.restricted.png` : `${id}.png`;
+      const pngPath = resolve(targetDir, pngFilename);
 
       // Save the metadata (without imageData) as CBOR
       const metadataEncoded = encode(doc);
       const metadataGz = gzipSync(metadataEncoded);
-      atomicWriteFileSync(paths.cbor, metadataGz);
+      atomicWriteFileSync(cborPath, metadataGz);
 
       // Save the image data as a separate PNG file
       if (imageData && imageData.length > 0) {
-        atomicWriteFileSync(paths.png, Buffer.from(imageData));
+        atomicWriteFileSync(pngPath, Buffer.from(imageData));
       }
 
       res.sendStatus(204);

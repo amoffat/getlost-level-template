@@ -1,7 +1,6 @@
 *.tiled-session merge=ours
 
-.internal/assets/**/restricted/** filter=git-crypt diff=git-crypt
-level/**/restricted/** filter=git-crypt diff=git-crypt
-level/**/restricted/**/README.md !filter !diff
+.internal/assets/**/*.restricted.* filter=git-crypt diff=git-crypt
+level/**/*.restricted.* filter=git-crypt diff=git-crypt
 
 *.cbor binary
