@@ -6,10 +6,17 @@ import { RootState, store } from "@/store/store";
 import { setActiveLayerThunk } from "@/thunks/map";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { isTileGroupInstance, MapObj } from "@/types/map";
+import {
+  BackgroundImageObj,
+  isBackgroundImageObj,
+  isTileGroupInstance,
+  MapObj,
+} from "@/types/map";
+import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";
 import { rectToBBox } from "@/utils/spatial";
+import { Vector2 } from "@/vec";
 import * as P from "pixi.js";
 import {
   ClickDragger,
@@ -21,6 +28,18 @@ import { selectStroke, tileSelectFill } from "../../common/strokes";
 import { globals as g } from "../globals";
 import { pressedKeys } from "../keys";
 
+// ─── Resize types & constants ────────────────────────────────────────────────
+
+type EdgeType = "top" | "bottom" | "left" | "right" | null;
+type CornerType = "tl" | "tr" | "bl" | "br" | null;
+
+/** How close the cursor must be to a handle, in screen pixels. */
+const RESIZE_THRESHOLD_SCREEN_PX = 10;
+/** Rendered handle square size in screen pixels. */
+const RESIZE_HANDLE_SCREEN_PX = 8;
+/** Minimum dimension (px) enforced during resize to prevent degenerate objects. */
+const MIN_RESIZE_SIZE = 4;
+
 class Selector extends ClickDragListener<Mode> implements Tool {
   private _marqueeEnabled = false;
   private _hoveringObjects = false;
@@ -31,7 +50,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
   }
 
   protected override get providedModes(): Set<Mode> {
-    return new Set(["select"]);
+    return new Set(["select", "add-background-image"]);
   }
 
   private get _addToSelection(): boolean {
@@ -48,7 +67,11 @@ class Selector extends ClickDragListener<Mode> implements Tool {
     // start a marquee. This will always be true if we're on the ground layer,
     // so we'll do some extra checks related to the ground layer in this block.
     if (e.hoverIds.length > 0) {
-      store.dispatch(actions.setActiveTool("select"));
+      // Don't override "add-background-image" mode — that mode intentionally
+      // shares select behaviour without resetting the active tool.
+      if (state.mapEditor.activeTool !== "add-background-image") {
+        store.dispatch(actions.setActiveTool("select"));
+      }
       const sel = state.mapEditor.selectedIds;
       const selIds = new Set(sel);
 
@@ -251,7 +274,8 @@ class Selector extends ClickDragListener<Mode> implements Tool {
         rect: e.hitbox,
         zoom: state.mapEditor.zoomPan.zoom,
       });
-      if (state.mapEditor.activeTool !== "select") {
+      const activeTool = state.mapEditor.activeTool;
+      if (activeTool !== "select" && activeTool !== "add-background-image") {
         store.dispatch(actions.setActiveTool("select"));
       }
       return true;
@@ -286,6 +310,407 @@ export function setupSelector({
   cd.addListener(new Selector(spatialIndex));
 }
 
+// ─── Resizer ─────────────────────────────────────────────────────────────────
+
+/**
+ * Handles edge/corner resize of BackgroundImageObj instances while in select
+ * mode. Registered before Selector and Mover so it can intercept pointer
+ * events when the cursor is near a resize handle.
+ */
+class Resizer extends ClickDragListener<Mode> implements Tool {
+  /** When true, corner drags preserve the original aspect ratio and edge handles are hidden. */
+  public preserveAspectRatio = true;
+
+  private _dragEnabled = false;
+  private _hoveredEdge: EdgeType = null;
+  private _hoveredCorner: CornerType = null;
+  private _startBounds: Rect | null = null;
+  private _targetId: string | null = null;
+
+  constructor() {
+    super((state) => mapEdSelectors.selectMode(state));
+  }
+
+  protected override get providedModes(): Set<Mode> {
+    return new Set(["select", "add-background-image"]);
+  }
+
+  /** Returns the selected BackgroundImageObj if exactly one is selected. */
+  private _getTarget(): BackgroundImageObj | null {
+    const state = store.getState();
+    const selected = mapEdSelectors.selectedObjs(state);
+    if (selected.length !== 1) return null;
+    const obj = selected[0];
+    return isBackgroundImageObj(obj) ? obj : null;
+  }
+
+  private _threshold(zoom: number): number {
+    return RESIZE_THRESHOLD_SCREEN_PX / zoom;
+  }
+
+  private _detectEdge(
+    pos: Vector2,
+    bounds: Rect,
+    threshold: number,
+  ): { edge: EdgeType; corner: CornerType } {
+    const nearLeft = Math.abs(pos.x - bounds.x) < threshold;
+    const nearRight = Math.abs(pos.x - (bounds.x + bounds.width)) < threshold;
+    const nearTop = Math.abs(pos.y - bounds.y) < threshold;
+    const nearBottom = Math.abs(pos.y - (bounds.y + bounds.height)) < threshold;
+
+    const inHorizontalRange =
+      pos.x >= bounds.x - threshold &&
+      pos.x <= bounds.x + bounds.width + threshold;
+    const inVerticalRange =
+      pos.y >= bounds.y - threshold &&
+      pos.y <= bounds.y + bounds.height + threshold;
+
+    if (nearLeft && nearTop && inHorizontalRange && inVerticalRange)
+      return { edge: null, corner: "tl" };
+    if (nearRight && nearTop && inHorizontalRange && inVerticalRange)
+      return { edge: null, corner: "tr" };
+    if (nearLeft && nearBottom && inHorizontalRange && inVerticalRange)
+      return { edge: null, corner: "bl" };
+    if (nearRight && nearBottom && inHorizontalRange && inVerticalRange)
+      return { edge: null, corner: "br" };
+
+    if (nearLeft && inVerticalRange) return { edge: "left", corner: null };
+    if (nearRight && inVerticalRange) return { edge: "right", corner: null };
+    if (nearTop && inHorizontalRange) return { edge: "top", corner: null };
+    if (nearBottom && inHorizontalRange)
+      return { edge: "bottom", corner: null };
+
+    return { edge: null, corner: null };
+  }
+
+  private _dragEdge(
+    bounds: Rect,
+    edge: EdgeType,
+    offset: Vector2,
+    snap: boolean,
+    gridSize: Vector2,
+  ): Rect {
+    const b = { ...bounds };
+    switch (edge) {
+      case "left":
+        b.x = bounds.x + offset.x;
+        b.width = bounds.width - offset.x;
+        if (snap) {
+          const sx = Math.floor(b.x / gridSize.x) * gridSize.x;
+          b.width += b.x - sx;
+          b.x = sx;
+        }
+        break;
+      case "right":
+        b.width = bounds.width + offset.x;
+        if (snap) b.width = Math.ceil(b.width / gridSize.x) * gridSize.x;
+        break;
+      case "top":
+        b.y = bounds.y + offset.y;
+        b.height = bounds.height - offset.y;
+        if (snap) {
+          const sy = Math.floor(b.y / gridSize.y) * gridSize.y;
+          b.height += b.y - sy;
+          b.y = sy;
+        }
+        break;
+      case "bottom":
+        b.height = bounds.height + offset.y;
+        if (snap) b.height = Math.ceil(b.height / gridSize.y) * gridSize.y;
+        break;
+    }
+    return b;
+  }
+
+  private _dragCorner(
+    bounds: Rect,
+    corner: CornerType,
+    offset: Vector2,
+    snap: boolean,
+    gridSize: Vector2,
+  ): Rect {
+    const b = { ...bounds };
+    switch (corner) {
+      case "tl":
+        b.x = bounds.x + offset.x;
+        b.y = bounds.y + offset.y;
+        b.width = bounds.width - offset.x;
+        b.height = bounds.height - offset.y;
+        break;
+      case "tr":
+        b.y = bounds.y + offset.y;
+        b.width = bounds.width + offset.x;
+        b.height = bounds.height - offset.y;
+        break;
+      case "bl":
+        b.x = bounds.x + offset.x;
+        b.width = bounds.width - offset.x;
+        b.height = bounds.height + offset.y;
+        break;
+      case "br":
+        b.width = bounds.width + offset.x;
+        b.height = bounds.height + offset.y;
+        break;
+    }
+    if (snap) {
+      if (corner?.includes("l")) {
+        const sx = Math.floor(b.x / gridSize.x) * gridSize.x;
+        b.width += b.x - sx;
+        b.x = sx;
+      }
+      if (corner?.includes("t")) {
+        const sy = Math.floor(b.y / gridSize.y) * gridSize.y;
+        b.height += b.y - sy;
+        b.y = sy;
+      }
+      if (corner?.includes("r"))
+        b.width = Math.ceil(b.width / gridSize.x) * gridSize.x;
+      if (corner?.includes("b"))
+        b.height = Math.ceil(b.height / gridSize.y) * gridSize.y;
+    }
+    return b;
+  }
+
+  /**
+   * Drags a corner while preserving the original aspect ratio. The drag
+   * vector is projected onto the object's diagonal so that both axes respond
+   * naturally regardless of which direction the user moves the mouse.
+   */
+  private _dragCornerAspect(
+    bounds: Rect,
+    corner: CornerType,
+    offset: Vector2,
+    snap: boolean,
+    gridSize: Vector2,
+  ): Rect {
+    if (!corner) return bounds;
+
+    const b = { ...bounds };
+    const aspectRatio = bounds.width / bounds.height;
+
+    // Outward unit direction for each corner.
+    const dirX = corner.includes("r") ? 1 : -1;
+    const dirY = corner.includes("b") ? 1 : -1;
+
+    // Project the drag vector onto the aspect-ratio-normalised diagonal so
+    // that diagonal drags feel proportional rather than axis-biased.
+    const diagonal = Math.sqrt(bounds.width ** 2 + bounds.height ** 2);
+    const normX = bounds.width / diagonal;
+    const normY = bounds.height / diagonal;
+    const projection = offset.x * dirX * normX + offset.y * dirY * normY;
+
+    const scale = (diagonal + projection) / diagonal;
+    let newWidth = Math.max(bounds.width * scale, MIN_RESIZE_SIZE);
+
+    if (snap) {
+      const snapped = Math.round(newWidth / gridSize.x) * gridSize.x;
+      newWidth = Math.max(snapped, gridSize.x);
+    }
+
+    b.width = newWidth;
+    b.height = newWidth / aspectRatio;
+
+    // Keep the opposite corner fixed by adjusting the origin.
+    if (corner.includes("l")) b.x = bounds.x + bounds.width - b.width;
+    if (corner.includes("t")) b.y = bounds.y + bounds.height - b.height;
+
+    return b;
+  }
+
+  public override pointerMove(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
+    if (this._dragEnabled) return false;
+
+    const target = this._getTarget();
+    if (!target) {
+      this._hoveredEdge = null;
+      this._hoveredCorner = null;
+      return false;
+    }
+
+    const zoom = store.getState().mapEditor.zoomPan.zoom;
+    const result = this._detectEdge(
+      e.localPos,
+      { x: target.x, y: target.y, width: target.width, height: target.height },
+      this._threshold(zoom),
+    );
+
+    if (this.preserveAspectRatio) {
+      // Edge handles are disabled; only activate on corners.
+      this._hoveredEdge = null;
+      this._hoveredCorner = result.corner;
+      return !!result.corner;
+    }
+
+    this._hoveredEdge = result.edge;
+    this._hoveredCorner = result.corner;
+
+    // Only consume the event (return true) when we're actually over a handle,
+    // so that normal hover/cursor behaviour from Selector still works otherwise.
+    return !!(result.edge || result.corner);
+  }
+
+  public override pointerDown(e: PointerEventData): boolean {
+    if (!this.modeMatches()) return false;
+
+    const target = this._getTarget();
+    if (!target) return false;
+
+    const zoom = store.getState().mapEditor.zoomPan.zoom;
+    const bounds: Rect = {
+      x: target.x,
+      y: target.y,
+      width: target.width,
+      height: target.height,
+    };
+    const result = this._detectEdge(e.localPos, bounds, this._threshold(zoom));
+
+    const edge = this.preserveAspectRatio ? null : result.edge;
+    const corner = result.corner;
+
+    if (edge || corner) {
+      this._dragEnabled = true;
+      this._hoveredEdge = edge;
+      this._hoveredCorner = corner;
+      this._startBounds = bounds;
+      this._targetId = target.id;
+      return true;
+    }
+    return false;
+  }
+
+  public override pointerUp(_e: PointerEventData): boolean {
+    if (!this._dragEnabled) return false;
+    this._dragEnabled = false;
+    this._startBounds = null;
+    this._targetId = null;
+    this._hoveredEdge = null;
+    this._hoveredCorner = null;
+    return true;
+  }
+
+  public override pointerDrag(e: PointerEventData): boolean {
+    if (!this._dragEnabled || !this._startBounds || !this._targetId)
+      return false;
+
+    const state = store.getState();
+    const snap = state.mapEditor.grid.snap;
+    const gridSize = state.mapEditor.grid.size;
+    const offset = e.localMoveVector;
+
+    let b = { ...this._startBounds };
+    if (this._hoveredCorner) {
+      b = this.preserveAspectRatio
+        ? this._dragCornerAspect(b, this._hoveredCorner, offset, snap, gridSize)
+        : this._dragCorner(b, this._hoveredCorner, offset, snap, gridSize);
+    } else if (this._hoveredEdge) {
+      b = this._dragEdge(b, this._hoveredEdge, offset, snap, gridSize);
+    }
+
+    // Enforce minimum size, adjusting origin for left/top handles.
+    if (b.width < MIN_RESIZE_SIZE) {
+      if (this._hoveredEdge === "left" || this._hoveredCorner?.includes("l")) {
+        b.x = b.x + b.width - MIN_RESIZE_SIZE;
+      }
+      b.width = MIN_RESIZE_SIZE;
+    }
+    if (b.height < MIN_RESIZE_SIZE) {
+      if (this._hoveredEdge === "top" || this._hoveredCorner?.includes("t")) {
+        b.y = b.y + b.height - MIN_RESIZE_SIZE;
+      }
+      b.height = MIN_RESIZE_SIZE;
+    }
+
+    store.dispatch(
+      actions.updateOne({
+        id: this._targetId,
+        changes: { x: b.x, y: b.y, width: b.width, height: b.height },
+      }),
+    );
+    return true;
+  }
+
+  public override getCursor(_e: P.FederatedPointerEvent): string | null {
+    if (this._hoveredCorner) {
+      switch (this._hoveredCorner) {
+        case "tl":
+        case "br":
+          return "nwse-resize";
+        case "tr":
+        case "bl":
+          return "nesw-resize";
+      }
+    }
+    if (this._hoveredEdge) {
+      switch (this._hoveredEdge) {
+        case "left":
+        case "right":
+          return "ew-resize";
+        case "top":
+        case "bottom":
+          return "ns-resize";
+      }
+    }
+    return null;
+  }
+}
+
+/** Module-level reference so drawResizeHandles can read the current flag. */
+let _activeResizer: Resizer | null = null;
+
+export function setupResizer(cd: ClickDragger<Mode>): Resizer {
+  const resizer = new Resizer();
+  _activeResizer = resizer;
+  cd.addListener(resizer);
+  return resizer;
+}
+
+/**
+ * Draws resize handle squares inside the given container. When
+ * `preserveAspectRatio` is true only the 4 corner handles are drawn; when
+ * false all 8 handles (corners + edge midpoints) are drawn.
+ * Squares are rendered at a fixed screen-pixel size so they remain
+ * comfortably clickable at any zoom level.
+ */
+function drawResizeHandles(
+  container: P.Container,
+  width: number,
+  height: number,
+  zoom: number,
+  preserveAspectRatio: boolean,
+): void {
+  const size = RESIZE_HANDLE_SCREEN_PX / zoom;
+  const half = size / 2;
+  const strokeWidth = 1 / zoom;
+
+  const cornerPositions = [
+    { x: 0, y: 0 },
+    { x: width, y: 0 },
+    { x: 0, y: height },
+    { x: width, y: height },
+  ];
+
+  const edgeMidPositions = [
+    { x: width / 2, y: 0 },
+    { x: width / 2, y: height },
+    { x: 0, y: height / 2 },
+    { x: width, y: height / 2 },
+  ];
+
+  const positions = preserveAspectRatio
+    ? cornerPositions
+    : [...cornerPositions, ...edgeMidPositions];
+
+  const gfx = new P.Graphics();
+  for (const { x, y } of positions) {
+    gfx
+      .rect(x - half, y - half, size, size)
+      .fill({ color: 0xffffff })
+      .stroke({ color: 0x22cc66, width: strokeWidth });
+  }
+  container.addChild(gfx);
+}
+
 /**
  * Outlines the given objects.
  * @param objs Objects to outline
@@ -305,8 +730,16 @@ export function outlineObjects(objs: MapObj[], zoom: number) {
       width: obj.width,
       height: obj.height,
       stroke,
-      fill: tileSelectFill,
+      // Skip the fill for background images — they're large and a semi-transparent
+      // overlay over the entire surface makes them appear noticeably dimmer than
+      // other selected objects where the same fill is imperceptible.
+      fill: isBackgroundImageObj(obj) ? undefined : tileSelectFill,
     });
+
+    if (isBackgroundImageObj(obj)) {
+      const preserveAspect = _activeResizer?.preserveAspectRatio ?? true;
+      drawResizeHandles(container, obj.width, obj.height, zoom, preserveAspect);
+    }
   }
 }
 
@@ -324,5 +757,35 @@ subState(
   [mapEdSelectors.selectedObjs, (state) => state.mapEditor.zoomPan.zoom],
   (selectedObjs, zoom) => {
     outlineObjects(selectedObjs, zoom);
+  },
+);
+
+/**
+ * Auto-switch activeTool between "select" and "add-background-image" depending
+ * on whether a BackgroundImageObj is part of the current selection.
+ *
+ * - Selecting a background image while in "select" mode → switches to
+ *   "add-background-image" so the BackgroundTool panel appears naturally and
+ *   the toolbar button highlights correctly.
+ * - Deselecting all backgrounds while in "add-background-image" mode → reverts
+ *   to "select" so the normal select tool panel is restored.
+ *
+ * Only transitions between these two modes; other tool modes (paint, fill, …)
+ * are left untouched.
+ */
+subState(
+  [
+    mapEdSelectors.selectedObjs,
+    (state: RootState) => state.mapEditor.activeTool,
+  ],
+  (selectedObjs, activeTool) => {
+    if (selectedObjs.length > 0) {
+      const hasBackground = selectedObjs.some(isBackgroundImageObj);
+      if (hasBackground && activeTool === "select") {
+        store.dispatch(actions.setActiveTool("add-background-image"));
+      } else if (!hasBackground && activeTool === "add-background-image") {
+        store.dispatch(actions.setActiveTool("select"));
+      }
+    }
   },
 );

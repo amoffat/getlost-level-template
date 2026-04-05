@@ -21,14 +21,18 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { IconGripVertical, IconPhotoPlus, IconTrash } from "@tabler/icons-react";
+import {
+  IconGripVertical,
+  IconPhotoPlus,
+  IconTrash,
+} from "@tabler/icons-react";
 import { useCallback, useRef, useState } from "react";
 import UploadAssetModal from "../../uploadAssets/UploadAssetModal";
 
 export default function BackgroundTool() {
   const dispatch = useAppDispatch();
 
-  // Derive background image objects from the entity adapter, sorted by z (ascending = bottom first)
+  // Derive background image objects from the entity adapter, sorted by z (descending = top first)
   const backgroundObjs = useAppSelector((state: RootState) => {
     const entities = state.mapEditor.objects.entities;
     return Object.values(entities)
@@ -37,7 +41,7 @@ export default function BackgroundTool() {
           isBackgroundImageObj(o as any) &&
           (o as BackgroundImageObj).layer === MapLayerName.Background,
       )
-      .sort((a, b) => a.z - b.z);
+      .sort((a, b) => b.z - a.z);
   });
 
   const selectedIds = useAppSelector(
@@ -73,13 +77,13 @@ export default function BackgroundTool() {
       if (fromIdx === -1 || toIdx === -1) return;
 
       const reordered = arrayMove(backgroundObjs, fromIdx, toIdx);
-      // Reassign z values to reflect the new visual order, preserving relative spacing
-      const baseZ = backgroundObjs[0]?.z ?? 0;
+      // Reassign z values: first item in list = top of canvas = highest z
+      const maxZ = backgroundObjs[0]?.z ?? reordered.length - 1;
       dispatch(
         mapActions.updateMany(
           reordered.map((obj, i) => ({
             id: obj.id,
-            changes: { z: baseZ + i },
+            changes: { z: maxZ - i },
           })),
         ),
       );
@@ -134,7 +138,7 @@ export default function BackgroundTool() {
             items={backgroundObjs.map((o) => o.id)}
             strategy={verticalListSortingStrategy}
           >
-            <Stack gap={4}>
+            <Stack p={0} gap={2}>
               {backgroundObjs.map((obj, idx) => (
                 <SortableImageRow
                   key={obj.id}
@@ -191,12 +195,11 @@ function SortableImageRow({
       style={style}
       gap="xs"
       wrap="nowrap"
-      p={4}
+      p={2}
       onClick={() => onSelect(obj.id)}
       styles={{
         root: {
           cursor: "pointer",
-          borderRadius: "var(--mantine-radius-sm)",
           border: isSelected
             ? "1px solid var(--mantine-color-green-6)"
             : "1px solid var(--mantine-color-default-border)",
@@ -222,7 +225,6 @@ function SortableImageRow({
         w={48}
         h={36}
         fit="cover"
-        radius="sm"
         style={{ flexShrink: 0 }}
       />
 
@@ -247,4 +249,3 @@ function SortableImageRow({
     </Group>
   );
 }
-

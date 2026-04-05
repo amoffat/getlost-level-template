@@ -25,7 +25,7 @@ import { setupBoundsDragger } from "./tools/bounds";
 import { setupFill } from "./tools/fill";
 import { setupMover } from "./tools/move";
 import { setupPlacer } from "./tools/place";
-import { setupSelector } from "./tools/select";
+import { setupSelector, setupResizer } from "./tools/select";
 
 export async function init(): Promise<P.Application> {
   // Create a new application
@@ -162,6 +162,7 @@ export async function init(): Promise<P.Application> {
   toolDispatcher.registerTool(cd);
 
   setupFill({ cd });
+  setupResizer(cd);
   setupSelector({ cd, spatialIndex });
   g.mover = setupMover(cd);
   setupPlacer({ cd, spatialIndex });

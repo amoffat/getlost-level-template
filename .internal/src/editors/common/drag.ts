@@ -30,6 +30,9 @@ export abstract class ClickDragListener<ModeType extends string> {
   pointerDrag?(e: PointerEventData): boolean;
   pointerMove?(e: PointerEventData): boolean;
   getCursor?(e: P.FederatedPointerEvent): string | null;
+
+  // These are modes for which the click dragger will be active, if the
+  // `modeMatches` method is used.
   protected abstract get providedModes(): Set<ModeType>;
 
   protected modeMatches(): boolean {
