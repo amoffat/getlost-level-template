@@ -8,6 +8,7 @@ import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
+import { TemplateObject } from "@/types/tilesetobject";
 import {
   isBackgroundImageObj,
   isMapObjFromTileset,
@@ -212,6 +213,33 @@ export const setToolThunk = createAsyncThunk(
 
     dispatch(mapActions.setMode(tool));
     dispatch(mapActions.setActiveTool(tool));
+  },
+);
+
+/** The layers on which the paint tool (and palette-placed objects) are valid. */
+const paintLayerConstraints = [MapLayerName.Exterior, MapLayerName.Ground];
+
+/**
+ * Sets the place object from the palette, switching to the paint tool and
+ * auto-correcting the active layer if it is not valid for painting.
+ */
+export const setPlaceThunk = createAsyncThunk(
+  "mapEditor/setPlaceThunk",
+  async (obj: TemplateObject, { dispatch, getState }) => {
+    await dispatch(setToolThunk("paint")).unwrap();
+
+    const state = getState() as RootState;
+    const curLayer = state.mapEditor.layers.active;
+    if (!paintLayerConstraints.includes(curLayer)) {
+      await dispatch(
+        setActiveLayerThunk({
+          layer: paintLayerConstraints[0],
+          notify: true,
+        }),
+      ).unwrap();
+    }
+
+    dispatch(mapActions.setPlace(obj));
   },
 );
 

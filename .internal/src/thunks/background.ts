@@ -90,6 +90,7 @@ export const uploadBackgroundImageThunk = createAsyncThunk(
           layer: MapLayerName.Background,
           width: imgWidth,
           height: imgHeight,
+          parallax: { x: 1, y: 1 },
         }),
       );
     }

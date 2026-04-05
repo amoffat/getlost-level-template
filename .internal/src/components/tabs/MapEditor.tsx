@@ -7,7 +7,7 @@ import { useSpotlightActions } from "@/hooks/useSpotlightActions";
 import { brokenTileGroups } from "@/selectors/map";
 import { actions, selectors } from "@/slices/mapEditor";
 import { RootState, store } from "@/store/store";
-import { resetMapThunk, setToolThunk } from "@/thunks/map";
+import { resetMapThunk, setPlaceThunk, setToolThunk } from "@/thunks/map";
 import { isAnimationTemplate } from "@/types/animation";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
@@ -270,8 +270,7 @@ export default function MapEditorTab({
           }),
         );
       } else {
-        await dispatch(setToolThunk("paint")).unwrap();
-        dispatch(actions.setPlace(obj));
+        await dispatch(setPlaceThunk(obj)).unwrap();
       }
     },
     [dispatch],

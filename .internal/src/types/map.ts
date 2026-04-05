@@ -1,4 +1,5 @@
 import { HasId, RequiredButMaybeUndefined } from "@/utils/misc";
+import type { Vector2 } from "@/vec";
 import { EntityState } from "@reduxjs/toolkit";
 import { Card } from "./card";
 import type { MapLayerName } from "./layer";
@@ -121,6 +122,12 @@ export interface BackgroundImageObj extends BaseMapObj {
   type: MapObjType.BackgroundImage;
   /** SHA-1 hash of the PNG bytes — used as the filename on disk. */
   imageId: string;
+  /**
+   * Parallax scroll factor. `{ x: 1, y: 1 }` means the layer moves at the
+   * same speed as the camera (no parallax). Values < 1 scroll slower (appear
+   * further away);
+   */
+  parallax: Vector2;
 }
 
 export type MapObj =

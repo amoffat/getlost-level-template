@@ -1,6 +1,5 @@
 import { sliceTileset } from "@/editors/tileset/loader";
-import { useAppDispatch } from "@/hooks/redux";
-import { useAppSelector } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors } from "@/slices/tilesetEditor";
 import { uploadTilesetThunk } from "@/thunks/tileset";
 import { Rect } from "@/types/rect";
@@ -15,7 +14,7 @@ const NEW_TILESET = "__new_tileset__";
 const MERGE_UPLOADS = "__merge_uploads__";
 
 export type SpecialTilesetOption = typeof NEW_TILESET | typeof MERGE_UPLOADS;
-export { NEW_TILESET, MERGE_UPLOADS };
+export { MERGE_UPLOADS, NEW_TILESET };
 
 interface FormValues {
   creationOption: SpecialTilesetOption | string;
@@ -195,7 +194,7 @@ export default function TilesetUploadOptions({
  * Determine the default creation option based on average image area.
  * Small images (sprites) default to merge; large images default to individual tilesets.
  */
-export async function chooseDefaultCreationOption(
+async function chooseDefaultCreationOption(
   files: File[],
 ): Promise<SpecialTilesetOption> {
   const allowedTypes = new Set([
@@ -222,4 +221,3 @@ export async function chooseDefaultCreationOption(
     return NEW_TILESET;
   }
 }
-

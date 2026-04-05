@@ -37,5 +37,9 @@ export interface MapDocV8 extends Omit<MapDocV7, "version"> {
   version: 8;
 }
 
-export type LatestMapDoc = MapDocV8;
-export const latestVersion = 8;
+export interface MapDocV9 extends Omit<MapDocV8, "version"> {
+  version: 9;
+}
+
+export type LatestMapDoc = MapDocV9;
+export const latestVersion = 9;

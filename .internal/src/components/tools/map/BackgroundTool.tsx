@@ -1,3 +1,4 @@
+import Tip from "@/components/Tip";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as mapActions } from "@/slices/mapEditor";
@@ -15,19 +16,14 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   ActionIcon,
   Box,
-  Button,
   Group,
   Image,
+  Slider,
   Stack,
   Text,
 } from "@mantine/core";
-import {
-  IconGripVertical,
-  IconPhotoPlus,
-  IconTrash,
-} from "@tabler/icons-react";
-import { useCallback, useRef, useState } from "react";
-import UploadAssetModal from "../../uploadAssets/UploadAssetModal";
+import { IconGripVertical, IconTrash } from "@tabler/icons-react";
+import { ReactNode, useCallback, useMemo } from "react";
 
 export default function BackgroundTool() {
   const dispatch = useAppDispatch();
@@ -46,26 +42,6 @@ export default function BackgroundTool() {
 
   const selectedIds = useAppSelector(
     (state: RootState) => state.mapEditor.selectedIds,
-  );
-
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const openUploadModal = useCallback((files: File[]) => {
-    setPendingFiles(files);
-    setUploadModalOpen(true);
-  }, []);
-
-  const handleFileInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(e.target.files ?? []);
-      if (files.length > 0) {
-        openUploadModal(files);
-      }
-      e.target.value = "";
-    },
-    [openUploadModal],
   );
 
   const handleDragEnd = useCallback(
@@ -105,79 +81,84 @@ export default function BackgroundTool() {
     [dispatch],
   );
 
+  const handleParallaxChange = useCallback(
+    (id: string, axis: "x" | "y", value: number) => {
+      const obj = backgroundObjs.find((o) => o.id === id);
+      if (!obj) return;
+      dispatch(
+        mapActions.updateOne({
+          id,
+          changes: {
+            parallax: { ...obj.parallax, [axis]: value },
+          },
+        }),
+      );
+    },
+    [dispatch, backgroundObjs],
+  );
+
+  const tips: ReactNode[] = useMemo(() => {
+    const tips: ReactNode[] = [];
+
+    tips.push(
+      "Add a new background image by dragging and dropping it onto the editor.",
+    );
+
+    if (backgroundObjs.length > 0) {
+      tips.push(
+        "Move a background image around by selecting and dragging it in the editor.",
+      );
+      if (backgroundObjs.length > 1) {
+        tips.push(
+          "Re-order the background images by dragging their handles below.",
+        );
+      }
+    }
+
+    return tips;
+  }, [backgroundObjs]);
+
   return (
     <Stack p={0} gap="xs">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/png,image/jpeg,image/webp"
-        multiple
-        style={{ display: "none" }}
-        onChange={handleFileInputChange}
-      />
+      <Tip tips={tips} />
 
-      <Button
-        leftSection={<IconPhotoPlus size={16} />}
-        variant="light"
-        size="sm"
-        onClick={() => fileInputRef.current?.click()}
-      >
-        Add image
-      </Button>
-
-      {backgroundObjs.length === 0 ? (
-        <Text size="xs" c="dimmed" ta="center" py="sm">
-          No background images yet. Add an image or drag one onto the canvas.
-        </Text>
-      ) : (
-        <DndContext
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
+      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext
+          items={backgroundObjs.map((o) => o.id)}
+          strategy={verticalListSortingStrategy}
         >
-          <SortableContext
-            items={backgroundObjs.map((o) => o.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <Stack p={0} gap={2}>
-              {backgroundObjs.map((obj, idx) => (
-                <SortableImageRow
-                  key={obj.id}
-                  obj={obj}
-                  index={idx}
-                  isSelected={selectedIds.includes(obj.id)}
-                  onSelect={handleSelect}
-                  onRemove={handleRemove}
-                />
-              ))}
-            </Stack>
-          </SortableContext>
-        </DndContext>
-      )}
-
-      <UploadAssetModal
-        mode="background"
-        files={pendingFiles}
-        opened={uploadModalOpen}
-        closeModal={() => setUploadModalOpen(false)}
-      />
+          <Stack p={0} gap={2}>
+            {backgroundObjs.map((obj) => (
+              <SortableImageRow
+                key={obj.id}
+                obj={obj}
+                isSelected={selectedIds.includes(obj.id)}
+                onSelect={handleSelect}
+                onRemove={handleRemove}
+                onParallaxChange={handleParallaxChange}
+              />
+            ))}
+          </Stack>
+        </SortableContext>
+      </DndContext>
     </Stack>
   );
 }
 
 interface SortableImageRowProps {
   obj: BackgroundImageObj;
-  index: number;
   isSelected: boolean;
   onSelect: (id: string) => void;
   onRemove: (id: string) => void;
+  onParallaxChange: (id: string, axis: "x" | "y", value: number) => void;
 }
 
 function SortableImageRow({
   obj,
-  index,
   isSelected,
   onSelect,
   onRemove,
+  onParallaxChange,
 }: SortableImageRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: obj.id });
@@ -190,12 +171,11 @@ function SortableImageRow({
   const thumbnailSrc = g.backgroundImageObjectUrlCache.get(obj.imageId);
 
   return (
-    <Group
+    <Stack
       ref={setNodeRef}
       style={style}
-      gap="xs"
-      wrap="nowrap"
-      p={2}
+      gap={4}
+      p={4}
       onClick={() => onSelect(obj.id)}
       styles={{
         root: {
@@ -209,43 +189,64 @@ function SortableImageRow({
         },
       }}
     >
-      {/* Drag handle */}
-      <Box
-        {...attributes}
-        {...listeners}
-        style={{ cursor: "grab", color: "var(--mantine-color-dimmed)" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <IconGripVertical size={16} />
-      </Box>
+      {/* Top row: drag handle, delete */}
+      <Group gap="xs" wrap="nowrap" justify="space-between">
+        <Box
+          {...attributes}
+          {...listeners}
+          style={{ cursor: "grab", color: "var(--mantine-color-dimmed)" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <IconGripVertical size={16} />
+        </Box>
+        <ActionIcon
+          variant="subtle"
+          color="red"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove(obj.id);
+          }}
+          aria-label="Remove background image"
+        >
+          <IconTrash size={14} />
+        </ActionIcon>
+      </Group>
 
-      {/* Thumbnail */}
+      {/* Full-width thumbnail */}
       <Image
         src={thumbnailSrc}
-        w={48}
-        h={36}
+        w="100%"
+        h={80}
         fit="cover"
         style={{ flexShrink: 0 }}
       />
 
-      {/* Layer index label */}
-      <Text size="xs" c="dimmed" style={{ flex: 1 }} lineClamp={1}>
-        Layer {index + 1}
-      </Text>
-
-      {/* Delete */}
-      <ActionIcon
-        variant="subtle"
-        color="red"
-        size="sm"
-        onClick={(e) => {
-          e.stopPropagation();
-          onRemove(obj.id);
-        }}
-        aria-label="Remove background image"
-      >
-        <IconTrash size={14} />
-      </ActionIcon>
-    </Group>
+      {/* Parallax sliders */}
+      <Stack gap={2} onClick={(e) => e.stopPropagation()}>
+        <Text size="xs" c="dimmed">
+          Parallax X: {obj.parallax.x.toFixed(2)}
+        </Text>
+        <Slider
+          min={0}
+          max={1}
+          step={0.01}
+          defaultValue={obj.parallax.x}
+          onChangeEnd={(v) => onParallaxChange(obj.id, "x", v)}
+          size="xs"
+        />
+        <Text size="xs" c="dimmed">
+          Parallax Y: {obj.parallax.y.toFixed(2)}
+        </Text>
+        <Slider
+          min={0}
+          max={1}
+          step={0.01}
+          defaultValue={obj.parallax.y}
+          onChangeEnd={(v) => onParallaxChange(obj.id, "y", v)}
+          size="xs"
+        />
+      </Stack>
+    </Stack>
   );
 }

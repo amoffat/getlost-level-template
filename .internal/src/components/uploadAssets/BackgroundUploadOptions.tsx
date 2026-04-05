@@ -1,6 +1,6 @@
 import { useAppDispatch } from "@/hooks/redux";
 import { uploadBackgroundImageThunk } from "@/thunks/background";
-import { Button, Group, Stack, Text } from "@mantine/core";
+import { Button, Group, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useEffect } from "react";
 import RestrictedControl from "./RestrictedControl";
@@ -41,12 +41,6 @@ export default function BackgroundUploadOptions({
   return (
     <form onSubmit={handleSubmit}>
       <Stack>
-        <Text size="sm" c="dimmed">
-          {files.length === 1
-            ? `Upload "${files[0].name}" as a background image for the Background layer. Background images are rendered behind all other layers and can be repositioned in the Background tool.`
-            : `Upload ${files.length} images as background images. Each file will be added as a separate background image.`}
-        </Text>
-
         <RestrictedControl
           value={form.values.restricted}
           onChange={(v) => form.setFieldValue("restricted", v)}
@@ -61,4 +55,3 @@ export default function BackgroundUploadOptions({
     </form>
   );
 }
-
