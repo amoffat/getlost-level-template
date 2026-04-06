@@ -505,10 +505,28 @@ export default function StoryTab({
   const rightTips: ReactNode[] = useMemo(() => {
     const tips = [];
 
-    tips.push("Create new story milestone nodes.");
+    if (nodes.length === 0) {
+      tips.push("Create new story milestone nodes.");
+    } else {
+      tips.push(
+        "Give nodes good names by selecting them and editing them below.",
+      );
+      tips.push(
+        "New nodes can be created by dragging off of an existing node.",
+      );
+    }
+
+    if (nodes.length > 0 && edges.length > 0) {
+      tips.push(
+        "A node can be inserted into an existing connection by dragging it over the connection.",
+      );
+      tips.push(
+        "Delete an node or connection by selecting it and pressing the delete key.",
+      );
+    }
 
     return tips;
-  }, []);
+  }, [nodes, edges]);
 
   return (
     <>

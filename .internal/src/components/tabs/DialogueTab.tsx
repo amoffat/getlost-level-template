@@ -22,6 +22,7 @@ import { showNotification } from "@/utils/notifications";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
   ActionIcon,
+  Alert,
   Box,
   Button,
   Fieldset,
@@ -44,6 +45,7 @@ import { modals } from "@mantine/modals";
 import {
   IconAlertTriangle,
   IconBubbleText,
+  IconInfoCircle,
   IconPlus,
   IconSitemap,
   IconTrash,
@@ -167,8 +169,14 @@ export default function DialogueTab({
       return;
     }
 
-    // Load our nodes and edges into react flow
-    const newNodes = Object.values(activeDialogue.nodes.entities) as DNode[];
+    // Load our nodes and edges into react flow. Strip `selected` so that the
+    // URL param effect (below) is the sole source of truth for selection.
+    // Leaving stale `selected: true` values in the store would cause
+    // reactFlowInstance.setNodes to re-select a node, firing
+    // useOnSelectionChange and navigating back to the node URL.
+    const newNodes = (
+      Object.values(activeDialogue.nodes.entities) as DNode[]
+    ).map((n) => ({ ...n, selected: false }));
     reactFlowInstance.setNodes(newNodes);
 
     const newEdges = activeDialogue.edges.ids.map(
@@ -202,7 +210,7 @@ export default function DialogueTab({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dlgId, msId, dispatch, location, navigate]);
+  }, [dlgId, msId, dispatch]);
 
   // Sync node selection from URL parameter. Depends on activeDialogueId so
   // that it runs after effect #2 has loaded the nodes into ReactFlow.
@@ -611,16 +619,10 @@ export default function DialogueTab({
       );
     }
 
-    if (!dlgId) {
-      if (speakers.length === 0) {
-        t.push(
-          "No named NPCs or tile groups found in the map. Go name something in the map.",
-        );
-      } else {
-        t.push(
-          "Select a dialogue from the left panel, or create a new one by clicking the '+' icon next to an NPC or tile group.",
-        );
-      }
+    if (!dlgId && speakers.length > 0) {
+      t.push(
+        "Select a dialogue from the left panel, or create a new one by clicking the '+' icon next to an NPC or tile group.",
+      );
     }
 
     return t;
@@ -638,6 +640,18 @@ export default function DialogueTab({
         <Stack h="100%" style={{ overflow: "hidden" }} p={0}>
           <ScrollArea type="never" style={{ flex: 1 }}>
             <Stack p={0}>
+              {treeData.length === 0 && (
+                <Box p="xs">
+                  <Alert
+                    title="No dialogues"
+                    variant="light"
+                    icon={<IconInfoCircle />}
+                  >
+                    There are no objects in the scene that the player can talk
+                    with.
+                  </Alert>
+                </Box>
+              )}
               <Tree
                 data={treeData}
                 tree={tree}
@@ -882,7 +896,7 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
   const dialogue = props.dialogue as Dialogue | undefined;
   const milestoneCount = dialogue?.milestoneNodeIds.length ?? 0;
 
-  // node.value is the URL path for this leaf: "{dlgId}" or "{dlgId}/{milestoneNodeId}".
+  // node.value is the URL path for this leaf: "{dlgId}" or "{dlgId}/nodes/{milestoneNodeId}".
   // Since the milestone node ID is now stored in the URL, we can read it directly here.
   const milestoneNodeId = node.value.split("/")[1] as string | undefined;
 
