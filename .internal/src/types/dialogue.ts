@@ -12,6 +12,8 @@ export interface SpeechData extends Record<string, unknown> {
   animated: boolean;
   choices: Choice[];
   isOrigin: boolean;
+  /** Per-node speaker image override. Overrides the object-level speakerImageId. */
+  speakerImageId?: string | null;
 }
 
 export interface SignData extends Record<string, unknown> {

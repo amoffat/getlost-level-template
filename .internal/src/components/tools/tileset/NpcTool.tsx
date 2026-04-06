@@ -176,6 +176,7 @@ export default function NpcTool() {
         defaultAnimation: "Idle",
         dampenWalkCollisions: constants.defaultNpcDampen,
         status: null,
+        speakerImageId: null,
       };
       // Merge in existing properties of existing
       Object.assign(npc, existingNpc ?? {});

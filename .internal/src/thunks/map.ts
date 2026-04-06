@@ -2,6 +2,7 @@ import { iconTsId, lightIcon, waypointIcon } from "@/constants/tsObjs";
 import { globals as gApp } from "@/globals";
 import { fetchBackgroundImageUrl } from "@/persist/background/api";
 import { loadMap } from "@/persist/map/api";
+import { fetchSpeakerImageUrl } from "@/persist/speakerImage/api";
 import { router } from "@/router";
 import { actions as mapActions, selectors } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
@@ -10,8 +11,10 @@ import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import {
+  isAnimatedInstance,
   isBackgroundImageObj,
   isMapObjFromTileset,
+  isNpcInstance,
   isTileGroupInstance,
   MapObj,
   TileGroupInstance,
@@ -118,6 +121,27 @@ export const loadMapThunk = createAsyncThunk(
       if (persisted.card) {
         dispatch(mapActions.setCard(persisted.card));
       }
+
+      // Pre-populate the speaker image blob-URL cache for any NPC, tile group,
+      // or animation instances that have a speakerImageId.
+      const seenSpeakerIds = new Set<string>();
+      await Promise.all(
+        objs
+          .filter(
+            (o) => isNpcInstance(o) || isTileGroupInstance(o) || isAnimatedInstance(o),
+          )
+          .map(async (obj) => {
+            const imageId = (obj as any).speakerImageId as string | null | undefined;
+            if (!imageId || seenSpeakerIds.has(imageId)) return;
+            seenSpeakerIds.add(imageId);
+            try {
+              const url = await fetchSpeakerImageUrl(imageId);
+              gApp.speakerImageObjectUrlCache.set(imageId, url);
+            } catch {
+              // Non-fatal: image may have been deleted
+            }
+          }),
+      );
     }
     dispatch(uiActions.popLoadingMessage());
   },

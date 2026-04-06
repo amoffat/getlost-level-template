@@ -328,6 +328,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           friction: undefined,
           traction: undefined,
           groundOffset: undefined,
+          speakerImageId: undefined,
         } satisfies TileGroupInstance;
       }
     } else if (isAnimationTemplate(obj)) {
@@ -352,6 +353,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
         loop: undefined,
         autoplay: undefined,
         groundOffset: undefined,
+        speakerImageId: undefined,
       } satisfies AnimationInstance;
     } else if (isNpcTemplate(obj)) {
       inst = {
@@ -375,6 +377,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
         groundOffset: undefined,
         dampenWalkCollisions: undefined,
         status: undefined,
+        speakerImageId: undefined,
       } satisfies NpcInstance;
     }
 

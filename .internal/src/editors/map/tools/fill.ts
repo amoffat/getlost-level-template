@@ -171,6 +171,7 @@ class Filler extends ClickDragListener<Mode> {
           x,
           y,
           z: y + tmpl.pos.height,
+          speakerImageId: undefined,
         } satisfies TileGroupInstance);
       }
     }

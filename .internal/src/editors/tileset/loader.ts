@@ -138,6 +138,7 @@ export async function sliceTileset(
       flipX: false,
       tint: null,
       groundOffset: 0,
+      speakerImageId: null,
       collisions: {
         mask: null,
         shapes: [],

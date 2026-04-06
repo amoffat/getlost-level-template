@@ -145,6 +145,7 @@ class Grouper extends ClickDragListener<Mode> implements Tool {
             flipX: false,
             tint: null,
             groundOffset: 0,
+            speakerImageId: null,
             collisions: {
               mask: null,
               shapes: [],

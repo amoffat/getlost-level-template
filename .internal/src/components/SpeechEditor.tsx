@@ -1,10 +1,12 @@
 import * as constants from "@/constants";
+import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
 import { Choice, SpeechData } from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
+import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
   restrictToParentElement,
@@ -17,19 +19,23 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  ActionIcon,
+  Box,
   Button,
   CloseButton,
   Fieldset,
   Group,
+  Image,
   Input,
   Stack,
   Text,
   Textarea,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
-import { IconGripVertical } from "@tabler/icons-react";
-import { useCallback, useMemo, useState } from "react";
+import { IconGripVertical, IconPhoto, IconX } from "@tabler/icons-react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import InfoTooltip from "./common/InfoTooltip";
 import ResettableInput from "./ResettableInput";
 
@@ -165,6 +171,12 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
     );
   }
 
+  // Speaker image state:
+  // - objSpeakerImageId: the image set at the object level (falls back to undefined)
+  // - nodeSpeakerImageId: per-node override stored in the node's data
+  const objSpeakerImageId = (obj as any)?.speakerImageId as string | null | undefined;
+  const nodeSpeakerImageId = data.speakerImageId;
+
   const canAddChoice = choicesData.length < constants.maxDialogueChoices;
 
   return (
@@ -198,6 +210,24 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
               }
             />
           </ResettableInput>
+
+          {obj && (
+            <SpeakerImageSection
+              objId={obj.id}
+              objSpeakerImageId={objSpeakerImageId}
+              nodeSpeakerImageId={nodeSpeakerImageId}
+              onSetNodeOverride={(imageId) => {
+                if (!activeDialogueId) return;
+                dispatch(
+                  actions.setNodeData({
+                    dialogueId: activeDialogueId,
+                    id: nodeId,
+                    data: { speakerImageId: imageId },
+                  }),
+                );
+              }}
+            />
+          )}
 
           <Textarea
             required
@@ -255,6 +285,125 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
           </Stack>
         </DndContext>
       </Fieldset>
+    </Stack>
+  );
+}
+
+interface SpeakerImageSectionProps {
+  objId: string;
+  objSpeakerImageId: string | null | undefined;
+  nodeSpeakerImageId: string | null | undefined;
+  onSetNodeOverride: (imageId: string | null) => void;
+}
+
+/**
+ * Renders the speaker portrait section inside the Speech fieldset.
+ *
+ * - No object image: shows an "Upload image" button → sets the object-level image.
+ * - Object image, no node override: shows the object-level thumbnail + "Override" button.
+ * - Node override present: shows the override thumbnail + "Remove override" button.
+ */
+function SpeakerImageSection({
+  objId,
+  objSpeakerImageId,
+  nodeSpeakerImageId,
+  onSetNodeOverride,
+}: SpeakerImageSectionProps) {
+  const dispatch = useAppDispatch();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const activeImageId = nodeSpeakerImageId ?? objSpeakerImageId;
+  const activeImageUrl = activeImageId
+    ? g.speakerImageObjectUrlCache.get(activeImageId)
+    : undefined;
+
+  const handlePickFile = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    if (!objSpeakerImageId) {
+      // No object-level image yet → upload and set at the object level
+      await dispatch(uploadSpeakerImageThunk({ objId, file }));
+    } else {
+      // Object-level image already exists → upload for per-node override only
+      const resultAction = await dispatch(uploadSpeakerImageThunk({ objId: null, file }));
+      if (uploadSpeakerImageThunk.fulfilled.match(resultAction)) {
+        onSetNodeOverride(resultAction.payload as string);
+      }
+    }
+  };
+
+  const handleRemoveOverride = () => {
+    onSetNodeOverride(null);
+  };
+
+  return (
+    <Stack gap={4} p={0}>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+      />
+      <Text size="xs" fw={500}>
+        Speaker image
+        <InfoTooltip>
+          A portrait image for the speaker. Set at the object level, with an
+          optional per-node override.
+        </InfoTooltip>
+      </Text>
+
+      {activeImageUrl ? (
+        <Group gap="xs" align="flex-start">
+          <Image src={activeImageUrl} w={64} h={64} fit="cover" radius="sm" />
+          <Stack gap={4} p={0}>
+            {nodeSpeakerImageId ? (
+              <Tooltip label="Remove the per-node override; the object-level image will be used">
+                <ActionIcon
+                  variant="default"
+                  size="sm"
+                  onClick={handleRemoveOverride}
+                >
+                  <IconX size={14} />
+                </ActionIcon>
+              </Tooltip>
+            ) : (
+              <Tooltip label="Upload a different image for this speech node only">
+                <ActionIcon
+                  variant="default"
+                  size="sm"
+                  onClick={handlePickFile}
+                >
+                  <IconPhoto size={14} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+            <Text size="xs" c="dimmed">
+              {nodeSpeakerImageId ? "Node override" : "Object image"}
+            </Text>
+          </Stack>
+        </Group>
+      ) : (
+        <Box>
+          <Button
+            variant="default"
+            size="xs"
+            leftSection={<IconPhoto size={14} />}
+            onClick={handlePickFile}
+          >
+            Upload image
+          </Button>
+          <Text size="xs" c="dimmed" mt={4}>
+            No speaker image set.
+          </Text>
+        </Box>
+      )}
     </Stack>
   );
 }

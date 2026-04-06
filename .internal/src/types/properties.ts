@@ -58,6 +58,7 @@ export interface TileGroupProps {
   hidden: boolean;
   tint: string | null;
   groundOffset: number;
+  speakerImageId: string | null;
 }
 
 export interface AnimationProps {
@@ -69,6 +70,7 @@ export interface AnimationProps {
   autoplay: boolean;
   hidden: boolean;
   groundOffset: number;
+  speakerImageId: string | null;
 }
 
 export interface NpcProps {
@@ -82,6 +84,7 @@ export interface NpcProps {
   groundOffset: number;
   dampenWalkCollisions: number;
   status: InstanceStatus | null;
+  speakerImageId: string | null;
 }
 
 // Default values for each Props type. These are applied at load time to fill in
@@ -131,6 +134,7 @@ export const TILE_GROUP_PROPS_DEFAULTS: TileGroupProps = {
   hidden: false,
   tint: null,
   groundOffset: 0,
+  speakerImageId: null,
 };
 
 export const ANIMATION_PROPS_DEFAULTS: AnimationProps = {
@@ -142,6 +146,7 @@ export const ANIMATION_PROPS_DEFAULTS: AnimationProps = {
   autoplay: false,
   hidden: false,
   groundOffset: 0,
+  speakerImageId: null,
 };
 
 export const NPC_PROPS_DEFAULTS: NpcProps = {
@@ -155,4 +160,5 @@ export const NPC_PROPS_DEFAULTS: NpcProps = {
   groundOffset: 0,
   dampenWalkCollisions: defaultNpcDampen,
   status: null,
+  speakerImageId: null,
 };

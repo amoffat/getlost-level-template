@@ -1,4 +1,5 @@
 import { defaultMilestone } from "@/constants";
+import { globals as g } from "@/globals";
 import { shallowEqual, useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
   createDialogue,
@@ -13,6 +14,7 @@ import {
   setDefaultDialogueThunk,
   unlinkDialogueThunk,
 } from "@/thunks/dialogue";
+import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import type { Dialogue, DNode } from "@/types/dialogue";
 import { isNpcInstance, isTileGroupInstance } from "@/types/map";
 import type { NpcRequiredAnimation, NpcTemplate } from "@/types/npc";
@@ -28,6 +30,7 @@ import {
   Fieldset,
   Flex,
   Group,
+  Image,
   MultiSelect,
   Overlay,
   RenderTreeNodePayload,
@@ -46,6 +49,7 @@ import {
   IconAlertTriangle,
   IconBubbleText,
   IconInfoCircle,
+  IconPhoto,
   IconPlus,
   IconSitemap,
   IconTrash,
@@ -845,6 +849,14 @@ function ObjLeaf({
   const isActive = selected || isChildSelected;
   const icon = getIcon(isActive, expanded);
 
+  const obj = useAppSelector((state) => mapSelectors.selectObject(state, objId));
+  const speakerImageId = (obj as any)?.speakerImageId as string | null | undefined;
+  const speakerImageUrl = speakerImageId
+    ? g.speakerImageObjectUrlCache.get(speakerImageId)
+    : undefined;
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleAddDialogue = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
@@ -854,6 +866,19 @@ function ObjLeaf({
     const milestones = hasDefaultMilestone ? [] : [defaultMilestone];
     dispatch(dActions.addDialogue(createDialogue(dId, objId, milestones)));
     onCreate(dId);
+  };
+
+  const handleUploadSpeakerImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Reset the input so the same file can be re-selected
+    e.target.value = "";
+    await dispatch(uploadSpeakerImageThunk({ objId, file }));
   };
 
   const handleClick = useCallback(
@@ -866,10 +891,34 @@ function ObjLeaf({
 
   return (
     <Box p="xs" {...elementProps} onClick={handleClick}>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+      />
       <Group gap="md">
-        <Box w="15%">{icon}</Box>
+        <Box w="15%">
+          {speakerImageUrl ? (
+            <Image
+              src={speakerImageUrl}
+              w={32}
+              h={32}
+              fit="cover"
+              radius="sm"
+            />
+          ) : (
+            icon
+          )}
+        </Box>
         <Text fz="sm">{node.label}</Text>
         <Box style={{ flexGrow: 1 }} />
+        <Tooltip label={speakerImageId ? "Change speaker image" : "Upload speaker image"}>
+          <ActionIcon variant="default" onClick={handleUploadSpeakerImage}>
+            <IconPhoto size={16} />
+          </ActionIcon>
+        </Tooltip>
         <Tooltip label="Add new dialogue for this NPC">
           <ActionIcon variant="default" onClick={handleAddDialogue}>
             <IconPlus size={16} />

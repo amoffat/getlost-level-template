@@ -16,6 +16,8 @@ interface Globals {
   backgroundImageCache: Map<string, P.CanvasSource>;
   // Background image blob-URL cache, keyed by imageId (SHA-1 hash), for thumbnails
   backgroundImageObjectUrlCache: Map<string, string>;
+  // Speaker image blob-URL cache, keyed by imageId (SHA-1 hash), for thumbnails
+  speakerImageObjectUrlCache: Map<string, string>;
   mapEditorReconciler: MapObjReconciler;
   collisionEditorReconciler: MapObjReconciler;
   tilesetEditorReconciler: TileReconciler;
@@ -35,6 +37,7 @@ export const globals: Globals = {
   tilesetImageDataCache: new Map(),
   backgroundImageCache: new Map(),
   backgroundImageObjectUrlCache: new Map(),
+  speakerImageObjectUrlCache: new Map(),
   mapEditorReconciler: new MapObjReconciler(tilesetTextureCache),
   collisionEditorReconciler: new MapObjReconciler(tilesetTextureCache),
   tilesetEditorReconciler: new TileReconciler(),

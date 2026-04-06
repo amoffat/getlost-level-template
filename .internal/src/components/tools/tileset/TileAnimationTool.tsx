@@ -231,10 +231,12 @@ export default function TileAnimationTool({
         slotNames: [],
         tags: [],
         loop: true,
+        autoplay: false,
         flipX: false,
         tint: null,
         hidden: false,
         groundOffset: 0,
+        speakerImageId: null,
       };
       // Merge in existing properties of existing
       Object.assign(anim, selectedAnimation ?? {});
