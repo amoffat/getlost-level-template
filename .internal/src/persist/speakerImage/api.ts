@@ -12,11 +12,15 @@ export async function uploadSpeakerImage(item: {
   data: Uint8Array;
 }): Promise<void> {
   const { id, data } = item;
-  const blob = new Blob([data.buffer as ArrayBuffer], { type: "image/png" });
+  const form = new FormData();
+  form.append(
+    "speaker",
+    new Blob([data.buffer as ArrayBuffer], { type: "image/png" }),
+    `${id}.png`,
+  );
   const res = await fetch(`/level/speakers/${encodeURIComponent(id)}.png`, {
     method: "PUT",
-    headers: { "content-type": "image/png" },
-    body: blob,
+    body: form,
   });
   if (!res.ok) throw new Error(`uploadSpeakerImage failed: ${res.status}`);
 }
