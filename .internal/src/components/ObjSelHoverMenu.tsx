@@ -1,3 +1,4 @@
+import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
@@ -5,13 +6,12 @@ import { store } from "@/store/store";
 import { AnimationTemplate } from "@/types/animation";
 import {
   isAnimatedInstance,
+  isBackgroundImageObj,
   isNpcInstance,
   isTileGroupInstance,
   MapObj,
 } from "@/types/map";
-import { NpcTemplate } from "@/types/npc";
-import { TileGroupTemplate } from "@/types/tilegroup";
-import { Checkbox, Group, Stack } from "@mantine/core";
+import { Checkbox, Group, Image, Stack } from "@mantine/core";
 import { ReactNode, useCallback, useMemo } from "react";
 import { DynamicHoverCard } from "./DynamicHoverCard";
 import classes from "./styles/ObjSelHover.module.css";
@@ -69,6 +69,11 @@ export default function ObjSelHover() {
           return { ...f, tg: f.tg };
         });
         view = <TileAnimation frames={frames} scale={2} bounded />;
+      } else if (isBackgroundImageObj(obj)) {
+        const src = g.backgroundImageObjectUrlCache.get(obj.imageId);
+        if (!src) return null;
+
+        view = <Image src={src} w={80} h={80} fit="cover" />;
       }
 
       const entry = (
