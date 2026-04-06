@@ -1,21 +1,27 @@
 import { createBrowserRouter } from "react-router";
 import { ShellApp } from "./components/ShellApp";
 
-// Create the router routes configuration
+// ShellApp is the root layout for all routes. It reads useLocation() internally
+// to determine which tab to render, so child routes need no element of their own.
 const routes = [
-  { path: "/", element: <ShellApp /> },
-  { path: "/map", element: <ShellApp /> },
-  { path: "/tilesets", element: <ShellApp /> },
-  { path: "/tilesets/:tsid", element: <ShellApp /> },
-  { path: "/tilesets/:tsid/objects/:objid", element: <ShellApp /> },
-  { path: "/npcs", element: <ShellApp /> },
-  { path: "/story", element: <ShellApp /> },
-  { path: "/story/nodes/:nodeid", element: <ShellApp /> },
-  { path: "/dialogues", element: <ShellApp /> },
-  { path: "/dialogues/:dlgid", element: <ShellApp /> },
-  { path: "/dialogues/:dlgid/milestones/:milestone", element: <ShellApp /> },
-  { path: "/dialogues/:dlgid/milestones/:milestone/nodes/:nodeid", element: <ShellApp /> },
-  { path: "/preview", element: <ShellApp /> },
+  {
+    path: "/",
+    element: <ShellApp />,
+    children: [
+      { index: true },
+      { path: "map" },
+      { path: "tilesets" },
+      { path: "tilesets/:tsid" },
+      { path: "tilesets/:tsid/objects/:objid" },
+      { path: "story" },
+      { path: "story/nodes/:nodeid" },
+      { path: "dialogues" },
+      { path: "dialogues/:dlgid" },
+      { path: "dialogues/:dlgid/milestones/:milestone" },
+      { path: "dialogues/:dlgid/milestones/:milestone/nodes/:nodeid" },
+      { path: "preview" },
+    ],
+  },
 ];
 
 export const router = createBrowserRouter(routes);
