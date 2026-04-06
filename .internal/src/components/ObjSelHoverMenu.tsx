@@ -11,6 +11,8 @@ import {
   isTileGroupInstance,
   MapObj,
 } from "@/types/map";
+import { NpcTemplate } from "@/types/npc";
+import { TileGroupTemplate } from "@/types/tilegroup";
 import { Checkbox, Group, Image, Stack } from "@mantine/core";
 import { ReactNode, useCallback, useMemo } from "react";
 import { DynamicHoverCard } from "./DynamicHoverCard";
