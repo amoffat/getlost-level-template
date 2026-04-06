@@ -20,6 +20,7 @@ import { drawBounds } from "./bounds";
 import { globals as g } from "./globals";
 import { setupKeys } from "./keys";
 import { initLayerVisibility } from "./layers";
+import { setupParallaxTicker } from "./parallax";
 import { setupAutotiler } from "./tools/autotiler";
 import { setupBoundsDragger } from "./tools/bounds";
 import { setupFill } from "./tools/fill";
@@ -191,6 +192,7 @@ export async function init(): Promise<P.Application> {
   toolDispatcher.registerTool(panner);
 
   initLayerVisibility();
+  setupParallaxTicker(app);
 
   canvas.addEventListener("mouseover", () => {
     canvas.focus();

@@ -1,11 +1,11 @@
-import { batchUploadBackgroundImages } from "@/persist/background/api";
 import { globals as g } from "@/globals";
+import { batchUploadBackgroundImages } from "@/persist/background/api";
 import { actions as mapActions } from "@/slices/mapEditor";
+import { RootState } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { MapObjType } from "@/types/map";
 import { sha1Hash } from "@/utils/hash";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { RootState } from "@/store/store";
 import * as P from "pixi.js";
 
 export const uploadBackgroundImageThunk = createAsyncThunk(
@@ -17,17 +17,28 @@ export const uploadBackgroundImageThunk = createAsyncThunk(
     if (!files.length) return;
 
     // Process all files: hash, objectUrl, cache population
-    const items: { id: string; imageId: string; data: Uint8Array; objectUrl: string; restricted: boolean }[] =
-      await Promise.all(
-        files.map(async (file) => {
-          const arrayBuffer = await file.arrayBuffer();
-          const imageId = await sha1Hash(arrayBuffer);
-          const objectUrl = URL.createObjectURL(
-            new Blob([arrayBuffer], { type: "image/png" }),
-          );
-          return { id: crypto.randomUUID(), imageId, data: new Uint8Array(arrayBuffer), objectUrl, restricted };
-        }),
-      );
+    const items: {
+      id: string;
+      imageId: string;
+      data: Uint8Array;
+      objectUrl: string;
+      restricted: boolean;
+    }[] = await Promise.all(
+      files.map(async (file) => {
+        const arrayBuffer = await file.arrayBuffer();
+        const imageId = await sha1Hash(arrayBuffer);
+        const objectUrl = URL.createObjectURL(
+          new Blob([arrayBuffer], { type: "image/png" }),
+        );
+        return {
+          id: crypto.randomUUID(),
+          imageId,
+          data: new Uint8Array(arrayBuffer),
+          objectUrl,
+          restricted,
+        };
+      }),
+    );
 
     // Populate texture caches for all unique imageIds before dispatching
     await Promise.all(
@@ -48,6 +59,7 @@ export const uploadBackgroundImageThunk = createAsyncThunk(
             0,
           );
           canvas.update();
+          canvas.scaleMode = "nearest";
           g.backgroundImageCache.set(imageId, canvas);
         }),
     );
@@ -57,7 +69,12 @@ export const uploadBackgroundImageThunk = createAsyncThunk(
 
     // Batch-upload all unique images to the server in one request
     const uniqueImages = Array.from(
-      new Map(items.map(({ imageId, data, restricted: r }) => [imageId, { data, restricted: r }])).entries(),
+      new Map(
+        items.map(({ imageId, data, restricted: r }) => [
+          imageId,
+          { data, restricted: r },
+        ]),
+      ).entries(),
     ).map(([id, { data, restricted: r }]) => ({ id, data, restricted: r }));
     await batchUploadBackgroundImages(uniqueImages);
 
@@ -70,9 +87,7 @@ export const uploadBackgroundImageThunk = createAsyncThunk(
       (o) => o?.type === MapObjType.BackgroundImage,
     );
     let minZ =
-      bgObjs.length > 0
-        ? Math.min(...bgObjs.map((o) => (o as any).z ?? 0))
-        : 0;
+      bgObjs.length > 0 ? Math.min(...bgObjs.map((o) => (o as any).z ?? 0)) : 0;
 
     for (const { id, imageId } of items) {
       const canvas = g.backgroundImageCache.get(imageId)!;
@@ -96,4 +111,3 @@ export const uploadBackgroundImageThunk = createAsyncThunk(
     }
   },
 );
-

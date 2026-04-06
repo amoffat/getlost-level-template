@@ -1,6 +1,7 @@
 import { iconTsId, lightIcon, waypointIcon } from "@/constants/tsObjs";
-import { loadMap } from "@/persist/map/api";
+import { globals as gApp } from "@/globals";
 import { fetchBackgroundImageUrl } from "@/persist/background/api";
+import { loadMap } from "@/persist/map/api";
 import { router } from "@/router";
 import { actions as mapActions, selectors } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
@@ -8,7 +9,6 @@ import { actions as uiActions } from "@/slices/ui";
 import { RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { TemplateObject } from "@/types/tilesetobject";
 import {
   isBackgroundImageObj,
   isMapObjFromTileset,
@@ -16,12 +16,12 @@ import {
   MapObj,
   TileGroupInstance,
 } from "@/types/map";
+import { TemplateObject } from "@/types/tilesetobject";
 import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import * as P from "pixi.js";
-import { globals as gApp } from "@/globals";
 import { globals as g } from "../editors/map/globals";
 import { resetStoryThunk } from "./story";
 import { removeTilesetThunk } from "./tileset";
@@ -108,6 +108,7 @@ export const loadMapThunk = createAsyncThunk(
             0,
           );
           canvas.update();
+          canvas.scaleMode = "nearest";
           gApp.backgroundImageCache.set(obj.imageId, canvas);
         }),
       );
