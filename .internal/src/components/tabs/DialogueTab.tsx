@@ -139,6 +139,9 @@ export default function DialogueTab({
     }),
     shallowEqual,
   );
+  const activeDialogueId = useAppSelector(
+    (state) => state.dialogue.activeDialogueId,
+  );
   const tree = useTree();
   const treeSelectRef = useRef(tree.select);
   treeSelectRef.current = tree.select;
@@ -210,12 +213,12 @@ export default function DialogueTab({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dlgId, msId, dispatch]);
+  }, [dlgId, msId, dispatch, location.pathname, navigate, nodeIdParam]);
 
   // Sync node selection from URL parameter. Depends on activeDialogueId so
   // that it runs after effect #2 has loaded the nodes into ReactFlow.
   useEffect(() => {
-    if (!nodeIdParam || !dlgId) {
+    if (!nodeIdParam || !activeDialogueId) {
       if (!nodeIdParam) setSelectedNodeId(null);
       return;
     }
@@ -227,7 +230,7 @@ export default function DialogueTab({
     setSelectedNodeId(nodeIdParam);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodeIdParam, dlgId]);
+  }, [nodeIdParam, activeDialogueId]);
 
   const { screenToFlowPosition } = useReactFlow();
   const flowContainerRef = useRef<HTMLDivElement>(null);
