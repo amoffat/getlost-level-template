@@ -2,7 +2,6 @@ import { LatestTilesetDoc } from "@/persist/tileset/schema";
 import { decode, encode } from "cbor2";
 import { registerEncoder } from "cbor2/encoder";
 import express from "express";
-import formidable from "formidable";
 import * as fs from "fs";
 import { resolve } from "path";
 import { gunzipSync, gzipSync } from "zlib";
@@ -12,6 +11,7 @@ import {
 } from "../../constants/headers";
 import { LoadTilesetsResponse } from "../../types/api/tileset";
 import { atomicWriteFileSync } from "../../utils/file";
+import { parseFormUpload, sanitizeId } from "./utils/assetRouter";
 
 const internalDir = process.cwd();
 const repoDir = resolve(internalDir, "..");
@@ -29,12 +29,6 @@ registerEncoder(Buffer, (b) => [
 export const router = express.Router({ mergeParams: true });
 type TilesetDoc = Omit<LatestTilesetDoc, "imageData"> &
   Partial<Pick<LatestTilesetDoc, "imageData">>;
-
-// Sanitize a requested tileset ID so it can be safely used as a filename stem.
-// Allowed characters: a-z A-Z 0-9 . _ - (mirrors previous inline regex)
-function sanitizeId(raw: unknown): string {
-  return (typeof raw === "string" ? raw : "").replace(/[^a-zA-Z0-9._-]/g, "");
-}
 
 /**
  * List tileset IDs from a directory.
@@ -173,67 +167,52 @@ router.delete("/:id.cbor.gz", (req, res) => {
 });
 
 router.put("/:id.cbor.gz", (req, res) => {
-  const form = formidable({
-    multiples: false,
-    maxFileSize: 10 * 1024 * 1024,
-  });
-  form.parse(req, (err, fields, files) => {
-    try {
-      if (err) {
-        console.error("Form parse error:", err);
-        res.status(400).send("Invalid form data");
-        return;
+  const id = sanitizeId((req.params as any)["id"]);
+  if (!id) {
+    res.status(400).send("Invalid id in URL");
+    return;
+  }
+
+  parseFormUpload(req, "tileset", 10 * 1024 * 1024)
+    .then(({ buf, fields }) => {
+      try {
+        // Read restricted flag from per-asset form field "tileset.restricted"
+        const isRestricted = fields["tileset.restricted"]?.[0] === "1";
+
+        // Decode the incoming CBOR data
+        const doc = decode(buf) as TilesetDoc;
+
+        // Extract imageData from the document
+        const imageData = doc.imageData;
+        delete doc.imageData;
+
+        // Determine output directory: write back to whichever directory already owns this tileset.
+        // Falls back to levelTsDir for new uploads.
+        const existing = pathForId(id);
+        const targetDir = existing?.dir ?? levelTsDir;
+        fs.mkdirSync(targetDir, { recursive: true });
+        const cborPath = resolve(targetDir, `${id}.cbor.gz`);
+        const pngFilename = isRestricted ? `${id}.restricted.png` : `${id}.png`;
+        const pngPath = resolve(targetDir, pngFilename);
+
+        // Save the metadata (without imageData) as CBOR
+        const metadataEncoded = encode(doc);
+        const metadataGz = gzipSync(metadataEncoded);
+        atomicWriteFileSync(cborPath, metadataGz);
+
+        // Save the image data as a separate PNG file
+        if (imageData && imageData.length > 0) {
+          atomicWriteFileSync(pngPath, Buffer.from(imageData));
+        }
+
+        res.sendStatus(204);
+      } catch (error) {
+        console.error("Error saving upload:", error);
+        res.sendStatus(500);
       }
-
-      // Use id from URL to build output filename <id>.cbor
-      const id = sanitizeId((req.params as any)["id"]);
-      if (!id) {
-        res.status(400).send("Invalid id in URL");
-        return;
-      }
-
-      // Expect a single file under the explicit field name 'tileset'
-      const pickFirst = (v: any) => (Array.isArray(v) ? v[0] : v);
-      const incoming: any = pickFirst((files as any)["tileset"]);
-      if (!incoming || !incoming.filepath) {
-        res.status(400).send("Missing 'tileset' file in form data");
-        return;
-      }
-
-      // Read restricted flag from per-asset form field "tileset.restricted"
-      const isRestricted = fields["tileset.restricted"]?.[0] === "1";
-
-      // Read and decode the incoming CBOR data
-      const buf = fs.readFileSync(incoming.filepath);
-      const doc = decode(buf) as TilesetDoc;
-
-      // Extract imageData from the document
-      const imageData = doc.imageData;
-      delete doc.imageData;
-
-      // Determine output directory: write back to whichever directory already owns this tileset.
-      // Falls back to levelTsDir for new uploads.
-      const existing = pathForId(id);
-      const targetDir = existing?.dir ?? levelTsDir;
-      fs.mkdirSync(targetDir, { recursive: true });
-      const cborPath = resolve(targetDir, `${id}.cbor.gz`);
-      const pngFilename = isRestricted ? `${id}.restricted.png` : `${id}.png`;
-      const pngPath = resolve(targetDir, pngFilename);
-
-      // Save the metadata (without imageData) as CBOR
-      const metadataEncoded = encode(doc);
-      const metadataGz = gzipSync(metadataEncoded);
-      atomicWriteFileSync(cborPath, metadataGz);
-
-      // Save the image data as a separate PNG file
-      if (imageData && imageData.length > 0) {
-        atomicWriteFileSync(pngPath, Buffer.from(imageData));
-      }
-
-      res.sendStatus(204);
-    } catch (error) {
-      console.error("Error saving upload:", error);
-      res.sendStatus(500);
-    }
-  });
+    })
+    .catch((e) => {
+      console.error("Form parse error:", e.message);
+      res.status(e.status).send(e.message);
+    });
 });

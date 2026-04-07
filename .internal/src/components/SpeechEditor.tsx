@@ -2,7 +2,10 @@ import * as constants from "@/constants";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors as dSelectors } from "@/slices/dialogue";
-import { selectors as mapSelectors } from "@/slices/mapEditor";
+import {
+  actions as mapActions,
+  selectors as mapSelectors,
+} from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import { Choice, SpeechData } from "@/types/dialogue";
@@ -34,7 +37,12 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
-import { IconGripVertical, IconPhoto, IconX } from "@tabler/icons-react";
+import {
+  IconGripVertical,
+  IconPhoto,
+  IconTrash,
+  IconX,
+} from "@tabler/icons-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import InfoTooltip from "./common/InfoTooltip";
 import ResettableInput from "./ResettableInput";
@@ -237,7 +245,7 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
       </Fieldset>
 
       <Fieldset legend="Responses" p="xs">
-        <Input.Description mb="xs">
+        <Input.Description mb={0}>
           These are possible responses the player can choose from.
         </Input.Description>
         <DndContext
@@ -347,17 +355,30 @@ function SpeakerImageSection({
         style={{ display: "none" }}
         onChange={handleFileChange}
       />
-      <Text size="xs" fw={500}>
-        Speaker image
+      <Text size="sm" fw={500}>
+        Avatar
         <InfoTooltip>
-          A portrait image for the speaker. Set at the object level, with an
-          optional per-node override.
+          A portrait image for the speaker. You can override this on a per-node
+          basis. For example, to change it to a laughing portrait when the
+          player says something funny.
         </InfoTooltip>
       </Text>
 
+      <Input.Description mb={0}>
+        A visual for the character speaking.
+      </Input.Description>
+
       {activeImageUrl ? (
         <Group gap="xs" align="flex-start">
-          <Image src={activeImageUrl} w={64} h={64} fit="cover" radius="sm" />
+          <Image
+            src={activeImageUrl}
+            w={100}
+            h={100}
+            fit="cover"
+            style={{
+              imageRendering: "pixelated",
+            }}
+          />
           <Stack gap={4} p={0}>
             {nodeSpeakerImageId ? (
               <Tooltip label="Remove the per-node override; the object-level image will be used">
@@ -370,19 +391,35 @@ function SpeakerImageSection({
                 </ActionIcon>
               </Tooltip>
             ) : (
-              <Tooltip label="Upload a different image for this speech node only">
-                <ActionIcon
-                  variant="default"
-                  size="sm"
-                  onClick={handlePickFile}
-                >
-                  <IconPhoto size={14} />
-                </ActionIcon>
-              </Tooltip>
+              <>
+                <Tooltip label="Upload a different image for this speech node only">
+                  <ActionIcon
+                    variant="default"
+                    size="sm"
+                    onClick={handlePickFile}
+                  >
+                    <IconPhoto size={14} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Remove the speaker image">
+                  <ActionIcon
+                    variant="default"
+                    size="sm"
+                    color="red"
+                    onClick={() =>
+                      dispatch(
+                        mapActions.updateOne({
+                          id: objId,
+                          changes: { speakerImageId: null },
+                        }),
+                      )
+                    }
+                  >
+                    <IconTrash size={14} />
+                  </ActionIcon>
+                </Tooltip>
+              </>
             )}
-            <Text size="xs" c="dimmed">
-              {nodeSpeakerImageId ? "Node override" : "Object image"}
-            </Text>
           </Stack>
         </Group>
       ) : (
@@ -393,11 +430,8 @@ function SpeakerImageSection({
             leftSection={<IconPhoto size={14} />}
             onClick={handlePickFile}
           >
-            Upload image
+            Upload avatar
           </Button>
-          <Text size="xs" c="dimmed" mt={4}>
-            No speaker image set.
-          </Text>
         </Box>
       )}
     </Stack>

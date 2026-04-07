@@ -6,7 +6,10 @@ import {
   actions as dActions,
   selectors as dSelectors,
 } from "@/slices/dialogue";
-import { selectors as mapSelectors } from "@/slices/mapEditor";
+import {
+  actions as mapActions,
+  selectors as mapSelectors,
+} from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import {
@@ -16,7 +19,11 @@ import {
 } from "@/thunks/dialogue";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import type { Dialogue, DNode } from "@/types/dialogue";
-import { isNpcInstance, isTileGroupInstance } from "@/types/map";
+import {
+  isNpcInstance,
+  isTileGroupInstance,
+  SpeakableMapObj,
+} from "@/types/map";
 import type { NpcRequiredAnimation, NpcTemplate } from "@/types/npc";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { createUrlPath } from "@/utils/dialogue";
@@ -31,6 +38,7 @@ import {
   Flex,
   Group,
   Image,
+  Menu,
   MultiSelect,
   Overlay,
   RenderTreeNodePayload,
@@ -825,8 +833,8 @@ type LeafProps = Pick<
 function ObjLeaf({
   node,
   selected,
-  elementProps,
   expanded,
+  elementProps,
   getIcon,
   onCreate,
   objId,
@@ -849,10 +857,11 @@ function ObjLeaf({
   const isActive = selected || isChildSelected;
   const icon = getIcon(isActive, expanded);
 
-  const obj = useAppSelector((state) => mapSelectors.selectObject(state, objId));
-  const speakerImageId = (obj as any)?.speakerImageId as string | null | undefined;
-  const speakerImageUrl = speakerImageId
-    ? g.speakerImageObjectUrlCache.get(speakerImageId)
+  const obj = useAppSelector((state) =>
+    mapSelectors.selectObject(state, objId),
+  ) as SpeakableMapObj;
+  const speakerImageUrl = obj.speakerImageId
+    ? g.speakerImageObjectUrlCache.get(obj.speakerImageId)
     : undefined;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -898,32 +907,74 @@ function ObjLeaf({
         style={{ display: "none" }}
         onChange={handleFileChange}
       />
-      <Group gap="md">
-        <Box w="15%">
+      <Group gap="xs" wrap="nowrap">
+        <Box w="20%">
           {speakerImageUrl ? (
             <Image
               src={speakerImageUrl}
-              w={32}
-              h={32}
+              w={50}
+              h={50}
               fit="cover"
-              radius="sm"
+              style={{
+                imageRendering: "pixelated",
+              }}
             />
           ) : (
-            icon
+            <Box w={50} h={50}>
+              {icon}
+            </Box>
           )}
         </Box>
         <Text fz="sm">{node.label}</Text>
         <Box style={{ flexGrow: 1 }} />
-        <Tooltip label={speakerImageId ? "Change speaker image" : "Upload speaker image"}>
-          <ActionIcon variant="default" onClick={handleUploadSpeakerImage}>
-            <IconPhoto size={16} />
-          </ActionIcon>
-        </Tooltip>
-        <Tooltip label="Add new dialogue for this NPC">
-          <ActionIcon variant="default" onClick={handleAddDialogue}>
-            <IconPlus size={16} />
-          </ActionIcon>
-        </Tooltip>
+
+        <ActionIcon.Group>
+          {obj.speakerImageId ? (
+            <Menu withinPortal position="bottom-end">
+              <Tooltip label="Change speaker image">
+                <Menu.Target>
+                  <ActionIcon variant="default" onClick={(e) => e.stopPropagation()}>
+                    <IconPhoto size={16} />
+                  </ActionIcon>
+                </Menu.Target>
+              </Tooltip>
+              <Menu.Dropdown>
+                <Menu.Item
+                  leftSection={<IconPhoto size={14} />}
+                  onClick={handleUploadSpeakerImage}
+                >
+                  Replace image
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconTrash size={14} />}
+                  color="red"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dispatch(
+                      mapActions.updateOne({
+                        id: objId,
+                        changes: { speakerImageId: null },
+                      }),
+                    );
+                  }}
+                >
+                  Remove image
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          ) : (
+            <Tooltip label="Upload speaker image">
+              <ActionIcon variant="default" onClick={handleUploadSpeakerImage}>
+                <IconPhoto size={16} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+          <Tooltip label="Add new dialogue for this NPC">
+            <ActionIcon variant="default" onClick={handleAddDialogue}>
+              <IconPlus size={16} />
+            </ActionIcon>
+          </Tooltip>
+        </ActionIcon.Group>
       </Group>
     </Box>
   );
