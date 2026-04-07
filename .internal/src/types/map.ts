@@ -143,7 +143,10 @@ export type MapObj =
   | PickupObj
   | BackgroundImageObj;
 
-export type SpeakableMapObj = MapObj & { name: string };
+export type SpeakableMapObj = MapObj & {
+  speakerImageId: string | null;
+  name: string;
+};
 
 export type MapObjProps =
   | LightProps

@@ -4,9 +4,9 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
+import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import { Choice, SpeechData } from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
-import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
   restrictToParentElement,
@@ -171,12 +171,6 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
     );
   }
 
-  // Speaker image state:
-  // - objSpeakerImageId: the image set at the object level (falls back to undefined)
-  // - nodeSpeakerImageId: per-node override stored in the node's data
-  const objSpeakerImageId = (obj as any)?.speakerImageId as string | null | undefined;
-  const nodeSpeakerImageId = data.speakerImageId;
-
   const canAddChoice = choicesData.length < constants.maxDialogueChoices;
 
   return (
@@ -214,8 +208,8 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
           {obj && (
             <SpeakerImageSection
               objId={obj.id}
-              objSpeakerImageId={objSpeakerImageId}
-              nodeSpeakerImageId={nodeSpeakerImageId}
+              objSpeakerImageId={obj?.speakerImageId}
+              nodeSpeakerImageId={data.speakerImageId}
               onSetNodeOverride={(imageId) => {
                 if (!activeDialogueId) return;
                 dispatch(
@@ -331,7 +325,9 @@ function SpeakerImageSection({
       await dispatch(uploadSpeakerImageThunk({ objId, file }));
     } else {
       // Object-level image already exists → upload for per-node override only
-      const resultAction = await dispatch(uploadSpeakerImageThunk({ objId: null, file }));
+      const resultAction = await dispatch(
+        uploadSpeakerImageThunk({ objId: null, file }),
+      );
       if (uploadSpeakerImageThunk.fulfilled.match(resultAction)) {
         onSetNodeOverride(resultAction.payload as string);
       }

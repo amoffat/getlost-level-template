@@ -47,7 +47,7 @@ export const uploadBackgroundImageThunk = createAsyncThunk(
         .map(async ({ imageId, objectUrl }) => {
           const tex = await P.Assets.load<P.Texture>({
             src: objectUrl,
-            loadParser: "loadTextures",
+            parser: "loadTextures",
           });
           const canvas = new P.CanvasSource({
             width: tex.source.width,

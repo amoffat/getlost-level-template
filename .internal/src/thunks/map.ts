@@ -2,7 +2,7 @@ import { iconTsId, lightIcon, waypointIcon } from "@/constants/tsObjs";
 import { globals as gApp } from "@/globals";
 import { fetchBackgroundImageUrl } from "@/persist/background/api";
 import { loadMap } from "@/persist/map/api";
-import { fetchSpeakerImageUrl } from "@/persist/speakerImage/api";
+import { fetchSpeakerImageUrl as fetchSpeakerImageBlob } from "@/persist/speakerImage/api";
 import { router } from "@/router";
 import { actions as mapActions, selectors } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
@@ -99,7 +99,7 @@ export const loadMapThunk = createAsyncThunk(
           gApp.backgroundImageObjectUrlCache.set(obj.imageId, objectUrl);
           const tex = await P.Assets.load<P.Texture>({
             src: objectUrl,
-            loadParser: "loadTextures",
+            parser: "loadTextures",
           });
           const canvas = new P.CanvasSource({
             width: tex.source.width,
@@ -128,15 +128,18 @@ export const loadMapThunk = createAsyncThunk(
       await Promise.all(
         objs
           .filter(
-            (o) => isNpcInstance(o) || isTileGroupInstance(o) || isAnimatedInstance(o),
+            (o) =>
+              isNpcInstance(o) ||
+              isTileGroupInstance(o) ||
+              isAnimatedInstance(o),
           )
           .map(async (obj) => {
-            const imageId = (obj as any).speakerImageId as string | null | undefined;
+            const imageId = obj.speakerImageId;
             if (!imageId || seenSpeakerIds.has(imageId)) return;
             seenSpeakerIds.add(imageId);
             try {
-              const url = await fetchSpeakerImageUrl(imageId);
-              gApp.speakerImageObjectUrlCache.set(imageId, url);
+              const blob = await fetchSpeakerImageBlob(imageId);
+              gApp.speakerImageObjectUrlCache.set(imageId, blob);
             } catch {
               // Non-fatal: image may have been deleted
             }
