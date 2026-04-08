@@ -4,10 +4,12 @@ import {
   Checkbox,
   CloseButton,
   Fieldset,
+  Group,
   Stack,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
-import { IconFilter } from "@tabler/icons-react";
+import { IconFilter, IconInfinity } from "@tabler/icons-react";
 import { ComponentType, FC, useMemo, useState } from "react";
 
 interface AncestorHighlight {
@@ -63,6 +65,17 @@ export default function MilestoneList({
     return map;
   }, [nodes]);
 
+  // Map node internal IDs to their permanent flag
+  const nodeIdToPermanent = useMemo(() => {
+    const map = new Map<string, boolean>();
+    for (const node of nodes) {
+      if (node.type === "story") {
+        map.set(node.id, node.data.permanent === true);
+      }
+    }
+    return map;
+  }, [nodes]);
+
   const filteredMilestoneIds = useMemo(() => {
     if (!filter.trim()) return sortedMilestoneIds;
     const lower = filter.toLowerCase();
@@ -93,10 +106,22 @@ export default function MilestoneList({
         />
         {filteredMilestoneIds.map((nodeId) => {
           const isSelected = selectedNodeIds.includes(nodeId);
+          const isPermanent = nodeIdToPermanent.get(nodeId) ?? false;
+          const milestoneName = nodeIdToMilestoneId.get(nodeId) ?? nodeId;
+          const label = isPermanent ? (
+            <Group gap={4} wrap="nowrap">
+              {milestoneName}
+              <Tooltip label="Permanent milestone" withArrow>
+                <IconInfinity size={14} color="gold" />
+              </Tooltip>
+            </Group>
+          ) : (
+            milestoneName
+          );
           return (
             <Checkbox
               key={nodeId}
-              label={nodeIdToMilestoneId.get(nodeId) ?? nodeId}
+              label={label}
               checked={!!(isSelected || ancestorHighlight?.nodeIds.has(nodeId))}
               onChange={() => {
                 if (onSelect) {

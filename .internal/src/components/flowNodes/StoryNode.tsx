@@ -9,7 +9,8 @@ import { isNpcInstance, isTileGroupInstance, type MapObj } from "@/types/map";
 import { NpcTemplate } from "@/types/npc";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { createUrlPath } from "@/utils/dialogue";
-import { Box, Flex, Stack, UnstyledButton } from "@mantine/core";
+import { Box, Flex, Group, Stack, UnstyledButton } from "@mantine/core";
+import { IconInfinity } from "@tabler/icons-react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import classNames from "classnames";
 import { useCallback } from "react";
@@ -102,6 +103,8 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
     );
   }
 
+  const isPermanent = reduxNode?.data.permanent === true;
+
   const cls = classNames(styles.node, {
     "react-flow__node-default": true,
     [styles.selected]: selected,
@@ -111,8 +114,11 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
   return (
     <div className={cls}>
       <Handle type="target" position={Position.Top} />
-      <Stack p={0}>
-        {milestoneName}
+      <Stack p={0} align="center">
+        <Group gap={4} wrap="nowrap">
+          {milestoneName}
+          {isPermanent && <IconInfinity color="gold" />}
+        </Group>
         {npcNode}
       </Stack>
       <Handle type="source" position={Position.Bottom} />

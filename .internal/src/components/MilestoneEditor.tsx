@@ -120,6 +120,7 @@ export default function MilestoneEditor({
           <TextInput
             label="Name"
             description="A name to reference this milestone. Must be unique."
+            required
             value={localName}
             onChange={(e) => onNameChange(e.currentTarget.value)}
             error={nameError}
@@ -129,7 +130,7 @@ export default function MilestoneEditor({
 
           <Checkbox
             label="Permanent"
-            description="Should this milestone survive reloads?"
+            description="Should this become part of the player's permanent action history?"
             defaultChecked={node.data.permanent ?? false}
             onChange={(e) => onPermanentChange(e.currentTarget.checked)}
           />
