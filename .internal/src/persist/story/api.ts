@@ -1,6 +1,8 @@
 import type { StoryEdge, StoryNode } from "@/slices/story";
 import type { Dialogue } from "@/types/dialogue";
+import { MILESTONE_NODE_DEFAULTS } from "@/types/properties";
 import { applyMigrations } from "@/utils/migrations";
+import { applyDefaultProps } from "@/utils/misc";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
 import {
@@ -80,6 +82,14 @@ export async function loadStory(): Promise<{
 
   const decoded = baseDecoded as unknown as LatestStoryDoc;
   const { nodes, edges } = decoded;
+
+  // Fill in any properties absent from persisted story nodes using their
+  // defaults. This replaces the need for migrations when adding new properties.
+  for (const node of nodes) {
+    if (node.type !== "or") {
+      applyDefaultProps(node.data, MILESTONE_NODE_DEFAULTS);
+    }
+  }
 
   // Extract unique Dialogue objects from the nested record
   const dialogues = extractDialogues(decoded.dialogues);

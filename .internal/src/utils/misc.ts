@@ -24,7 +24,7 @@ export type RequiredButMaybeUndefined<T> = {
  */
 export function applyDefaultProps<T extends object>(
   target: T,
-  defaults: T,
+  defaults: Partial<T>,
 ): void {
   for (const key of Object.keys(defaults) as (keyof T)[]) {
     if (!Object.prototype.hasOwnProperty.call(target, key)) {

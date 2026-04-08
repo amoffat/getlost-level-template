@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
-import { setNodeData } from "@/slices/story";
+import { setNodeData, StoryNodeData } from "@/slices/story";
 import { RootState } from "@/store/store";
 import { Dialogue } from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
@@ -60,9 +60,12 @@ export default function MilestoneEditor({
     dSelectors.dialogueForMilestone(state, nodeId),
   );
 
-  const debouncedDispatch = useDebouncedCallback((value: string) => {
-    dispatch(setNodeData({ id: nodeId, data: { id: value } }));
-  }, 300);
+  const debouncedDispatch = useDebouncedCallback(
+    (data: Partial<StoryNodeData>) => {
+      dispatch(setNodeData({ id: nodeId, data }));
+    },
+    300,
+  );
 
   const sanitizeName = useCallback((value: string) => {
     return (
@@ -81,10 +84,17 @@ export default function MilestoneEditor({
       setLocalName(sanitized);
       // Only persist if non-empty and unique
       if (sanitized !== "" && !otherIdsSet.has(sanitized)) {
-        debouncedDispatch(sanitized);
+        debouncedDispatch({ id: sanitized });
       }
     },
     [sanitizeName, otherIdsSet, debouncedDispatch],
+  );
+
+  const onPermanentChange = useCallback(
+    (permanent: boolean) => {
+      debouncedDispatch({ permanent });
+    },
+    [debouncedDispatch],
   );
 
   if (!node) {
@@ -120,6 +130,8 @@ export default function MilestoneEditor({
           <Checkbox
             label="Permanent"
             description="Should this milestone survive reloads?"
+            defaultChecked={node.data.permanent ?? false}
+            onChange={(e) => onPermanentChange(e.currentTarget.checked)}
           />
         </Stack>
       </Fieldset>

@@ -3,6 +3,7 @@ import type { Edge, Node } from "@xyflow/react";
 
 export interface StoryNodeData extends Record<string, unknown> {
   id: string;
+  permanent?: boolean;
 }
 
 export interface StoryEdgeData extends Record<string, unknown> {

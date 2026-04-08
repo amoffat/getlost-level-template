@@ -162,3 +162,11 @@ export const NPC_PROPS_DEFAULTS: NpcProps = {
   status: null,
   speakerImageId: null,
 };
+
+export interface MilestoneNodeData extends Record<string, unknown> {
+  permanent: boolean;
+}
+
+export const MILESTONE_NODE_DEFAULTS: MilestoneNodeData = {
+  permanent: false,
+};
