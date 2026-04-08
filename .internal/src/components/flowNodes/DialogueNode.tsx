@@ -5,6 +5,7 @@ import { RootState } from "@/store/store";
 import { DNode, SpeechData } from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
 import { Fieldset, Stack, Text, Title } from "@mantine/core";
+import VariableText from "../VariableText";
 import {
   Handle,
   NodeToolbar,
@@ -163,7 +164,9 @@ export default function DialogueNode({
                 choiceRefs.current[c.id] = element;
               }}
             >
-              <Text size="sm">{c.text}</Text>
+              <Text size="sm">
+                <VariableText text={c.text} />
+              </Text>
             </div>
           ))}
         </Stack>
@@ -171,7 +174,11 @@ export default function DialogueNode({
     );
   }
 
-  let content = <Text>{data.content}</Text>;
+  let content = (
+    <Text>
+      <VariableText text={data.content} />
+    </Text>
+  );
   if (!data.content || data.content.trim() === "") {
     content = (
       <Text ta="center" pb="lg" c="red">

@@ -225,7 +225,7 @@ export default function DialogueTab({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dlgId, msId, dispatch, location.pathname, navigate, nodeIdParam]);
+  }, [dlgId, msId, dispatch, navigate]);
 
   // Sync node selection from URL parameter. Depends on activeDialogueId so
   // that it runs after effect #2 has loaded the nodes into ReactFlow.

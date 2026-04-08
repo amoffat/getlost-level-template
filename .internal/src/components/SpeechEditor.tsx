@@ -10,6 +10,7 @@ import { RootState } from "@/store/store";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import { Choice, SpeechData } from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
+import { extractVariableKeys, getDescription } from "@/utils/variableMap";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
   restrictToParentElement,
@@ -23,6 +24,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import {
   ActionIcon,
+  Badge,
   Box,
   Button,
   CloseButton,
@@ -35,6 +37,7 @@ import {
   Textarea,
   TextInput,
   Tooltip,
+  Typography,
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
 import {
@@ -183,7 +186,7 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
 
   return (
     <Stack p={0} gap="md">
-      <Fieldset legend="Speech" p="xs">
+      <Fieldset legend="Speaker" p="xs">
         <Stack gap="sm" p={0}>
           <ResettableInput
             onReset={() => {
@@ -196,7 +199,7 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
               key={`label-${nodeId}-${resetKey}`}
               label={
                 <>
-                  Speaker
+                  Name
                   <InfoTooltip>
                     By default, the speaker name is the NPC's name, but you can
                     change it per-node. For example, instead of "Guard", you
@@ -230,22 +233,40 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
               }}
             />
           )}
+        </Stack>
+      </Fieldset>
 
+      <Fieldset legend="Content" p="xs">
+        <Stack gap="sm" p={0}>
           <Textarea
             required
             key={`content-${nodeId}-${resetKey}`}
             rows={5}
-            label="Content"
+            label={
+              <>
+                Text
+                <InfoTooltip>
+                  <Typography>
+                    <p>
+                      This is the contents of the NPC's dialogue to the player.
+                    </p>
+                    <p>
+                      You may use special variable placeholders to insert things
+                      like the player's name.
+                    </p>
+                  </Typography>
+                </InfoTooltip>
+              </>
+            }
             description="The text that will be displayed to the player."
             placeholder="Please write NPC dialogue here..."
             defaultValue={data.content ?? ""}
             onChange={(event) => onTextChange(event.currentTarget.value)}
           />
+          <DetectedVariables text={data.content} />
         </Stack>
-      </Fieldset>
-
-      <Fieldset legend="Responses" p="xs">
-        <Input.Description mb={0}>
+        <Input.Label mt="sm">Responses</Input.Label>
+        <Input.Description mb="sm">
           These are possible responses the player can choose from.
         </Input.Description>
         <DndContext
@@ -476,5 +497,46 @@ function SortableChoice({
         <CloseButton size="xs" onClick={() => removeChoice(id)} />
       </Group>
     </div>
+  );
+}
+
+/** Renders a row of hoverable variable badges detected in the given text. */
+function DetectedVariables({ text }: { text: string | undefined }) {
+  if (!text) return null;
+  const keys = extractVariableKeys(text);
+  if (keys.length === 0) return null;
+
+  return (
+    <Stack gap={4} p={0}>
+      <Text size="xs" c="dimmed">
+        Detected variables
+      </Text>
+      <Group gap="xs">
+        {keys.map((tvar) => {
+          const description = getDescription(tvar.key);
+
+          return (
+            <Tooltip
+              key={tvar.key}
+              label={description}
+              withArrow
+              multiline
+              maw={220}
+            >
+              <Badge
+                variant="light"
+                color={tvar.known ? "blue" : "orange"}
+                style={{
+                  cursor: "pointer",
+                  fontFamily: "var(--mantine-font-family-monospace, monospace)",
+                }}
+              >
+                {tvar.key}
+              </Badge>
+            </Tooltip>
+          );
+        })}
+      </Group>
+    </Stack>
   );
 }
