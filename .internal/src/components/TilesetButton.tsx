@@ -8,7 +8,9 @@ import { Tileset } from "@/types/tileset";
 import { Image, Menu, UnstyledButton } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { IconCopy, IconTrash } from "@tabler/icons-react";
+import classNames from "classnames";
 import { useCallback, useEffect, useState } from "react";
+import styles from "./styles/TilesetButton.module.css";
 import { ItemStatus } from "./modals/ItemizedConfirmModal";
 
 interface TilesetButtonProps {
@@ -124,21 +126,12 @@ export default function TilesetButton({
           onContextMenu={onRightClick}
           p={0}
           onClick={onClick}
-          style={(theme) => ({
-            overflow: "hidden",
-            outline: isActive ? `2px solid rgb(0, 255, 0)` : null,
-            "&:hover": {
-              outlineColor: theme.colors.gray[4],
-              cursor: "pointer",
-            },
-          })}
+          className={classNames(styles.button, { [styles.active]: isActive })}
         >
           <Image
             src={ts.objectUrl}
             draggable={false}
-            style={{
-              imageRendering: "pixelated",
-            }}
+            className={styles.image}
           />
         </UnstyledButton>
       </Menu.Target>

@@ -1,4 +1,5 @@
 import Tip from "@/components/Tip";
+import { globals as mapEditorGlobals } from "@/editors/map/globals";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as mapActions } from "@/slices/mapEditor";
@@ -20,14 +21,26 @@ import {
   Image,
   Slider,
   Stack,
+  Switch,
   Text,
+  Tooltip,
 } from "@mantine/core";
-import { IconGripVertical, IconTrash } from "@tabler/icons-react";
-import { ReactNode, useCallback, useMemo } from "react";
+import {
+  IconEye,
+  IconEyeOff,
+  IconGripVertical,
+  IconTrash,
+} from "@tabler/icons-react";
+import { ReactNode, useCallback, useMemo, useState } from "react";
 import classes from "./BackgroundTool.module.css";
 
 export default function BackgroundTool() {
   const dispatch = useAppDispatch();
+
+  const [parallaxDisabledIds, setParallaxDisabledIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [allParallaxEnabled, setAllParallaxEnabled] = useState(true);
 
   // Derive background image objects from the entity adapter, sorted by z (descending = top first)
   const backgroundObjs = useAppSelector((state: RootState) => {
@@ -98,6 +111,31 @@ export default function BackgroundTool() {
     [dispatch, backgroundObjs],
   );
 
+  const handleParallaxToggle = useCallback((id: string) => {
+    setParallaxDisabledIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      mapEditorGlobals.parallaxDisabledIds = next;
+      return next;
+    });
+  }, []);
+
+  const handleAllParallaxToggle = useCallback(
+    (enabled: boolean) => {
+      setAllParallaxEnabled(enabled);
+      const next = enabled
+        ? new Set<string>()
+        : new Set(backgroundObjs.map((o) => o.id));
+      setParallaxDisabledIds(next);
+      mapEditorGlobals.parallaxDisabledIds = next;
+    },
+    [backgroundObjs],
+  );
+
   const tips: ReactNode[] = useMemo(() => {
     const tips: ReactNode[] = [];
 
@@ -123,6 +161,15 @@ export default function BackgroundTool() {
     <Stack p={0} gap="xs">
       <Tip tips={tips} />
 
+      {backgroundObjs.length > 0 && (
+        <Switch
+          label="Parallax preview"
+          description="Toggle parallax effect for all layers"
+          checked={allParallaxEnabled}
+          onChange={(e) => handleAllParallaxToggle(e.currentTarget.checked)}
+        />
+      )}
+
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext
           items={backgroundObjs.map((o) => o.id)}
@@ -134,9 +181,11 @@ export default function BackgroundTool() {
                 key={obj.id}
                 obj={obj}
                 isSelected={selectedIds.includes(obj.id)}
+                parallaxEnabled={!parallaxDisabledIds.has(obj.id)}
                 onSelect={handleSelect}
                 onRemove={handleRemove}
                 onParallaxChange={handleParallaxChange}
+                onParallaxToggle={handleParallaxToggle}
               />
             ))}
           </Stack>
@@ -149,17 +198,21 @@ export default function BackgroundTool() {
 interface SortableImageRowProps {
   obj: BackgroundImageObj;
   isSelected: boolean;
+  parallaxEnabled: boolean;
   onSelect: (id: string) => void;
   onRemove: (id: string) => void;
   onParallaxChange: (id: string, axis: "x" | "y", value: number) => void;
+  onParallaxToggle: (id: string) => void;
 }
 
 function SortableImageRow({
   obj,
   isSelected,
+  parallaxEnabled,
   onSelect,
   onRemove,
   onParallaxChange,
+  onParallaxToggle,
 }: SortableImageRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: obj.id });
@@ -190,7 +243,7 @@ function SortableImageRow({
         },
       }}
     >
-      {/* Top row: drag handle, delete */}
+      {/* Top row: drag handle, parallax toggle, delete */}
       <Group gap="xs" wrap="nowrap" justify="space-between">
         <Box
           {...attributes}
@@ -200,18 +253,52 @@ function SortableImageRow({
         >
           <IconGripVertical size={16} />
         </Box>
-        <ActionIcon
-          variant="subtle"
-          color="red"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(obj.id);
-          }}
-          aria-label="Remove background image"
-        >
-          <IconTrash size={14} />
-        </ActionIcon>
+        <Group gap={4} wrap="nowrap">
+          <Tooltip
+            label={
+              parallaxEnabled
+                ? "Disable parallax preview"
+                : "Enable parallax preview"
+            }
+            withArrow
+            position="left"
+          >
+            <ActionIcon
+              variant="subtle"
+              color={parallaxEnabled ? "blue" : "gray"}
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onParallaxToggle(obj.id);
+              }}
+              aria-label={
+                parallaxEnabled
+                  ? "Disable parallax preview"
+                  : "Enable parallax preview"
+              }
+            >
+              {parallaxEnabled ? (
+                <IconEye size={14} />
+              ) : (
+                <IconEyeOff size={14} />
+              )}
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Remove background image" withArrow position="left">
+            <ActionIcon
+              variant="subtle"
+              color="red"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove(obj.id);
+              }}
+              aria-label="Remove background image"
+            >
+              <IconTrash size={14} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
       </Group>
 
       <Box className={classes.thumbnailWrapper}>

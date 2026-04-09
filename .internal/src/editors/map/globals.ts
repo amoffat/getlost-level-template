@@ -32,10 +32,14 @@ interface Globals {
 
   spatialIndex: SpatialIndex<MapObj>;
   mousePos: Vector2;
+  // IDs of background images whose parallax effect is currently disabled in the editor.
+  // Toggled via the eye icon in BackgroundTool; not persisted to level state.
+  parallaxDisabledIds: Set<string>;
 }
 
 export const globals: Globals = {
   initialized: false,
   layerContainers: {} as Record<MapLayerName, P.Container>,
   mousePos: { x: 0, y: 0 },
+  parallaxDisabledIds: new Set(),
 } as unknown as Globals;

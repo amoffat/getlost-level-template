@@ -47,3 +47,7 @@ State is held in Redux using Redux RTK. The main store can be seen in `.internal
 Many of the components in the editor (like the map and tileset editors) use a pixi.js canvas to display their contents. The code that manages the pixi.js rendering is held in `.internal/src/editors/` and there is a subfolder for each editor type that is being managed by a separate pixi.js application instance.
 
 The state of each pixi.js application must be kept in sync with the redux state. The authoritative state source is the redux store. To keep pixi.js in sync, we have a `Reconciler` class (`.internal/src/editors/common/reconciler.ts`) which knows how to create, update, and delete pixi.js objects. An instance of this reconciler class is used in redux middlewares, so that when a state-mutating action takes place, the reconciler can propagate that change to the pixi.js canvas.
+
+## UI Preferences
+
+- Prefer CSS modules to many inline styles

@@ -45,8 +45,13 @@ export function setupParallaxTicker(app: P.Application): void {
 
       // A parallax of 1 means no shift (moves with the world at full speed).
       // A parallax of 0 means the image stays fixed relative to the camera.
-      child.position.x = obj.x + camOffsetX * (1 - obj.parallax.x);
-      child.position.y = obj.y + camOffsetY * (1 - obj.parallax.y);
+      if (g.parallaxDisabledIds.has(obj.id)) {
+        child.position.x = obj.x;
+        child.position.y = obj.y;
+      } else {
+        child.position.x = obj.x + camOffsetX * (1 - obj.parallax.x);
+        child.position.y = obj.y + camOffsetY * (1 - obj.parallax.y);
+      }
     }
   });
 }
