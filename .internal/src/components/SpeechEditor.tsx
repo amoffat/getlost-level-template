@@ -264,6 +264,11 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
             onChange={(event) => onTextChange(event.currentTarget.value)}
           />
           <DetectedVariables text={data.content} />
+          <Textarea
+            rows={5}
+            label={"Translation context"}
+            description="Context exclusively by the translation tool when translating to other languages."
+          />
         </Stack>
         <Input.Label mt="sm">Responses</Input.Label>
         <Input.Description mb="sm">

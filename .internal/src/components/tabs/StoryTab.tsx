@@ -538,15 +538,17 @@ export default function StoryTab({
           maxWidth={500}
           onResizeEnd={handlePaneResize}
         >
-          <Stack h="100%" style={{ overflow: "hidden" }}>
+          <Stack h="100%" style={{ overflow: "hidden" }} pb="xl">
             <ScrollArea type="never" style={{ flex: 1 }}>
               {showDependencyMilestones && (
-                <MilestoneList
-                  selectedNodeIds={selectedNodeId ? [selectedNodeId] : []}
-                  ancestorHighlight={ancestorHighlight}
-                  onSelect={handleMilestoneSelect}
-                  selectedIcon={IconStarFilled}
-                />
+                <Stack p={0} pb="xl">
+                  <MilestoneList
+                    selectedNodeIds={selectedNodeId ? [selectedNodeId] : []}
+                    ancestorHighlight={ancestorHighlight}
+                    onSelect={handleMilestoneSelect}
+                    selectedIcon={IconStarFilled}
+                  />
+                </Stack>
               )}
             </ScrollArea>
           </Stack>
@@ -641,10 +643,10 @@ export default function StoryTab({
           maxWidth={500}
           onResizeEnd={handlePaneResize}
         >
-          <Stack h="100%" style={{ overflow: "hidden" }}>
+          <Stack h="100%" style={{ overflow: "hidden" }} pb="xl">
             <Tip tips={rightTips} />
             <ScrollArea type="never" style={{ flex: 1 }}>
-              <Stack p={0} pb={50}>
+              <Stack p={0} pb="xl">
                 {showMilestoneEditor && (
                   <MilestoneEditor
                     key={selectedNodeId}

@@ -114,7 +114,7 @@ export default function MilestoneEditor({
       : undefined;
 
   return (
-    <Stack p={0} gap="md">
+    <>
       <Fieldset legend="Milestone Details" p="xs">
         <Stack p={0} gap="md">
           <TextInput
@@ -151,7 +151,7 @@ export default function MilestoneEditor({
           </Stack>
         </Fieldset>
       )}
-    </Stack>
+    </>
   );
 }
 

@@ -24,6 +24,7 @@ import {
 } from "@mantine/core";
 import { IconGripVertical, IconTrash } from "@tabler/icons-react";
 import { ReactNode, useCallback, useMemo } from "react";
+import classes from "./BackgroundTool.module.css";
 
 export default function BackgroundTool() {
   const dispatch = useAppDispatch();
@@ -127,7 +128,7 @@ export default function BackgroundTool() {
           items={backgroundObjs.map((o) => o.id)}
           strategy={verticalListSortingStrategy}
         >
-          <Stack p={0} gap={2}>
+          <Stack p={0} gap="xs">
             {backgroundObjs.map((obj) => (
               <SortableImageRow
                 key={obj.id}
@@ -213,14 +214,16 @@ function SortableImageRow({
         </ActionIcon>
       </Group>
 
-      {/* Full-width thumbnail */}
-      <Image
-        src={thumbnailSrc}
-        w="100%"
-        h={80}
-        fit="cover"
-        style={{ flexShrink: 0 }}
-      />
+      <Box className={classes.thumbnailWrapper}>
+        <Box className={classes.thumbnailCheckers} />
+        <Image
+          src={thumbnailSrc}
+          w="100%"
+          h={80}
+          fit="cover"
+          className={classes.thumbnailImage}
+        />
+      </Box>
 
       {/* Parallax sliders */}
       <Stack gap={2} onClick={(e) => e.stopPropagation()}>

@@ -62,6 +62,7 @@ import {
   useRef,
 } from "react";
 import LayerList from "../LayerList";
+import MapPositions from "../MapPositions";
 import ObjectPalette from "../ObjectPalette";
 import ObjSelHover from "../ObjSelHoverMenu";
 import AnimationsPaletteFilters from "../paletteFilters/Animations";
@@ -69,7 +70,6 @@ import ObjectsPaletteFilters from "../paletteFilters/Objects";
 import { renderNpc } from "../paletteObjects/Npc";
 import { renderObjectAnimation } from "../paletteObjects/ObjectAnimation";
 import { renderTileGroup } from "../paletteObjects/TileGroup";
-import MapPositions from "../MapPositions";
 import Tip from "../Tip";
 import ToolPalette, { ToolDescriptor } from "../ToolPalette";
 import AutotilerTool from "../tools/map/AutotilerTool";
@@ -565,7 +565,7 @@ export default function MapEditorTab({
           maxWidth={500}
           onResizeEnd={handlePaneResize}
         >
-          <Stack h="100%" style={{ overflow: "hidden" }}>
+          <Stack h="100%" style={{ overflow: "hidden" }} pb="xl">
             <ToolPalette
               tools={toolPalette}
               activeTool={selectedToolName}
@@ -575,7 +575,7 @@ export default function MapEditorTab({
 
             <Tip tips={tips} />
             <ScrollArea type="never" style={{ flex: 1 }}>
-              <Stack p={0} pb={100}>
+              <Stack p={0} pb="xl">
                 {toolOptions}
               </Stack>
             </ScrollArea>

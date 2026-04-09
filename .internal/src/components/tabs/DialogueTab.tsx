@@ -652,9 +652,9 @@ export default function DialogueTab({
         maxWidth="45%"
         onResizeEnd={handlePaneResize}
       >
-        <Stack h="100%" style={{ overflow: "hidden" }} p={0}>
+        <Stack h="100%" style={{ overflow: "hidden" }} p={0} pb="xl">
           <ScrollArea type="never" style={{ flex: 1 }}>
-            <Stack p={0}>
+            <Stack p={0} pb="xl">
               {treeData.length === 0 && (
                 <Box p="xs">
                   <Alert
@@ -755,11 +755,11 @@ export default function DialogueTab({
         maxWidth="45%"
         onResizeEnd={handlePaneResize}
       >
-        <Stack h="100%" style={{ overflow: "hidden" }}>
+        <Stack h="100%" style={{ overflow: "hidden" }} pb="xl">
           <Tip tips={tips} />
 
           <ScrollArea type="never" style={{ flex: 1 }}>
-            <Stack p={0} gap="md">
+            <Stack p={0} gap="md" pb="xl">
               {dlgId && (
                 <>
                   <Fieldset legend="Dialogue" p="xs">
@@ -933,7 +933,10 @@ function ObjLeaf({
             <Menu withinPortal position="bottom-end">
               <Tooltip label="Change speaker image">
                 <Menu.Target>
-                  <ActionIcon variant="default" onClick={(e) => e.stopPropagation()}>
+                  <ActionIcon
+                    variant="default"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <IconPhoto size={16} />
                   </ActionIcon>
                 </Menu.Target>

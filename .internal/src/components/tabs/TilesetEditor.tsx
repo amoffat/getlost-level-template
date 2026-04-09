@@ -381,9 +381,11 @@ export default function TilesetEditorTab({
           maxWidth={500}
           onResizeEnd={handlePaneResize}
         >
-          <Stack h="100%" style={{ overflow: "hidden" }}>
+          <Stack h="100%" style={{ overflow: "hidden" }} pb="xl">
             <ScrollArea type="never" style={{ flex: 1 }}>
-              <Stack pb={50}>{tilesetImages}</Stack>
+              <Stack p={0} pb="xl">
+                {tilesetImages}
+              </Stack>
             </ScrollArea>
           </Stack>
         </Split.Pane>
@@ -517,7 +519,7 @@ export default function TilesetEditorTab({
           maxWidth={500}
           onResizeEnd={handlePaneResize}
         >
-          <Stack h="100%" style={{ overflow: "hidden" }}>
+          <Stack h="100%" style={{ overflow: "hidden" }} pb="xl">
             <ToolPalette
               activeTool={selectedToolName}
               tools={toolPalette}
@@ -528,7 +530,7 @@ export default function TilesetEditorTab({
             <Tip tips={tips} />
 
             <ScrollArea type="never" style={{ flex: 1 }}>
-              <Stack p={0} pb={50}>
+              <Stack p={0} pb="xl">
                 {toolOptions}
               </Stack>
             </ScrollArea>
