@@ -187,13 +187,15 @@ export default function SpeechEditor({
         makeKey: (text) => makeLocaleKey({ text }),
         dispatch,
       });
-      dispatch(
-        actions.updateNodeData({
-          dialogueId: activeDialogueId,
-          id: node.id,
-          data: { speakerNameKey: newKey },
-        }),
-      );
+      if (newKey !== undefined) {
+        dispatch(
+          actions.updateNodeData({
+            dialogueId: activeDialogueId,
+            id: node.id,
+            data: { speakerNameKey: newKey },
+          }),
+        );
+      }
     },
     [activeDialogueId, speakerNameKey, dispatch, localeEntries, node.id],
   );
@@ -211,13 +213,15 @@ export default function SpeechEditor({
       ctx: contentEntry?.ctx ?? null,
       dispatch,
     });
-    dispatch(
-      actions.updateNodeData({
-        dialogueId: activeDialogueId,
-        id: node.id,
-        data: { contentKey: newKey },
-      }),
-    );
+    if (newKey !== undefined) {
+      dispatch(
+        actions.updateNodeData({
+          dialogueId: activeDialogueId,
+          id: node.id,
+          data: { contentKey: newKey },
+        }),
+      );
+    }
   }, 300);
 
   const onCtxChange = useDebouncedCallback((ctx: string) => {
@@ -293,16 +297,18 @@ export default function SpeechEditor({
         makeKey: (text) => makeLocaleKey({ prefix: choiceId, text }),
         dispatch,
       });
-      const choices = data.choices.map((c) =>
-        c.id === choiceId ? { ...c, textKey: newKey } : c,
-      );
-      dispatch(
-        actions.updateNodeData({
-          dialogueId: activeDialogueId,
-          id: node.id,
-          data: { choices },
-        }),
-      );
+      if (newKey !== undefined) {
+        const choices = data.choices.map((c) =>
+          c.id === choiceId ? { ...c, textKey: newKey } : c,
+        );
+        dispatch(
+          actions.updateNodeData({
+            dialogueId: activeDialogueId,
+            id: node.id,
+            data: { choices },
+          }),
+        );
+      }
     },
     300,
   );
