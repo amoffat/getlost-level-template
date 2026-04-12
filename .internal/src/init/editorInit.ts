@@ -49,7 +49,7 @@ export async function getStoryInitPromise() {
   if (!storyInitPromiseCache) {
     storyInitPromiseCache = (async () => {
       await getMapInitPromise();
-      await getPreviewInitPromise();
+      await store.dispatch(loadStoryThunk()).unwrap();
     })();
   }
   return storyInitPromiseCache;

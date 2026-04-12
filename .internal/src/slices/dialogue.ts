@@ -99,7 +99,7 @@ export const slice = createSlice({
       if (!dlg) return;
       edgeAdapter.setAll(dlg.edges, edges);
     },
-    setNodeData(
+    updateNodeData(
       state,
       action: PayloadAction<{
         dialogueId: string;

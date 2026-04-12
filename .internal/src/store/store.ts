@@ -1,5 +1,6 @@
 import { globals as g } from "@/globals";
 import { slice as dialogueSlice } from "@/slices/dialogue";
+import { slice as localeSlice } from "@/slices/locale";
 import { slice as mapEditorSlice } from "@/slices/mapEditor";
 import { slice as storySlice } from "@/slices/story";
 import { slice as tilesetEditorSlice } from "@/slices/tilesetEditor";
@@ -12,6 +13,7 @@ import autosaveTilesetMiddleware from "./middleware/tileset/autosave";
 
 export const rootReducer = combineReducers({
   dialogue: dialogueSlice.reducer,
+  locale: localeSlice.reducer,
   story: storySlice.reducer,
   tilesetEditor: tilesetEditorSlice.reducer,
   mapEditor: mapEditorSlice.reducer,

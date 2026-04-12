@@ -5,7 +5,6 @@ import { RootState } from "@/store/store";
 import { DNode, SpeechData } from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
 import { Fieldset, Stack, Text, Title } from "@mantine/core";
-import VariableText from "../VariableText";
 import {
   Handle,
   NodeToolbar,
@@ -22,6 +21,7 @@ import {
   useRef,
   useState,
 } from "react";
+import VariableText from "../VariableText";
 import styles from "./styles/DialogueNode.module.css";
 
 export default function DialogueNode({
@@ -56,15 +56,29 @@ export default function DialogueNode({
     return mapSelectors.selectObject(state, dialogue.subjectId);
   }) as SpeakableMapObj | undefined;
 
-  const label = data?.label ?? obj?.name;
+  const localeEntries = useAppSelector(
+    (state: RootState) => state.locale.entries.entities,
+  );
+
+  const resolveText = useCallback(
+    (key: string | undefined): string => {
+      if (!key) return "";
+      return localeEntries[key]?.v ?? "";
+    },
+    [localeEntries],
+  );
+
+  const label = data?.speakerNameKey
+    ? resolveText(data.speakerNameKey)
+    : (obj?.name ?? "");
 
   // Clean up empty choices when deselected
   useEffect(() => {
     if (!selected) {
-      const filteredChoices = choicesData.filter((c) => Boolean(c.text));
+      const filteredChoices = choicesData.filter((c) => Boolean(c.textKey));
       if (filteredChoices.length !== choicesData.length && activeDialogueId) {
         dispatch(
-          actions.setNodeData({
+          actions.updateNodeData({
             dialogueId: activeDialogueId,
             id,
             data: { choices: filteredChoices },
@@ -132,7 +146,7 @@ export default function DialogueNode({
   if (!data) return null;
 
   const handles = choicesData.map((c) => {
-    if (!c.text) return null;
+    if (!c.textKey) return null;
     const measuredTop = handleTopByChoiceId[c.id];
     return (
       <Handle
@@ -150,7 +164,7 @@ export default function DialogueNode({
     [styles.selected]: selected,
   });
 
-  const visibleChoices = choicesData.filter((c) => Boolean(c.text));
+  const visibleChoices = choicesData.filter((c) => Boolean(c.textKey));
 
   let choicesContainer = null;
   if (visibleChoices.length > 0) {
@@ -165,7 +179,7 @@ export default function DialogueNode({
               }}
             >
               <Text size="sm">
-                <VariableText text={c.text} />
+                <VariableText text={resolveText(c.textKey)} />
               </Text>
             </div>
           ))}
@@ -174,12 +188,13 @@ export default function DialogueNode({
     );
   }
 
+  const resolvedContent = resolveText(data.contentKey);
   let content = (
     <Text>
-      <VariableText text={data.content} />
+      <VariableText text={resolvedContent} />
     </Text>
   );
-  if (!data.content || data.content.trim() === "") {
+  if (!data.contentKey || !resolvedContent) {
     content = (
       <Text ta="center" pb="lg" c="red">
         Missing content

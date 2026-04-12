@@ -1,9 +1,9 @@
 import { log } from "@/log";
 import { saveStory } from "@/persist/story/api";
 import { slice as dialogueSlice } from "@/slices/dialogue";
-import { slice as storySlice } from "@/slices/story";
-import type { Dialogue } from "@/types/dialogue";
+import { setLoading, slice as storySlice } from "@/slices/story";
 import { type RootState } from "@/store/store";
+import type { Dialogue } from "@/types/dialogue";
 import { AppStartListening } from "@/types/redux";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { EMPTY, Subject, from } from "rxjs";
@@ -12,7 +12,10 @@ import { catchError, concatMap, debounceTime, tap } from "rxjs/operators";
 const listenerMiddleware = createListenerMiddleware();
 
 // Stream of save requests for the single story
-const saveRequests$ = new Subject<{ story: RootState["story"]; dialogues: Dialogue[] }>();
+const saveRequests$ = new Subject<{
+  story: RootState["story"];
+  dialogues: Dialogue[];
+}>();
 
 saveRequests$
   .pipe(
@@ -40,9 +43,18 @@ const startAppListening =
   listenerMiddleware.startListening as AppStartListening;
 
 startAppListening({
-  predicate: (action) =>
-    action.type.startsWith(storySlice.name) ||
-    action.type.startsWith(dialogueSlice.name),
+  predicate: (action, _currentState, previousState) => {
+    const isLoadingStory =
+      action.type.startsWith("story/loadStory") ||
+      previousState.story.loading ||
+      action.type === setLoading.type;
+
+    const isStorySlice =
+      action.type.startsWith(storySlice.name) ||
+      action.type.startsWith(dialogueSlice.name);
+
+    return isStorySlice && !isLoadingStory;
+  },
   effect: async (_action, { getState }) => {
     const state = getState();
     const dialogues = state.dialogue.dialogues.ids

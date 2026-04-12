@@ -6,6 +6,7 @@ import {
   actions as dActions,
   selectors as dSelectors,
 } from "@/slices/dialogue";
+import { selectors as localeSelectors } from "@/slices/locale";
 import {
   actions as mapActions,
   selectors as mapSelectors,
@@ -17,6 +18,7 @@ import {
   setDefaultDialogueThunk,
   unlinkDialogueThunk,
 } from "@/thunks/dialogue";
+import { setLocaleThunk } from "@/thunks/locale";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import type { Dialogue, DNode } from "@/types/dialogue";
 import {
@@ -43,6 +45,7 @@ import {
   Overlay,
   RenderTreeNodePayload,
   ScrollArea,
+  Select,
   Stack,
   Text,
   Tooltip,
@@ -57,6 +60,7 @@ import {
   IconAlertTriangle,
   IconBubbleText,
   IconInfoCircle,
+  IconLanguage,
   IconPhoto,
   IconPlus,
   IconSitemap,
@@ -103,6 +107,7 @@ import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
 import Tip from "../Tip";
 
+import { supportedLocales } from "@/constants/locale";
 import "@/styles/react-flow.css";
 
 interface ObjNodeProps {
@@ -154,10 +159,19 @@ export default function DialogueTab({
   const activeDialogueId = useAppSelector(
     (state) => state.dialogue.activeDialogueId,
   );
+  const currentLocale = useAppSelector(localeSelectors.currentLocale);
   const tree = useTree();
   const treeSelectRef = useRef(tree.select);
   treeSelectRef.current = tree.select;
   const navigate = useNavigate();
+
+  const handleLocaleChange = useCallback(
+    (locale: string | null) => {
+      if (!locale) return;
+      dispatch(setLocaleThunk(locale));
+    },
+    [dispatch],
+  );
 
   const sortedSpeakers = useMemo(() => {
     return [...speakers].sort((a, b) => a.name.localeCompare(b.name));
@@ -250,6 +264,10 @@ export default function DialogueTab({
 
   // Track the currently selected node for the right-pane editor
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  const selectedNode = useAppSelector((state) =>
+    selectedNodeId ? dSelectors.selectNode(state, selectedNodeId) : null,
+  );
 
   useOnSelectionChange({
     onChange: ({ nodes: selectedNodes }) => {
@@ -371,8 +389,8 @@ export default function DialogueTab({
         type: "dialogue",
         data: {
           id,
-          label: undefined,
-          content: undefined,
+          speakerNameKey: undefined,
+          contentKey: undefined,
           animated: true,
           choices: [],
           isOrigin: clear,
@@ -713,21 +731,33 @@ export default function DialogueTab({
               <Background color="#505050ff" variant={BackgroundVariant.Dots} />
               <Controls position="top-left" showInteractive={false}></Controls>
               <Panel position="top-center">
-                <Button
-                  variant="filled"
-                  onClick={() => createSpeech({ dialogueId: dlgId })}
-                  leftSection={<IconBubbleText size={20} />}
-                >
-                  New Speech
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleReflow}
-                  ml="xs"
-                  leftSection={<IconSitemap size={20} />}
-                >
-                  Organize
-                </Button>
+                <Group gap="xs">
+                  <Button
+                    variant="filled"
+                    onClick={() => createSpeech({ dialogueId: dlgId })}
+                    leftSection={<IconBubbleText size={20} />}
+                  >
+                    New Speech
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleReflow}
+                    leftSection={<IconSitemap size={20} />}
+                  >
+                    Organize
+                  </Button>
+                  <Select
+                    leftSection={<IconLanguage />}
+                    variant="default"
+                    withAlignedLabels
+                    value={currentLocale}
+                    onChange={handleLocaleChange}
+                    data={supportedLocales}
+                    allowDeselect={false}
+                    comboboxProps={{ withinPortal: true }}
+                    styles={{ input: { cursor: "pointer" } }}
+                  />
+                </Group>
               </Panel>
             </ReactFlow>
           </div>
@@ -809,10 +839,11 @@ export default function DialogueTab({
                     </Stack>
                   </Fieldset>
 
-                  {selectedNodeId && (
+                  {selectedNodeId && selectedNode && (
                     <SpeechEditor
                       key={selectedNodeId}
-                      nodeId={selectedNodeId}
+                      currentLocale={currentLocale}
+                      node={selectedNode}
                     />
                   )}
                 </>

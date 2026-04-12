@@ -11,6 +11,7 @@ export function getDescription(key: string): string {
 }
 
 export type TextVariable = { key: string; known: boolean };
+const VAR_REGEX = /\{\{([^{}]+)\}\}/g;
 
 export type VariableSegment =
   | { type: "text"; value: string }
@@ -22,11 +23,10 @@ export type VariableSegment =
  */
 export function parseVariables(text: string): VariableSegment[] {
   const segments: VariableSegment[] = [];
-  const regex = /\{([^{}]+)\}/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  while ((match = regex.exec(text)) !== null) {
+  while ((match = VAR_REGEX.exec(text)) !== null) {
     if (match.index > lastIndex) {
       segments.push({
         type: "text",
@@ -39,7 +39,7 @@ export function parseVariables(text: string): VariableSegment[] {
       key,
       known: key in VARIABLE_MAP,
     });
-    lastIndex = regex.lastIndex;
+    lastIndex = VAR_REGEX.lastIndex;
   }
 
   if (lastIndex < text.length) {
@@ -52,9 +52,8 @@ export function parseVariables(text: string): VariableSegment[] {
 /** Returns the unique variable keys found in a string. */
 export function extractVariableKeys(text: string): TextVariable[] {
   const keys = new Set<string>();
-  const regex = /\{([^{}]+)\}/g;
   let match: RegExpExecArray | null;
-  while ((match = regex.exec(text)) !== null) {
+  while ((match = VAR_REGEX.exec(text)) !== null) {
     keys.add(match[1]);
   }
 

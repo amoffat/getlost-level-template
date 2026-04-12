@@ -6,10 +6,14 @@ import {
   actions as mapActions,
   selectors as mapSelectors,
 } from "@/slices/mapEditor";
+import type { AppDispatch } from "@/store/store";
 import { RootState } from "@/store/store";
+import { removeLocaleEntryThunk, syncLocaleEntryThunk } from "@/thunks/locale";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
-import { Choice, SpeechData } from "@/types/dialogue";
+import { Choice, DNode, SpeechData } from "@/types/dialogue";
+import type { LocaleEntry } from "@/types/locale";
 import { SpeakableMapObj } from "@/types/map";
+import { makeLocaleKey } from "@/utils/locale";
 import { extractVariableKeys, getDescription } from "@/utils/variableMap";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
@@ -46,19 +50,93 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import InfoTooltip from "./common/InfoTooltip";
 import ResettableInput from "./ResettableInput";
 
+/**
+ * Syncs a locale text field to the store, handling both main and non-main
+ * locales.
+ *
+ * - `main: true` — derives a new key via `makeKey`, removes the old entry if
+ *   the key changed, syncs the new entry, and returns the new key.
+ * - `main: false` — updates the translated value for the existing key,
+ *   preserving `original`, `ctx`, and `lock`. Returns `undefined` (key is
+ *   unchanged).
+ */
+function syncLocaleField({
+  locale,
+  existingEntry,
+  newText,
+  makeKey,
+  ctx = null,
+  dispatch,
+}: {
+  locale: string;
+  existingEntry: LocaleEntry | null;
+  newText: string | null;
+  makeKey: (text: string) => string;
+  ctx?: string | null;
+  dispatch: AppDispatch;
+}): string | undefined {
+  // If we're editing an entry in a locale, but our main locale doesn't have an
+  // entry, then assume this locale IS the main locale (even if its not
+  // selected).
+  locale = existingEntry ? locale : constants.defaultLocale;
+  const main = locale === constants.defaultLocale;
+
+  if (!newText) {
+    if (existingEntry) {
+      dispatch(removeLocaleEntryThunk({ locale, key: existingEntry.k }));
+    }
+    return;
+  }
+
+  const newKey = makeKey(newText);
+
+  if (main) {
+    if (existingEntry && existingEntry.k !== newKey) {
+      dispatch(removeLocaleEntryThunk({ locale, key: existingEntry.k }));
+    }
+    dispatch(
+      syncLocaleEntryThunk({ locale, entry: {
+        k: newKey,
+        v: newText,
+        original: newText,
+        ctx,
+      }}),
+    );
+  } else {
+    // Should never happen, since if existingEntry is not defined, we switch to
+    // the main locale. We only do this for typescript linting.
+    if (!existingEntry) return;
+
+    dispatch(
+      syncLocaleEntryThunk({ locale, entry: {
+        k: existingEntry.k,
+        v: newText,
+        original: existingEntry.original,
+        ctx: existingEntry.ctx,
+      }}),
+    );
+  }
+
+  return newKey;
+}
+
 interface SpeechEditorProps {
-  nodeId: string;
+  node: DNode;
+  currentLocale: string;
 }
 
 /**
  * Editing panel for a selected dialogue speech node.
  * Renders in the right pane of the DialogueTab.
  */
-export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
+export default function SpeechEditor({
+  node,
+  currentLocale,
+}: SpeechEditorProps) {
   const dispatch = useAppDispatch();
 
   const [resetKey, setResetKey] = useState(0);
@@ -66,12 +144,7 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
     (state: RootState) => state.dialogue.activeDialogueId,
   )!;
 
-  const node = useAppSelector((state: RootState) =>
-    dSelectors.selectNode(state, nodeId),
-  );
-
-  const data = node?.data as SpeechData | undefined;
-  const choicesData = useMemo(() => data?.choices ?? [], [data?.choices]);
+  const data = node.data as SpeechData;
 
   const dialogue = useAppSelector((state: RootState) =>
     dSelectors.selectDialogue(state, activeDialogueId),
@@ -81,28 +154,89 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
     if (!dialogue?.subjectId) return undefined;
     return mapSelectors.selectObject(state, dialogue.subjectId);
   }) as SpeakableMapObj | undefined;
-  const label = data?.label ?? obj?.name ?? "Sign";
 
-  const onLabelChange = (newLabel: string | undefined) => {
+  // Locale helpers — resolve a hash key to its display text
+  const localeEntries = useAppSelector(
+    (state: RootState) => state.locale.entries.entities,
+  );
+
+  const resolveText = useCallback(
+    (key: string | undefined): string => {
+      if (!key) return "";
+      return localeEntries[key]?.v ?? "";
+    },
+    [localeEntries],
+  );
+
+  // Resolve the content entry so we can read its ctx field
+  const contentEntry = data?.contentKey ? localeEntries[data.contentKey] : null;
+
+  const speakerNameKey = data?.speakerNameKey ?? `char:${obj?.name}`;
+  const resolvedSpeakerName = speakerNameKey
+    ? (localeEntries[speakerNameKey]?.v ?? obj?.name ?? "Sign")
+    : (obj?.name ?? "Sign");
+
+  const onSpeakerNameChange = useCallback(
+    (newText: string | undefined) => {
+      if (!activeDialogueId) return;
+
+      const newKey = syncLocaleField({
+        locale: currentLocale,
+        existingEntry: localeEntries[speakerNameKey],
+        newText: newText ?? null,
+        makeKey: (text) => makeLocaleKey({ text }),
+        dispatch,
+      });
+      dispatch(
+        actions.updateNodeData({
+          dialogueId: activeDialogueId,
+          id: node.id,
+          data: { speakerNameKey: newKey },
+        }),
+      );
+    },
+    [activeDialogueId, speakerNameKey, dispatch, localeEntries, node.id],
+  );
+
+  const onLabelChangeDebounce = useDebouncedCallback(onSpeakerNameChange, 300);
+
+  const onTextChange = useDebouncedCallback((newText: string) => {
     if (!activeDialogueId) return;
+
+    const newKey = syncLocaleField({
+      locale: currentLocale,
+      existingEntry: contentEntry,
+      newText,
+      makeKey: (text) => makeLocaleKey({ text, prefix: node.id }),
+      ctx: contentEntry?.ctx ?? null,
+      dispatch,
+    });
     dispatch(
-      actions.setNodeData({
+      actions.updateNodeData({
         dialogueId: activeDialogueId,
-        id: nodeId,
-        data: { label: newLabel },
+        id: node.id,
+        data: { contentKey: newKey },
       }),
     );
-  };
+  }, 300);
 
-  const onLabelChangeDebounce = useDebouncedCallback(onLabelChange, 300);
-
-  const onTextChange = useDebouncedCallback((content: string) => {
+  const onCtxChange = useDebouncedCallback((ctx: string) => {
     if (!activeDialogueId) return;
+    if (!contentEntry) return;
+
+    syncLocaleField({
+      locale: currentLocale,
+      existingEntry: contentEntry,
+      newText: contentEntry.v,
+      makeKey: () => contentEntry.k,
+      ctx,
+      dispatch,
+    });
     dispatch(
-      actions.setNodeData({
+      actions.updateNodeData({
         dialogueId: activeDialogueId,
-        id: nodeId,
-        data: { content },
+        id: node.id,
+        data: { ctx },
       }),
     );
   }, 300);
@@ -111,43 +245,61 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
     if (!activeDialogueId) return;
     const newChoice: Choice = {
       id: crypto.randomUUID(),
-      text: undefined,
+      textKey: undefined,
     };
-    const choices = [...choicesData, newChoice];
+    const choices = [...data.choices, newChoice];
     dispatch(
-      actions.setNodeData({
+      actions.updateNodeData({
         dialogueId: activeDialogueId,
-        id: nodeId,
+        id: node.id,
         data: { choices },
       }),
     );
-  }, [nodeId, dispatch, choicesData, activeDialogueId]);
+  }, [node, dispatch, data, activeDialogueId]);
 
   const removeChoice = useCallback(
     (choiceId: string) => {
       if (!activeDialogueId) return;
-      const choices = choicesData.filter((c) => c.id !== choiceId);
+      const choice = data.choices.find((c) => c.id === choiceId);
+      if (choice?.textKey) {
+        dispatch(removeLocaleEntryThunk({ locale: currentLocale, key: choice.textKey }));
+      }
+      const choices = data.choices.filter((c) => c.id !== choiceId);
       dispatch(
-        actions.setNodeData({
+        actions.updateNodeData({
           dialogueId: activeDialogueId,
-          id: nodeId,
+          id: node.id,
           data: { choices },
         }),
       );
     },
-    [nodeId, dispatch, choicesData, activeDialogueId],
+    [node, dispatch, data, activeDialogueId, currentLocale],
   );
 
   const updateChoiceText = useDebouncedCallback(
-    (choiceId: string, text: string) => {
+    (choiceId: string, newText: string) => {
       if (!activeDialogueId) return;
-      const choices = choicesData.map((c) =>
-        c.id === choiceId ? { ...c, text } : c,
+
+      const existingChoice = data.choices.find((c) => c.id === choiceId);
+      const existingEntry =
+        (existingChoice?.textKey
+          ? localeEntries[existingChoice.textKey]
+          : null) ?? null;
+
+      const newKey = syncLocaleField({
+        locale: currentLocale,
+        existingEntry,
+        newText: newText || null,
+        makeKey: (text) => makeLocaleKey({ prefix: choiceId, text }),
+        dispatch,
+      });
+      const choices = data.choices.map((c) =>
+        c.id === choiceId ? { ...c, textKey: newKey } : c,
       );
       dispatch(
-        actions.setNodeData({
+        actions.updateNodeData({
           dialogueId: activeDialogueId,
-          id: nodeId,
+          id: node.id,
           data: { choices },
         }),
       );
@@ -158,18 +310,18 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
   const reorderChoices = useCallback(
     (fromIndex: number, toIndex: number) => {
       if (!activeDialogueId) return;
-      const newChoices = [...choicesData];
+      const newChoices = [...data.choices];
       const [removed] = newChoices.splice(fromIndex, 1);
       newChoices.splice(toIndex, 0, removed);
       dispatch(
-        actions.setNodeData({
+        actions.updateNodeData({
           dialogueId: activeDialogueId,
-          id: nodeId,
+          id: node.id,
           data: { choices: newChoices },
         }),
       );
     },
-    [nodeId, dispatch, choicesData, activeDialogueId],
+    [node, dispatch, data, activeDialogueId],
   );
 
   if (!node || !data) {
@@ -182,7 +334,7 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
     );
   }
 
-  const canAddChoice = choicesData.length < constants.maxDialogueChoices;
+  const canAddChoice = data.choices.length < constants.maxDialogueChoices;
 
   return (
     <Stack p={0} gap="md">
@@ -190,13 +342,13 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
         <Stack gap="sm" p={0}>
           <ResettableInput
             onReset={() => {
-              onLabelChange(undefined);
+              onSpeakerNameChange(undefined);
               setResetKey((k) => k + 1);
             }}
           >
             <TextInput
               required
-              key={`label-${nodeId}-${resetKey}`}
+              key={`label-${node.id}-${resetKey}-${currentLocale}`}
               label={
                 <>
                   Name
@@ -209,7 +361,7 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
                 </>
               }
               description="The character speaking this dialogue."
-              defaultValue={label}
+              defaultValue={resolvedSpeakerName}
               onChange={(event) =>
                 onLabelChangeDebounce(event.currentTarget.value)
               }
@@ -224,9 +376,9 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
               onSetNodeOverride={(imageId) => {
                 if (!activeDialogueId) return;
                 dispatch(
-                  actions.setNodeData({
+                  actions.updateNodeData({
                     dialogueId: activeDialogueId,
-                    id: nodeId,
+                    id: node.id,
                     data: { speakerImageId: imageId },
                   }),
                 );
@@ -240,7 +392,7 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
         <Stack gap="sm" p={0}>
           <Textarea
             required
-            key={`content-${nodeId}-${resetKey}`}
+            key={`content-${node.id}-${resetKey}-${currentLocale}`}
             rows={5}
             label={
               <>
@@ -260,14 +412,17 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
             }
             description="The text that will be displayed to the player."
             placeholder="Please write NPC dialogue here..."
-            defaultValue={data.content ?? ""}
+            defaultValue={resolveText(data.contentKey)}
             onChange={(event) => onTextChange(event.currentTarget.value)}
           />
-          <DetectedVariables text={data.content} />
+          <DetectedVariables text={resolveText(data.contentKey)} />
           <Textarea
+            key={`ctx-${node.id}-${resetKey}-${currentLocale}`}
             rows={5}
             label={"Translation context"}
             description="Context exclusively by the translation tool when translating to other languages."
+            defaultValue={contentEntry?.ctx ?? ""}
+            onChange={(event) => onCtxChange(event.currentTarget.value)}
           />
         </Stack>
         <Input.Label mt="sm">Responses</Input.Label>
@@ -280,8 +435,8 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
           onDragEnd={(event: DragEndEvent) => {
             const { active, over } = event;
             if (!over || active.id === over.id) return;
-            const fromIndex = choicesData.findIndex((c) => c.id === active.id);
-            const toIndex = choicesData.findIndex((c) => c.id === over.id);
+            const fromIndex = data.choices.findIndex((c) => c.id === active.id);
+            const toIndex = data.choices.findIndex((c) => c.id === over.id);
             if (fromIndex !== -1 && toIndex !== -1) {
               reorderChoices(fromIndex, toIndex);
             }
@@ -289,15 +444,17 @@ export default function SpeechEditor({ nodeId }: SpeechEditorProps) {
         >
           <Stack p={0}>
             <SortableContext
-              items={choicesData.map((c) => c.id)}
+              items={data.choices.map((c) => c.id)}
               strategy={verticalListSortingStrategy}
             >
               <Stack p={0} gap="xs">
-                {choicesData.map((c) => (
+                {data.choices.map((c) => (
                   <SortableChoice
                     key={c.id}
                     id={c.id}
                     choice={c}
+                    currentLocale={currentLocale}
+                    resolveText={resolveText}
                     updateChoiceText={updateChoiceText}
                     removeChoice={removeChoice}
                   />
@@ -467,6 +624,8 @@ function SpeakerImageSection({
 type SortableChoiceProps = {
   id: string;
   choice: Choice;
+  currentLocale: string;
+  resolveText: (key: string | undefined) => string;
   updateChoiceText: (choiceId: string, text: string) => void;
   removeChoice: (choiceId: string) => void;
 };
@@ -474,6 +633,8 @@ type SortableChoiceProps = {
 function SortableChoice({
   id,
   choice,
+  currentLocale,
+  resolveText,
   updateChoiceText,
   removeChoice,
 }: SortableChoiceProps) {
@@ -494,7 +655,8 @@ function SortableChoice({
           {...listeners}
         />
         <TextInput
-          defaultValue={choice.text}
+          key={`choice-${id}-${currentLocale}`}
+          defaultValue={resolveText(choice.textKey)}
           style={{ flex: 1 }}
           placeholder="Type response"
           onChange={(event) => updateChoiceText(id, event.currentTarget.value)}

@@ -40,7 +40,7 @@ export async function layoutGraph<
       id: n.id,
       width: n.width ?? n.measured?.width ?? 150,
       height: n.height ?? n.measured?.height ?? 50,
-      label: n.data?.label ?? n.id,
+      label: n.data?.speakerNameKey ?? n.id,
     })),
     edges: edges.map((e, i) => ({
       id: e.id ?? `e${i}`,

@@ -73,3 +73,5 @@ export const maxBoundsArea = 1750 * 1750;
 
 export const maxDialogueChoices = 5;
 export const defaultMilestone = "default";
+
+export const defaultLocale = "main";

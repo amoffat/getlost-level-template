@@ -1,3 +1,4 @@
+import { defaultLocale } from "@/constants";
 import { loadStory } from "@/persist/story/api";
 import { actions as dActions } from "@/slices/dialogue";
 import {
@@ -12,6 +13,7 @@ import {
 import type { RootState } from "@/store/store";
 import { layoutGraph } from "@/utils/story";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { loadDialogueLocaleThunk } from "./locale";
 
 export const loadStoryThunk = createAsyncThunk(
   "story/loadStory",
@@ -20,14 +22,11 @@ export const loadStoryThunk = createAsyncThunk(
       dispatch(setLoading(true));
       dispatch(setError(undefined));
       const { nodes, edges, dialogues } = await loadStory();
-      if (!nodes.length && !edges.length) {
-        dispatch(setNodes([]));
-        dispatch(setEdges([]));
-        return;
-      }
+      dispatch(dActions.setDialogues(dialogues));
+      await dispatch(loadDialogueLocaleThunk(defaultLocale)).unwrap();
+
       dispatch(setNodes(nodes));
       dispatch(setEdges(edges));
-      dispatch(dActions.setDialogues(dialogues));
     } catch (err: any) {
       dispatch(setError(err?.message ?? String(err)));
     } finally {
