@@ -107,7 +107,7 @@ import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
 import Tip from "../Tip";
 
-import { supportedLocales } from "@/constants/locale";
+import { codeToFlag, codeToLanguage, supportedLangs } from "@/constants/locale";
 import "@/styles/react-flow.css";
 
 interface ObjNodeProps {
@@ -172,6 +172,13 @@ export default function DialogueTab({
     },
     [dispatch],
   );
+
+  const supportedLocales = useMemo(() => {
+    return supportedLangs.map((l) => ({
+      value: l,
+      label: `${codeToFlag[l]} ${codeToLanguage[l]}`,
+    }));
+  }, []);
 
   const sortedSpeakers = useMemo(() => {
     return [...speakers].sort((a, b) => a.name.localeCompare(b.name));

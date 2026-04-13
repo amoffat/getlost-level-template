@@ -6,14 +6,12 @@ import {
   actions as mapActions,
   selectors as mapSelectors,
 } from "@/slices/mapEditor";
-import type { AppDispatch } from "@/store/store";
 import { RootState } from "@/store/store";
-import { removeLocaleEntryThunk, syncLocaleEntryThunk } from "@/thunks/locale";
+import { removeLocaleEntryThunk } from "@/thunks/locale";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import { Choice, DNode, SpeechData } from "@/types/dialogue";
-import type { LocaleEntry } from "@/types/locale";
 import { SpeakableMapObj } from "@/types/map";
-import { makeLocaleKey } from "@/utils/locale";
+import { syncLocaleField } from "@/utils/locale";
 import { extractVariableKeys, getDescription } from "@/utils/variableMap";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
@@ -38,91 +36,26 @@ import {
   Input,
   Stack,
   Text,
-  Textarea,
-  TextInput,
   Tooltip,
   Typography,
 } from "@mantine/core";
-import { useDebouncedCallback } from "@mantine/hooks";
+import { useDisclosure } from "@mantine/hooks";
 import {
   IconGripVertical,
+  IconLanguage,
   IconPhoto,
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
 import { useCallback, useRef, useState } from "react";
 import InfoTooltip from "./common/InfoTooltip";
+import {
+  ActionButton,
+  LocaleContextModal,
+  LocalizedTextarea,
+  LocalizedTextInput,
+} from "./l10n";
 import ResettableInput from "./ResettableInput";
-
-/**
- * Syncs a locale text field to the store, handling both main and non-main
- * locales.
- *
- * - `main: true` — derives a new key via `makeKey`, removes the old entry if
- *   the key changed, syncs the new entry, and returns the new key.
- * - `main: false` — updates the translated value for the existing key,
- *   preserving `original`, `ctx`, and `lock`. Returns `undefined` (key is
- *   unchanged).
- */
-function syncLocaleField({
-  locale,
-  existingEntry,
-  newText,
-  makeKey,
-  ctx = null,
-  dispatch,
-}: {
-  locale: string;
-  existingEntry: LocaleEntry | null;
-  newText: string | null;
-  makeKey: (text: string) => string;
-  ctx?: string | null;
-  dispatch: AppDispatch;
-}): string | undefined {
-  // If we're editing an entry in a locale, but our main locale doesn't have an
-  // entry, then assume this locale IS the main locale (even if its not
-  // selected).
-  locale = existingEntry ? locale : constants.defaultLocale;
-  const main = locale === constants.defaultLocale;
-
-  if (!newText) {
-    if (existingEntry) {
-      dispatch(removeLocaleEntryThunk({ locale, key: existingEntry.k }));
-    }
-    return;
-  }
-
-  const newKey = makeKey(newText);
-
-  if (main) {
-    if (existingEntry && existingEntry.k !== newKey) {
-      dispatch(removeLocaleEntryThunk({ locale, key: existingEntry.k }));
-    }
-    dispatch(
-      syncLocaleEntryThunk({ locale, entry: {
-        k: newKey,
-        v: newText,
-        original: newText,
-        ctx,
-      }}),
-    );
-  } else {
-    // Should never happen, since if existingEntry is not defined, we switch to
-    // the main locale. We only do this for typescript linting.
-    if (!existingEntry) return;
-
-    dispatch(
-      syncLocaleEntryThunk({ locale, entry: {
-        k: existingEntry.k,
-        v: newText,
-        original: existingEntry.original,
-        ctx: existingEntry.ctx,
-      }}),
-    );
-  }
-
-  return newKey;
-}
 
 interface SpeechEditorProps {
   node: DNode;
@@ -155,95 +88,7 @@ export default function SpeechEditor({
     return mapSelectors.selectObject(state, dialogue.subjectId);
   }) as SpeakableMapObj | undefined;
 
-  // Locale helpers — resolve a hash key to its display text
-  const localeEntries = useAppSelector(
-    (state: RootState) => state.locale.entries.entities,
-  );
-
-  const resolveText = useCallback(
-    (key: string | undefined): string => {
-      if (!key) return "";
-      return localeEntries[key]?.v ?? "";
-    },
-    [localeEntries],
-  );
-
-  // Resolve the content entry so we can read its ctx field
-  const contentEntry = data?.contentKey ? localeEntries[data.contentKey] : null;
-
   const speakerNameKey = data?.speakerNameKey ?? `char:${obj?.name}`;
-  const resolvedSpeakerName = speakerNameKey
-    ? (localeEntries[speakerNameKey]?.v ?? obj?.name ?? "Sign")
-    : (obj?.name ?? "Sign");
-
-  const onSpeakerNameChange = useCallback(
-    (newText: string | undefined) => {
-      if (!activeDialogueId) return;
-
-      const newKey = syncLocaleField({
-        locale: currentLocale,
-        existingEntry: localeEntries[speakerNameKey],
-        newText: newText ?? null,
-        makeKey: (text) => makeLocaleKey({ text }),
-        dispatch,
-      });
-      if (newKey !== undefined) {
-        dispatch(
-          actions.updateNodeData({
-            dialogueId: activeDialogueId,
-            id: node.id,
-            data: { speakerNameKey: newKey },
-          }),
-        );
-      }
-    },
-    [activeDialogueId, speakerNameKey, dispatch, localeEntries, node.id],
-  );
-
-  const onLabelChangeDebounce = useDebouncedCallback(onSpeakerNameChange, 300);
-
-  const onTextChange = useDebouncedCallback((newText: string) => {
-    if (!activeDialogueId) return;
-
-    const newKey = syncLocaleField({
-      locale: currentLocale,
-      existingEntry: contentEntry,
-      newText,
-      makeKey: (text) => makeLocaleKey({ text, prefix: node.id }),
-      ctx: contentEntry?.ctx ?? null,
-      dispatch,
-    });
-    if (newKey !== undefined) {
-      dispatch(
-        actions.updateNodeData({
-          dialogueId: activeDialogueId,
-          id: node.id,
-          data: { contentKey: newKey },
-        }),
-      );
-    }
-  }, 300);
-
-  const onCtxChange = useDebouncedCallback((ctx: string) => {
-    if (!activeDialogueId) return;
-    if (!contentEntry) return;
-
-    syncLocaleField({
-      locale: currentLocale,
-      existingEntry: contentEntry,
-      newText: contentEntry.v,
-      makeKey: () => contentEntry.k,
-      ctx,
-      dispatch,
-    });
-    dispatch(
-      actions.updateNodeData({
-        dialogueId: activeDialogueId,
-        id: node.id,
-        data: { ctx },
-      }),
-    );
-  }, 300);
 
   const addChoice = useCallback(() => {
     if (!activeDialogueId) return;
@@ -266,7 +111,12 @@ export default function SpeechEditor({
       if (!activeDialogueId) return;
       const choice = data.choices.find((c) => c.id === choiceId);
       if (choice?.textKey) {
-        dispatch(removeLocaleEntryThunk({ locale: currentLocale, key: choice.textKey }));
+        dispatch(
+          removeLocaleEntryThunk({
+            locale: currentLocale,
+            key: choice.textKey,
+          }),
+        );
       }
       const choices = data.choices.filter((c) => c.id !== choiceId);
       dispatch(
@@ -280,37 +130,21 @@ export default function SpeechEditor({
     [node, dispatch, data, activeDialogueId, currentLocale],
   );
 
-  const updateChoiceText = useDebouncedCallback(
-    (choiceId: string, newText: string) => {
+  const updateChoiceTextKey = useCallback(
+    (choiceId: string, newKey: string) => {
       if (!activeDialogueId) return;
-
-      const existingChoice = data.choices.find((c) => c.id === choiceId);
-      const existingEntry =
-        (existingChoice?.textKey
-          ? localeEntries[existingChoice.textKey]
-          : null) ?? null;
-
-      const newKey = syncLocaleField({
-        locale: currentLocale,
-        existingEntry,
-        newText: newText || null,
-        makeKey: (text) => makeLocaleKey({ prefix: choiceId, text }),
-        dispatch,
-      });
-      if (newKey !== undefined) {
-        const choices = data.choices.map((c) =>
-          c.id === choiceId ? { ...c, textKey: newKey } : c,
-        );
-        dispatch(
-          actions.updateNodeData({
-            dialogueId: activeDialogueId,
-            id: node.id,
-            data: { choices },
-          }),
-        );
-      }
+      const choices = data.choices.map((c) =>
+        c.id === choiceId ? { ...c, textKey: newKey } : c,
+      );
+      dispatch(
+        actions.updateNodeData({
+          dialogueId: activeDialogueId,
+          id: node.id,
+          data: { choices },
+        }),
+      );
     },
-    300,
+    [node, dispatch, data, activeDialogueId],
   );
 
   const reorderChoices = useCallback(
@@ -340,6 +174,7 @@ export default function SpeechEditor({
     );
   }
 
+  const remountKey = `${currentLocale}-${node.id}-${resetKey}`;
   const canAddChoice = data.choices.length < constants.maxDialogueChoices;
 
   return (
@@ -348,13 +183,29 @@ export default function SpeechEditor({
         <Stack gap="sm" p={0}>
           <ResettableInput
             onReset={() => {
-              onSpeakerNameChange(undefined);
+              dispatch(
+                actions.updateNodeData({
+                  dialogueId: activeDialogueId,
+                  id: node.id,
+                  data: { speakerNameKey: undefined },
+                }),
+              );
               setResetKey((k) => k + 1);
             }}
           >
-            <TextInput
-              required
-              key={`label-${node.id}-${resetKey}-${currentLocale}`}
+            <LocalizedTextInput
+              key={remountKey}
+              currentLocale={currentLocale}
+              contentKey={speakerNameKey}
+              onLocaleKeyChange={(newKey) =>
+                dispatch(
+                  actions.updateNodeData({
+                    dialogueId: activeDialogueId,
+                    id: node.id,
+                    data: { speakerNameKey: newKey },
+                  }),
+                )
+              }
               label={
                 <>
                   Name
@@ -367,10 +218,6 @@ export default function SpeechEditor({
                 </>
               }
               description="The character speaking this dialogue."
-              defaultValue={resolvedSpeakerName}
-              onChange={(event) =>
-                onLabelChangeDebounce(event.currentTarget.value)
-              }
             />
           </ResettableInput>
 
@@ -396,9 +243,20 @@ export default function SpeechEditor({
 
       <Fieldset legend="Content" p="xs">
         <Stack gap="sm" p={0}>
-          <Textarea
-            required
-            key={`content-${node.id}-${resetKey}-${currentLocale}`}
+          <LocalizedTextarea
+            key={remountKey}
+            currentLocale={currentLocale}
+            contentKey={data.contentKey}
+            keyPrefix={node.id}
+            onLocaleKeyChange={(newKey) =>
+              dispatch(
+                actions.updateNodeData({
+                  dialogueId: activeDialogueId,
+                  id: node.id,
+                  data: { contentKey: newKey },
+                }),
+              )
+            }
             rows={5}
             label={
               <>
@@ -418,18 +276,8 @@ export default function SpeechEditor({
             }
             description="The text that will be displayed to the player."
             placeholder="Please write NPC dialogue here..."
-            defaultValue={resolveText(data.contentKey)}
-            onChange={(event) => onTextChange(event.currentTarget.value)}
           />
-          <DetectedVariables text={resolveText(data.contentKey)} />
-          <Textarea
-            key={`ctx-${node.id}-${resetKey}-${currentLocale}`}
-            rows={5}
-            label={"Translation context"}
-            description="Context exclusively by the translation tool when translating to other languages."
-            defaultValue={contentEntry?.ctx ?? ""}
-            onChange={(event) => onCtxChange(event.currentTarget.value)}
-          />
+          <DetectedVariables localeKey={data.contentKey} />
         </Stack>
         <Input.Label mt="sm">Responses</Input.Label>
         <Input.Description mb="sm">
@@ -460,8 +308,7 @@ export default function SpeechEditor({
                     id={c.id}
                     choice={c}
                     currentLocale={currentLocale}
-                    resolveText={resolveText}
-                    updateChoiceText={updateChoiceText}
+                    updateChoiceTextKey={updateChoiceTextKey}
                     removeChoice={removeChoice}
                   />
                 ))}
@@ -631,8 +478,7 @@ type SortableChoiceProps = {
   id: string;
   choice: Choice;
   currentLocale: string;
-  resolveText: (key: string | undefined) => string;
-  updateChoiceText: (choiceId: string, text: string) => void;
+  updateChoiceTextKey: (choiceId: string, newKey: string) => void;
   removeChoice: (choiceId: string) => void;
 };
 
@@ -640,15 +486,36 @@ function SortableChoice({
   id,
   choice,
   currentLocale,
-  resolveText,
-  updateChoiceText,
+  updateChoiceTextKey,
   removeChoice,
 }: SortableChoiceProps) {
+  const dispatch = useAppDispatch();
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
+  };
+
+  const localeEntries = useAppSelector(
+    (state: RootState) => state.locale.entries.entities,
+  );
+  const existingEntry = choice.textKey
+    ? (localeEntries[choice.textKey] ?? null)
+    : null;
+
+  const [ctxOpened, { open: openCtx, close: closeCtx }] = useDisclosure(false);
+
+  const handleCtxSave = (newCtx: string | undefined) => {
+    if (!existingEntry) return;
+    syncLocaleField({
+      locale: currentLocale,
+      existingEntry,
+      newText: existingEntry.v,
+      makeKey: () => existingEntry.k,
+      ctx: newCtx,
+      dispatch,
+    });
   };
 
   return (
@@ -660,21 +527,40 @@ function SortableChoice({
           {...attributes}
           {...listeners}
         />
-        <TextInput
-          key={`choice-${id}-${currentLocale}`}
-          defaultValue={resolveText(choice.textKey)}
+        <LocalizedTextInput
+          currentLocale={currentLocale}
+          contentKey={choice.textKey}
+          keyPrefix={id}
+          onLocaleKeyChange={(newKey) => updateChoiceTextKey(id, newKey)}
           style={{ flex: 1 }}
           placeholder="Type response"
-          onChange={(event) => updateChoiceText(id, event.currentTarget.value)}
+          showContextButton={false}
+        />
+        <ActionButton
+          tooltip="Translation context"
+          icon={<IconLanguage size={12} />}
+          onClick={openCtx}
+          disabled={!existingEntry}
         />
         <CloseButton size="xs" onClick={() => removeChoice(id)} />
       </Group>
+      <LocaleContextModal
+        opened={ctxOpened}
+        onClose={closeCtx}
+        originalText={existingEntry?.original ?? null}
+        initialCtx={existingEntry?.ctx}
+        onSave={handleCtxSave}
+      />
     </div>
   );
 }
 
 /** Renders a row of hoverable variable badges detected in the given text. */
-function DetectedVariables({ text }: { text: string | undefined }) {
+function DetectedVariables({ localeKey }: { localeKey: string | undefined }) {
+  const localeEntries = useAppSelector(
+    (state: RootState) => state.locale.entries.entities,
+  );
+  const text = localeKey ? (localeEntries[localeKey]?.v ?? "") : "";
   if (!text) return null;
   const keys = extractVariableKeys(text);
   if (keys.length === 0) return null;
