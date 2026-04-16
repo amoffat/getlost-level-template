@@ -1,4 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { selectors as localeSelectors } from "@/slices/locale";
 import { RootState } from "@/store/store";
 import { makeKey, syncLocaleField } from "@/utils/locale";
 import { Textarea, TextareaProps } from "@mantine/core";
@@ -41,7 +42,10 @@ export default function LocalizedTextarea({
   const dispatch = useAppDispatch();
 
   const localeEntries = useAppSelector(
-    (state: RootState) => state.locale.entries.entities,
+    (state: RootState) => state.locale.activeEntries.entities,
+  );
+  const defaultEntry = useAppSelector((state: RootState) =>
+    localeSelectors.selectDefaultEntry(state, contentKey),
   );
 
   const prevEntry = contentKey ? (localeEntries[contentKey] ?? null) : null;
@@ -52,6 +56,7 @@ export default function LocalizedTextarea({
     const newKey = syncLocaleField({
       locale: currentLocale,
       prevEntry,
+      defaultEntry,
       makeKey: ({ text, context }) => makeKey(keyPrefix, context, text),
       dispatch,
       updates: {
@@ -64,11 +69,12 @@ export default function LocalizedTextarea({
   }, debounce);
 
   const handleCtxSave = (newCtx: string | null | undefined) => {
-    if (!prevEntry) return;
+    if (!prevEntry && !defaultEntry) return;
     syncLocaleField({
       locale: currentLocale,
       prevEntry,
-      makeKey: () => prevEntry.k,
+      defaultEntry,
+      makeKey: () => (prevEntry ?? defaultEntry)!.k,
       dispatch,
       updates: {
         ctx: newCtx,
@@ -84,13 +90,13 @@ export default function LocalizedTextarea({
     />
   );
 
-  const originalText = prevEntry?.original ?? prevEntry?.v;
+  const originalText = defaultEntry?.v ?? prevEntry?.v;
 
   return (
     <>
-      <LocalizedInputHoverCard ctx={prevEntry?.ctx}>
+      <LocalizedInputHoverCard ctx={defaultEntry?.ctx}>
         <Textarea
-          defaultValue={prevEntry?.v}
+          defaultValue={prevEntry?.v ?? defaultEntry?.v}
           onChange={(event) => handleChange(event.currentTarget.value)}
           {...rest}
           label={labelWithCtx ?? rest.label}
@@ -101,7 +107,7 @@ export default function LocalizedTextarea({
         opened={ctxOpened}
         onClose={closeCtx}
         originalText={originalText}
-        initialCtx={prevEntry?.ctx}
+        initialCtx={defaultEntry?.ctx}
         onSave={handleCtxSave}
       />
     </>

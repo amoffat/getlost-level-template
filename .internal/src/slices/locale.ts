@@ -13,43 +13,82 @@ const entryAdapter = createEntityAdapter<LocaleEntry, string>({
 
 interface LocaleState {
   currentLocale: string;
-  entries: ReturnType<typeof entryAdapter.getInitialState>;
+  /** Raw entries for the default locale. Loaded once at editor init. */
+  defaultEntries: ReturnType<typeof entryAdapter.getInitialState>;
+  /** Raw entries for the currently active locale. Replaced on locale switch. */
+  activeEntries: ReturnType<typeof entryAdapter.getInitialState>;
 }
 
 export const slice = createSlice({
   name: "locale",
   initialState: {
     currentLocale: defaultLocale,
-    entries: entryAdapter.getInitialState(),
+    defaultEntries: entryAdapter.getInitialState(),
+    activeEntries: entryAdapter.getInitialState(),
   } as LocaleState,
 
   reducers: {
     setCurrentLocale(state, action: PayloadAction<string>) {
       state.currentLocale = action.payload;
     },
-    setEntries(state, action: PayloadAction<LocaleEntry[]>) {
-      entryAdapter.setAll(state.entries, action.payload);
+
+    // --- default locale reducers ---
+    setDefaultEntries(state, action: PayloadAction<LocaleEntry[]>) {
+      entryAdapter.setAll(state.defaultEntries, action.payload);
     },
-    mergeEntries(state, action: PayloadAction<LocaleEntry[]>) {
-      entryAdapter.upsertMany(state.entries, action.payload);
-    },
-    upsertEntry(
+    upsertDefaultEntry(
       state,
       action: PayloadAction<PartialNullable<LocaleEntry> & { k: string }>,
     ) {
-      entryAdapter.upsertOne(state.entries, action.payload as LocaleEntry);
+      entryAdapter.upsertOne(
+        state.defaultEntries,
+        action.payload as LocaleEntry,
+      );
     },
-    removeEntry(state, action: PayloadAction<string>) {
-      entryAdapter.removeOne(state.entries, action.payload);
+    removeDefaultEntry(state, action: PayloadAction<string>) {
+      entryAdapter.removeOne(state.defaultEntries, action.payload);
+    },
+
+    // --- active locale reducers ---
+    setActiveEntries(state, action: PayloadAction<LocaleEntry[]>) {
+      entryAdapter.setAll(state.activeEntries, action.payload);
+    },
+    mergeActiveEntries(state, action: PayloadAction<LocaleEntry[]>) {
+      entryAdapter.upsertMany(state.activeEntries, action.payload);
+    },
+    upsertActiveEntry(
+      state,
+      action: PayloadAction<PartialNullable<LocaleEntry> & { k: string }>,
+    ) {
+      entryAdapter.upsertOne(
+        state.activeEntries,
+        action.payload as LocaleEntry,
+      );
+    },
+    removeActiveEntry(state, action: PayloadAction<string>) {
+      entryAdapter.removeOne(state.activeEntries, action.payload);
     },
   },
 
   selectors: {
     currentLocale: (state) => state.currentLocale,
+    /** Active locale entry for the given key. */
     selectEntry: (state, key: string): LocaleEntry | undefined =>
-      state.entries.entities[key],
+      state.activeEntries.entities[key],
+    /** Default locale entry for the given key. */
+    selectDefaultEntry: (
+      state,
+      key: string | undefined,
+    ): LocaleEntry | undefined =>
+      key ? state.defaultEntries.entities[key] : undefined,
     allEntries: (state): LocaleEntry[] =>
-      state.entries.ids.map((id) => state.entries.entities[id] as LocaleEntry),
+      state.activeEntries.ids.map(
+        (id) => state.activeEntries.entities[id] as LocaleEntry,
+      ),
+    allDefaultEntries: (state): LocaleEntry[] =>
+      state.defaultEntries.ids.map(
+        (id) => state.defaultEntries.entities[id] as LocaleEntry,
+      ),
   },
 });
 

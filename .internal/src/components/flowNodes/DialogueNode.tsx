@@ -56,16 +56,19 @@ export default function DialogueNode({
     return mapSelectors.selectObject(state, dialogue.subjectId);
   }) as SpeakableMapObj | undefined;
 
-  const localeEntries = useAppSelector(
-    (state: RootState) => state.locale.entries.entities,
+  const activeEntries = useAppSelector(
+    (state: RootState) => state.locale.activeEntries.entities,
+  );
+  const defaultLocaleEntries = useAppSelector(
+    (state: RootState) => state.locale.defaultEntries.entities,
   );
 
   const resolveText = useCallback(
     (key: string | undefined): string => {
       if (!key) return "";
-      return localeEntries[key]?.v ?? "";
+      return activeEntries[key]?.v ?? defaultLocaleEntries[key]?.v ?? "";
     },
-    [localeEntries],
+    [activeEntries, defaultLocaleEntries],
   );
 
   const label = data?.speakerNameKey

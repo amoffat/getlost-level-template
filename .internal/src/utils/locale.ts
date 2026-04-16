@@ -24,26 +24,30 @@ export function makeKey(...args: (string | undefined)[]) {
  * - `main: true` — derives a new key via `makeKey`, removes the old entry if
  *   the key changed, syncs the new entry, and returns the new key.
  * - `main: false` — updates the translated value for the existing key,
- *   preserving `original`, `ctx`, and `lock`. Returns `undefined` (key is
- *   unchanged).
+ *   writing `original: defaultEntry.v` so translators have context in the
+ *   raw JSONL file. Returns `undefined` (key is unchanged).
  */
 export function syncLocaleField({
   locale,
   prevEntry,
+  defaultEntry,
   makeKey,
   dispatch,
   updates,
 }: {
   locale: string;
   prevEntry: LocaleEntry | null;
+  /** The corresponding entry from the default locale, used for cascade logic
+   *  and for populating the `original` field in non-default locale entries. */
+  defaultEntry: LocaleEntry | undefined;
   makeKey: ({ text, context }: { text?: string; context?: string }) => string;
   dispatch: AppDispatch;
   updates: PartialNullable<LocaleEntry>;
 }): string | undefined {
-  // If we're editing an entry in a locale, but our main locale doesn't have an
-  // entry, then assume this locale IS the main locale (even if it's not
-  // selected).
-  locale = prevEntry ? locale : constants.defaultLocale;
+  // If the default locale has no entry for this key yet, assume we are
+  // creating a brand-new entry in the default locale regardless of which
+  // locale is active.
+  locale = defaultEntry ? locale : constants.defaultLocale;
   const main = locale === constants.defaultLocale;
 
   if (updates.v === null) {
@@ -73,18 +77,20 @@ export function syncLocaleField({
     );
     return k;
   } else {
-    // Should never happen, since if existingEntry is not defined, we switch to
+    // Should never happen, since if defaultEntry is not defined, we switch to
     // the main locale. We only do this for typescript linting.
-    if (!prevEntry) return;
+    if (!prevEntry && !defaultEntry) return;
 
+    const entryKey = (prevEntry ?? defaultEntry)!.k;
     dispatch(
       upsertLocaleEntryThunk({
         locale,
         entry: {
-          original: prevEntry.v,
-          ctx: prevEntry.ctx,
+          // Persist original so translators can see the default text in the
+          // raw JSONL file.
+          original: defaultEntry?.v,
           ...updates,
-          k: prevEntry.k,
+          k: entryKey,
         },
       }),
     );

@@ -46,10 +46,7 @@ import {
 } from "@tabler/icons-react";
 import { useCallback, useRef, useState } from "react";
 import InfoTooltip from "./common/InfoTooltip";
-import {
-  LocalizedTextarea,
-  LocalizedTextInput,
-} from "./l10n";
+import { LocalizedTextarea, LocalizedTextInput } from "./l10n";
 import ResettableInput from "./ResettableInput";
 
 interface SpeechEditorProps {
@@ -517,10 +514,15 @@ function SortableChoice({
 
 /** Renders a row of hoverable variable badges detected in the given text. */
 function DetectedVariables({ localeKey }: { localeKey: string | undefined }) {
-  const localeEntries = useAppSelector(
-    (state: RootState) => state.locale.entries.entities,
+  const activeEntries = useAppSelector(
+    (state: RootState) => state.locale.activeEntries.entities,
   );
-  const text = localeKey ? (localeEntries[localeKey]?.v ?? "") : "";
+  const defaultLocaleEntries = useAppSelector(
+    (state: RootState) => state.locale.defaultEntries.entities,
+  );
+  const text = localeKey
+    ? (activeEntries[localeKey]?.v ?? defaultLocaleEntries[localeKey]?.v ?? "")
+    : "";
   if (!text) return null;
   const keys = extractVariableKeys(text);
   if (keys.length === 0) return null;

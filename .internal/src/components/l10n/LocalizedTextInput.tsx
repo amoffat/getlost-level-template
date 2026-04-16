@@ -1,5 +1,6 @@
 import { defaultLocale } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { selectors as localeSelectors } from "@/slices/locale";
 import { RootState } from "@/store/store";
 import { makeKey, syncLocaleField } from "@/utils/locale";
 import { Group, TextInput, TextInputProps } from "@mantine/core";
@@ -54,7 +55,10 @@ export default function LocalizedTextInput({
   const dispatch = useAppDispatch();
 
   const localeEntries = useAppSelector(
-    (state: RootState) => state.locale.entries.entities,
+    (state: RootState) => state.locale.activeEntries.entities,
+  );
+  const defaultEntry = useAppSelector((state: RootState) =>
+    localeSelectors.selectDefaultEntry(state, contentKey),
   );
 
   const prevEntry = contentKey ? (localeEntries[contentKey] ?? null) : null;
@@ -65,6 +69,7 @@ export default function LocalizedTextInput({
     const newKey = syncLocaleField({
       locale: currentLocale,
       prevEntry,
+      defaultEntry,
       makeKey: ({ text, context }) => makeKey(keyPrefix, context, text),
       dispatch,
       updates: {
@@ -77,11 +82,12 @@ export default function LocalizedTextInput({
   }, debounce);
 
   const handleCtxSave = (newCtx: string | null | undefined) => {
-    if (!prevEntry) return;
+    if (!prevEntry && !defaultEntry) return;
     syncLocaleField({
       locale: currentLocale,
       prevEntry,
-      makeKey: () => prevEntry.k,
+      defaultEntry,
+      makeKey: () => (prevEntry ?? defaultEntry)!.k,
       dispatch,
       updates: {
         ctx: newCtx,
@@ -89,16 +95,16 @@ export default function LocalizedTextInput({
     });
   };
 
-  const originalText = prevEntry?.original ?? prevEntry?.v;
+  const originalText = defaultEntry?.v ?? prevEntry?.v;
 
   if (contextButton === "inline") {
     const { style: wrapperStyle, ...inputRest } = rest;
     return (
       <>
         <Group gap="xs" wrap="nowrap" align="center" style={wrapperStyle}>
-          <LocalizedInputHoverCard ctx={prevEntry?.ctx}>
+          <LocalizedInputHoverCard ctx={defaultEntry?.ctx}>
             <TextInput
-              defaultValue={prevEntry?.v}
+              defaultValue={prevEntry?.v ?? defaultEntry?.v}
               onChange={(event) => handleChange(event.currentTarget.value)}
               {...inputRest}
               style={{ flex: 1 }}
@@ -109,7 +115,7 @@ export default function LocalizedTextInput({
               tooltip="Translation context"
               icon={<IconLanguage size={12} />}
               onClick={openCtx}
-              disabled={!prevEntry}
+              disabled={!prevEntry && !defaultEntry}
             />
           )}
         </Group>
@@ -118,7 +124,7 @@ export default function LocalizedTextInput({
           opened={ctxOpened}
           onClose={closeCtx}
           originalText={originalText}
-          initialCtx={prevEntry?.ctx}
+          initialCtx={defaultEntry?.ctx}
           onSave={handleCtxSave}
         />
       </>
@@ -135,9 +141,9 @@ export default function LocalizedTextInput({
 
   return (
     <>
-      <LocalizedInputHoverCard ctx={prevEntry?.ctx}>
+      <LocalizedInputHoverCard ctx={defaultEntry?.ctx}>
         <TextInput
-          defaultValue={prevEntry?.v}
+          defaultValue={prevEntry?.v ?? defaultEntry?.v}
           onChange={(event) => handleChange(event.currentTarget.value)}
           {...rest}
           label={labelWithCtx}
@@ -148,7 +154,7 @@ export default function LocalizedTextInput({
         opened={ctxOpened}
         onClose={closeCtx}
         originalText={originalText}
-        initialCtx={prevEntry?.ctx}
+        initialCtx={defaultEntry?.ctx}
         onSave={handleCtxSave}
       />
     </>
