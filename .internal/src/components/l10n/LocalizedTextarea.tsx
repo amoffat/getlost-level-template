@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { RootState } from "@/store/store";
-import { makeLocaleKey, syncLocaleField } from "@/utils/locale";
+import { makeKey, syncLocaleField } from "@/utils/locale";
 import { Textarea, TextareaProps } from "@mantine/core";
 import { useDebouncedCallback, useDisclosure } from "@mantine/hooks";
 import LocaleContextModal from "./LocaleContextModal";
@@ -20,11 +20,6 @@ interface LocalizedTextareaProps extends Omit<
    * Called when the locale key changes (main locale edits that rotate the key).
    */
   onLocaleKeyChange?: (newKey: string) => void;
-  /**
-   * Changing this value causes the underlying textarea to remount, resetting
-   * its displayed value from the store. Useful for external resets.
-   */
-  remountKey?: string | number;
   /** Debounce delay in ms. Defaults to 300. */
   debounce?: number;
 }
@@ -40,7 +35,6 @@ export default function LocalizedTextarea({
   contentKey,
   keyPrefix,
   onLocaleKeyChange,
-  remountKey,
   debounce = 300,
   ...rest
 }: LocalizedTextareaProps) {
@@ -50,61 +44,64 @@ export default function LocalizedTextarea({
     (state: RootState) => state.locale.entries.entities,
   );
 
-  const existingEntry = contentKey ? (localeEntries[contentKey] ?? null) : null;
-  const displayValue = existingEntry?.v ?? "";
+  const prevEntry = contentKey ? (localeEntries[contentKey] ?? null) : null;
 
   const [ctxOpened, { open: openCtx, close: closeCtx }] = useDisclosure(false);
 
   const handleChange = useDebouncedCallback((newText: string) => {
     const newKey = syncLocaleField({
       locale: currentLocale,
-      existingEntry,
-      newText: newText || null,
-      makeKey: (text) => makeLocaleKey({ text, prefix: keyPrefix }),
+      prevEntry,
+      makeKey: ({ text, context }) => makeKey(keyPrefix, context, text),
       dispatch,
+      updates: {
+        v: newText.trim() === "" ? null : newText,
+      },
     });
     if (newKey !== undefined) {
       onLocaleKeyChange?.(newKey);
     }
   }, debounce);
 
-  const handleCtxSave = (newCtx: string | undefined) => {
-    if (!existingEntry) return;
+  const handleCtxSave = (newCtx: string | null | undefined) => {
+    if (!prevEntry) return;
     syncLocaleField({
       locale: currentLocale,
-      existingEntry,
-      newText: existingEntry.v,
-      makeKey: () => existingEntry.k,
-      ctx: newCtx,
+      prevEntry,
+      makeKey: () => prevEntry.k,
       dispatch,
+      updates: {
+        ctx: newCtx,
+      },
     });
   };
 
-  const labelWithCtx =
-    rest.label != null || existingEntry ? (
-      <LocalizedInputLabel
-        label={rest.label}
-        showContextButton={!!existingEntry}
-        onContextClick={openCtx}
-      />
-    ) : undefined;
+  const labelWithCtx = rest.label != null && (
+    <LocalizedInputLabel
+      locale={currentLocale}
+      label={rest.label}
+      onContextClick={openCtx}
+    />
+  );
+
+  const originalText = prevEntry?.original ?? prevEntry?.v;
 
   return (
     <>
-      <LocalizedInputHoverCard ctx={existingEntry?.ctx}>
+      <LocalizedInputHoverCard ctx={prevEntry?.ctx}>
         <Textarea
-          key={`${currentLocale}-${remountKey ?? ""}`}
-          defaultValue={displayValue}
+          defaultValue={prevEntry?.v}
           onChange={(event) => handleChange(event.currentTarget.value)}
           {...rest}
           label={labelWithCtx ?? rest.label}
         />
       </LocalizedInputHoverCard>
       <LocaleContextModal
+        key={originalText}
         opened={ctxOpened}
         onClose={closeCtx}
-        originalText={existingEntry?.original ?? null}
-        initialCtx={existingEntry?.ctx}
+        originalText={originalText}
+        initialCtx={prevEntry?.ctx}
         onSave={handleCtxSave}
       />
     </>

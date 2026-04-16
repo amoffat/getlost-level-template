@@ -5,11 +5,11 @@ interface LocaleContextModalProps {
   opened: boolean;
   onClose: () => void;
   /** The original (source-language) text shown read-only for reference. */
-  originalText: string | null;
+  originalText: string | undefined;
   /** Current ctx value pre-populated into the textarea. */
   initialCtx: string | undefined;
-  /** Called with the new ctx string (or undefined if cleared) on Save. */
-  onSave: (ctx: string | undefined) => void;
+  /** Called with the new ctx string on Save. */
+  onSave: (ctx: string | undefined | null) => void;
 }
 
 /**
@@ -31,12 +31,14 @@ export default function LocaleContextModal({
     onSubmitPreventDefault: "always",
     validateInputOnChange: false,
     initialValues: {
-      context: "",
+      text: originalText,
+      context: initialCtx,
     },
   });
 
   const handleModalSubmit = form.onSubmit((values) => {
-    onSave(values.context || undefined);
+    const ctx = values.context?.trim() === "" ? null : values.context;
+    onSave(ctx);
     onClose();
   });
 
@@ -58,10 +60,11 @@ export default function LocaleContextModal({
 
           <Textarea
             label="Original text"
-            value={originalText ?? ""}
             autosize
             readOnly
             styles={{ input: { cursor: "default" } }}
+            key={form.key("text")}
+            {...form.getInputProps("text")}
           />
 
           <Textarea
@@ -69,7 +72,6 @@ export default function LocaleContextModal({
             placeholder="e.g. A friendly greeting from the character"
             autosize
             minRows={4}
-            defaultValue={initialCtx ?? ""}
             key={form.key("context")}
             {...form.getInputProps("context")}
           />

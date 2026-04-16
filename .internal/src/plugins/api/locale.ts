@@ -44,7 +44,16 @@ function readEntries(filePath: string): Record<string, unknown>[] {
 /** Write an array of entries back to a JSONL file, creating parent dirs as needed. */
 function writeEntries(filePath: string, entries: Record<string, unknown>[]): void {
   fs.mkdirSync(resolve(filePath, ".."), { recursive: true });
-  const content = entries.map((e) => JSON.stringify(e)).join("\n") + "\n";
+  // JSON.stringify preserves insertion order, so we build a new object with
+  // keys in the desired order. Known keys come first (skipped if absent),
+  // then any unrecognised keys are appended at the end.
+  const keyOrder = ["k", "v", "ctx", "original"];
+  const content = entries.map((e) => {
+    const ordered: Record<string, unknown> = {};
+    for (const key of keyOrder) if (key in e) ordered[key] = e[key];
+    for (const key of Object.keys(e)) if (!keyOrder.includes(key)) ordered[key] = e[key];
+    return JSON.stringify(ordered);
+  }).join("\n") + "\n";
   fs.writeFileSync(filePath, content, "utf8");
 }
 
@@ -119,6 +128,31 @@ router.put("/:locale/:file/:id", express.json(), async (req, res) => {
   });
 
   if (!res.headersSent) res.json(entry);
+});
+
+// Patch a single entry — serialised per file
+router.patch("/:locale/:file/:id", express.json(), async (req, res) => {
+  const { locale, file, id } = req.params;
+  const filePath = resolve(localeDir, locale, `${file}.jsonl`);
+  let result: Record<string, unknown> = { ...req.body, k: id };
+
+  await getMutex(filePath).runExclusive(() => {
+    const entries = readEntries(filePath);
+    const idx = entries.findIndex((e) => e.k === id);
+    if (idx >= 0) {
+      result = { ...entries[idx], ...req.body, k: id };
+      entries[idx] = result;
+    } else {
+      entries.push(result);
+    }
+    writeEntries(filePath, entries);
+  }).catch((error) => {
+    console.error("Error handling locale entry patch:", error);
+    if (!res.headersSent) res.sendStatus(500);
+    return;
+  });
+
+  if (!res.headersSent) res.json(result);
 });
 
 // Delete a single entry by key — serialised per file

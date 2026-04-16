@@ -1,8 +1,11 @@
+import { defaultLocale } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { RootState } from "@/store/store";
-import { makeLocaleKey, syncLocaleField } from "@/utils/locale";
-import { TextInput, TextInputProps } from "@mantine/core";
+import { makeKey, syncLocaleField } from "@/utils/locale";
+import { Group, TextInput, TextInputProps } from "@mantine/core";
 import { useDebouncedCallback, useDisclosure } from "@mantine/hooks";
+import { IconLanguage } from "@tabler/icons-react";
+import ActionButton from "./ActionButton";
 import LocaleContextModal from "./LocaleContextModal";
 import LocalizedInputHoverCard from "./LocalizedInputHoverCard";
 import LocalizedInputLabel from "./LocalizedInputLabel";
@@ -25,10 +28,12 @@ interface LocalizedTextInputProps extends Omit<
   /** Debounce delay in ms. Defaults to 300. */
   debounce?: number;
   /**
-   * When false, suppresses the translation-context button in the label area.
-   * Useful when the parent renders its own context button. Defaults to true.
+   * Controls where the translation-context button is rendered.
+   * - `"label"` (default): button appears inside the input label area.
+   * - `"inline"`: button appears to the right of the input in a flex row,
+   *   and the `style` prop is applied to the outer wrapper instead of the input.
    */
-  showContextButton?: boolean;
+  contextButton?: "label" | "inline";
 }
 
 /**
@@ -43,7 +48,7 @@ export default function LocalizedTextInput({
   keyPrefix,
   onLocaleKeyChange,
   debounce = 300,
-  showContextButton = true,
+  contextButton = "label",
   ...rest
 }: LocalizedTextInputProps) {
   const dispatch = useAppDispatch();
@@ -52,61 +57,98 @@ export default function LocalizedTextInput({
     (state: RootState) => state.locale.entries.entities,
   );
 
-  const existingEntry = contentKey ? (localeEntries[contentKey] ?? null) : null;
-  const displayValue = existingEntry?.v ?? "";
+  const prevEntry = contentKey ? (localeEntries[contentKey] ?? null) : null;
 
   const [ctxOpened, { open: openCtx, close: closeCtx }] = useDisclosure(false);
 
   const handleChange = useDebouncedCallback((newText: string) => {
     const newKey = syncLocaleField({
       locale: currentLocale,
-      existingEntry,
-      newText: newText || null,
-      makeKey: (text) => makeLocaleKey({ text, prefix: keyPrefix }),
+      prevEntry,
+      makeKey: ({ text, context }) => makeKey(keyPrefix, context, text),
       dispatch,
+      updates: {
+        v: newText.trim() === "" ? null : newText,
+      },
     });
     if (newKey !== undefined) {
       onLocaleKeyChange?.(newKey);
     }
   }, debounce);
 
-  const handleCtxSave = (newCtx: string | undefined) => {
-    if (!existingEntry) return;
+  const handleCtxSave = (newCtx: string | null | undefined) => {
+    if (!prevEntry) return;
     syncLocaleField({
       locale: currentLocale,
-      existingEntry,
-      newText: existingEntry.v,
-      makeKey: () => existingEntry.k,
-      ctx: newCtx,
+      prevEntry,
+      makeKey: () => prevEntry.k,
       dispatch,
+      updates: {
+        ctx: newCtx,
+      },
     });
   };
 
-  const ctxButtonVisible = showContextButton && !!existingEntry;
-  const labelWithCtx =
-    rest.label != null || ctxButtonVisible ? (
-      <LocalizedInputLabel
-        label={rest.label}
-        showContextButton={ctxButtonVisible}
-        onContextClick={openCtx}
-      />
-    ) : undefined;
+  const originalText = prevEntry?.original ?? prevEntry?.v;
+
+  if (contextButton === "inline") {
+    const { style: wrapperStyle, ...inputRest } = rest;
+    return (
+      <>
+        <Group gap="xs" wrap="nowrap" align="center" style={wrapperStyle}>
+          <LocalizedInputHoverCard ctx={prevEntry?.ctx}>
+            <TextInput
+              defaultValue={prevEntry?.v}
+              onChange={(event) => handleChange(event.currentTarget.value)}
+              {...inputRest}
+              style={{ flex: 1 }}
+            />
+          </LocalizedInputHoverCard>
+          {currentLocale === defaultLocale && (
+            <ActionButton
+              tooltip="Translation context"
+              icon={<IconLanguage size={12} />}
+              onClick={openCtx}
+              disabled={!prevEntry}
+            />
+          )}
+        </Group>
+        <LocaleContextModal
+          key={originalText}
+          opened={ctxOpened}
+          onClose={closeCtx}
+          originalText={originalText}
+          initialCtx={prevEntry?.ctx}
+          onSave={handleCtxSave}
+        />
+      </>
+    );
+  }
+
+  const labelWithCtx = (
+    <LocalizedInputLabel
+      locale={currentLocale}
+      label={rest.label}
+      onContextClick={openCtx}
+    />
+  );
 
   return (
     <>
-      <LocalizedInputHoverCard ctx={existingEntry?.ctx}>
+      <LocalizedInputHoverCard ctx={prevEntry?.ctx}>
         <TextInput
-          defaultValue={displayValue}
+          defaultValue={prevEntry?.v}
           onChange={(event) => handleChange(event.currentTarget.value)}
           {...rest}
-          label={labelWithCtx ?? rest.label}
+          label={labelWithCtx}
         />
       </LocalizedInputHoverCard>
       <LocaleContextModal
+        key={originalText}
         opened={ctxOpened}
         onClose={closeCtx}
-        originalText={existingEntry?.original ?? null}
-        initialCtx={existingEntry?.ctx}
+        originalText={originalText}
+        initialCtx={prevEntry?.ctx}
         onSave={handleCtxSave}
       />
     </>

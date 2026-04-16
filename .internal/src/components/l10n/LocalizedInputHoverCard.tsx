@@ -1,5 +1,4 @@
 import { HoverCard, Text, Title } from "@mantine/core";
-import { IconLanguage } from "@tabler/icons-react";
 import { ReactNode } from "react";
 
 interface LocalizedInputHoverCardProps {
@@ -17,18 +16,15 @@ export default function LocalizedInputHoverCard({
   children,
   ctx,
 }: LocalizedInputHoverCardProps) {
-  if (!ctx) return <>{children}</>;
-
   return (
     <HoverCard position="left-start" withArrow>
       <HoverCard.Target>{children}</HoverCard.Target>
-      <HoverCard.Dropdown>
-        <Title order={3}>
-          <IconLanguage />
-          Translation Context:
-        </Title>
-        <Text>{ctx}</Text>
-      </HoverCard.Dropdown>
+      {ctx && (
+        <HoverCard.Dropdown>
+          <Title order={3}>Translation Context:</Title>
+          <Text>{ctx}</Text>
+        </HoverCard.Dropdown>
+      )}
     </HoverCard>
   );
 }

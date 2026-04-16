@@ -1,6 +1,9 @@
 import { defaultLocale } from "@/constants";
+import { supportedLangs } from "@/constants/locale";
 import { actions } from "@/slices/locale";
+import type { DNode } from "@/types/dialogue";
 import type { LocaleEntry } from "@/types/locale";
+import { PartialNullable } from "@/types/util";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 const LOCALE_FILE = "dialogue";
@@ -33,28 +36,63 @@ export const loadDialogueLocaleThunk = createAsyncThunk(
   "locale/loadDialogue",
   async (locale: string, { dispatch }) => {
     const mainEntries = await fetchEntries(defaultLocale);
-    dispatch(actions.setEntries(mainEntries));
 
+    // Before we insert the main entries into the state, we set the `original`
+    // field correctly, so that the locale loaded below has `original` set on it
+    // correctly.
+    dispatch(
+      actions.setEntries(mainEntries.map((e) => ({ ...e, original: e.v }))),
+    );
+
+    // Prune entries that are not in the main locale. These can exist. For
+    // example, if you change the text of an entry in the main locale, but it
+    // already existed in a non-main locale. The id of the entry in the non-main
+    // locale is now orphaned.
     if (locale !== defaultLocale) {
       const localeEntries = await fetchEntries(locale);
-      dispatch(actions.mergeEntries(localeEntries));
+      const mainKeys = new Set(mainEntries.map((e) => e.k));
+      const validEntries = localeEntries
+        .filter((e) => mainKeys.has(e.k))
+        // Ensure that a null context is interpreted as "fall back to the
+        // default locale's context for this entry"
+        .map((e) => {
+          if (!e.ctx) {
+            delete e.ctx;
+          }
+          return e;
+        });
+      const orphanKeys = localeEntries
+        .filter((e) => !mainKeys.has(e.k))
+        .map((e) => e.k);
+
+      dispatch(actions.mergeEntries(validEntries));
+
+      await Promise.all(
+        orphanKeys.map((key) =>
+          fetch(entryUrl(locale, key), { method: "DELETE" }),
+        ),
+      );
     }
   },
 );
 
 /**
- * Upsert a single locale entry for the current locale.
- * Updates the Redux store optimistically, then persists to the API.
+ * Patch a single locale entry for the current locale.
+ * Accepts a partial entry (must include `k`). Merges with the existing Redux
+ * entry optimistically, then persists the patch to the API via PATCH.
  */
-export const syncLocaleEntryThunk = createAsyncThunk(
+export const upsertLocaleEntryThunk = createAsyncThunk(
   "locale/syncEntry",
   async (
-    { locale, entry }: { locale: string; entry: LocaleEntry },
+    {
+      locale,
+      entry,
+    }: { locale: string; entry: PartialNullable<LocaleEntry> & { k: string } },
     { dispatch },
   ) => {
     dispatch(actions.upsertEntry(entry));
     await fetch(entryUrl(locale, entry.k), {
-      method: "PUT",
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(entry),
     });
@@ -78,5 +116,36 @@ export const setLocaleThunk = createAsyncThunk(
   async (locale: string, { dispatch }) => {
     await dispatch(loadDialogueLocaleThunk(locale)).unwrap();
     dispatch(actions.setCurrentLocale(locale));
+  },
+);
+
+/**
+ * Remove all locale entries associated with a set of dialogue nodes across
+ * every supported locale.
+ *
+ * Cleans up `contentKey` and every `choices[].textKey` for each node.
+ * `speakerNameKey` is intentionally excluded — it is a plain-text hash shared
+ * across every node that uses the same speaker, so removing it here would
+ * silently break other nodes.
+ */
+export const cleanupNodeLocaleEntriesThunk = createAsyncThunk(
+  "locale/cleanupNodes",
+  async ({ nodes }: { nodes: DNode[] }, { dispatch }) => {
+    const promises: Promise<void>[] = [];
+    for (const node of nodes) {
+      const keysToRemove: string[] = [];
+      if (node.data.contentKey) keysToRemove.push(node.data.contentKey);
+      for (const choice of node.data.choices) {
+        if (choice.textKey) keysToRemove.push(choice.textKey);
+      }
+      for (const locale of supportedLangs) {
+        for (const key of keysToRemove) {
+          promises.push(
+            dispatch(removeLocaleEntryThunk({ locale, key })).unwrap(),
+          );
+        }
+      }
+    }
+    await Promise.all(promises);
   },
 );

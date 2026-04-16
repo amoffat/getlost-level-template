@@ -75,7 +75,9 @@ export default function DialogueNode({
   // Clean up empty choices when deselected
   useEffect(() => {
     if (!selected) {
-      const filteredChoices = choicesData.filter((c) => Boolean(c.textKey));
+      const filteredChoices = choicesData.filter((c) =>
+        Boolean(resolveText(c.textKey)),
+      );
       if (filteredChoices.length !== choicesData.length && activeDialogueId) {
         dispatch(
           actions.updateNodeData({

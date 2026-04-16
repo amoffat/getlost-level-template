@@ -1,5 +1,6 @@
 import { defaultLocale } from "@/constants";
 import type { LocaleEntry } from "@/types/locale";
+import { PartialNullable } from "@/types/util";
 import {
   createEntityAdapter,
   createSlice,
@@ -32,8 +33,11 @@ export const slice = createSlice({
     mergeEntries(state, action: PayloadAction<LocaleEntry[]>) {
       entryAdapter.upsertMany(state.entries, action.payload);
     },
-    upsertEntry(state, action: PayloadAction<LocaleEntry>) {
-      entryAdapter.upsertOne(state.entries, action.payload);
+    upsertEntry(
+      state,
+      action: PayloadAction<PartialNullable<LocaleEntry> & { k: string }>,
+    ) {
+      entryAdapter.upsertOne(state.entries, action.payload as LocaleEntry);
     },
     removeEntry(state, action: PayloadAction<string>) {
       entryAdapter.removeOne(state.entries, action.payload);

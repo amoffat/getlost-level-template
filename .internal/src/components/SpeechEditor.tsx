@@ -11,7 +11,6 @@ import { removeLocaleEntryThunk } from "@/thunks/locale";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import { Choice, DNode, SpeechData } from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
-import { syncLocaleField } from "@/utils/locale";
 import { extractVariableKeys, getDescription } from "@/utils/variableMap";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
@@ -39,10 +38,8 @@ import {
   Tooltip,
   Typography,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
 import {
   IconGripVertical,
-  IconLanguage,
   IconPhoto,
   IconTrash,
   IconX,
@@ -50,8 +47,6 @@ import {
 import { useCallback, useRef, useState } from "react";
 import InfoTooltip from "./common/InfoTooltip";
 import {
-  ActionButton,
-  LocaleContextModal,
   LocalizedTextarea,
   LocalizedTextInput,
 } from "./l10n";
@@ -275,7 +270,7 @@ export default function SpeechEditor({
               </>
             }
             description="The text that will be displayed to the player."
-            placeholder="Please write NPC dialogue here..."
+            placeholder="Please write character text here..."
           />
           <DetectedVariables localeKey={data.contentKey} />
         </Stack>
@@ -304,7 +299,7 @@ export default function SpeechEditor({
               <Stack p={0} gap="xs">
                 {data.choices.map((c) => (
                   <SortableChoice
-                    key={c.id}
+                    key={`${c.id}-${remountKey}`}
                     id={c.id}
                     choice={c}
                     currentLocale={currentLocale}
@@ -489,33 +484,11 @@ function SortableChoice({
   updateChoiceTextKey,
   removeChoice,
 }: SortableChoiceProps) {
-  const dispatch = useAppDispatch();
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-  };
-
-  const localeEntries = useAppSelector(
-    (state: RootState) => state.locale.entries.entities,
-  );
-  const existingEntry = choice.textKey
-    ? (localeEntries[choice.textKey] ?? null)
-    : null;
-
-  const [ctxOpened, { open: openCtx, close: closeCtx }] = useDisclosure(false);
-
-  const handleCtxSave = (newCtx: string | undefined) => {
-    if (!existingEntry) return;
-    syncLocaleField({
-      locale: currentLocale,
-      existingEntry,
-      newText: existingEntry.v,
-      makeKey: () => existingEntry.k,
-      ctx: newCtx,
-      dispatch,
-    });
   };
 
   return (
@@ -534,23 +507,10 @@ function SortableChoice({
           onLocaleKeyChange={(newKey) => updateChoiceTextKey(id, newKey)}
           style={{ flex: 1 }}
           placeholder="Type response"
-          showContextButton={false}
-        />
-        <ActionButton
-          tooltip="Translation context"
-          icon={<IconLanguage size={12} />}
-          onClick={openCtx}
-          disabled={!existingEntry}
+          contextButton="inline"
         />
         <CloseButton size="xs" onClick={() => removeChoice(id)} />
       </Group>
-      <LocaleContextModal
-        opened={ctxOpened}
-        onClose={closeCtx}
-        originalText={existingEntry?.original ?? null}
-        initialCtx={existingEntry?.ctx}
-        onSave={handleCtxSave}
-      />
     </div>
   );
 }

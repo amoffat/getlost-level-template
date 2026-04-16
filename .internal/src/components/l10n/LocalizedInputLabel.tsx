@@ -1,13 +1,13 @@
+import { defaultLocale } from "@/constants";
 import { Group } from "@mantine/core";
 import { IconLanguage } from "@tabler/icons-react";
 import { ReactNode } from "react";
 import ActionButton from "./ActionButton";
 
 interface LocalizedInputLabelProps {
+  locale: string;
   /** The original label content passed to the input. */
   label: ReactNode;
-  /** When true, shows the language context button. */
-  showContextButton: boolean;
   /** Called when the language context button is clicked. */
   onContextClick: () => void;
 }
@@ -18,14 +18,14 @@ interface LocalizedInputLabelProps {
  * `LocalizedTextarea` to keep the label+button pattern DRY.
  */
 export default function LocalizedInputLabel({
+  locale,
   label,
-  showContextButton,
   onContextClick,
 }: LocalizedInputLabelProps) {
   return (
     <Group gap={4} align="center" wrap="nowrap">
       {label}
-      {showContextButton && (
+      {locale === defaultLocale && (
         <ActionButton
           tooltip="Translation context"
           icon={<IconLanguage size={12} />}

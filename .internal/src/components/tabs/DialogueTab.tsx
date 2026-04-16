@@ -18,7 +18,7 @@ import {
   setDefaultDialogueThunk,
   unlinkDialogueThunk,
 } from "@/thunks/dialogue";
-import { setLocaleThunk } from "@/thunks/locale";
+import { cleanupNodeLocaleEntriesThunk, setLocaleThunk } from "@/thunks/locale";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import type { Dialogue, DNode } from "@/types/dialogue";
 import {
@@ -311,7 +311,7 @@ export default function DialogueTab({
     200,
   );
 
-  // Prevent deletion of the origin node
+  // Prevent deletion of the origin node; clean up locale entries for deleted nodes
   const onBeforeDelete: OnBeforeDelete<DNode, Edge> = useCallback(
     async ({
       nodes: nodesToDelete,
@@ -319,7 +319,14 @@ export default function DialogueTab({
       nodes: DNode[];
       edges: Edge[];
     }): Promise<boolean> => {
-      const hasOrigin = nodesToDelete.some((n) => n.data.isOrigin);
+      // ReactFlow node state can be stale (e.g. data.contentKey, data.choices
+      // are updated via updateNodeData which only writes to Redux). Map each
+      // ReactFlow node to its authoritative Redux counterpart before acting.
+      const authoritativeNodes = nodesToDelete
+        .map((n) => activeNodes[n.id])
+        .filter((n): n is DNode => n !== undefined);
+
+      const hasOrigin = authoritativeNodes.some((n) => n.data.isOrigin);
       if (hasOrigin) {
         showNotification({
           title: "Cannot delete",
@@ -328,9 +335,15 @@ export default function DialogueTab({
         });
         return false;
       }
+
+      // Clean up locale entries for all nodes being removed.
+      await dispatch(
+        cleanupNodeLocaleEntriesThunk({ nodes: authoritativeNodes }),
+      ).unwrap();
+
       return true;
     },
-    [],
+    [dispatch, activeNodes],
   );
 
   const onEdgesChange: OnEdgesChange = useDebouncedCallback((changes) => {
@@ -1144,7 +1157,10 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
               }),
             );
           } else {
-            // Last (or no) milestone — remove the dialogue entirely
+            // Last (or no) milestone — remove the dialogue entirely, cleaning
+            // up all locale entries for every node in the dialogue first.
+            const allNodes = Object.values(dialogue.nodes.entities) as DNode[];
+            dispatch(cleanupNodeLocaleEntriesThunk({ nodes: allNodes }));
             dispatch(dActions.removeDialogue(dialogue.id));
           }
           if (activeDialogueId === dialogue.id) {

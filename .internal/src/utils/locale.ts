@@ -1,7 +1,11 @@
 import * as constants from "@/constants";
 import type { AppDispatch } from "@/store/store";
-import { removeLocaleEntryThunk, syncLocaleEntryThunk } from "@/thunks/locale";
+import {
+  removeLocaleEntryThunk,
+  upsertLocaleEntryThunk,
+} from "@/thunks/locale";
 import type { LocaleEntry } from "@/types/locale";
+import { PartialNullable } from "@/types/util";
 import { x86 } from "murmurhash3js";
 
 /** Returns an 8-char hex murmur hash of the given text. */
@@ -9,20 +13,8 @@ export function hashText(text: string): string {
   return (x86.hash32(text) >>> 0).toString(16).padStart(8, "0");
 }
 
-/**
- * Returns a locale key for node content or choice text, prefixed by the
- * owning ID (node ID or choice ID) so that identical text on different nodes
- * can carry independent translations.
- */
-export function makeLocaleKey({
-  text,
-  prefix,
-}: {
-  text: string;
-  prefix?: string;
-}): string {
-  if (!prefix) return hashText(text);
-  return `${prefix}:${hashText(text)}`;
+export function makeKey(...args: (string | undefined)[]) {
+  return hashText(args.join(":"));
 }
 
 /**
@@ -37,61 +29,62 @@ export function makeLocaleKey({
  */
 export function syncLocaleField({
   locale,
-  existingEntry,
-  newText,
+  prevEntry,
   makeKey,
-  ctx,
   dispatch,
+  updates,
 }: {
   locale: string;
-  existingEntry: LocaleEntry | null;
-  newText: string | null;
-  makeKey: (text: string) => string;
-  ctx?: string;
+  prevEntry: LocaleEntry | null;
+  makeKey: ({ text, context }: { text?: string; context?: string }) => string;
   dispatch: AppDispatch;
+  updates: PartialNullable<LocaleEntry>;
 }): string | undefined {
   // If we're editing an entry in a locale, but our main locale doesn't have an
   // entry, then assume this locale IS the main locale (even if it's not
   // selected).
-  locale = existingEntry ? locale : constants.defaultLocale;
+  locale = prevEntry ? locale : constants.defaultLocale;
   const main = locale === constants.defaultLocale;
 
-  if (!newText) {
-    if (existingEntry) {
-      dispatch(removeLocaleEntryThunk({ locale, key: existingEntry.k }));
+  if (updates.v === null) {
+    if (prevEntry) {
+      dispatch(removeLocaleEntryThunk({ locale, key: prevEntry.k }));
     }
     return;
   }
 
   if (main) {
-    const newKey = makeKey(newText);
-    if (existingEntry && existingEntry.k !== newKey) {
-      dispatch(removeLocaleEntryThunk({ locale, key: existingEntry.k }));
+    const k = makeKey({
+      text: updates.v ?? prevEntry?.v,
+      context: updates.ctx ?? prevEntry?.ctx,
+    });
+
+    if (prevEntry && prevEntry.k !== k) {
+      dispatch(removeLocaleEntryThunk({ locale, key: prevEntry.k }));
     }
     dispatch(
-      syncLocaleEntryThunk({
+      upsertLocaleEntryThunk({
         locale,
         entry: {
-          k: newKey,
-          v: newText,
-          ctx,
+          ...updates,
+          k,
         },
       }),
     );
-    return newKey;
+    return k;
   } else {
     // Should never happen, since if existingEntry is not defined, we switch to
     // the main locale. We only do this for typescript linting.
-    if (!existingEntry) return;
+    if (!prevEntry) return;
 
     dispatch(
-      syncLocaleEntryThunk({
+      upsertLocaleEntryThunk({
         locale,
         entry: {
-          k: existingEntry.k,
-          v: newText,
-          original: existingEntry.original,
-          ctx: ctx ?? existingEntry.ctx,
+          original: prevEntry.v,
+          ctx: prevEntry.ctx,
+          ...updates,
+          k: prevEntry.k,
         },
       }),
     );
