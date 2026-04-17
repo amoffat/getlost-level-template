@@ -48,7 +48,7 @@ export default function LocalizedTextarea({
     localeSelectors.selectDefaultEntry(state, contentKey),
   );
 
-  const prevEntry = contentKey ? (localeEntries[contentKey] ?? null) : null;
+  const prevEntry = contentKey ? localeEntries[contentKey] : undefined;
 
   const [ctxOpened, { open: openCtx, close: closeCtx }] = useDisclosure(false);
 

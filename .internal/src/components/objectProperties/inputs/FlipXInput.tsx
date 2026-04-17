@@ -1,12 +1,9 @@
-import { PropertyValueInfo, PropertyValueScope } from "../../PropertyValue";
+import { OnValueChangeArgs, PropertyValueInfo } from "../../PropertyValue";
 import SwitchInput from "./SwitchInput";
 
 interface FlipXInputProps {
   values: PropertyValueInfo<boolean>[];
-  onValueChange: (
-    scope: PropertyValueScope,
-    value: boolean | undefined,
-  ) => void;
+  onValueChange: (args: OnValueChangeArgs<boolean>) => void;
 }
 
 export default function FlipXInput({ values, onValueChange }: FlipXInputProps) {

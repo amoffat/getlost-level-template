@@ -1,8 +1,10 @@
 import * as constants from "@/constants";
-import { useAppSelector } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
+import { store } from "@/store/store";
 import { NpcInstance } from "@/types/map";
 import { NpcProps } from "@/types/properties";
+import { makeKey, syncLocaleField } from "@/utils/locale";
 import {
   collectPropertyValues,
   updateObjectProperties,
@@ -41,6 +43,8 @@ const TEMPLATE_PROPS = ["id", "tsObjId", "tilesetId"] as const;
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function NpcProperties({ objs }: { objs: NpcInstance[] }) {
+  const dispatch = useAppDispatch();
+
   // Create a key based only on relevant properties
   const propertyKey = createPropertyKey(objs, RELEVANT_PROPS);
 
@@ -86,13 +90,40 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       noTemplate
       defaultValue=""
       debounceMs={100}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: string | undefined,
-      ): void => {
+      onValueChange={({
+        scope,
+        value,
+        prevValue,
+      }: {
+        scope: PropertyValueScope;
+        value: string | undefined;
+        prevValue: string | undefined;
+      }): void => {
+        const keyMaker = (value: string | undefined) => makeKey("char", value);
+        const nameKey = keyMaker(value);
+
         updateProps(scope, {
           name: value,
+          nameKey,
           status: nameValidator(value) ? "error" : null,
+        });
+
+        const state = store.getState();
+        const localeEntries = state.locale.defaultEntries.entities;
+        const prevEntry = prevValue
+          ? localeEntries[keyMaker(prevValue)]
+          : undefined;
+
+        syncLocaleField({
+          locale: constants.defaultLocale,
+          defaultEntry: prevEntry,
+          prevEntry,
+          makeKey: () => nameKey,
+          dispatch,
+          updates: {
+            ctx: "Character name",
+            v: value,
+          },
         });
       }}
       renderInput={(
@@ -119,10 +150,13 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       description="How quickly the NPC moves across the map."
       values={toCollect.walkSpeed}
       defaultValue={constants.defaultNpcWalkSpeed}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: number | undefined,
-      ): void => {
+      onValueChange={({
+        scope,
+        value,
+      }: {
+        scope: PropertyValueScope;
+        value: number | undefined;
+      }): void => {
         updateProps(scope, { walkSpeed: value });
       }}
       debounceMs={100}
@@ -151,10 +185,13 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       description="How much to slow the player's movement when colliding with this NPC."
       values={toCollect.dampenWalkCollisions}
       defaultValue={constants.defaultNpcDampen}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: number | undefined,
-      ): void => {
+      onValueChange={({
+        scope,
+        value,
+      }: {
+        scope: PropertyValueScope;
+        value: number | undefined;
+      }): void => {
         updateProps(scope, { dampenWalkCollisions: value });
       }}
       debounceMs={100}
@@ -182,7 +219,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       description="Vertical offset of the NPC from the ground."
       tooltip="The ground offset adjusts the NPC's vertical position relative to the ground. Positive values will raise the NPC above the ground, while negative values will sink it below. This can be useful for NPCs that need to appear to be floating or partially submerged. Normally, this should be set to 0 for most NPCs."
       values={toCollect.groundOffset}
-      onValueChange={(scope, value) =>
+      onValueChange={({ scope, value }) =>
         updateProps(scope, { groundOffset: value })
       }
     />

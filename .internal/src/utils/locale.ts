@@ -36,10 +36,10 @@ export function syncLocaleField({
   updates,
 }: {
   locale: string;
-  prevEntry: LocaleEntry | null;
+  prevEntry?: LocaleEntry;
   /** The corresponding entry from the default locale, used for cascade logic
    *  and for populating the `original` field in non-default locale entries. */
-  defaultEntry: LocaleEntry | undefined;
+  defaultEntry?: LocaleEntry;
   makeKey: ({ text, context }: { text?: string; context?: string }) => string;
   dispatch: AppDispatch;
   updates: PartialNullable<LocaleEntry>;

@@ -115,10 +115,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       noTemplate
       values={toCollect.name}
       defaultValue=""
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: string | undefined,
-      ): void => {
+      onValueChange={({ scope, value }: { scope: PropertyValueScope; value: string | undefined }): void => {
         updateProps(scope, {
           name: value,
           status: nameValidator(value) ? "error" : null,
@@ -154,10 +151,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       values={toCollect.preferredEntranceId}
       defaultValue={null}
       debounceMs={100}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: string | null | undefined,
-      ): void => {
+      onValueChange={({ scope, value }: { scope: PropertyValueScope; value: string | null | undefined }): void => {
         updateProps(scope, { preferredEntranceId: value });
       }}
       renderInput={(
@@ -193,7 +187,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       label="Force exit?"
       description="A forced exit does not give the player a choice to stay."
       values={toCollect.force}
-      onValueChange={(scope, value) => updateProps(scope, { force: value })}
+      onValueChange={({ scope, value }) => updateProps(scope, { force: value })}
       noTemplate
       debounceMs={100}
     />
@@ -206,10 +200,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       values={toCollect.sensorRadius}
       defaultValue={constants.defaultExitSensorRadius}
       noTemplate
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: number | undefined,
-      ): void => {
+      onValueChange={({ scope, value }: { scope: PropertyValueScope; value: number | undefined }): void => {
         updateProps(scope, { sensorRadius: value });
       }}
       renderInput={(

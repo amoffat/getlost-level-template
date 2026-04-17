@@ -69,7 +69,7 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
   const flipXInput = (
     <FlipXInput
       values={toCollect.flipX}
-      onValueChange={(scope, value) => updateProps(scope, { flipX: value })}
+      onValueChange={({ scope, value }) => updateProps(scope, { flipX: value })}
     />
   );
 
@@ -77,7 +77,7 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
     <TintInput
       description="A color tint to apply to this animation."
       values={toCollect.tint}
-      onValueChange={(scope, value) => updateProps(scope, { tint: value })}
+      onValueChange={({ scope, value }) => updateProps(scope, { tint: value })}
     />
   );
 
@@ -86,7 +86,7 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
       label="Autoplay"
       description="Start the animation immediately"
       values={toCollect.autoplay}
-      onValueChange={(scope, value) => updateProps(scope, { autoplay: value })}
+      onValueChange={({ scope, value }) => updateProps(scope, { autoplay: value })}
     />
   );
 
@@ -95,7 +95,7 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
       label="Loop"
       description="Whether this animation loops continuously."
       values={toCollect.loop}
-      onValueChange={(scope, value) => updateProps(scope, { loop: value })}
+      onValueChange={({ scope, value }) => updateProps(scope, { loop: value })}
     />
   );
 
@@ -103,7 +103,7 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
     <HiddenInput
       description="Whether this animation starts off hidden on the map."
       values={toCollect.hidden}
-      onValueChange={(scope, value) => updateProps(scope, { hidden: value })}
+      onValueChange={({ scope, value }) => updateProps(scope, { hidden: value })}
     />
   );
 
@@ -111,7 +111,7 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
     <GroundOffsetInput
       description="Vertical offset of the animation from the ground."
       values={toCollect.groundOffset}
-      onValueChange={(scope, value) =>
+      onValueChange={({ scope, value }) =>
         updateProps(scope, { groundOffset: value })
       }
     />

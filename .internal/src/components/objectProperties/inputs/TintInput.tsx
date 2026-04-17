@@ -1,16 +1,13 @@
 import PropertyValue, {
+  OnValueChangeArgs,
   PropertyValueInfo,
-  PropertyValueScope,
 } from "../../PropertyValue";
 import { ColorInput } from "@mantine/core";
 import { ReactElement } from "react";
 
 interface TintInputProps {
   values: PropertyValueInfo<string | null>[];
-  onValueChange: (
-    scope: PropertyValueScope,
-    value: string | null | undefined,
-  ) => void;
+  onValueChange: (args: OnValueChangeArgs<string | null>) => void;
   description?: string;
 }
 

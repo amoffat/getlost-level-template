@@ -80,7 +80,7 @@ export default function SpeechEditor({
     return mapSelectors.selectObject(state, dialogue.subjectId);
   }) as SpeakableMapObj | undefined;
 
-  const speakerNameKey = data?.speakerNameKey ?? `char:${obj?.name}`;
+  const speakerNameKey = data?.speakerNameKey ?? obj?.nameKey;
 
   const addChoice = useCallback(() => {
     if (!activeDialogueId) return;

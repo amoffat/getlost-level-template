@@ -1,6 +1,6 @@
 import PropertyValue, {
+  OnValueChangeArgs,
   PropertyValueInfo,
-  PropertyValueScope,
 } from "../../PropertyValue";
 import { Switch } from "@mantine/core";
 import { ReactElement } from "react";
@@ -9,10 +9,7 @@ interface SwitchInputProps {
   label: string;
   description: string;
   values: PropertyValueInfo<boolean>[];
-  onValueChange: (
-    scope: PropertyValueScope,
-    value: boolean | undefined,
-  ) => void;
+  onValueChange: (args: OnValueChangeArgs<boolean>) => void;
   noTemplate?: boolean;
   debounceMs?: number;
 }

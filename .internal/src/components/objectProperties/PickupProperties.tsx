@@ -97,10 +97,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       noTemplate
       values={toCollect.name}
       defaultValue=""
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: string | undefined,
-      ): void => {
+      onValueChange={({ scope, value }: { scope: PropertyValueScope; value: string | undefined }): void => {
         updateProps(scope, {
           name: value,
           status: nameValidator(value) ? "error" : null,
@@ -133,7 +130,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       values={toCollect.tags}
       defaultValue={[]}
       areEqual={arrayEquals}
-      onValueChange={(scope, value: string[] | undefined) => {
+      onValueChange={({ scope, value }: { scope: PropertyValueScope; value: string[] | undefined }) => {
         updateProps(scope, { tags: value });
       }}
       debounceMs={100}
@@ -180,10 +177,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       values={toCollect.assetId}
       defaultValue={null}
       noTemplate={true}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: string | null | undefined,
-      ): void => {
+      onValueChange={({ scope, value }: { scope: PropertyValueScope; value: string | null | undefined }): void => {
         updateProps(scope, { assetId: value });
       }}
       debounceMs={100}
@@ -213,7 +207,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
     <HiddenInput
       description="Whether the pickup starts off hidden on the map."
       values={toCollect.hidden}
-      onValueChange={(scope, value) => updateProps(scope, { hidden: value })}
+      onValueChange={({ scope, value }) => updateProps(scope, { hidden: value })}
       noTemplate
       debounceMs={100}
     />

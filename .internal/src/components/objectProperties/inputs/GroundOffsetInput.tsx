@@ -1,16 +1,13 @@
 import PropertyValue, {
+  OnValueChangeArgs,
   PropertyValueInfo,
-  PropertyValueScope,
 } from "../../PropertyValue";
 import { Slider } from "@mantine/core";
 import { ReactElement, ReactNode } from "react";
 
 interface GroundOffsetInputProps {
   values: PropertyValueInfo<number>[];
-  onValueChange: (
-    scope: PropertyValueScope,
-    value: number | undefined,
-  ) => void;
+  onValueChange: (args: OnValueChangeArgs<number>) => void;
   description?: string;
   tooltip?: ReactNode;
   min?: number;

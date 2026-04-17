@@ -80,10 +80,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       values={toCollect.name}
       defaultValue=""
       debounceMs={100}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: string | undefined,
-      ): void => {
+      onValueChange={({ scope, value }: { scope: PropertyValueScope; value: string | undefined }): void => {
         updateProps(scope, { name: value });
       }}
       renderInput={(
@@ -110,7 +107,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       description="The RGB color of the light"
       values={toCollect.color}
       defaultValue={constants.defaultLightColor}
-      onValueChange={(scope, value: string | undefined) => {
+      onValueChange={({ scope, value }: { scope: PropertyValueScope; value: string | undefined }) => {
         updateProps(scope, { color: value });
       }}
       debounceMs={100}
@@ -142,7 +139,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       noTemplate
       values={toCollect.intensity}
       defaultValue={constants.defaultLightIntensity}
-      onValueChange={(scope, value: number | undefined) => {
+      onValueChange={({ scope, value }: { scope: PropertyValueScope; value: number | undefined }) => {
         updateProps(scope, { intensity: value });
       }}
       debounceMs={100}
@@ -170,7 +167,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       label="Off during day"
       description="Whether the light is off during the day"
       values={toCollect.offDuringDay}
-      onValueChange={(scope, value) =>
+      onValueChange={({ scope, value }) =>
         updateProps(scope, { offDuringDay: value })
       }
       noTemplate
@@ -185,10 +182,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       noTemplate
       values={toCollect.flicker}
       defaultValue={constants.defaultLightFlicker}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: LightFlicker | undefined,
-      ): void => {
+      onValueChange={({ scope, value }: { scope: PropertyValueScope; value: LightFlicker | undefined }): void => {
         updateProps(scope, { flicker: value });
       }}
       debounceMs={100}

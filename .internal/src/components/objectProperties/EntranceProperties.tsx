@@ -129,10 +129,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       noTemplate
       values={toCollect.name}
       defaultValue=""
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: string | undefined,
-      ): void => {
+      onValueChange={({ scope, value }: { scope: PropertyValueScope; value: string | undefined }): void => {
         updateProps(scope, {
           name: value,
           status: nameValidator(value) ? "error" : null,
@@ -166,10 +163,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
         description="The IDs of the exits (up to 3) that will lead to this entrance."
         noTemplate
         values={toCollect.exitIds}
-        onValueChange={(
-          scope: PropertyValueScope,
-          value: string[] | undefined,
-        ): void => {
+        onValueChange={({ scope, value }: { scope: PropertyValueScope; value: string[] | undefined }): void => {
           updateProps(scope, { exitIds: value });
         }}
         renderInput={(

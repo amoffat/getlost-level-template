@@ -23,6 +23,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -34,6 +35,12 @@ export type SelectableScope = Extract<
   PropertyValueScope,
   "template" | "instance"
 >;
+
+export interface OnValueChangeArgs<T> {
+  scope: PropertyValueScope;
+  value: T | undefined;
+  prevValue: T | undefined;
+}
 
 export interface PropertyValueInfo<T> {
   // Used purely for key generation/stability for react components
@@ -58,7 +65,7 @@ interface PropertyValueProps<T> {
     onChange: (value: T) => void,
   ) => ReactElement;
   /** Callback when the user changes the value */
-  onValueChange: (scope: PropertyValueScope, value: T | undefined) => void;
+  onValueChange: (args: OnValueChangeArgs<T>) => void;
   /** Optional function to determine if two values are equal (defaults to ===) */
   areEqual?: (a: T, b: T) => boolean;
   /**
@@ -170,9 +177,18 @@ function PropertyValueInner<T>({
 
   const [hasPendingValue, setHasPendingValue] = useState(false);
 
+  // Tracks the last value passed to onValueChange so prevValue is accurate
+  // across re-renders and debounced calls.
+  const lastCommittedValue = useRef<T | undefined>(analysis.effectiveValue);
+
   const setValue = useCallback(
     (value: T) => {
-      onValueChange(noTemplate ? "instance" : localScope, value);
+      onValueChange({
+        scope: noTemplate ? "instance" : localScope,
+        value,
+        prevValue: lastCommittedValue.current,
+      });
+      lastCommittedValue.current = value;
     },
     [localScope, noTemplate, onValueChange],
   );
@@ -197,7 +213,13 @@ function PropertyValueInner<T>({
 
       // This triggers an expensive operation in parent, so defer it
       requestIdleCallback(() => {
-        onValueChange(scope, scope === "template" ? undefined : localValue);
+        const newValue = scope === "template" ? undefined : localValue;
+        onValueChange({
+          scope,
+          value: newValue,
+          prevValue: lastCommittedValue.current,
+        });
+        lastCommittedValue.current = newValue;
         setHasPendingValue(false);
       });
     },

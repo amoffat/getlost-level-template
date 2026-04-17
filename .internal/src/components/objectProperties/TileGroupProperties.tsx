@@ -1,9 +1,11 @@
 import * as constants from "@/constants";
 import { WalkSound, walkSounds } from "@/constants";
-import { useAppSelector } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { TileGroupInstance } from "@/types/map";
 import { TileGroupProps } from "@/types/properties";
+import { makeKey, syncLocaleField } from "@/utils/locale";
 import {
   collectPropertyValues,
   updateObjectProperties,
@@ -38,6 +40,8 @@ const TEMPLATE_PROPS = ["id", "tsObjId", "tilesetId"] as const;
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
+  const dispatch = useAppDispatch();
+
   const groundLayer = useAppSelector(
     (state) => state.mapEditor.layers.active === MapLayerName.Ground,
   );
@@ -67,11 +71,39 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       label="Name"
       description="A name for this object. Does not have to be unique."
       values={toCollect.name}
-      onValueChange={(
-        scope: PropertyValueScope,
-        value: string | undefined,
-      ): void => {
-        updateProps(scope, { name: value });
+      onValueChange={({
+        scope,
+        value,
+        prevValue,
+      }: {
+        scope: PropertyValueScope;
+        value: string | undefined;
+        prevValue: string | undefined;
+      }): void => {
+        const keyMaker = (value: string | undefined) => makeKey("tg", value);
+        const nameKey = keyMaker(value);
+        updateProps(scope, {
+          name: value,
+          nameKey,
+        });
+
+        const state = store.getState();
+        const localeEntries = state.locale.defaultEntries.entities;
+        const prevEntry = prevValue
+          ? localeEntries[keyMaker(prevValue)]
+          : undefined;
+
+        syncLocaleField({
+          locale: constants.defaultLocale,
+          defaultEntry: prevEntry,
+          prevEntry,
+          makeKey: () => nameKey,
+          dispatch,
+          updates: {
+            ctx: "Object name",
+            v: value,
+          },
+        });
       }}
       debounceMs={100}
       defaultValue=""
@@ -98,10 +130,13 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       label="Walk sound"
       description="The sound that will play when a character walks on this tile"
       values={toCollect.walkSound}
-      onValueChange={function (
-        scope: PropertyValueScope,
-        value: WalkSound | undefined,
-      ): void {
+      onValueChange={function ({
+        scope,
+        value,
+      }: {
+        scope: PropertyValueScope;
+        value: WalkSound | undefined;
+      }): void {
         updateProps(scope, { walkSound: value });
       }}
       defaultValue={constants.defaultWalkSound}
@@ -134,10 +169,13 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       label="Friction"
       description="How many seconds it takes for the player's speed to reduce by half."
       values={toCollect.friction}
-      onValueChange={function (
-        scope: PropertyValueScope,
-        value: number | undefined,
-      ): void {
+      onValueChange={function ({
+        scope,
+        value,
+      }: {
+        scope: PropertyValueScope;
+        value: number | undefined;
+      }): void {
         updateProps(scope, { friction: value });
       }}
       debounceMs={100}
@@ -166,7 +204,13 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       label="Traction"
       description="How much grip this tile provides. Higher values make it easier to change direction."
       values={toCollect.traction}
-      onValueChange={(scope: PropertyValueScope, value: number | undefined) => {
+      onValueChange={({
+        scope,
+        value,
+      }: {
+        scope: PropertyValueScope;
+        value: number | undefined;
+      }) => {
         updateProps(scope, { traction: value });
       }}
       debounceMs={100}
@@ -193,7 +237,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
   const flipXInput = (
     <FlipXInput
       values={toCollect.flipX}
-      onValueChange={(scope, value) => updateProps(scope, { flipX: value })}
+      onValueChange={({ scope, value }) => updateProps(scope, { flipX: value })}
     />
   );
 
@@ -201,7 +245,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
     <TintInput
       description="A color tint to apply to this tile."
       values={toCollect.tint}
-      onValueChange={(scope, value) => updateProps(scope, { tint: value })}
+      onValueChange={({ scope, value }) => updateProps(scope, { tint: value })}
     />
   );
 
@@ -209,7 +253,9 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
     <HiddenInput
       description="Whether this object starts off hidden on the map."
       values={toCollect.hidden}
-      onValueChange={(scope, value) => updateProps(scope, { hidden: value })}
+      onValueChange={({ scope, value }) =>
+        updateProps(scope, { hidden: value })
+      }
     />
   );
 
@@ -217,7 +263,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
     <GroundOffsetInput
       description="Vertical offset of the object from the ground."
       values={toCollect.groundOffset}
-      onValueChange={(scope, value) =>
+      onValueChange={({ scope, value }) =>
         updateProps(scope, { groundOffset: value })
       }
       min={0}

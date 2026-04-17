@@ -1,12 +1,9 @@
-import { PropertyValueInfo, PropertyValueScope } from "../../PropertyValue";
+import { OnValueChangeArgs, PropertyValueInfo } from "../../PropertyValue";
 import SwitchInput from "./SwitchInput";
 
 interface HiddenInputProps {
   values: PropertyValueInfo<boolean>[];
-  onValueChange: (
-    scope: PropertyValueScope,
-    value: boolean | undefined,
-  ) => void;
+  onValueChange: (args: OnValueChangeArgs<boolean>) => void;
   description?: string;
   noTemplate?: boolean;
   debounceMs?: number;
