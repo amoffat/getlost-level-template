@@ -1,4 +1,5 @@
 import { defaultLocale } from "@/constants";
+import { SupportedLang } from "@/constants/locale";
 import type { LocaleEntry } from "@/types/locale";
 import { PartialNullable } from "@/types/util";
 import {
@@ -12,7 +13,7 @@ const entryAdapter = createEntityAdapter<LocaleEntry, string>({
 });
 
 interface LocaleState {
-  currentLocale: string;
+  currentLocale: SupportedLang;
   /** Raw entries for the default locale. Loaded once at editor init. */
   defaultEntries: ReturnType<typeof entryAdapter.getInitialState>;
   /** Raw entries for the currently active locale. Replaced on locale switch. */
@@ -28,7 +29,7 @@ export const slice = createSlice({
   } as LocaleState,
 
   reducers: {
-    setCurrentLocale(state, action: PayloadAction<string>) {
+    setCurrentLocale(state, action: PayloadAction<SupportedLang>) {
       state.currentLocale = action.payload;
     },
 
@@ -81,14 +82,7 @@ export const slice = createSlice({
       key: string | undefined,
     ): LocaleEntry | undefined =>
       key ? state.defaultEntries.entities[key] : undefined,
-    allEntries: (state): LocaleEntry[] =>
-      state.activeEntries.ids.map(
-        (id) => state.activeEntries.entities[id] as LocaleEntry,
-      ),
-    allDefaultEntries: (state): LocaleEntry[] =>
-      state.defaultEntries.ids.map(
-        (id) => state.defaultEntries.entities[id] as LocaleEntry,
-      ),
+    allDefaultEntries: (state) => state.defaultEntries.entities,
   },
 });
 

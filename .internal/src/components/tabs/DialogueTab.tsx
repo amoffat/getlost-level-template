@@ -12,13 +12,14 @@ import {
   selectors as mapSelectors,
 } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
+import { speakers as speakersSelector } from "@/store/selectors";
 import { store } from "@/store/store";
 import {
   reflowDialogueThunk,
   setDefaultDialogueThunk,
   unlinkDialogueThunk,
 } from "@/thunks/dialogue";
-import { cleanupNodeLocaleEntriesThunk, setLocaleThunk } from "@/thunks/locale";
+import { cleanupNodeLocaleEntriesThunk } from "@/thunks/locale";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import type { Dialogue, DNode } from "@/types/dialogue";
 import {
@@ -45,7 +46,6 @@ import {
   Overlay,
   RenderTreeNodePayload,
   ScrollArea,
-  Select,
   Stack,
   Text,
   Tooltip,
@@ -60,7 +60,6 @@ import {
   IconAlertTriangle,
   IconBubbleText,
   IconInfoCircle,
-  IconLanguage,
   IconPhoto,
   IconPlus,
   IconSitemap,
@@ -107,7 +106,6 @@ import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
 import Tip from "../Tip";
 
-import { codeToFlag, codeToLanguage, supportedLangs } from "@/constants/locale";
 import "@/styles/react-flow.css";
 
 interface ObjNodeProps {
@@ -144,7 +142,7 @@ export default function DialogueTab({
     nodeid?: string;
   }>();
   const location = useLocation();
-  const speakers = useAppSelector(mapSelectors.speakers);
+  const speakers = useAppSelector(speakersSelector);
   const availableMilestones = useAppSelector(dSelectors.availableMilestones);
   const allDialogues = useAppSelector(dSelectors.allDialogues);
   const storyNodes = useAppSelector((state) => state.story.nodes);
@@ -165,23 +163,8 @@ export default function DialogueTab({
   treeSelectRef.current = tree.select;
   const navigate = useNavigate();
 
-  const handleLocaleChange = useCallback(
-    (locale: string | null) => {
-      if (!locale) return;
-      dispatch(setLocaleThunk(locale));
-    },
-    [dispatch],
-  );
-
-  const supportedLocales = useMemo(() => {
-    return supportedLangs.map((l) => ({
-      value: l,
-      label: `${codeToFlag[l]} ${codeToLanguage[l]}`,
-    }));
-  }, []);
-
   const sortedSpeakers = useMemo(() => {
-    return [...speakers].sort((a, b) => a.name.localeCompare(b.name));
+    return speakers.sort((a, b) => a[0].localeCompare(b[0]));
   }, [speakers]);
 
   // Sync activeDialogueId from URL parameter
@@ -528,12 +511,11 @@ export default function DialogueTab({
       storyNodes.map((n) => [n.id, n.data.id] as [string, string]),
     );
 
-    const tree: TreeNodeData[] = sortedSpeakers.map((obj) => {
+    const tree: TreeNodeData[] = sortedSpeakers.map(([label, obj]) => {
       let getIcon: (
         isActive: boolean,
         expanded: boolean,
       ) => ReactElement = () => <></>;
-      const label = obj.name;
 
       if (isNpcInstance(obj)) {
         const npcTemplate = tsSelectors.templateFromId(
@@ -615,9 +597,9 @@ export default function DialogueTab({
 
     return tree;
   }, [
+    storyNodes,
     sortedSpeakers,
     allDialogues,
-    storyNodes,
     onCreateDialogue,
     onSelectDialogue,
   ]);
@@ -674,7 +656,7 @@ export default function DialogueTab({
 
     if (!dlgId && speakers.length > 0) {
       t.push(
-        "Select a dialogue from the left panel, or create a new one by clicking the '+' icon next to an NPC or tile group.",
+        "Select a dialogue from the left panel, or create a new dialogue by clicking the '+' icon in the left panel.",
       );
     }
 
@@ -766,17 +748,6 @@ export default function DialogueTab({
                   >
                     Organize
                   </Button>
-                  <Select
-                    leftSection={<IconLanguage />}
-                    variant="default"
-                    withAlignedLabels
-                    value={currentLocale}
-                    onChange={handleLocaleChange}
-                    data={supportedLocales}
-                    allowDeselect={false}
-                    comboboxProps={{ withinPortal: true }}
-                    styles={{ input: { cursor: "pointer" } }}
-                  />
                 </Group>
               </Panel>
             </ReactFlow>

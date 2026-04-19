@@ -16,14 +16,14 @@ import type { NpcAnimationRecord } from "./npc";
 type InstanceStatus = "error" | "warning";
 
 export interface EntranceProps {
-  name: string;
+  nameKey: string | null;
   tags: string[];
   exitIds: string[];
   status: InstanceStatus | null;
 }
 
 export interface ExitProps {
-  name: string;
+  nameKey: string | null;
   tags: string[];
   force: boolean;
   preferredEntranceId: string | null;
@@ -32,7 +32,7 @@ export interface ExitProps {
 }
 
 export interface PickupProps {
-  name: string;
+  nameKey: string | null;
   assetId: string | null;
   tags: string[];
   status: InstanceStatus | null;
@@ -49,7 +49,6 @@ export interface LightProps {
 }
 
 export interface TileGroupProps {
-  name: string;
   nameKey: string | null;
   tags: string[];
   flipX: boolean;
@@ -75,7 +74,6 @@ export interface AnimationProps {
 }
 
 export interface NpcProps {
-  name: string;
   nameKey: string | null;
   tags: string[];
   flipX: boolean;
@@ -94,14 +92,14 @@ export interface NpcProps {
 // migrations when adding or removing properties.
 
 export const ENTRANCE_PROPS_DEFAULTS: EntranceProps = {
-  name: "",
+  nameKey: null,
   tags: [],
   exitIds: [],
   status: null,
 };
 
 export const EXIT_PROPS_DEFAULTS: ExitProps = {
-  name: "",
+  nameKey: null,
   tags: [],
   force: false,
   preferredEntranceId: null,
@@ -110,7 +108,7 @@ export const EXIT_PROPS_DEFAULTS: ExitProps = {
 };
 
 export const PICKUP_PROPS_DEFAULTS: PickupProps = {
-  name: "",
+  nameKey: null,
   assetId: null,
   tags: [],
   status: null,
@@ -127,7 +125,6 @@ export const LIGHT_PROPS_DEFAULTS: LightProps = {
 };
 
 export const TILE_GROUP_PROPS_DEFAULTS: TileGroupProps = {
-  name: "",
   nameKey: null,
   tags: [],
   flipX: false,
@@ -153,7 +150,6 @@ export const ANIMATION_PROPS_DEFAULTS: AnimationProps = {
 };
 
 export const NPC_PROPS_DEFAULTS: NpcProps = {
-  name: "",
   nameKey: null,
   tags: [],
   flipX: false,

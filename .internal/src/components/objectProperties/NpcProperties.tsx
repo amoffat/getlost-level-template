@@ -1,16 +1,14 @@
 import * as constants from "@/constants";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useAppSelector } from "@/hooks/redux";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
-import { store } from "@/store/store";
+import { collectPropertyValues } from "@/store/selectors";
 import { NpcInstance } from "@/types/map";
 import { NpcProps } from "@/types/properties";
-import { makeKey, syncLocaleField } from "@/utils/locale";
 import {
-  collectPropertyValues,
   updateObjectProperties,
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
-import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
+import { createPropsEqualFn } from "@/utils/propertyKey";
 import {
   ActionIcon,
   Box,
@@ -22,15 +20,15 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { IconCopy } from "@tabler/icons-react";
-import { memo, ReactElement, useCallback, useMemo } from "react";
+import { memo, ReactElement, useCallback } from "react";
 import AdvancedSection from "../common/AdvancedSection";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
-import { requiredUniqueName } from "./validators/name";
+import LocalizedNameInput from "./inputs/LocalizedNameInput";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
-  "name",
+  "nameKey",
   "walkSpeed",
   "dampenWalkCollisions",
   "groundOffset",
@@ -43,15 +41,9 @@ const TEMPLATE_PROPS = ["id", "tsObjId", "tilesetId"] as const;
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function NpcProperties({ objs }: { objs: NpcInstance[] }) {
-  const dispatch = useAppDispatch();
-
-  // Create a key based only on relevant properties
-  const propertyKey = createPropertyKey(objs, RELEVANT_PROPS);
-
-  const toCollect = useMemo(() => {
-    return collectPropertyValues(objs, [...COLLECTED_PROPS]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propertyKey]);
+  const toCollect = useAppSelector((state) =>
+    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
+  );
 
   const npcs = useAppSelector(mapSelectors.selectNpcs);
 
@@ -67,80 +59,18 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
     [objs],
   );
 
-  const existingNames = useMemo(() => {
-    const skipIds = new Set(objs.map((obj) => obj.id));
-    const names = npcs
-      .filter((npc) => !skipIds.has(npc.id))
-      .map((npc) => npc.name!);
-    return new Set<string>(names);
-  }, [npcs, objs]);
-
-  const nameValidator = useCallback(
-    (value: string | undefined) => {
-      return requiredUniqueName(existingNames, value);
-    },
-    [existingNames],
-  );
-
   const nameInput = (
-    <PropertyValue
-      label="Name"
-      description="A name for the NPC. Must be unique."
-      values={toCollect.name}
-      noTemplate
-      defaultValue=""
-      debounceMs={100}
-      onValueChange={({
-        scope,
-        value,
-        prevValue,
-      }: {
-        scope: PropertyValueScope;
-        value: string | undefined;
-        prevValue: string | undefined;
-      }): void => {
-        const keyMaker = (value: string | undefined) => makeKey("char", value);
-        const nameKey = keyMaker(value);
-
+    <LocalizedNameInput
+      description="A name for this character. Must be unique."
+      values={toCollect.nameKey}
+      context="Character name"
+      keyPrefix="char"
+      onValueChange={({ scope, value }): void => {
         updateProps(scope, {
-          name: value,
-          nameKey,
-          status: nameValidator(value) ? "error" : null,
-        });
-
-        const state = store.getState();
-        const localeEntries = state.locale.defaultEntries.entities;
-        const prevEntry = prevValue
-          ? localeEntries[keyMaker(prevValue)]
-          : undefined;
-
-        syncLocaleField({
-          locale: constants.defaultLocale,
-          defaultEntry: prevEntry,
-          prevEntry,
-          makeKey: () => nameKey,
-          dispatch,
-          updates: {
-            ctx: "Character name",
-            v: value,
-          },
+          nameKey: value,
         });
       }}
-      renderInput={(
-        key: string,
-        value: string | undefined,
-        onChange: (value: string) => void,
-      ): ReactElement => {
-        return (
-          <TextInput
-            key={key}
-            defaultValue={value ?? ""}
-            placeholder="Enter name"
-            error={nameValidator(value)}
-            onChange={(e) => onChange(e.target.value)}
-          />
-        );
-      }}
+      required
     />
   );
 

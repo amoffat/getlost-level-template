@@ -1,92 +1,10 @@
-import {
-  PropertyValueInfo,
-  PropertyValueScope,
-} from "@/components/PropertyValue";
+import { PropertyValueScope } from "@/components/PropertyValue";
 import { globals } from "@/globals";
 import { actions as mapActions } from "@/slices/mapEditor";
 import { actions as tsActions } from "@/slices/tilesetEditor";
+import { selectTemplateProps } from "@/store/selectors";
 import { store } from "@/store/store";
-import { ExtractProps, MapObj, MapObjProps, TilesetMapObj } from "@/types/map";
-import { resolveTemplateProps } from "./map";
-
-/**
- * Collects property values from a list of instance objects and their templates.
- * Returns a mapping of property names to their values across all objects.
- *
- * The return type is narrowed to only the keys in `propertyNames`, so accessing
- * a property that was not collected is a compile-time error.
- *
- * @param objs - Array of instance objects
- * @param propertyNames - Array of property names to collect
- * @returns Object mapping property names to arrays of PropertyValueInfo
- */
-export function collectPropertyValues<
-  TInstance extends MapObj,
-  K extends keyof ExtractProps<TInstance>,
->(objs: TInstance[], propertyNames: K[]) {
-  type TProps = ExtractProps<TInstance>;
-  const collected = {} as { [P in K]: PropertyValueInfo<TProps[P]>[] };
-
-  // Initialize arrays for each property
-  for (const propName of propertyNames) {
-    collected[propName] = [];
-  }
-
-  // Collect values from each object and its template
-  objs.forEach((obj) => {
-    const tmpl = resolveTemplateProps(obj) as MapObjProps | null;
-
-    for (const propName of propertyNames) {
-      const valuesArray = collected[propName];
-      const instanceValue = obj[propName as keyof TInstance];
-
-      if (instanceValue === undefined) {
-        const templateValue = tmpl
-          ? tmpl[propName as keyof MapObjProps]
-          : undefined;
-        valuesArray.push({
-          key: obj.id,
-          value: templateValue as TProps[typeof propName],
-          scope: "template",
-        });
-      } else {
-        valuesArray.push({
-          key: obj.id,
-          value: instanceValue as TProps[typeof propName],
-          scope: "instance",
-        });
-      }
-    }
-  });
-
-  return collected;
-}
-
-/**
- * Resolves the effective value of a single property on a single instance
- * object, falling back to the template value if the instance has no override.
- *
- * @param obj - The instance object
- * @param propName - The property name to resolve
- * @returns The resolved property value
- */
-export function resolvePropertyValue<
-  TInstance extends MapObj,
-  TProps extends ExtractProps<TInstance> = ExtractProps<TInstance>,
-  K extends keyof TProps = keyof TProps,
->(obj: TInstance, propName: K): TProps[K] {
-  const instanceValue = obj[propName as keyof TInstance];
-
-  if (instanceValue === undefined) {
-    const tmpl = resolveTemplateProps(obj) as MapObjProps | null;
-    const templateValue = tmpl
-      ? tmpl[propName as keyof MapObjProps]
-      : undefined;
-    return templateValue as TProps[K];
-  }
-
-  return instanceValue as TProps[K];
-}
+import { ExtractProps, MapObj, TilesetMapObj } from "@/types/map";
 
 /**
  * Updates properties on instance objects and/or their templates.
@@ -136,15 +54,16 @@ export function updateObjectProperties<
       undefinedProps[key] = undefined;
     }
 
+    const state = store.getState();
+
     // Now collect all template IDs from the affected objects
     const allTmplIds = new Set<string>();
     for (const obj of objs) {
-      const tmpl = resolveTemplateProps(obj);
+      const tmpl = selectTemplateProps(state, obj);
       if (!tmpl) continue;
       allTmplIds.add(tmpl.id);
     }
 
-    const state = store.getState().mapEditor;
     const propsToCheck = Object.entries(props) as [keyof TInstance, any][];
 
     // Use the template index to efficiently find all objects using those
@@ -158,7 +77,7 @@ export function updateObjectProperties<
       if (!objIds) continue;
 
       for (const objId of objIds) {
-        const obj = state.objects.entities[objId]! as TInstance;
+        const obj = state.mapEditor.objects.entities[objId]! as TInstance;
         const instChanges: Partial<TInstance> = {};
 
         // This is subtle but very carefully designed. What we need to do is

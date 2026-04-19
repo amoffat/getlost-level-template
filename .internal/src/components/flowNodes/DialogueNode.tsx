@@ -1,9 +1,10 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
+import { selectPropertyValue } from "@/store/selectors";
 import { RootState } from "@/store/store";
 import { DNode, SpeechData } from "@/types/dialogue";
-import { SpeakableMapObj } from "@/types/map";
+import { SpeakableMapObj, SpeakableProps } from "@/types/map";
 import { Fieldset, Stack, Text, Title } from "@mantine/core";
 import {
   Handle,
@@ -71,9 +72,22 @@ export default function DialogueNode({
     [activeEntries, defaultLocaleEntries],
   );
 
-  const label = data?.speakerNameKey
-    ? resolveText(data.speakerNameKey)
-    : (obj?.name ?? "");
+  const objNameKey = useAppSelector((state) =>
+    obj
+      ? selectPropertyValue<SpeakableMapObj, SpeakableProps>(
+          state,
+          obj,
+          "nameKey",
+        )
+      : undefined,
+  );
+
+  const label =
+    (data?.speakerNameKey
+      ? resolveText(data.speakerNameKey)
+      : objNameKey
+        ? resolveText(objNameKey)
+        : undefined) ?? "";
 
   // Clean up empty choices when deselected
   useEffect(() => {
@@ -91,7 +105,7 @@ export default function DialogueNode({
         );
       }
     }
-  }, [selected, choicesData, dispatch, id, activeDialogueId]);
+  }, [selected, choicesData, dispatch, id, activeDialogueId, resolveText]);
 
   // Measure handle positions for choice handles
   const measureHandlePositions = useCallback(() => {

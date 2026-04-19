@@ -3,9 +3,11 @@ import { globals } from "@/globals";
 import { Card } from "@/types/card";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
+
 import {
   isAnimatedInstance,
   isNpcInstance,
+  isSpeakableObject,
   isTileGroupInstance,
   MapObj,
   NpcInstance,
@@ -157,14 +159,14 @@ export const slice = createSlice({
       },
       entryGateways: {
         id: constants.entryTemplateId,
-        name: "",
+        nameKey: null,
         tags: [],
         exitIds: [],
         status: null,
       },
       exitGateways: {
         id: constants.exitTemplateId,
-        name: "",
+        nameKey: null,
         tags: [],
         force: false,
         preferredEntranceId: null,
@@ -172,7 +174,7 @@ export const slice = createSlice({
         status: null,
       },
       pickups: {
-        name: "",
+        nameKey: null,
         hidden: false,
         id: constants.pickupTemplateId,
         assetId: null,
@@ -499,21 +501,10 @@ export const slice = createSlice({
           isNpcInstance(obj),
         ),
     ),
-    // Objects that are able to speak in dialogue
-    speakers: createMapSelector(
+    selectSpeakers: createMapSelector(
       [(state) => state.objects.entities],
-      (entities): SpeakableMapObj[] => {
-        const npcs = Object.values(entities).filter((obj) => {
-          const validClass = isNpcInstance(obj) || isTileGroupInstance(obj);
-          if (validClass) {
-            if (obj.name && obj.name.trim() !== "") {
-              return true;
-            }
-          }
-          return false;
-        });
-        return npcs as SpeakableMapObj[];
-      },
+      (entities): SpeakableMapObj[] =>
+        Object.values(entities).filter(isSpeakableObject) as SpeakableMapObj[],
     ),
     numSelectedTgInstances: createMapSelector(
       [(state) => state.selectedIds, (state) => state.objects.entities],

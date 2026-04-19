@@ -13,13 +13,14 @@ import LocalizedInputLabel from "./LocalizedInputLabel";
 
 interface LocalizedTextInputProps extends Omit<
   TextInputProps,
-  "defaultValue" | "value" | "onChange" | "required"
+  "defaultValue" | "value" | "onChange"
 > {
   currentLocale: string;
   /** The locale key currently stored for this field. */
   contentKey: string | undefined;
   /** Optional prefix passed to makeLocaleKey when generating a new key. */
   keyPrefix?: string;
+  defaultContext?: string;
   /**
    * Called when the locale key changes (main locale edits that rotate the key).
    * Not called when editing a non-main locale or when text is cleared.
@@ -34,7 +35,8 @@ interface LocalizedTextInputProps extends Omit<
    * - `"inline"`: button appears to the right of the input in a flex row,
    *   and the `style` prop is applied to the outer wrapper instead of the input.
    */
-  contextButton?: "label" | "inline";
+  contextButton?: "label" | "inline" | false;
+  shouldClearOldKey?: (oldKey: string, newKey: string) => boolean;
 }
 
 /**
@@ -47,9 +49,11 @@ export default function LocalizedTextInput({
   currentLocale,
   contentKey,
   keyPrefix,
+  defaultContext,
   onLocaleKeyChange,
   debounce = 300,
   contextButton = "label",
+  shouldClearOldKey,
   ...rest
 }: LocalizedTextInputProps) {
   const dispatch = useAppDispatch();
@@ -72,8 +76,10 @@ export default function LocalizedTextInput({
       defaultEntry,
       makeKey: ({ text, context }) => makeKey(keyPrefix, context, text),
       dispatch,
+      shouldClearOldKey,
       updates: {
         v: newText.trim() === "" ? null : newText,
+        ctx: defaultContext,
       },
     });
     if (newKey !== undefined) {
@@ -119,6 +125,26 @@ export default function LocalizedTextInput({
             />
           )}
         </Group>
+        <LocaleContextModal
+          key={originalText}
+          opened={ctxOpened}
+          onClose={closeCtx}
+          originalText={originalText}
+          initialCtx={defaultEntry?.ctx}
+          onSave={handleCtxSave}
+        />
+      </>
+    );
+  }
+
+  if (contextButton === false) {
+    return (
+      <>
+        <TextInput
+          defaultValue={prevEntry?.v ?? defaultEntry?.v}
+          onChange={(event) => handleChange(event.currentTarget.value)}
+          {...rest}
+        />
         <LocaleContextModal
           key={originalText}
           opened={ctxOpened}

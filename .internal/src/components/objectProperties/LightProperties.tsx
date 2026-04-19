@@ -1,23 +1,20 @@
 import * as constants from "@/constants";
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
+import { collectPropertyValues } from "@/store/selectors";
 import { LightFlicker, lightFlickerTypes } from "@/types/lights";
 import { LightObj } from "@/types/map";
 import { LightProps } from "@/types/properties";
-import {
-  collectPropertyValues,
-  updateObjectProperties,
-} from "@/utils/propertyEditor";
-import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
-import {
-  ColorInput,
+import { updateObjectProperties } from "@/utils/propertyEditor";
+import { createPropsEqualFn } from "@/utils/propertyKey";
+import { ColorInput,
   Fieldset,
   Select,
   Slider,
   Stack,
   TextInput,
 } from "@mantine/core";
-import { memo, ReactElement, useCallback, useMemo } from "react";
+import { memo, ReactElement, useCallback } from "react";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import SwitchInput from "./inputs/SwitchInput";
 
@@ -39,8 +36,9 @@ const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 function LightProperties({ objs }: { objs: LightObj[] }) {
   const dispatch = useAppDispatch();
 
-  // Create a key based only on relevant properties
-  const propertyKey = createPropertyKey(objs, RELEVANT_PROPS);
+  const toCollect = useAppSelector((state) =>
+    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
+  );
 
   // All light objects use the same global light template
   const templateUpdate = useCallback(
@@ -66,11 +64,6 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
     },
     [objs, templateUpdate],
   );
-
-  const toCollect = useMemo(() => {
-    return collectPropertyValues(objs, [...COLLECTED_PROPS]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propertyKey]);
 
   const nameInput = (
     <PropertyValue

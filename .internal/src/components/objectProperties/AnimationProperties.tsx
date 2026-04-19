@@ -1,27 +1,20 @@
+import { useAppSelector } from "@/hooks/redux";
+import { collectPropertyValues } from "@/store/selectors";
 import { AnimationInstance } from "@/types/map";
 import { AnimationProps } from "@/types/properties";
 import {
-  collectPropertyValues,
   updateObjectProperties,
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
-import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
-import {
-  ActionIcon,
-  Box,
-  Fieldset,
-  Group,
-  Stack,
-  TextInput,
-  Tooltip,
-} from "@mantine/core";
-import { IconCopy } from "@tabler/icons-react";
-import { memo, useCallback, useMemo } from "react";
+import { createPropsEqualFn } from "@/utils/propertyKey";
+import { Fieldset, Stack } from "@mantine/core";
+import { memo, useCallback } from "react";
 import AdvancedSection from "../common/AdvancedSection";
 import { PropertyValueScope } from "../PropertyValue";
 import FlipXInput from "./inputs/FlipXInput";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
 import HiddenInput from "./inputs/HiddenInput";
+import IdInput from "./inputs/IdInput";
 import SwitchInput from "./inputs/SwitchInput";
 import TintInput from "./inputs/TintInput";
 
@@ -46,13 +39,9 @@ const RELEVANT_PROPS: readonly (keyof AnimationInstance)[] = [
 ];
 
 function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
-  // Create a key based only on relevant properties
-  const propertyKey = createPropertyKey(objs, RELEVANT_PROPS);
-
-  const toCollect = useMemo(() => {
-    return collectPropertyValues(objs, [...COLLECTED_PROPS]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propertyKey]);
+  const toCollect = useAppSelector((state) =>
+    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
+  );
 
   const updateProps = useCallback(
     (scope: PropertyValueScope, props: Partial<AnimationProps>) => {
@@ -119,27 +108,7 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
 
   let idInput;
   if (objs.length === 1) {
-    const copyId = () => {
-      navigator.clipboard.writeText(objs[0].id);
-    };
-
-    idInput = (
-      <Group gap="xs" wrap="nowrap">
-        <Box style={{ flex: 1 }}>
-          <TextInput
-            label="ID"
-            description="The object's unique identifier."
-            value={objs[0].id}
-            disabled
-          />
-        </Box>
-        <Tooltip label="Copy id">
-          <ActionIcon onClick={copyId} variant="subtle" color="gray" size="sm">
-            <IconCopy size={16} />
-          </ActionIcon>
-        </Tooltip>
-      </Group>
-    );
+    idInput = <IdInput id={objs[0].id} />;
   }
 
   return (

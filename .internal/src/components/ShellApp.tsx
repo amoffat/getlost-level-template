@@ -15,7 +15,7 @@ import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
 import { MainTabName } from "@/types/tab";
 import { hasNewerEngineVersion } from "@/utils/version";
-import { AppShell, Group, Tabs, Text } from "@mantine/core";
+import { AppShell, Box, Group, Tabs, Text } from "@mantine/core";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
@@ -35,6 +35,7 @@ import {
 import { shallowEqual } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import PanelLoader from "./PanelLoader";
+import LocaleSelector from "./LocaleSelector";
 import PreviewTab from "./Preview";
 import Spotlight from "./Spotlight";
 import DialogueTab from "./tabs/DialogueTab";
@@ -299,6 +300,9 @@ const ShellAppContent = memo(function ShellAppContent({
               <Tabs.Tab value="story-editor">Story</Tabs.Tab>
               <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
               <Tabs.Tab value="preview">Preview</Tabs.Tab>
+              <Box style={{ marginLeft: "auto" }} pr="sm">
+                <LocaleSelector />
+              </Box>
             </Tabs.List>
 
             <PanelLoader visible={isPendingTab} />

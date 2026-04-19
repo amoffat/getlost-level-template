@@ -1,5 +1,5 @@
 import { defaultLocale } from "@/constants";
-import { supportedLangs } from "@/constants/locale";
+import { SupportedLang, supportedLangs } from "@/constants/locale";
 import { actions } from "@/slices/locale";
 import type { RootState } from "@/store/store";
 import type { DNode } from "@/types/dialogue";
@@ -115,7 +115,10 @@ export const upsertLocaleEntryThunk = createAsyncThunk(
  */
 export const removeLocaleEntryThunk = createAsyncThunk(
   "locale/removeEntry",
-  async ({ locale, key }: { locale: string; key: string }, { dispatch, getState }) => {
+  async (
+    { locale, key }: { locale: string; key: string },
+    { dispatch, getState },
+  ) => {
     if (locale === defaultLocale) {
       dispatch(actions.removeDefaultEntry(key));
     }
@@ -129,7 +132,7 @@ export const removeLocaleEntryThunk = createAsyncThunk(
 
 export const setLocaleThunk = createAsyncThunk(
   "locale/set",
-  async (locale: string, { dispatch }) => {
+  async (locale: SupportedLang, { dispatch }) => {
     await dispatch(loadDialogueLocaleThunk(locale)).unwrap();
     dispatch(actions.setCurrentLocale(locale));
   },

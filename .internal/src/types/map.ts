@@ -143,11 +143,12 @@ export type MapObj =
   | PickupObj
   | BackgroundImageObj;
 
-export type SpeakableMapObj = MapObj & {
+export interface SpeakableProps {
   speakerImageId: string | null;
-  name: string;
-  nameKey: string;
-};
+  nameKey: string | null;
+}
+
+export type SpeakableMapObj = MapObj & SpeakableProps;
 
 export type MapObjProps =
   | LightProps
@@ -197,6 +198,10 @@ export function isAnimatedInstance(
 
 export function isNpcInstance(obj: Partial<MapObj>): obj is NpcInstance {
   return obj.type === MapObjType.NpcInstance;
+}
+
+export function isSpeakableObject(obj: MapObj): obj is SpeakableMapObj {
+  return isNpcInstance(obj) || isTileGroupInstance(obj);
 }
 
 export function isMapObjFromTileset(

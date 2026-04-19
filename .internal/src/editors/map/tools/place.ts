@@ -256,7 +256,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
         inst = {
           id,
           exitIds: [],
-          name: undefined,
+          nameKey: undefined,
           tags: undefined,
           type: MapObjType.Entry,
           x: pos.x,
@@ -275,7 +275,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           force: false,
           preferredEntranceId: null,
           sensorRadius: undefined,
-          name: undefined,
+          nameKey: undefined,
           tags: undefined,
           type: MapObjType.Exit,
           x: pos.x,
@@ -291,7 +291,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
       } else if (obj.id === pickupIcon) {
         inst = {
           id,
-          name: undefined,
+          nameKey: undefined,
           assetId: undefined,
           tags: undefined,
           type: MapObjType.Pickup,

@@ -8,6 +8,8 @@ import type { LocaleEntry } from "@/types/locale";
 import { PartialNullable } from "@/types/util";
 import { x86 } from "murmurhash3js";
 
+export type LocaleEntryMap = Record<string, LocaleEntry | undefined>;
+
 /** Returns an 8-char hex murmur hash of the given text. */
 export function hashText(text: string): string {
   return (x86.hash32(text) >>> 0).toString(16).padStart(8, "0");
@@ -15,6 +17,24 @@ export function hashText(text: string): string {
 
 export function makeKey(...args: (string | undefined)[]) {
   return hashText(args.join(":"));
+}
+
+export function resolveLocaleText({
+  key,
+  primaryEntries,
+  fallbackEntries,
+  defaultText = "",
+}: {
+  key: string | null | undefined;
+  primaryEntries: LocaleEntryMap;
+  fallbackEntries?: LocaleEntryMap;
+  defaultText?: string;
+}): string {
+  if (!key) {
+    return defaultText;
+  }
+
+  return primaryEntries[key]?.v ?? fallbackEntries?.[key]?.v ?? defaultText;
 }
 
 /**
@@ -34,6 +54,7 @@ export function syncLocaleField({
   makeKey,
   dispatch,
   updates,
+  shouldClearOldKey = (oldKey, newKey) => oldKey != newKey,
 }: {
   locale: string;
   prevEntry?: LocaleEntry;
@@ -43,6 +64,7 @@ export function syncLocaleField({
   makeKey: ({ text, context }: { text?: string; context?: string }) => string;
   dispatch: AppDispatch;
   updates: PartialNullable<LocaleEntry>;
+  shouldClearOldKey?: (oldKey: string, newKey: string) => boolean;
 }): string | undefined {
   // If the default locale has no entry for this key yet, assume we are
   // creating a brand-new entry in the default locale regardless of which
@@ -63,7 +85,7 @@ export function syncLocaleField({
       context: updates.ctx ?? prevEntry?.ctx,
     });
 
-    if (prevEntry && prevEntry.k !== k) {
+    if (prevEntry && shouldClearOldKey(prevEntry.k, k)) {
       dispatch(removeLocaleEntryThunk({ locale, key: prevEntry.k }));
     }
     dispatch(

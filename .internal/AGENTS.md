@@ -51,3 +51,7 @@ The state of each pixi.js application must be kept in sync with the redux state.
 ## UI Preferences
 
 - Prefer CSS modules to many inline styles
+
+## Style preferences
+
+- Functions with more than a few arguments, or functions that will naturally expand over time, should use a destructured object instead of positional arguments.

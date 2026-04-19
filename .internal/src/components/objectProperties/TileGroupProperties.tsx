@@ -1,29 +1,28 @@
 import * as constants from "@/constants";
 import { WalkSound, walkSounds } from "@/constants";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { store } from "@/store/store";
+import { useAppSelector } from "@/hooks/redux";
 import { MapLayerName } from "@/types/layer";
+import { collectPropertyValues } from "@/store/selectors";
 import { TileGroupInstance } from "@/types/map";
 import { TileGroupProps } from "@/types/properties";
-import { makeKey, syncLocaleField } from "@/utils/locale";
 import {
-  collectPropertyValues,
   updateObjectProperties,
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
-import { createPropertyKey, createPropsEqualFn } from "@/utils/propertyKey";
-import { Fieldset, Select, Slider, Stack, TextInput } from "@mantine/core";
+import { createPropsEqualFn } from "@/utils/propertyKey";
+import { Fieldset, Select, Slider, Stack } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
-import { memo, ReactElement, useCallback, useMemo } from "react";
+import { memo, ReactElement, useCallback } from "react";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import FlipXInput from "./inputs/FlipXInput";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
 import HiddenInput from "./inputs/HiddenInput";
+import LocalizedNameInput from "./inputs/LocalizedNameInput";
 import TintInput from "./inputs/TintInput";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
-  "name",
+  "nameKey",
   "flipX",
   "tint",
   "hidden",
@@ -40,19 +39,13 @@ const TEMPLATE_PROPS = ["id", "tsObjId", "tilesetId"] as const;
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
-  const dispatch = useAppDispatch();
-
   const groundLayer = useAppSelector(
     (state) => state.mapEditor.layers.active === MapLayerName.Ground,
   );
 
-  // Create a key based only on relevant properties
-  const propertyKey = createPropertyKey(objs, RELEVANT_PROPS);
-
-  const toCollect = useMemo(() => {
-    return collectPropertyValues(objs, [...COLLECTED_PROPS]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propertyKey]);
+  const toCollect = useAppSelector((state) =>
+    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
+  );
 
   const updateProps = useCallback(
     (scope: PropertyValueScope, props: Partial<TileGroupProps>) => {
@@ -67,60 +60,15 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
   );
 
   const nameInput = (
-    <PropertyValue
-      label="Name"
+    <LocalizedNameInput
       description="A name for this object. Does not have to be unique."
-      values={toCollect.name}
-      onValueChange={({
-        scope,
-        value,
-        prevValue,
-      }: {
-        scope: PropertyValueScope;
-        value: string | undefined;
-        prevValue: string | undefined;
-      }): void => {
-        const keyMaker = (value: string | undefined) => makeKey("tg", value);
-        const nameKey = keyMaker(value);
+      values={toCollect.nameKey}
+      context="Object name"
+      keyPrefix="tg"
+      onValueChange={({ scope, value }): void => {
         updateProps(scope, {
-          name: value,
-          nameKey,
+          nameKey: value,
         });
-
-        const state = store.getState();
-        const localeEntries = state.locale.defaultEntries.entities;
-        const prevEntry = prevValue
-          ? localeEntries[keyMaker(prevValue)]
-          : undefined;
-
-        syncLocaleField({
-          locale: constants.defaultLocale,
-          defaultEntry: prevEntry,
-          prevEntry,
-          makeKey: () => nameKey,
-          dispatch,
-          updates: {
-            ctx: "Object name",
-            v: value,
-          },
-        });
-      }}
-      debounceMs={100}
-      defaultValue=""
-      renderInput={(
-        key: string,
-        value: string | undefined,
-        onChange: (value: string) => void,
-      ): ReactElement => {
-        return (
-          <TextInput
-            key={key}
-            leftSection={value === undefined && <IconAlertTriangle size={14} />}
-            defaultValue={value ?? ""}
-            placeholder={value === undefined ? "Mixed values" : "Enter name"}
-            onChange={(e) => onChange(e.target.value)}
-          />
-        );
       }}
     />
   );

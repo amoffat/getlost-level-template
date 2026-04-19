@@ -3,6 +3,7 @@ import { errorIcon, iconTsId } from "@/constants/tsObjs";
 import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
+import { selectTemplateProps } from "@/store/selectors";
 import { store } from "@/store/store";
 import { AnimationTemplate } from "@/types/animation";
 import {
@@ -28,7 +29,6 @@ import { toPixiRect } from "@/types/rect";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { makeGroupedDebouncer } from "@/utils/debounce";
-import { resolveTemplateProps } from "@/utils/map";
 import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
 import { EMPTY } from "rxjs";
@@ -140,7 +140,8 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     const objId = node.label;
     const obj = state.mapEditor.objects.entities[objId];
     const sprite = node.getChildByLabel("sprite");
-    const tmpl = resolveTemplateProps(obj);
+
+    const tmpl = selectTemplateProps(state, obj);
 
     if (props.x !== undefined) {
       node.x = props.x;

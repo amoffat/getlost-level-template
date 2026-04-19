@@ -6,11 +6,12 @@ import {
   actions as mapActions,
   selectors as mapSelectors,
 } from "@/slices/mapEditor";
+import { selectPropertyValue } from "@/store/selectors";
 import { RootState } from "@/store/store";
 import { removeLocaleEntryThunk } from "@/thunks/locale";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import { Choice, DNode, SpeechData } from "@/types/dialogue";
-import { SpeakableMapObj } from "@/types/map";
+import { SpeakableMapObj, SpeakableProps } from "@/types/map";
 import { extractVariableKeys, getDescription } from "@/utils/variableMap";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
@@ -80,7 +81,17 @@ export default function SpeechEditor({
     return mapSelectors.selectObject(state, dialogue.subjectId);
   }) as SpeakableMapObj | undefined;
 
-  const speakerNameKey = data?.speakerNameKey ?? obj?.nameKey;
+  const speakerNameKey = useAppSelector(
+    (state: RootState) =>
+      data.speakerNameKey ??
+      (obj
+        ? (selectPropertyValue<SpeakableMapObj, SpeakableProps>(
+            state,
+            obj,
+            "nameKey",
+          ) ?? undefined)
+        : undefined),
+  );
 
   const addChoice = useCallback(() => {
     if (!activeDialogueId) return;
@@ -123,7 +134,7 @@ export default function SpeechEditor({
   );
 
   const updateChoiceTextKey = useCallback(
-    (choiceId: string, newKey: string) => {
+    (choiceId: string, newKey: string | undefined) => {
       if (!activeDialogueId) return;
       const choices = data.choices.map((c) =>
         c.id === choiceId ? { ...c, textKey: newKey } : c,
@@ -156,6 +167,11 @@ export default function SpeechEditor({
     [node, dispatch, data, activeDialogueId],
   );
 
+  // We don't want to clear an old speaker name key if it lives on the object
+  const shouldClearOldKey = (oldKey: string, newKey: string): boolean => {
+    return oldKey != newKey && data.speakerNameKey !== undefined;
+  };
+
   if (!node || !data) {
     return (
       <Stack align="center" justify="center" style={{ height: "100%" }}>
@@ -174,6 +190,7 @@ export default function SpeechEditor({
       <Fieldset legend="Speaker" p="xs">
         <Stack gap="sm" p={0}>
           <ResettableInput
+            disabled={data.speakerNameKey === undefined}
             onReset={() => {
               dispatch(
                 actions.updateNodeData({
@@ -189,6 +206,7 @@ export default function SpeechEditor({
               key={remountKey}
               currentLocale={currentLocale}
               contentKey={speakerNameKey}
+              shouldClearOldKey={shouldClearOldKey}
               onLocaleKeyChange={(newKey) =>
                 dispatch(
                   actions.updateNodeData({
@@ -470,7 +488,7 @@ type SortableChoiceProps = {
   id: string;
   choice: Choice;
   currentLocale: string;
-  updateChoiceTextKey: (choiceId: string, newKey: string) => void;
+  updateChoiceTextKey: (choiceId: string, newKey: string | undefined) => void;
   removeChoice: (choiceId: string) => void;
 };
 

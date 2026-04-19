@@ -11,7 +11,7 @@ export const codeToFlag = {
   it: "🇮🇹",
   ja: "🇯🇵",
   ko: "🇰🇷",
-  main: "",
+  main: "🇦🇰",
   pl: "🇵🇱",
   pt: "🇵🇹",
   ru: "🇷🇺",
@@ -22,7 +22,7 @@ export const codeToFlag = {
 } as const;
 
 export const codeToLanguage = {
-  main: "Main",
+  main: "Your language",
   en: "English", // English
   es: "Español", // Spanish
   pt: "Português", // Portuguese
