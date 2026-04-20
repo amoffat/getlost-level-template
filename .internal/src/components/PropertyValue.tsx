@@ -51,6 +51,13 @@ export interface PropertyValueInfo<T> {
   scope: SelectableScope;
 }
 
+export interface RenderInputArgs<T> {
+  key: string;
+  defaultValue: T | undefined;
+  onChange: (value: T) => void;
+  scope: SelectableScope;
+}
+
 interface PropertyValueProps<T> {
   /** Label for the property */
   label?: string;
@@ -59,11 +66,7 @@ interface PropertyValueProps<T> {
   /** Array of value info from all selected objects */
   values: PropertyValueInfo<T>[];
   /** The input component to render. Receives the effective value and onChange callback */
-  renderInput: (
-    key: string,
-    defaultValue: T | undefined,
-    onChange: (value: T) => void,
-  ) => ReactElement;
+  renderInput: (args: RenderInputArgs<T>) => ReactElement;
   /** Callback when the user changes the value */
   onValueChange: (args: OnValueChangeArgs<T>) => void;
   /** Optional function to determine if two values are equal (defaults to ===) */
@@ -213,12 +216,17 @@ function PropertyValueInner<T>({
 
       // This triggers an expensive operation in parent, so defer it
       requestIdleCallback(() => {
-        const newValue = scope === "template" ? undefined : localValue;
+        const changeValue = scope === "template";
+        const newValue = changeValue ? undefined : localValue;
         onValueChange({
           scope,
           value: newValue,
           prevValue: lastCommittedValue.current,
         });
+        if (changeValue) {
+          setLocalValue(newValue);
+          setResetCounter((prev) => prev + 1);
+        }
         lastCommittedValue.current = newValue;
         setHasPendingValue(false);
       });
@@ -229,25 +237,31 @@ function PropertyValueInner<T>({
   // The widget for the input field, passed in from props
   const inputField = useMemo(
     () =>
-      renderInput(inputKey, localValue, (value) => {
-        setLocalValue(value);
+      renderInput({
+        key: inputKey,
+        defaultValue: localValue,
+        scope: localScope === "mixed" ? "instance" : localScope,
+        onChange: (value) => {
+          setLocalValue(value);
 
-        if (analysis.hasMixedValues && analysis.hasMixedScopes) {
-          setLocalScope("instance");
-        }
+          if (analysis.hasMixedValues && analysis.hasMixedScopes) {
+            setLocalScope("instance");
+          }
 
-        // Often the input can have rapid changes, like text inputs, so debounce
-        // them
-        if (debounceMs !== undefined) {
-          debouncedSetValue(value);
-        } else {
-          setValue(value);
-        }
+          // Often the input can have rapid changes, like text inputs, so debounce
+          // them
+          if (debounceMs !== undefined) {
+            debouncedSetValue(value);
+          } else {
+            setValue(value);
+          }
+        },
       }),
     [
       inputKey,
       renderInput,
       localValue,
+      localScope,
       analysis.hasMixedValues,
       analysis.hasMixedScopes,
       debouncedSetValue,

@@ -1,8 +1,8 @@
 import * as constants from "@/constants";
 import { WalkSound, walkSounds } from "@/constants";
 import { useAppSelector } from "@/hooks/redux";
-import { MapLayerName } from "@/types/layer";
 import { collectPropertyValues } from "@/store/selectors";
+import { MapLayerName } from "@/types/layer";
 import { TileGroupInstance } from "@/types/map";
 import { TileGroupProps } from "@/types/properties";
 import {
@@ -64,7 +64,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       description="A name for this object. Does not have to be unique."
       values={toCollect.nameKey}
       context="Object name"
-      keyPrefix="tg"
+      keyPrefix={["tg"]}
       onValueChange={({ scope, value }): void => {
         updateProps(scope, {
           nameKey: value,
@@ -89,11 +89,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       }}
       defaultValue={constants.defaultWalkSound}
       debounceMs={100}
-      renderInput={(
-        key: string,
-        value: WalkSound | undefined,
-        onChange: (value: WalkSound) => void,
-      ): ReactElement => {
+      renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         return (
           <Select
             key={key}
@@ -128,11 +124,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       }}
       debounceMs={100}
       defaultValue={constants.defaultFriction}
-      renderInput={(
-        key: string,
-        value: number | undefined,
-        onChange: (value: number) => void,
-      ): ReactElement => {
+      renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         return (
           <Slider
             key={key}
@@ -163,11 +155,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       }}
       debounceMs={100}
       defaultValue={constants.defaultTraction}
-      renderInput={(
-        key: string,
-        value: number | undefined,
-        onChange: (value: number) => void,
-      ): ReactElement => {
+      renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         return (
           <Slider
             key={key}

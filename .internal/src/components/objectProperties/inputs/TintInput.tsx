@@ -24,11 +24,11 @@ export default function TintInput({
       onValueChange={onValueChange}
       defaultValue={null}
       debounceMs={100}
-      renderInput={(
-        key: string,
-        value: string | null | undefined,
-        onChange: (value: string) => void,
-      ): ReactElement => {
+      renderInput={({
+        key,
+        defaultValue: value,
+        onChange,
+      }): ReactElement => {
         const hexColor = value ? `#${value}` : "";
 
         return (

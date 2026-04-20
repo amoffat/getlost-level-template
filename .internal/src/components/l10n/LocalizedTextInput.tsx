@@ -19,7 +19,7 @@ interface LocalizedTextInputProps extends Omit<
   /** The locale key currently stored for this field. */
   contentKey: string | undefined;
   /** Optional prefix passed to makeLocaleKey when generating a new key. */
-  keyPrefix?: string;
+  keyPrefix?: string[];
   defaultContext?: string;
   /**
    * Called when the locale key changes (main locale edits that rotate the key).
@@ -48,7 +48,7 @@ interface LocalizedTextInputProps extends Omit<
 export default function LocalizedTextInput({
   currentLocale,
   contentKey,
-  keyPrefix,
+  keyPrefix = [],
   defaultContext,
   onLocaleKeyChange,
   debounce = 300,
@@ -74,7 +74,7 @@ export default function LocalizedTextInput({
       locale: currentLocale,
       prevEntry,
       defaultEntry,
-      makeKey: ({ text, context }) => makeKey(keyPrefix, context, text),
+      makeKey: ({ text, context }) => makeKey(...keyPrefix, context, text),
       dispatch,
       shouldClearOldKey,
       updates: {

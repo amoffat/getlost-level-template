@@ -76,11 +76,11 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
       onValueChange={({ scope, value }: { scope: PropertyValueScope; value: string | undefined }): void => {
         updateProps(scope, { name: value });
       }}
-      renderInput={(
-        key: string,
-        value: string | undefined,
-        onChange: (value: string) => void,
-      ): ReactElement => {
+      renderInput={({
+        key,
+        defaultValue: value,
+        onChange,
+      }): ReactElement => {
         return (
           <TextInput
             key={key}
@@ -104,11 +104,11 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
         updateProps(scope, { color: value });
       }}
       debounceMs={100}
-      renderInput={(
-        key: string,
-        value: string | undefined,
-        onChange: (value: string) => void,
-      ): ReactElement => {
+      renderInput={({
+        key,
+        defaultValue: value,
+        onChange,
+      }): ReactElement => {
         const hexColor = value ? `#${value}` : undefined;
 
         return (
@@ -136,11 +136,11 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
         updateProps(scope, { intensity: value });
       }}
       debounceMs={100}
-      renderInput={(
-        key: string,
-        value: number | undefined,
-        onChange: (value: number) => void,
-      ): ReactElement => {
+      renderInput={({
+        key,
+        defaultValue: value,
+        onChange,
+      }): ReactElement => {
         return (
           <Slider
             key={key}
@@ -179,11 +179,11 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
         updateProps(scope, { flicker: value });
       }}
       debounceMs={100}
-      renderInput={(
-        key: string,
-        value: LightFlicker | undefined,
-        onChange: (value: LightFlicker) => void,
-      ): ReactElement => {
+      renderInput={({
+        key,
+        defaultValue: value,
+        onChange,
+      }): ReactElement => {
         return (
           <Select
             key={key}

@@ -29,11 +29,11 @@ export default function GroundOffsetInput({
       defaultValue={0}
       debounceMs={100}
       onValueChange={onValueChange}
-      renderInput={(
-        key: string,
-        value: number | undefined,
-        onChange: (value: number) => void,
-      ): ReactElement => {
+      renderInput={({
+        key,
+        defaultValue: value,
+        onChange,
+      }): ReactElement => {
         return (
           <Slider
             key={key}

@@ -4,10 +4,10 @@ import {
   actions as mapEditorActions,
   selectors as mapSelectors,
 } from "@/slices/mapEditor";
+import { collectPropertyValues } from "@/store/selectors";
 import { ExitObj } from "@/types/map";
 import { ExitProps } from "@/types/properties";
 import { resolveLocaleText } from "@/utils/locale";
-import { collectPropertyValues } from "@/store/selectors";
 import { updateObjectProperties } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Button, Fieldset, Slider, Stack, TextInput } from "@mantine/core";
@@ -114,7 +114,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       noTemplate
       values={toCollect.nameKey}
       context="Exit name"
-      keyPrefix="exit"
+      keyPrefix={["exit"]}
       validator={nameValidator}
       onValueChange={({ scope, value }): void => {
         const text = resolveLocaleText({
@@ -150,11 +150,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       }): void => {
         updateProps(scope, { preferredEntranceId: value });
       }}
-      renderInput={(
-        key: string,
-        value: string | null | undefined,
-        onChange: (value: string) => void,
-      ): ReactElement => {
+      renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         return (
           <Stack key={key} gap="xs" p={0}>
             {value && (
@@ -205,11 +201,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       }): void => {
         updateProps(scope, { sensorRadius: value });
       }}
-      renderInput={(
-        key: string,
-        value: number | undefined,
-        onChange: (value: number) => void,
-      ): ReactElement => {
+      renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         return (
           <Slider
             key={key}

@@ -5,10 +5,10 @@ import {
   actions as mapEditorActions,
   selectors as mapSelectors,
 } from "@/slices/mapEditor";
+import { collectPropertyValues } from "@/store/selectors";
 import { EntranceObj } from "@/types/map";
 import { EntranceProps } from "@/types/properties";
 import { resolveLocaleText } from "@/utils/locale";
-import { collectPropertyValues } from "@/store/selectors";
 import { updateObjectProperties } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import {
@@ -127,7 +127,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       noTemplate
       values={toCollect.nameKey}
       context="Entrance name"
-      keyPrefix="entrance"
+      keyPrefix={["entrance"]}
       validator={nameValidator}
       onValueChange={({ scope, value }): void => {
         const text = resolveLocaleText({
@@ -161,11 +161,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
         }): void => {
           updateProps(scope, { exitIds: value });
         }}
-        renderInput={(
-          key: string,
-          value: string[] | undefined,
-          onChange: (value: string[]) => void,
-        ): ReactElement => {
+        renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
           const exitIds = value ?? [];
 
           return (

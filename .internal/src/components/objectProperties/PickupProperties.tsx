@@ -4,12 +4,12 @@ import {
   actions as mapEditorActions,
   selectors as mapSelectors,
 } from "@/slices/mapEditor";
+import { collectPropertyValues } from "@/store/selectors";
 import { PickupObj } from "@/types/map";
 import { PickupProps } from "@/types/properties";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { arrayEquals } from "@/utils/array";
 import { resolveLocaleText } from "@/utils/locale";
-import { collectPropertyValues } from "@/store/selectors";
 import { updateObjectProperties } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Fieldset, Stack, TagsInput, TextInput } from "@mantine/core";
@@ -96,7 +96,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       noTemplate
       values={toCollect.nameKey}
       context="Pickup name"
-      keyPrefix="pickup"
+      keyPrefix={["pickup"]}
       validator={nameValidator}
       placeholder="Enter pickup name"
       onValueChange={({ scope, value }): void => {
@@ -130,11 +130,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
         updateProps(scope, { tags: value });
       }}
       debounceMs={100}
-      renderInput={(
-        key: string,
-        value: string[] | undefined,
-        onChange: (value: string[]) => void,
-      ): ReactElement => {
+      renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         return (
           <TagsInput
             key={key}
@@ -183,11 +179,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
         updateProps(scope, { assetId: value });
       }}
       debounceMs={100}
-      renderInput={(
-        key: string,
-        value: string | null | undefined,
-        onChange: (value: string) => void,
-      ): ReactElement => {
+      renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         const tilegroup = findTileGroup(value);
         return (
           <Stack key={key} gap="xs" p={0}>

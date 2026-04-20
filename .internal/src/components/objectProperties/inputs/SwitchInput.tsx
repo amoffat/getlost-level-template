@@ -31,11 +31,11 @@ export default function SwitchInput({
       noTemplate={noTemplate}
       debounceMs={debounceMs}
       onValueChange={onValueChange}
-      renderInput={(
-        key: string,
-        value: boolean | undefined,
-        onChange: (value: boolean) => void,
-      ): ReactElement => {
+      renderInput={({
+        key,
+        defaultValue: value,
+        onChange,
+      }): ReactElement => {
         return (
           <Switch
             key={key}

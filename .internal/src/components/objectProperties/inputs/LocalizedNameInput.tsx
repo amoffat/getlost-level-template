@@ -13,7 +13,7 @@ interface LocalizedNameInputProps {
   values: PropertyValueInfo<string | null>[];
   onValueChange: (args: OnValueChangeArgs<string | null>) => void;
   context: string;
-  keyPrefix?: string;
+  keyPrefix?: string[];
   label?: string;
   description?: string;
   noTemplate?: boolean;
@@ -27,7 +27,7 @@ export default function LocalizedNameInput({
   values,
   onValueChange,
   validator,
-  keyPrefix,
+  keyPrefix = [],
   description = "A name for this object.",
   context,
   noTemplate,
@@ -50,15 +50,17 @@ export default function LocalizedNameInput({
       noTemplate={noTemplate}
       debounceMs={debounceMs}
       defaultValue=""
-      renderInput={(
-        key: string,
-        value: string | null | undefined,
-        onChange: (value: string | null) => void,
-      ): ReactElement => {
+      renderInput={({
+        key,
+        defaultValue: value,
+        onChange,
+        scope,
+      }): ReactElement => {
         const name = resolveLocaleText({
           key: value,
           primaryEntries: defaultEntries,
         });
+
         return (
           <LocalizedTextInput
             key={`${key}-${currentLocale}`}
@@ -70,6 +72,9 @@ export default function LocalizedNameInput({
             contentKey={value ?? undefined}
             placeholder={value === undefined ? "Mixed values" : placeholder}
             required={required}
+            shouldClearOldKey={(oldKey, newKey) =>
+              false && scope === "instance" && oldKey !== newKey
+            }
             onLocaleKeyChange={(newKey) => {
               onChange(newKey ?? null);
             }}

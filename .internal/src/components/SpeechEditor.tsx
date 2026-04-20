@@ -518,7 +518,7 @@ function SortableChoice({
         <LocalizedTextInput
           currentLocale={currentLocale}
           contentKey={choice.textKey}
-          keyPrefix={id}
+          keyPrefix={[id]}
           onLocaleKeyChange={(newKey) => updateChoiceTextKey(id, newKey)}
           style={{ flex: 1 }}
           placeholder="Type response"

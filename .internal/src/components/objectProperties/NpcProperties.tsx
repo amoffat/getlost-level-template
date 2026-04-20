@@ -1,6 +1,5 @@
 import * as constants from "@/constants";
 import { useAppSelector } from "@/hooks/redux";
-import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { collectPropertyValues } from "@/store/selectors";
 import { NpcInstance } from "@/types/map";
 import { NpcProps } from "@/types/properties";
@@ -45,8 +44,6 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
     collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
   );
 
-  const npcs = useAppSelector(mapSelectors.selectNpcs);
-
   const updateProps = useCallback(
     (scope: PropertyValueScope, props: Partial<NpcProps>) => {
       updateObjectProperties({
@@ -64,7 +61,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       description="A name for this character. Must be unique."
       values={toCollect.nameKey}
       context="Character name"
-      keyPrefix="char"
+      keyPrefix={["char"]}
       onValueChange={({ scope, value }): void => {
         updateProps(scope, {
           nameKey: value,
@@ -90,11 +87,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
         updateProps(scope, { walkSpeed: value });
       }}
       debounceMs={100}
-      renderInput={(
-        key: string,
-        value: number | undefined,
-        onChange: (value: number) => void,
-      ): ReactElement => {
+      renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         return (
           <Slider
             key={key}
@@ -125,11 +118,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
         updateProps(scope, { dampenWalkCollisions: value });
       }}
       debounceMs={100}
-      renderInput={(
-        key: string,
-        value: number | undefined,
-        onChange: (value: number) => void,
-      ): ReactElement => {
+      renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         return (
           <Slider
             key={key}
