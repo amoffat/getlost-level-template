@@ -8,7 +8,6 @@ import {
 } from "@/slices/mapEditor";
 import { selectPropertyValue } from "@/store/selectors";
 import { RootState } from "@/store/store";
-import { removeLocaleEntryThunk } from "@/thunks/locale";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import { Choice, DNode, SpeechData } from "@/types/dialogue";
 import { SpeakableMapObj, SpeakableProps } from "@/types/map";
@@ -112,15 +111,6 @@ export default function SpeechEditor({
   const removeChoice = useCallback(
     (choiceId: string) => {
       if (!activeDialogueId) return;
-      const choice = data.choices.find((c) => c.id === choiceId);
-      if (choice?.textKey) {
-        dispatch(
-          removeLocaleEntryThunk({
-            locale: currentLocale,
-            key: choice.textKey,
-          }),
-        );
-      }
       const choices = data.choices.filter((c) => c.id !== choiceId);
       dispatch(
         actions.updateNodeData({
@@ -130,7 +120,7 @@ export default function SpeechEditor({
         }),
       );
     },
-    [node, dispatch, data, activeDialogueId, currentLocale],
+    [node, dispatch, data, activeDialogueId],
   );
 
   const updateChoiceTextKey = useCallback(
@@ -167,11 +157,6 @@ export default function SpeechEditor({
     [node, dispatch, data, activeDialogueId],
   );
 
-  // We don't want to clear an old speaker name key if it lives on the object
-  const shouldClearOldKey = (oldKey: string, newKey: string): boolean => {
-    return oldKey != newKey && data.speakerNameKey !== undefined;
-  };
-
   if (!node || !data) {
     return (
       <Stack align="center" justify="center" style={{ height: "100%" }}>
@@ -206,7 +191,6 @@ export default function SpeechEditor({
               key={remountKey}
               currentLocale={currentLocale}
               contentKey={speakerNameKey}
-              shouldClearOldKey={shouldClearOldKey}
               onLocaleKeyChange={(newKey) =>
                 dispatch(
                   actions.updateNodeData({

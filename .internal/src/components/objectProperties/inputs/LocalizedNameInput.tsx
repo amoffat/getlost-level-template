@@ -54,7 +54,6 @@ export default function LocalizedNameInput({
         key,
         defaultValue: value,
         onChange,
-        scope,
       }): ReactElement => {
         const name = resolveLocaleText({
           key: value,
@@ -72,9 +71,6 @@ export default function LocalizedNameInput({
             contentKey={value ?? undefined}
             placeholder={value === undefined ? "Mixed values" : placeholder}
             required={required}
-            shouldClearOldKey={(oldKey, newKey) =>
-              false && scope === "instance" && oldKey !== newKey
-            }
             onLocaleKeyChange={(newKey) => {
               onChange(newKey ?? null);
             }}

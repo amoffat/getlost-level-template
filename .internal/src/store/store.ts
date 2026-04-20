@@ -7,6 +7,7 @@ import { slice as tilesetEditorSlice } from "@/slices/tilesetEditor";
 import { slice as uiSlice } from "@/slices/ui";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { makeEditorSyncMiddleware } from "./middleware/map";
+import autosaveLocaleMiddleware from "./middleware/locale/autosave";
 import autosaveMapMiddleware from "./middleware/map/autosave";
 import autosaveStoryMiddleware from "./middleware/story/autosave";
 import autosaveTilesetMiddleware from "./middleware/tileset/autosave";
@@ -45,6 +46,7 @@ export const store = configureStore({
       immutableCheck: false,
       serializableCheck: true,
     }).prepend(
+      autosaveLocaleMiddleware,
       autosaveTilesetMiddleware,
       autosaveMapMiddleware,
       autosaveStoryMiddleware,

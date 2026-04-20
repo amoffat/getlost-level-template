@@ -55,6 +55,7 @@ export const defaultTileSize = 16;
 export const defaultAnimTime = 1000;
 export const autosaveMapDebounce = 1000; // ms
 export const autosaveTilesetDebounce = 1000; // ms
+export const autosaveLocaleDebounce = 1000; // ms
 
 export const gameUrls: Record<Env, string> = {
   local: "http://localhost:5176",

@@ -1,9 +1,6 @@
 import * as constants from "@/constants";
 import type { AppDispatch } from "@/store/store";
-import {
-  removeLocaleEntryThunk,
-  upsertLocaleEntryThunk,
-} from "@/thunks/locale";
+import { upsertLocaleEntryThunk } from "@/thunks/locale";
 import type { LocaleEntry } from "@/types/locale";
 import { PartialNullable } from "@/types/util";
 import { x86 } from "murmurhash3js";
@@ -54,7 +51,6 @@ export function syncLocaleField({
   makeKey,
   dispatch,
   updates,
-  shouldClearOldKey = (oldKey, newKey) => oldKey != newKey,
 }: {
   locale: string;
   prevEntry?: LocaleEntry;
@@ -64,7 +60,6 @@ export function syncLocaleField({
   makeKey: ({ text, context }: { text?: string; context?: string }) => string;
   dispatch: AppDispatch;
   updates: PartialNullable<LocaleEntry>;
-  shouldClearOldKey?: (oldKey: string, newKey: string) => boolean;
 }): string | undefined {
   // If the default locale has no entry for this key yet, assume we are
   // creating a brand-new entry in the default locale regardless of which
@@ -73,9 +68,6 @@ export function syncLocaleField({
   const main = locale === constants.defaultLocale;
 
   if (updates.v === null) {
-    if (prevEntry) {
-      dispatch(removeLocaleEntryThunk({ locale, key: prevEntry.k }));
-    }
     return;
   }
 
@@ -85,9 +77,6 @@ export function syncLocaleField({
       context: updates.ctx ?? prevEntry?.ctx,
     });
 
-    if (prevEntry && shouldClearOldKey(prevEntry.k, k)) {
-      dispatch(removeLocaleEntryThunk({ locale, key: prevEntry.k }));
-    }
     dispatch(
       upsertLocaleEntryThunk({
         locale,

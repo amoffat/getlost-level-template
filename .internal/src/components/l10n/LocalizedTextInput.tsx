@@ -36,7 +36,6 @@ interface LocalizedTextInputProps extends Omit<
    *   and the `style` prop is applied to the outer wrapper instead of the input.
    */
   contextButton?: "label" | "inline" | false;
-  shouldClearOldKey?: (oldKey: string, newKey: string) => boolean;
 }
 
 /**
@@ -53,7 +52,6 @@ export default function LocalizedTextInput({
   onLocaleKeyChange,
   debounce = 300,
   contextButton = "label",
-  shouldClearOldKey,
   ...rest
 }: LocalizedTextInputProps) {
   const dispatch = useAppDispatch();
@@ -76,7 +74,6 @@ export default function LocalizedTextInput({
       defaultEntry,
       makeKey: ({ text, context }) => makeKey(...keyPrefix, context, text),
       dispatch,
-      shouldClearOldKey,
       updates: {
         v: newText.trim() === "" ? null : newText,
         ctx: defaultContext,

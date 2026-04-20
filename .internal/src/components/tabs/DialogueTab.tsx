@@ -19,7 +19,6 @@ import {
   setDefaultDialogueThunk,
   unlinkDialogueThunk,
 } from "@/thunks/dialogue";
-import { cleanupNodeLocaleEntriesThunk } from "@/thunks/locale";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import type { Dialogue, DNode } from "@/types/dialogue";
 import {
@@ -319,14 +318,9 @@ export default function DialogueTab({
         return false;
       }
 
-      // Clean up locale entries for all nodes being removed.
-      await dispatch(
-        cleanupNodeLocaleEntriesThunk({ nodes: authoritativeNodes }),
-      ).unwrap();
-
       return true;
     },
-    [dispatch, activeNodes],
+    [activeNodes],
   );
 
   const onEdgesChange: OnEdgesChange = useDebouncedCallback((changes) => {
@@ -1128,10 +1122,7 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
               }),
             );
           } else {
-            // Last (or no) milestone — remove the dialogue entirely, cleaning
-            // up all locale entries for every node in the dialogue first.
-            const allNodes = Object.values(dialogue.nodes.entities) as DNode[];
-            dispatch(cleanupNodeLocaleEntriesThunk({ nodes: allNodes }));
+            // Last (or no) milestone — remove the dialogue entirely.
             dispatch(dActions.removeDialogue(dialogue.id));
           }
           if (activeDialogueId === dialogue.id) {
