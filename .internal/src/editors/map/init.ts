@@ -1,3 +1,4 @@
+import debounce from "debounce";
 import * as constants from "@/constants";
 import { globals as gApp } from "@/globals";
 import { actions, mapSelectors, selectors } from "@/slices/mapEditor";
@@ -26,7 +27,7 @@ import { setupBoundsDragger } from "./tools/bounds";
 import { setupFill } from "./tools/fill";
 import { setupMover } from "./tools/move";
 import { setupPlacer } from "./tools/place";
-import { setupSelector, setupResizer } from "./tools/select";
+import { setupResizer, setupSelector } from "./tools/select";
 
 export async function init(): Promise<P.Application> {
   // Create a new application
@@ -173,9 +174,10 @@ export async function init(): Promise<P.Application> {
     canvas,
     stage,
     container: g.mapContainer,
-    onZoomChange: (zp) => {
+    // Debounce, because redux state changes can lag if we're scrolling fast
+    onZoomChange: debounce((zp) => {
       store.dispatch(actions.setZoomPan(zp));
-    },
+    }, 50),
   });
   const panner = setupPanControls({
     panContainer: g.mapContainer,
