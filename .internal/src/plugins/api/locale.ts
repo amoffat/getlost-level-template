@@ -1,4 +1,3 @@
-import { supportedLangs } from "@/constants/locale";
 import { Mutex } from "async-mutex";
 import express from "express";
 import * as fs from "fs";
@@ -8,9 +7,6 @@ const internalDir = process.cwd();
 const repoDir = resolve(internalDir, "..");
 const levelDir = resolve(repoDir, "level");
 const localeDir = resolve(levelDir, "locales");
-
-const mainLocale = "main";
-const nonMainLocales = supportedLangs.filter((l) => l !== mainLocale);
 
 export const router = express.Router({ mergeParams: true });
 
@@ -35,16 +31,6 @@ function getMutex(filePath: string): Mutex {
 // JSONL helpers
 // ---------------------------------------------------------------------------
 
-/** Read all entries from a JSONL file as an array, or [] if the file doesn't exist. */
-function readEntries(filePath: string): Record<string, unknown>[] {
-  if (!fs.existsSync(filePath)) return [];
-  const raw = fs.readFileSync(filePath, "utf8");
-  return raw
-    .split("\n")
-    .filter((line) => line.trim().length > 0)
-    .map((line) => JSON.parse(line) as Record<string, unknown>);
-}
-
 /** Write an array of entries back to a JSONL file, creating parent dirs as needed. */
 function writeEntries(
   filePath: string,
@@ -65,52 +51,8 @@ function writeEntries(
         return JSON.stringify(ordered);
       })
       .join("\n") + "\n";
+
   fs.writeFileSync(filePath, content, "utf8");
-}
-
-// ---------------------------------------------------------------------------
-// Locale propagation
-// ---------------------------------------------------------------------------
-
-/**
- * Merges main-locale entries into a single non-main locale file.
- * - Missing entries are seeded with v, original, and ctx from main.
- * - Existing entries have their ctx overwritten (or removed) from main.
- * - Entries absent from main are dropped (stale removal).
- */
-async function upsertLocaleFile(
-  locale: string,
-  file: string,
-  mainMap: Map<string, Record<string, unknown>>,
-): Promise<void> {
-  const filePath = resolve(localeDir, locale, `${file}.jsonl`);
-  await getMutex(filePath).runExclusive(() => {
-    const existing = readEntries(filePath);
-    const existingMap = new Map(existing.map((e) => [e.k as string, e]));
-
-    const merged: Record<string, unknown>[] = [];
-    for (const [k, mainEntry] of mainMap) {
-      const current = existingMap.get(k);
-      if (current) {
-        const updated = { ...current };
-        if ("ctx" in mainEntry) {
-          updated.ctx = mainEntry.ctx;
-        } else {
-          delete updated.ctx;
-        }
-        merged.push(updated);
-      } else {
-        const seeded: Record<string, unknown> = {
-          k,
-          v: mainEntry.v,
-          original: mainEntry.v,
-        };
-        if ("ctx" in mainEntry) seeded.ctx = mainEntry.ctx;
-        merged.push(seeded);
-      }
-    }
-    writeEntries(filePath, merged);
-  });
 }
 
 // ---------------------------------------------------------------------------
@@ -145,7 +87,6 @@ router.get("/:locale/:file.jsonl", (req, res) => {
 });
 
 // Write the entire locale file atomically — serialised per file.
-// When writing the main locale, propagate entries to all non-main locale files.
 router.put("/:locale/:file.jsonl", express.json(), async (req, res) => {
   const { locale, file } = req.params;
   const filePath = resolve(localeDir, locale, `${file}.jsonl`);
@@ -167,18 +108,6 @@ router.put("/:locale/:file.jsonl", express.json(), async (req, res) => {
     });
 
   if (res.headersSent) return;
-
-  if (locale === mainLocale) {
-    const mainMap = new Map(entries.map((e) => [e.k as string, e]));
-    for (const nonMain of nonMainLocales) {
-      await upsertLocaleFile(nonMain, file, mainMap).catch((error) => {
-        console.error(
-          `Error propagating locale to ${nonMain}/${file}.jsonl:`,
-          error,
-        );
-      });
-    }
-  }
 
   res.sendStatus(204);
 });

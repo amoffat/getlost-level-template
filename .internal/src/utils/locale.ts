@@ -1,6 +1,6 @@
 import * as constants from "@/constants";
+import { actions as localeActions } from "@/slices/locale";
 import type { AppDispatch } from "@/store/store";
-import { upsertLocaleEntryThunk } from "@/thunks/locale";
 import type { LocaleEntry } from "@/types/locale";
 import { PartialNullable } from "@/types/util";
 import { x86 } from "murmurhash3js";
@@ -78,7 +78,7 @@ export function syncLocaleField({
     });
 
     dispatch(
-      upsertLocaleEntryThunk({
+      localeActions.upsertEntry({
         locale,
         entry: {
           ...updates,
@@ -86,6 +86,7 @@ export function syncLocaleField({
         },
       }),
     );
+
     return k;
   } else {
     // Should never happen, since if defaultEntry is not defined, we switch to
@@ -93,8 +94,9 @@ export function syncLocaleField({
     if (!prevEntry && !defaultEntry) return;
 
     const entryKey = (prevEntry ?? defaultEntry)!.k;
+
     dispatch(
-      upsertLocaleEntryThunk({
+      localeActions.upsertEntry({
         locale,
         entry: {
           // Persist original so translators can see the default text in the

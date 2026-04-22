@@ -1,6 +1,5 @@
 import { useAppSelector } from "@/hooks/redux";
 import { selectors as localeSelectors } from "@/slices/locale";
-import { RootState } from "@/store/store";
 import { resolveLocaleText } from "@/utils/locale";
 import { ReactElement, ReactNode } from "react";
 import { LocalizedTextInput } from "../../l10n";
@@ -36,10 +35,8 @@ export default function LocalizedNameInput({
   placeholder = "Enter name",
   required,
 }: LocalizedNameInputProps) {
-  const currentLocale = useAppSelector(localeSelectors.currentLocale);
-  const defaultEntries = useAppSelector(
-    (state: RootState) => state.locale.defaultEntries.entities,
-  );
+  const currentLocale = useAppSelector(localeSelectors.activeLocale);
+  const defaultEntries = useAppSelector(localeSelectors.selectDefaultEntries);
 
   return (
     <PropertyValue
@@ -50,11 +47,7 @@ export default function LocalizedNameInput({
       noTemplate={noTemplate}
       debounceMs={debounceMs}
       defaultValue=""
-      renderInput={({
-        key,
-        defaultValue: value,
-        onChange,
-      }): ReactElement => {
+      renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         const name = resolveLocaleText({
           key: value,
           primaryEntries: defaultEntries,

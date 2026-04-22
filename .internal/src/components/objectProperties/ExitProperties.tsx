@@ -1,5 +1,6 @@
 import * as constants from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { selectors as localeSelectors } from "@/slices/locale";
 import {
   actions as mapEditorActions,
   selectors as mapSelectors,
@@ -38,9 +39,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
   const objsByTemplateId = useAppSelector((state) =>
     mapSelectors.objectsByTemplateId(state, constants.exitTemplateId),
   ) as ExitObj[];
-  const defaultEntries = useAppSelector(
-    (state) => state.locale.defaultEntries.entities,
-  );
+  const defaultEntries = useAppSelector(localeSelectors.selectDefaultEntries);
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
 

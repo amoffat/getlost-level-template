@@ -156,7 +156,7 @@ export default function DialogueTab({
   const activeDialogueId = useAppSelector(
     (state) => state.dialogue.activeDialogueId,
   );
-  const currentLocale = useAppSelector(localeSelectors.currentLocale);
+  const currentLocale = useAppSelector(localeSelectors.activeLocale);
   const tree = useTree();
   const treeSelectRef = useRef(tree.select);
   treeSelectRef.current = tree.select;
@@ -928,8 +928,8 @@ function ObjLeaf({
           {speakerImageUrl ? (
             <Image
               src={speakerImageUrl}
-              w={50}
-              h={50}
+              w={38}
+              h={38}
               fit="cover"
               style={{
                 imageRendering: "pixelated",

@@ -2,6 +2,7 @@ import * as constants from "@/constants";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors as dSelectors } from "@/slices/dialogue";
+import { selectors as localeSelectors } from "@/slices/locale";
 import {
   actions as mapActions,
   selectors as mapSelectors,
@@ -516,11 +517,9 @@ function SortableChoice({
 
 /** Renders a row of hoverable variable badges detected in the given text. */
 function DetectedVariables({ localeKey }: { localeKey: string | undefined }) {
-  const activeEntries = useAppSelector(
-    (state: RootState) => state.locale.activeEntries.entities,
-  );
+  const activeEntries = useAppSelector(localeSelectors.selectActiveEntries);
   const defaultLocaleEntries = useAppSelector(
-    (state: RootState) => state.locale.defaultEntries.entities,
+    localeSelectors.selectDefaultEntries,
   );
   const text = localeKey
     ? (activeEntries[localeKey]?.v ?? defaultLocaleEntries[localeKey]?.v ?? "")

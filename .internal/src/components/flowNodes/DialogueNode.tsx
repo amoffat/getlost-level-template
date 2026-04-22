@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors as dSelectors } from "@/slices/dialogue";
+import { selectors as localeSelectors } from "@/slices/locale";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { selectPropertyValue } from "@/store/selectors";
 import { RootState } from "@/store/store";
@@ -57,11 +58,9 @@ export default function DialogueNode({
     return mapSelectors.selectObject(state, dialogue.subjectId);
   }) as SpeakableMapObj | undefined;
 
-  const activeEntries = useAppSelector(
-    (state: RootState) => state.locale.activeEntries.entities,
-  );
+  const activeEntries = useAppSelector(localeSelectors.selectActiveEntries);
   const defaultLocaleEntries = useAppSelector(
-    (state: RootState) => state.locale.defaultEntries.entities,
+    localeSelectors.selectDefaultEntries,
   );
 
   const resolveText = useCallback(

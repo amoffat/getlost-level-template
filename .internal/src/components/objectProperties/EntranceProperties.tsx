@@ -42,7 +42,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
   const objsByTemplateId = useAppSelector((state) =>
     mapSelectors.objectsByTemplateId(state, entryTemplateId),
   ) as EntranceObj[];
-  const defaultEntries = useAppSelector(localeSelectors.allDefaultEntries);
+  const defaultEntries = useAppSelector(localeSelectors.selectDefaultEntries);
 
   // All entrance objects use the same global entrance template
   const templateUpdate = useCallback(

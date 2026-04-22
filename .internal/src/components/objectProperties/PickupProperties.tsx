@@ -1,5 +1,6 @@
 import * as constants from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { selectors as localeSelectors } from "@/slices/locale";
 import {
   actions as mapEditorActions,
   selectors as mapSelectors,
@@ -34,9 +35,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
   const objsByTemplateId = useAppSelector((state) =>
     mapSelectors.objectsByTemplateId(state, constants.pickupTemplateId),
   ) as PickupObj[];
-  const defaultEntries = useAppSelector(
-    (state) => state.locale.defaultEntries.entities,
-  );
+  const defaultEntries = useAppSelector(localeSelectors.selectDefaultEntries);
 
   // All pickup objects use the same global pickup template
   const templateUpdate = useCallback(

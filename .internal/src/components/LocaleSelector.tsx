@@ -7,14 +7,15 @@ import {
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors as localeSelectors } from "@/slices/locale";
 import { setLocaleThunk } from "@/thunks/locale";
-import { Button, Menu, ScrollArea } from "@mantine/core";
+import { Badge, Button, Group, Menu, ScrollArea } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconChevronDown } from "@tabler/icons-react";
 import { useCallback, useMemo } from "react";
 
 export default function LocaleSelector() {
   const dispatch = useAppDispatch();
-  const currentLocale = useAppSelector(localeSelectors.currentLocale);
+  const currentLocale = useAppSelector(localeSelectors.activeLocale);
+  const untranslatedCounts = useAppSelector(localeSelectors.untranslatedCounts);
 
   const handleLocaleChange = useCallback(
     (locale: SupportedLang) => {
@@ -51,14 +52,24 @@ export default function LocaleSelector() {
       </Menu.Target>
       <Menu.Dropdown>
         <ScrollArea.Autosize mah={320} type="scroll">
-          {supportedLocales.map((l) => (
-            <Menu.Item
-              key={l.value}
-              onClick={() => handleLocaleChange(l.value)}
-            >
-              {l.flag} {l.label}
-            </Menu.Item>
-          ))}
+          {supportedLocales.map((l) => {
+            const untranslated = untranslatedCounts[l.value];
+            return (
+              <Menu.Item
+                key={l.value}
+                onClick={() => handleLocaleChange(l.value)}
+              >
+                <Group justify="space-between" gap="xs" wrap="nowrap">
+                  <span>{l.flag} {l.label}</span>
+                  {untranslated != null && untranslated > 0 && (
+                    <Badge size="xs" color="orange" variant="filled">
+                      {untranslated}
+                    </Badge>
+                  )}
+                </Group>
+              </Menu.Item>
+            );
+          })}
         </ScrollArea.Autosize>
       </Menu.Dropdown>
     </Menu>

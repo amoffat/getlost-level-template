@@ -41,9 +41,7 @@ export default function LocalizedTextarea({
 }: LocalizedTextareaProps) {
   const dispatch = useAppDispatch();
 
-  const localeEntries = useAppSelector(
-    (state: RootState) => state.locale.activeEntries.entities,
-  );
+  const localeEntries = useAppSelector(localeSelectors.selectActiveEntries);
   const defaultEntry = useAppSelector((state: RootState) =>
     localeSelectors.selectDefaultEntry(state, contentKey),
   );

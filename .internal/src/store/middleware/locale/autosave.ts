@@ -1,12 +1,8 @@
 import { autosaveLocaleDebounce, defaultLocale } from "@/constants";
+import { supportedLangs } from "@/constants/locale";
 import { log } from "@/log";
 import { saveLocaleFile } from "@/persist/locale/api";
-import { slice as dialogueSlice } from "@/slices/dialogue";
-import {
-  actions as localeActions,
-  slice as localeSlice,
-} from "@/slices/locale";
-import { slice as mapEditorSlice } from "@/slices/mapEditor";
+import { actions as localeActions } from "@/slices/locale";
 import { selectPropertyValue } from "@/store/selectors";
 import { type RootState } from "@/store/store";
 import type { LocaleEntry } from "@/types/locale";
@@ -21,17 +17,17 @@ const LOCALE_FILE = "dialogue";
 const listenerMiddleware = createListenerMiddleware();
 
 /** One Subject per locale so debouncing is independent per file. */
-const subjectsByLocale = new Map<string, Subject<LocaleEntry[]>>();
+const subjectsByLocale = new Map<string, Subject<() => LocaleEntry[]>>();
 
-function getSubject(locale: string): Subject<LocaleEntry[]> {
+function getSubject(locale: string): Subject<() => LocaleEntry[]> {
   let subject = subjectsByLocale.get(locale);
   if (!subject) {
-    subject = new Subject<LocaleEntry[]>();
+    subject = new Subject<() => LocaleEntry[]>();
     subject
       .pipe(
         debounceTime(autosaveLocaleDebounce),
-        concatMap((entries) =>
-          from(saveLocaleFile(locale, LOCALE_FILE, entries)).pipe(
+        concatMap((getEntries) =>
+          from(saveLocaleFile(locale, LOCALE_FILE, getEntries())).pipe(
             catchError((e) => {
               log.error({ e }, "Locale autosave failed for locale %s", locale);
               return EMPTY;
@@ -45,15 +41,46 @@ function getSubject(locale: string): Subject<LocaleEntry[]> {
   return subject;
 }
 
+/**
+ * Merge main-locale entries into a non-main locale's existing entries.
+ * - Entries absent from main are dropped (stale removal).
+ * - Missing entries are seeded with v, original, and ctx from main.
+ * - Existing entries keep their translated v, but have ctx overwritten from main.
+ */
+function mergeNonMainEntries(
+  mainEntries: LocaleEntry[],
+  existingEntries: LocaleEntry[],
+): LocaleEntry[] {
+  const existingMap = new Map(existingEntries.map((e) => [e.k, e]));
+  return mainEntries.map((mainEntry) => {
+    const current = existingMap.get(mainEntry.k);
+    if (current) {
+      const updated: LocaleEntry = { ...current };
+      if ("ctx" in mainEntry && mainEntry.ctx !== undefined) {
+        updated.ctx = mainEntry.ctx;
+      } else {
+        delete updated.ctx;
+      }
+      return updated;
+    } else {
+      const seeded: LocaleEntry = {
+        k: mainEntry.k,
+        v: mainEntry.v,
+        original: mainEntry.v,
+      };
+      if ("ctx" in mainEntry && mainEntry.ctx !== undefined) {
+        seeded.ctx = mainEntry.ctx;
+      }
+      return seeded;
+    }
+  });
+}
+
 // Actions that represent a fresh load from disk — triggering a sync in
 // response to these would race against the load and could corrupt the file.
 const loadActionTypes = new Set<string>([
-  localeActions.setDefaultEntries.type,
-  localeActions.setActiveEntries.type,
-  "locale/loadDialogue/pending",
-  "locale/loadDialogue/fulfilled",
-  "locale/loadDialogue/rejected",
-  dialogueSlice.actions.setDialogues.type,
+  localeActions.upsertEntry.type,
+  localeActions.removeEntry.type,
 ]);
 
 /** Collect all locale keys that are currently referenced by live state. */
@@ -96,30 +123,43 @@ const startAppListening =
 
 startAppListening({
   predicate: (action) => {
-    if (loadActionTypes.has(action.type)) return false;
-    return (
-      action.type.startsWith(localeSlice.name) ||
-      action.type.startsWith(dialogueSlice.name) ||
-      action.type.startsWith(mapEditorSlice.name)
-    );
+    return loadActionTypes.has(action.type);
   },
-  effect: async (_action, { getState }) => {
-    const state = getState();
-    const liveKeys = collectLiveKeys(state);
-    const currentLocale = state.locale.currentLocale;
+  effect: async (_action, { dispatch, getState }) => {
+    for (const locale of supportedLangs) {
+      getSubject(locale).next(() => {
+        const state = getState();
 
-    // Sync default locale entries
-    const defaultEntries = (state.locale.defaultEntries.ids as string[])
-      .map((k) => state.locale.defaultEntries.entities[k])
-      .filter((e): e is LocaleEntry => !!e && liveKeys.has(e.k));
-    getSubject(defaultLocale).next(defaultEntries);
+        // Find all main entries that are *live*, meaning, used by some object
+        // in the map/dialogue/story. If they're not live, we don't want to save
+        // them, so filter them out.
+        const liveKeys = collectLiveKeys(state);
+        const mainLocaleState = state.locale.entries[defaultLocale];
+        const mainEntries = mainLocaleState
+          ? (mainLocaleState.ids as string[])
+              .map((k) => mainLocaleState.entities[k])
+              .filter((e): e is LocaleEntry => !!e && liveKeys.has(e.k))
+          : [];
 
-    // Sync active locale entries if it differs from the default
-    if (currentLocale !== defaultLocale) {
-      const activeEntries = (state.locale.activeEntries.ids as string[])
-        .map((k) => state.locale.activeEntries.entities[k])
-        .filter((e): e is LocaleEntry => !!e && liveKeys.has(e.k));
-      getSubject(currentLocale).next(activeEntries);
+        if (locale === defaultLocale) {
+          return mainEntries;
+        }
+
+        const localeEntityState = state.locale.entries[locale];
+        const existingEntries = (localeEntityState.ids as string[])
+          .map((k) => localeEntityState.entities[k])
+          .filter((e): e is LocaleEntry => !!e);
+
+        // Merge with main, so the locale's entries are up to date with main's
+        // entries.
+        const merged = mergeNonMainEntries(mainEntries, existingEntries);
+
+        // Now that we have an authoritative view of the entries (because it's
+        // going to be written to the locale's file), let's go ahead and set the
+        // locale's entries.
+        dispatch(localeActions.setEntries({ locale, entries: merged }));
+        return merged;
+      });
     }
   },
 });

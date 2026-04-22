@@ -5,6 +5,7 @@ import { PartialNullable } from "@/types/util";
 import {
   createEntityAdapter,
   createSlice,
+  EntityState,
   PayloadAction,
 } from "@reduxjs/toolkit";
 
@@ -12,77 +13,97 @@ const entryAdapter = createEntityAdapter<LocaleEntry, string>({
   selectId: (entry) => entry.k,
 });
 
+type LocaleEntityState = EntityState<LocaleEntry, string>;
+
 interface LocaleState {
-  currentLocale: SupportedLang;
-  /** Raw entries for the default locale. Loaded once at editor init. */
-  defaultEntries: ReturnType<typeof entryAdapter.getInitialState>;
-  /** Raw entries for the currently active locale. Replaced on locale switch. */
-  activeEntries: ReturnType<typeof entryAdapter.getInitialState>;
+  activeLocale: SupportedLang;
+  /** All loaded locale entries, keyed by locale string. */
+  entries: Record<string, LocaleEntityState>;
+}
+
+function ensureLocale(state: LocaleState, locale: string): LocaleEntityState {
+  if (!state.entries[locale]) {
+    state.entries[locale] = entryAdapter.getInitialState();
+  }
+  return state.entries[locale];
 }
 
 export const slice = createSlice({
   name: "locale",
   initialState: {
-    currentLocale: defaultLocale,
-    defaultEntries: entryAdapter.getInitialState(),
-    activeEntries: entryAdapter.getInitialState(),
+    activeLocale: defaultLocale,
+    entries: {},
   } as LocaleState,
 
   reducers: {
-    setCurrentLocale(state, action: PayloadAction<SupportedLang>) {
-      state.currentLocale = action.payload;
+    setActiveLocale(state, action: PayloadAction<SupportedLang>) {
+      state.activeLocale = action.payload;
     },
 
-    // --- default locale reducers ---
-    setDefaultEntries(state, action: PayloadAction<LocaleEntry[]>) {
-      entryAdapter.setAll(state.defaultEntries, action.payload);
-    },
-    upsertDefaultEntry(
+    setEntries(
       state,
-      action: PayloadAction<PartialNullable<LocaleEntry> & { k: string }>,
+      action: PayloadAction<{ locale: string; entries: LocaleEntry[] }>,
     ) {
-      entryAdapter.upsertOne(
-        state.defaultEntries,
-        action.payload as LocaleEntry,
-      );
-    },
-    removeDefaultEntry(state, action: PayloadAction<string>) {
-      entryAdapter.removeOne(state.defaultEntries, action.payload);
+      const bucket = ensureLocale(state, action.payload.locale);
+      entryAdapter.setAll(bucket, action.payload.entries);
     },
 
-    // --- active locale reducers ---
-    setActiveEntries(state, action: PayloadAction<LocaleEntry[]>) {
-      entryAdapter.setAll(state.activeEntries, action.payload);
-    },
-    mergeActiveEntries(state, action: PayloadAction<LocaleEntry[]>) {
-      entryAdapter.upsertMany(state.activeEntries, action.payload);
-    },
-    upsertActiveEntry(
+    upsertEntry(
       state,
-      action: PayloadAction<PartialNullable<LocaleEntry> & { k: string }>,
+      action: PayloadAction<{
+        locale: string;
+        entry: PartialNullable<LocaleEntry> & { k: string };
+      }>,
     ) {
-      entryAdapter.upsertOne(
-        state.activeEntries,
-        action.payload as LocaleEntry,
-      );
+      const { locale, entry } = action.payload;
+      const bucket = ensureLocale(state, locale);
+      entryAdapter.upsertOne(bucket, entry as LocaleEntry);
     },
-    removeActiveEntry(state, action: PayloadAction<string>) {
-      entryAdapter.removeOne(state.activeEntries, action.payload);
+
+    removeEntry(state, action: PayloadAction<{ locale: string; key: string }>) {
+      const bucket = state.entries[action.payload.locale];
+      if (bucket) {
+        entryAdapter.removeOne(bucket, action.payload.key);
+      }
     },
   },
 
   selectors: {
-    currentLocale: (state) => state.currentLocale,
+    activeLocale: (state) => state.activeLocale,
     /** Active locale entry for the given key. */
     selectEntry: (state, key: string): LocaleEntry | undefined =>
-      state.activeEntries.entities[key],
+      state.entries[state.activeLocale]?.entities[key],
+    /** All entries for the currently active locale. */
+    selectActiveEntries: (state) =>
+      state.entries[state.activeLocale]?.entities ?? {},
     /** Default locale entry for the given key. */
     selectDefaultEntry: (
       state,
       key: string | undefined,
     ): LocaleEntry | undefined =>
-      key ? state.defaultEntries.entities[key] : undefined,
-    allDefaultEntries: (state) => state.defaultEntries.entities,
+      key ? state.entries[defaultLocale]?.entities[key] : undefined,
+    selectDefaultEntries: (state) =>
+      state.entries[defaultLocale]?.entities ?? {},
+    /**
+     * For each non-default loaded locale, returns the count of entries where
+     * `v` equals `original` (i.e. the value has not been translated).
+     * Only entries that have an `original` field set are considered.
+     */
+    untranslatedCounts: (state): Partial<Record<SupportedLang, number>> => {
+      const result: Partial<Record<SupportedLang, number>> = {};
+      for (const [locale, entityState] of Object.entries(state.entries)) {
+        if (locale === defaultLocale) continue;
+        let count = 0;
+        for (const key of entityState.ids as string[]) {
+          const entry = entityState.entities[key];
+          if (entry?.original !== undefined && entry.v === entry.original) {
+            count++;
+          }
+        }
+        result[locale as SupportedLang] = count;
+      }
+      return result;
+    },
   },
 });
 

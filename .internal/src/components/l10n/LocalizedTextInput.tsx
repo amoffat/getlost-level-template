@@ -56,9 +56,7 @@ export default function LocalizedTextInput({
 }: LocalizedTextInputProps) {
   const dispatch = useAppDispatch();
 
-  const localeEntries = useAppSelector(
-    (state: RootState) => state.locale.activeEntries.entities,
-  );
+  const localeEntries = useAppSelector(localeSelectors.selectActiveEntries);
   const defaultEntry = useAppSelector((state: RootState) =>
     localeSelectors.selectDefaultEntry(state, contentKey),
   );

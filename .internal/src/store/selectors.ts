@@ -77,7 +77,7 @@ export function selectPropertyValue<
 export const speakers = createRootSelector(
   [
     mapEditorSelectors.selectSpeakers,
-    localeSelectors.allDefaultEntries,
+    localeSelectors.selectDefaultEntries,
     (state: RootState) => state,
     (state: RootState) => state.mapEditor.templates,
     (state: RootState) => state.tilesetEditor,
