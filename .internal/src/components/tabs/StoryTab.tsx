@@ -512,6 +512,9 @@ export default function StoryTab({
         "Give nodes good names by selecting them and editing them below.",
       );
       tips.push(
+        "A milestone should be a thing that can be achieved in the level.",
+      );
+      tips.push(
         "New nodes can be created by dragging off of an existing node.",
       );
     }

@@ -555,7 +555,7 @@ export default function DialogueTab({
         if (dlg.milestoneNodeIds.length === 0) {
           return [
             {
-              value: dlg.id,
+              value: createUrlPath({ id: dlg.id }),
               label: dlg.id,
               nodeProps: {
                 dialogue: dlg,
