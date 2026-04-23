@@ -1,0 +1,27 @@
+export default {
+  locales: [
+    "en",
+    "es",
+    "pt",
+    "pt-br",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ja",
+    "ko",
+    "zh",
+    "zh-cn",
+    "zh-tw",
+    "ar",
+    "tr",
+    "pl",
+    "th",
+    "vi",
+    "id",
+  ],
+  extract: {
+    input: "src/**/*.{js,jsx,ts,tsx}",
+    output: "public/locales/{{language}}/{{namespace}}.json",
+  },
+};

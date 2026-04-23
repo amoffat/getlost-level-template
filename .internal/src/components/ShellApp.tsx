@@ -3,6 +3,7 @@ import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
 import "@xyflow/react/dist/style.css";
 
+import { SupportedLang, supportedLangs } from "@/constants/locale";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
   getMapInitPromise,
@@ -11,11 +12,13 @@ import {
   getTilesetInitPromise,
 } from "@/init/editorInit";
 import { pathToTab, tabToPath } from "@/routes/tabs";
+import { selectors as localeSelectors } from "@/slices/locale";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
+import { setActiveLocaleThunk, setUserLocaleThunk } from "@/thunks/locale";
 import { MainTabName } from "@/types/tab";
 import { hasNewerEngineVersion } from "@/utils/version";
-import { AppShell, Box, Group, Tabs, Text } from "@mantine/core";
+import { AppShell, Badge, Box, Group, Tabs, Text } from "@mantine/core";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
@@ -23,8 +26,9 @@ import { notifications } from "@mantine/notifications";
 import { IconUpload, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import {
-  Suspense,
   memo,
+  ReactElement,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -32,10 +36,11 @@ import {
   useState,
   useTransition,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { shallowEqual } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import PanelLoader from "./PanelLoader";
 import LocaleSelector from "./LocaleSelector";
+import PanelLoader from "./PanelLoader";
 import PreviewTab from "./Preview";
 import Spotlight from "./Spotlight";
 import DialogueTab from "./tabs/DialogueTab";
@@ -59,6 +64,7 @@ declare global {
 }
 
 export function ShellApp() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const activeTab = useAppSelector((state) => state.ui.activeTab);
   const navigate = useNavigate();
@@ -199,6 +205,8 @@ type ShellAppContentProps = {
 const ShellAppContent = memo(function ShellAppContent({
   onTabChange,
 }: ShellAppContentProps) {
+  const { t } = useTranslation();
+  const dispatch = useAppDispatch();
   const [draggedFiles, setDraggedFiles] = useState<File[] | null>(null);
   const [assetTypeOpened, { open: openAssetType, close: closeAssetType }] =
     useDisclosure(false);
@@ -214,6 +222,9 @@ const ShellAppContent = memo(function ShellAppContent({
       }),
       shallowEqual,
     );
+
+  const activeLocale = useAppSelector(localeSelectors.activeLocale);
+  const userLocale = useAppSelector(localeSelectors.userLocale);
 
   const onDrop = useCallback(
     (files: FileWithPath[]) => {
@@ -241,6 +252,36 @@ const ShellAppContent = memo(function ShellAppContent({
   const mapInitPromise = useMemo(() => getMapInitPromise(), []);
   const storyInitPromise = useMemo(() => getStoryInitPromise(), []);
   const previewInitPromise = useMemo(() => getPreviewInitPromise(), []);
+
+  const handleLevelLocaleChange = useCallback(
+    (locale: SupportedLang) => {
+      dispatch(setActiveLocaleThunk(locale));
+    },
+    [dispatch],
+  );
+
+  const handleUserLocaleChange = useCallback(
+    (locale: SupportedLang) => {
+      dispatch(setUserLocaleThunk(locale));
+    },
+    [dispatch],
+  );
+
+  const untranslatedCounts = useAppSelector(localeSelectors.untranslatedCounts);
+  const untranslatedBadges: Map<SupportedLang, ReactElement> = useMemo(() => {
+    return new Map(
+      supportedLangs
+        .filter((l) => (untranslatedCounts[l] ?? 0) > 0)
+        .map((l) => {
+          return [
+            l,
+            <Badge size="xs" color="orange" variant="filled">
+              {untranslatedCounts[l]}
+            </Badge>,
+          ];
+        }),
+    );
+  }, [untranslatedCounts]);
 
   return (
     <>
@@ -295,13 +336,30 @@ const ShellAppContent = memo(function ShellAppContent({
             }
           >
             <Tabs.List style={{ alignItems: "center" }}>
-              <Tabs.Tab value="map-editor">Map</Tabs.Tab>
-              <Tabs.Tab value="tileset-editor">Tilesets</Tabs.Tab>
-              <Tabs.Tab value="story-editor">Story</Tabs.Tab>
-              <Tabs.Tab value="dialogue-editor">Dialogue</Tabs.Tab>
-              <Tabs.Tab value="preview">Preview</Tabs.Tab>
+              <Tabs.Tab value="map-editor">{t("mapTab")}</Tabs.Tab>
+              <Tabs.Tab value="tileset-editor">{t("tilesetsTab")}</Tabs.Tab>
+              <Tabs.Tab value="story-editor">{t("storyTab")}</Tabs.Tab>
+              <Tabs.Tab value="dialogue-editor">
+                {t("dialogueTab")}
+              </Tabs.Tab>
+              <Tabs.Tab value="preview">{t("previewTab")}</Tabs.Tab>
               <Box style={{ marginLeft: "auto" }} pr="sm">
-                <LocaleSelector />
+                <Group gap={0}>
+                  <LocaleSelector
+                    key="your-lang"
+                    label="Your language"
+                    locale={userLocale}
+                    hideMain
+                    onLocaleChange={handleUserLocaleChange}
+                  />
+                  <LocaleSelector
+                    key="level-lang"
+                    label="Level language"
+                    locale={activeLocale}
+                    onLocaleChange={handleLevelLocaleChange}
+                    rightSection={untranslatedBadges}
+                  />
+                </Group>
               </Box>
             </Tabs.List>
 

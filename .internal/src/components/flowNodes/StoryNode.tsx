@@ -86,9 +86,9 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
     dSelectors.dialogueForMilestone(state, id),
   );
 
-  let npcNode = null;
+  let speakers = null;
   if (dialogues.length > 0) {
-    npcNode = (
+    speakers = (
       <Flex wrap="wrap" gap={0}>
         {dialogues.map((dlg) => (
           <Box key={dlg.id} w={32} h={32}>
@@ -119,7 +119,7 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
           {milestoneName}
           {isPermanent && <IconInfinity color="gold" />}
         </Group>
-        {npcNode}
+        {speakers}
       </Stack>
       <Handle type="source" position={Position.Bottom} />
     </div>

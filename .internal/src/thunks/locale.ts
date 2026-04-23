@@ -1,6 +1,11 @@
-import { SupportedLang, supportedLangs } from "@/constants/locale";
+import {
+  codeToLanguage,
+  SupportedLang,
+  supportedLangs,
+} from "@/constants/locale";
 import { actions } from "@/slices/locale";
 import type { LocaleEntry } from "@/types/locale";
+import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 const LOCALE_FILE = "dialogue";
@@ -46,10 +51,25 @@ export const loadAllLocalesThunk = createAsyncThunk(
   },
 );
 
-export const setLocaleThunk = createAsyncThunk(
-  "locale/set",
+export const setActiveLocaleThunk = createAsyncThunk(
+  "locale/setActive",
   async (locale: SupportedLang, { dispatch }) => {
     await dispatch(loadDialogueLocaleThunk(locale)).unwrap();
     dispatch(actions.setActiveLocale(locale));
+    notifications.show({
+      title: "Language changed",
+      message: `The story dialogue and names are now in ${codeToLanguage[locale]}`,
+    });
+  },
+);
+
+export const setUserLocaleThunk = createAsyncThunk(
+  "locale/setUser",
+  async (locale: SupportedLang, { dispatch }) => {
+    dispatch(actions.setUserLocale(locale));
+    notifications.show({
+      title: "Language changed",
+      message: `The editor interface is now in ${codeToLanguage[locale]}`,
+    });
   },
 );

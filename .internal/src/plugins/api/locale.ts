@@ -7,6 +7,7 @@ const internalDir = process.cwd();
 const repoDir = resolve(internalDir, "..");
 const levelDir = resolve(repoDir, "level");
 const localeDir = resolve(levelDir, "locales");
+const systemLocaleDir = resolve(internalDir, "public", "locales");
 
 export const router = express.Router({ mergeParams: true });
 
@@ -57,6 +58,42 @@ function writeEntries(
 
 // ---------------------------------------------------------------------------
 // Routes
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// System locale router — serves read-only files from public/locales
+// ---------------------------------------------------------------------------
+
+export const systemRouter = express.Router({ mergeParams: true });
+
+systemRouter.get("/:locale/:file.jsonl", (req, res) => {
+  try {
+    const { locale, file } = req.params;
+    const filePath = resolve(systemLocaleDir, locale, `${file}.jsonl`);
+
+    if (!fs.existsSync(filePath)) {
+      res.sendStatus(404);
+      return;
+    }
+
+    res.sendFile(
+      filePath,
+      { headers: { "Content-Type": "application/jsonl" }, dotfiles: "allow" },
+      (err) => {
+        if (err) {
+          console.error("Error sending system locale file:", err);
+          if (!res.headersSent) res.sendStatus(500);
+        }
+      },
+    );
+  } catch (error) {
+    console.error("Error handling system locale get:", error);
+    res.sendStatus(500);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Level locale routes
 // ---------------------------------------------------------------------------
 
 // Serve the entire locale file (read-only; no locking needed)

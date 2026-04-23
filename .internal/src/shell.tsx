@@ -15,6 +15,7 @@ import ItemizedConfirmModal from "./components/modals/ItemizedConfirmModal";
 import { overlayProps } from "./constants";
 
 const theme: MantineThemeOverride = {
+  defaultRadius: "sm",
   components: {
     Alert: { defaultProps: { variant: "filled", color: "pink" } },
     // Container: { defaultProps: { p: "xs" } },

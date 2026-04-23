@@ -4,39 +4,35 @@ import {
   SupportedLang,
   supportedLangs,
 } from "@/constants/locale";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { selectors as localeSelectors } from "@/slices/locale";
-import { setLocaleThunk } from "@/thunks/locale";
-import { Badge, Button, Group, Menu, ScrollArea } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { Button, Group, Menu, ScrollArea } from "@mantine/core";
 import { IconChevronDown } from "@tabler/icons-react";
-import { useCallback, useMemo } from "react";
+import { ReactElement, useMemo } from "react";
 
-export default function LocaleSelector() {
-  const dispatch = useAppDispatch();
-  const currentLocale = useAppSelector(localeSelectors.activeLocale);
-  const untranslatedCounts = useAppSelector(localeSelectors.untranslatedCounts);
+type LocaleSelectorProps = {
+  label: string;
+  locale: SupportedLang;
+  rightSection?: Map<SupportedLang, ReactElement>;
+  onLocaleChange: (locale: SupportedLang) => void;
+  hideMain?: boolean;
+};
 
-  const handleLocaleChange = useCallback(
-    (locale: SupportedLang) => {
-      dispatch(setLocaleThunk(locale));
-
-      notifications.show({
-        title: "Language changed",
-        message: `The story dialogue and names are now in ${codeToLanguage[locale]}`,
-      });
-    },
-    [dispatch],
-  );
-
+export default function LocaleSelector({
+  label,
+  locale,
+  rightSection,
+  onLocaleChange,
+  hideMain = false,
+}: LocaleSelectorProps) {
   const supportedLocales = useMemo(
     () =>
-      supportedLangs.map((l) => ({
-        value: l,
-        flag: codeToFlag[l],
-        label: codeToLanguage[l],
-      })),
-    [],
+      supportedLangs
+        .filter((l) => (hideMain ? l !== "main" : true))
+        .map((l) => ({
+          value: l,
+          flag: codeToFlag[l],
+          label: codeToLanguage[l],
+        })),
+    [hideMain],
   );
 
   return (
@@ -47,25 +43,19 @@ export default function LocaleSelector() {
           size="xs"
           rightSection={<IconChevronDown size={12} />}
         >
-          {codeToFlag[currentLocale]} {codeToLanguage[currentLocale]}
+          {codeToFlag[locale]} {label}
         </Button>
       </Menu.Target>
       <Menu.Dropdown>
         <ScrollArea.Autosize mah={320} type="scroll">
           {supportedLocales.map((l) => {
-            const untranslated = untranslatedCounts[l.value];
             return (
-              <Menu.Item
-                key={l.value}
-                onClick={() => handleLocaleChange(l.value)}
-              >
+              <Menu.Item key={l.value} onClick={() => onLocaleChange(l.value)}>
                 <Group justify="space-between" gap="xs" wrap="nowrap">
-                  <span>{l.flag} {l.label}</span>
-                  {untranslated != null && untranslated > 0 && (
-                    <Badge size="xs" color="orange" variant="filled">
-                      {untranslated}
-                    </Badge>
-                  )}
+                  <span>
+                    {l.flag} {l.label}
+                  </span>
+                  {rightSection?.get(l.value)}
                 </Group>
               </Menu.Item>
             );

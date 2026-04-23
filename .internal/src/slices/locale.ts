@@ -17,6 +17,7 @@ type LocaleEntityState = EntityState<LocaleEntry, string>;
 
 interface LocaleState {
   activeLocale: SupportedLang;
+  userLocale: SupportedLang;
   /** All loaded locale entries, keyed by locale string. */
   entries: Record<string, LocaleEntityState>;
 }
@@ -32,12 +33,17 @@ export const slice = createSlice({
   name: "locale",
   initialState: {
     activeLocale: defaultLocale,
+    userLocale: defaultLocale,
     entries: {},
   } as LocaleState,
 
   reducers: {
     setActiveLocale(state, action: PayloadAction<SupportedLang>) {
       state.activeLocale = action.payload;
+    },
+
+    setUserLocale(state, action: PayloadAction<SupportedLang>) {
+      state.userLocale = action.payload;
     },
 
     setEntries(
@@ -70,6 +76,7 @@ export const slice = createSlice({
 
   selectors: {
     activeLocale: (state) => state.activeLocale,
+    userLocale: (state) => state.userLocale,
     /** Active locale entry for the given key. */
     selectEntry: (state, key: string): LocaleEntry | undefined =>
       state.entries[state.activeLocale]?.entities[key],

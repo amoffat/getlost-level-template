@@ -1,14 +1,17 @@
 import express from "express";
 import type { Plugin } from "vite";
 import { router as backgroundRouter } from "./background";
-import { router as speakerImageRouter } from "./speakerImage";
 import { router as execRouter } from "./exec";
 import { router as filesRouter } from "./files";
 import { router as gitRouter } from "./git";
-import { router as localeRouter } from "./locale";
+import {
+  router as localeRouter,
+  systemRouter as systemLocaleRouter,
+} from "./locale";
 import { router as mapRouter } from "./map";
 import { router as pathgraphRouter } from "./pathgraph";
 import { router as scriptRouter } from "./script";
+import { router as speakerImageRouter } from "./speakerImage";
 import { router as storyRouter } from "./story";
 import { router as tilesetRouter } from "./tileset";
 
@@ -34,8 +37,10 @@ export default function expressApi(): Plugin {
       levelRouter.use("/speakers", speakerImageRouter);
       levelRouter.use("/map.cbor.gz", mapRouter);
       levelRouter.use("/story.cbor.gz", storyRouter);
-      levelRouter.use("/locales", localeRouter);
       levelRouter.use("/main.js", scriptRouter);
+
+      rootRouter.use("/locales/system", systemLocaleRouter);
+      levelRouter.use("/locales", localeRouter);
 
       rootRouter.use("/files", filesRouter);
 
