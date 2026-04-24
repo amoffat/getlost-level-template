@@ -1,9 +1,11 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as uiActions } from "@/slices/ui";
 import { shallowEqual } from "react-redux";
+import { useTranslation } from "react-i18next";
 import PaletteFilter, { FilterToggle } from "../PaletteFilter";
 
 export default function ObjectsPaletteFilters() {
+  const { t } = useTranslation();
   const filters = useAppSelector(
     (state) => state.ui.paletteFilterSwitches.objects,
     shallowEqual
@@ -13,7 +15,7 @@ export default function ObjectsPaletteFilters() {
   const filterToggles: FilterToggle[] = [
     {
       key: "hide-animations",
-      label: "Hide sprites used in animations",
+      label: t("paletteFilterHideAnimationSprites"),
       checked: filters.hideAnimations,
       onChange: (checked) => {
         dispatch(
@@ -27,7 +29,7 @@ export default function ObjectsPaletteFilters() {
     },
     {
       key: "hide-npcs",
-      label: "Hide sprites from NPC tilesets",
+      label: t("paletteFilterHideNpcTilesetSprites"),
       checked: filters.hideNpcLeftovers,
       onChange: (checked) => {
         dispatch(
@@ -41,7 +43,7 @@ export default function ObjectsPaletteFilters() {
     },
     {
       key: "hide-unused",
-      label: "Hide unused sprites",
+      label: t("paletteFilterHideUnusedSprites"),
       checked: filters.hideUnusedObjects,
       onChange: (checked) => {
         dispatch(
@@ -55,7 +57,7 @@ export default function ObjectsPaletteFilters() {
     },
     {
       key: "show-tiles",
-      label: "Show only solid tiles",
+      label: t("paletteFilterShowOnlyTiles"),
       checked: filters.showOnlyTiles,
       onChange: (checked) => {
         dispatch(

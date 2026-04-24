@@ -10,6 +10,7 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { IconCopy, IconTrash } from "@tabler/icons-react";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import FloatingMenu from "../FloatingMenu";
 
 interface ObjectNpcMenuProps {
@@ -23,6 +24,7 @@ export default function ObjectNpcMenu({
   obj,
   closeMenu,
 }: ObjectNpcMenuProps) {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const onCopyId = useCallback(() => {
@@ -50,8 +52,8 @@ export default function ObjectNpcMenu({
       ok: mapUses === 0,
       message:
         mapUses > 0
-          ? `${mapUses} map objects use this NPC.`
-          : "This NPC is not used in the map.",
+          ? t("objNpcMenuMapObjectsUse", { count: mapUses })
+          : t("objNpcMenuNotUsedInMap"),
     });
 
     // const hasWarning = items.some((item) => !item.ok);
@@ -63,21 +65,21 @@ export default function ObjectNpcMenu({
         }),
       );
       notifications.show({
-        title: "NPC deleted",
-        message: `Deleted NPC "${obj.name}".`,
+        title: t("objNpcMenuDeletedTitle"),
+        message: t("objNpcMenuDeletedMsg", { name: obj.id }),
         autoClose: 3000,
       });
     };
 
     modals.openContextModal({
       modal: "confirm",
-      title: "Delete NPC?",
+      title: t("objNpcMenuDeleteModalTitle"),
       centered: true,
       withCloseButton: true,
       innerProps: {
         makeItems: () => items,
-        confirmLabel: "Yes, delete NPC",
-        msg: "Are you sure you want to delete this NPC? This action cannot be undone.",
+        confirmLabel: t("objNpcMenuDeleteConfirmLabel"),
+        msg: t("objNpcMenuDeleteMsg"),
         onConfirm,
       },
     });
@@ -90,20 +92,20 @@ export default function ObjectNpcMenu({
   return (
     <>
       <FloatingMenu pos={pos} opened={pos !== null} withArrow>
-        <Menu.Label>Object Npc Actions</Menu.Label>
+        <Menu.Label>{t("objNpcMenuLabel")}</Menu.Label>
         <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
-          Copy object id
+          {t("objNpcMenuCopyId")}
         </Menu.Item>
 
         <Menu.Divider />
 
-        <Menu.Label>Danger zone</Menu.Label>
+        <Menu.Label>{t("objNpcMenuDangerZone")}</Menu.Label>
         <Menu.Item
           color="red"
           leftSection={<IconTrash size={14} />}
           onClick={deleteObject}
         >
-          Delete
+          {t("objNpcMenuDeleteMenuItem")}
         </Menu.Item>
       </FloatingMenu>
     </>

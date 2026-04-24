@@ -1,15 +1,17 @@
 import Tip from "@/components/Tip";
+import { useTranslation } from "react-i18next";
 
 export default function ZIndexTool() {
+  const { t } = useTranslation();
   return (
     <>
       <Tip
         tips={[
-          "Move the red z-index handles to adjust the z-indices.",
-          "If a character is below the handle, it will be drawn in front of the object.",
-          "If a character is above the handle, it will be drawn behind the object.",
-          "Double click a segment to add a new handle.",
-          "Double click a handle to remove it.",
+          t('zIndexToolTipMove'),
+          t('zIndexToolTipBelow'),
+          t('zIndexToolTipAbove'),
+          t('zIndexToolTipDblClickAdd'),
+          t('zIndexToolTipDblClickRemove'),
         ]}
       />
     </>

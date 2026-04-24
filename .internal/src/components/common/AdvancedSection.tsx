@@ -1,6 +1,7 @@
 import { Button, Collapse } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 interface AdvancedSectionProps {
   /** Content to be displayed inside the collapsible section */
@@ -13,18 +14,20 @@ interface AdvancedSectionProps {
 
 export default function AdvancedSection({
   children,
-  label = "Advanced",
+  label,
   defaultOpen = false,
 }: AdvancedSectionProps) {
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t("advancedLabel");
   const [opened, { toggle }] = useDisclosure(defaultOpen);
 
   return (
     <>
       <Button variant="subtle" size="xs" onClick={toggle} fullWidth>
-        {opened ? "Hide" : "Show"} {label}
+        {opened ? t("advancedHide") : t("advancedShow")} {resolvedLabel}
       </Button>
 
-      <Collapse in={opened}>{children}</Collapse>
+      <Collapse expanded={opened}>{children}</Collapse>
     </>
   );
 }

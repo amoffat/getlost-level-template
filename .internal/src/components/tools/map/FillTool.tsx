@@ -25,10 +25,12 @@ import {
 import { IconInfoCircle } from "@tabler/icons-react";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual } from "react-redux";
+import { useTranslation } from "react-i18next";
 import TilesetGroup from "../../TilesetGroup";
 import Tip from "../../Tip";
 
 export default function FillTool() {
+  const { t } = useTranslation();
   const {
     candidates: cands,
     density: storeDensity,
@@ -49,23 +51,21 @@ export default function FillTool() {
   const uiFromWeight = useCallback((t: number) => mapWeightToUi(t, n), [n]);
 
   const tips: ReactNode[] = useMemo(() => {
-    const t = [];
+    const tipsList = [];
     if (!hasCands) {
-      t.push("Select objects from the palette to use them for filling.");
+      tipsList.push(t("fillToolTip1"));
     } else {
-      t.push(
-        "Adjust the sliders to set the probability that each tile will be placed at a given location in the fill area.",
-      );
+      tipsList.push(t("fillToolTip2"));
     }
 
     if (!selectedBounds) {
-      t.push("Drag on the map to select an area to fill.");
+      tipsList.push(t("fillToolTip3"));
     }
 
-    t.push("The fill tool allows you to fill a rectangle with some objects.");
+    tipsList.push(t("fillToolTip4"));
 
-    return t;
-  }, [hasCands, selectedBounds]);
+    return tipsList;
+  }, [hasCands, selectedBounds, t]);
 
   const dynamicUpdate = useMemo(() => {
     if (!bounds) return 0;
@@ -170,15 +170,15 @@ export default function FillTool() {
   return (
     <>
       <Tip tips={tips} />
-      <Fieldset legend="Fill Tool Options" p="xs">
+      <Fieldset legend={t("fillToolOptionsLegend")} p="xs">
         <Stack p={0} gap="xs">
           {!hasCands && (
             <Alert
-              title="No tiles selected"
+              title={t("fillToolNoTilesTitle")}
               variant="light"
               icon={<IconInfoCircle />}
             >
-              Please select tile groups from the palette.
+              {t("fillToolNoTilesMsg")}
             </Alert>
           )}
 
@@ -230,7 +230,7 @@ export default function FillTool() {
 
           <Stack gap="xs" p={0}>
             <Text size="sm" fw={500}>
-              Density
+              {t("fillToolDensityLabel")}
             </Text>
             <Slider
               min={0}
@@ -260,7 +260,7 @@ export default function FillTool() {
             disabled={!canCommit}
             onClick={commitChanges}
           >
-            Fill
+            {t("fillToolFillButton")}
           </Button>
         </Stack>
       </Fieldset>

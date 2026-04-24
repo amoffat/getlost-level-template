@@ -18,10 +18,12 @@ import {
   IconSquareFilled,
 } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import AdvancedSection from "../../common/AdvancedSection";
 import Tip from "../../Tip";
 
 export default function ColliderTool() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const {
     brushSize,
@@ -182,24 +184,17 @@ export default function ColliderTool() {
     <>
       <Tip
         tips={[
-          "Draw collision masks on tile groups by painting directly on the tileset.",
-          "Paint mode adds collision areas, erase mode removes them.",
-          <>
-            Hold <Kbd>Ctrl</Kbd> to temporarily switch to erase mode.
-          </>,
-          <>
-            Press <Kbd>S</Kbd> to toggle brush shape.
-          </>,
-          <>
-            Hold <Kbd>Ctrl</Kbd> and scroll the mouse wheel to adjust brush
-            size.
-          </>,
+          t('tsColliderTipDrawMasks'),
+          t('tsColliderTipPaintErase'),
+          <Trans i18nKey="tsColliderTipHoldCtrl">Hold <Kbd>Ctrl</Kbd> to temporarily switch to erase mode.</Trans>,
+          <Trans i18nKey="tsColliderTipPressS">Press <Kbd>S</Kbd> to toggle brush shape.</Trans>,
+          <Trans i18nKey="tsColliderTipScrollWheel">Hold <Kbd>Ctrl</Kbd> and scroll the mouse wheel to adjust brush size.</Trans>,
         ]}
       />
-      <Fieldset legend="Collider" p="xs">
+      <Fieldset legend={t('tsColliderLegend')} p="xs">
         <Stack p={0} gap="md">
           <Stack gap="xs" p={0}>
-            <Text size="sm">Brush Mode</Text>
+            <Text size="sm">{t('tsColliderBrushMode')}</Text>
             <SegmentedControl
               value={mode}
               onChange={handleModeChange}
@@ -208,7 +203,7 @@ export default function ColliderTool() {
                   label: (
                     <Group gap="xs" wrap="nowrap">
                       <IconBrush size={16} />
-                      Paint
+                      {t('tsColliderPaint')}
                     </Group>
                   ),
                   value: "paint",
@@ -217,7 +212,7 @@ export default function ColliderTool() {
                   label: (
                     <Group gap="xs" wrap="nowrap">
                       <IconEraser size={16} />
-                      Erase
+                      {t('tsColliderErase')}
                     </Group>
                   ),
                   value: "erase",
@@ -227,7 +222,7 @@ export default function ColliderTool() {
           </Stack>
 
           <Stack gap="xs" p={0}>
-            <Text size="sm">Brush Shape</Text>
+            <Text size="sm">{t('tsColliderBrushShape')}</Text>
             <SegmentedControl
               value={brushShape}
               onChange={handleBrushShapeChange}
@@ -236,7 +231,7 @@ export default function ColliderTool() {
                   label: (
                     <Group gap="xs" wrap="nowrap">
                       <IconSquareFilled size={16} />
-                      Square
+                      {t('tsColliderSquare')}
                     </Group>
                   ),
                   value: "square",
@@ -245,7 +240,7 @@ export default function ColliderTool() {
                   label: (
                     <Group gap="xs" wrap="nowrap">
                       <IconCircleFilled size={16} />
-                      Circle
+                      {t('tsColliderCircle')}
                     </Group>
                   ),
                   value: "circle",
@@ -255,9 +250,9 @@ export default function ColliderTool() {
           </Stack>
 
           <Stack gap="xs" p={0} mb="md">
-            <Text size="sm">Brush Size</Text>
+            <Text size="sm">{t('tsColliderBrushSize')}</Text>
             <Slider
-              label="Brush Size"
+              label={t('tsColliderBrushSize')}
               value={brushSize}
               onChange={handleBrushSizeChange}
               min={1}
@@ -270,16 +265,16 @@ export default function ColliderTool() {
           <AdvancedSection>
             <Stack gap="md" p={0}>
               <Switch
-                label="Draw on opaque pixels only"
-                description="When enabled, brush only draws on non-transparent pixels"
+                label={t('tsColliderDrawOpaqueLabel')}
+                description={t('tsColliderDrawOpaqueDesc')}
                 checked={drawOnOpaqueOnly}
                 onChange={handleDrawOnOpaqueOnlyChange}
               />
 
               <Stack gap="xs" p={0}>
-                <Text size="sm">Overlay Opacity</Text>
+                <Text size="sm">{t('tsColliderOverlayOpacity')}</Text>
                 <Slider
-                  label="Overlay Opacity"
+                  label={t('tsColliderOverlayOpacity')}
                   value={overlayOpacity}
                   onChange={handleOverlayOpacityChange}
                   min={0}
@@ -289,14 +284,14 @@ export default function ColliderTool() {
               </Stack>
 
               <Switch
-                label="Show colliders"
-                description="Display computed collision rectangles as overlays"
+                label={t('tsColliderShowColliders')}
+                description={t('tsColliderShowCollidersDesc')}
                 checked={showColliders}
                 onChange={handleShowCollidersChange}
               />
 
               <Stack gap="xs" p={0}>
-                <Text size="sm">Simplify collider</Text>
+                <Text size="sm">{t('tsColliderSimplify')}</Text>
                 <Slider
                   key={objKey}
                   label={simplify.toFixed(3)}

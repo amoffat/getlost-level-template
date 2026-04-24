@@ -4,18 +4,20 @@ import { actions as mapActions } from "@/slices/mapEditor";
 import { loadTileGroup } from "@/utils/tileset";
 import { Fieldset, Radio, Stack, Tooltip } from "@mantine/core";
 import { ReactNode, useCallback, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import Tip from "../../Tip";
 
 export default function GatewayTool() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const tips: ReactNode[] = useMemo(() => {
     return [
-      "Click on a gateway to select it.",
-      "Click on the map to place the gateway.",
-      "Gateways can only be placed on the Special layer.",
+      t("gatewayTip1"),
+      t("gatewayTip2"),
+      t("gatewayTip3"),
     ];
-  }, []);
+  }, [t]);
 
   const onSetGatewayType = useCallback(
     (value: string) => {
@@ -40,7 +42,7 @@ export default function GatewayTool() {
   return (
     <>
       <Tip tips={tips} />
-      <Fieldset legend="Gateway type" p="xs">
+      <Fieldset legend={t("gatewayTypeLegend")} p="xs">
         <Radio.Group
           name="gateway-type"
           onChange={onSetGatewayType}
@@ -48,20 +50,20 @@ export default function GatewayTool() {
         >
           <Stack>
             <Tooltip
-              label="Where the player enters the level"
+              label={t("gatewayEntranceTooltip")}
               refProp="rootRef"
               position="left"
               withArrow
             >
-              <Radio value="entrance" label="Entrance" />
+              <Radio value="entrance" label={t("gatewayEntranceLabel")} />
             </Tooltip>
             <Tooltip
-              label="Where the player exits the level"
+              label={t("gatewayExitTooltip")}
               refProp="rootRef"
               position="left"
               withArrow
             >
-              <Radio value="exit" label="Exit" />
+              <Radio value="exit" label={t("gatewayExitLabel")} />
             </Tooltip>
           </Stack>
         </Radio.Group>

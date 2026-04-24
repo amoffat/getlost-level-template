@@ -87,7 +87,6 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
-    "i18next-cli": "^1.56.5",
     "knip": "^6.6.1",
     "license-checker-rseidelsohn": "^4.4.2",
     "npm-check-updates": "^21.0.3",

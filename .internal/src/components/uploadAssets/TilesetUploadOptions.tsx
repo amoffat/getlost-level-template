@@ -8,6 +8,7 @@ import { Button, Group, Image, Select, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconLibraryPhoto, IconPhotoPlus } from "@tabler/icons-react";
 import { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import RestrictedControl from "./RestrictedControl";
 
 const NEW_TILESET = "__new_tileset__";
@@ -30,6 +31,7 @@ export default function TilesetUploadOptions({
   files,
   closeModal,
 }: TilesetUploadOptionsProps) {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const tilesets = useAppSelector(selectors.selectTilesets);
 
@@ -61,30 +63,30 @@ export default function TilesetUploadOptions({
     }> = [];
 
     const ntGroups: { value: string; label: string }[] = [];
-    groups.push({ group: "New tilesets", items: ntGroups });
+    groups.push({ group: t("tilesetUploadNewTilesets"), items: ntGroups });
 
     ntGroups.push({
       value: NEW_TILESET,
       label:
         files.length === 1
-          ? "Create a new tileset"
-          : "Create a new tileset for each upload",
+          ? t("tilesetUploadCreateNew")
+          : t("tilesetUploadCreateNewForEach"),
     });
 
     if (files.length > 1) {
       ntGroups.push({
         value: MERGE_UPLOADS,
-        label: `Merge the ${files.length} uploads into a single new tileset`,
+        label: t("tilesetUploadMergeUploads", { count: files.length }),
       });
     }
 
     const existingTilesets = Object.values(tilesets).map((tileset) => ({
       value: tileset.id,
-      label: `Merge into ${tileset.id}`,
+      label: t("tilesetUploadMergeInto", { id: tileset.id }),
     }));
 
     if (existingTilesets.length > 0) {
-      groups.push({ group: "Existing tilesets", items: existingTilesets });
+      groups.push({ group: t("tilesetUploadExistingTilesets"), items: existingTilesets });
     }
 
     return groups;
@@ -166,9 +168,9 @@ export default function TilesetUploadOptions({
     <form onSubmit={handleSubmit}>
       <Stack>
         <Select
-          label="Asset creation"
-          description="How should the uploaded assets be organized into tilesets?"
-          placeholder="Choose a tileset"
+          label={t("tilesetUploadAssetCreation")}
+          description={t("tilesetUploadAssetCreationDesc")}
+          placeholder={t("tilesetUploadChooseTileset")}
           data={tilesetOptions}
           key={form.key("creationOption")}
           {...form.getInputProps("creationOption")}
@@ -182,7 +184,7 @@ export default function TilesetUploadOptions({
 
         <Group mt="lg" justify="flex-end">
           <Button color="blue" type="submit" radius="md">
-            Upload
+            {t("tilesetUploadSubmitBtn")}
           </Button>
         </Group>
       </Stack>

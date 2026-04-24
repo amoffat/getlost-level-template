@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useAppSelector } from "@/hooks/redux";
 import { selectors as localeSelectors } from "@/slices/locale";
 import { resolveLocaleText } from "@/utils/locale";
@@ -27,14 +28,18 @@ export default function LocalizedNameInput({
   onValueChange,
   validator,
   keyPrefix = [],
-  description = "A name for this object.",
+  description: descriptionProp,
   context,
   noTemplate,
   debounceMs = 100,
-  label = "Name",
-  placeholder = "Enter name",
+  label: labelProp,
+  placeholder: placeholderProp,
   required,
 }: LocalizedNameInputProps) {
+  const { t } = useTranslation();
+  const label = labelProp ?? t('localizedNameInputLabel');
+  const description = descriptionProp ?? t('localizedNameInputDescription');
+  const placeholder = placeholderProp ?? t('localizedNameInputPlaceholder');
   const currentLocale = useAppSelector(localeSelectors.activeLocale);
   const defaultEntries = useAppSelector(localeSelectors.selectDefaultEntries);
 
@@ -62,7 +67,7 @@ export default function LocalizedNameInput({
             keyPrefix={keyPrefix}
             currentLocale={currentLocale}
             contentKey={value ?? undefined}
-            placeholder={value === undefined ? "Mixed values" : placeholder}
+            placeholder={value === undefined ? t('localizedNameInputMixedValues') : placeholder}
             required={required}
             onLocaleKeyChange={(newKey) => {
               onChange(newKey ?? null);

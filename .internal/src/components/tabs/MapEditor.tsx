@@ -61,6 +61,7 @@ import {
   useMemo,
   useRef,
 } from "react";
+import { useTranslation } from "react-i18next";
 import LayerList from "../LayerList";
 import MapPositions from "../MapPositions";
 import ObjectPalette from "../ObjectPalette";
@@ -143,19 +144,19 @@ export default function MapEditorTab({
   }, [paletteSelection, tilesets, placeObj]);
 
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   // Register map-editor spotlight actions
   const mapSpotlightActions = useMemo(
     () => [
       {
         id: "clear-broken",
-        label: "Clear broken objects",
-        description:
-          "Remove references to missing tilesets or objects from the map",
+        label: t("mapEditorClearBrokenLabel"),
+        description: t("mapEditorClearBrokenDescription"),
         onClick: () => {
           modals.openContextModal({
             modal: "confirm",
-            title: "Clear broken references?",
+            title: t("mapEditorClearBrokenTitle"),
             centered: true,
             withCloseButton: true,
             innerProps: {
@@ -167,13 +168,15 @@ export default function MapEditorTab({
                   ok: broken.length === 0,
                   message:
                     broken.length === 0
-                      ? "No broken tiles found."
-                      : `Found ${broken.length} broken tiles`,
+                      ? t("mapEditorNoBrokenTilesFound")
+                      : t("mapEditorFoundBrokenTiles", {
+                          count: broken.length,
+                        }),
                 });
                 return items;
               },
-              confirmLabel: "Yes, clear references",
-              msg: "Are you sure you want to clear all broken references? This will delete all map objects that are not backed by a tileset. This action cannot be undone.",
+              confirmLabel: t("mapEditorClearBrokenConfirmLabel"),
+              msg: t("mapEditorClearBrokenMsg"),
               onConfirm: () => {},
             },
           });
@@ -182,18 +185,16 @@ export default function MapEditorTab({
       },
       {
         id: "reset-map",
-        label: "Reset map",
-        description: "Delete all objects in the current map",
+        label: t("mapEditorResetMapLabel"),
+        description: t("mapEditorResetMapDescription"),
         onClick: () => {
           modals.openConfirmModal({
-            title: "Reset map?",
-            children: (
-              <Text size="sm">
-                This will delete everything in the map. This action cannot be
-                undone.
-              </Text>
-            ),
-            labels: { confirm: "Reset map", cancel: "Cancel" },
+            title: t("mapEditorResetMapTitle"),
+            children: <Text size="sm">{t("mapEditorResetMapBody")}</Text>,
+            labels: {
+              confirm: t("mapEditorResetMapConfirm"),
+              cancel: t("mapEditorCancel"),
+            },
             confirmProps: { color: "red" },
             centered: true,
             withCloseButton: false,
@@ -203,7 +204,7 @@ export default function MapEditorTab({
         leftSection: <IconTrash />,
       },
     ],
-    [dispatch],
+    [dispatch, t],
   );
   useSpotlightActions(
     "map-editor",
@@ -293,90 +294,90 @@ export default function MapEditorTab({
     () =>
       ({
         select: {
-          name: "Select/move",
+          name: t("mapEditorSelectMoveTool"),
           icon: <IconPointer size={16} />,
           options: <SelectTool />,
         },
         paint: {
-          name: "Paint area",
+          name: t("mapEditorPaintAreaTool"),
           icon: <IconPaint size={16} />,
           layerConstraints: [MapLayerName.Exterior, MapLayerName.Ground],
           options: <PaintTool />,
         },
         autotiler: {
-          name: "Autotiler",
+          name: t("mapEditorAutotilerTool"),
           icon: <IconWand size={16} />,
           layerConstraints: [MapLayerName.Ground],
           options: <AutotilerTool />,
         },
         fill: {
-          name: "Fill area",
+          name: t("mapEditorFillAreaTool"),
           icon: <IconBucketDroplet size={16} />,
           layerConstraints: [MapLayerName.Exterior, MapLayerName.Ground],
           options: <FillTool />,
         },
         "set-gateway": {
-          name: "Add gateway",
+          name: t("mapEditorAddGatewayTool"),
           icon: <IconDoorExit size={16} />,
           layerConstraints: [MapLayerName.Special],
           options: <GatewayTool />,
         },
         "set-waypoint": {
-          name: "Set waypoint",
+          name: t("mapEditorSetWaypointTool"),
           icon: <IconMapPin size={16} />,
           layerConstraints: [MapLayerName.Special],
         },
         "add-collider": {
-          name: "Add collider",
+          name: t("mapEditorAddColliderTool"),
           icon: <IconCarCrash size={16} />,
           layerConstraints: [MapLayerName.Sensors],
           options: <ColliderTool />,
         },
 
         "set-sensor-zone": {
-          name: "Sensor zone",
+          name: t("mapEditorSensorZoneTool"),
           icon: <IconInputSpark size={16} />,
           layerConstraints: [MapLayerName.Sensors],
         },
         "set-sink-zone": {
-          name: "Sink zone",
+          name: t("mapEditorSinkZoneTool"),
           icon: <IconRipple size={16} />,
           layerConstraints: [MapLayerName.Sensors],
         },
         "set-sound-zone": {
-          name: "Sound zone",
+          name: t("mapEditorSoundZoneTool"),
           icon: <IconEar size={16} />,
           layerConstraints: [MapLayerName.Sensors],
         },
         "set-zoom-zone": {
-          name: "Zoom zone",
+          name: t("mapEditorZoomZoneTool"),
           icon: <IconCameraSearch size={16} />,
           layerConstraints: [MapLayerName.Sensors],
         },
         "add-light": {
-          name: "Add light",
+          name: t("mapEditorAddLightTool"),
           icon: <IconBulb size={16} />,
           layerConstraints: [MapLayerName.Special],
         },
         "add-pickup": {
-          name: "Add pickup",
+          name: t("mapEditorAddPickupTool"),
           icon: <IconGift size={16} />,
           layerConstraints: [MapLayerName.Special],
           options: <PickupTool />,
         },
         "set-bounds": {
-          name: "Set bounds",
+          name: t("mapEditorSetBoundsTool"),
           icon: <IconFrame size={16} />,
           options: <MapBoundsTool />,
         },
         "add-background-image": {
-          name: "Background images",
+          name: t("mapEditorBackgroundImagesTool"),
           icon: <IconPhoto size={16} />,
           layerConstraints: [MapLayerName.Background],
           options: <BackgroundTool />,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,
-    [],
+    [t],
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName];
@@ -397,10 +398,10 @@ export default function MapEditorTab({
     const tips: string[] = [];
 
     if (!tool) {
-      tips.push("Select a tool above to start editing the map.");
+      tips.push(t("mapEditorSelectToolTip"));
     }
     return tips;
-  }, [tool]);
+  }, [tool, t]);
 
   const objectsBadge = <SelectedBadge count={selCounts.objects} />;
   const animationsBadge = <SelectedBadge count={selCounts.animations} />;
@@ -470,19 +471,19 @@ export default function MapEditorTab({
                   <Tabs.List>
                     <Tabs.Tab value="objects">
                       <Group gap="xs">
-                        Objects
+                        {t("mapEditorObjectsTab")}
                         {objectsBadge}
                       </Group>
                     </Tabs.Tab>
                     <Tabs.Tab value="animations">
                       <Group gap="xs">
-                        Animations
+                        {t("mapEditorAnimationsTab")}
                         {animationsBadge}
                       </Group>
                     </Tabs.Tab>
                     <Tabs.Tab value="npcs">
                       <Group gap="xs">
-                        NPCs
+                        {t("mapEditorNpcsTab")}
                         {npcsBadge}
                       </Group>
                     </Tabs.Tab>

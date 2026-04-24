@@ -20,6 +20,7 @@ import {
 } from "@mantine/core";
 import { IconCopy } from "@tabler/icons-react";
 import { memo, ReactElement, useCallback } from "react";
+import { useTranslation } from 'react-i18next';
 import AdvancedSection from "../common/AdvancedSection";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
@@ -40,6 +41,7 @@ const TEMPLATE_PROPS = ["id", "tsObjId", "tilesetId"] as const;
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function NpcProperties({ objs }: { objs: NpcInstance[] }) {
+  const { t } = useTranslation();
   const toCollect = useAppSelector((state) =>
     collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
   );
@@ -58,7 +60,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
 
   const nameInput = (
     <LocalizedNameInput
-      description="A name for this character. Must be unique."
+      description={t('npcPropNameDescription')}
       values={toCollect.nameKey}
       context="Character name"
       keyPrefix={["char"]}
@@ -73,8 +75,8 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
 
   const walkSpeedInput = (
     <PropertyValue
-      label="Walk speed"
-      description="How quickly the NPC moves across the map."
+      label={t('npcPropWalkSpeedLabel')}
+      description={t('npcPropWalkSpeedDescription')}
       values={toCollect.walkSpeed}
       defaultValue={constants.defaultNpcWalkSpeed}
       onValueChange={({
@@ -104,8 +106,8 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
 
   const dampenWalkCollisionsInput = (
     <PropertyValue
-      label="Dampen walk collisions"
-      description="How much to slow the player's movement when colliding with this NPC."
+      label={t('npcPropDampenWalkCollisionsLabel')}
+      description={t('npcPropDampenWalkCollisionsDescription')}
       values={toCollect.dampenWalkCollisions}
       defaultValue={constants.defaultNpcDampen}
       onValueChange={({
@@ -135,8 +137,8 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
 
   const groundOffsetInput = (
     <GroundOffsetInput
-      description="Vertical offset of the NPC from the ground."
-      tooltip="The ground offset adjusts the NPC's vertical position relative to the ground. Positive values will raise the NPC above the ground, while negative values will sink it below. This can be useful for NPCs that need to appear to be floating or partially submerged. Normally, this should be set to 0 for most NPCs."
+      description={t('npcPropGroundOffsetDescription')}
+      tooltip={t('npcPropGroundOffsetTooltip')}
       values={toCollect.groundOffset}
       onValueChange={({ scope, value }) =>
         updateProps(scope, { groundOffset: value })
@@ -154,13 +156,13 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       <Group gap="xs" wrap="nowrap">
         <Box style={{ flex: 1 }}>
           <TextInput
-            label="ID"
-            description="The object's unique identifier."
+            label={t('npcPropIdLabel')}
+            description={t('npcPropIdDescription')}
             value={objs[0].id}
             disabled
           />
         </Box>
-        <Tooltip label="Copy id">
+        <Tooltip label={t('npcPropCopyIdTooltip')}>
           <ActionIcon onClick={copyId} variant="subtle" color="gray" size="sm">
             <IconCopy size={16} />
           </ActionIcon>
@@ -170,7 +172,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
   }
 
   return (
-    <Fieldset legend="NPC properties" p="xs">
+    <Fieldset legend={t('npcPropLegend')} p="xs">
       <Stack p={0} gap="xl">
         {nameInput}
         {walkSpeedInput}

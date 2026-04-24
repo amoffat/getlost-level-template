@@ -53,6 +53,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import StoryEdgeComponent from "../flowEdges/StoryEdge";
 import OrNode from "../flowNodes/OrNode";
@@ -70,6 +71,7 @@ export default function StoryTab({
 }) {
   use(initPromise);
 
+  const { t } = useTranslation();
   const { nodeid: nodeIdParam } = useParams<{ nodeid?: string }>();
   const navigate = useNavigate();
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -191,15 +193,15 @@ export default function StoryTab({
       if (!isValid) {
         showNotification({
           key: "story-connection-cycle",
-          title: "Invalid connection",
-          message: "Creating this connection would create a cycle.",
+          title: t("storyTabInvalidConnection"),
+          message: t("storyTabInvalidConnectionMsg"),
           color: "red",
           autoClose: 5000,
         });
       }
       return isValid;
     },
-    [getNodes, getEdges],
+    [getNodes, getEdges, t],
   );
 
   const createMilestone = useCallback(
@@ -506,30 +508,20 @@ export default function StoryTab({
     const tips = [];
 
     if (nodes.length === 0) {
-      tips.push("Create new story milestone nodes.");
+      tips.push(t("storyTabTip1"));
     } else {
-      tips.push(
-        "Give nodes good names by selecting them and editing them below.",
-      );
-      tips.push(
-        "A milestone should be a thing that can be achieved in the level.",
-      );
-      tips.push(
-        "New nodes can be created by dragging off of an existing node.",
-      );
+      tips.push(t("storyTabTip2"));
+      tips.push(t("storyTabTip3"));
+      tips.push(t("storyTabTip4"));
     }
 
     if (nodes.length > 0 && edges.length > 0) {
-      tips.push(
-        "A node can be inserted into an existing connection by dragging it over the connection.",
-      );
-      tips.push(
-        "Delete an node or connection by selecting it and pressing the delete key.",
-      );
+      tips.push(t("storyTabTip5"));
+      tips.push(t("storyTabTip6"));
     }
 
     return tips;
-  }, [nodes, edges]);
+  }, [nodes, edges, t]);
 
   return (
     <>
@@ -609,7 +601,7 @@ export default function StoryTab({
                       onClick={() => createMilestone()}
                       leftSection={<IconScriptPlus size={20} />}
                     >
-                      New Milestone
+                      {t("storyTabNewMilestone")}
                     </Button>
 
                     <Button
@@ -619,7 +611,7 @@ export default function StoryTab({
                       ml="xs"
                       leftSection={<IconLogicOr size={20} />}
                     >
-                      OR
+                      {t("storyTabOr")}
                     </Button>
 
                     <Button
@@ -628,7 +620,7 @@ export default function StoryTab({
                       ml="xs"
                       leftSection={<IconSitemap size={20} />}
                     >
-                      Organize
+                      {t("storyTabOrganize")}
                     </Button>
                   </Panel>
                 </ReactFlow>

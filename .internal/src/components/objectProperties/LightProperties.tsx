@@ -15,6 +15,7 @@ import { ColorInput,
   TextInput,
 } from "@mantine/core";
 import { memo, ReactElement, useCallback } from "react";
+import { useTranslation } from 'react-i18next';
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import SwitchInput from "./inputs/SwitchInput";
 
@@ -34,6 +35,7 @@ const TEMPLATE_PROPS = ["id"] as const;
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function LightProperties({ objs }: { objs: LightObj[] }) {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const toCollect = useAppSelector((state) =>
@@ -67,8 +69,8 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
 
   const nameInput = (
     <PropertyValue
-      label="Name"
-      description="A name for the light. Does not have to be unique."
+      label={t('lightPropNameLabel')}
+      description={t('lightPropNameDescription')}
       noTemplate
       values={toCollect.name}
       defaultValue=""
@@ -85,7 +87,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
           <TextInput
             key={key}
             defaultValue={value ?? ""}
-            placeholder="Enter name"
+            placeholder={t('lightPropNamePlaceholder')}
             onChange={(e) => onChange(e.target.value)}
           />
         );
@@ -95,9 +97,9 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
 
   const colorInput = (
     <PropertyValue
-      label="Color"
+      label={t('lightPropColorLabel')}
       noTemplate
-      description="The RGB color of the light"
+      description={t('lightPropColorDescription')}
       values={toCollect.color}
       defaultValue={constants.defaultLightColor}
       onValueChange={({ scope, value }: { scope: PropertyValueScope; value: string | undefined }) => {
@@ -127,8 +129,8 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
 
   const intensityInput = (
     <PropertyValue
-      label="Intensity"
-      description="The brightness of the light"
+      label={t('lightPropIntensityLabel')}
+      description={t('lightPropIntensityDescription')}
       noTemplate
       values={toCollect.intensity}
       defaultValue={constants.defaultLightIntensity}
@@ -157,8 +159,8 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
 
   const offDuringDayInput = (
     <SwitchInput
-      label="Off during day"
-      description="Whether the light is off during the day"
+      label={t('lightPropOffDuringDayLabel')}
+      description={t('lightPropOffDuringDayDescription')}
       values={toCollect.offDuringDay}
       onValueChange={({ scope, value }) =>
         updateProps(scope, { offDuringDay: value })
@@ -170,8 +172,8 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
 
   const flickerInput = (
     <PropertyValue
-      label="Flicker"
-      description="The flicker pattern of the light"
+      label={t('lightPropFlickerLabel')}
+      description={t('lightPropFlickerDescription')}
       noTemplate
       values={toCollect.flicker}
       defaultValue={constants.defaultLightFlicker}
@@ -202,7 +204,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
   );
 
   return (
-    <Fieldset legend="Light properties" p="xs">
+    <Fieldset legend={t('lightPropLegend')} p="xs">
       <Stack p={0} gap="xl">
         {nameInput}
         {colorInput}

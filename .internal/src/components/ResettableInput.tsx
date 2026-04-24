@@ -1,6 +1,7 @@
 import { ActionIcon, Box, Group, Tooltip } from "@mantine/core";
 import { IconRestore } from "@tabler/icons-react";
 import { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ResettableInputProps {
   children: ReactNode;
@@ -13,10 +14,11 @@ export default function ResettableInput({
   disabled,
   onReset,
 }: ResettableInputProps) {
+  const { t } = useTranslation();
   return (
     <Group gap="xs" wrap="nowrap">
       <Box style={{ flex: 1 }}>{children}</Box>
-      <Tooltip label="Reset to default">
+      <Tooltip label={t("resettableResetTooltip")}>
         <ActionIcon
           onClick={onReset}
           disabled={disabled}

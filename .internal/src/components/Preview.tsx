@@ -36,6 +36,7 @@ import {
   IconRocket,
 } from "@tabler/icons-react";
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import CardModal from "./CardModal";
 import AdvancedSection from "./common/AdvancedSection";
 import LogPane from "./LogPane";
@@ -50,6 +51,8 @@ export default function PreviewTab({
   initPromise: Promise<unknown>;
 }) {
   use(initPromise);
+
+  const { t } = useTranslation();
 
   const { nodes } = useAppSelector((state: RootState) => state.story);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -110,13 +113,13 @@ export default function PreviewTab({
     },
     validate: {
       licenseAgreed: (value) =>
-        value ? null : "You must agree to the license agreement",
+        value ? null : t("previewLicenseRequired"),
       guidelinesAgreed: (value) =>
-        value ? null : "You must agree to the story guidelines",
+        value ? null : t("previewGuidelinesRequired"),
       assetsDisclosed: (value) =>
-        value ? null : "You must disclose third-party assets",
+        value ? null : t("previewAssetsRequired"),
       commitMessage: (value) =>
-        value.trim().length > 0 ? null : "Commit message is required",
+        value.trim().length > 0 ? null : t("previewCommitMsgRequired"),
     },
   });
 
@@ -313,12 +316,10 @@ export default function PreviewTab({
   const leftTips = useMemo(() => {
     const tips = [];
     if (!enableOverlays) {
-      tips.push(
-        "No audio? Enable overlays to allow audio to pass through to the iframe.",
-      );
+      tips.push(t("previewNoAudioTip"));
     }
     return tips;
-  }, [enableOverlays]);
+  }, [enableOverlays, t]);
 
   const createDebugSwitch = (
     label: string,
@@ -351,21 +352,21 @@ export default function PreviewTab({
 
         if (response.ok) {
           notifications.show({
-            title: "Published Successfully",
-            message: `Level changes published to branch: ${result.branch}`,
+            title: t("previewPublishedSuccessTitle"),
+            message: t("previewPublishedSuccessMsg", { branch: result.branch }),
             color: "green",
           });
         } else {
           notifications.show({
-            title: "Publish Failed",
-            message: result.error || "Failed to publish level changes",
+            title: t("previewPublishFailedTitle"),
+            message: result.error || t("previewPublishFailedMsg"),
             color: "red",
           });
         }
       } catch (error: any) {
         notifications.show({
-          title: "Publish Error",
-          message: error.message || "An error occurred while publishing",
+          title: t("previewPublishErrorTitle"),
+          message: error.message || t("previewPublishErrorMsg"),
           color: "red",
         });
       } finally {
@@ -378,8 +379,8 @@ export default function PreviewTab({
     const response = await fetch(`/files/${path}`);
     if (!response.ok) {
       notifications.show({
-        title: "Error",
-        message: `Failed to load file, please see ${path}`,
+        title: t("previewLoadFileErrorTitle"),
+        message: t("previewLoadFileErrorMsg", { path }),
         color: "red",
       });
       throw new Error(`Failed to load file: ${response.statusText}`);
@@ -494,14 +495,14 @@ export default function PreviewTab({
         >
           <Stack h="100%" style={{ overflow: "hidden" }}>
             <Tip tips={leftTips} />
-            <Fieldset legend="Engine" p="xs">
+            <Fieldset legend={t("previewEngineFieldset")} p="xs">
               <Stack p={0}>
                 <Select
-                  label="Environment"
+                  label={t("previewEnvironmentLabel")}
                   data={[
-                    { value: "local", label: "Localhost" },
-                    { value: "prod", label: "Production" },
-                    { value: "qa", label: "QA" },
+                    { value: "local", label: t("previewEnvLocalhost") },
+                    { value: "prod", label: t("previewEnvProduction") },
+                    { value: "qa", label: t("previewEnvQA") },
                   ]}
                   defaultValue={gameEnv}
                   onChange={(value) => setGameEnv(value as Env)}
@@ -515,26 +516,26 @@ export default function PreviewTab({
                     onClick={restartIframe}
                     disabled={!iframeLoaded}
                   >
-                    Restart
+                    {t("previewRestartBtn")}
                   </Button>
                   <Button
                     size="xs"
                     onClick={stopIframe}
                     disabled={!iframeLoaded}
                   >
-                    Stop
+                    {t("previewStopBtn")}
                   </Button>
                   <Button
                     size="xs"
                     onClick={loadIframe}
                     disabled={iframeLoaded}
                   >
-                    Start
+                    {t("previewStartBtn")}
                   </Button>
                 </Group>
 
                 <Switch
-                  label="Auto-reload"
+                  label={t("previewAutoReloadLabel")}
                   defaultChecked={autoReload}
                   onChange={(event) =>
                     setAutoReload(event.currentTarget.checked)
@@ -542,7 +543,7 @@ export default function PreviewTab({
                 />
 
                 <Switch
-                  label="Enable overlays"
+                  label={t("previewEnableOverlaysLabel")}
                   defaultChecked={enableOverlays}
                   onChange={(event) =>
                     setEnableOverlays(event.currentTarget.checked)
@@ -551,7 +552,7 @@ export default function PreviewTab({
               </Stack>
             </Fieldset>
 
-            <Fieldset legend="Device emulation" p="xs">
+            <Fieldset legend={t("previewDeviceEmulationFieldset")} p="xs">
               <Select
                 defaultValue={deviceType}
                 onChange={(value) =>
@@ -566,8 +567,8 @@ export default function PreviewTab({
                   )
                 }
                 data={[
-                  { value: "desktop", label: "Desktop" },
-                  { value: "mobile", label: "Mobile" },
+                  { value: "desktop", label: t("previewDeviceDesktop") },
+                  { value: "mobile", label: t("previewDeviceMobile") },
                 ]}
               />
             </Fieldset>
@@ -584,7 +585,7 @@ export default function PreviewTab({
                 />
               </Fieldset> */}
 
-            <Fieldset legend="Publish" p="xs">
+            <Fieldset legend={t("previewPublishFieldset")} p="xs">
               <Stack p={0} gap="sm">
                 <Checkbox
                   {...publishForm.getInputProps("licenseAgreed", {
@@ -592,9 +593,9 @@ export default function PreviewTab({
                   })}
                   label={
                     <>
-                      I agree to the{" "}
+                      {t("previewAgreeToThe")}{" "}
                       <Anchor inherit onClick={showLicenseAgreement}>
-                        Level Submission License Agreement
+                        {t("previewLicenseAgreement")}
                       </Anchor>{" "}
                     </>
                   }
@@ -605,9 +606,9 @@ export default function PreviewTab({
                   })}
                   label={
                     <>
-                      My level follows the{" "}
+                      {t("previewLevelFollows")}{" "}
                       <Anchor inherit onClick={showStoryGuidelines}>
-                        Story Submission Guidelines
+                        {t("previewStoryGuidelines")}
                       </Anchor>
                     </>
                   }
@@ -616,7 +617,7 @@ export default function PreviewTab({
                   {...publishForm.getInputProps("assetsDisclosed", {
                     type: "checkbox",
                   })}
-                  label="I have disclosed all third-party assets in this level"
+                  label={t("previewThirdPartyAssetsLabel")}
                 />
                 <Checkbox
                   checked={card !== null}
@@ -624,7 +625,7 @@ export default function PreviewTab({
                   onChange={() => {}}
                   label={
                     <>
-                      I have set the{" "}
+                      {t("previewIHaveSetThe")}{" "}
                       <Anchor
                         inherit
                         onClick={(e) => {
@@ -632,14 +633,14 @@ export default function PreviewTab({
                           openCardModal();
                         }}
                       >
-                        level credits
+                        {t("previewLevelCreditsLink")}
                       </Anchor>
                     </>
                   }
                 />
 
                 <Textarea
-                  label="Publish message"
+                  label={t("previewPublishMessageLabel")}
                   autosize
                   minRows={1}
                   maxRows={3}
@@ -661,7 +662,7 @@ export default function PreviewTab({
                     !publishForm.values.assetsDisclosed
                   }
                 >
-                  Publish Level
+                  {t("previewPublishLevelBtn")}
                 </Button>
               </Stack>
             </Fieldset>
@@ -753,16 +754,16 @@ export default function PreviewTab({
           <Stack h="100%" style={{ overflow: "hidden" }}>
             <Stack gap="xs" p={0}>
               <MilestoneList
-                legend="Story progress"
+                legend={t("previewStoryProgressLegend")}
                 selectedNodeIds={selectedNodeIds}
                 onSelect={handleMilestoneSelect}
               />
             </Stack>
 
-            <Fieldset legend="Time Control">
+            <Fieldset legend={t("previewTimeControlFieldset")}>
               <Stack gap="xs" p={0} mb="lg">
                 <Text size="sm" fw={500}>
-                  Game speed
+                  {t("previewGameSpeedLabel")}
                 </Text>
                 <Slider
                   mb="lg"
@@ -786,20 +787,20 @@ export default function PreviewTab({
               <TimeDisplay comms={comms} />
             </Fieldset>
 
-            <Fieldset legend="Visualization">
+            <Fieldset legend={t("previewVisualizationFieldset")}>
               <Stack gap="sm" p={0}>
-                {createDebugSwitch("Show collisions", "collisions")}
-                {createDebugSwitch("Show pathfinding", "pathfinding")}
-                {createDebugSwitch("Show scene depth", "zSorting")}
-                {createDebugSwitch("Show object details", "objDetails")}
+                {createDebugSwitch(t("previewShowCollisions"), "collisions")}
+                {createDebugSwitch(t("previewShowPathfinding"), "pathfinding")}
+                {createDebugSwitch(t("previewShowSceneDepth"), "zSorting")}
+                {createDebugSwitch(t("previewShowObjDetails"), "objDetails")}
               </Stack>
             </Fieldset>
 
             <AdvancedSection>
-              <Fieldset legend="Developer Tools">
+              <Fieldset legend={t("previewDeveloperToolsFieldset")}>
                 <Stack gap="xs" p={0}>
                   <Anchor href="/level/main.js" target="_blank" size="xs">
-                    Open compiled level js
+                    {t("previewOpenCompiledLevelJs")}
                   </Anchor>
                 </Stack>
               </Fieldset>
@@ -809,7 +810,7 @@ export default function PreviewTab({
       </Split>
       {licenseContent && (
         <MarkdownModal
-          title="Level Submission License Agreement"
+          title={t("previewLicenseAgreement")}
           opened={licenseModalOpened}
           close={closeLicenseModal}
         >
@@ -818,7 +819,7 @@ export default function PreviewTab({
       )}
       {storyGuidelinesContent && (
         <MarkdownModal
-          title="Story Submission Guidelines"
+          title={t("previewStoryGuidelines")}
           opened={storyGuidelinesModalOpened}
           close={closeStoryGuidelinesModal}
         >

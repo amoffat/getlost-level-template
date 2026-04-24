@@ -13,6 +13,7 @@ import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Fieldset, Select, Slider, Stack } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { memo, ReactElement, useCallback } from "react";
+import { useTranslation } from 'react-i18next';
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import FlipXInput from "./inputs/FlipXInput";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
@@ -39,6 +40,7 @@ const TEMPLATE_PROPS = ["id", "tsObjId", "tilesetId"] as const;
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
+  const { t } = useTranslation();
   const groundLayer = useAppSelector(
     (state) => state.mapEditor.layers.active === MapLayerName.Ground,
   );
@@ -61,7 +63,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
 
   const nameInput = (
     <LocalizedNameInput
-      description="A name for this object. Does not have to be unique."
+      description={t('tileGroupPropNameDescription')}
       values={toCollect.nameKey}
       context="Object name"
       keyPrefix={["tg"]}
@@ -75,8 +77,8 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
 
   const walkSoundInput = (
     <PropertyValue
-      label="Walk sound"
-      description="The sound that will play when a character walks on this tile"
+      label={t('tileGroupPropWalkSoundLabel')}
+      description={t('tileGroupPropWalkSoundDescription')}
       values={toCollect.walkSound}
       onValueChange={function ({
         scope,
@@ -97,7 +99,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
             leftSection={value === undefined && <IconAlertTriangle size={14} />}
             defaultValue={value ?? undefined}
             placeholder={
-              value === undefined ? "Mixed values" : "Select walk sound"
+              value === undefined ? t('tileGroupPropWalkSoundMixedValues') : t('tileGroupPropWalkSoundPlaceholder')
             }
             onChange={(val) => {
               if (val) onChange(val as WalkSound);
@@ -110,8 +112,8 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
 
   const frictionInput = (
     <PropertyValue
-      label="Friction"
-      description="How many seconds it takes for the player's speed to reduce by half."
+      label={t('tileGroupPropFrictionLabel')}
+      description={t('tileGroupPropFrictionDescription')}
       values={toCollect.friction}
       onValueChange={function ({
         scope,
@@ -141,8 +143,8 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
 
   const tractionInput = (
     <PropertyValue
-      label="Traction"
-      description="How much grip this tile provides. Higher values make it easier to change direction."
+      label={t('tileGroupPropTractionLabel')}
+      description={t('tileGroupPropTractionDescription')}
       values={toCollect.traction}
       onValueChange={({
         scope,
@@ -179,7 +181,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
 
   const tintInput = (
     <TintInput
-      description="A color tint to apply to this tile."
+      description={t('tileGroupPropTintDescription')}
       values={toCollect.tint}
       onValueChange={({ scope, value }) => updateProps(scope, { tint: value })}
     />
@@ -187,7 +189,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
 
   const hiddenInput = (
     <HiddenInput
-      description="Whether this object starts off hidden on the map."
+      description={t('tileGroupPropHiddenDescription')}
       values={toCollect.hidden}
       onValueChange={({ scope, value }) =>
         updateProps(scope, { hidden: value })
@@ -197,7 +199,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
 
   const groundOffsetInput = (
     <GroundOffsetInput
-      description="Vertical offset of the object from the ground."
+      description={t('tileGroupPropGroundOffsetDescription')}
       values={toCollect.groundOffset}
       onValueChange={({ scope, value }) =>
         updateProps(scope, { groundOffset: value })
@@ -207,7 +209,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
   );
 
   return (
-    <Fieldset legend="Object properties" p="xs">
+    <Fieldset legend={t('tileGroupPropLegend')} p="xs">
       <Stack p={0} gap="xl">
         {nameInput}
         {flipXInput}

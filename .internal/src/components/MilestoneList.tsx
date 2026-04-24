@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import { IconFilter, IconInfinity } from "@tabler/icons-react";
 import { ComponentType, FC, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface AncestorHighlight {
   nodeIds: Set<string>;
@@ -32,12 +33,14 @@ interface MilestoneListProps {
  * Returns null when there are no milestone nodes in the story.
  */
 export default function MilestoneList({
-  legend = "Milestones",
+  legend,
   selectedNodeIds,
   ancestorHighlight,
   onSelect,
   selectedIcon: SelectedIcon,
 }: MilestoneListProps) {
+  const { t } = useTranslation();
+  const legendText = legend ?? t("milestoneListDefaultLegend");
   const nodes = useAppSelector((state: RootState) => state.story.nodes);
   const [filter, setFilter] = useState("");
 
@@ -89,11 +92,11 @@ export default function MilestoneList({
   }
 
   return (
-    <Fieldset legend={legend} p="xs">
+    <Fieldset legend={legendText} p="xs">
       <Stack gap="xs" p={0}>
         <TextInput
           mb="xs"
-          placeholder="Filter..."
+          placeholder={t("milestoneListFilterPlaceholder")}
           leftSection={<IconFilter size={14} />}
           rightSection={
             filter ? (
@@ -111,7 +114,7 @@ export default function MilestoneList({
           const label = isPermanent ? (
             <Group gap={4} wrap="nowrap">
               {milestoneName}
-              <Tooltip label="Permanent milestone" withArrow>
+              <Tooltip label={t("milestoneListPermanentTooltip")} withArrow>
                 <IconInfinity size={14} color="gold" />
               </Tooltip>
             </Group>

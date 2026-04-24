@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import { defaultTileSize } from "@/constants";
 import { computeEdgeSignatures } from "@/editors/map/utils/autotile";
 import {
@@ -89,15 +90,15 @@ export const setActiveTilesetThunk = createAsyncThunk(
 export const loadTilesetsThunk = createAsyncThunk(
   "tilesetEditor/loadTilesetsThunk",
   async (_, { dispatch }) => {
-    dispatch(uiActions.pushLoadingMessage("Loading tilesets ids..."));
+    dispatch(uiActions.pushLoadingMessage(i18n.t("tilesetLoadingIds")));
     const tilesets = await loadTilesets();
     for (const tsId of tilesets.ids) {
       try {
         await dispatch(loadTilesetThunk({ tsId })).unwrap();
       } catch (e) {
         notifications.show({
-          title: "Failed to load tileset",
-          message: `Tileset ${tsId} failed to load: ${(e as Error).message}`,
+          title: i18n.t("tilesetLoadFailed"),
+          message: i18n.t("tilesetLoadFailedMessage", { tsId, message: (e as Error).message }),
           color: "red",
         });
       }
@@ -147,7 +148,7 @@ export const uploadTilesetThunk = createAsyncThunk(
 export const loadTilesetThunk = createAsyncThunk(
   "tilesetEditor/loadTilesetThunk",
   async ({ tsId }: { tsId: string }, { dispatch }) => {
-    dispatch(uiActions.pushLoadingMessage(`Loading tileset ${tsId}...`));
+    dispatch(uiActions.pushLoadingMessage(i18n.t("tilesetLoading", { tsId })));
 
     const ts = await loadTileset(tsId);
     dispatch(tsActions.addTileset({ tsId, ts }));
@@ -192,7 +193,7 @@ export const loadEdgeSignaturesThunk = createAsyncThunk(
     }
 
     dispatch(
-      uiActions.pushLoadingMessage(`Indexing edges for tileset ${tsId}...`),
+      uiActions.pushLoadingMessage(i18n.t("tilesetIndexingEdges", { tsId })),
     );
 
     const imageData = gApp.tilesetImageDataCache.get(tsId)!;
@@ -266,8 +267,8 @@ export const removeTilesetThunk = createAsyncThunk(
     // createEntityAdapter modifies the tileset's tiles slice directly.
     dispatch(tsActions.removeTileset(tsId));
     notifications.show({
-      title: "Tileset removed",
-      message: `Tileset ${tsId} has been removed.`,
+      title: i18n.t("tilesetRemoved"),
+      message: i18n.t("tilesetRemovedMessage", { tsId }),
       color: "green",
     });
     await router.navigate("/tilesets");
@@ -375,8 +376,8 @@ export const addAnimationFrameThunk = createAsyncThunk(
 
       if (firstWidth !== newWidth || firstHeight !== newHeight) {
         notifications.show({
-          title: "Animation frame size mismatch",
-          message: `The new frame is ${newWidth}x${newHeight}, but the first frame is ${firstWidth}x${firstHeight}. All frames must be the same size.`,
+          title: i18n.t("tilesetAnimFrameSizeMismatch"),
+          message: i18n.t("tilesetAnimFrameSizeMismatchMessage", { newWidth, newHeight, firstWidth, firstHeight }),
           color: "red",
         });
         return;
@@ -405,8 +406,8 @@ export const setAnimationFramesThunk = createAsyncThunk(
 
     dispatch(tsActions.setActiveTool("animate"));
     notifications.show({
-      title: "Animation loaded",
-      message: `Loaded ${obj.frames.length} frames for animation "${obj.slotNames.join(", ")}".`,
+      title: i18n.t("tilesetAnimationLoaded"),
+      message: i18n.t("tilesetAnimationLoadedMessage", { count: obj.frames.length, name: obj.slotNames.join(", ") }),
       color: "green",
     });
   },
@@ -418,8 +419,8 @@ export const setNpcThunk = createAsyncThunk(
     dispatch(tsActions.setOneSelected(npc));
     dispatch(tsActions.setActiveTool("make-npc"));
     notifications.show({
-      title: "NPC loaded",
-      message: `NPC "${npc.name}" loaded.`,
+      title: i18n.t("tilesetNpcLoaded"),
+      message: i18n.t("tilesetNpcLoadedMessage", { name: npc.id }),
       color: "green",
     });
   },

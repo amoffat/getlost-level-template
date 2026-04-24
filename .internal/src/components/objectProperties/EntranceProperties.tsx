@@ -21,6 +21,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { memo, ReactElement, useCallback, useMemo } from "react";
+import { useTranslation } from 'react-i18next';
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import LocalizedNameInput from "./inputs/LocalizedNameInput";
@@ -36,6 +37,7 @@ const TEMPLATE_PROPS = ["id"] as const;
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
@@ -123,7 +125,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
 
   const nameInput = (
     <LocalizedNameInput
-      description="A name of the entrance. Must be unique."
+      description={t('entrancePropNameDescription')}
       noTemplate
       values={toCollect.nameKey}
       context="Entrance name"
@@ -148,8 +150,8 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
   const exitIdInput = (
     <Stack p={0} gap="xs">
       <PropertyValue
-        label="Exit connections"
-        description="The IDs of the exits (up to 3) that will lead to this entrance."
+        label={t('entrancePropExitConnectionsLabel')}
+        description={t('entrancePropExitConnectionsDescription')}
         noTemplate
         values={toCollect.exitIds}
         onValueChange={({
@@ -171,7 +173,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
                   <TextInput
                     flex={1}
                     value={exitId}
-                    placeholder="Enter exit id"
+                    placeholder={t('entrancePropExitIdPlaceholder')}
                     onChange={(e) => {
                       const newExitIds = [...exitIds];
                       newExitIds[index] = e.target.value;
@@ -193,7 +195,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       />
       {numExits < 3 && (
         <Button size="xs" fullWidth onClick={openModal}>
-          Add connection
+          {t('entrancePropAddConnection')}
         </Button>
       )}
     </Stack>
@@ -203,7 +205,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
 
   return (
     <>
-      <Fieldset legend="Entrance properties" p="xs">
+      <Fieldset legend={t('entrancePropLegend')} p="xs">
         <Stack p={0} gap="xl">
           {singleSelected && nameInput}
           {singleSelected && exitIdInput}
@@ -214,9 +216,9 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
         opened={modalOpened}
         onClose={closeModal}
         onSubmit={handleModalSubmit}
-        gatewayLabel="Exit name"
-        gatewayPlaceholder="Select an exit"
-        gatewayDescription="Enter a Github repository ID first"
+        gatewayLabel={t('entrancePropGatewayLabel')}
+        gatewayPlaceholder={t('entrancePropGatewayPlaceholder')}
+        gatewayDescription={t('entrancePropGatewayDescription')}
         filterGateway={filterGateway}
       />
     </>

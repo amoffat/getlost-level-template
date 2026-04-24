@@ -14,6 +14,7 @@ import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Button, Fieldset, Slider, Stack, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { memo, ReactElement, useCallback, useMemo } from "react";
+import { useTranslation } from 'react-i18next';
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import LocalizedNameInput from "./inputs/LocalizedNameInput";
@@ -35,6 +36,7 @@ const TEMPLATE_PROPS = ["id"] as const;
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function ExitProperties({ objs }: { objs: ExitObj[] }) {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const objsByTemplateId = useAppSelector((state) =>
     mapSelectors.objectsByTemplateId(state, constants.exitTemplateId),
@@ -109,7 +111,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
   const nameInput = (
     <LocalizedNameInput
-      description="A name of the exit. Must be unique."
+      description={t('exitPropNameDescription')}
       noTemplate
       values={toCollect.nameKey}
       context="Exit name"
@@ -134,8 +136,8 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
   const preferredEntranceInput = (
     <PropertyValue<string | null>
-      label="Preferred entrance"
-      description="If an entrance matching this id attaches to this exit, it will be permanently attached."
+      label={t('exitPropPreferredEntranceLabel')}
+      description={t('exitPropPreferredEntranceDescription')}
       noTemplate
       values={toCollect.preferredEntranceId}
       defaultValue={null}
@@ -155,7 +157,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
             {value && (
               <TextInput
                 defaultValue={value}
-                placeholder="Enter entrance id"
+                placeholder={t('exitPropPreferredEntrancePlaceholder')}
                 onChange={(e) => {
                   onChange(e.target.value);
                 }}
@@ -164,7 +166,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
             {!hasPrefEntrance && (
               <Button size="xs" fullWidth onClick={openModal}>
-                Add connection
+                {t('exitPropAddConnection')}
               </Button>
             )}
           </Stack>
@@ -175,8 +177,8 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
   const forceInput = (
     <SwitchInput
-      label="Force exit?"
-      description="A forced exit does not give the player a choice to stay."
+      label={t('exitPropForceLabel')}
+      description={t('exitPropForceDescription')}
       values={toCollect.force}
       onValueChange={({ scope, value }) => updateProps(scope, { force: value })}
       noTemplate
@@ -186,8 +188,8 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
   const sensorSizeInput = (
     <PropertyValue<number | undefined>
-      label="Sensor radius"
-      description="The radius that triggers the player to exit."
+      label={t('exitPropSensorRadiusLabel')}
+      description={t('exitPropSensorRadiusDescription')}
       values={toCollect.sensorRadius}
       defaultValue={constants.defaultExitSensorRadius}
       noTemplate
@@ -219,7 +221,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
   return (
     <>
-      <Fieldset legend="Exit properties" p="xs">
+      <Fieldset legend={t('exitPropLegend')} p="xs">
         <Stack p={0} gap="xl">
           {singleSelected && nameInput}
           {forceInput}
@@ -232,9 +234,9 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
         opened={modalOpened}
         onClose={closeModal}
         onSubmit={handleModalSubmit}
-        gatewayLabel="Entrance name"
-        gatewayPlaceholder="Select an entrance"
-        gatewayDescription="Enter a Github repository ID first"
+        gatewayLabel={t('exitPropGatewayLabel')}
+        gatewayPlaceholder={t('exitPropGatewayPlaceholder')}
+        gatewayDescription={t('exitPropGatewayDescription')}
       />
     </>
   );

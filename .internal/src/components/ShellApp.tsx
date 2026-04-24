@@ -86,30 +86,30 @@ export function ShellApp() {
         if (hasNewer) {
           modals.openContextModal({
             modal: "confirm",
-            title: "Update Available",
+            title: t("updateAvailable"),
             centered: true,
             withCloseButton: true,
             innerProps: {
               makeItems: () => [
                 {
                   ok: true,
-                  message: "The editor will update",
+                  message: t("editorWillUpdate"),
                 },
                 {
                   ok: true,
-                  message: "It will migrate your assets automatically",
+                  message: t("migrateAssetsAutomatically"),
                 },
                 {
                   ok: false,
-                  message: "You may need to migrate your level code manually",
+                  message: t("migrateLevelCodeManually"),
                 },
                 {
                   ok: true,
-                  message: "The upgrade is reversible",
+                  message: t("upgradeReversible"),
                 },
               ],
-              confirmLabel: "Ok, upgrade",
-              msg: "There's a new version of the editor available. Please update now.",
+              confirmLabel: t("okUpgrade"),
+              msg: t("updateEditorMsg"),
               onConfirm: async () => {
                 const resp = await fetch("/api/exec/upgrade.py", {
                   method: "POST",
@@ -126,17 +126,16 @@ export function ShellApp() {
                   const msg = `${errorData.error}: ${errorData.stderr}`;
 
                   notifications.show({
-                    title: "Upgrade Failed",
+                    title: t("upgradeFailed"),
                     color: "red",
-                    message: `Failed to upgrade: ${msg}`,
+                    message: t("upgradeFailedMsg", { msg }),
                     autoClose: 3000,
                   });
                 } else {
                   notifications.show({
-                    title: "Upgrade succesful",
+                    title: t("upgradeSuccessful"),
                     color: "green",
-                    message:
-                      "The editor has been upgraded successfully. The page will now reload.",
+                    message: t("upgradeSuccessMsg"),
                     onClose: () => {
                       window.location.reload();
                     },
@@ -152,7 +151,7 @@ export function ShellApp() {
     };
 
     checkVersion();
-  }, []);
+  }, [t]);
 
   // Sync tab changes with URL path
   useEffect(() => {
@@ -318,10 +317,10 @@ const ShellAppContent = memo(function ShellAppContent({
           </Dropzone.Reject>
           <div>
             <Text size="xl" inline>
-              Drag assets here
+              {t("dragAssetsHere")}
             </Text>
             <Text size="sm" c="dimmed" inline mt={7}>
-              Attach as many assets as you like.
+              {t("attachAssetsMsg")}
             </Text>
           </div>
         </Group>
@@ -339,22 +338,20 @@ const ShellAppContent = memo(function ShellAppContent({
               <Tabs.Tab value="map-editor">{t("mapTab")}</Tabs.Tab>
               <Tabs.Tab value="tileset-editor">{t("tilesetsTab")}</Tabs.Tab>
               <Tabs.Tab value="story-editor">{t("storyTab")}</Tabs.Tab>
-              <Tabs.Tab value="dialogue-editor">
-                {t("dialogueTab")}
-              </Tabs.Tab>
+              <Tabs.Tab value="dialogue-editor">{t("dialogueTab")}</Tabs.Tab>
               <Tabs.Tab value="preview">{t("previewTab")}</Tabs.Tab>
               <Box style={{ marginLeft: "auto" }} pr="sm">
                 <Group gap={0}>
                   <LocaleSelector
                     key="your-lang"
-                    label="Your language"
+                    label={t("yourLanguage")}
                     locale={userLocale}
                     hideMain
                     onLocaleChange={handleUserLocaleChange}
                   />
                   <LocaleSelector
                     key="level-lang"
-                    label="Level language"
+                    label={t("levelLanguage")}
                     locale={activeLocale}
                     onLocaleChange={handleLevelLocaleChange}
                     rightSection={untranslatedBadges}

@@ -14,6 +14,7 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { IconCopy, IconTrash } from "@tabler/icons-react";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import FloatingMenu from "../FloatingMenu";
 
 interface ObjectAnimationMenuProps {
@@ -27,6 +28,7 @@ export default function ObjectAnimationMenu({
   obj,
   closeMenu,
 }: ObjectAnimationMenuProps) {
+  const { t } = useTranslation();
   const tab = useAppSelector((state) => state.ui.activeTab);
   const dispatch = useAppDispatch();
 
@@ -72,16 +74,16 @@ export default function ObjectAnimationMenu({
       ok: npcs.size === 0,
       message:
         npcs.size > 0
-          ? `It is used by ${npcs.size} NPCs.`
-          : "No NPCs use this animation.",
+          ? t("objAnimMenuUsedByNpcs", { count: npcs.size })
+          : t("objAnimMenuNoNpcs"),
     });
 
     items.push({
       ok: mapUses === 0,
       message:
         mapUses > 0
-          ? `${mapUses} map objects use this animation.`
-          : "This animation is not used in the map.",
+          ? t("objAnimMenuMapObjectsUse", { count: mapUses })
+          : t("objAnimMenuNotUsedInMap"),
     });
 
     // const hasWarning = items.some((item) => !item.ok);
@@ -93,21 +95,21 @@ export default function ObjectAnimationMenu({
         }),
       );
       notifications.show({
-        title: "Animation deleted",
-        message: `Deleted animation "${obj.slotNames}".`,
+        title: t("objAnimMenuDeletedTitle"),
+        message: t("objAnimMenuDeletedMsg", { name: obj.slotNames }),
         autoClose: 3000,
       });
     };
 
     modals.openContextModal({
       modal: "confirm",
-      title: "Delete animation?",
+      title: t("objAnimMenuDeleteModalTitle"),
       centered: true,
       withCloseButton: true,
       innerProps: {
         makeItems: () => items,
-        confirmLabel: "Yes, delete animation",
-        msg: "Are you sure you want to delete this animation? This action cannot be undone.",
+        confirmLabel: t("objAnimMenuDeleteConfirmLabel"),
+        msg: t("objAnimMenuDeleteMsg"),
         onConfirm,
       },
     });
@@ -122,22 +124,22 @@ export default function ObjectAnimationMenu({
   return (
     <>
       <FloatingMenu pos={pos} opened={pos !== null} withArrow>
-        <Menu.Label>Object Animation Actions</Menu.Label>
+        <Menu.Label>{t("objAnimMenuLabel")}</Menu.Label>
         <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
-          Copy object id
+          {t("objAnimMenuCopyId")}
         </Menu.Item>
 
         {tilesetEd && (
           <>
             <Menu.Divider />
 
-            <Menu.Label>Danger zone</Menu.Label>
+            <Menu.Label>{t("objAnimMenuDangerZone")}</Menu.Label>
             <Menu.Item
               color="red"
               leftSection={<IconTrash size={14} />}
               onClick={deleteObject}
             >
-              Delete
+              {t("objAnimMenuDeleteMenuItem")}
             </Menu.Item>
           </>
         )}

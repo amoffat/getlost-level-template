@@ -20,6 +20,7 @@ import {
 } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { shallowEqual } from "react-redux";
 import ObjectAnimationMenu from "./paletteMenus/ObjectAnimationMenu";
 import ObjectNpcMenu from "./paletteMenus/ObjectNpcMenu";
@@ -67,6 +68,7 @@ function ObjectPalette<ObjType extends TemplateObject>({
   sort,
   filter,
 }: ObjectPaletteProps<ObjType>) {
+  const { t } = useTranslation();
   const [objMenuPos, setObjMenuPos] = useState<Vector2 | null>(null);
   const [clicked, setClicked] = useState<ObjType | null>(null);
   const tilesets = useAppSelector(selectors.selectTilesets);
@@ -214,7 +216,7 @@ function ObjectPalette<ObjType extends TemplateObject>({
           {filterMenu}
           <TextInput
             flex="3"
-            placeholder="Filter by tags"
+            placeholder={t("objectPaletteFilterByTags")}
             leftSection={<IconSearch size={16} />}
             disabled
           />

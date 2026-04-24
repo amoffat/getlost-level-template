@@ -3,6 +3,7 @@ import { Vector2 } from "@/vec";
 import { Menu } from "@mantine/core";
 import { IconCopy, IconExternalLink } from "@tabler/icons-react";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import FloatingMenu from "../FloatingMenu";
 
@@ -17,6 +18,7 @@ export default function TileGroupMenu({
   obj,
   closeMenu,
 }: TileGroupMenuProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const onCopyId = useCallback(() => {
     if (!obj) return;
@@ -35,15 +37,15 @@ export default function TileGroupMenu({
   return (
     <>
       <FloatingMenu pos={pos} opened={pos !== null} withArrow>
-        <Menu.Label>Tile Group Actions</Menu.Label>
+        <Menu.Label>{t("tileGroupMenuLabel")}</Menu.Label>
         <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
-          Copy object id
+          {t("tileGroupMenuCopyId")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconExternalLink size={14} />}
           onClick={onViewInTileset}
         >
-          View in tileset
+          {t("tileGroupMenuViewInTileset")}
         </Menu.Item>
       </FloatingMenu>
     </>

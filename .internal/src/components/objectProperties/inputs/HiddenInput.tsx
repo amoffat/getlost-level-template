@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { OnValueChangeArgs, PropertyValueInfo } from "../../PropertyValue";
 import SwitchInput from "./SwitchInput";
 
@@ -12,13 +13,15 @@ interface HiddenInputProps {
 export default function HiddenInput({
   values,
   onValueChange,
-  description = "Whether this object starts off hidden on the map.",
+  description: descriptionProp,
   noTemplate,
   debounceMs,
 }: HiddenInputProps) {
+  const { t } = useTranslation();
+  const description = descriptionProp ?? t('hiddenInputDescription');
   return (
     <SwitchInput
-      label="Hidden"
+      label={t('hiddenInputLabel')}
       description={description}
       values={values}
       onValueChange={onValueChange}

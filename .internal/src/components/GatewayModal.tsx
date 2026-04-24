@@ -4,6 +4,7 @@ import { Button, Loader, Modal, Select, Stack, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDebouncedCallback } from "@mantine/hooks";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface GatewayModalProps {
   opened: boolean;
@@ -24,6 +25,7 @@ export default function GatewayModal({
   gatewayDescription,
   filterGateway,
 }: GatewayModalProps) {
+  const { t } = useTranslation();
   const [availableGateways, setAvailableGateways] = useState<string[]>([]);
   const [loadingGateways, setLoadingGateways] = useState(false);
   const [numericRepoId, setNumericRepoId] = useState<string | null>(null);
@@ -41,12 +43,12 @@ export default function GatewayModal({
     validate: {
       githubRepoId: (value) => {
         if (!value.trim()) {
-          return "Level ID is required";
+          return t("gatewayModalLevelIdRequired");
         }
         // Use the validation error state from debounced validation
         return validationError;
       },
-      gatewayId: (value) => (!value ? "Gateway selection is required" : null),
+      gatewayId: (value) => (!value ? t("gatewayModalGatewayRequired") : null),
     },
   });
 
@@ -60,7 +62,7 @@ export default function GatewayModal({
     const numericId = await extractRepoId(repoId);
     if (!numericId) {
       setValidationError(
-        "Must be in format: owner/repo, numeric ID, GitHub URL, or Get Lost URL",
+        t("gatewayModalLevelIdFormat"),
       );
     } else {
       setValidationError(null);
@@ -87,11 +89,11 @@ export default function GatewayModal({
           setAvailableGateways(level.exits);
           setNumericRepoId(numericRepoId);
           if (level.exits.length === 0) {
-            setValidationError("No gateways found in this level");
+            setValidationError(t("gatewayModalNoGateways"));
           }
         } catch {
           setAvailableGateways([]);
-          setValidationError("No gateways found in this level");
+          setValidationError(t("gatewayModalNoGateways"));
         } finally {
           setLoadingGateways(false);
         }
@@ -120,15 +122,15 @@ export default function GatewayModal({
     <Modal
       opened={opened}
       onClose={resetAndCloseModal}
-      title="Gateway lookup"
+      title={t("gatewayModalTitle")}
       centered
     >
       <form onSubmit={handleModalSubmit}>
         <Stack gap="md">
           <TextInput
-            label="Level id"
-            placeholder="Level id"
-            description="Can be the Github level url, owner/repo, repo id (numeric), or Get Lost level url"
+            label={t("gatewayModalLevelIdLabel")}
+            placeholder={t("gatewayModalLevelIdPlaceholder")}
+            description={t("gatewayModalLevelIdDescription")}
             key={form.key("githubRepoId")}
             {...form.getInputProps("githubRepoId")}
             error={validationError}
@@ -164,7 +166,7 @@ export default function GatewayModal({
             description={
               availableGateways.length === 0
                 ? gatewayDescription
-                : "Select a gateway from the level"
+                : t("gatewayModalSelectFromLevel")
             }
             rightSection={loadingGateways ? <Loader size="xs" /> : undefined}
             key={form.key("gatewayId")}
@@ -172,7 +174,7 @@ export default function GatewayModal({
           />
 
           <Button type="submit" fullWidth>
-            Select gateway
+            {t("gatewayModalSelectBtn")}
           </Button>
         </Stack>
       </form>

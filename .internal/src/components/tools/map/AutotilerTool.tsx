@@ -4,10 +4,12 @@ import { actions as mapEdActions } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Fieldset, Group, Kbd, Stack, Text } from "@mantine/core";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Tip from "../../Tip";
 import classes from "./Autotiler.module.css";
 
 export default function AutotilerTool() {
+  const { t } = useTranslation();
   const cands = useAppSelector(
     (state) => state.mapEditor.toolOptions["autotiler"].candidates
   );
@@ -79,20 +81,19 @@ export default function AutotilerTool() {
     <>
       <Tip
         tips={[
-          "The autotiler lets you quickly place ground tiles that adapt to their surroundings.",
-          "If you don't like the selected tile, press number keys to choose a different candidate.",
-          "Moving the cursor slightly within a grid cell will result in candidates that allow more change in that direction.",
+          t("autotilerTip1"),
+          t("autotilerTip2"),
+          t("autotilerTip3"),
         ]}
       />
       {showCands && (
-        <Fieldset legend="Autotiler candidates" p="xs">
-          <Stack p={0} gap="sm" aria-label="Autotiler candidates">
+        <Fieldset legend={t("autotilerCandidatesLegend")} p="xs">
+          <Stack p={0} gap="sm" aria-label={t("autotilerCandidatesLegend")}>
             <Text size="xs" c="dimmed">
-              Press number keys to choose a different tile
+              {t("autotilerPressNumKeys")}
             </Text>
             {cands.map((cand, idx) => {
               const displayNumber = idx + 1; // 1-based label
-              const pressHint = `Press ${displayNumber}`;
               const isPressed = pressedKey === displayNumber;
               return (
                 <Group key={cand.id} align="center" gap="sm" wrap="nowrap">
@@ -100,8 +101,8 @@ export default function AutotilerTool() {
                   <Kbd
                     className={`${classes.kbd} ${isPressed ? classes.kbdPressed : ""}`}
                     size="xl"
-                    title={`${pressHint} to select`}
-                    aria-label={`Key ${displayNumber}`}
+                    title={t("autotilerPressToSelect", { number: displayNumber })}
+                    aria-label={t("autotilerKeyAriaLabel", { number: displayNumber })}
                     aria-pressed={isPressed}
                   >
                     {displayNumber}

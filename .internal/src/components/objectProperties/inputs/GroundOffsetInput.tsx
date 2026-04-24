@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import PropertyValue, {
   OnValueChangeArgs,
   PropertyValueInfo,
@@ -16,13 +17,15 @@ interface GroundOffsetInputProps {
 export default function GroundOffsetInput({
   values,
   onValueChange,
-  description = "Vertical offset of the object from the ground.",
+  description: descriptionProp,
   tooltip,
   min = -16,
 }: GroundOffsetInputProps) {
+  const { t } = useTranslation();
+  const description = descriptionProp ?? t('groundOffsetInputDescription');
   return (
     <PropertyValue
-      label="Ground offset"
+      label={t('groundOffsetInputLabel')}
       description={description}
       tooltip={tooltip}
       values={values}

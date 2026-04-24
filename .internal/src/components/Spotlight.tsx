@@ -9,21 +9,23 @@ import { modals } from "@mantine/modals";
 import { Spotlight as MantineSpotlight } from "@mantine/spotlight";
 import { IconBiohazard, IconSearch } from "@tabler/icons-react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ItemStatus } from "./modals/ItemizedConfirmModal";
 
 export default function Spotlight() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const globalActions = useMemo(
     () => [
       {
         id: "reset-all",
-        label: "Reset all",
-        description: "Delete everything in the project",
+        label: t("spotlightResetAllLabel"),
+        description: t("spotlightResetAllDesc"),
         onClick: () => {
           modals.openContextModal({
             modal: "confirm",
-            title: "Reset the project?",
+            title: t("spotlightResetModalTitle"),
             centered: true,
             withCloseButton: true,
             innerProps: {
@@ -36,8 +38,8 @@ export default function Spotlight() {
                   ok: mapObjs === 0,
                   message:
                     mapObjs === 0
-                      ? "You have no objects in the map."
-                      : `${mapObjs} map objects will be deleted.`,
+                      ? t("spotlightNoMapObjects")
+                      : t("spotlightMapObjsWillBeDeleted", { count: mapObjs }),
                 });
 
                 const numTilesets = Object.values(
@@ -47,8 +49,8 @@ export default function Spotlight() {
                   ok: numTilesets === 0,
                   message:
                     numTilesets === 0
-                      ? "You have no tilesets."
-                      : `${numTilesets} tilesets will be deleted.`,
+                      ? t("spotlightNoTilesets")
+                      : t("spotlightTilesetsWillBeDeleted", { count: numTilesets }),
                 });
 
                 const dialogues = state.dialogue.dialogues.ids.length;
@@ -56,8 +58,8 @@ export default function Spotlight() {
                   ok: dialogues === 0,
                   message:
                     dialogues === 0
-                      ? "You have no NPC dialogue."
-                      : `${dialogues} NPC dialogues will be deleted.`,
+                      ? t("spotlightNoNpcDialogue")
+                      : t("spotlightNpcDialoguesWillBeDeleted", { count: dialogues }),
                 });
 
                 const storyNodes = state.story.nodes.length;
@@ -65,14 +67,14 @@ export default function Spotlight() {
                   ok: storyNodes === 0,
                   message:
                     storyNodes === 0
-                      ? "You have no story nodes."
-                      : `${storyNodes} story nodes will be deleted.`,
+                      ? t("spotlightNoStoryNodes")
+                      : t("spotlightStoryNodesWillBeDeleted", { count: storyNodes }),
                 });
 
                 return items;
               },
-              confirmLabel: "Yes, reset all",
-              msg: "Are you sure you want to reset everything? This action cannot be undone.",
+              confirmLabel: t("spotlightResetConfirmLabel"),
+              msg: t("spotlightResetMsg"),
               onConfirm: () => dispatch(resetAllThunk()),
             },
           });
@@ -80,7 +82,7 @@ export default function Spotlight() {
         leftSection: <IconBiohazard />,
       },
     ],
-    [dispatch],
+    [dispatch, t],
   );
 
   useSpotlightActions("global", globalActions);
@@ -92,11 +94,11 @@ export default function Spotlight() {
       actions={actions}
       shortcut={["mod + K", "ctrl + K"]}
       centered
-      nothingFound="Nothing found..."
+      nothingFound={t("spotlightNothingFound")}
       highlightQuery
       searchProps={{
         leftSection: <IconSearch size={20} stroke={1.5} />,
-        placeholder: "Search...",
+        placeholder: t("spotlightSearchPlaceholder"),
       }}
     />
   );

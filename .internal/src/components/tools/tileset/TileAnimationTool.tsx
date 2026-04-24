@@ -43,6 +43,7 @@ import {
   IconInfoCircle,
 } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import TileAnimation from "../../TileAnimation";
 import TilesetGroup from "../../TilesetGroup";
 import Tip from "../../Tip";
@@ -152,6 +153,7 @@ export default function TileAnimationTool({
     (state) => state.tilesetEditor.toolOptions.animator.totalTime,
   );
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   // Store fractional weights per frame (0..1), always normalized so sum == 1
   // Local state for responsive slider interaction
   const [weights, setWeights] = useState<Weights>([]);
@@ -167,7 +169,7 @@ export default function TileAnimationTool({
     },
     validate: {
       names: (value) =>
-        value.length === 0 ? "Please enter at least one animation name." : null,
+        value.length === 0 ? t('tileAnimValidationNames') : null,
     },
   });
 
@@ -247,8 +249,8 @@ export default function TileAnimationTool({
       dispatch(clearCandAnimFramesThunk());
       dispatch(uiActions.setTilesetTab("animations"));
       notifications.show({
-        title: "Animation saved",
-        message: `Saved animation "${values.names.join(", ")}".`,
+        title: t('tileAnimNotifTitle'),
+        message: t('tileAnimNotifMessage', { names: values.names.join(", ") }),
         autoClose: 3000,
       });
 
@@ -304,28 +306,22 @@ export default function TileAnimationTool({
   }, [animationUseCounts]);
 
   const tips: string[] = useMemo(() => {
-    const t = [];
+    const tipItems: string[] = [];
     if (candFrames.length === 0) {
-      t.push("Select tiles that you want to see in your animation.");
-      t.push("You may only select objects that are the same size.");
+      tipItems.push(t('tileAnimTipSelectTiles'));
+      tipItems.push(t('tileAnimTipSameSize'));
     } else {
-      t.push(
-        "Adjust the sliders to set how long each frame appears in the animation.",
-      );
-      t.push("Drag the frame to reorder it in the animation sequence.");
-      t.push(
-        "You can duplicate a frame by clicking the same tile again in the tile editor.",
-      );
+      tipItems.push(t('tileAnimTipAdjustSliders'));
+      tipItems.push(t('tileAnimTipDragReorder'));
+      tipItems.push(t('tileAnimTipDuplicate'));
     }
 
     if (hasAllNpcAnims) {
-      t.push(
-        "When all required NPC animations are present, you can create an NPC with the NPC tool.",
-      );
+      tipItems.push(t('tileAnimTipCreateNpc'));
     }
 
-    return t;
-  }, [candFrames, hasAllNpcAnims]);
+    return tipItems;
+  }, [candFrames, hasAllNpcAnims, t]);
 
   const canSave = hasFrames;
 
@@ -333,15 +329,15 @@ export default function TileAnimationTool({
     <>
       <Tip tips={tips} />
       <form onSubmit={formSubmit}>
-        <Fieldset legend="Animation preview" p="xs">
+        <Fieldset legend={t('tileAnimLegend')} p="xs">
           <Stack p={0} gap="xs">
             {!hasFrames && (
               <Alert
-                title="No preview"
+                title={t('tileAnimAlertNoPreviewTitle')}
                 variant="light"
                 icon={<IconInfoCircle />}
               >
-                Please select tiles from the tileset.
+                {t('tileAnimAlertNoPreviewMsg')}
               </Alert>
             )}
             <TileAnimation frames={frames} scale={5} bounded />
@@ -398,7 +394,7 @@ export default function TileAnimationTool({
             </DndContext>
 
             <NumberInput
-              label="Total time"
+              label={t('tileAnimTotalTimeLabel')}
               placeholder="1000"
               min={1}
               step={50}
@@ -412,14 +408,14 @@ export default function TileAnimationTool({
             />
 
             <TagsInput
-              label="Animation names"
-              description="Enter one or more names for this animation."
-              placeholder="MyAnimation"
+              label={t('tileAnimNamesLabel')}
+              description={t('tileAnimNamesDesc')}
+              placeholder={t('tileAnimNamesPlaceholder')}
               splitChars={[",", " ", "|"]}
               limit={5}
               data={[
                 {
-                  group: "Required for NPCs",
+                  group: t('tileAnimRequiredForNpcs'),
                   items: [...requiredNpcAnimations],
                 },
               ]}
@@ -453,7 +449,7 @@ export default function TileAnimationTool({
               disabled={!canSave}
               type="submit"
             >
-              Save animation
+              {t('tileAnimSaveBtn')}
             </Button>
           </Stack>
         </Fieldset>

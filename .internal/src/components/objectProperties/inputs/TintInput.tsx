@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import PropertyValue, {
   OnValueChangeArgs,
   PropertyValueInfo,
@@ -14,11 +15,13 @@ interface TintInputProps {
 export default function TintInput({
   values,
   onValueChange,
-  description = "A color tint to apply to this object.",
+  description: descriptionProp,
 }: TintInputProps) {
+  const { t } = useTranslation();
+  const description = descriptionProp ?? t('tintInputDescription');
   return (
     <PropertyValue
-      label="Tint"
+      label={t('tintInputLabel')}
       description={description}
       values={values}
       onValueChange={onValueChange}

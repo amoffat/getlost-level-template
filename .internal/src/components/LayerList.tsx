@@ -14,6 +14,7 @@ import {
   Text,
 } from "@mantine/core";
 import { useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import classes from "./styles/LayerList.module.css";
 
 interface Layer {
@@ -26,6 +27,7 @@ interface LayerListProps {
 }
 
 export default function LayerList({ layerConstraints }: LayerListProps) {
+  const { t } = useTranslation();
   const layerState = useAppSelector(
     (state: RootState) => state.mapEditor.layers,
   );
@@ -45,32 +47,30 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
     return [
       {
         id: MapLayerName.Exterior,
-        description:
-          "Outdoor objects that can appear in front of and behind a character",
+        description: t("layerListExteriorDescription"),
       },
       {
         id: MapLayerName.Ground,
-        description: "Ground objects are always rendered beneath the character",
+        description: t("layerListGroundDescription"),
       },
       {
         id: MapLayerName.Background,
-        description:
-          "Skies and other parallax background images rendered behind everything else",
+        description: t("layerListBackgroundDescription"),
       },
       {
         id: MapLayerName.Sensors,
-        description: "Areas that trigger events or define zones",
+        description: t("layerListSensorsDescription"),
       },
 
       {
         id: MapLayerName.Special,
-        description: "Special objects like gateways, lights, and waypoints",
+        description: t("layerListSpecialDescription"),
       },
     ];
-  }, []);
+  }, [t]);
 
   return (
-    <Fieldset legend="Layers" p="xs">
+    <Fieldset legend={t("layerListLegend")} p="xs">
       <Stack p={0}>
         <Radio.Group
           value={layerState.active.toString()}
@@ -113,14 +113,14 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
           </Stack>
         </Radio.Group>
         <Switch
-          label="Lock inactive layers"
+          label={t("layerListLockInactive")}
           checked={layerState.lockInactive}
           onChange={(event) => {
             dispatch(actions.setLockInactiveLayer(event.currentTarget.checked));
           }}
         />
         <Switch
-          label="Dim inactive layers"
+          label={t("layerListDimInactive")}
           checked={layerState.dimInactive}
           onChange={(event) => {
             dispatch(actions.setDimInactiveLayer(event.currentTarget.checked));

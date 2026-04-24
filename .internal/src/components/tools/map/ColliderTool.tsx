@@ -3,9 +3,11 @@ import { actions } from "@/slices/mapEditor";
 import { ColliderOpts } from "@/types/tools";
 import { Fieldset, Kbd, Radio, Stack } from "@mantine/core";
 import { useCallback } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import Tip from "../../Tip";
 
 export default function ColliderTool() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const opts = useAppSelector(
     (state) => state.mapEditor.toolOptions["add-collider"]
@@ -28,22 +30,22 @@ export default function ColliderTool() {
     <>
       <Tip
         tips={[
-          "Use the collider tool to create collision areas.",
-          <>
+          t("mapColliderTip1"),
+          <Trans i18nKey="mapColliderTip2">
             Hold <Kbd>Ctrl</Kbd> to snap the collider to the grid.
-          </>,
-          "Only use colliders for large areas. Small areas should use colliders set on the tile.",
+          </Trans>,
+          t("mapColliderTip3"),
         ]}
       />
-      <Fieldset legend="Collider options" p="xs">
+      <Fieldset legend={t("mapColliderOptionsLegend")} p="xs">
         <Radio.Group
           name="collider-mode"
           value={opts.type}
           onChange={onChangeMode}
         >
           <Stack>
-            <Radio value="box" label="Box collider" />
-            <Radio value="ellipse" label="Circle collider" />
+            <Radio value="box" label={t("mapColliderBoxLabel")} />
+            <Radio value="ellipse" label={t("mapColliderCircleLabel")} />
           </Stack>
         </Radio.Group>
       </Fieldset>

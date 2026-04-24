@@ -13,6 +13,7 @@ import {
 import { useForm } from "@mantine/form";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 interface PersonFormValues {
   name: string;
@@ -31,6 +32,7 @@ interface CardModalProps {
 }
 
 export default function CardModal({ opened, onClose }: CardModalProps) {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const card = useAppSelector(selectors.selectCard);
 
@@ -41,17 +43,17 @@ export default function CardModal({ opened, onClose }: CardModalProps) {
     },
     validate: {
       levelName: (value) =>
-        value.trim().length > 0 ? null : "Level name is required",
+        value.trim().length > 0 ? null : t("cardModalLevelNameRequired"),
       credits: {
-        name: (value) => (value.trim().length > 0 ? null : "Name is required"),
-        role: (value) => (value.trim().length > 0 ? null : "Role is required"),
+        name: (value) => (value.trim().length > 0 ? null : t("cardModalNameRequired")),
+        role: (value) => (value.trim().length > 0 ? null : t("cardModalRoleRequired")),
         link: (value) => {
           if (!value || value.trim() === "") return null;
           try {
             new URL(value);
             return null;
           } catch {
-            return "Please enter a valid URL (e.g. https://example.com)";
+            return t("cardModalInvalidUrl");
           }
         },
       },
@@ -98,37 +100,37 @@ export default function CardModal({ opened, onClose }: CardModalProps) {
     <Modal
       opened={opened}
       onClose={onClose}
-      title="Level Credits"
+      title={t("cardModalTitle")}
       size="xl"
       centered
       closeOnClickOutside={false}
     >
       <Stack>
         <TextInput
-          label="Level name"
+          label={t("cardModalLevelNameLabel")}
           required
           {...form.getInputProps("levelName")}
         />
 
-        <Divider label="Credits" labelPosition="left" />
+        <Divider label={t("cardModalCreditsLabel")} labelPosition="left" />
 
         {form.values.credits.map((_, index) => (
           <Group key={index} align="flex-end" wrap="nowrap" gap="xs">
             <TextInput
-              label="Name"
+              label={t("cardModalCreditNameLabel")}
               required
               style={{ flex: 1 }}
               {...form.getInputProps(`credits.${index}.name`)}
             />
             <TextInput
-              label="Role"
+              label={t("cardModalCreditRoleLabel")}
               required
               style={{ flex: 1 }}
               {...form.getInputProps(`credits.${index}.role`)}
             />
             <TextInput
-              label="Social link"
-              placeholder="https://..."
+              label={t("cardModalCreditSocialLinkLabel")}
+              placeholder={t("cardModalCreditSocialLinkPlaceholder")}
               style={{ flex: 1 }}
               {...form.getInputProps(`credits.${index}.link`)}
             />
@@ -137,7 +139,7 @@ export default function CardModal({ opened, onClose }: CardModalProps) {
               variant="subtle"
               size="input-sm"
               onClick={() => form.removeListItem("credits", index)}
-              aria-label="Remove person"
+              aria-label={t("cardModalRemovePersonAriaLabel")}
             >
               <IconTrash size={16} />
             </ActionIcon>
@@ -151,14 +153,14 @@ export default function CardModal({ opened, onClose }: CardModalProps) {
             form.insertListItem("credits", { name: "", role: "", link: "" })
           }
         >
-          Add person
+          {t("cardModalAddPersonBtn")}
         </Button>
 
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose}>
-            Cancel
+            {t("cardModalCancelBtn")}
           </Button>
-          <Button onClick={handleSave}>Save</Button>
+          <Button onClick={handleSave}>{t("cardModalSaveBtn")}</Button>
         </Group>
       </Stack>
     </Modal>

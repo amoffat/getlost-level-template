@@ -1,5 +1,6 @@
 import { Button, Group, Modal, Stack, Text, Textarea } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useTranslation } from "react-i18next";
 
 interface LocaleContextModalProps {
   opened: boolean;
@@ -25,6 +26,7 @@ export default function LocaleContextModal({
   initialCtx,
   onSave,
 }: LocaleContextModalProps) {
+  const { t } = useTranslation();
   const form = useForm({
     name: "context-modal",
     mode: "uncontrolled",
@@ -46,20 +48,18 @@ export default function LocaleContextModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title="Translation Context"
+      title={t("localeContextTitle")}
       size="lg"
       centered
     >
       <form onSubmit={handleModalSubmit}>
         <Stack>
           <Text size="sm" c="dimmed">
-            The translation context is not shown in-game and is only used to
-            assist the translators in understanding the meaning of the text they
-            are tasked with translating.
+            {t("localeContextDescription")}
           </Text>
 
           <Textarea
-            label="Original text"
+            label={t("localeContextOriginalText")}
             autosize
             readOnly
             styles={{ input: { cursor: "default" } }}
@@ -68,8 +68,8 @@ export default function LocaleContextModal({
           />
 
           <Textarea
-            label="Context"
-            placeholder="e.g. A friendly greeting from the character"
+            label={t("localeContextContext")}
+            placeholder={t("localeContextPlaceholder")}
             autosize
             minRows={4}
             key={form.key("context")}
@@ -77,7 +77,7 @@ export default function LocaleContextModal({
           />
 
           <Group justify="flex-end">
-            <Button type="submit">Save</Button>
+            <Button type="submit">{t("localeContextSave")}</Button>
           </Group>
         </Stack>
       </form>

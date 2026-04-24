@@ -32,9 +32,11 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { ReactNode, useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import classes from "./BackgroundTool.module.css";
 
 export default function BackgroundTool() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const [parallaxDisabledIds, setParallaxDisabledIds] = useState<Set<string>>(
@@ -137,25 +139,19 @@ export default function BackgroundTool() {
   );
 
   const tips: ReactNode[] = useMemo(() => {
-    const tips: ReactNode[] = [];
+    const tipsList: ReactNode[] = [];
 
-    tips.push(
-      "Add a new background image by dragging and dropping it onto the editor.",
-    );
+    tipsList.push(t("backgroundToolTip1"));
 
     if (backgroundObjs.length > 0) {
-      tips.push(
-        "Move a background image around by selecting and dragging it in the editor.",
-      );
+      tipsList.push(t("backgroundToolTip2"));
       if (backgroundObjs.length > 1) {
-        tips.push(
-          "Re-order the background images by dragging their handles below.",
-        );
+        tipsList.push(t("backgroundToolTip3"));
       }
     }
 
-    return tips;
-  }, [backgroundObjs]);
+    return tipsList;
+  }, [backgroundObjs, t]);
 
   return (
     <Stack p={0} gap="xs">
@@ -163,8 +159,8 @@ export default function BackgroundTool() {
 
       {backgroundObjs.length > 0 && (
         <Switch
-          label="Parallax preview"
-          description="Toggle parallax effect for all layers"
+          label={t("backgroundToolParallaxPreviewLabel")}
+          description={t("backgroundToolParallaxPreviewDesc")}
           checked={allParallaxEnabled}
           onChange={(e) => handleAllParallaxToggle(e.currentTarget.checked)}
         />
@@ -214,6 +210,7 @@ function SortableImageRow({
   onParallaxChange,
   onParallaxToggle,
 }: SortableImageRowProps) {
+  const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: obj.id });
 
@@ -257,8 +254,8 @@ function SortableImageRow({
           <Tooltip
             label={
               parallaxEnabled
-                ? "Disable parallax preview"
-                : "Enable parallax preview"
+                ? t("backgroundToolDisableParallax")
+                : t("backgroundToolEnableParallax")
             }
             withArrow
             position="left"
@@ -273,8 +270,8 @@ function SortableImageRow({
               }}
               aria-label={
                 parallaxEnabled
-                  ? "Disable parallax preview"
-                  : "Enable parallax preview"
+                  ? t("backgroundToolDisableParallax")
+                  : t("backgroundToolEnableParallax")
               }
             >
               {parallaxEnabled ? (
@@ -284,7 +281,7 @@ function SortableImageRow({
               )}
             </ActionIcon>
           </Tooltip>
-          <Tooltip label="Remove background image" withArrow position="left">
+          <Tooltip label={t("backgroundToolRemoveImage")} withArrow position="left">
             <ActionIcon
               variant="subtle"
               color="red"
@@ -293,7 +290,7 @@ function SortableImageRow({
                 e.stopPropagation();
                 onRemove(obj.id);
               }}
-              aria-label="Remove background image"
+              aria-label={t("backgroundToolRemoveImage")}
             >
               <IconTrash size={14} />
             </ActionIcon>
@@ -315,7 +312,7 @@ function SortableImageRow({
       {/* Parallax sliders */}
       <Stack gap={2} onClick={(e) => e.stopPropagation()}>
         <Text size="xs" c="dimmed">
-          Parallax X: {obj.parallax.x.toFixed(2)}
+          {t("backgroundToolParallaxX", { value: obj.parallax.x.toFixed(2) })}
         </Text>
         <Slider
           min={0}
@@ -326,7 +323,7 @@ function SortableImageRow({
           size="xs"
         />
         <Text size="xs" c="dimmed">
-          Parallax Y: {obj.parallax.y.toFixed(2)}
+          {t("backgroundToolParallaxY", { value: obj.parallax.y.toFixed(2) })}
         </Text>
         <Slider
           min={0}

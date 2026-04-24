@@ -10,6 +10,7 @@ import { modals } from "@mantine/modals";
 import { IconCopy, IconTrash } from "@tabler/icons-react";
 import classNames from "classnames";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./styles/TilesetButton.module.css";
 import { ItemStatus } from "./modals/ItemizedConfirmModal";
 
@@ -24,6 +25,7 @@ export default function TilesetButton({
   ts,
   isActive,
 }: TilesetButtonProps) {
+  const { t } = useTranslation();
   const [opened, setOpened] = useState(false);
   const dispatch = useAppDispatch();
 
@@ -72,40 +74,40 @@ export default function TilesetButton({
       ok: mapUses === 0,
       message:
         mapUses > 0
-          ? `${mapUses} map objects use this tileset.`
-          : "No map objects are using this tileset.",
+          ? t("tilesetBtnMapObjectsUseTileset", { count: mapUses })
+          : t("tilesetBtnNoMapObjects"),
     });
 
     items.push({
       ok: pinnedGroups === 0,
       message:
         pinnedGroups > 0
-          ? `It contains custom ${pinnedGroups} tile groups.`
-          : "It contains no custom tile groups.",
+          ? t("tilesetBtnContainsTileGroups", { count: pinnedGroups })
+          : t("tilesetBtnNoCustomTileGroups"),
     });
 
     items.push({
       ok: animations === 0,
       message:
         animations > 0
-          ? `It contains ${animations} animations.`
-          : "It contains no animations.",
+          ? t("tilesetBtnContainsAnimations", { count: animations })
+          : t("tilesetBtnNoAnimations"),
     });
 
     items.push({
       ok: npcs === 0,
-      message: npcs > 0 ? `It contains ${npcs} NPCs.` : "It contains no NPCs.",
+      message: npcs > 0 ? t("tilesetBtnContainsNpcs", { count: npcs }) : t("tilesetBtnNoNpcs"),
     });
 
     modals.openContextModal({
       modal: "confirm",
-      title: "Delete tileset?",
+      title: t("tilesetBtnDeleteTitle"),
       centered: true,
       withCloseButton: true,
       innerProps: {
         makeItems: () => items,
-        confirmLabel: "Yes, delete tileset",
-        msg: "Are you sure you want to delete this tileset? This action cannot be undone.",
+        confirmLabel: t("tilesetBtnDeleteConfirmLabel"),
+        msg: t("tilesetBtnDeleteMsg"),
         onConfirm: () => {
           dispatch(removeTilesetThunk(ts.id));
         },
@@ -138,14 +140,14 @@ export default function TilesetButton({
 
       <Menu.Dropdown>
         <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
-          Copy tileset id
+          {t("tilesetBtnCopyId")}
         </Menu.Item>
         <Menu.Item
           color="red"
           leftSection={<IconTrash size={14} />}
           onClick={onDelete}
         >
-          Delete
+          {t("tilesetBtnDeleteMenuItem")}
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>

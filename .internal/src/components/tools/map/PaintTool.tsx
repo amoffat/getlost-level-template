@@ -14,10 +14,12 @@ import {
 } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import Tip from "../../Tip";
 import TileContext from "./TileContext";
 
 export default function PaintTool() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const activeLayer = useAppSelector((state) => state.mapEditor.layers.active);
@@ -86,29 +88,29 @@ export default function PaintTool() {
     <>
       <Tip
         tips={[
-          "The paint tool allows you to place tiles or objects on the map.",
-          "Paint tiles on the ground layer and objects on the world layer.",
+          t("paintToolTip1"),
+          t("paintToolTip2"),
         ]}
       />
       <Stack p={0}>
         {!placeObj && (
           <Alert
-            title="No object selected"
+            title={t("paintToolNoObjectTitle")}
             variant="light"
             icon={<IconInfoCircle />}
           >
-            Please select an object from the palette.
+            {t("paintToolNoObjectMsg")}
           </Alert>
         )}
 
         {contextTile && (
-          <Fieldset legend="Tile context">
+          <Fieldset legend={t("paintToolTileContextLegend")}>
             <TileContext placeObj={contextTile} />
           </Fieldset>
         )}
 
         {isGround && (
-          <Fieldset legend="Placement mode">
+          <Fieldset legend={t("paintToolPlacementModeLegend")}>
             <Radio.Group
               name="paint-mode"
               value={opts.mode}
@@ -116,31 +118,31 @@ export default function PaintTool() {
             >
               <Stack p={0}>
                 <Tooltip
-                  label="Places only on empty spaces"
+                  label={t("paintToolPlaceOnceTooltip")}
                   refProp="rootRef"
                   position="left"
                   withArrow
                 >
-                  <Radio value="place-once" label="Place once" />
+                  <Radio value="place-once" label={t("paintToolPlaceOnceLabel")} />
                 </Tooltip>
                 <Tooltip
-                  label="Replaces existing tiles"
+                  label={t("paintToolOverwriteTooltip")}
                   refProp="rootRef"
                   position="left"
                   withArrow
                 >
-                  <Radio value="overwrite" label="Overwrite" />
+                  <Radio value="overwrite" label={t("paintToolOverwriteLabel")} />
                 </Tooltip>
                 <Tooltip
-                  label="Stack on top of existing tiles"
+                  label={t("paintToolStackTooltip")}
                   refProp="rootRef"
                   position="left"
                   withArrow
                 >
-                  <Radio value="stack" label="Stack" />
+                  <Radio value="stack" label={t("paintToolStackLabel")} />
                 </Tooltip>
                 <NumberInput
-                  label="Brush size"
+                  label={t("paintToolBrushSizeLabel")}
                   value={opts.size}
                   min={1}
                   max={10}
@@ -153,24 +155,24 @@ export default function PaintTool() {
           </Fieldset>
         )}
 
-        <Fieldset legend="Snapping" disabled>
+        <Fieldset legend={t("paintToolSnappingLegend")} disabled>
           <Radio.Group name="snap" value={opts.snap} onChange={onChangeSnap}>
             <Stack p={0}>
               <Tooltip
-                label="Use the map's grid for snapping"
+                label={t("paintToolSnapGridTooltip")}
                 refProp="rootRef"
                 position="left"
                 withArrow
               >
-                <Radio value="grid" label="Snap to grid" />
+                <Radio value="grid" label={t("paintToolSnapGridLabel")} />
               </Tooltip>
               <Tooltip
-                label="Use the object's size for snapping"
+                label={t("paintToolSnapObjectTooltip")}
                 refProp="rootRef"
                 position="left"
                 withArrow
               >
-                <Radio value="object" label="Snap to object's size" />
+                <Radio value="object" label={t("paintToolSnapObjectLabel")} />
               </Tooltip>
             </Stack>
           </Radio.Group>

@@ -3,6 +3,7 @@ import { uploadBackgroundImageThunk } from "@/thunks/background";
 import { Button, Group, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import RestrictedControl from "./RestrictedControl";
 
 interface FormValues {
@@ -18,6 +19,7 @@ export default function BackgroundUploadOptions({
   files,
   closeModal,
 }: BackgroundUploadOptionsProps) {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const form = useForm<FormValues>({
@@ -48,7 +50,7 @@ export default function BackgroundUploadOptions({
 
         <Group mt="lg" justify="flex-end">
           <Button color="blue" type="submit" radius="md">
-            Upload
+            {t("bgUploadSubmitBtn")}
           </Button>
         </Group>
       </Stack>

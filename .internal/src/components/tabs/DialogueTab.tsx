@@ -95,6 +95,7 @@ import {
   useState,
   useTransition,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import InfoTooltip from "../common/InfoTooltip";
 import DialogueNode from "../flowNodes/DialogueNode";
@@ -131,6 +132,7 @@ export default function DialogueTab({
 
   const reactFlowInstance = useReactFlow<DNode, Edge>();
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const {
     dlgid: dlgId,
     milestone: msId,
@@ -311,8 +313,8 @@ export default function DialogueTab({
       const hasOrigin = authoritativeNodes.some((n) => n.data.isOrigin);
       if (hasOrigin) {
         showNotification({
-          title: "Cannot delete",
-          message: "The origin speech cannot be deleted",
+          title: t("dialogueTabCannotDelete"),
+          message: t("dialogueTabCannotDeleteMsg"),
           color: "orange",
         });
         return false;
@@ -320,7 +322,7 @@ export default function DialogueTab({
 
       return true;
     },
-    [activeNodes],
+    [activeNodes, t],
   );
 
   const onEdgesChange: OnEdgesChange = useDebouncedCallback((changes) => {
@@ -637,25 +639,19 @@ export default function DialogueTab({
   }, [dispatch, reactFlowInstance, dlgId]);
 
   const tips: ReactNode[] = useMemo(() => {
-    const t: ReactNode[] = [];
+    const tipItems: ReactNode[] = [];
 
     if (Object.values(activeNodes).length === 1) {
-      t.push(
-        "Click 'New Speech' to add a new speech node connected to this one.",
-      );
-      t.push(
-        "If your node has responses, you can drag a connection from the right handle to create a new connected node.",
-      );
+      tipItems.push(t("dialogueTabTip1"));
+      tipItems.push(t("dialogueTabTip2"));
     }
 
     if (!dlgId && speakers.length > 0) {
-      t.push(
-        "Select a dialogue from the left panel, or create a new dialogue by clicking the '+' icon in the left panel.",
-      );
+      tipItems.push(t("dialogueTabTip3"));
     }
 
-    return t;
-  }, [activeNodes, dlgId, speakers.length]);
+    return tipItems;
+  }, [activeNodes, dlgId, speakers.length, t]);
 
   return (
     <Split h="100dvh" style={{ flex: 1 }}>
@@ -672,12 +668,11 @@ export default function DialogueTab({
               {treeData.length === 0 && (
                 <Box p="xs">
                   <Alert
-                    title="No dialogues"
+                    title={t("dialogueTabNoDialogues")}
                     variant="light"
                     icon={<IconInfoCircle />}
                   >
-                    There are no objects in the scene that the player can talk
-                    with.
+                    {t("dialogueTabNoDialoguesMsg")}
                   </Alert>
                 </Box>
               )}
@@ -733,14 +728,14 @@ export default function DialogueTab({
                     onClick={() => createSpeech({ dialogueId: dlgId })}
                     leftSection={<IconBubbleText size={20} />}
                   >
-                    New Speech
+                    {t("dialogueTabNewSpeech")}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={handleReflow}
                     leftSection={<IconSitemap size={20} />}
                   >
-                    Organize
+                    {t("dialogueTabOrganize")}
                   </Button>
                 </Group>
               </Panel>
@@ -753,7 +748,7 @@ export default function DialogueTab({
             <Overlay color="#000" backgroundOpacity={0.65} blur={4} zIndex={10}>
               <Stack align="center" justify="center" style={{ height: "100%" }}>
                 <Text size="lg" c="dimmed">
-                  Please select a dialogue from the left panel.
+                  {t("dialogueTabSelectPrompt")}
                 </Text>
               </Stack>
             </Overlay>
@@ -777,13 +772,13 @@ export default function DialogueTab({
             <Stack p={0} gap="md" pb="xl">
               {dlgId && (
                 <>
-                  <Fieldset legend="Dialogue" p="xs">
+                  <Fieldset legend={t("dialogueTabDialogueLegend")} p="xs">
                     <Stack p={0}>
                       <MultiSelect
                         required
                         label={
                           <>
-                            Milestones
+                            {t("dialogueTabMilestonesLabel")}
                             <InfoTooltip>
                               <Typography>
                                 <p>
@@ -813,12 +808,12 @@ export default function DialogueTab({
                             </InfoTooltip>
                           </>
                         }
-                        description="Which story milestones activate this dialogue?"
+                        description={t("dialogueTabMilestonesDesc")}
                         searchable
                         value={activeMilestones}
                         onChange={onMilestoneChange}
                         data={availableMilestones}
-                        nothingFoundMessage="No milestones found"
+                        nothingFoundMessage={t("dialogueTabNoMilestonesFound")}
                         disabled={!dlgId}
                       />
                     </Stack>
@@ -858,6 +853,7 @@ function ObjLeaf({
 }: LeafProps & ObjNodeProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const npcDialogues = useAppSelector((state) =>
     dSelectors.dialoguesForObj(state, objId),
   );
@@ -947,7 +943,7 @@ function ObjLeaf({
         <ActionIcon.Group>
           {obj.speakerImageId ? (
             <Menu withinPortal position="bottom-end">
-              <Tooltip label="Change speaker image">
+              <Tooltip label={t("dialogueTabChangeSpeakerImage")}>
                 <Menu.Target>
                   <ActionIcon
                     variant="default"
@@ -962,7 +958,7 @@ function ObjLeaf({
                   leftSection={<IconPhoto size={14} />}
                   onClick={handleUploadSpeakerImage}
                 >
-                  Replace image
+                  {t("dialogueTabReplaceImage")}
                 </Menu.Item>
                 <Menu.Item
                   leftSection={<IconTrash size={14} />}
@@ -977,18 +973,18 @@ function ObjLeaf({
                     );
                   }}
                 >
-                  Remove image
+                  {t("dialogueTabRemoveImage")}
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
           ) : (
-            <Tooltip label="Upload speaker image">
+            <Tooltip label={t("dialogueTabUploadSpeakerImage")}>
               <ActionIcon variant="default" onClick={handleUploadSpeakerImage}>
                 <IconPhoto size={16} />
               </ActionIcon>
             </Tooltip>
           )}
-          <Tooltip label="Add new dialogue for this NPC">
+          <Tooltip label={t("dialogueTabAddNewDialogue")}>
             <ActionIcon variant="default" onClick={handleAddDialogue}>
               <IconPlus size={16} />
             </ActionIcon>
@@ -1002,6 +998,7 @@ function ObjLeaf({
 function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const activeDialogueId = useAppSelector(
     (state) => state.dialogue.activeDialogueId,
   );
@@ -1028,7 +1025,7 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
       <Group gap="xs">
         <IconAlertTriangle size={16} color="orange" />
         <Text fz="sm" variant="dimmed">
-          No milestone
+          {t("dialogueTabNoMilestone")}
         </Text>
       </Group>
     );
@@ -1046,22 +1043,24 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
 
     modals.openContextModal({
       modal: "confirm",
-      title: "Unlink dialogue?",
+      title: t("dialogueTabUnlinkTitle"),
       centered: true,
       withCloseButton: true,
       innerProps: {
         makeItems: () => [
           {
             ok: true,
-            message: `A new copy of this dialogue will be created for the "${node.label}" milestone.`,
+            message: t("dialogueTabUnlinkItem1", { label: node.label }),
           },
           {
             ok: true,
-            message: `The original dialogue will keep its remaining ${milestoneCount - 1} milestone(s).`,
+            message: t("dialogueTabUnlinkItem2", {
+              count: milestoneCount - 1,
+            }),
           },
         ],
-        confirmLabel: "Yes, unlink",
-        msg: "Are you sure you want to unlink this milestone into its own separate dialogue?",
+        confirmLabel: t("dialogueTabUnlinkConfirm"),
+        msg: t("dialogueTabUnlinkMsg"),
         onConfirm: () => {
           const newId = dispatch(
             unlinkDialogueThunk(dialogue.id, milestoneNodeId),
@@ -1083,33 +1082,32 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
     if (milestoneCount > 1) {
       items.push({
         ok: true,
-        message: `This dialogue belongs to ${milestoneCount - 1} other milestones.`,
+        message: t("dialogueTabDeleteItem1", { count: milestoneCount - 1 }),
       });
       items.push({
         ok: true,
-        message:
-          "Deleting it will only remove the dialogue from the current milestone.",
+        message: t("dialogueTabDeleteItem2"),
       });
     } else {
       items.push({
         ok: false,
-        message: "This dialogue does not belong to any other milestones.",
+        message: t("dialogueTabDeleteItem3"),
       });
       items.push({
         ok: false,
-        message: "Deleting it will remove the dialogue permanently.",
+        message: t("dialogueTabDeleteItem4"),
       });
     }
 
     modals.openContextModal({
       modal: "confirm",
-      title: "Delete dialogue?",
+      title: t("dialogueTabDeleteTitle"),
       centered: true,
       withCloseButton: true,
       innerProps: {
         makeItems: () => items,
-        confirmLabel: "Yes, delete",
-        msg: "Are you sure you want to delete this dialogue? This action cannot be undone.",
+        confirmLabel: t("dialogueTabDeleteConfirm"),
+        msg: t("dialogueTabDeleteMsg"),
         onConfirm: () => {
           if (milestoneCount > 1) {
             // Remove only this milestone from the dialogue
@@ -1138,14 +1136,14 @@ function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
       <Group gap="xs" wrap="nowrap">
         <Box style={{ flexGrow: 1 }}>{content}</Box>
         {selected && (
-          <Tooltip label="Delete this dialogue">
+          <Tooltip label={t("dialogueTabDeleteDialogue")}>
             <ActionIcon variant="default" size="sm" onClick={handleDelete}>
               <IconTrash size={14} />
             </ActionIcon>
           </Tooltip>
         )}
         {selected && milestoneCount > 1 && (
-          <Tooltip label="Unlink from active dialogue">
+          <Tooltip label={t("dialogueTabUnlinkDialogue")}>
             <ActionIcon variant="default" size="sm" onClick={handleUnlink}>
               <IconUnlink size={14} />
             </ActionIcon>

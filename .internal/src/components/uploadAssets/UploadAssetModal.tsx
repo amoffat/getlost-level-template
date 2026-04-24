@@ -1,4 +1,5 @@
 import { Modal } from "@mantine/core";
+import { useTranslation } from "react-i18next";
 import BackgroundUploadOptions from "./BackgroundUploadOptions";
 import TilesetUploadOptions from "./TilesetUploadOptions";
 
@@ -16,12 +17,13 @@ export default function UploadAssetModal({
   closeModal,
   mode = "tileset",
 }: UploadAssetModalProps) {
+  const { t } = useTranslation();
   const title =
     mode === "background"
       ? files.length === 1
-        ? "Upload background image"
-        : `Upload ${files.length} background images`
-      : "Tileset upload";
+        ? t("uploadAssetUploadBackground")
+        : t("uploadAssetUploadBackgroundPlural", { count: files.length })
+      : t("uploadAssetTilesetUpload");
 
   return (
     <Modal

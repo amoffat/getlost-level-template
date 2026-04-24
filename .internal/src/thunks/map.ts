@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import { iconTsId, lightIcon, waypointIcon } from "@/constants/tsObjs";
 import { globals as gApp } from "@/globals";
 import { fetchBackgroundImageUrl } from "@/persist/background/api";
@@ -55,8 +56,8 @@ export const setActiveLayerThunk = createAsyncThunk(
           ),
         );
         notifications.show({
-          title: "Moved objects",
-          message: `${selectedTgInstances.length} objects were moved to the "${name}" layer.`,
+          title: i18n.t("mapMovedObjects"),
+          message: i18n.t("mapMovedObjectsMessage", { count: selectedTgInstances.length, name }),
           autoClose: 3000,
         });
       }
@@ -67,8 +68,8 @@ export const setActiveLayerThunk = createAsyncThunk(
 
     if (notify) {
       notifications.show({
-        title: "Layer switched",
-        message: `You're now editing the "${name}" layer.`,
+        title: i18n.t("mapLayerSwitched"),
+        message: i18n.t("mapLayerSwitchedMessage", { name }),
         autoClose: 3000,
       });
     }
@@ -78,7 +79,7 @@ export const setActiveLayerThunk = createAsyncThunk(
 export const loadMapThunk = createAsyncThunk(
   "map/loadMapThunk",
   async (_: void, { dispatch }) => {
-    dispatch(uiActions.pushLoadingMessage(`Loading map...`));
+    dispatch(uiActions.pushLoadingMessage(i18n.t("mapLoading")));
     const persisted = await loadMap();
     if (persisted) {
       const objs: MapObj[] = [];
@@ -153,12 +154,12 @@ export const loadMapThunk = createAsyncThunk(
 export const resetMapThunk = createAsyncThunk(
   "mapEditor/resetMapThunk",
   async (_, { dispatch }) => {
-    dispatch(uiActions.pushLoadingMessage("Resetting map..."));
+    dispatch(uiActions.pushLoadingMessage(i18n.t("mapResetting")));
     dispatch(mapActions.setAll([]));
     dispatch(uiActions.popLoadingMessage());
     notifications.show({
-      title: "Map reset",
-      message: "The map has been cleared.",
+      title: i18n.t("mapReset"),
+      message: i18n.t("mapResetMessage"),
       autoClose: 3000,
     });
     router.navigate("/map");
@@ -170,7 +171,7 @@ export const resetAllThunk = createAsyncThunk(
   async (_, { dispatch, getState }) => {
     const state = getState() as RootState;
 
-    dispatch(uiActions.pushLoadingMessage("Resetting all data..."));
+    dispatch(uiActions.pushLoadingMessage(i18n.t("mapResetAllLoading")));
 
     await dispatch(resetStoryThunk()).unwrap();
     await dispatch(resetMapThunk()).unwrap();
@@ -181,8 +182,8 @@ export const resetAllThunk = createAsyncThunk(
     // TODO Potentially other slices to reset in the future
     dispatch(uiActions.popLoadingMessage());
     notifications.show({
-      title: "All data reset",
-      message: "All data has been cleared.",
+      title: i18n.t("mapAllDataReset"),
+      message: i18n.t("mapAllDataResetMessage"),
       autoClose: 3000,
     });
     router.navigate("/");

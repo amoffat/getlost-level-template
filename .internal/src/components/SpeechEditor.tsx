@@ -45,6 +45,7 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 import { useCallback, useRef, useState } from "react";
 import InfoTooltip from "./common/InfoTooltip";
 import { LocalizedTextarea, LocalizedTextInput } from "./l10n";
@@ -64,6 +65,7 @@ export default function SpeechEditor({
   currentLocale,
 }: SpeechEditorProps) {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const [resetKey, setResetKey] = useState(0);
   const activeDialogueId = useAppSelector(
@@ -162,7 +164,7 @@ export default function SpeechEditor({
     return (
       <Stack align="center" justify="center" style={{ height: "100%" }}>
         <Text size="sm" c="dimmed">
-          Select a speech node to edit its properties.
+          {t("speechEditorSelectPrompt")}
         </Text>
       </Stack>
     );
@@ -173,7 +175,7 @@ export default function SpeechEditor({
 
   return (
     <Stack p={0} gap="md">
-      <Fieldset legend="Speaker" p="xs">
+      <Fieldset legend={t("speechEditorSpeakerLegend")} p="xs">
         <Stack gap="sm" p={0}>
           <ResettableInput
             disabled={data.speakerNameKey === undefined}
@@ -203,16 +205,13 @@ export default function SpeechEditor({
               }
               label={
                 <>
-                  Name
+                  {t("speechEditorSpeakerNameLabel")}
                   <InfoTooltip>
-                    By default, the speaker name is the NPC's name, but you can
-                    change it per-node. For example, instead of "Guard", you
-                    could set it to "Guard (angry)" to indicate a change in
-                    tone.
+                    {t("speechEditorSpeakerNameTooltip")}
                   </InfoTooltip>
                 </>
               }
-              description="The character speaking this dialogue."
+              description={t("speechEditorSpeakerDesc")}
             />
           </ResettableInput>
 
@@ -236,7 +235,7 @@ export default function SpeechEditor({
         </Stack>
       </Fieldset>
 
-      <Fieldset legend="Content" p="xs">
+      <Fieldset legend={t("speechEditorContentLegend")} p="xs">
         <Stack gap="sm" p={0}>
           <LocalizedTextarea
             key={remountKey}
@@ -255,7 +254,7 @@ export default function SpeechEditor({
             rows={5}
             label={
               <>
-                Text
+                {t("speechEditorTextLabel")}
                 <InfoTooltip>
                   <Typography>
                     <p>
@@ -269,14 +268,14 @@ export default function SpeechEditor({
                 </InfoTooltip>
               </>
             }
-            description="The text that will be displayed to the player."
-            placeholder="Please write character text here..."
+            description={t("speechEditorContentDesc")}
+            placeholder={t("speechEditorPlaceholder")}
           />
           <DetectedVariables localeKey={data.contentKey} />
         </Stack>
-        <Input.Label mt="sm">Responses</Input.Label>
+        <Input.Label mt="sm">{t("speechEditorResponsesLabel")}</Input.Label>
         <Input.Description mb="sm">
-          These are possible responses the player can choose from.
+          {t("speechEditorResponsesDesc")}
         </Input.Description>
         <DndContext
           collisionDetection={closestCenter}
@@ -312,7 +311,7 @@ export default function SpeechEditor({
 
             {canAddChoice && (
               <Button variant="subtle" size="xs" fullWidth onClick={addChoice}>
-                Add response
+                {t("speechEditorAddResponse")}
               </Button>
             )}
           </Stack>
@@ -343,6 +342,7 @@ function SpeakerImageSection({
   onSetNodeOverride,
 }: SpeakerImageSectionProps) {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const activeImageId = nodeSpeakerImageId ?? objSpeakerImageId;
@@ -387,16 +387,14 @@ function SpeakerImageSection({
         onChange={handleFileChange}
       />
       <Text size="sm" fw={500}>
-        Avatar
+        {t("speechEditorAvatarLabel")}
         <InfoTooltip>
-          A portrait image for the speaker. You can override this on a per-node
-          basis. For example, to change it to a laughing portrait when the
-          player says something funny.
+          {t("speechEditorAvatarTooltip")}
         </InfoTooltip>
       </Text>
 
       <Input.Description mb={0}>
-        A visual for the character speaking.
+        {t("speechEditorAvatarDesc")}
       </Input.Description>
 
       {activeImageUrl ? (
@@ -412,7 +410,7 @@ function SpeakerImageSection({
           />
           <Stack gap={4} p={0}>
             {nodeSpeakerImageId ? (
-              <Tooltip label="Remove the per-node override; the object-level image will be used">
+              <Tooltip label={t("speechEditorRemoveOverride")}>
                 <ActionIcon
                   variant="default"
                   size="sm"
@@ -423,7 +421,7 @@ function SpeakerImageSection({
               </Tooltip>
             ) : (
               <>
-                <Tooltip label="Upload a different image for this speech node only">
+                <Tooltip label={t("speechEditorUploadOverride")}>
                   <ActionIcon
                     variant="default"
                     size="sm"
@@ -432,7 +430,7 @@ function SpeakerImageSection({
                     <IconPhoto size={14} />
                   </ActionIcon>
                 </Tooltip>
-                <Tooltip label="Remove the speaker image">
+                <Tooltip label={t("speechEditorRemoveSpeakerImage")}>
                   <ActionIcon
                     variant="default"
                     size="sm"
@@ -461,7 +459,7 @@ function SpeakerImageSection({
             leftSection={<IconPhoto size={14} />}
             onClick={handlePickFile}
           >
-            Upload avatar
+            {t("speechEditorUploadAvatar")}
           </Button>
         </Box>
       )}
@@ -484,6 +482,7 @@ function SortableChoice({
   updateChoiceTextKey,
   removeChoice,
 }: SortableChoiceProps) {
+  const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
   const style: React.CSSProperties = {
@@ -506,7 +505,7 @@ function SortableChoice({
           keyPrefix={[id]}
           onLocaleKeyChange={(newKey) => updateChoiceTextKey(id, newKey)}
           style={{ flex: 1 }}
-          placeholder="Type response"
+          placeholder={t("speechEditorChoicePlaceholder")}
           contextButton="inline"
         />
         <CloseButton size="xs" onClick={() => removeChoice(id)} />
@@ -517,6 +516,7 @@ function SortableChoice({
 
 /** Renders a row of hoverable variable badges detected in the given text. */
 function DetectedVariables({ localeKey }: { localeKey: string | undefined }) {
+  const { t } = useTranslation();
   const activeEntries = useAppSelector(localeSelectors.selectActiveEntries);
   const defaultLocaleEntries = useAppSelector(
     localeSelectors.selectDefaultEntries,
@@ -531,7 +531,7 @@ function DetectedVariables({ localeKey }: { localeKey: string | undefined }) {
   return (
     <Stack gap={4} p={0}>
       <Text size="xs" c="dimmed">
-        Detected variables
+        {t("speechEditorDetectedVariables")}
       </Text>
       <Group gap="xs">
         {keys.map((tvar) => {

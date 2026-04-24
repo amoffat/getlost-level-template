@@ -26,6 +26,7 @@ import {
   IconArrowBarToUp,
 } from "@tabler/icons-react";
 import { ReactNode, useDeferredValue, useMemo } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import EntranceProperties from "../../objectProperties/EntranceProperties";
 import ExitProperties from "../../objectProperties/ExitProperties";
 import LightProperties from "../../objectProperties/LightProperties";
@@ -35,6 +36,7 @@ import TileGroupProperties from "../../objectProperties/TileGroupProperties";
 import Tip from "../../Tip";
 
 export default function SelectTool() {
+  const { t } = useTranslation();
   const selectedObjs = useAppSelector(mapSelectors.selectedObjs);
   const deferredSelectedObjs = useDeferredValue(selectedObjs);
 
@@ -49,16 +51,16 @@ export default function SelectTool() {
 
   const tips: ReactNode[] = useMemo(() => {
     return [
-      "Right click and drag on the map to pan the view.",
-      "Use click and drag to select multiple objects.",
-      <>
+      t("selectToolTip1"),
+      t("selectToolTip2"),
+      <Trans i18nKey="selectToolTip3">
         Hold <Kbd>Ctrl</Kbd> to add to or remove from the current selection.
-      </>,
-      "Click on an object to select it.",
-      "Click on empty space to clear the selection.",
-      "If you can't select an object, make sure the correct layer is active.",
+      </Trans>,
+      t("selectToolTip4"),
+      t("selectToolTip5"),
+      t("selectToolTip6"),
     ];
-  }, []);
+  }, [t]);
 
   const onBringToTop = () => {
     dispatch(bringToTopThunk(selectedTgInstances));
@@ -110,10 +112,10 @@ export default function SelectTool() {
         <Alert
           variant="light"
           color="yellow"
-          title="Mixed selection"
+          title={t("selectToolMixedSelectionTitle")}
           icon={<IconAlertTriangle />}
         >
-          Only objects of the same type can be edited at once.
+          {t("selectToolMixedSelectionMsg")}
         </Alert>
       );
     }
@@ -149,7 +151,7 @@ export default function SelectTool() {
     }
 
     return null;
-  }, [deferredSelectedObjs]);
+  }, [deferredSelectedObjs, t]);
 
   const hasSelection = deferredSelectedObjs.length > 0;
 
@@ -158,7 +160,7 @@ export default function SelectTool() {
       <Tip tips={tips} />
 
       {groundLayer && (
-        <Fieldset legend="Ordering" p="xs">
+        <Fieldset legend={t("selectToolOrderingLegend")} p="xs">
           <Stack p={0}>
             <>
               <Button
@@ -167,7 +169,7 @@ export default function SelectTool() {
                 disabled={!hasSelection}
                 leftSection={<IconArrowBarToUp size={14} />}
               >
-                Bring to top
+                {t("selectToolBringToTop")}
               </Button>
               <Button
                 onClick={onSendToBottom}
@@ -175,7 +177,7 @@ export default function SelectTool() {
                 disabled={!hasSelection}
                 leftSection={<IconArrowBarToDown size={14} />}
               >
-                Send to bottom
+                {t("selectToolSendToBottom")}
               </Button>
             </>
           </Stack>

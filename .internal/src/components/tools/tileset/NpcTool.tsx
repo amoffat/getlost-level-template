@@ -33,6 +33,7 @@ import {
   IconFlipVertical,
 } from "@tabler/icons-react";
 import { ReactNode, useCallback, useMemo, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import TileAnimation from "../../TileAnimation";
 import Tip from "../../Tip";
 
@@ -43,6 +44,7 @@ interface FormValues {
 export default function NpcTool() {
   const ts = useAppSelector(selectors.activeTileset);
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const existingNpc = useMemo(() => {
     const npcs = ts?.tiles.ids
@@ -81,7 +83,7 @@ export default function NpcTool() {
     validate: {
       name: (value) => {
         if (value.trim().length === 0) {
-          return "Name is required";
+          return t('npcToolNameRequired');
         }
         return null;
       },
@@ -187,8 +189,8 @@ export default function NpcTool() {
       dispatch(uiActions.setTilesetTab("npcs"));
 
       notifications.show({
-        title: "NPC saved",
-        message: `Saved NPC "${values.name}".`,
+        title: t('npcToolNotifTitle'),
+        message: t('npcToolNotifMessage', { name: values.name }),
         autoClose: 3000,
       });
     },
@@ -217,25 +219,23 @@ export default function NpcTool() {
   }, [dispatch]);
 
   const tips: ReactNode[] = useMemo(() => {
-    const t = [];
+    const tipItems: ReactNode[] = [];
 
     if (hasAll) {
-      t.push(
-        "Once every animation is assigned, enter a name and click 'Create NPC' to finalize.",
-      );
+      tipItems.push(t('npcToolTipAllAssigned'));
     } else if (hasNone || hasSome) {
-      t.push("Create an NPC by defining its required animations.");
-      t.push(
-        <>
+      tipItems.push(t('npcToolTipDefineAnimations'));
+      tipItems.push(
+        <Trans i18nKey="npcToolTipUseAnimator">
           To create a required animation, use the{" "}
           <Anchor underline="hover" onClick={activateAnimationTool}>
             Animator tool.
           </Anchor>
-        </>,
+        </Trans>,
       );
     }
-    return t;
-  }, [activateAnimationTool, hasAll, hasSome, hasNone]);
+    return tipItems;
+  }, [activateAnimationTool, hasAll, hasSome, hasNone, t]);
 
   const canSave = hasAll;
 
@@ -243,13 +243,13 @@ export default function NpcTool() {
     <>
       <Tip tips={tips} />
       <form onSubmit={formSubmit}>
-        <Fieldset legend="NPC animations" p="xs">
+        <Fieldset legend={t('npcToolLegend')} p="xs">
           <Stack p={0} gap="md">
             <Table striped highlightOnHover>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Required</Table.Th>
-                  <Table.Th>Animation</Table.Th>
+                  <Table.Th>{t('npcToolTableRequired')}</Table.Th>
+                  <Table.Th>{t('npcToolTableAnimation')}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -294,7 +294,7 @@ export default function NpcTool() {
                               />
                             </div>
 
-                            <Tooltip label="Flip horizontally">
+                            <Tooltip label={t('npcToolFlipTooltip')}>
                               <ActionIcon
                                 variant={animRecord.flipX ? "filled" : "subtle"}
                                 size="sm"
@@ -310,7 +310,7 @@ export default function NpcTool() {
                             size="xs"
                             onClick={activateAnimationTool}
                           >
-                            Create
+                            {t('npcToolCreate')}
                           </Anchor>
                         )}
                       </Table.Td>
@@ -321,9 +321,9 @@ export default function NpcTool() {
             </Table>
 
             <TextInput
-              label="Name"
-              description="What should we call this NPC?"
-              placeholder="Jeff"
+              label={t('npcToolNameLabel')}
+              description={t('npcToolNameDesc')}
+              placeholder={t('npcToolNamePlaceholder')}
               disabled={!canSave}
               {...form.getInputProps("name")}
             />
@@ -335,7 +335,7 @@ export default function NpcTool() {
               disabled={!canSave}
               type="submit"
             >
-              {existingNpc ? "Update NPC" : "Create NPC"}
+              {existingNpc ? t('npcToolUpdateNpc') : t('npcToolCreateNpc')}
             </Button>
           </Stack>
         </Fieldset>

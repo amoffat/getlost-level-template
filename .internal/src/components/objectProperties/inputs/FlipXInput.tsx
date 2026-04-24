@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { OnValueChangeArgs, PropertyValueInfo } from "../../PropertyValue";
 import SwitchInput from "./SwitchInput";
 
@@ -7,10 +8,11 @@ interface FlipXInputProps {
 }
 
 export default function FlipXInput({ values, onValueChange }: FlipXInputProps) {
+  const { t } = useTranslation();
   return (
     <SwitchInput
-      label="Flip X"
-      description="Whether to flip the object horizontally."
+      label={t('flipXInputLabel')}
+      description={t('flipXInputDescription')}
       values={values}
       onValueChange={onValueChange}
     />

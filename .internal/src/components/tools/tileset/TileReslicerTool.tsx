@@ -2,10 +2,12 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { Fieldset, Stack } from "@mantine/core";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import GridSizeInput from "../../GridSizeInput";
 import Tip from "../../Tip";
 
 export default function TileReslicerTool() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const grid = useAppSelector((state) => state.tilesetEditor.grid);
   const ts = useAppSelector(selectors.activeTileset);
@@ -24,11 +26,11 @@ export default function TileReslicerTool() {
     <>
       <Tip
         tips={[
-          "Click and drag on the tileset to select an area. Releasing the drag will reslice immediately.",
-          "Adjust the grid size to change how the selection will be sliced.",
+          t('reslicerToolTipClickDrag'),
+          t('reslicerToolTipGridSize'),
         ]}
       />
-      <Fieldset legend="Reslicer" p="xs">
+      <Fieldset legend={t('reslicerToolLegend')} p="xs">
         <Stack p={0}>
           {!ts.composite && (
             <GridSizeInput defaultValue={grid.size} onChange={changeGridSize} />

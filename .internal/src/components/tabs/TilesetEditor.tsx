@@ -41,6 +41,7 @@ import React, {
   useMemo,
   useRef,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ObjectPalette from "../ObjectPalette";
 import TilesetButton from "../TilesetButton";
@@ -63,14 +64,15 @@ export default function TilesetEditorTab({
 }) {
   const dispatch = useAppDispatch();
   const activeTab = useAppSelector((state) => state.ui.activeTab);
+  const { t } = useTranslation();
 
   // Register tileset-editor spotlight actions
   const tilesetSpotlightActions = useMemo(
     () => [
       {
         id: "toggle-hidden-tilesets",
-        label: "Toggle hidden tilesets",
-        description: "Toggle hidden tilesets",
+        label: t('tilesetEditorToggleHiddenLabel'),
+        description: t('tilesetEditorToggleHiddenDescription'),
         leftSection: <IconEye />,
         onClick: () => {
           const state = store.getState();
@@ -80,8 +82,8 @@ export default function TilesetEditorTab({
       },
       {
         id: "reset-colliders",
-        label: "Reset tileset's colliders",
-        description: "Remove all collider data from the active tileset",
+        label: t('tilesetEditorResetCollidersLabel'),
+        description: t('tilesetEditorResetCollidersDescription'),
         leftSection: <IconTrash />,
         onClick: () => {
           const state = store.getState();
@@ -235,36 +237,36 @@ export default function TilesetEditorTab({
     () =>
       ({
         "reslice-tiles": {
-          name: "Reslicer",
+          name: t('tilesetEditorReslicerTool'),
           icon: <IconScissors size={16} />,
           options: <TileReslicerTool />,
           enabled: enableGroup,
         },
 
         select: {
-          name: "Select",
+          name: t('tilesetEditorSelectTool'),
           icon: <IconSelectAll size={16} />,
           enabled: hasTsSelected,
         },
         "replace-group": {
-          name: "Replace group",
+          name: t('tilesetEditorReplaceGroupTool'),
           icon: <IconReplace size={16} />,
           options: <TileReplaceTool />,
           enabled: hasTsSelected,
         },
         "add-group": {
-          name: "Add group",
+          name: t('tilesetEditorAddGroupTool'),
           icon: <IconSquarePlus size={16} />,
           enabled: hasTsSelected,
         },
         "delete-group": {
-          name: "Delete group",
+          name: t('tilesetEditorDeleteGroupTool'),
           icon: <IconTrash size={16} />,
           enabled: hasTsSelected,
         },
 
         animate: {
-          name: "Animate",
+          name: t('tilesetEditorAnimateTool'),
           icon: <IconRun size={16} />,
           options: (
             <TileAnimationTool
@@ -275,19 +277,19 @@ export default function TilesetEditorTab({
           enabled: hasTsSelected,
         },
         "make-npc": {
-          name: "Make NPC",
+          name: t('tilesetEditorMakeNpcTool'),
           icon: <IconUser size={16} />,
           options: <NpcTool />,
           enabled: hasTsSelected,
         },
         "z-index": {
-          name: "Set Z-Index",
+          name: t('tilesetEditorSetZIndexTool'),
           icon: <IconLetterZ size={16} />,
           options: <ZIndexTool />,
           enabled: hasTsSelected,
         },
         "draw-colliders": {
-          name: "Draw colliders",
+          name: t('tilesetEditorDrawCollidersTool'),
           icon: <IconShape size={16} />,
           options: <ColliderTool />,
           enabled: hasTsSelected,
@@ -338,20 +340,16 @@ export default function TilesetEditorTab({
         } else {
           if (hasTiles) {
             if (hasPinned) {
-              tips.push(
-                "Select a tool above to add or delete tile groups from the tileset.",
-              );
+              tips.push(t('tilesetEditorSelectToolAddDeleteTip'));
             } else {
-              tips.push(
-                "Add new tile groups by creating them with the tools above.",
-              );
+              tips.push(t('tilesetEditorAddNewTileGroupsTip'));
             }
           } else {
             tips.push(
               <>
-                Use the re-slice tool to create initial tiles.{" "}
+                {t('tilesetEditorUseResliceTip')}{" "}
                 <Anchor underline="hover" onClick={onActivateReslicer}>
-                  Activate reslicer
+                  {t('tilesetEditorActivateReslicer')}
                 </Anchor>
               </>,
             );
@@ -359,14 +357,12 @@ export default function TilesetEditorTab({
         }
       } else {
         if (tilesetImages.length === 0) {
-          tips.push("Upload a tileset to get started.");
+          tips.push(t('tilesetEditorUploadTilesetTip'));
         } else {
-          tips.push("Select a tileset from the left to work on it.");
+          tips.push(t('tilesetEditorSelectTilesetTip'));
         }
       }
-      tips.push(
-        "Drag and drop an image file onto the tileset area to upload it.",
-      );
+      tips.push(t('tilesetEditorDragDropTip'));
     }
     return tips;
   }, [deferredTs, dispatch, tilesetImages.length, tool]);
@@ -433,14 +429,14 @@ export default function TilesetEditorTab({
                 >
                   <Tabs.List>
                     <Tabs.Tab value={"objects"}>
-                      <Group gap="xs">Objects</Group>
+                      <Group gap="xs">{t('tilesetEditorObjectsTab')}</Group>
                     </Tabs.Tab>
                     <Tabs.Tab value="animations">
-                      <Group gap="xs">Animations</Group>
+                      <Group gap="xs">{t('tilesetEditorAnimationsTab')}</Group>
                     </Tabs.Tab>
 
                     <Tabs.Tab value="npcs">
-                      <Group gap="xs">NPCs</Group>
+                      <Group gap="xs">{t('tilesetEditorNpcsTab')}</Group>
                     </Tabs.Tab>
                   </Tabs.List>
 
