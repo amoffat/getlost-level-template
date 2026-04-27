@@ -1,8 +1,9 @@
 import * as filters from "@gl/api/filters";
 import * as story from "@gl/api/story";
 
-import { addTiltShift } from "@gl/api/filters";
-import { setSunTime } from "@gl/api/time";
+import { setSunEvent } from "@gl/api/time";
+import { ColorMatrixFilter } from "@gl/filters/colormatrix";
+import { SunEvent } from "@gl/types/time";
 import { Vec2 } from "@gl/utils/vec2";
 
 let tiltShift!: number;
@@ -13,7 +14,30 @@ let tiltShift!: number;
  * filters, or setting up event handlers.
  */
 export async function init(): Promise<void> {
-  tiltShift = addTiltShift(0.06);
+  tiltShift = filters.addTiltShift(0.06);
+  setSunEvent(SunEvent.SolarNoon, 0);
+
+  const colors = new ColorMatrixFilter();
+  colors.matrix = [
+    // R output: warm, lifted, slightly fed by green/blue
+    1.08, 0.1, 0.08, 0.0, 0.035,
+
+    // G output: softened, peach/gold support
+    0.06, 0.94, 0.06, 0.0, 0.025,
+
+    // B output: reduced contrast, lavender haze rather than pure blue
+    0.1, 0.04, 0.88, 0.0, 0.04,
+
+    // A output
+    0.0, 0.0, 0.0, 1.0, 0.0,
+  ];
+
+  const bloom = filters.addBloom({
+    brightness: 0.5,
+    threshold: 0.3,
+    bloomScale: 0.55,
+    blur: 10,
+  });
 
   events.on({
     type: "collision",
@@ -74,5 +98,5 @@ export function movePlayer(dir: Vec2): void {
  */
 export async function tick(timestep: number, paused: boolean) {
   filters.setTiltShiftY(tiltShift, player.pos.y - 10);
-  setSunTime(Date.now());
+  // setSunTime(Date.now());
 }
