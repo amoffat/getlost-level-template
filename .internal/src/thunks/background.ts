@@ -20,20 +20,19 @@ export const uploadBackgroundImageThunk = createAsyncThunk(
     const items: {
       id: string;
       imageId: string;
-      data: Uint8Array;
+      blob: Blob;
       objectUrl: string;
       restricted: boolean;
     }[] = await Promise.all(
       files.map(async (file) => {
         const arrayBuffer = await file.arrayBuffer();
         const imageId = await sha1Hash(arrayBuffer);
-        const objectUrl = URL.createObjectURL(
-          new Blob([arrayBuffer], { type: "image/png" }),
-        );
+        const blob = new Blob([arrayBuffer], { type: "image/png" });
+        const objectUrl = URL.createObjectURL(blob);
         return {
           id: crypto.randomUUID(),
           imageId,
-          data: new Uint8Array(arrayBuffer),
+          blob,
           objectUrl,
           restricted,
         };
@@ -70,12 +69,12 @@ export const uploadBackgroundImageThunk = createAsyncThunk(
     // Batch-upload all unique images to the server in one request
     const uniqueImages = Array.from(
       new Map(
-        items.map(({ imageId, data, restricted: r }) => [
+        items.map(({ imageId, blob, restricted: r }) => [
           imageId,
-          { data, restricted: r },
+          { blob, restricted: r },
         ]),
       ).entries(),
-    ).map(([id, { data, restricted: r }]) => ({ id, data, restricted: r }));
+    ).map(([id, { blob, restricted: r }]) => ({ id, blob, restricted: r }));
     await batchUploadBackgroundImages(uniqueImages);
 
     const state = getState() as RootState;

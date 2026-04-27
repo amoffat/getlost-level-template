@@ -14,16 +14,12 @@ export async function fetchBackgroundImageUrl(
  */
 export async function uploadBackgroundImage(item: {
   id: string;
-  data: Uint8Array;
+  blob: Blob;
   restricted?: boolean;
 }): Promise<void> {
-  const { id, data, restricted } = item;
+  const { id, blob, restricted } = item;
   const form = new FormData();
-  form.append(
-    "background",
-    new Blob([data.buffer as ArrayBuffer], { type: "image/png" }),
-    `${id}.png`,
-  );
+  form.append("background", blob, `${id}.png`);
   if (restricted) form.append("background.restricted", "1");
   const res = await fetch(`/level/backgrounds/${encodeURIComponent(id)}.png`, {
     method: "PUT",
@@ -36,7 +32,7 @@ export async function uploadBackgroundImage(item: {
  * Uploads multiple background image PNGs, one PUT per image (parallel).
  */
 export async function batchUploadBackgroundImages(
-  items: { id: string; data: Uint8Array; restricted?: boolean }[],
+  items: { id: string; blob: Blob; restricted?: boolean }[],
 ): Promise<void> {
   if (!items.length) return;
   await Promise.all(items.map(uploadBackgroundImage));

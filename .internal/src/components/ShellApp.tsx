@@ -298,7 +298,11 @@ const ShellAppContent = memo(function ShellAppContent({
         />
       )}
 
-      <Dropzone.FullScreen onDrop={onDrop} multiple>
+      <Dropzone.FullScreen
+        onDrop={onDrop}
+        multiple
+        accept={{ "image/png": [".png"] }}
+      >
         <Group
           justify="center"
           gap="xl"
