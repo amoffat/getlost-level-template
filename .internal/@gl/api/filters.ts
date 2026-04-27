@@ -1,4 +1,5 @@
 import type { RippleFilterOpts } from "@gl/types/api/filter";
+import type { BloomFilterOpts } from "@gl/types/filters/bloom";
 
 /**
  * Create a new tilt shift effect.
@@ -7,6 +8,12 @@ import type { RippleFilterOpts } from "@gl/types/api/filter";
  * @returns The tilt shift filter ID.
  */
 export declare function addTiltShift(blur: number): number;
+
+export declare function addBloom(opts?: Partial<BloomFilterOpts>): number;
+export declare function setBloomOpts(
+  id: number,
+  opts: Partial<BloomFilterOpts>,
+): void;
 
 /**
  * Adds the amount of blur to the tilt shift effect.

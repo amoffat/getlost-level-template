@@ -341,4 +341,9 @@ export class ColorMatrixFilter {
   public get matrix(): ColorMatrix {
     return this._matrix;
   }
+
+  public set matrix(mat: ColorMatrix) {
+    this._matrix = mat;
+    this._sync();
+  }
 }
