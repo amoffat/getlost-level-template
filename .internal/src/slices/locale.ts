@@ -8,6 +8,7 @@ import {
   EntityState,
   PayloadAction,
 } from "@reduxjs/toolkit";
+import i18next from "i18next";
 
 const entryAdapter = createEntityAdapter<LocaleEntry, string>({
   selectId: (entry) => entry.k,
@@ -32,8 +33,10 @@ function ensureLocale(state: LocaleState, locale: string): LocaleEntityState {
 export const slice = createSlice({
   name: "locale",
   initialState: {
+    // The locale of the user. This changes the editor UI
+    userLocale: i18next.language,
+    // The locale of the level, for checking/editing translations in the dialogue tab.
     activeLocale: defaultLocale,
-    userLocale: defaultLocale,
     entries: {},
   } as LocaleState,
 

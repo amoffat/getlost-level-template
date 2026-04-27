@@ -46,6 +46,10 @@ export function routeLang(langOrLocale: string): string {
   if (lang === "en") {
     return "en";
   }
+  if (!supportedLangs.find((l) => l === lang)) {
+    return "en";
+  }
+
   return langOrLocale;
 }
 

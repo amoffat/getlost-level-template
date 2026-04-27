@@ -67,6 +67,16 @@ export const setUserLocaleThunk = createAsyncThunk(
   "locale/setUser",
   async (locale: SupportedLang, { dispatch }) => {
     dispatch(actions.setUserLocale(locale));
+
+    if (locale !== "en") {
+      notifications.show({
+        title: "Language changed",
+        color: "red",
+        message: "Only english is currently supported.",
+      });
+    }
+
+    return;
     notifications.show({
       title: "Language changed",
       message: `The editor interface is now in ${codeToLanguage[locale]}`,
