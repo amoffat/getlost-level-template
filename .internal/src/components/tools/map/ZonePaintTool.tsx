@@ -1,8 +1,13 @@
+import { ZONE_TYPE_META } from "@/constants/zoneMeta";
 import { trackKeyPresses } from "@/editors/common/keypress";
+import { getZonePaintTool } from "@/editors/map/tools/zone";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { actions } from "@/slices/tilesetEditor";
-import { BrushShape, PaintMode } from "@/types/zone";
+import { actions, selectors } from "@/slices/mapEditor";
+import { isZoneObj } from "@/types/map";
+import { BrushShape, PaintMode, ZoneType, zoneTypes } from "@/types/zone";
 import {
+  Badge,
+  Button,
   Fieldset,
   Group,
   Kbd,
@@ -17,31 +22,36 @@ import {
   IconCircleFilled,
   IconEraser,
   IconSquareFilled,
+  IconTrash,
 } from "@tabler/icons-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import AdvancedSection from "../../common/AdvancedSection";
 import Tip from "../../Tip";
 
-export default function ColliderTool() {
+export default function ZonePaintTool() {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const {
     brushSize,
     brushShape,
     mode,
-    drawOnOpaqueOnly,
     overlayOpacity,
     showColliders,
     simplify,
-  } = useAppSelector((state) => state.tilesetEditor.toolOptions.collider);
+    zoneType,
+  } = useAppSelector((state) => state.mapEditor.toolOptions["paint-zone"]);
+
+  // Determine if a zone object is selected (locking zone type)
+  const selectedObjs = useAppSelector((state) => selectors.selectedObjs(state));
+  const selectedZone = useMemo(
+    () => selectedObjs.find((o) => isZoneObj(o)) ?? null,
+    [selectedObjs],
+  );
+  const isTypeLocked = selectedZone !== null;
+
   const [isControlPressed, setIsControlPressed] = useState(false);
 
-  const objKey = useAppSelector((state) => {
-    return state.tilesetEditor.selectedTiles.ids.join(",");
-  });
-
-  // Track keyboard state
   useEffect(() => {
     const clearEventHandlers = trackKeyPresses({
       element: document.body,
@@ -51,7 +61,7 @@ export default function ColliderTool() {
           const effectiveMode = pressed ? "erase" : "paint";
           dispatch(
             actions.setToolOptions({
-              tool: "collider",
+              tool: "paint-zone",
               options: { mode: effectiveMode },
             }),
           );
@@ -61,7 +71,7 @@ export default function ColliderTool() {
             const newShape = brushShape === "square" ? "circle" : "square";
             dispatch(
               actions.setToolOptions({
-                tool: "collider",
+                tool: "paint-zone",
                 options: { brushShape: newShape },
               }),
             );
@@ -72,33 +82,43 @@ export default function ColliderTool() {
     return clearEventHandlers;
   }, [dispatch, brushShape]);
 
-  // Handle scroll wheel for brush size adjustment when Control is pressed
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       if (isControlPressed) {
         e.preventDefault();
-
         const delta = e.deltaY > 0 ? -1 : 1;
         const newSize = Math.max(1, Math.min(16, brushSize + delta));
         dispatch(
           actions.setToolOptions({
-            tool: "collider",
+            tool: "paint-zone",
             options: { brushSize: newSize },
           }),
         );
       }
     };
-
     document.body.addEventListener("wheel", handleWheel, { passive: false });
     return () => document.body.removeEventListener("wheel", handleWheel);
   }, [isControlPressed, brushSize, dispatch]);
+
+  const handleZoneTypeChange = useCallback(
+    (value: ZoneType) => {
+      if (isTypeLocked) return;
+      dispatch(
+        actions.setToolOptions({
+          tool: "paint-zone",
+          options: { zoneType: value },
+        }),
+      );
+    },
+    [dispatch, isTypeLocked],
+  );
 
   const handleBrushSizeChange = useCallback(
     (value: number | string) => {
       if (typeof value === "string") return;
       dispatch(
         actions.setToolOptions({
-          tool: "collider",
+          tool: "paint-zone",
           options: { brushSize: value },
         }),
       );
@@ -110,7 +130,7 @@ export default function ColliderTool() {
     (value: string) => {
       dispatch(
         actions.setToolOptions({
-          tool: "collider",
+          tool: "paint-zone",
           options: { mode: value as PaintMode },
         }),
       );
@@ -122,20 +142,8 @@ export default function ColliderTool() {
     (value: string) => {
       dispatch(
         actions.setToolOptions({
-          tool: "collider",
+          tool: "paint-zone",
           options: { brushShape: value as BrushShape },
-        }),
-      );
-    },
-    [dispatch],
-  );
-
-  const handleDrawOnOpaqueOnlyChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      dispatch(
-        actions.setToolOptions({
-          tool: "collider",
-          options: { drawOnOpaqueOnly: event.currentTarget.checked },
         }),
       );
     },
@@ -147,7 +155,7 @@ export default function ColliderTool() {
       if (typeof value === "string") return;
       dispatch(
         actions.setToolOptions({
-          tool: "collider",
+          tool: "paint-zone",
           options: { overlayOpacity: value },
         }),
       );
@@ -159,7 +167,7 @@ export default function ColliderTool() {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       dispatch(
         actions.setToolOptions({
-          tool: "collider",
+          tool: "paint-zone",
           options: { showColliders: event.currentTarget.checked },
         }),
       );
@@ -170,10 +178,9 @@ export default function ColliderTool() {
   const handleSimplifyChange = useCallback(
     (value: number | string) => {
       if (typeof value === "string") return;
-
       dispatch(
         actions.setToolOptions({
-          tool: "collider",
+          tool: "paint-zone",
           options: { simplify: value, showColliders: true },
         }),
       );
@@ -181,26 +188,72 @@ export default function ColliderTool() {
     [dispatch],
   );
 
+  const handleClear = useCallback(() => {
+    getZonePaintTool().clearMask();
+  }, []);
+
+  // The effective zone type: locked to selected object, or chosen by user
+  const effectiveZoneType = isTypeLocked
+    ? (getZonePaintTool().lockedZoneType ?? zoneType)
+    : zoneType;
+
+  const meta = ZONE_TYPE_META[effectiveZoneType];
+
   return (
     <>
       <Tip
         tips={[
-          t("tsColliderTipDrawMasks"),
-          t("tsColliderTipPaintErase"),
-          <Trans i18nKey="tsColliderTipHoldCtrl">
+          t("mapZoneTipDraw"),
+          t("mapZoneTipPaintErase"),
+          <Trans i18nKey="mapZoneTipHoldCtrl">
             Hold <Kbd>Ctrl</Kbd> to temporarily switch to erase mode.
           </Trans>,
-          <Trans i18nKey="tsColliderTipPressS">
+          <Trans i18nKey="mapZoneTipPressS">
             Press <Kbd>S</Kbd> to toggle brush shape.
           </Trans>,
-          <Trans i18nKey="tsColliderTipScrollWheel">
+          <Trans i18nKey="mapZoneTipScrollWheel">
             Hold <Kbd>Ctrl</Kbd> and scroll the mouse wheel to adjust brush
             size.
           </Trans>,
+          t("mapZoneTipSelectZone"),
         ]}
       />
-      <Fieldset legend={t("tsColliderLegend")} p="xs">
+      <Fieldset legend={t("mapZoneLegend")} p="xs">
         <Stack p={0} gap="md">
+          {/* Zone type selector — locked when an object is selected */}
+          <Stack gap="xs" p={0}>
+            <Text size="sm">{t("mapZoneType")}</Text>
+            {isTypeLocked ? (
+              <Badge
+                color={meta.cssColor}
+                leftSection={meta.icon}
+                variant="light"
+                size="md"
+                radius="sm"
+              >
+                {t(meta.label)}
+              </Badge>
+            ) : (
+              <SegmentedControl
+                value={effectiveZoneType}
+                onChange={handleZoneTypeChange}
+                orientation="vertical"
+                data={zoneTypes.map((opt) => {
+                  const meta = ZONE_TYPE_META[opt];
+                  return {
+                    value: opt,
+                    label: (
+                      <Group gap="xs" wrap="nowrap">
+                        {meta.icon}
+                        {t(meta.label)}
+                      </Group>
+                    ),
+                  };
+                })}
+              />
+            )}
+          </Stack>
+
           <Stack gap="xs" p={0}>
             <Text size="sm">{t("tsColliderBrushMode")}</Text>
             <SegmentedControl
@@ -270,15 +323,18 @@ export default function ColliderTool() {
             />
           </Stack>
 
+          <Button
+            leftSection={<IconTrash size={16} />}
+            variant="light"
+            color="red"
+            size="xs"
+            onClick={handleClear}
+          >
+            {t("mapZoneClear")}
+          </Button>
+
           <AdvancedSection>
             <Stack gap="md" p={0}>
-              <Switch
-                label={t("tsColliderDrawOpaqueLabel")}
-                description={t("tsColliderDrawOpaqueDesc")}
-                checked={drawOnOpaqueOnly}
-                onChange={handleDrawOnOpaqueOnlyChange}
-              />
-
               <Stack gap="xs" p={0}>
                 <Text size="sm">{t("tsColliderOverlayOpacity")}</Text>
                 <Slider
@@ -293,7 +349,7 @@ export default function ColliderTool() {
 
               <Switch
                 label={t("tsColliderShowColliders")}
-                description={t("tsColliderShowCollidersDesc")}
+                description={t("mapZoneShowOverlayDesc")}
                 checked={showColliders}
                 onChange={handleShowCollidersChange}
               />
@@ -301,7 +357,6 @@ export default function ColliderTool() {
               <Stack gap="xs" p={0}>
                 <Text size="sm">{t("tsColliderSimplify")}</Text>
                 <Slider
-                  key={objKey}
                   label={simplify.toFixed(3)}
                   defaultValue={simplify}
                   onChangeEnd={handleSimplifyChange}

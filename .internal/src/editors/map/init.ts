@@ -24,6 +24,7 @@ import { initLayerVisibility } from "./layers";
 import { setupParallaxTicker } from "./parallax";
 import { setupAutotiler } from "./tools/autotiler";
 import { setupBoundsDragger } from "./tools/bounds";
+import { setupZonePaintTool } from "./tools/zone";
 import { setupFill } from "./tools/fill";
 import { setupMover } from "./tools/move";
 import { setupPlacer } from "./tools/place";
@@ -150,6 +151,13 @@ export async function init(): Promise<P.Application> {
   setupKeys(canvas);
 
   const toolDispatcher = new ToolDispatcher(app);
+
+  // Register the zone paint tool BEFORE ClickDragger so it gets first
+  // priority on pointer events. ClickDragger.onPointerDown always returns true,
+  // so any tool that needs to intercept events must be registered first.
+  const zonePaintTool = setupZonePaintTool();
+  toolDispatcher.registerTool(zonePaintTool);
+
   const cd = new ClickDragger<Mode>({
     app,
     container: stage,

@@ -278,7 +278,7 @@
 {"k": "mapEditorFillAreaTool", "v": "Fill area", "ctx": "Map editor tool name for flood-filling an area with tiles"}
 {"k": "mapEditorAddGatewayTool", "v": "Add gateway", "ctx": "Map editor tool name for placing a gateway (level exit)"}
 {"k": "mapEditorSetWaypointTool", "v": "Set waypoint", "ctx": "Map editor tool name for placing a waypoint marker"}
-{"k": "mapEditorAddColliderTool", "v": "Add collider", "ctx": "Map editor tool name for placing a collision shape"}
+{"k": "mapEditorZoneTool", "v": "Paint zones", "ctx": "Map editor tool name for drawing and erasing zones"}
 {"k": "mapEditorSensorZoneTool", "v": "Sensor zone", "ctx": "Map editor tool name for placing a sensor trigger zone"}
 {"k": "mapEditorSinkZoneTool", "v": "Sink zone", "ctx": "Map editor tool name for placing a sink (liquid) zone"}
 {"k": "mapEditorSoundZoneTool", "v": "Sound zone", "ctx": "Map editor tool name for placing a sound trigger zone"}
@@ -547,3 +547,26 @@
 {"k": "spotlightResetMsg", "v": "Are you sure you want to reset everything? This action cannot be undone.", "ctx": "Body message in the reset project confirmation modal"}
 {"k": "spotlightNothingFound", "v": "Nothing found...", "ctx": "Message shown in the spotlight search when no actions match the query"}
 {"k": "spotlightSearchPlaceholder", "v": "Search...", "ctx": "Placeholder text in the spotlight search input"}
+{"k": "mapColliderTipDraw", "v": "Paint a freehand collision mask directly on the map. The mask is converted to polygon colliders automatically.", "ctx": "Map collider tool tip"}
+{"k": "mapColliderTipPaintErase", "v": "Paint mode adds collision areas, erase mode removes them.", "ctx": "Map collider tool tip"}
+{"k": "mapColliderTipHoldCtrl", "v": "Hold <1>Ctrl</1> to temporarily switch to erase mode.", "ctx": "Keyboard shortcut tip - <1> wraps the Kbd element"}
+{"k": "mapColliderTipPressS", "v": "Press <1>S</1> to toggle brush shape.", "ctx": "Keyboard shortcut tip - <1> wraps the Kbd element"}
+{"k": "mapColliderTipScrollWheel", "v": "Hold <1>Ctrl</1> and scroll the mouse wheel to adjust brush size.", "ctx": "Keyboard shortcut tip - <1> wraps the Kbd element"}
+{"k": "mapColliderLegend", "v": "Collider", "ctx": "Fieldset legend for the map collider tool"}
+{"k": "mapColliderClear", "v": "Clear mask", "ctx": "Button label to clear the drawn collision mask and remove the collider from the map"}
+{"k": "mapColliderShowCollidersDesc", "v": "Display computed collision polygons as overlays", "ctx": "Switch description for show-colliders option in map collider tool"}
+{"k": "mapZoneTipDraw", "v": "Paint a freehand zone mask directly on the map. The mask is converted to polygon shapes automatically.", "ctx": "Zone paint tool tip"}
+{"k": "mapZoneTipPaintErase", "v": "Paint mode adds to the zone, erase mode removes from it.", "ctx": "Zone paint tool tip"}
+{"k": "mapZoneTipHoldCtrl", "v": "Hold <1>Ctrl</1> to temporarily switch to erase mode.", "ctx": "Keyboard shortcut tip - <1> wraps the Kbd element"}
+{"k": "mapZoneTipPressS", "v": "Press <1>S</1> to toggle brush shape.", "ctx": "Keyboard shortcut tip - <1> wraps the Kbd element"}
+{"k": "mapZoneTipScrollWheel", "v": "Hold <1>Ctrl</1> and scroll the mouse wheel to adjust brush size.", "ctx": "Keyboard shortcut tip - <1> wraps the Kbd element"}
+{"k": "mapZoneTipSelectZone", "v": "Select an existing zone object to continue painting into it. The zone type will be locked to the selected object's type.", "ctx": "Zone paint tool tip"}
+{"k": "mapZoneLegend", "v": "Zone", "ctx": "Fieldset legend for the map zone paint tool"}
+{"k": "mapZoneType", "v": "Zone type", "ctx": "Label for the zone type selector in the map zone paint tool"}
+{"k": "mapZoneClear", "v": "Clear mask", "ctx": "Button label to clear the drawn region mask and remove the region object from the map"}
+{"k": "mapZoneShowOverlayDesc", "v": "Display computed zone polygons as overlays", "ctx": "Switch description for show-colliders option in map zone paint tool"}
+{"k": "zoneTypeCollision", "v": "Collision", "ctx": "Zone type label for collision areas"}
+{"k": "zoneTypeSink", "v": "Sink", "ctx": "Zone type label for sink (liquid) areas"}
+{"k": "zoneTypeSound", "v": "Sound", "ctx": "Zone type label for sound zones"}
+{"k": "zoneTypeZoom", "v": "Zoom", "ctx": "Zone type label for camera zoom zones"}
+{"k": "zoneTypeSensor", "v": "Sensor", "ctx": "Zone type label for sensor trigger zones"}

@@ -161,8 +161,9 @@ export default function DialogueTab({
   const currentLocale = useAppSelector(localeSelectors.activeLocale);
   const tree = useTree();
   const treeSelectRef = useRef(tree.select);
-  treeSelectRef.current = tree.select;
   const navigate = useNavigate();
+  // Track the currently selected node for the right-pane editor
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   const sortedSpeakers = useMemo(() => {
     return speakers.sort((a, b) => a[0].localeCompare(b[0]));
@@ -236,7 +237,9 @@ export default function DialogueTab({
   // that it runs after effect #2 has loaded the nodes into ReactFlow.
   useEffect(() => {
     if (!nodeIdParam || !activeDialogueId) {
-      if (!nodeIdParam) setSelectedNodeId(null);
+      if (!nodeIdParam) {
+        queueMicrotask(() => setSelectedNodeId(null));
+      }
       return;
     }
     const nodes = reactFlowInstance.getNodes();
@@ -244,17 +247,14 @@ export default function DialogueTab({
     reactFlowInstance.setNodes(
       nodes.map((n) => ({ ...n, selected: n.id === nodeIdParam })),
     );
-    setSelectedNodeId(nodeIdParam);
+    queueMicrotask(() => setSelectedNodeId(nodeIdParam));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodeIdParam, activeDialogueId]);
+  }, [nodeIdParam, activeDialogueId, setSelectedNodeId]);
 
   const { screenToFlowPosition } = useReactFlow();
   const flowContainerRef = useRef<HTMLDivElement>(null);
   const [isPendingDialogue, startDialogueTransition] = useTransition();
-
-  // Track the currently selected node for the right-pane editor
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   const selectedNode = useAppSelector((state) =>
     selectedNodeId ? dSelectors.selectNode(state, selectedNodeId) : null,

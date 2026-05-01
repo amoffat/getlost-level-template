@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { iconTsId, lightIcon, waypointIcon } from "@/constants/tsObjs";
 import { globals as gApp } from "@/globals";
 import { fetchBackgroundImageUrl } from "@/persist/background/api";
@@ -25,6 +24,7 @@ import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import i18n from "i18next";
 import * as P from "pixi.js";
 import { globals as g } from "../editors/map/globals";
 import { resetStoryThunk } from "./story";
@@ -57,7 +57,10 @@ export const setActiveLayerThunk = createAsyncThunk(
         );
         notifications.show({
           title: i18n.t("mapMovedObjects"),
-          message: i18n.t("mapMovedObjectsMessage", { count: selectedTgInstances.length, name }),
+          message: i18n.t("mapMovedObjectsMessage", {
+            count: selectedTgInstances.length,
+            name,
+          }),
           autoClose: 3000,
         });
       }

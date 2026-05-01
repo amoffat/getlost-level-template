@@ -49,6 +49,12 @@ import StoryTab from "./tabs/StoryTab";
 import TilesetEditorTab from "./tabs/TilesetEditor";
 import UploadAssetModal from "./uploadAssets/UploadAssetModal";
 
+// Get the cached init promises that persist across HMR
+const tilesetInitPromise = getTilesetInitPromise();
+const mapInitPromise = getMapInitPromise();
+const storyInitPromise = getStoryInitPromise();
+const previewInitPromise = getPreviewInitPromise();
+
 declare global {
   interface Window {
     gl: {
@@ -245,12 +251,6 @@ const ShellAppContent = memo(function ShellAppContent({
     },
     [activeTab, onTabChange],
   );
-
-  // Get the cached init promises that persist across HMR
-  const tilesetInitPromise = useMemo(() => getTilesetInitPromise(), []);
-  const mapInitPromise = useMemo(() => getMapInitPromise(), []);
-  const storyInitPromise = useMemo(() => getStoryInitPromise(), []);
-  const previewInitPromise = useMemo(() => getPreviewInitPromise(), []);
 
   const handleLevelLocaleChange = useCallback(
     (locale: SupportedLang) => {

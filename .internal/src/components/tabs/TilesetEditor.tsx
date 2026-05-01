@@ -2,6 +2,10 @@ import * as constants from "@/constants";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { useSpotlightActions } from "@/hooks/useSpotlightActions";
+import {
+  getTilesetInitPromise,
+  resetTilesetCanvasInit,
+} from "@/init/editorInit";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
@@ -57,6 +61,23 @@ import TileReplaceTool from "../tools/tileset/TileReplaceTool";
 import TileReslicerTool from "../tools/tileset/TileReslicerTool";
 import ZIndexTool from "../tools/tileset/ZIndexTool";
 
+// Created at module-evaluation time (outside React's render cycle) so any
+// Redux dispatches inside the thunks don't fire while React is rendering.
+const _hmrInitPromise: Promise<unknown> | null = import.meta.hot?.data
+  ?.needsReinit
+  ? getTilesetInitPromise()
+  : null;
+
+if (import.meta.hot) {
+  import.meta.hot.dispose((data) => {
+    // Detach the canvas from the DOM *before* destroying the app so the
+    // browser never renders the "WebGL context lost" sad-face on a live canvas.
+    g.tilesetEditorApp?.canvas.remove();
+    resetTilesetCanvasInit();
+    data.needsReinit = true;
+  });
+}
+
 export default function TilesetEditorTab({
   initPromise,
 }: {
@@ -71,8 +92,8 @@ export default function TilesetEditorTab({
     () => [
       {
         id: "toggle-hidden-tilesets",
-        label: t('tilesetEditorToggleHiddenLabel'),
-        description: t('tilesetEditorToggleHiddenDescription'),
+        label: t("tilesetEditorToggleHiddenLabel"),
+        description: t("tilesetEditorToggleHiddenDescription"),
         leftSection: <IconEye />,
         onClick: () => {
           const state = store.getState();
@@ -82,8 +103,8 @@ export default function TilesetEditorTab({
       },
       {
         id: "reset-colliders",
-        label: t('tilesetEditorResetCollidersLabel'),
-        description: t('tilesetEditorResetCollidersDescription'),
+        label: t("tilesetEditorResetCollidersLabel"),
+        description: t("tilesetEditorResetCollidersDescription"),
         leftSection: <IconTrash />,
         onClick: () => {
           const state = store.getState();
@@ -115,7 +136,7 @@ export default function TilesetEditorTab({
         },
       },
     ],
-    [dispatch],
+    [dispatch, t],
   );
   useSpotlightActions(
     "tileset-editor",
@@ -144,11 +165,7 @@ export default function TilesetEditorTab({
   const containerRef = useRef<HTMLDivElement>(null);
   const curTab = useAppSelector((state) => state.ui.tilesetTab);
 
-  // This promise is created in the ShellApp and ensures the tileset editor (the
-  // pixi.js canvas) is loaded and ready.
-  use(initPromise);
-
-  // Ensure the canvas is mounted in our container
+  use(_hmrInitPromise ?? initPromise);
   useEffect(() => {
     const container = containerRef.current!;
     const canvas = g.tilesetEditorApp!.canvas;
@@ -237,36 +254,36 @@ export default function TilesetEditorTab({
     () =>
       ({
         "reslice-tiles": {
-          name: t('tilesetEditorReslicerTool'),
+          name: t("tilesetEditorReslicerTool"),
           icon: <IconScissors size={16} />,
           options: <TileReslicerTool />,
           enabled: enableGroup,
         },
 
         select: {
-          name: t('tilesetEditorSelectTool'),
+          name: t("tilesetEditorSelectTool"),
           icon: <IconSelectAll size={16} />,
           enabled: hasTsSelected,
         },
         "replace-group": {
-          name: t('tilesetEditorReplaceGroupTool'),
+          name: t("tilesetEditorReplaceGroupTool"),
           icon: <IconReplace size={16} />,
           options: <TileReplaceTool />,
           enabled: hasTsSelected,
         },
         "add-group": {
-          name: t('tilesetEditorAddGroupTool'),
+          name: t("tilesetEditorAddGroupTool"),
           icon: <IconSquarePlus size={16} />,
           enabled: hasTsSelected,
         },
         "delete-group": {
-          name: t('tilesetEditorDeleteGroupTool'),
+          name: t("tilesetEditorDeleteGroupTool"),
           icon: <IconTrash size={16} />,
           enabled: hasTsSelected,
         },
 
         animate: {
-          name: t('tilesetEditorAnimateTool'),
+          name: t("tilesetEditorAnimateTool"),
           icon: <IconRun size={16} />,
           options: (
             <TileAnimationTool
@@ -277,25 +294,25 @@ export default function TilesetEditorTab({
           enabled: hasTsSelected,
         },
         "make-npc": {
-          name: t('tilesetEditorMakeNpcTool'),
+          name: t("tilesetEditorMakeNpcTool"),
           icon: <IconUser size={16} />,
           options: <NpcTool />,
           enabled: hasTsSelected,
         },
         "z-index": {
-          name: t('tilesetEditorSetZIndexTool'),
+          name: t("tilesetEditorSetZIndexTool"),
           icon: <IconLetterZ size={16} />,
           options: <ZIndexTool />,
           enabled: hasTsSelected,
         },
         "draw-colliders": {
-          name: t('tilesetEditorDrawCollidersTool'),
+          name: t("tilesetEditorDrawCollidersTool"),
           icon: <IconShape size={16} />,
           options: <ColliderTool />,
           enabled: hasTsSelected,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,
-    [enableGroup, hasTsSelected, selectedAnimation],
+    [enableGroup, hasTsSelected, selectedAnimation, t],
   );
 
   const tool = selectedToolName && toolPalette[selectedToolName]!;
@@ -340,16 +357,16 @@ export default function TilesetEditorTab({
         } else {
           if (hasTiles) {
             if (hasPinned) {
-              tips.push(t('tilesetEditorSelectToolAddDeleteTip'));
+              tips.push(t("tilesetEditorSelectToolAddDeleteTip"));
             } else {
-              tips.push(t('tilesetEditorAddNewTileGroupsTip'));
+              tips.push(t("tilesetEditorAddNewTileGroupsTip"));
             }
           } else {
             tips.push(
               <>
-                {t('tilesetEditorUseResliceTip')}{" "}
+                {t("tilesetEditorUseResliceTip")}{" "}
                 <Anchor underline="hover" onClick={onActivateReslicer}>
-                  {t('tilesetEditorActivateReslicer')}
+                  {t("tilesetEditorActivateReslicer")}
                 </Anchor>
               </>,
             );
@@ -357,15 +374,15 @@ export default function TilesetEditorTab({
         }
       } else {
         if (tilesetImages.length === 0) {
-          tips.push(t('tilesetEditorUploadTilesetTip'));
+          tips.push(t("tilesetEditorUploadTilesetTip"));
         } else {
-          tips.push(t('tilesetEditorSelectTilesetTip'));
+          tips.push(t("tilesetEditorSelectTilesetTip"));
         }
       }
-      tips.push(t('tilesetEditorDragDropTip'));
+      tips.push(t("tilesetEditorDragDropTip"));
     }
     return tips;
-  }, [deferredTs, dispatch, tilesetImages.length, tool]);
+  }, [deferredTs, dispatch, tilesetImages.length, tool, t]);
 
   return (
     <>
@@ -429,14 +446,14 @@ export default function TilesetEditorTab({
                 >
                   <Tabs.List>
                     <Tabs.Tab value={"objects"}>
-                      <Group gap="xs">{t('tilesetEditorObjectsTab')}</Group>
+                      <Group gap="xs">{t("tilesetEditorObjectsTab")}</Group>
                     </Tabs.Tab>
                     <Tabs.Tab value="animations">
-                      <Group gap="xs">{t('tilesetEditorAnimationsTab')}</Group>
+                      <Group gap="xs">{t("tilesetEditorAnimationsTab")}</Group>
                     </Tabs.Tab>
 
                     <Tabs.Tab value="npcs">
-                      <Group gap="xs">{t('tilesetEditorNpcsTab')}</Group>
+                      <Group gap="xs">{t("tilesetEditorNpcsTab")}</Group>
                     </Tabs.Tab>
                   </Tabs.List>
 

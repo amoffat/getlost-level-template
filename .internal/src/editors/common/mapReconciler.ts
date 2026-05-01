@@ -1,4 +1,5 @@
 import { defaultTint, texAtlasPadding } from "@/constants";
+import { ZONE_TYPE_META } from "@/constants/zoneMeta";
 import { errorIcon, iconTsId } from "@/constants/tsObjs";
 import { globals as gApp } from "@/globals";
 import { log } from "@/log";
@@ -9,13 +10,12 @@ import { AnimationTemplate } from "@/types/animation";
 import {
   isAnimatedInstance,
   isBackgroundImageObj,
-  isColliderBox,
-  isColliderEllipse,
   isEntranceObj,
   isExitObj,
   isMapObjFromTileset,
   isNpcInstance,
   isPickupObj,
+  isZoneObj,
   isTileGroupInstance,
   MapObj,
 } from "@/types/map";
@@ -33,7 +33,7 @@ import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
 import { EMPTY } from "rxjs";
 import { ReduxReconciler } from "./reconciler";
-import { colliderFill, exitFill } from "./strokes";
+import { exitFill } from "./strokes";
 
 export class MapObjReconciler extends ReduxReconciler<MapObj> {
   private layerContainers?: Record<number, P.Container>;
@@ -62,6 +62,11 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     this.layerContainers = layerContainers;
     this.spatialIndex = spatialIndex;
     this.connected = true;
+    // Clear stale node/layer state so the next enqueueDiff routes every
+    // object through pendingAdds → createNode, rather than reusing nodes
+    // that belong to the old (destroyed) Pixi.js application.
+    this.layerLookup.clear();
+    this.resetNodes();
   }
 
   /**
@@ -454,28 +459,34 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       }
 
       return spriteContainer;
-    } else if (isColliderEllipse(obj)) {
+    } else if (isZoneObj(obj)) {
+      const fill = {
+        color: ZONE_TYPE_META[obj.type]!.color,
+        alpha: 0.45,
+      };
       const gfx = new P.Graphics();
       gfx.eventMode = "passive";
-      gfx.ellipse(0, 0, obj.width / 2, obj.height / 2);
-      const container = new P.Container();
-      container.label = obj.id;
-      container.position.set(obj.x, obj.y);
-      container.zIndex = obj.z;
-      container.addChild(gfx);
-      container.eventMode = "static";
-      return container;
-    } else if (isColliderBox(obj)) {
-      const gfx = new P.Graphics();
-      gfx.eventMode = "passive";
-      gfx.rect(0, 0, obj.width, obj.height).fill(colliderFill);
-      const container = new P.Container();
-      container.label = obj.id;
-      container.position.set(obj.x, obj.y);
-      container.zIndex = obj.z;
-      container.addChild(gfx);
-      container.eventMode = "static";
-      return container;
+      if (obj.shapes) {
+        obj.shapes.forEach((polygon) => {
+          polygon.forEach((triangle) => {
+            gfx.poly([triangle.a, triangle.b, triangle.c]).fill(fill).stroke({
+              color: fill.color,
+              width: 1,
+              alpha: 0.75,
+              pixelLine: true,
+            });
+          });
+        });
+      } else if (obj.points.length >= 3) {
+        gfx.poly(obj.points).fill(fill);
+      }
+      const zoneContainer = new P.Container();
+      zoneContainer.label = obj.id;
+      zoneContainer.position.set(obj.x, obj.y);
+      zoneContainer.zIndex = obj.z;
+      zoneContainer.addChild(gfx);
+      zoneContainer.eventMode = "static";
+      return zoneContainer;
     } else if (isBackgroundImageObj(obj)) {
       const canvasSource = gApp.backgroundImageCache.get(obj.imageId);
       if (!canvasSource) {

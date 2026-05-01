@@ -1,5 +1,6 @@
 import { Vector2 } from "@/vec";
 import { Rect } from "./rect";
+import type { BrushShape, PaintMode, ZoneType } from "./zone";
 import type { TileGroupTemplate } from "./tilegroup";
 
 export interface PaintOpts {
@@ -8,8 +9,14 @@ export interface PaintOpts {
   snap: "grid" | "object" | "free";
 }
 
-export interface ColliderOpts {
-  type: "box" | "ellipse" | "polygon";
+export interface ZonePaintOpts {
+  mode: PaintMode;
+  brushSize: number;
+  brushShape: BrushShape;
+  overlayOpacity: number;
+  showColliders: boolean;
+  simplify: number;
+  zoneType: ZoneType;
 }
 
 export interface AutotilerOpts {

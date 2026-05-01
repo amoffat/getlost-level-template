@@ -61,7 +61,7 @@ const DEFAULT_SIMPLIFY: Required<SimplifyOptions> = {
  */
 export function determineCoverage(
   mask: boolean[][],
-  options: DetermineCoverageOptions = {}
+  options: DetermineCoverageOptions = {},
 ): ConcavePolygon[] {
   const {
     connectivity = 4,
@@ -83,7 +83,7 @@ export function determineCoverage(
     width,
     height,
     connectivity,
-    minIslandArea
+    minIslandArea,
   );
 
   const polygons: ConcavePolygon[] = [];
@@ -95,7 +95,7 @@ export function determineCoverage(
 
     // Simplify all boundary loops (outer + holes) to reduce vertex count
     const simplifiedLoops = boundaryLoops.map((loop) =>
-      simplifyPolygon(loop, simplifyOpts, width, height)
+      simplifyPolygon(loop, simplifyOpts, width, height),
     );
 
     // Filter out degenerate loops
@@ -114,7 +114,7 @@ export function determineCoverage(
       // Add holes to the sweep context
       if (holes.length > 0) {
         const holeContours = holes.map((hole) =>
-          hole.map((v) => new poly2tri.Point(v.x, v.y))
+          hole.map((v) => new poly2tri.Point(v.x, v.y)),
         );
         swctx.addHoles(holeContours);
       }
@@ -152,7 +152,7 @@ function extractIslands(
   width: number,
   height: number,
   connectivity: 4 | 8,
-  minIslandArea: number
+  minIslandArea: number,
 ): Array<Set<string>> {
   const visited: boolean[][] = Array(height)
     .fill(null)
@@ -229,7 +229,7 @@ function extractIslands(
 function buildBoundaryLoops(
   island: Set<string>,
   width: number,
-  solid: boolean[][]
+  solid: boolean[][],
 ): Vector2[][] {
   const height = solid.length;
   const edges: Edge[] = [];
@@ -305,7 +305,7 @@ function stitchEdgesIntoLoops(edges: Edge[]): Vector2[][] {
     while (true) {
       // Find any unused edge leaving current
       const nextKey = Array.from(remaining.keys()).find((k) =>
-        k.startsWith(`${current.x},${current.y}|`)
+        k.startsWith(`${current.x},${current.y}|`),
       );
       if (!nextKey) break; // dead end
 
@@ -365,7 +365,7 @@ function separateOuterAndHoles(loops: Vector2[][]): {
 
   // Sort loops by area (largest first) to identify outer boundary
   const sorted = [...loops].sort(
-    (a, b) => Math.abs(signedArea(b)) - Math.abs(signedArea(a))
+    (a, b) => Math.abs(signedArea(b)) - Math.abs(signedArea(a)),
   );
   const outer = sorted[0];
   const holesList = sorted.slice(1);
@@ -398,7 +398,7 @@ function ensureOrientation(loop: Vector2[], makeCCW: boolean): Vector2[] {
  * @returns Array of Triangle objects
  */
 function poly2triToTriangles(
-  poly2triTriangles: poly2tri.Triangle[]
+  poly2triTriangles: poly2tri.Triangle[],
 ): Triangle[] {
   const triangles: Triangle[] = [];
 
@@ -452,7 +452,7 @@ function simplifyPolygon(
   loop: Vector2[],
   opts: Required<SimplifyOptions>,
   maskWidth: number,
-  maskHeight: number
+  maskHeight: number,
 ): Vector2[] {
   if (loop.length <= 3) return loop;
 
@@ -512,7 +512,7 @@ function dedupeSequential(points: Vector2[]): Vector2[] {
 function dropCollinear(
   points: Vector2[],
   maskWidth: number,
-  maskHeight: number
+  maskHeight: number,
 ): Vector2[] {
   if (points.length <= 3) return points;
 
@@ -557,7 +557,7 @@ function isCollinear(a: Vector2, b: Vector2, c: Vector2): boolean {
  */
 function detectCornerIndices(
   points: Vector2[],
-  thresholdDeg: number
+  thresholdDeg: number,
 ): Set<number> {
   const keep = new Set<number>();
   const thresholdRad = (thresholdDeg * Math.PI) / 180;
@@ -592,7 +592,7 @@ function detectCornerIndices(
 function douglasPeucker(
   points: Vector2[],
   tolerance: number,
-  keep: Set<number>
+  keep: Set<number>,
 ): Vector2[] {
   if (points.length <= 2) return points;
   const tolSq = tolerance * tolerance;
@@ -648,7 +648,7 @@ export function decodeMask(buffer: Uint8Array): boolean[][] {
   const view = new DataView(
     buffer.buffer,
     buffer.byteOffset,
-    buffer.byteLength
+    buffer.byteLength,
   );
   const width = view.getUint32(0, true); // little-endian
   const height = view.getUint32(4, true); // little-endian
@@ -691,7 +691,7 @@ export function encodeMask(mask: boolean[][]): Uint8Array {
   const view = new DataView(
     buffer.buffer,
     buffer.byteOffset,
-    buffer.byteLength
+    buffer.byteLength,
   );
   view.setUint32(0, width, true); // little-endian
   view.setUint32(4, height, true); // little-endian
@@ -710,4 +710,20 @@ export function encodeMask(mask: boolean[][]): Uint8Array {
   }
 
   return buffer;
+}
+
+/** Point-in-triangle test using the sign method. */
+export function pointInTriangle(
+  px: number,
+  py: number,
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+  c: { x: number; y: number },
+): boolean {
+  const d1 = (px - b.x) * (a.y - b.y) - (a.x - b.x) * (py - b.y);
+  const d2 = (px - c.x) * (b.y - c.y) - (b.x - c.x) * (py - c.y);
+  const d3 = (px - a.x) * (c.y - a.y) - (c.x - a.x) * (py - a.y);
+  const hasNeg = d1 < 0 || d2 < 0 || d3 < 0;
+  const hasPos = d1 > 0 || d2 > 0 || d3 > 0;
+  return !(hasNeg && hasPos);
 }

@@ -1,3 +1,4 @@
+import { ZONE_TYPE_META } from "@/constants/zoneMeta";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/mapEditor";
@@ -9,18 +10,21 @@ import {
   isBackgroundImageObj,
   isNpcInstance,
   isTileGroupInstance,
+  isZoneObj,
   MapObj,
 } from "@/types/map";
 import { NpcTemplate } from "@/types/npc";
 import { TileGroupTemplate } from "@/types/tilegroup";
-import { Checkbox, Group, Image, Stack } from "@mantine/core";
+import { Badge, Checkbox, Group, Image, Stack } from "@mantine/core";
 import { ReactNode, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { DynamicHoverCard } from "./DynamicHoverCard";
 import classes from "./styles/ObjSelHover.module.css";
 import TileAnimation from "./TileAnimation";
 import TilesetGroup from "./TilesetGroup";
 
 export default function ObjSelHover() {
+  const { t } = useTranslation();
   const proposed = useAppSelector((state) => state.mapEditor.proposedSelection);
   const curSelected = useAppSelector((state) => state.mapEditor.selectedIds);
   const dispatch = useAppDispatch();
@@ -76,6 +80,13 @@ export default function ObjSelHover() {
         if (!src) return null;
 
         view = <Image src={src} w={80} h={80} fit="cover" />;
+      } else if (isZoneObj(obj)) {
+        const typeMeta = ZONE_TYPE_META[obj.type]!;
+        view = (
+          <Badge color={typeMeta.cssColor} variant="filled" size="sm">
+            {t(typeMeta.label)}
+          </Badge>
+        );
       }
 
       const entry = (
@@ -97,7 +108,7 @@ export default function ObjSelHover() {
       );
       return entry;
     });
-  }, [curSelected, onChange, proposed?.objects]);
+  }, [curSelected, onChange, proposed?.objects, t]);
 
   if (!proposed) return null;
 

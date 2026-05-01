@@ -1,4 +1,5 @@
 import { HasId, RequiredButMaybeUndefined } from "@/utils/misc";
+import { ConcavePolygon } from "@/utils/polygon";
 import type { Vector2 } from "@/vec";
 import { EntityState } from "@reduxjs/toolkit";
 import { Card } from "./card";
@@ -31,15 +32,17 @@ export enum MapObjType {
   TileGroupInstance = 0,
   AnimationInstance = 1,
   NpcInstance = 2,
-  EllipseCollider = 3,
-  BoxCollider = 4,
-  PolyCollider = 5,
+  CollisionZone = 5,
   Light = 6,
   Entry = 7,
   Exit = 8,
   Waypoint = 9,
   Pickup = 10,
   BackgroundImage = 11,
+  SinkZone = 12,
+  SoundZone = 13,
+  ZoomZone = 14,
+  SensorZone = 15,
 }
 
 // The base interface for all playable map objects
@@ -92,15 +95,30 @@ export interface LightObj
   type: MapObjType.Light;
 }
 
-export interface EllipseObj extends BaseMapObj {
-  type: MapObjType.EllipseCollider;
-}
-export interface BoxObj extends BaseMapObj {
-  type: MapObjType.BoxCollider;
-}
-export interface PolyObj extends BaseMapObj {
-  type: MapObjType.PolyCollider;
+/** Shared shape for all painted zone object types */
+export interface BaseZoneObj extends BaseMapObj {
   points: { x: number; y: number }[];
+  shapes: ConcavePolygon[];
+}
+
+export interface CollisionObj extends BaseZoneObj {
+  type: MapObjType.CollisionZone;
+}
+
+export interface SinkZoneObj extends BaseZoneObj {
+  type: MapObjType.SinkZone;
+}
+
+export interface SoundZoneObj extends BaseZoneObj {
+  type: MapObjType.SoundZone;
+}
+
+export interface ZoomZoneObj extends BaseZoneObj {
+  type: MapObjType.ZoomZone;
+}
+
+export interface SensorZoneObj extends BaseZoneObj {
+  type: MapObjType.SensorZone;
 }
 
 export interface EntranceObj
@@ -135,9 +153,11 @@ export type MapObj =
   | AnimationInstance
   | NpcInstance
   | LightObj
-  | EllipseObj
-  | PolyObj
-  | BoxObj
+  | CollisionObj
+  | SinkZoneObj
+  | SoundZoneObj
+  | ZoomZoneObj
+  | SensorZoneObj
   | EntranceObj
   | ExitObj
   | PickupObj
@@ -180,14 +200,9 @@ export function isTileGroupInstance(
 ): obj is TileGroupInstance {
   return obj.type === MapObjType.TileGroupInstance;
 }
-export function isColliderEllipse(obj: Partial<BaseMapObj>): obj is EllipseObj {
-  return obj.type === MapObjType.EllipseCollider;
-}
-export function isColliderPoly(obj: Partial<BaseMapObj>): obj is PolyObj {
-  return obj.type === MapObjType.PolyCollider;
-}
-export function isColliderBox(obj: Partial<BaseMapObj>): obj is BoxObj {
-  return obj.type === MapObjType.BoxCollider;
+
+export function isCollisionZone(obj: Partial<BaseMapObj>): obj is CollisionObj {
+  return obj.type === MapObjType.CollisionZone;
 }
 
 export function isAnimatedInstance(
@@ -230,4 +245,40 @@ export function isBackgroundImageObj(
   obj: Partial<MapObj>,
 ): obj is BackgroundImageObj {
   return obj.type === MapObjType.BackgroundImage;
+}
+
+export function isSinkZoneObj(obj: Partial<BaseMapObj>): obj is SinkZoneObj {
+  return obj.type === MapObjType.SinkZone;
+}
+
+export function isSoundZoneObj(obj: Partial<BaseMapObj>): obj is SoundZoneObj {
+  return obj.type === MapObjType.SoundZone;
+}
+
+export function isZoomZoneObj(obj: Partial<BaseMapObj>): obj is ZoomZoneObj {
+  return obj.type === MapObjType.ZoomZone;
+}
+
+export function isSensorZoneObj(
+  obj: Partial<BaseMapObj>,
+): obj is SensorZoneObj {
+  return obj.type === MapObjType.SensorZone;
+}
+
+export type ZoneObj =
+  | CollisionObj
+  | SinkZoneObj
+  | SoundZoneObj
+  | ZoomZoneObj
+  | SensorZoneObj;
+
+/** Returns true if the object is any painted zone type */
+export function isZoneObj(obj: Partial<BaseMapObj>): obj is ZoneObj {
+  return (
+    obj.type === MapObjType.CollisionZone ||
+    obj.type === MapObjType.SinkZone ||
+    obj.type === MapObjType.SoundZone ||
+    obj.type === MapObjType.ZoomZone ||
+    obj.type === MapObjType.SensorZone
+  );
 }

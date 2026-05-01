@@ -8,6 +8,7 @@ import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { TemplateObject } from "@/types/tilesetobject";
 import { AnimatorOpts, CandidateAnimFrame } from "@/types/tools";
+import { BrushShape, PaintMode } from "@/types/zone";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
 import { HasId } from "@/utils/misc";
 import { resizeWeights } from "@/utils/normalizedSliders";
@@ -87,8 +88,8 @@ type ToolOptMapping = {
   animator: AnimatorOpts;
   collider: {
     brushSize: number;
-    brushShape: "square" | "circle";
-    mode: "paint" | "erase";
+    brushShape: BrushShape;
+    mode: PaintMode;
     drawOnOpaqueOnly: boolean;
     overlayOpacity: number;
     showColliders: boolean;

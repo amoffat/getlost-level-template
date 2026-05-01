@@ -1,5 +1,6 @@
 import { init as mapInit } from "@/editors/map/init";
 import { init as tsInit } from "@/editors/tileset/init";
+import { globals } from "@/globals";
 import { store } from "@/store/store";
 import { loadMapThunk } from "@/thunks/map";
 import { loadStoryThunk } from "@/thunks/story";
@@ -8,11 +9,8 @@ import { log } from "../log";
 
 // Module-level promises that persist across HMR
 // These are initialized once and reused, preventing re-initialization on hot reload
-let tilesetInitPromiseCache: Promise<
-  Awaited<ReturnType<typeof tsInit>>
-> | null = null;
-let mapInitPromiseCache: Promise<Awaited<ReturnType<typeof mapInit>>> | null =
-  null;
+let tilesetInitPromiseCache: Promise<void> | null = null;
+let mapInitPromiseCache: Promise<void> | null = null;
 let storyInitPromiseCache: Promise<void> | null = null;
 let previewInitPromiseCache: Promise<void> | null = null;
 
@@ -20,8 +18,7 @@ export function getTilesetInitPromise() {
   if (!tilesetInitPromiseCache) {
     tilesetInitPromiseCache = (async () => {
       await store.dispatch(loadTilesetsThunk()).unwrap();
-      const app = await tsInit();
-      return app;
+      await tsInit();
     })();
   }
   return tilesetInitPromiseCache;
@@ -31,7 +28,7 @@ export function getMapInitPromise() {
   if (!mapInitPromiseCache) {
     mapInitPromiseCache = (async () => {
       await getTilesetInitPromise();
-      const app = await mapInit();
+      await mapInit();
       // This has to happen after the pixi app is initialized, because it
       // depends on the map reconciler existing.
       try {
@@ -39,7 +36,6 @@ export function getMapInitPromise() {
       } catch (e) {
         log.error({ error: e }, "Failed to load map");
       }
-      return app;
     })();
   }
   return mapInitPromiseCache;
@@ -64,9 +60,26 @@ export async function getPreviewInitPromise() {
   return previewInitPromiseCache;
 }
 
-// Export reset functions for when we actually want to reinitialize (e.g., map reset)
-export function resetInitPromises() {
+/**
+ * Destroys the tileset Pixi.js app and clears its init promise cache.
+ * Called during HMR of the tileset editor to mimic a hard-refresh for the canvas.
+ */
+export function resetTilesetCanvasInit() {
+  if (globals.tilesetEditorApp) {
+    globals.tilesetEditorApp.destroy();
+    globals.tilesetEditorApp = null;
+  }
   tilesetInitPromiseCache = null;
+}
+
+/**
+ * Destroys the map Pixi.js app and clears its init promise cache.
+ * Called during HMR of the map editor to mimic a hard-refresh for the canvas.
+ */
+export function resetMapCanvasInit() {
+  if (globals.mapEditorApp) {
+    globals.mapEditorApp.destroy();
+    globals.mapEditorApp = null;
+  }
   mapInitPromiseCache = null;
-  storyInitPromiseCache = null;
 }

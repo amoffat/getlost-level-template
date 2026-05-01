@@ -47,6 +47,21 @@ export abstract class ReduxReconciler<
   private pendingRemoves: Set<string> = new Set();
   private rafScheduled = false;
 
+  /**
+   * Clears all internal node/object state and pending queues. Call this
+   * whenever the underlying canvas is destroyed and re-created (e.g., HMR)
+   * so that the next enqueueDiff routes every object through pendingAdds
+   * (createNode) rather than pendingUpdates, which only patches stale nodes.
+   */
+  protected resetNodes(): void {
+    this.nodes.clear();
+    this.objs.clear();
+    this.pendingAdds.length = 0;
+    this.pendingUpdates.length = 0;
+    this.pendingRemoves.clear();
+    this.rafScheduled = false;
+  }
+
   enqueueAdd(obj: ObjType) {
     this.pendingAdds.push(obj);
     this.scheduleFlush();

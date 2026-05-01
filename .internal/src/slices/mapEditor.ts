@@ -10,6 +10,7 @@ import {
   isSpeakableObject,
   isTileGroupInstance,
   MapObj,
+  MapObjType,
   NpcInstance,
   SpeakableMapObj,
 } from "@/types/map";
@@ -24,9 +25,9 @@ import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TemplateObject } from "@/types/tilesetobject";
 import {
   AutotilerOpts,
-  ColliderOpts,
   FillOpts,
   PaintOpts,
+  ZonePaintOpts,
 } from "@/types/tools";
 import { ZoomPan } from "@/types/zoompan";
 import { HasId } from "@/utils/misc";
@@ -47,7 +48,7 @@ import {
 type ToolOptMapping = {
   paint: PaintOpts;
   autotiler: AutotilerOpts;
-  "add-collider": ColliderOpts;
+  "paint-zone": ZonePaintOpts;
   fill: FillOpts;
 };
 
@@ -129,7 +130,15 @@ export const slice = createSlice({
     toolOptions: {
       paint: { mode: "place-once", size: 1, snap: "object" },
       autotiler: { candidates: [], gridPosFreeze: null },
-      "add-collider": { type: "box" },
+      "paint-zone": {
+        mode: "paint",
+        brushSize: 3,
+        brushShape: "square",
+        overlayOpacity: 0.5,
+        showColliders: false,
+        simplify: 0.5,
+        zoneType: MapObjType.CollisionZone,
+      },
       fill: {
         candidates: [],
         density: 0,

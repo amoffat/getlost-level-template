@@ -2,6 +2,7 @@ import { Tool } from "@/editors/common/tooldispatch";
 import { globals as gApp } from "@/globals";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
+import { BrushShape } from "@/types/zone";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { decodeMask, determineCoverage, encodeMask } from "@/utils/collider";
 import { collisionMaskStore } from "@/utils/maskStore";
@@ -49,7 +50,7 @@ export class ColliderTool implements Tool {
   private brushSize = 8;
 
   /** Shape of the brush: "square" or "circle" */
-  private brushShape: "square" | "circle" = "square";
+  private brushShape: BrushShape = "square";
 
   /** If true, brush only draws on non-transparent pixels; if false, draws on
    * all pixels including transparent areas */
@@ -609,7 +610,7 @@ export class ColliderTool implements Tool {
   /**
    * Sets the brush shape (square or circle).
    */
-  public setBrushShape(shape: "square" | "circle"): void {
+  public setBrushShape(shape: BrushShape): void {
     this.brushShape = shape;
     this.updateBrushCursor();
   }

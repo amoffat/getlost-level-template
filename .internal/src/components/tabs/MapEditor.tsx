@@ -4,6 +4,7 @@ import { iconTsId, transparentIcon } from "@/constants/tsObjs";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { useSpotlightActions } from "@/hooks/useSpotlightActions";
+import { getMapInitPromise, resetMapCanvasInit } from "@/init/editorInit";
 import { brokenTileGroups } from "@/selectors/map";
 import { actions, selectors } from "@/slices/mapEditor";
 import { RootState, store } from "@/store/store";
@@ -35,20 +36,16 @@ import {
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import {
+  IconBrush,
   IconBucketDroplet,
   IconBulb,
-  IconCameraSearch,
-  IconCarCrash,
   IconDoorExit,
-  IconEar,
   IconFrame,
   IconGift,
-  IconInputSpark,
   IconMapPin,
   IconPaint,
   IconPhoto,
   IconPointer,
-  IconRipple,
   IconTrash,
   IconUnlink,
   IconWand,
@@ -75,13 +72,30 @@ import Tip from "../Tip";
 import ToolPalette, { ToolDescriptor } from "../ToolPalette";
 import AutotilerTool from "../tools/map/AutotilerTool";
 import BackgroundTool from "../tools/map/BackgroundTool";
-import ColliderTool from "../tools/map/ColliderTool";
 import FillTool from "../tools/map/FillTool";
 import GatewayTool from "../tools/map/GatewayTool";
 import MapBoundsTool from "../tools/map/MapBoundsTool";
 import PaintTool from "../tools/map/PaintTool";
 import PickupTool from "../tools/map/PickupTool";
 import SelectTool from "../tools/map/SelectTool";
+import ZonePaintTool from "../tools/map/ZonePaintTool";
+
+// Created at module-evaluation time (outside React's render cycle) so any
+// Redux dispatches inside the thunks don't fire while React is rendering.
+const _hmrInitPromise: Promise<unknown> | null = import.meta.hot?.data
+  ?.needsReinit
+  ? getMapInitPromise()
+  : null;
+
+if (import.meta.hot) {
+  import.meta.hot.dispose((data) => {
+    // Detach the canvas from the DOM *before* destroying the app so the
+    // browser never renders the "WebGL context lost" sad-face on a live canvas.
+    g.mapEditorApp?.canvas.remove();
+    resetMapCanvasInit();
+    data.needsReinit = true;
+  });
+}
 
 export default function MapEditorTab({
   initPromise,
@@ -212,8 +226,7 @@ export default function MapEditorTab({
     activeTab === "map-editor",
   );
 
-  // This waits for our tileset and map to load from the shell.
-  use(initPromise);
+  use(_hmrInitPromise ?? initPromise);
 
   useEffect(() => {
     const container = containerRef.current!;
@@ -327,33 +340,13 @@ export default function MapEditorTab({
           icon: <IconMapPin size={16} />,
           layerConstraints: [MapLayerName.Special],
         },
-        "add-collider": {
-          name: t("mapEditorAddColliderTool"),
-          icon: <IconCarCrash size={16} />,
+        "paint-zone": {
+          name: t("mapEditorZoneTool"),
+          icon: <IconBrush size={16} />,
           layerConstraints: [MapLayerName.Sensors],
-          options: <ColliderTool />,
+          options: <ZonePaintTool />,
         },
 
-        "set-sensor-zone": {
-          name: t("mapEditorSensorZoneTool"),
-          icon: <IconInputSpark size={16} />,
-          layerConstraints: [MapLayerName.Sensors],
-        },
-        "set-sink-zone": {
-          name: t("mapEditorSinkZoneTool"),
-          icon: <IconRipple size={16} />,
-          layerConstraints: [MapLayerName.Sensors],
-        },
-        "set-sound-zone": {
-          name: t("mapEditorSoundZoneTool"),
-          icon: <IconEar size={16} />,
-          layerConstraints: [MapLayerName.Sensors],
-        },
-        "set-zoom-zone": {
-          name: t("mapEditorZoomZoneTool"),
-          icon: <IconCameraSearch size={16} />,
-          layerConstraints: [MapLayerName.Sensors],
-        },
         "add-light": {
           name: t("mapEditorAddLightTool"),
           icon: <IconBulb size={16} />,

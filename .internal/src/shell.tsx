@@ -2,9 +2,10 @@ import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/spotlight/styles.css";
 
+import { store } from "@/store/store";
+
 import { CommsProvider } from "@/components/providers/CommsProvider";
 import { router } from "@/router";
-import { store } from "@/store/store";
 import { MantineProvider, MantineThemeOverride } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
