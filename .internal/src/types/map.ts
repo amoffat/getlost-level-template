@@ -103,6 +103,8 @@ export interface BaseZoneObj extends BaseMapObj {
 
 export interface CollisionObj extends BaseZoneObj {
   type: MapObjType.CollisionZone;
+  // We hide the object while painting
+  hidden: boolean;
 }
 
 export interface SinkZoneObj extends BaseZoneObj {

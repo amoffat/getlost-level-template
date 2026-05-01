@@ -1,6 +1,6 @@
 import { defaultTint, texAtlasPadding } from "@/constants";
-import { ZONE_TYPE_META } from "@/constants/zoneMeta";
 import { errorIcon, iconTsId } from "@/constants/tsObjs";
+import { ZONE_TYPE_META } from "@/constants/zoneMeta";
 import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
@@ -15,8 +15,8 @@ import {
   isMapObjFromTileset,
   isNpcInstance,
   isPickupObj,
-  isZoneObj,
   isTileGroupInstance,
+  isZoneObj,
   MapObj,
 } from "@/types/map";
 import { NpcTemplate } from "@/types/npc";
@@ -215,14 +215,24 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     }
 
     if (Object.hasOwn(props, "hidden")) {
-      // If hidden is undefined, inherit from template. If it's null, don't.
-      const hidden = this.resolveWithInheritance<boolean>(
-        props.hidden,
-        tmpl,
-        "hidden",
-        TILE_GROUP_PROPS_DEFAULTS.hidden,
-      );
-      node.alpha = hidden ? 0.35 : 1;
+      if (isTileGroupInstance(obj)) {
+        // If hidden is undefined, inherit from template. If it's null, don't.
+        const hidden = this.resolveWithInheritance<boolean>(
+          props.hidden,
+          tmpl,
+          "hidden",
+          TILE_GROUP_PROPS_DEFAULTS.hidden,
+        );
+        node.alpha = hidden ? 0.35 : 1;
+      } else if (isZoneObj(obj)) {
+        const hidden = this.resolveWithInheritance<boolean>(
+          props.hidden,
+          tmpl,
+          "hidden",
+          false,
+        );
+        node.alpha = hidden ? 0 : 1;
+      }
     }
 
     if (isAnimatedInstance(obj)) {

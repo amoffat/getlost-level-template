@@ -1,4 +1,4 @@
-export function arrayEquals<T>(a: T[], b: T[]): boolean {
+export function shallowEquals<T>(a: T[], b: T[]): boolean {
   if (a === b) {
     return true;
   }

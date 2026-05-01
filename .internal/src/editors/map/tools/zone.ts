@@ -1,11 +1,12 @@
 import { ZONE_TYPE_META } from "@/constants/zoneMeta";
 import { Tool } from "@/editors/common/tooldispatch";
-import { actions, selectors } from "@/slices/mapEditor";
+import { actions, actions as mapActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { isZoneObj, MapObjType, ZoneObj } from "@/types/map";
 import { BrushShape, ZoneType } from "@/types/zone";
+import { shallowEquals } from "@/utils/array";
 import { determineCoverage, pointInTriangle } from "@/utils/collider";
 import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
@@ -413,7 +414,7 @@ export class ZonePaintTool implements Tool {
     const isFirstCommit = this.workingObjId === null;
     const objId = this.workingObjId ?? crypto.randomUUID();
 
-    const baseProps = {
+    const obj: ZoneObj = {
       id: objId,
       layer: MapLayerName.Sensors,
       x: objX,
@@ -423,9 +424,9 @@ export class ZonePaintTool implements Tool {
       height: objH,
       points: [],
       shapes: localShapes,
+      hidden: true,
+      type: activeZoneType,
     };
-
-    const obj = { ...baseProps, type: activeZoneType } as ZoneObj;
 
     if (isFirstCommit) {
       this.workingObjId = objId;
@@ -546,6 +547,12 @@ export class ZonePaintTool implements Tool {
       this.workingObjId = selectedZone.id;
       this.lockedZoneType = selectedZone.type;
       this.zoneType = selectedZone.type;
+      store.dispatch(
+        mapActions.updateOne({
+          id: this.workingObjId,
+          changes: { hidden: true },
+        }),
+      );
     } else {
       // No zone selected — always start fresh so the user can paint a new
       // zone. Keeping the old workingObjId would silently add to the previous
@@ -560,6 +567,15 @@ export class ZonePaintTool implements Tool {
   /** Called when the tool becomes inactive. */
   public deactivate(): void {
     this.clearMaskDisplay();
+
+    if (this.workingObjId) {
+      store.dispatch(
+        mapActions.updateOne({
+          id: this.workingObjId,
+          changes: { hidden: false },
+        }),
+      );
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -691,9 +707,16 @@ export function setupZonePaintTool(): ZonePaintTool {
   // selection change (e.g. right-click-drag pan clearing the selection) from
   // deselecting that zone. Re-assert the selection whenever it drifts.
   subState(
-    [selectors.selectMode, (state) => state.mapEditor.selectedIds as string[]],
-    (mode, selectedIds) => {
-      if (mode !== "paint-zone" && mode !== "pan") return;
+    [
+      (state) => state.mapEditor.modeStack,
+      (state) => state.mapEditor.selectedIds as string[],
+    ],
+    (modeStack, selectedIds) => {
+      if (
+        !shallowEquals(modeStack.slice(-2), ["paint-zone", "pan"]) &&
+        modeStack.at(-1) !== "paint-zone"
+      )
+        return;
       const id = tool.workingObjId;
       if (id !== null && !selectedIds.includes(id)) {
         store.dispatch(actions.setOneSelected(id));

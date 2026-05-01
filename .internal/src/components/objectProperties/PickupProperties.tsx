@@ -9,13 +9,13 @@ import { collectPropertyValues } from "@/store/selectors";
 import { PickupObj } from "@/types/map";
 import { PickupProps } from "@/types/properties";
 import { TileGroupTemplate } from "@/types/tilegroup";
-import { arrayEquals } from "@/utils/array";
+import { shallowEquals } from "@/utils/array";
 import { resolveLocaleText } from "@/utils/locale";
 import { updateObjectProperties } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Fieldset, Stack, TagsInput, TextInput } from "@mantine/core";
 import { memo, ReactElement, useCallback, useMemo } from "react";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import TilesetGroup from "../TilesetGroup";
 import HiddenInput from "./inputs/HiddenInput";
@@ -93,13 +93,13 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
 
   const nameInput = (
     <LocalizedNameInput
-      description={t('pickupPropNameDescription')}
+      description={t("pickupPropNameDescription")}
       noTemplate
       values={toCollect.nameKey}
       context="Pickup name"
       keyPrefix={["pickup"]}
       validator={nameValidator}
-      placeholder={t('pickupPropNamePlaceholder')}
+      placeholder={t("pickupPropNamePlaceholder")}
       onValueChange={({ scope, value }): void => {
         const text = resolveLocaleText({
           key: value,
@@ -116,11 +116,11 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
 
   const tagsInput = (
     <PropertyValue
-      label={t('pickupPropTagsLabel')}
-      description={t('pickupPropTagsDescription')}
+      label={t("pickupPropTagsLabel")}
+      description={t("pickupPropTagsDescription")}
       values={toCollect.tags}
       defaultValue={[]}
-      areEqual={arrayEquals}
+      areEqual={shallowEquals}
       onValueChange={({
         scope,
         value,
@@ -137,7 +137,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
             key={key}
             defaultValue={value}
             onChange={onChange}
-            placeholder={t('pickupPropTagsPlaceholder')}
+            placeholder={t("pickupPropTagsPlaceholder")}
             splitChars={[",", " ", "|"]}
           />
         );
@@ -165,8 +165,8 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
 
   const tgIdInput = (
     <PropertyValue
-      label={t('pickupPropImageAssetLabel')}
-      description={t('pickupPropImageAssetDescription')}
+      label={t("pickupPropImageAssetLabel")}
+      description={t("pickupPropImageAssetDescription")}
       values={toCollect.assetId}
       defaultValue={null}
       noTemplate={true}
@@ -189,7 +189,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
             )}
             <TextInput
               defaultValue={value ?? ""}
-              placeholder={t('pickupPropImageAssetPlaceholder')}
+              placeholder={t("pickupPropImageAssetPlaceholder")}
               onChange={(e) => onChange(e.target.value)}
             />
           </Stack>
@@ -200,7 +200,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
 
   const hiddenInput = (
     <HiddenInput
-      description={t('pickupPropHiddenDescription')}
+      description={t("pickupPropHiddenDescription")}
       values={toCollect.hidden}
       onValueChange={({ scope, value }) =>
         updateProps(scope, { hidden: value })
@@ -211,7 +211,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
   );
 
   return (
-    <Fieldset legend={t('pickupPropLegend')} p="xs">
+    <Fieldset legend={t("pickupPropLegend")} p="xs">
       <Stack p={0} gap="xl">
         {nameInput}
         {tgIdInput}
