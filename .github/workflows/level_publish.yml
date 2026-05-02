@@ -94,8 +94,6 @@ jobs:
       - name: Install dependencies
         run: |
           uv tool install -e .internal/deployer
-          uv tool install -e .internal/spindler
-          uv tool install git+https://github.com/amoffat/translator@main
 
       - name: Install Node.js
         uses: actions/setup-node@v4

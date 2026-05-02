@@ -47,11 +47,6 @@ export default function levelWatcher() {
             gameReload = true;
           }
 
-          // If it's in the spindler directory, reload the game
-          if (changed.startsWith(`${internalDir}/spindler/`)) {
-            gameReload = true;
-          }
-
           // If it's a __pycache__ directory, ignore it
           if (changed.includes("__pycache__")) {
             gameReload = false;

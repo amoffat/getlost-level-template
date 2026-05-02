@@ -21,14 +21,11 @@ uv self update
 # when we're editing code. This isn't necessary for running the tool scripts.
 uv venv --allow-existing /home/node/venv
 source /home/node/venv/bin/activate
-uv pip install -e "$INTERNAL_DIR/spindler"
-uv pip install -e "$INTERNAL_DIR/deployer"
+
 
 # This is all that's really needed for running the tools.
-uv tool install -e "$INTERNAL_DIR/spindler"
 uv tool install -e "$INTERNAL_DIR/deployer"
 uv tool install git+https://github.com/amoffat/translator@main
-
 
 echo "Starting PM2 in the background..."
 npx --prefix "$INTERNAL_DIR" pm2 start "$ECOSYSTEM_FILE"
