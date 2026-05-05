@@ -53,18 +53,19 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
         id: MapLayerName.Ground,
         description: t("layerListGroundDescription"),
       },
+
       {
-        id: MapLayerName.Background,
-        description: t("layerListBackgroundDescription"),
-      },
-      {
-        id: MapLayerName.Sensors,
+        id: MapLayerName.Zones,
         description: t("layerListSensorsDescription"),
       },
 
       {
         id: MapLayerName.Special,
         description: t("layerListSpecialDescription"),
+      },
+      {
+        id: MapLayerName.Background,
+        description: t("layerListBackgroundDescription"),
       },
     ];
   }, [t]);

@@ -1,23 +1,38 @@
 import AnimationProperties from "@/components/objectProperties/AnimationProperties";
+import SinkZoneProperties from "@/components/objectProperties/zones/SinkZoneProperties";
+import SoundZoneProperties from "@/components/objectProperties/zones/SoundZoneProperties";
+import ZoomZoneProperties from "@/components/objectProperties/zones/ZoomZoneProperties";
+import CollisionZoneProperties from "@/components/objectProperties/zones/CollisionZoneProperties";
+import SensorZoneProperties from "@/components/objectProperties/zones/SensorZoneProperties";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { bringToTopThunk, sendToBottomThunk } from "@/thunks/map";
 import { MapLayerName } from "@/types/layer";
 import {
   AnimationInstance,
+  CollisionObj,
   EntranceObj,
   ExitObj,
   isAnimatedInstance,
+  isCollisionZone,
   isEntranceObj,
   isExitObj,
   isLightInstance,
   isNpcInstance,
   isPickupObj,
+  isSensorZoneObj,
+  isSinkZoneObj,
+  isSoundZoneObj,
   isTileGroupInstance,
+  isZoomZoneObj,
   LightObj,
   NpcInstance,
   PickupObj,
+  SensorZoneObj,
+  SinkZoneObj,
+  SoundZoneObj,
   TileGroupInstance,
+  ZoomZoneObj,
 } from "@/types/map";
 import { Alert, Button, Fieldset, Kbd, Stack } from "@mantine/core";
 import {
@@ -78,6 +93,11 @@ export default function SelectTool() {
     const exits: ExitObj[] = [];
     const pickups: PickupObj[] = [];
     const animatedInstances: AnimationInstance[] = [];
+    const collisionZones: CollisionObj[] = [];
+    const sensorZones: SensorZoneObj[] = [];
+    const sinkZones: SinkZoneObj[] = [];
+    const zoomZones: ZoomZoneObj[] = [];
+    const soundZones: SoundZoneObj[] = [];
 
     for (const obj of deferredSelectedObjs) {
       if (isTileGroupInstance(obj)) {
@@ -94,6 +114,16 @@ export default function SelectTool() {
         pickups.push(obj);
       } else if (isAnimatedInstance(obj)) {
         animatedInstances.push(obj);
+      } else if (isSinkZoneObj(obj)) {
+        sinkZones.push(obj);
+      } else if (isZoomZoneObj(obj)) {
+        zoomZones.push(obj);
+      } else if (isSoundZoneObj(obj)) {
+        soundZones.push(obj);
+      } else if (isSensorZoneObj(obj)) {
+        sensorZones.push(obj);
+      } else if (isCollisionZone(obj)) {
+        collisionZones.push(obj);
       }
     }
 
@@ -105,6 +135,9 @@ export default function SelectTool() {
       exits.length > 0,
       pickups.length > 0,
       animatedInstances.length > 0,
+      sinkZones.length > 0,
+      zoomZones.length > 0,
+      soundZones.length > 0,
     ].filter(Boolean).length;
 
     if (typesCount > 1) {
@@ -148,6 +181,26 @@ export default function SelectTool() {
       return (
         <AnimationProperties key="animation-props" objs={animatedInstances} />
       );
+    }
+
+    if (sinkZones.length > 0) {
+      return <SinkZoneProperties key="sink-zone-props" objs={sinkZones} />;
+    }
+
+    if (zoomZones.length > 0) {
+      return <ZoomZoneProperties key="zoom-zone-props" objs={zoomZones} />;
+    }
+
+    if (soundZones.length > 0) {
+      return <SoundZoneProperties key="sound-zone-props" objs={soundZones} />;
+    }
+
+    if (sensorZones.length > 0) {
+      return <SensorZoneProperties key="sensor-zone-props" objs={sensorZones} />;
+    }
+
+    if (collisionZones.length > 0) {
+      return <CollisionZoneProperties key="collision-zone-props" objs={collisionZones} />;
     }
 
     return null;

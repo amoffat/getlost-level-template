@@ -1,4 +1,3 @@
-import debounce from "debounce";
 import * as constants from "@/constants";
 import { globals as gApp } from "@/globals";
 import { actions, mapSelectors, selectors } from "@/slices/mapEditor";
@@ -10,6 +9,7 @@ import { SpatialIndex } from "@/types/spatial";
 import { subState } from "@/utils/redux";
 import { onVisible } from "@/utils/visible";
 import { Vector2 } from "@/vec";
+import debounce from "debounce";
 import { DropShadowFilter } from "pixi-filters";
 import * as P from "pixi.js";
 import { makeCheckerboard } from "../common/bg";
@@ -24,11 +24,11 @@ import { initLayerVisibility } from "./layers";
 import { setupParallaxTicker } from "./parallax";
 import { setupAutotiler } from "./tools/autotiler";
 import { setupBoundsDragger } from "./tools/bounds";
-import { setupZonePaintTool } from "./tools/zone";
 import { setupFill } from "./tools/fill";
 import { setupMover } from "./tools/move";
 import { setupPlacer } from "./tools/place";
 import { setupResizer, setupSelector } from "./tools/select";
+import { setupZonePaintTool } from "./tools/zone";
 
 export async function init(): Promise<P.Application> {
   // Create a new application
@@ -135,7 +135,7 @@ export async function init(): Promise<P.Application> {
   g.mapContainer.addChild(worldLayer);
 
   const colliderLayer = new P.Container();
-  g.layerContainers[MapLayerName.Sensors] = colliderLayer;
+  g.layerContainers[MapLayerName.Zones] = colliderLayer;
   g.mapContainer.addChild(colliderLayer);
 
   const placesLayer = new P.Container();

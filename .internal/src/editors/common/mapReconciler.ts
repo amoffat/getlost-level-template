@@ -29,6 +29,7 @@ import { toPixiRect } from "@/types/rect";
 import { IndexItem, SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { makeGroupedDebouncer } from "@/utils/debounce";
+import { drawPaddingOutline } from "@/utils/polygon";
 import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
 import { EMPTY } from "rxjs";
@@ -201,6 +202,54 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       gfx.circle(0, 0, props.sensorRadius).fill(exitFill);
     }
 
+    if (isZoneObj(obj)) {
+      if (Object.hasOwn(props, "shapes")) {
+        const shapesGfx = node.children[0] as P.Graphics;
+        const fill = {
+          color: ZONE_TYPE_META[obj.type]!.color,
+          alpha: 0.45,
+        };
+        shapesGfx.clear();
+        if (obj.shapes) {
+          obj.shapes.forEach((polygon) => {
+            polygon.forEach((triangle) => {
+              shapesGfx
+                .poly([triangle.a, triangle.b, triangle.c])
+                .fill(fill)
+                .stroke({
+                  color: fill.color,
+                  width: 1,
+                  alpha: 0.75,
+                  pixelLine: true,
+                });
+            });
+          });
+        }
+        // Padding outline depends on shapes, so refresh it too.
+        const paddingGfxOnShapeChange = node.getChildByLabel(
+          "paddingLine",
+        ) as P.Graphics | null;
+        if (paddingGfxOnShapeChange && "padding" in obj && obj.shapes?.length) {
+          paddingGfxOnShapeChange.clear();
+          drawPaddingOutline(
+            paddingGfxOnShapeChange,
+            obj.shapes,
+            obj.padding as number,
+          );
+        }
+      }
+
+      if (Object.hasOwn(props, "padding")) {
+        const paddingGfx = node.getChildByLabel(
+          "paddingLine",
+        ) as P.Graphics | null;
+        if (paddingGfx && "padding" in obj && obj.shapes?.length) {
+          paddingGfx.clear();
+          drawPaddingOutline(paddingGfx, obj.shapes, obj.padding as number);
+        }
+      }
+    }
+
     if (Object.hasOwn(props, "groundOffset")) {
       if (sprite) {
         const normalY = sprite.height / 2 + texAtlasPadding;
@@ -231,7 +280,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
           "hidden",
           false,
         );
-        node.alpha = hidden ? 0 : 1;
+        node.visible = !hidden;
       }
     }
 
@@ -470,31 +519,20 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
       return spriteContainer;
     } else if (isZoneObj(obj)) {
-      const fill = {
-        color: ZONE_TYPE_META[obj.type]!.color,
-        alpha: 0.45,
-      };
       const gfx = new P.Graphics();
       gfx.eventMode = "passive";
-      if (obj.shapes) {
-        obj.shapes.forEach((polygon) => {
-          polygon.forEach((triangle) => {
-            gfx.poly([triangle.a, triangle.b, triangle.c]).fill(fill).stroke({
-              color: fill.color,
-              width: 1,
-              alpha: 0.75,
-              pixelLine: true,
-            });
-          });
-        });
-      } else if (obj.points.length >= 3) {
-        gfx.poly(obj.points).fill(fill);
-      }
+
       const zoneContainer = new P.Container();
       zoneContainer.label = obj.id;
       zoneContainer.position.set(obj.x, obj.y);
       zoneContainer.zIndex = obj.z;
       zoneContainer.addChild(gfx);
+
+      const paddingGfx = new P.Graphics();
+      paddingGfx.label = "paddingLine";
+      paddingGfx.eventMode = "passive";
+      zoneContainer.addChild(paddingGfx);
+
       zoneContainer.eventMode = "static";
       return zoneContainer;
     } else if (isBackgroundImageObj(obj)) {

@@ -228,9 +228,14 @@ export default function MapEditorTab({
 
   use(_hmrInitPromise ?? initPromise);
 
+  const app = g.mapEditorApp;
+
   useEffect(() => {
+    // App doesn't exist during hotreload :O
+    if (!app) return;
+
     const container = containerRef.current!;
-    const canvas = g.mapEditorApp!.canvas;
+    const canvas = app.canvas;
 
     if (!container.contains(canvas)) {
       container.appendChild(canvas);
@@ -238,9 +243,9 @@ export default function MapEditorTab({
 
     // Set resizeTo after a frame to ensure the container has its final size
     requestAnimationFrame(() => {
-      g.mapEditorApp!.resizeTo = container;
+      app.resizeTo = container;
     });
-  }, []);
+  }, [app]);
 
   const onSelectObject = useCallback(
     async (obj: TemplateObject, e: React.MouseEvent) => {
@@ -343,7 +348,7 @@ export default function MapEditorTab({
         "paint-zone": {
           name: t("mapEditorZoneTool"),
           icon: <IconBrush size={16} />,
-          layerConstraints: [MapLayerName.Sensors],
+          layerConstraints: [MapLayerName.Zones],
           options: <ZonePaintTool />,
         },
 

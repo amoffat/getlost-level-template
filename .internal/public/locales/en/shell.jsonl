@@ -279,10 +279,6 @@
 {"k": "mapEditorAddGatewayTool", "v": "Add gateway", "ctx": "Map editor tool name for placing a gateway (level exit)"}
 {"k": "mapEditorSetWaypointTool", "v": "Set waypoint", "ctx": "Map editor tool name for placing a waypoint marker"}
 {"k": "mapEditorZoneTool", "v": "Paint zones", "ctx": "Map editor tool name for drawing and erasing zones"}
-{"k": "mapEditorSensorZoneTool", "v": "Sensor zone", "ctx": "Map editor tool name for placing a sensor trigger zone"}
-{"k": "mapEditorSinkZoneTool", "v": "Sink zone", "ctx": "Map editor tool name for placing a sink (liquid) zone"}
-{"k": "mapEditorSoundZoneTool", "v": "Sound zone", "ctx": "Map editor tool name for placing a sound trigger zone"}
-{"k": "mapEditorZoomZoneTool", "v": "Zoom zone", "ctx": "Map editor tool name for placing a camera zoom zone"}
 {"k": "mapEditorAddLightTool", "v": "Add light", "ctx": "Map editor tool name for placing a light source"}
 {"k": "mapEditorAddPickupTool", "v": "Add pickup", "ctx": "Map editor tool name for placing a pickup item"}
 {"k": "mapEditorSetBoundsTool", "v": "Set bounds", "ctx": "Map editor tool name for defining map boundaries"}
@@ -405,7 +401,7 @@
 {"k": "layerListExteriorDescription", "v": "Outdoor objects that can appear in front of and behind a character", "ctx": "Description for the Exterior map layer shown in the layer selector"}
 {"k": "layerListGroundDescription", "v": "Ground objects are always rendered beneath the character", "ctx": "Description for the Ground map layer shown in the layer selector"}
 {"k": "layerListBackgroundDescription", "v": "Skies and other parallax background images rendered behind everything else", "ctx": "Description for the Background map layer shown in the layer selector"}
-{"k": "layerListSensorsDescription", "v": "Areas that trigger events or define zones", "ctx": "Description for the Sensors map layer shown in the layer selector"}
+{"k": "layerListSensorsDescription", "v": "Areas that trigger special events or behavior", "ctx": "Description for the Sensors map layer shown in the layer selector"}
 {"k": "layerListSpecialDescription", "v": "Special objects like gateways, lights, and waypoints", "ctx": "Description for the Special map layer shown in the layer selector"}
 {"k": "resettableResetTooltip", "v": "Reset to default", "ctx": "Tooltip on the reset button in the ResettableInput component"}
 {"k": "uploadAssetUploadBackground", "v": "Upload background image", "ctx": "Modal title when uploading a single background image"}
@@ -570,3 +566,37 @@
 {"k": "zoneTypeSound", "v": "Sound", "ctx": "Zone type label for sound zones"}
 {"k": "zoneTypeZoom", "v": "Zoom", "ctx": "Zone type label for camera zoom zones"}
 {"k": "zoneTypeSensor", "v": "Sensor", "ctx": "Zone type label for sensor trigger zones"}
+{"k": "zoneTypeTooltipSink", "v": "Makes characters sink into the ground", "ctx": "Sink zone type tooltip"}
+{"k": "zoneTypeTooltipCollision", "v": "Blocks characters from moving through", "ctx": "Collision zone type tooltip"}
+{"k": "zoneTypeTooltipSound", "v": "Plays some sound as the player approaches", "ctx": "Sound zone type tooltip"}
+{"k": "zoneTypeTooltipZoom", "v": "Zooms the camera in or out", "ctx": "Zoom zone type tooltip"}
+{"k": "zoneTypeTooltipSensor", "v": "Triggers a code event", "ctx": "Sensor zone type tooltip"}
+{"k": "groundLayerName", "v": "Ground", "ctx": "The layer name for the ground"}
+{"k": "exteriorLayerName", "v": "Exterior", "ctx": "The layer name for the ground"}
+{"k": "zonesLayerName", "v": "Zones", "ctx": "The layer name for zones"}
+{"k": "specialLayerName", "v": "Special", "ctx": "The layer name for special objects"}
+{"k": "backgroundLayerName", "v": "Background", "ctx": "The layer name background objects"}
+{"k": "sinkZoneDepthDescription", "v": "How far beneath the surface can the character sink?", "ctx": "The description for the 'depth' property of a sink zone."}
+{"k": "zonePaddingLabel", "v": "Padding", "ctx": "Zone padding label"}
+{"k": "zonePaddingDescription", "v": "How far into the zone must the character travel for the maximum effect?", "ctx": "Zone padding description"}
+{"k": "zonePropNameLabel", "v": "Name", "ctx": "Label for zone name field used by all zone property panels"}
+{"k": "zonePropNameDescription", "v": "This is how you refer to your zone in the level code", "ctx": "Description for the zone name field used by all zones"}
+{"k": "zonePropNamePlaceholder", "v": "Zone name", "ctx": "Placeholder for zone name input"}
+{"k": "zonePropEditLabel", "v": "Edit boundary", "ctx": "Label for the Edit button that activates the zone paint tool"}
+{"k": "collisionZonePropLegend", "v": "Collision Zone", "ctx": "Fieldset legend for collision zone properties"}
+{"k": "sensorZonePropLegend", "v": "Sensor Zone", "ctx": "Fieldset legend for sensor zone properties"}
+{"k": "sinkZonePropDepthLabel", "v": "Depth", "ctx": "Label for the sink zone"}
+{"k": "zoomZonePropZoomLabel", "v": "Zoom", "ctx": "Label for the zoom value input in Zoom Zone properties"}
+{"k": "zoomZonePropZoomDescription", "v": "The amount of camera zoom. Less than 1 means zoom out, greater than 1 zoom in"}
+{"k": "zoomZonePropPaddingLabel", "v": "Padding", "ctx": "Label for the padding value input in Zoom Zone properties"}
+{"k": "zoomZonePropLegend", "v": "Zoom Zone", "ctx": "Legend title for Zoom Zone properties"}
+{"k": "soundZonePropSoundLabel", "v": "Sound", "ctx": "Label for the sound asset input in Sound Zone properties"}
+{"k": "soundZonePropSoundPlaceholder", "v": "Sound asset path", "ctx": "Placeholder for the sound asset input in Sound Zone properties"}
+{"k": "soundZonePropPaddingLabel", "v": "Padding", "ctx": "Label for the padding value input in Sound Zone properties"}
+{"k": "soundZonePropVolumeLabel", "v": "Volume", "ctx": "Label for the volume value input in Sound Zone properties"}
+{"k": "soundZonePropLegend", "v": "Sound Zone", "ctx": "Legend title for Sound Zone properties"}
+{"k": "sinkZonePropLegend", "v": "Sink Zone", "ctx": "Legend title for Sink Zone properties"}
+{"k": "layerMoveModalTitle", "v": "Move objects?", "ctx": "The title for the modal asking if the user wants to move objects to a new layer"}
+{"k": "layerMoveModalBody", "v": "You're switching layers with {{count}} objects selected. Would you like to move them to layer {{name}}?", "ctx": "The body of the modal for asking the user if they want to move objects to a new layer"}
+{"k": "moveObjects", "v": "Yes, move objects"}
+{"k": "no", "v": "No", "ctx": "no"}

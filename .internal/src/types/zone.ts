@@ -1,7 +1,8 @@
 import { ReactNode } from "react";
-import { MapObjType } from "./map";
+import { MapObjType, ZoneObj } from "./map";
 
 export interface ZoneTypeMeta {
+  slug: string;
   /** Pixi.js tint / fill color as a 24-bit hex number */
   color: number;
   /** CSS hex color string, e.g. "#ff3333" */
@@ -11,12 +12,7 @@ export interface ZoneTypeMeta {
   icon: ReactNode;
 }
 
-export type ZoneType =
-  | MapObjType.CollisionZone
-  | MapObjType.SinkZone
-  | MapObjType.SoundZone
-  | MapObjType.ZoomZone
-  | MapObjType.SensorZone;
+export type ZoneType = ZoneObj["type"];
 
 export const zoneTypes: ZoneType[] = [
   MapObjType.CollisionZone,

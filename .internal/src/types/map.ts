@@ -1,9 +1,9 @@
 import { HasId, RequiredButMaybeUndefined } from "@/utils/misc";
-import { ConcavePolygon } from "@/utils/polygon";
 import type { Vector2 } from "@/vec";
 import { EntityState } from "@reduxjs/toolkit";
 import { Card } from "./card";
 import type { MapLayerName } from "./layer";
+import { ConcavePolygon } from "./polygon";
 import {
   AnimationProps,
   EntranceProps,
@@ -97,26 +97,40 @@ export interface LightObj
 
 /** Shared shape for all painted zone object types */
 export interface BaseZoneObj extends BaseMapObj {
-  points: { x: number; y: number }[];
+  name: string;
   shapes: ConcavePolygon[];
-}
-
-export interface CollisionObj extends BaseZoneObj {
-  type: MapObjType.CollisionZone;
+  simplify: number;
+  /**
+   * Linear quadtree mask painted by the zone paint tool.
+   * Keys are `${level}:${bx}:${by}` where level ∈ {1,2,4,8,16}.
+   * This is the editor's source of truth; `shapes` is derived from it.
+   */
+  quadMask: Record<string, boolean>;
   // We hide the object while painting
   hidden: boolean;
 }
 
+export interface CollisionObj extends BaseZoneObj {
+  type: MapObjType.CollisionZone;
+}
+
 export interface SinkZoneObj extends BaseZoneObj {
   type: MapObjType.SinkZone;
+  depth: number;
+  padding: number;
 }
 
 export interface SoundZoneObj extends BaseZoneObj {
   type: MapObjType.SoundZone;
+  sound: string;
+  padding: number;
+  volume: number;
 }
 
 export interface ZoomZoneObj extends BaseZoneObj {
   type: MapObjType.ZoomZone;
+  zoom: number;
+  padding: number;
 }
 
 export interface SensorZoneObj extends BaseZoneObj {
@@ -247,6 +261,12 @@ export function isBackgroundImageObj(
   obj: Partial<MapObj>,
 ): obj is BackgroundImageObj {
   return obj.type === MapObjType.BackgroundImage;
+}
+
+export function isCollisionZoneObj(
+  obj: Partial<BaseMapObj>,
+): obj is SinkZoneObj {
+  return obj.type === MapObjType.CollisionZone;
 }
 
 export function isSinkZoneObj(obj: Partial<BaseMapObj>): obj is SinkZoneObj {

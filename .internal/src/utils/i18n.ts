@@ -1,7 +1,6 @@
 import { CSSProperties } from "react";
 import { log } from "../log";
 
-// Keep this in sync with what our `translator` package supports
 const codeToLanguage = {
   main: "English",
   en: "English", // English

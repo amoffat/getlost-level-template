@@ -132,10 +132,10 @@ export const slice = createSlice({
       autotiler: { candidates: [], gridPosFreeze: null },
       "paint-zone": {
         mode: "paint",
-        brushSize: 3,
+        brushSize: 16,
         brushShape: "square",
         overlayOpacity: 0.5,
-        showColliders: false,
+        showPolygons: false,
         simplify: 0.5,
         zoneType: MapObjType.CollisionZone,
       },
@@ -148,11 +148,7 @@ export const slice = createSlice({
     modeStack: [],
     layers: {
       active: MapLayerName.Exterior,
-      visible: [
-        MapLayerName.Ground,
-        MapLayerName.Exterior,
-        MapLayerName.Sensors,
-      ],
+      visible: [MapLayerName.Ground, MapLayerName.Exterior, MapLayerName.Zones],
       lockInactive: true,
       dimInactive: false,
     },

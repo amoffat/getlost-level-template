@@ -1,0 +1,65 @@
+import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
+import "@mantine/spotlight/styles.css";
+
+import { store } from "@/store/store";
+
+import { CommsProvider } from "@/components/providers/CommsProvider";
+import { router } from "@/router";
+import { MantineProvider, MantineThemeOverride } from "@mantine/core";
+import { ModalsProvider } from "@mantine/modals";
+import { Notifications } from "@mantine/notifications";
+import { Provider as ReduxProvider } from "react-redux";
+import { RouterProvider } from "react-router-dom";
+import ItemizedConfirmModal from "./components/modals/ItemizedConfirmModal";
+import { overlayProps } from "./constants";
+
+const theme: MantineThemeOverride = {
+  defaultRadius: "sm",
+  components: {
+    Alert: { defaultProps: { variant: "filled", color: "pink" } },
+    // Container: { defaultProps: { p: "xs" } },
+    // Paper: { defaultProps: { p: "xs" } },
+    // Button: { defaultProps: { p: "xs" } },
+    Stack: { defaultProps: { p: "xs" } },
+    // Flex: { defaultProps: { gap: "xs" } },
+    Dropzone: { defaultProps: { radius: 0 } },
+    Fieldset: { defaultProps: { radius: 0 } },
+    Tabs: { defaultProps: { radius: 0 } },
+    // "Tabs.Panel": { defaultProps: { pt: "xs" } },
+    // TextInput: { defaultProps: { size: "xs" } },
+    // Textarea: { defaultProps: { size: "xs" } },
+    // Switch: { defaultProps: { size: "xs" } },
+    Modal: {
+      defaultProps: { overlayProps },
+    },
+    // Title: { defaultProps: { order: 3 } },
+  },
+};
+
+const modals = {
+  confirm: ItemizedConfirmModal,
+};
+declare module "@mantine/modals" {
+  export interface MantineModalsOverride {
+    modals: typeof modals;
+  }
+}
+
+export default function App() {
+  return (
+    <ReduxProvider store={store}>
+      <MantineProvider defaultColorScheme="dark" theme={theme}>
+        <Notifications position="top-center" containerWidth={"30%"} />
+        <ModalsProvider
+          modals={modals}
+          modalProps={{ overlayProps: overlayProps }}
+        >
+          <CommsProvider>
+            <RouterProvider router={router} />
+          </CommsProvider>
+        </ModalsProvider>
+      </MantineProvider>
+    </ReduxProvider>
+  );
+}

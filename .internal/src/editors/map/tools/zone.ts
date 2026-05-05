@@ -5,9 +5,19 @@ import { store } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import { isZoneObj, MapObjType, ZoneObj } from "@/types/map";
+import { ZonePaintOpts } from "@/types/tools";
 import { BrushShape, ZoneType } from "@/types/zone";
 import { shallowEquals } from "@/utils/array";
-import { determineCoverage, pointInTriangle } from "@/utils/collider";
+import { determineCoverage } from "@/utils/collider";
+import {
+  createQuadTree,
+  Level,
+  qtInsert,
+  qtRemove,
+  qtSnapLevel,
+  qtToAdaptiveMask,
+  QuadTree,
+} from "@/utils/quadtree";
 import { subState } from "@/utils/redux";
 import * as P from "pixi.js";
 import { globals as g } from "../globals";
@@ -19,24 +29,24 @@ import { globals as g } from "../globals";
  * strokes modify that object; otherwise a new object is created on first commit.
  */
 export class ZonePaintTool implements Tool {
-  private maskGraphics: P.Graphics | null = null;
-  private maskTexture: P.RenderTexture | null = null;
-  private maskSprite: P.Sprite | null = null;
-  private brushContainer: P.Container | null = null;
-  private brushGraphics: P.Graphics | null = null;
-  private rectsGraphics: P.Graphics | null = null;
+  private _maskGraphics: P.Graphics | null = null;
+  private _maskTexture: P.RenderTexture | null = null;
+  private _maskSprite: P.Sprite | null = null;
+  private _brushContainer: P.Container | null = null;
+  private _brushGraphics: P.Graphics | null = null;
+  private _rectsGraphics: P.Graphics | null = null;
 
-  private isDrawing = false;
-  private lastDrawPos: P.Point | null = null;
-  private startDrawPos: P.Point | null = null;
+  private _isDrawing = false;
+  private _lastDrawPos: P.Point | null = null;
+  private _startDrawPos: P.Point | null = null;
 
-  private brushSize = 3;
-  private brushShape: BrushShape = "square";
-  private isEraserMode = false;
-  private overlayOpacity = 0.5;
-  public showColliders = true;
-  private simplify = 0.5;
-  private zoneType: ZoneType = MapObjType.CollisionZone;
+  private _brushSize: Level = 16;
+  private _brushShape: BrushShape = "square";
+  private _isEraserMode = false;
+  private _overlayOpacity = 0.5;
+  private _showPolygons: boolean = false;
+  private _simplify = 0.5;
+  private _zoneType: ZoneType = MapObjType.CollisionZone;
 
   /** Working zone object id — null until first commit or set from selection */
   private _workingObjId: string | null = null;
@@ -55,286 +65,252 @@ export class ZonePaintTool implements Tool {
    */
   public lockedZoneType: ZoneType | null = null;
 
-  /** Tile-grid mask dimensions */
-  private maskWidth = 0;
-  private maskHeight = 0;
-  private tileSize = 16;
-  private boundsX = 0;
-  private boundsY = 0;
+  /** Pixel mask dimensions (equals bounds.width × bounds.height) */
+  private _pixelWidth = 0;
+  private _pixelHeight = 0;
+  private _boundsX = 0;
+  private _boundsY = 0;
 
-  /** The collision mask data (true = filled) at tile-grid resolution */
-  private collisionMask: boolean[][] = [];
+  /**
+   * Pixel offset applied to all quadtree operations so that stored
+   * zone-local coordinates map correctly to map-relative texture pixels.
+   *
+   * For a freshly-painted zone this is 0. When an existing zone is loaded
+   * after being moved, this equals `obj.x - (bounds.x + storedMinPX)` —
+   * i.e. how far the object now sits from where its data expects it to be.
+   * Every read/write/render path adds this offset rather than rewriting keys.
+   */
+  private _zoneOffsetX = 0;
+  private _zoneOffsetY = 0;
+
+  /** Linear quadtree mask (filled nodes at various power-of-2 resolutions) */
+  private _quadTree: QuadTree = createQuadTree();
+  private _maskInitialized = false;
+
+  /** Cache for the last coverage computation — busted whenever the quadtree or simplify tolerance changes. */
+  private _polygonCacheDirty = true;
+  private _cachedCoverage: {
+    shapes: ReturnType<typeof determineCoverage>;
+    mask: boolean[][];
+    cellSize: number;
+    minPX: number;
+    minPY: number;
+  } | null = null;
 
   // -------------------------------------------------------------------------
   // Initialization / teardown
   // -------------------------------------------------------------------------
 
-  private initializeMask(): void {
-    this.clearMaskDisplay();
+  private _initializeMask(): void {
+    this._clearMaskDisplay();
 
     const state = store.getState();
     const bounds = state.mapEditor.bounds;
-    const tileSize = state.mapEditor.grid.size.x;
 
-    this.tileSize = tileSize;
-    this.boundsX = bounds.x;
-    this.boundsY = bounds.y;
-    this.maskWidth = Math.ceil(bounds.width / tileSize);
-    this.maskHeight = Math.ceil(bounds.height / tileSize);
+    this._boundsX = bounds.x;
+    this._boundsY = bounds.y;
+    this._pixelWidth = bounds.width;
+    this._pixelHeight = bounds.height;
 
-    // Always start with an empty mask, then populate from the current object
-    // state if one exists. Reconstructing from the object's actual x/y and
-    // shapes ensures the mask stays in sync even after the object is moved.
-    this.collisionMask = Array(this.maskHeight)
-      .fill(null)
-      .map(() => Array(this.maskWidth).fill(false));
-
+    // Load the quadtree from the working zone object if one exists.
+    // Coordinates in the stored quadMask are map-relative pixels (relative to
+    // bounds.x/y at the time of the last commit). If the zone has since been
+    // moved, obj.x/y will differ from bounds.x + storedMinPX. We track that
+    // difference as _zoneOffsetX/Y and apply it in every read/write/render
+    // path, so the stored data never needs to be rewritten.
+    this._quadTree = createQuadTree();
+    this._zoneOffsetX = 0;
+    this._zoneOffsetY = 0;
+    this._polygonCacheDirty = true;
+    this._cachedCoverage = null;
     if (this.workingObjId) {
       const obj = state.mapEditor.objects.entities[this.workingObjId];
-      if (isZoneObj(obj)) {
-        this.rasterizeShapesToMask(obj.x, obj.y, obj.shapes);
+      if (isZoneObj(obj) && obj.quadMask) {
+        const { minPX: storedMinPX, minPY: storedMinPY } = qtToAdaptiveMask(
+          obj.quadMask,
+        );
+        this._zoneOffsetX = obj.x - (bounds.x + storedMinPX);
+        this._zoneOffsetY = obj.y - (bounds.y + storedMinPY);
+        this._quadTree = { ...obj.quadMask };
       }
     }
+    this._maskInitialized = true;
 
-    const meta = ZONE_TYPE_META[this.zoneType];
+    const meta = ZONE_TYPE_META[this._zoneType];
 
-    // Render texture sized to mask cells, sprite scaled by tileSize
-    this.maskTexture = P.RenderTexture.create({
-      width: this.maskWidth,
-      height: this.maskHeight,
+    // Render texture at full pixel resolution; sprite has no extra scaling.
+    this._maskTexture = P.RenderTexture.create({
+      width: this._pixelWidth,
+      height: this._pixelHeight,
       antialias: false,
     });
-    this.maskTexture.source.scaleMode = "nearest";
+    this._maskTexture.source.scaleMode = "nearest";
 
-    this.maskGraphics = new P.Graphics();
+    this._maskGraphics = new P.Graphics();
 
-    this.maskSprite = new P.Sprite(this.maskTexture);
-    this.maskSprite.position.set(bounds.x, bounds.y);
-    this.maskSprite.scale.set(tileSize, tileSize);
-    this.maskSprite.tint = meta.color;
-    this.maskSprite.alpha = this.overlayOpacity;
-    this.maskSprite.zIndex = 9000;
-    g.mapContainer.addChild(this.maskSprite);
+    this._maskSprite = new P.Sprite(this._maskTexture);
+    this._maskSprite.position.set(bounds.x, bounds.y);
+    this._maskSprite.scale.set(1, 1);
+    this._maskSprite.tint = meta.color;
+    this._maskSprite.alpha = this._overlayOpacity;
+    this._maskSprite.zIndex = 9000;
+    g.mapContainer.addChild(this._maskSprite);
 
-    this.brushContainer = new P.Container();
-    this.brushContainer.zIndex = 9200;
-    this.brushGraphics = new P.Graphics();
-    this.brushContainer.addChild(this.brushGraphics);
-    g.mapContainer.addChild(this.brushContainer);
+    this._brushContainer = new P.Container();
+    this._brushContainer.zIndex = 9200;
+    this._brushGraphics = new P.Graphics();
+    this._brushContainer.addChild(this._brushGraphics);
+    g.mapContainer.addChild(this._brushContainer);
 
-    this.rectsGraphics = new P.Graphics();
-    this.rectsGraphics.position.set(bounds.x, bounds.y);
-    this.rectsGraphics.zIndex = 9100;
-    g.mapContainer.addChild(this.rectsGraphics);
+    this._rectsGraphics = new P.Graphics();
+    this._rectsGraphics.position.set(bounds.x, bounds.y);
+    this._rectsGraphics.zIndex = 9100;
+    g.mapContainer.addChild(this._rectsGraphics);
 
-    this.updateBrushCursor();
-    this.redrawMaskTexture();
+    this._updateBrushCursor();
+    this._redrawMaskTexture();
   }
 
-  private clearMaskDisplay(): void {
-    if (this.maskSprite) {
-      g.mapContainer.removeChild(this.maskSprite);
-      this.maskSprite.destroy();
-      this.maskSprite = null;
+  private _clearMaskDisplay(): void {
+    if (this._maskSprite) {
+      g.mapContainer.removeChild(this._maskSprite);
+      this._maskSprite.destroy();
+      this._maskSprite = null;
     }
-    if (this.maskTexture) {
-      this.maskTexture.destroy(true);
-      this.maskTexture = null;
+    if (this._maskTexture) {
+      this._maskTexture.destroy(true);
+      this._maskTexture = null;
     }
-    if (this.maskGraphics) {
-      this.maskGraphics.destroy();
-      this.maskGraphics = null;
+    if (this._maskGraphics) {
+      this._maskGraphics.destroy();
+      this._maskGraphics = null;
     }
-    if (this.brushContainer) {
-      g.mapContainer.removeChild(this.brushContainer);
-      this.brushContainer.destroy({ children: true });
-      this.brushContainer = null;
-      this.brushGraphics = null;
+    if (this._brushContainer) {
+      g.mapContainer.removeChild(this._brushContainer);
+      this._brushContainer.destroy({ children: true });
+      this._brushContainer = null;
+      this._brushGraphics = null;
     }
-    if (this.rectsGraphics) {
-      g.mapContainer.removeChild(this.rectsGraphics);
-      this.rectsGraphics.destroy();
-      this.rectsGraphics = null;
+    if (this._rectsGraphics) {
+      g.mapContainer.removeChild(this._rectsGraphics);
+      this._rectsGraphics.destroy();
+      this._rectsGraphics = null;
     }
 
-    this.isDrawing = false;
-    this.lastDrawPos = null;
+    this._isDrawing = false;
+    this._lastDrawPos = null;
   }
 
   // -------------------------------------------------------------------------
   // Brush drawing
   // -------------------------------------------------------------------------
 
-  /**
-   * Reconstructs the collisionMask by rasterizing the object's triangulated
-   * shapes back to tile cells. Uses the object's current world position so the
-   * mask stays aligned even if the object was moved since it was last painted.
-   */
-  private rasterizeShapesToMask(
-    objX: number,
-    objY: number,
-    shapes: NonNullable<
-      {
-        shapes?: Array<
-          Array<{
-            a: { x: number; y: number };
-            b: { x: number; y: number };
-            c: { x: number; y: number };
-          }>
-        >;
-      }["shapes"]
-    >,
-  ): void {
-    const ts = this.tileSize;
-    for (let cy = 0; cy < this.maskHeight; cy++) {
-      for (let cx = 0; cx < this.maskWidth; cx++) {
-        // Test the center of this tile cell in object-local coords
-        const localX = this.boundsX + cx * ts + ts / 2 - objX;
-        const localY = this.boundsY + cy * ts + ts / 2 - objY;
-        let inside = false;
-        outer: for (const polygon of shapes) {
-          for (const tri of polygon) {
-            if (pointInTriangle(localX, localY, tri.a, tri.b, tri.c)) {
-              inside = true;
-              break outer;
-            }
-          }
-        }
-        this.collisionMask[cy][cx] = inside;
-      }
-    }
-  }
+  private _updateBrushCursor(): void {
+    if (!this._brushGraphics) return;
+    this._brushGraphics.clear();
 
-  private updateBrushCursor(): void {
-    if (!this.brushGraphics) return;
-    this.brushGraphics.clear();
+    const level = this._brushSize;
 
-    const ts = this.tileSize;
+    const meta = ZONE_TYPE_META[this._zoneType];
 
-    const meta = ZONE_TYPE_META[this.zoneType];
-
-    if (this.brushShape === "circle") {
-      const radius = (this.brushSize * ts) / 2;
-      this.brushGraphics.circle(radius, radius, radius);
+    if (this._brushShape === "circle") {
+      const radius = level / 2;
+      this._brushGraphics.circle(radius, radius, radius);
     } else {
-      this.brushGraphics.rect(0, 0, this.brushSize * ts, this.brushSize * ts);
+      this._brushGraphics.rect(0, 0, level, level);
     }
 
-    this.brushGraphics.fill({
-      color: this.isEraserMode ? 0x0000ff : meta.color,
+    this._brushGraphics.fill({
+      color: this._isEraserMode ? 0x0000ff : meta.color,
       alpha: 0.4,
     });
   }
 
-  /** Convert world position to mask-cell coordinates */
-  private worldToMask(
+  /**
+   * Returns the top-left world coordinate of the quadtree block that the
+   * cursor is snapped to at the current level.
+   */
+  private blockOriginWorld(
     worldX: number,
     worldY: number,
-  ): { mx: number; my: number } {
+  ): { originX: number; originY: number } {
+    const level = this._brushSize;
+    // Subtract the zone offset so snapping aligns with the painted data's
+    // coordinate system, then add it back for the world-space result.
+    const pixelX = worldX - this._boundsX - this._zoneOffsetX;
+    const pixelY = worldY - this._boundsY - this._zoneOffsetY;
+    const bx = Math.floor(pixelX / level);
+    const by = Math.floor(pixelY / level);
     return {
-      mx: Math.floor((worldX - this.boundsX) / this.tileSize),
-      my: Math.floor((worldY - this.boundsY) / this.tileSize),
+      originX: bx * level + this._boundsX + this._zoneOffsetX,
+      originY: by * level + this._boundsY + this._zoneOffsetY,
     };
   }
 
-  /**
-   * Returns the top-left tile origin of the brush centered on (centerMX, centerMY).
-   *
-   * - Circle: fractional origin so the drawn circle is centred on the tile-left-edge
-   *   (matches the circle graphic which is drawn with its centre at (radius, radius)).
-   * - Square: integer-snapped origin so the brush occupies exactly `brushSize` whole
-   *   tiles with the cursor tile in the middle (for odd sizes) or left-of-centre (even).
-   */
-  private brushOrigin(
-    centerMX: number,
-    centerMY: number,
-  ): { originMX: number; originMY: number } {
-    const halfSize = this.brushSize / 2;
-    if (this.brushShape === "circle") {
-      return { originMX: centerMX - halfSize, originMY: centerMY - halfSize };
-    }
-    const halfFloor = Math.floor(halfSize);
-    return {
-      originMX: centerMX - halfFloor,
-      originMY: centerMY - halfFloor,
-    };
-  }
+  private _drawAtPosition(worldX: number, worldY: number): void {
+    if (!this._maskGraphics || !this._maskTexture) return;
 
-  private drawAtPosition(worldX: number, worldY: number): void {
-    if (!this.maskGraphics || !this.maskTexture) return;
+    const level = this._brushSize;
+    const bx = Math.floor((worldX - this._boundsX - this._zoneOffsetX) / level);
+    const by = Math.floor((worldY - this._boundsY - this._zoneOffsetY) / level);
 
-    const { mx: centerMX, my: centerMY } = this.worldToMask(worldX, worldY);
-    const { originMX, originMY } = this.brushOrigin(centerMX, centerMY);
-
-    const minMX = Math.max(0, Math.floor(originMX));
-    const maxMX = Math.min(
-      this.maskWidth - 1,
-      Math.floor(originMX) + this.brushSize - 1,
-    );
-    const minMY = Math.max(0, Math.floor(originMY));
-    const maxMY = Math.min(
-      this.maskHeight - 1,
-      Math.floor(originMY) + this.brushSize - 1,
-    );
-
-    if (this.brushShape === "circle") {
-      const radius = this.brushSize / 2;
-      for (let py = minMY; py <= maxMY; py++) {
-        for (let px = minMX; px <= maxMX; px++) {
-          const dx = px + 0.5 - centerMX;
-          const dy = py + 0.5 - centerMY;
-          if (dx * dx + dy * dy <= radius * radius) {
-            this.collisionMask[py][px] = !this.isEraserMode;
-          }
-        }
-      }
+    if (this._isEraserMode) {
+      qtRemove(this._quadTree, level, bx, by);
     } else {
-      for (let py = minMY; py <= maxMY; py++) {
-        for (let px = minMX; px <= maxMX; px++) {
-          this.collisionMask[py][px] = !this.isEraserMode;
-        }
-      }
+      qtInsert(this._quadTree, level, bx, by);
     }
 
-    this.redrawMaskTexture();
+    this._polygonCacheDirty = true;
+    this._redrawMaskTexture();
   }
 
-  private drawLine(wx1: number, wy1: number, wx2: number, wy2: number): void {
+  private _drawLine(wx1: number, wy1: number, wx2: number, wy2: number): void {
     const dx = wx2 - wx1;
     const dy = wy2 - wy1;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     if (distance === 0) {
-      this.drawAtPosition(wx1, wy1);
+      this._drawAtPosition(wx1, wy1);
       return;
     }
 
-    const step = this.tileSize * (this.brushSize / 4);
+    // Step at most one block-width per sample so we don't skip blocks.
+    const step = this._brushSize;
     const steps = Math.ceil(distance / Math.max(step, 1));
     for (let i = 0; i <= steps; i++) {
       const t = i / steps;
-      this.drawAtPosition(wx1 + dx * t, wy1 + dy * t);
+      this._drawAtPosition(wx1 + dx * t, wy1 + dy * t);
     }
   }
 
-  private redrawMaskTexture(): void {
-    if (!this.maskGraphics || !this.maskTexture) return;
+  private _redrawMaskTexture(): void {
+    if (!this._maskGraphics || !this._maskTexture) return;
 
     const app = g.app;
-    this.maskGraphics.clear();
+    this._maskGraphics.clear();
 
-    for (let y = 0; y < this.maskHeight; y++) {
-      for (let x = 0; x < this.maskWidth; x++) {
-        if (this.collisionMask[y][x]) {
-          this.maskGraphics.rect(x, y, 1, 1);
-        }
+    // Draw each quadtree node as a rect — one draw call per node, not per pixel.
+    for (const k of Object.keys(this._quadTree)) {
+      if (!this._quadTree[k]) continue;
+      const parts = k.split(":");
+      const level = Number(parts[0]);
+      const bx = Number(parts[1]);
+      const by = Number(parts[2]);
+      // Apply the zone offset so the stored coords render at the correct
+      // texture pixel position (accounting for any zone movement since commit).
+      const px = bx * level + this._zoneOffsetX;
+      const py = by * level + this._zoneOffsetY;
+      const w = Math.min(level, this._pixelWidth - px);
+      const h = Math.min(level, this._pixelHeight - py);
+      if (w > 0 && h > 0) {
+        this._maskGraphics.rect(px, py, w, h);
       }
     }
-    this.maskGraphics.fill({ color: 0xffffff, alpha: 1.0 });
+    this._maskGraphics.fill({ color: 0xffffff, alpha: 1.0 });
 
     app.renderer.render({
-      container: this.maskGraphics,
-      target: this.maskTexture,
+      container: this._maskGraphics,
+      target: this._maskTexture,
       clear: true,
       clearColor: [0, 0, 0, 0],
     });
@@ -344,19 +320,18 @@ export class ZonePaintTool implements Tool {
   // Coverage computation and redux commit
   // -------------------------------------------------------------------------
 
-  private computeAndCommit(): void {
-    if (this.collisionMask.length === 0) return;
+  private _computeAndCommit(): void {
+    if (!this._maskInitialized) return;
 
-    const coverageShapes = determineCoverage(this.collisionMask, {
-      simplify: {
-        tolerance: this.simplify,
-        preserveCorners: false,
-      },
-    });
+    const {
+      shapes: coverageShapes,
+      mask,
+      cellSize,
+      minPX,
+      minPY,
+    } = this._getOrComputeCoverage();
 
-    if (this.showColliders) {
-      this.drawColliders(coverageShapes);
-    }
+    this._refreshPolygons();
 
     if (coverageShapes.length === 0) {
       if (this.workingObjId) {
@@ -367,93 +342,94 @@ export class ZonePaintTool implements Tool {
       return;
     }
 
-    // Compute the tight bounding box over all painted mask cells.
-    let minCX = this.maskWidth;
-    let minCY = this.maskHeight;
-    let maxCX = 0;
-    let maxCY = 0;
-    for (let y = 0; y < this.maskHeight; y++) {
-      for (let x = 0; x < this.maskWidth; x++) {
-        if (this.collisionMask[y][x]) {
-          if (x < minCX) minCX = x;
-          if (x > maxCX) maxCX = x;
-          if (y < minCY) minCY = y;
-          if (y > maxCY) maxCY = y;
-        }
-      }
-    }
+    const maskW = mask[0]?.length ?? 0;
+    const maskH = mask.length;
 
-    const ts = this.tileSize;
     const state = store.getState();
     const bounds = state.mapEditor.bounds;
 
-    const objX = bounds.x + minCX * ts;
-    const objY = bounds.y + minCY * ts;
-    const objW = (maxCX - minCX + 1) * ts;
-    const objH = (maxCY - minCY + 1) * ts;
+    const objX = bounds.x + minPX + this._zoneOffsetX;
+    const objY = bounds.y + minPY + this._zoneOffsetY;
+    const objW = maskW * cellSize;
+    const objH = maskH * cellSize;
 
+    // Coverage shape vertices are in mask-cell units. Convert to pixel coords
+    // local to the object origin (which equals minPX/minPY from boundsX/Y).
     const localShapes = coverageShapes.map((polygon) =>
       polygon.map((triangle) => ({
-        a: {
-          x: (triangle.a.x - minCX) * ts,
-          y: (triangle.a.y - minCY) * ts,
-        },
-        b: {
-          x: (triangle.b.x - minCX) * ts,
-          y: (triangle.b.y - minCY) * ts,
-        },
-        c: {
-          x: (triangle.c.x - minCX) * ts,
-          y: (triangle.c.y - minCY) * ts,
-        },
+        a: { x: triangle.a.x * cellSize, y: triangle.a.y * cellSize },
+        b: { x: triangle.b.x * cellSize, y: triangle.b.y * cellSize },
+        c: { x: triangle.c.x * cellSize, y: triangle.c.y * cellSize },
       })),
     );
 
-    const activeZoneType = this.lockedZoneType ?? this.zoneType;
-
+    const activeZoneType = this.lockedZoneType ?? this._zoneType;
     const isFirstCommit = this.workingObjId === null;
-    const objId = this.workingObjId ?? crypto.randomUUID();
-
-    const obj: ZoneObj = {
-      id: objId,
-      layer: MapLayerName.Sensors,
-      x: objX,
-      y: objY,
-      z: 0,
-      width: objW,
-      height: objH,
-      points: [],
-      shapes: localShapes,
-      hidden: true,
-      type: activeZoneType,
-    };
 
     if (isFirstCommit) {
+      const objId = crypto.randomUUID();
+      const obj = {
+        id: objId,
+        layer: MapLayerName.Zones,
+        x: objX,
+        y: objY,
+        z: 0,
+        width: objW,
+        height: objH,
+        shapes: localShapes,
+        quadMask: { ...this._quadTree },
+        hidden: true,
+        type: activeZoneType,
+        simplify: this._simplify,
+        name: "",
+      } as ZoneObj;
+
       this.workingObjId = objId;
       this.lockedZoneType = activeZoneType;
       store.dispatch(actions.addOne(obj));
       store.dispatch(actions.setOneSelected(objId));
     } else {
-      store.dispatch(actions.removeOne(this.workingObjId!));
-      store.dispatch(actions.addOne(obj));
+      const changes = {
+        x: objX,
+        y: objY,
+        z: 0,
+        width: objW,
+        height: objH,
+        shapes: localShapes,
+        quadMask: { ...this._quadTree },
+        simplify: this._simplify,
+      } as Partial<ZoneObj>;
+
+      store.dispatch(actions.updateOne({ id: this.workingObjId!, changes }));
     }
   }
 
-  private drawColliders(
+  private _drawZonePolygons(
     coverageShapes: ReturnType<typeof determineCoverage>,
+    cellSize: number,
+    minPX: number,
+    minPY: number,
   ): void {
-    if (!this.rectsGraphics) return;
-    this.rectsGraphics.clear();
+    if (!this._rectsGraphics) return;
+    this._rectsGraphics.clear();
 
-    const meta = ZONE_TYPE_META[this.lockedZoneType ?? this.zoneType];
+    const meta = ZONE_TYPE_META[this.lockedZoneType ?? this._zoneType];
 
     coverageShapes.forEach((polygon) => {
       polygon.forEach((triangle) => {
-        const ts = this.tileSize;
-        this.rectsGraphics!.poly([
-          { x: triangle.a.x * ts, y: triangle.a.y * ts },
-          { x: triangle.b.x * ts, y: triangle.b.y * ts },
-          { x: triangle.c.x * ts, y: triangle.c.y * ts },
+        this._rectsGraphics!.poly([
+          {
+            x: minPX + this._zoneOffsetX + triangle.a.x * cellSize,
+            y: minPY + this._zoneOffsetY + triangle.a.y * cellSize,
+          },
+          {
+            x: minPX + this._zoneOffsetX + triangle.b.x * cellSize,
+            y: minPY + this._zoneOffsetY + triangle.b.y * cellSize,
+          },
+          {
+            x: minPX + this._zoneOffsetX + triangle.c.x * cellSize,
+            y: minPY + this._zoneOffsetY + triangle.c.y * cellSize,
+          },
         ])
           .fill({ color: meta.color, alpha: 1.0 })
           .stroke({ color: 0xffffff, width: 1, pixelLine: true });
@@ -461,10 +437,42 @@ export class ZonePaintTool implements Tool {
     });
   }
 
-  public clearCoverageDisplay(): void {
-    if (this.rectsGraphics) {
-      this.rectsGraphics.clear();
+  /**
+   * Returns cached coverage shapes, recomputing only when the quadtree or
+   * simplify tolerance has changed since the last computation.
+   */
+  private _getOrComputeCoverage(): {
+    shapes: ReturnType<typeof determineCoverage>;
+    mask: boolean[][];
+    cellSize: number;
+    minPX: number;
+    minPY: number;
+  } {
+    if (this._polygonCacheDirty || !this._cachedCoverage) {
+      const { mask, cellSize, minPX, minPY } = qtToAdaptiveMask(this._quadTree);
+      this._cachedCoverage = {
+        shapes: determineCoverage(mask, {
+          simplify: { tolerance: this._simplify, preserveCorners: false },
+        }),
+        mask,
+        cellSize,
+        minPX,
+        minPY,
+      };
+      this._polygonCacheDirty = false;
     }
+    return this._cachedCoverage;
+  }
+
+  /** Draws (or clears) the polygon overlay based on the current `_showPolygons` flag. */
+  private _refreshPolygons(): void {
+    if (!this._rectsGraphics) return;
+    if (!this._showPolygons) {
+      this._rectsGraphics.clear();
+      return;
+    }
+    const { shapes, cellSize, minPX, minPY } = this._getOrComputeCoverage();
+    this._drawZonePolygons(shapes, cellSize, minPX, minPY);
   }
 
   // -------------------------------------------------------------------------
@@ -472,60 +480,65 @@ export class ZonePaintTool implements Tool {
   // -------------------------------------------------------------------------
 
   public setBrushSize(size: number): void {
-    this.brushSize = Math.max(1, Math.min(50, size));
-    this.updateBrushCursor();
+    this._brushSize = qtSnapLevel(Math.max(1, Math.min(256, size)));
+    this._updateBrushCursor();
   }
 
   public setBrushShape(shape: BrushShape): void {
-    this.brushShape = shape;
-    this.updateBrushCursor();
+    this._brushShape = shape;
+    this._updateBrushCursor();
   }
 
   public setEraserMode(value: boolean): void {
-    this.isEraserMode = value;
-    this.updateBrushCursor();
+    this._isEraserMode = value;
+    this._updateBrushCursor();
+  }
+
+  public setShowPolygons(show: boolean): void {
+    this._showPolygons = show;
+    this._refreshPolygons();
   }
 
   public setOverlayOpacity(opacity: number): void {
-    this.overlayOpacity = Math.max(0, Math.min(1, opacity));
-    if (this.maskSprite) {
-      this.maskSprite.alpha = this.overlayOpacity;
+    this._overlayOpacity = Math.max(0, Math.min(1, opacity));
+    if (this._maskSprite) {
+      this._maskSprite.alpha = this._overlayOpacity;
     }
   }
 
   public setSimplify(value: number): void {
-    this.simplify = value;
+    this._simplify = value;
+    this._polygonCacheDirty = true;
+    this._computeAndCommit();
   }
 
   public setZoneType(type: ZoneType): void {
     if (this.lockedZoneType !== null) return; // locked to selected object
-    this.zoneType = type;
-    if (this.maskSprite) {
-      this.maskSprite.tint = ZONE_TYPE_META[type].color;
+    this._zoneType = type;
+    if (this._maskSprite) {
+      this._maskSprite.tint = ZONE_TYPE_META[type].color;
     }
-    this.updateBrushCursor();
+    this._updateBrushCursor();
   }
 
   /** Clears the mask and removes the working region object from the map. */
   public clearMask(): void {
-    if (this.collisionMask.length === 0) return;
+    if (!this._maskInitialized) return;
 
-    for (let y = 0; y < this.maskHeight; y++) {
-      for (let x = 0; x < this.maskWidth; x++) {
-        this.collisionMask[y][x] = false;
-      }
-    }
+    this._quadTree = createQuadTree();
+    this._polygonCacheDirty = true;
+    this._cachedCoverage = null;
 
-    if (this.maskGraphics && this.maskTexture) {
-      this.maskGraphics.clear();
+    if (this._maskGraphics && this._maskTexture) {
+      this._maskGraphics.clear();
       g.app.renderer.render({
-        container: this.maskGraphics,
-        target: this.maskTexture,
+        container: this._maskGraphics,
+        target: this._maskTexture,
         clear: true,
       });
     }
 
-    this.clearCoverageDisplay();
+    this._rectsGraphics?.clear();
 
     if (this.workingObjId) {
       store.dispatch(actions.removeOne(this.workingObjId));
@@ -546,7 +559,7 @@ export class ZonePaintTool implements Tool {
     if (selectedZone) {
       this.workingObjId = selectedZone.id;
       this.lockedZoneType = selectedZone.type;
-      this.zoneType = selectedZone.type;
+      this._zoneType = selectedZone.type;
       store.dispatch(
         mapActions.updateOne({
           id: this.workingObjId,
@@ -561,12 +574,13 @@ export class ZonePaintTool implements Tool {
       this.lockedZoneType = null;
     }
 
-    this.initializeMask();
+    this._initializeMask();
   }
 
   /** Called when the tool becomes inactive. */
   public deactivate(): void {
-    this.clearMaskDisplay();
+    this._clearMaskDisplay();
+    this._maskInitialized = false;
 
     if (this.workingObjId) {
       store.dispatch(
@@ -587,55 +601,46 @@ export class ZonePaintTool implements Tool {
 
     const mode = selectors.selectMode(store.getState());
     if (mode !== ("paint-zone" as Mode)) return false;
-    if (this.collisionMask.length === 0) return false;
+    if (!this._maskInitialized) return false;
 
     const localPos = g.mapContainer.toLocal(e.global);
-    this.isDrawing = true;
-    this.drawAtPosition(localPos.x, localPos.y);
-    this.lastDrawPos = new P.Point(localPos.x, localPos.y);
-    this.startDrawPos = new P.Point(localPos.x, localPos.y);
+    this._isDrawing = true;
+    this._drawAtPosition(localPos.x, localPos.y);
+    this._lastDrawPos = new P.Point(localPos.x, localPos.y);
+    this._startDrawPos = new P.Point(localPos.x, localPos.y);
     return true;
   }
 
   public onPointerMove(e: P.FederatedPointerEvent): boolean {
     const mode = selectors.selectMode(store.getState());
     if (mode !== ("paint-zone" as Mode)) return false;
-    if (this.collisionMask.length === 0) return false;
+    if (!this._maskInitialized) return false;
 
     const localPos = g.mapContainer.toLocal(e.global);
 
-    if (this.brushContainer) {
-      const ts = this.tileSize;
-      const centerMX = Math.floor((localPos.x - this.boundsX) / ts);
-      const centerMY = Math.floor((localPos.y - this.boundsY) / ts);
-      const { originMX, originMY } = this.brushOrigin(centerMX, centerMY);
-
-      this.brushContainer.position.set(
-        originMX * ts + this.boundsX,
-        originMY * ts + this.boundsY,
+    if (this._brushContainer) {
+      const { originX, originY } = this.blockOriginWorld(
+        localPos.x,
+        localPos.y,
       );
+      this._brushContainer.position.set(originX, originY);
     }
 
-    if (this.isDrawing) {
-      if (this.lastDrawPos) {
-        this.drawLine(
-          this.lastDrawPos.x,
-          this.lastDrawPos.y,
+    if (this._isDrawing) {
+      if (this._lastDrawPos) {
+        this._drawLine(
+          this._lastDrawPos.x,
+          this._lastDrawPos.y,
           localPos.x,
           localPos.y,
         );
       } else {
-        this.drawAtPosition(localPos.x, localPos.y);
+        this._drawAtPosition(localPos.x, localPos.y);
       }
 
-      if (this.showColliders) {
-        const coverageShapes = determineCoverage(this.collisionMask, {
-          simplify: { tolerance: this.simplify, preserveCorners: false },
-        });
-        this.drawColliders(coverageShapes);
-      }
+      this._refreshPolygons();
 
-      this.lastDrawPos = new P.Point(localPos.x, localPos.y);
+      this._lastDrawPos = new P.Point(localPos.x, localPos.y);
       return true;
     }
 
@@ -644,18 +649,18 @@ export class ZonePaintTool implements Tool {
 
   public onPointerUp(e: P.FederatedPointerEvent): boolean {
     if (e.button !== 0) return false;
-    if (!this.isDrawing) return false;
+    if (!this._isDrawing) return false;
 
     const moved =
-      this.startDrawPos !== null &&
-      !this.startDrawPos.equals(g.mapContainer.toLocal(e.global));
-    const wasDrawing = this.isDrawing;
-    this.isDrawing = false;
-    this.lastDrawPos = null;
-    this.startDrawPos = null;
+      this._startDrawPos !== null &&
+      !this._startDrawPos.equals(g.mapContainer.toLocal(e.global));
+    const wasDrawing = this._isDrawing;
+    this._isDrawing = false;
+    this._lastDrawPos = null;
+    this._startDrawPos = null;
 
     if (wasDrawing) {
-      this.computeAndCommit();
+      this._computeAndCommit();
     }
 
     return moved;
@@ -724,21 +729,33 @@ export function setupZonePaintTool(): ZonePaintTool {
     },
   );
 
+  let prevOpts: ZonePaintOpts | null = null;
   subState([(state) => state.mapEditor.toolOptions["paint-zone"]], (opts) => {
-    tool.setBrushSize(opts.brushSize);
-    tool.setBrushShape(opts.brushShape);
-    tool.setEraserMode(opts.mode === "erase");
-    tool.setOverlayOpacity(opts.overlayOpacity);
-    tool.setSimplify(opts.simplify);
-    tool.showColliders = opts.showColliders;
-
-    if (tool.lockedZoneType === null) {
+    if (!prevOpts || opts.brushSize !== prevOpts.brushSize) {
+      tool.setBrushSize(opts.brushSize);
+    }
+    if (!prevOpts || opts.brushShape !== prevOpts.brushShape) {
+      tool.setBrushShape(opts.brushShape);
+    }
+    if (!prevOpts || opts.mode !== prevOpts.mode) {
+      tool.setEraserMode(opts.mode === "erase");
+    }
+    if (!prevOpts || opts.overlayOpacity !== prevOpts.overlayOpacity) {
+      tool.setOverlayOpacity(opts.overlayOpacity);
+    }
+    if (!prevOpts || opts.simplify !== prevOpts.simplify) {
+      tool.setSimplify(opts.simplify);
+    }
+    if (!prevOpts || opts.showPolygons !== prevOpts.showPolygons) {
+      tool.setShowPolygons(opts.showPolygons);
+    }
+    if (
+      tool.lockedZoneType === null &&
+      (!prevOpts || opts.zoneType !== prevOpts.zoneType)
+    ) {
       tool.setZoneType(opts.zoneType);
     }
-
-    if (!opts.showColliders) {
-      tool.clearCoverageDisplay();
-    }
+    prevOpts = opts;
   });
 
   return tool;

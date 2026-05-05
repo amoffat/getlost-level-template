@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/mapEditor";
 import { isZoneObj } from "@/types/map";
 import { BrushShape, PaintMode, ZoneType, zoneTypes } from "@/types/zone";
+import { capitalize } from "@/utils/string";
 import {
   Badge,
   Button,
@@ -16,6 +17,7 @@ import {
   Stack,
   Switch,
   Text,
+  Tooltip,
 } from "@mantine/core";
 import {
   IconBrush,
@@ -37,7 +39,7 @@ export default function ZonePaintTool() {
     brushShape,
     mode,
     overlayOpacity,
-    showColliders,
+    showPolygons: showColliders,
     simplify,
     zoneType,
   } = useAppSelector((state) => state.mapEditor.toolOptions["paint-zone"]);
@@ -86,12 +88,16 @@ export default function ZonePaintTool() {
     const handleWheel = (e: WheelEvent) => {
       if (isControlPressed) {
         e.preventDefault();
-        const delta = e.deltaY > 0 ? -1 : 1;
-        const newSize = Math.max(1, Math.min(16, brushSize + delta));
+        const levels = [1, 2, 4, 8, 16, 32, 64, 128, 256];
+        const currentIdx = levels.indexOf(brushSize);
+        const newIdx = Math.max(
+          0,
+          Math.min(levels.length - 1, currentIdx + (e.deltaY > 0 ? -1 : 1)),
+        );
         dispatch(
           actions.setToolOptions({
             tool: "paint-zone",
-            options: { brushSize: newSize },
+            options: { brushSize: levels[newIdx] },
           }),
         );
       }
@@ -119,7 +125,7 @@ export default function ZonePaintTool() {
       dispatch(
         actions.setToolOptions({
           tool: "paint-zone",
-          options: { brushSize: value },
+          options: { brushSize: Math.round(2 ** value) },
         }),
       );
     },
@@ -168,7 +174,7 @@ export default function ZonePaintTool() {
       dispatch(
         actions.setToolOptions({
           tool: "paint-zone",
-          options: { showColliders: event.currentTarget.checked },
+          options: { showPolygons: event.currentTarget.checked },
         }),
       );
     },
@@ -181,7 +187,7 @@ export default function ZonePaintTool() {
       dispatch(
         actions.setToolOptions({
           tool: "paint-zone",
-          options: { simplify: value, showColliders: true },
+          options: { simplify: value, showPolygons: true },
         }),
       );
     },
@@ -235,6 +241,7 @@ export default function ZonePaintTool() {
               </Badge>
             ) : (
               <SegmentedControl
+                fullWidth
                 value={effectiveZoneType}
                 onChange={handleZoneTypeChange}
                 orientation="vertical"
@@ -243,10 +250,16 @@ export default function ZonePaintTool() {
                   return {
                     value: opt,
                     label: (
-                      <Group gap="xs" wrap="nowrap">
-                        {meta.icon}
-                        {t(meta.label)}
-                      </Group>
+                      <Tooltip
+                        withArrow
+                        position="left"
+                        label={t(`zoneTypeTooltip${capitalize(meta.slug)}`)}
+                      >
+                        <Group gap="xs" wrap="nowrap">
+                          {meta.icon}
+                          {t(meta.label)}
+                        </Group>
+                      </Tooltip>
                     ),
                   };
                 })}
@@ -313,13 +326,25 @@ export default function ZonePaintTool() {
           <Stack gap="xs" p={0} mb="md">
             <Text size="sm">{t("tsColliderBrushSize")}</Text>
             <Slider
-              label={t("tsColliderBrushSize")}
-              value={brushSize}
+              label={null}
+              value={Math.log2(brushSize)}
               onChange={handleBrushSizeChange}
-              min={1}
-              max={16}
+              min={2}
+              max={8}
               step={1}
-              marks={[{ value: 1 }, { value: 16 }]}
+              scale={(v) => Math.round(2 ** v)}
+              restrictToMarks
+              marks={[
+                // { value: 0, label: "1" },
+                // { value: 1, label: "2" },
+                { value: 2, label: "4" },
+                { value: 3, label: "8" },
+                { value: 4, label: "16px" },
+                { value: 5, label: "32" },
+                { value: 6, label: "64" },
+                { value: 7, label: "128" },
+                { value: 8, label: "256" },
+              ]}
             />
           </Stack>
 

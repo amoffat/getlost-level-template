@@ -14,6 +14,7 @@ import {
 } from "@/types/map";
 import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
+import { sortOrder } from "@/utils/layer";
 import { subState } from "@/utils/redux";
 import { rectToBBox } from "@/utils/spatial";
 import { Vector2 } from "@/vec";
@@ -181,10 +182,14 @@ class Selector extends ClickDragListener<Mode> implements Tool {
     // Nothing selected? Clear either the proposed selection (if any) (first
     // click), or the actual selection (second click).
     if (layerHits.length === 0) {
+      const filteredHits = allHits
+        .filter((hit) => hit.layer !== MapLayerName.Background)
+        .sort((a, b) => sortOrder(b.layer) - sortOrder(a.layer));
+
       // It's more ergonomic to allow selecting an object, even if we're not on
       // that layer, if it's the only object under the cursor.
-      if (allHits.length === 1) {
-        const obj = allHits[0];
+      if (filteredHits.length > 0) {
+        const obj = filteredHits[0];
         store
           .dispatch(setActiveLayerThunk({ layer: obj.layer, notify: true }))
           .unwrap();

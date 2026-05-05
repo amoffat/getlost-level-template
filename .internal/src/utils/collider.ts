@@ -1,6 +1,6 @@
+import { ConcavePolygon, Triangle } from "@/types/polygon";
 import { Vector2 } from "@/vec";
 import * as poly2tri from "poly2tri";
-import { ConcavePolygon, Triangle } from "./polygon";
 
 interface SimplifyOptions {
   /** Douglas-Peucker tolerance (in pixels). Higher removes more points. Default: 0.5 */

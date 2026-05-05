@@ -1,7 +1,7 @@
 import { Vector2 } from "@/vec";
 import { Rect } from "./rect";
-import type { BrushShape, PaintMode, ZoneType } from "./zone";
 import type { TileGroupTemplate } from "./tilegroup";
+import type { BrushShape, PaintMode, ZoneType } from "./zone";
 
 export interface PaintOpts {
   mode: "place-once" | "overwrite" | "stack";
@@ -14,7 +14,7 @@ export interface ZonePaintOpts {
   brushSize: number;
   brushShape: BrushShape;
   overlayOpacity: number;
-  showColliders: boolean;
+  showPolygons: boolean;
   simplify: number;
   zoneType: ZoneType;
 }

@@ -202,7 +202,9 @@ function PropertyValueInner<T>({
 
   // Sync local state when the effective value changes from outside
   useEffect(() => {
-    setLocalValue(analysis.effectiveValue);
+    queueMicrotask(() => {
+      setLocalValue(analysis.effectiveValue);
+    });
   }, [analysis.effectiveValue]);
 
   // When the segmented control changes, update scope and trigger onValueChange
@@ -234,40 +236,42 @@ function PropertyValueInner<T>({
     [localValue, onValueChange],
   );
 
+  const handleInputChange = useCallback(
+    (value: T) => {
+      setLocalValue(value);
+
+      if (analysis.hasMixedValues && analysis.hasMixedScopes) {
+        setLocalScope("instance");
+      }
+
+      // Often the input can have rapid changes, like text inputs, so debounce
+      // them
+      if (debounceMs !== undefined) {
+        debouncedSetValue(value);
+      } else {
+        setValue(value);
+      }
+    },
+    [
+      analysis.hasMixedValues,
+      analysis.hasMixedScopes,
+      debounceMs,
+      debouncedSetValue,
+      setValue,
+    ],
+  );
+
   // The widget for the input field, passed in from props
   const inputField = useMemo(
     () =>
+      // eslint-disable-next-line react-hooks/refs
       renderInput({
         key: inputKey,
         defaultValue: localValue,
         scope: localScope === "mixed" ? "instance" : localScope,
-        onChange: (value) => {
-          setLocalValue(value);
-
-          if (analysis.hasMixedValues && analysis.hasMixedScopes) {
-            setLocalScope("instance");
-          }
-
-          // Often the input can have rapid changes, like text inputs, so debounce
-          // them
-          if (debounceMs !== undefined) {
-            debouncedSetValue(value);
-          } else {
-            setValue(value);
-          }
-        },
+        onChange: handleInputChange,
       }),
-    [
-      inputKey,
-      renderInput,
-      localValue,
-      localScope,
-      analysis.hasMixedValues,
-      analysis.hasMixedScopes,
-      debouncedSetValue,
-      debounceMs,
-      setValue,
-    ],
+    [inputKey, renderInput, localValue, localScope, handleInputChange],
   );
 
   const handleReset = useCallback(() => {

@@ -1,7 +1,7 @@
 export enum MapLayerName {
   Ground,
   Exterior,
-  Sensors,
+  Zones,
   Special,
   Background,
 }

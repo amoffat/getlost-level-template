@@ -16,12 +16,15 @@ import {
   isMapObjFromTileset,
   isNpcInstance,
   isTileGroupInstance,
+  isZoneObj,
   MapObj,
   TileGroupInstance,
 } from "@/types/map";
 import { TemplateObject } from "@/types/tilesetobject";
 import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
+import { Text } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import i18n from "i18next";
@@ -43,25 +46,36 @@ export const setActiveLayerThunk = createAsyncThunk(
 
     // Should we move selected objects to the layer?
     if (layer === MapLayerName.Ground || layer === MapLayerName.Exterior) {
-      const selectedTgInstances = selectors
+      const selectedObjs = selectors
         .selectedObjs(state)
         .filter(isTileGroupInstance);
-      if (selectedTgInstances.length > 0) {
-        dispatch(
-          mapActions.updateMany(
-            selectedTgInstances.map((obj) => ({
-              id: obj.id,
-              changes: { layer },
-            })),
+
+      if (selectedObjs.length > 0) {
+        modals.openConfirmModal({
+          title: i18n.t("layerMoveModalTitle"),
+          centered: true,
+          children: (
+            <Text size="sm">
+              {i18n.t("layerMoveModalBody", {
+                count: selectedObjs.length,
+                name,
+              })}
+            </Text>
           ),
-        );
-        notifications.show({
-          title: i18n.t("mapMovedObjects"),
-          message: i18n.t("mapMovedObjectsMessage", {
-            count: selectedTgInstances.length,
-            name,
-          }),
-          autoClose: 3000,
+          onConfirm: () => {
+            dispatch(
+              mapActions.updateMany(
+                selectedObjs.map((obj) => ({
+                  id: obj.id,
+                  changes: { layer },
+                })),
+              ),
+            );
+          },
+          labels: {
+            confirm: i18n.t("moveObjects"),
+            cancel: i18n.t("no"),
+          },
         });
       }
     }
@@ -119,6 +133,15 @@ export const loadMapThunk = createAsyncThunk(
           gApp.backgroundImageCache.set(obj.imageId, canvas);
         }),
       );
+
+      // Zones should only ever be hidden during editing (because the mask is
+      // active then). But sometimes a zone can be hidden and the app crash,
+      // leaving them permanently hidden. Not good, so make sure they're never
+      // hidden on load.
+      const zones = objs.filter(isZoneObj);
+      zones.forEach((zone) => {
+        zone.hidden = false;
+      });
 
       dispatch(mapActions.setAll(objs));
       dispatch(mapActions.setBounds(persisted.bounds));
