@@ -44,7 +44,6 @@ import {
   IconGift,
   IconMapPin,
   IconPaint,
-  IconPhoto,
   IconPointer,
   IconTrash,
   IconUnlink,
@@ -71,7 +70,6 @@ import { renderTileGroup } from "../paletteObjects/TileGroup";
 import Tip from "../Tip";
 import ToolPalette, { ToolDescriptor } from "../ToolPalette";
 import AutotilerTool from "../tools/map/AutotilerTool";
-import BackgroundTool from "../tools/map/BackgroundTool";
 import FillTool from "../tools/map/FillTool";
 import GatewayTool from "../tools/map/GatewayTool";
 import MapBoundsTool from "../tools/map/MapBoundsTool";
@@ -367,12 +365,6 @@ export default function MapEditorTab({
           name: t("mapEditorSetBoundsTool"),
           icon: <IconFrame size={16} />,
           options: <MapBoundsTool />,
-        },
-        "add-background-image": {
-          name: t("mapEditorBackgroundImagesTool"),
-          icon: <IconPhoto size={16} />,
-          layerConstraints: [MapLayerName.Background],
-          options: <BackgroundTool />,
         },
       }) satisfies Partial<Record<Mode, ToolDescriptor>>,
     [t],

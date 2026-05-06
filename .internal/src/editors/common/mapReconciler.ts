@@ -36,6 +36,8 @@ import { EMPTY } from "rxjs";
 import { ReduxReconciler } from "./reconciler";
 import { exitFill } from "./strokes";
 
+const INF_TILE_DIM = 20000;
+
 export class MapObjReconciler extends ReduxReconciler<MapObj> {
   private layerContainers?: Record<number, P.Container>;
   private tilesetCache: Map<string, P.CanvasSource>;
@@ -191,7 +193,9 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       isBackgroundImageObj(obj) &&
       (props.imageId !== undefined ||
         props.width !== undefined ||
-        props.height !== undefined)
+        props.height !== undefined ||
+        props.tileX !== undefined ||
+        props.tileY !== undefined)
     ) {
       recreate = true;
     }
@@ -543,11 +547,34 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         return null;
       }
       const tex = new P.Texture({ source: canvasSource });
-      const sprite = new P.Sprite(tex);
-      sprite.label = "sprite";
-      sprite.eventMode = "passive";
-      sprite.width = obj.width;
-      sprite.height = obj.height;
+
+      const isTiledX = obj.tileX === true;
+      const isTiledY = obj.tileY === true;
+
+      let sprite: P.Sprite | P.TilingSprite;
+      if (isTiledX || isTiledY) {
+        const tileW = isTiledX ? INF_TILE_DIM : obj.width;
+        const tileH = isTiledY ? INF_TILE_DIM : obj.height;
+        const ts = new P.TilingSprite({
+          texture: tex,
+          width: tileW,
+          height: tileH,
+        });
+        // Offset within the container so the original (obj.x, obj.y) anchor is
+        // visually centred within the tiling area.
+        ts.x = isTiledX ? -(INF_TILE_DIM - obj.width) / 2 : 0;
+        ts.y = isTiledY ? -(INF_TILE_DIM - obj.height) / 2 : 0;
+        ts.label = "sprite";
+        ts.eventMode = "passive";
+        sprite = ts;
+      } else {
+        const s = new P.Sprite(tex);
+        s.label = "sprite";
+        s.eventMode = "passive";
+        s.width = obj.width;
+        s.height = obj.height;
+        sprite = s;
+      }
 
       const container = new P.Container();
       container.label = obj.id;

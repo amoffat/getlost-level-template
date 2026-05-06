@@ -162,6 +162,10 @@ export interface BackgroundImageObj extends BaseMapObj {
    * further away);
    */
   parallax: Vector2;
+  /** When true, the image tiles infinitely in the horizontal direction. */
+  tileX: boolean;
+  /** When true, the image tiles infinitely in the vertical direction. */
+  tileY: boolean;
 }
 
 export type MapObj =

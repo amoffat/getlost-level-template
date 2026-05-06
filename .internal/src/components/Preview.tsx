@@ -112,12 +112,10 @@ export default function PreviewTab({
       commitMessage: "Updates",
     },
     validate: {
-      licenseAgreed: (value) =>
-        value ? null : t("previewLicenseRequired"),
+      licenseAgreed: (value) => (value ? null : t("previewLicenseRequired")),
       guidelinesAgreed: (value) =>
         value ? null : t("previewGuidelinesRequired"),
-      assetsDisclosed: (value) =>
-        value ? null : t("previewAssetsRequired"),
+      assetsDisclosed: (value) => (value ? null : t("previewAssetsRequired")),
       commitMessage: (value) =>
         value.trim().length > 0 ? null : t("previewCommitMsgRequired"),
     },
@@ -487,7 +485,7 @@ export default function PreviewTab({
       <Split h="100dvh" style={{ flex: 1 }}>
         {/* Left pane */}
         <Split.Pane
-          initialWidth={300}
+          initialWidth={350}
           minWidth={200}
           maxWidth={500}
           onResizeStart={handlePaneResizeStart}
@@ -728,7 +726,7 @@ export default function PreviewTab({
 
             {/* Bottom pane */}
             <Split.Pane
-              initialHeight={350}
+              initialHeight={275}
               minHeight={100}
               maxHeight={500}
               onResizeStart={handlePaneResizeStart}
@@ -745,7 +743,7 @@ export default function PreviewTab({
 
         {/* Right toolbar - tools and options */}
         <Split.Pane
-          initialWidth={300}
+          initialWidth={350}
           minWidth={200}
           maxWidth={500}
           onResizeStart={handlePaneResizeStart}

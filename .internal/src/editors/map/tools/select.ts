@@ -51,7 +51,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
   }
 
   protected override get providedModes(): Set<Mode> {
-    return new Set(["select", "add-background-image"]);
+    return new Set(["select"]);
   }
 
   private get _addToSelection(): boolean {
@@ -68,11 +68,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
     // start a marquee. This will always be true if we're on the ground layer,
     // so we'll do some extra checks related to the ground layer in this block.
     if (e.hoverIds.length > 0) {
-      // Don't override "add-background-image" mode — that mode intentionally
-      // shares select behaviour without resetting the active tool.
-      if (state.mapEditor.activeTool !== "add-background-image") {
-        store.dispatch(actions.setActiveTool("select"));
-      }
+      store.dispatch(actions.setActiveTool("select"));
       const sel = state.mapEditor.selectedIds;
       const selIds = new Set(sel);
 
@@ -183,7 +179,6 @@ class Selector extends ClickDragListener<Mode> implements Tool {
     // click), or the actual selection (second click).
     if (layerHits.length === 0) {
       const filteredHits = allHits
-        .filter((hit) => hit.layer !== MapLayerName.Background)
         .sort((a, b) => sortOrder(b.layer) - sortOrder(a.layer));
 
       // It's more ergonomic to allow selecting an object, even if we're not on
@@ -280,7 +275,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
         zoom: state.mapEditor.zoomPan.zoom,
       });
       const activeTool = state.mapEditor.activeTool;
-      if (activeTool !== "select" && activeTool !== "add-background-image") {
+      if (activeTool !== "select") {
         store.dispatch(actions.setActiveTool("select"));
       }
       return true;
@@ -337,7 +332,7 @@ class Resizer extends ClickDragListener<Mode> implements Tool {
   }
 
   protected override get providedModes(): Set<Mode> {
-    return new Set(["select", "add-background-image"]);
+    return new Set(["select"]);
   }
 
   /** Returns the selected BackgroundImageObj if exactly one is selected. */
@@ -762,35 +757,5 @@ subState(
   [mapEdSelectors.selectedObjs, (state) => state.mapEditor.zoomPan.zoom],
   (selectedObjs, zoom) => {
     outlineObjects(selectedObjs, zoom);
-  },
-);
-
-/**
- * Auto-switch activeTool between "select" and "add-background-image" depending
- * on whether a BackgroundImageObj is part of the current selection.
- *
- * - Selecting a background image while in "select" mode → switches to
- *   "add-background-image" so the BackgroundTool panel appears naturally and
- *   the toolbar button highlights correctly.
- * - Deselecting all backgrounds while in "add-background-image" mode → reverts
- *   to "select" so the normal select tool panel is restored.
- *
- * Only transitions between these two modes; other tool modes (paint, fill, …)
- * are left untouched.
- */
-subState(
-  [
-    mapEdSelectors.selectedObjs,
-    (state: RootState) => state.mapEditor.activeTool,
-  ],
-  (selectedObjs, activeTool) => {
-    if (selectedObjs.length > 0) {
-      const hasBackground = selectedObjs.some(isBackgroundImageObj);
-      if (hasBackground && activeTool === "select") {
-        store.dispatch(actions.setActiveTool("add-background-image"));
-      } else if (!hasBackground && activeTool === "add-background-image") {
-        store.dispatch(actions.setActiveTool("select"));
-      }
-    }
   },
 );

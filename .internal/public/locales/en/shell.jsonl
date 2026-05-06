@@ -101,16 +101,6 @@
 {"k": "gatewayEntranceLabel", "v": "Entrance"}
 {"k": "gatewayExitTooltip", "v": "Where the player exits the level"}
 {"k": "gatewayExitLabel", "v": "Exit"}
-{"k": "backgroundToolTip1", "v": "Add a new background image by dragging and dropping it onto the editor."}
-{"k": "backgroundToolTip2", "v": "Move a background image around by selecting and dragging it in the editor."}
-{"k": "backgroundToolTip3", "v": "Re-order the background images by dragging their handles below."}
-{"k": "backgroundToolParallaxPreviewLabel", "v": "Parallax preview"}
-{"k": "backgroundToolParallaxPreviewDesc", "v": "Toggle parallax effect for all layers"}
-{"k": "backgroundToolDisableParallax", "v": "Disable parallax preview"}
-{"k": "backgroundToolEnableParallax", "v": "Enable parallax preview"}
-{"k": "backgroundToolRemoveImage", "v": "Remove background image"}
-{"k": "backgroundToolParallaxX", "v": "Parallax X: {{value}}", "ctx": "Label showing parallax X value. {{value}} is the formatted decimal number"}
-{"k": "backgroundToolParallaxY", "v": "Parallax Y: {{value}}", "ctx": "Label showing parallax Y value. {{value}} is the formatted decimal number"}
 {"k": "mapBoundsTip1", "v": "Adjust the map boundaries by clicking and dragging."}
 {"k": "mapBoundsTip2", "v": "The bounds define the playable area of your level."}
 {"k": "tsColliderTipDrawMasks", "v": "Draw collision masks on tile groups by painting directly on the tileset.", "ctx": "Collider tool tip"}
@@ -282,7 +272,6 @@
 {"k": "mapEditorAddLightTool", "v": "Add light", "ctx": "Map editor tool name for placing a light source"}
 {"k": "mapEditorAddPickupTool", "v": "Add pickup", "ctx": "Map editor tool name for placing a pickup item"}
 {"k": "mapEditorSetBoundsTool", "v": "Set bounds", "ctx": "Map editor tool name for defining map boundaries"}
-{"k": "mapEditorBackgroundImagesTool", "v": "Background images", "ctx": "Map editor tool name for managing background images"}
 {"k": "mapEditorSelectToolTip", "v": "Select a tool above to start editing the map.", "ctx": "Tip shown when no map editor tool is active"}
 {"k": "mapEditorObjectsTab", "v": "Objects", "ctx": "Palette tab label for tile group objects in the map editor"}
 {"k": "mapEditorAnimationsTab", "v": "Animations", "ctx": "Palette tab label for animation objects in the map editor"}
@@ -600,3 +589,25 @@
 {"k": "layerMoveModalBody", "v": "You're switching layers with {{count}} objects selected. Would you like to move them to layer {{name}}?", "ctx": "The body of the modal for asking the user if they want to move objects to a new layer"}
 {"k": "moveObjects", "v": "Yes, move objects"}
 {"k": "no", "v": "No", "ctx": "no"}
+{"k": "bgImagePropLegend", "v": "Background Image"}
+{"k": "bgImagePropParallaxPreviewLabel", "v": "Parallax preview"}
+{"k": "bgImagePropParallaxPreviewDesc", "v": "Toggle parallax effect for this layer in the editor"}
+{"k": "bgImagePropDisableParallax", "v": "Disable parallax preview"}
+{"k": "bgImagePropEnableParallax", "v": "Enable parallax preview"}
+{"k": "bgImagePropParallaxXLabel", "v": "Parallax X"}
+{"k": "bgImagePropParallaxXDesc", "v": "Controls how fast this layer scrolls horizontally relative to the camera. 0 = fixed (no scroll), 1 = moves with the camera."}
+{"k": "bgImagePropParallaxYLabel", "v": "Parallax Y"}
+{"k": "bgImagePropParallaxYDesc", "v": "Controls how fast this layer scrolls vertically relative to the camera. 0 = fixed (no scroll), 1 = moves with the camera."}
+{"k": "bgImagePropTileXLabel", "v": "Tile horizontally"}
+{"k": "bgImagePropTileXDesc", "v": "Tile this image infinitely in the horizontal direction"}
+{"k": "bgImagePropTileYLabel", "v": "Tile vertically"}
+{"k": "bgImagePropTileYDesc", "v": "Tile this image infinitely in the vertical direction"}
+{"k": "uploadAssetChooseTypeTitle", "v": "Choose asset type"}
+{"k": "uploadAssetChooseTypeBackground", "v": "Background image"}
+{"k": "uploadAssetChooseTypeBackgroundDesc", "v": "Parallax background image (sky, distant scenery, etc.)"}
+{"k": "uploadAssetChooseTypeTileset", "v": "Tileset"}
+{"k": "uploadAssetChooseTypeTilesetDesc", "v": "Tile-based sprite sheet for use in the map editor"}
+{"k": "bgImagePropMultipleSelected", "v": "{{count}} background images selected", "ctx": "Alert shown when multiple background images are selected at once"}
+{"k": "bgImagePropMoveUp", "v": "Move layer up"}
+{"k": "bgImagePropMoveDown", "v": "Move layer down"}
+{"k": "uploadAssetChooseTypeContinue", "v": "Continue"}

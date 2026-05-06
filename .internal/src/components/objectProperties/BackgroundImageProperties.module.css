@@ -4,6 +4,7 @@
   height: 80px;
   flex-shrink: 0;
   overflow: hidden;
+  border-radius: var(--mantine-radius-sm);
 }
 
 .thumbnailCheckers {

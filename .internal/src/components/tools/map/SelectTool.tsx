@@ -1,4 +1,5 @@
 import AnimationProperties from "@/components/objectProperties/AnimationProperties";
+import BackgroundImageProperties from "@/components/objectProperties/BackgroundImageProperties";
 import SinkZoneProperties from "@/components/objectProperties/zones/SinkZoneProperties";
 import SoundZoneProperties from "@/components/objectProperties/zones/SoundZoneProperties";
 import ZoomZoneProperties from "@/components/objectProperties/zones/ZoomZoneProperties";
@@ -14,6 +15,8 @@ import {
   EntranceObj,
   ExitObj,
   isAnimatedInstance,
+  BackgroundImageObj,
+  isBackgroundImageObj,
   isCollisionZone,
   isEntranceObj,
   isExitObj,
@@ -98,6 +101,7 @@ export default function SelectTool() {
     const sinkZones: SinkZoneObj[] = [];
     const zoomZones: ZoomZoneObj[] = [];
     const soundZones: SoundZoneObj[] = [];
+    const backgroundImages: BackgroundImageObj[] = [];
 
     for (const obj of deferredSelectedObjs) {
       if (isTileGroupInstance(obj)) {
@@ -124,6 +128,8 @@ export default function SelectTool() {
         sensorZones.push(obj);
       } else if (isCollisionZone(obj)) {
         collisionZones.push(obj);
+      } else if (isBackgroundImageObj(obj)) {
+        backgroundImages.push(obj);
       }
     }
 
@@ -138,6 +144,7 @@ export default function SelectTool() {
       sinkZones.length > 0,
       zoomZones.length > 0,
       soundZones.length > 0,
+      backgroundImages.length > 0,
     ].filter(Boolean).length;
 
     if (typesCount > 1) {
@@ -201,6 +208,12 @@ export default function SelectTool() {
 
     if (collisionZones.length > 0) {
       return <CollisionZoneProperties key="collision-zone-props" objs={collisionZones} />;
+    }
+
+    if (backgroundImages.length > 0) {
+      return (
+        <BackgroundImageProperties key="bg-image-props" objs={backgroundImages} />
+      );
     }
 
     return null;

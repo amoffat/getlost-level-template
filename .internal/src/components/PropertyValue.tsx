@@ -350,13 +350,6 @@ function PropertyValueInner<T>({
     return scopes;
   }, [localScope]);
 
-  // No template implies only instance-level editing, so it doesn't make sense
-  // to change the instance values of multiple objects at once since they likely
-  // have different values.
-  if (noTemplate && values.length > 1) {
-    return null;
-  }
-
   // Uncontrolled = more performant
   const isControlled = "value" in (inputField.props as any);
   if (isControlled) {

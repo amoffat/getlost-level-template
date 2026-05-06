@@ -1,45 +1,83 @@
-import { Modal } from "@mantine/core";
+import RadioCard from "@/components/assetTypes/RadioCard";
+import { Button, Modal, Radio, Stack } from "@mantine/core";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import BackgroundUploadOptions from "./BackgroundUploadOptions";
 import TilesetUploadOptions from "./TilesetUploadOptions";
+
+type AssetType = "tileset" | "background";
 
 export interface UploadAssetModalProps {
   files: File[];
   opened: boolean;
   closeModal: () => void;
-  /** Controls which upload flow to use. Defaults to "tileset". */
-  mode?: "tileset" | "background";
 }
 
 export default function UploadAssetModal({
   files,
   opened,
   closeModal,
-  mode = "tileset",
 }: UploadAssetModalProps) {
   const { t } = useTranslation();
+  const [assetType, setAssetType] = useState<AssetType | null>(null);
+  const [pendingType, setPendingType] = useState<AssetType | null>(null);
+
   const title =
-    mode === "background"
-      ? files.length === 1
-        ? t("uploadAssetUploadBackground")
-        : t("uploadAssetUploadBackgroundPlural", { count: files.length })
-      : t("uploadAssetTilesetUpload");
+    assetType === null
+      ? t("uploadAssetChooseTypeTitle")
+      : assetType === "background"
+        ? files.length === 1
+          ? t("uploadAssetUploadBackground")
+          : t("uploadAssetUploadBackgroundPlural", { count: files.length })
+        : t("uploadAssetTilesetUpload");
+
+  const handleClose = () => {
+    setAssetType(null);
+    setPendingType(null);
+    closeModal();
+  };
+
+  const handleConfirm = () => {
+    if (pendingType) setAssetType(pendingType);
+  };
 
   return (
     <Modal
       size="lg"
       centered
       opened={opened}
-      onClose={closeModal}
+      onClose={handleClose}
       title={title}
       closeOnClickOutside={false}
     >
-      {mode === "background" ? (
-        <BackgroundUploadOptions files={files} closeModal={closeModal} />
+      {!assetType ? (
+        <Stack>
+          <Radio.Group
+            value={pendingType ?? ""}
+            onChange={(v) => setPendingType(v as AssetType)}
+          >
+            <Stack gap="xs">
+              <RadioCard
+                value="background"
+                label={t("uploadAssetChooseTypeBackground")}
+                description={t("uploadAssetChooseTypeBackgroundDesc")}
+              />
+              <RadioCard
+                value="tileset"
+                label={t("uploadAssetChooseTypeTileset")}
+                description={t("uploadAssetChooseTypeTilesetDesc")}
+              />
+            </Stack>
+          </Radio.Group>
+          <Button onClick={handleConfirm} disabled={!pendingType}>
+            {t("uploadAssetChooseTypeContinue")}
+          </Button>
+        </Stack>
+      ) : assetType === "background" ? (
+        <BackgroundUploadOptions files={files} closeModal={handleClose} />
       ) : (
-        <TilesetUploadOptions files={files} closeModal={closeModal} />
+        <TilesetUploadOptions files={files} closeModal={handleClose} />
       )}
     </Modal>
   );
 }
-

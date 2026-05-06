@@ -14,7 +14,7 @@ let tiltShift!: number;
  * filters, or setting up event handlers.
  */
 export async function init(): Promise<void> {
-  tiltShift = filters.addTiltShift(0.06);
+  tiltShift = filters.addTiltShift(0.0);
   setSunEvent(SunEvent.SolarNoon, 0);
 
   const colors = new ColorMatrixFilter();
@@ -36,7 +36,7 @@ export async function init(): Promise<void> {
     brightness: 0.5,
     threshold: 0.3,
     bloomScale: 0.55,
-    blur: 10,
+    blur: 5,
   });
 
   events.on({

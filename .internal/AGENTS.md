@@ -60,3 +60,4 @@ There's actually 2 systems being used for i18n and l10n. The first system is for
 
 - Functions with more than a few arguments, or functions that will naturally expand over time, should use a destructured object instead of positional arguments.
 - `private` methods should start with an underscore.
+- All user-facing strings should be internationalized. Use no default value to `t()` calls, and rely on the key existing.

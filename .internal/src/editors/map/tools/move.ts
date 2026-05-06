@@ -47,7 +47,7 @@ export class Mover extends ClickDragListener<Mode> implements Tool {
   public override pointerDown(e: PointerEventData): boolean {
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
-    if (!(mode === "select" || mode === "move" || mode === "add-background-image")) return false;
+    if (!(mode === "select" || mode === "move")) return false;
 
     const selIds = new Set(state.mapEditor.selectedIds);
     const shouldMove = e.hoverIds.some((id) => selIds.has(id));

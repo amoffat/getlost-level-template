@@ -105,6 +105,8 @@ export const uploadBackgroundImageThunk = createAsyncThunk(
           width: imgWidth,
           height: imgHeight,
           parallax: { x: 1, y: 1 },
+          tileX: false,
+          tileY: false,
         }),
       );
     }
