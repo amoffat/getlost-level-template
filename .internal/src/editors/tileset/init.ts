@@ -245,14 +245,3 @@ export async function init(): Promise<P.Application> {
 subState([(state) => state.tilesetEditor.grid.visible], (visible) => {
   g.grid.visible = visible;
 });
-
-subState([(state) => state.tilesetEditor.scanPos], (scanPos) => {
-  if (scanPos === null) {
-    g.scanPos.visible = false;
-  } else {
-    g.scanPos.visible = true;
-    g.scanPos.position.set(scanPos.x, scanPos.y);
-    g.scanPos.width = scanPos.width;
-    g.scanPos.height = scanPos.height;
-  }
-});

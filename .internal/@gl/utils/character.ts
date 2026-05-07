@@ -40,7 +40,7 @@ export class Character {
   public mass: number = 40;
   public maxVelocity: Vec2 = Vec2.fromMagnitude(100);
   private _action: CharAction = CharAction.Idle;
-  public name: string;
+  public id: string;
   private _isPlayer: boolean = false;
   private _visible: boolean = true;
 
@@ -59,14 +59,14 @@ export class Character {
   // When an action is set, it can persist, overriding walk action changes.
   private _persistAction: Delay = new Delay(0);
 
-  constructor(name: string) {
-    this.name = name;
-    const initialPos = char.getPos(name);
+  constructor(id: string) {
+    this.id = id;
+    const initialPos = char.getPos(id);
     this._navPlan = new StationaryPlan(initialPos);
     this._pos = Vec2.fromVector(initialPos);
     this._sourcePos = this._pos;
-    this._isPlayer = this.name == "player";
-    chars.set(name, this);
+    this._isPlayer = this.id == "player";
+    chars.set(id, this);
 
     globalTicker.subscribe((deltaMs) => {
       this.tick(deltaMs);
@@ -120,11 +120,11 @@ export class Character {
   }
 
   public setColorOverlay(color: number, alpha: number): void {
-    char.setColorOverlay({ name: this.name, color, alpha });
+    char.setColorOverlay({ id: this.id, color, alpha });
   }
 
   public setAlpha(alpha: number): void {
-    char.setAlpha({ name: this.name, alpha });
+    char.setAlpha({ id: this.id, alpha });
   }
 
   public get action(): CharAction {
@@ -137,11 +137,11 @@ export class Character {
 
     this._action = newAction;
     this._persistAction = new Delay(duration);
-    char.setAction(this.name, this._action);
+    char.setAction(this.id, this._action);
   }
 
   set collisions(enabled: boolean) {
-    char.makeCollidable(this.name, enabled);
+    char.makeCollidable(this.id, enabled);
   }
 
   setNavPlan(navPlan: NavPlan, navImmediately: boolean = true): void {
@@ -183,7 +183,7 @@ export class Character {
 
     this._targetPath = (
       await navigation.findPath(
-        this.name,
+        this.id,
         this._pos.toVector(),
         targetPos.toVector(),
         nearestIsOk,
@@ -210,7 +210,7 @@ export class Character {
     volume: number = 1.0,
     onlyWhileMoving: boolean = false,
   ): void {
-    char.setMoveSound({ name: this.name, sound, volume, onlyWhileMoving });
+    char.setMoveSound({ id: this.id, sound, volume, onlyWhileMoving });
   }
 
   private set state(state: NavState) {
@@ -218,9 +218,9 @@ export class Character {
   }
 
   public set visibility(enabled: boolean) {
-    char.toggle(this.name, enabled);
+    char.toggle(this.id, enabled);
     this._visible = enabled;
-    navigation.clearPath(this.name);
+    navigation.clearPath(this.id);
   }
 
   /**
@@ -258,7 +258,7 @@ export class Character {
     this._velocity = new Vec2(0, 0);
     this.direction = new Vec2(0, 0);
     this.collisions = true;
-    navigation.clearPath(this.name); // clears the debug line
+    navigation.clearPath(this.id); // clears the debug line
   }
 
   protected getMoveAction(velocity: Vec2): CharAction {
@@ -297,7 +297,7 @@ export class Character {
       }
     }
 
-    const props = char.getMoveProps(this.name);
+    const props = char.getMoveProps(this.id);
     if (!this._isPlayer) {
       this.direction = new Vec2(0, 0);
     }
@@ -404,7 +404,7 @@ export class Character {
       // Check for collisions and adjust proposed translation
       if (needsCollisionCheck) {
         const correctedTrans = char.checkCollision({
-          name: this.name,
+          id: this.id,
           pos: this._pos,
           translation: proposedTrans,
         });
@@ -431,7 +431,7 @@ export class Character {
       // Check for collisions and adjust proposed translation
       if (needsCollisionCheck) {
         const correctedTrans = char.checkCollision({
-          name: this.name,
+          id: this.id,
           pos: this._pos,
           translation: proposedTrans,
         });
@@ -452,8 +452,8 @@ export class Character {
       1.0,
       Math.max(0.4, this._velocity.magnitude / 35),
     );
-    char.setSpeed(this.name, animSpeed);
-    char.setPos(this.name, this._pos.x, this._pos.y);
+    char.setSpeed(this.id, animSpeed);
+    char.setPos(this.id, this._pos.x, this._pos.y);
     this.setAction(moveAction);
   }
 

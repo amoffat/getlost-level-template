@@ -11,7 +11,7 @@ import PropertyValue, {
 } from "../../PropertyValue";
 import BaseZoneProperties from "./BaseZoneProperties";
 
-const RELEVANT_PROPS = ["id", "name", "sound", "padding", "volume"] as const;
+const RELEVANT_PROPS = ["id", "sound", "padding", "volume"] as const;
 
 function SoundZoneProperties({ objs }: { objs: SoundZoneObj[] }) {
   const { t } = useTranslation();
@@ -29,12 +29,6 @@ function SoundZoneProperties({ objs }: { objs: SoundZoneObj[] }) {
   const soundValues: PropertyValueInfo<string>[] = objs.map((o) => ({
     key: o.id,
     value: o.sound ?? "",
-    scope: "instance",
-  }));
-
-  const paddingValues: PropertyValueInfo<number>[] = objs.map((o) => ({
-    key: o.id,
-    value: o.padding ?? 0,
     scope: "instance",
   }));
 
@@ -67,34 +61,6 @@ function SoundZoneProperties({ objs }: { objs: SoundZoneObj[] }) {
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             onChange(e.target.value)
           }
-        />
-      )}
-    />
-  );
-
-  const paddingInput = (
-    <PropertyValue
-      label={t("soundZonePropPaddingLabel")}
-      noTemplate
-      values={paddingValues}
-      defaultValue={0}
-      debounceMs={100}
-      onValueChange={({
-        value,
-      }: {
-        scope: PropertyValueScope;
-        value: number | undefined;
-      }) => {
-        updateObjs({ padding: value });
-      }}
-      renderInput={({ key, defaultValue: value, onChange }): ReactElement => (
-        <Slider
-          key={key}
-          defaultValue={value}
-          min={0}
-          max={100}
-          step={1}
-          onChange={onChange}
         />
       )}
     />
@@ -136,7 +102,6 @@ function SoundZoneProperties({ objs }: { objs: SoundZoneObj[] }) {
       updateObjs={updateObjs}
     >
       {soundInput}
-      {paddingInput}
       {volumeInput}
     </BaseZoneProperties>
   );

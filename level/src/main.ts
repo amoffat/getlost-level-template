@@ -1,4 +1,5 @@
 import * as filters from "@gl/api/filters";
+import * as object from "@gl/api/object";
 import * as story from "@gl/api/story";
 
 import { setSunEvent } from "@gl/api/time";
@@ -98,5 +99,9 @@ export function movePlayer(dir: Vec2): void {
  */
 export async function tick(timestep: number, paused: boolean) {
   filters.setTiltShiftY(tiltShift, player.pos.y - 10);
+  object.translate("e397031f-ec42-4a1d-8146-50dd937baf1a", {
+    x: -0.02 * timestep,
+    y: 0,
+  });
   // setSunTime(Date.now());
 }

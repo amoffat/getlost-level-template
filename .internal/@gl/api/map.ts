@@ -20,7 +20,7 @@ export declare function exit(name: string, force: boolean): Promise<boolean>;
  * @param posX The column of the tile to get properties for.
  * @param posY The row of the tile to get properties for.
  */
-export declare function getTileProps(
+export declare function getMergedTileProps(
   posX: number,
   posY: number,
 ): TileProperties;

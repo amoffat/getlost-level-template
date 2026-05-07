@@ -82,9 +82,9 @@ export const slice = createSlice({
     },
     setTab: (state, action: PayloadAction<MainTabName>) => {
       state.activeTab = action.payload;
-      for (const tab in state.mountedTabs) {
-        // state.mountedTabs[tab as MainTabName] = false;
-      }
+      // for (const tab in state.mountedTabs) {
+      //   state.mountedTabs[tab as MainTabName] = false;
+      // }
       state.mountedTabs[action.payload] = true;
     },
     loadingPalette(state, action: PayloadAction<boolean>) {

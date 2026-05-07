@@ -24,8 +24,8 @@ import {
 } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
-import { shallowEqual } from "react-redux";
 import { useTranslation } from "react-i18next";
+import { shallowEqual } from "react-redux";
 import TilesetGroup from "../../TilesetGroup";
 import Tip from "../../Tip";
 

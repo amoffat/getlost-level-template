@@ -36,8 +36,6 @@ import { EMPTY } from "rxjs";
 import { ReduxReconciler } from "./reconciler";
 import { exitFill } from "./strokes";
 
-const INF_TILE_DIM = 20000;
-
 export class MapObjReconciler extends ReduxReconciler<MapObj> {
   private layerContainers?: Record<number, P.Container>;
   private tilesetCache: Map<string, P.CanvasSource>;
@@ -553,8 +551,11 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
       let sprite: P.Sprite | P.TilingSprite;
       if (isTiledX || isTiledY) {
-        const tileW = isTiledX ? INF_TILE_DIM : obj.width;
-        const tileH = isTiledY ? INF_TILE_DIM : obj.height;
+        const largeWidth = obj.width * 3;
+        const largeHeight = obj.height * 3;
+
+        const tileW = isTiledX ? largeWidth : obj.width;
+        const tileH = isTiledY ? largeHeight : obj.height;
         const ts = new P.TilingSprite({
           texture: tex,
           width: tileW,
@@ -562,8 +563,8 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         });
         // Offset within the container so the original (obj.x, obj.y) anchor is
         // visually centred within the tiling area.
-        ts.x = isTiledX ? -(INF_TILE_DIM - obj.width) / 2 : 0;
-        ts.y = isTiledY ? -(INF_TILE_DIM - obj.height) / 2 : 0;
+        ts.x = isTiledX ? -(largeWidth - obj.width) / 2 : 0;
+        ts.y = isTiledY ? -(largeHeight - obj.height) / 2 : 0;
         ts.label = "sprite";
         ts.eventMode = "passive";
         sprite = ts;

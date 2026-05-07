@@ -24,7 +24,7 @@ type RafDispatcher<AC extends ActionCreator<any[]>> = ((
  * The hook is bound to a single action type via the passed-in action creator.
  */
 export function useMakeRafDispatcher<AC extends ActionCreator>(
-  actionCreator: AC
+  actionCreator: AC,
 ): RafDispatcher<AC> {
   const dispatch = useDispatch();
   const mountedRef = useRef(true);
@@ -32,11 +32,12 @@ export function useMakeRafDispatcher<AC extends ActionCreator>(
   // Build a throttled dispatcher bound to this action creator.
   const throttled = useMemo(
     () =>
+      // eslint-disable-next-line react-hooks/refs
       createRafThrottled((...args: Parameters<AC>) => {
         if (!mountedRef.current) return;
         dispatch(actionCreator(...args));
       }),
-    [dispatch, actionCreator]
+    [dispatch, actionCreator],
   );
 
   useEffect(() => {

@@ -97,7 +97,6 @@ export interface LightObj
 
 /** Shared shape for all painted zone object types */
 export interface BaseZoneObj extends BaseMapObj {
-  name: string;
   shapes: ConcavePolygon[];
   simplify: number;
   /**

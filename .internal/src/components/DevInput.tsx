@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./DevInput.module.css";
 
 // Helper to get all callable paths on window.gl (e.g., markers.record)
@@ -21,8 +21,9 @@ export default function DevInput() {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [_, setHistoryIndex] = useState<number | null>(null);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [selectedSuggestion, setSelectedSuggestion] = useState<number>(-1);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<number | null>(
+    null,
+  );
   const [output, setOutput] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,13 +31,11 @@ export default function DevInput() {
     if (inputRef.current) inputRef.current.focus();
   }, []);
 
-  // Autocomplete suggestions
-  useEffect(() => {
-    if (!window.gl) return setSuggestions([]);
-    if (!input.trim()) return setSuggestions([]);
+  const suggestions: string[] = useMemo(() => {
+    if (!window.gl) return [];
+    if (!input.trim()) return [];
     const allFns = getGLFunctionPaths(window.gl);
-    setSuggestions(allFns.filter((fn) => fn.startsWith(input.trim())));
-    setSelectedSuggestion(-1); // Reset selection when suggestions change
+    return allFns.filter((fn) => fn.startsWith(input.trim()));
   }, [input]);
 
   // Handle input execution
@@ -69,9 +68,9 @@ export default function DevInput() {
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
-      if (suggestions.length > 0 && selectedSuggestion >= 0) {
+      if (suggestions.length > 0 && selectedSuggestion !== null) {
         setInput(suggestions[selectedSuggestion]);
-        setSelectedSuggestion(-1);
+        setSelectedSuggestion(null);
         e.preventDefault();
         return;
       }
@@ -81,15 +80,15 @@ export default function DevInput() {
     } else if (e.key === "Tab") {
       e.preventDefault();
       if (suggestions.length > 0) {
-        setInput(suggestions[selectedSuggestion >= 0 ? selectedSuggestion : 0]);
-        setSelectedSuggestion(-1);
+        setInput(suggestions[selectedSuggestion ?? 0]);
+        setSelectedSuggestion(null);
       }
     } else if (e.key === "ArrowUp") {
       if (suggestions.length > 0) {
         e.preventDefault();
         setSelectedSuggestion((idx) => {
-          const max = suggestions.length - 1;
-          if (idx <= 0) return max;
+          const max = Math.min(suggestions.length, 5) - 1;
+          if (idx === null) return max;
           return idx - 1;
         });
       } else if (history.length) {
@@ -104,8 +103,8 @@ export default function DevInput() {
       if (suggestions.length > 0) {
         e.preventDefault();
         setSelectedSuggestion((idx) => {
-          const max = suggestions.length - 1;
-          if (idx < 0 || idx === max) return 0;
+          const max = Math.min(suggestions.length, 5) - 1;
+          if (idx === null || idx === max) return 0;
           return idx + 1;
         });
       } else if (history.length) {
@@ -127,7 +126,10 @@ export default function DevInput() {
           ref={inputRef}
           className={styles.inputField}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            setInput(e.target.value);
+            setSelectedSuggestion(null);
+          }}
           onKeyDown={handleKeyDown}
           spellCheck={false}
           autoComplete="off"

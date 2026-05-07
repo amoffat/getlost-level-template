@@ -310,6 +310,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
         inst = {
           id,
           nameKey: undefined,
+          talkable: undefined,
           tags: undefined,
           type: MapObjType.TileGroupInstance,
           x: pos.x,
@@ -336,7 +337,8 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
 
       inst = {
         id,
-        name: undefined,
+        nameKey: undefined,
+        talkable: undefined,
         tags: undefined,
         type: MapObjType.AnimationInstance,
         tsObjId: obj.id,
@@ -358,7 +360,8 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
     } else if (isNpcTemplate(obj)) {
       inst = {
         id,
-        nameKey: obj.nameKey,
+        nameKey: undefined,
+        talkable: undefined,
         tags: undefined,
         type: MapObjType.NpcInstance,
         tsObjId: obj.id,

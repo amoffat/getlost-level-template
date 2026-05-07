@@ -1,6 +1,6 @@
 import { OklabColor } from "@/types/color";
-import { ConcavePolygon } from "@/utils/polygon";
 import { Vector2 } from "@/vec";
+import { ConcavePolygon } from "./polygon";
 import { TileGroupProps } from "./properties";
 import type { Rect } from "./rect";
 import { TemplateType } from "./templates";

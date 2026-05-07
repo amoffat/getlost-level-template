@@ -1,6 +1,7 @@
 import * as constants from "@/constants";
 import { requiredNpcAnimations as requiredNpcAnimationSlots } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { selectors as localeSelectors } from "@/slices/locale";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { setToolThunk } from "@/thunks/tileset";
@@ -22,10 +23,8 @@ import {
   Stack,
   Table,
   Text,
-  TextInput,
   Tooltip,
 } from "@mantine/core";
-import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import {
   IconAlertTriangle,
@@ -34,17 +33,15 @@ import {
 } from "@tabler/icons-react";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import LocalizedTextInput from "../../l10n/LocalizedTextInput";
 import TileAnimation from "../../TileAnimation";
 import Tip from "../../Tip";
-
-interface FormValues {
-  name: string;
-}
 
 export default function NpcTool() {
   const ts = useAppSelector(selectors.activeTileset);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const currentLocale = useAppSelector(localeSelectors.activeLocale);
 
   const existingNpc = useMemo(() => {
     const npcs = ts?.tiles.ids
@@ -52,6 +49,10 @@ export default function NpcTool() {
       .filter(isNpcTemplate);
     return npcs?.at(0);
   }, [ts]);
+
+  const [nameKey, setNameKey] = useState<string | null>(
+    existingNpc?.nameKey ?? null,
+  );
 
   // Track flipX state for each animation, initialized from existingNpc if available
   const [flipXState, setFlipXState] = useState<
@@ -70,25 +71,6 @@ export default function NpcTool() {
       [animName]: !prev[animName],
     }));
   }, []);
-
-  const form = useForm<FormValues>({
-    name: "npc",
-    // We have to use a controlled form, because otherwise some fields are very
-    // difficult to update correctly.
-    mode: "controlled",
-    onSubmitPreventDefault: "always",
-    initialValues: {
-      name: existingNpc?.name ?? "npc",
-    },
-    validate: {
-      name: (value) => {
-        if (value.trim().length === 0) {
-          return t('npcToolNameRequired');
-        }
-        return null;
-      },
-    },
-  });
 
   // Collect ALL animations matching each slot (not just the first)
   const allSlotAnimations = useMemo<
@@ -149,55 +131,59 @@ export default function NpcTool() {
     return matches;
   }, [allSlotAnimations, selectedIndex, flipXState]);
 
-  const saveNpc = useCallback(
-    (values: FormValues) => {
-      const animations: NpcAnimationRecord = {
-        Idle: animationMatches["Idle"]!,
-        WalkUp: animationMatches["WalkUp"]!,
-        WalkDown: animationMatches["WalkDown"]!,
-        WalkLeft: animationMatches["WalkLeft"]!,
-        WalkRight: animationMatches["WalkRight"]!,
-      };
+  const saveNpc = useCallback(() => {
+    const animations: NpcAnimationRecord = {
+      Idle: animationMatches["Idle"]!,
+      WalkUp: animationMatches["WalkUp"]!,
+      WalkDown: animationMatches["WalkDown"]!,
+      WalkLeft: animationMatches["WalkLeft"]!,
+      WalkRight: animationMatches["WalkRight"]!,
+    };
 
-      const id = crypto.randomUUID();
+    const id = crypto.randomUUID();
 
-      // Defaults
-      const npc: NpcTemplate = {
-        id,
-        type: TemplateType.Npc,
-        animations,
-        tilesetId: ts!.id,
-        gridSize: animations["Idle"].animation.gridSize,
-        name: "",
-        tags: [],
-        walkSpeed: constants.defaultNpcWalkSpeed,
-        flipX: false,
-        tint: null,
-        hidden: false,
-        groundOffset: 0,
-        defaultAnimation: "Idle",
-        dampenWalkCollisions: constants.defaultNpcDampen,
-        status: null,
-        speakerImageId: null,
-      };
-      // Merge in existing properties of existing
-      Object.assign(npc, existingNpc ?? {});
-      // Set creation values
-      Object.assign(npc, { name: values.name, animations });
+    // Defaults
+    const npc: NpcTemplate = {
+      id,
+      type: TemplateType.Npc,
+      animations,
+      tilesetId: ts!.id,
+      gridSize: animations["Idle"].animation.gridSize,
+      nameKey,
+      talkable: true,
+      tags: [],
+      walkSpeed: constants.defaultNpcWalkSpeed,
+      flipX: false,
+      tint: null,
+      hidden: false,
+      groundOffset: 0,
+      defaultAnimation: "Idle",
+      dampenWalkCollisions: constants.defaultNpcDampen,
+      status: null,
+      speakerImageId: null,
+    };
+    // Merge in existing properties of existing
+    Object.assign(npc, existingNpc ?? {});
+    // Set creation values
+    Object.assign(npc, { nameKey, animations });
 
-      dispatch(actions.setPaletteObjects({ tsId: ts!.id, objs: [npc] }));
-      dispatch(uiActions.setTilesetTab("npcs"));
+    dispatch(actions.setPaletteObjects({ tsId: ts!.id, objs: [npc] }));
+    dispatch(uiActions.setTilesetTab("npcs"));
 
-      notifications.show({
-        title: t('npcToolNotifTitle'),
-        message: t('npcToolNotifMessage', { name: values.name }),
-        autoClose: 3000,
-      });
+    notifications.show({
+      title: t("npcToolNotifTitle"),
+      message: t("npcToolNotifMessage", { name: nameKey }),
+      autoClose: 3000,
+    });
+  }, [animationMatches, existingNpc, nameKey, ts, dispatch, t]);
+
+  const handleSubmit = useCallback(
+    (e: React.SubmitEvent) => {
+      e.preventDefault();
+      saveNpc();
     },
-    [animationMatches, existingNpc, ts, dispatch],
+    [saveNpc],
   );
-
-  const formSubmit = form.onSubmit(saveNpc);
 
   const [hasAll, hasSome, hasNone] = useMemo(() => {
     let hasAll = true;
@@ -222,9 +208,9 @@ export default function NpcTool() {
     const tipItems: ReactNode[] = [];
 
     if (hasAll) {
-      tipItems.push(t('npcToolTipAllAssigned'));
+      tipItems.push(t("npcToolTipAllAssigned"));
     } else if (hasNone || hasSome) {
-      tipItems.push(t('npcToolTipDefineAnimations'));
+      tipItems.push(t("npcToolTipDefineAnimations"));
       tipItems.push(
         <Trans i18nKey="npcToolTipUseAnimator">
           To create a required animation, use the{" "}
@@ -237,19 +223,19 @@ export default function NpcTool() {
     return tipItems;
   }, [activateAnimationTool, hasAll, hasSome, hasNone, t]);
 
-  const canSave = hasAll;
+  const canSave = hasAll && nameKey !== null;
 
   return (
     <>
       <Tip tips={tips} />
-      <form onSubmit={formSubmit}>
-        <Fieldset legend={t('npcToolLegend')} p="xs">
+      <form onSubmit={handleSubmit}>
+        <Fieldset legend={t("npcToolLegend")} p="xs">
           <Stack p={0} gap="md">
             <Table striped highlightOnHover>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>{t('npcToolTableRequired')}</Table.Th>
-                  <Table.Th>{t('npcToolTableAnimation')}</Table.Th>
+                  <Table.Th>{t("npcToolTableRequired")}</Table.Th>
+                  <Table.Th>{t("npcToolTableAnimation")}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -294,7 +280,7 @@ export default function NpcTool() {
                               />
                             </div>
 
-                            <Tooltip label={t('npcToolFlipTooltip')}>
+                            <Tooltip label={t("npcToolFlipTooltip")}>
                               <ActionIcon
                                 variant={animRecord.flipX ? "filled" : "subtle"}
                                 size="sm"
@@ -310,7 +296,7 @@ export default function NpcTool() {
                             size="xs"
                             onClick={activateAnimationTool}
                           >
-                            {t('npcToolCreate')}
+                            {t("npcToolCreate")}
                           </Anchor>
                         )}
                       </Table.Td>
@@ -320,12 +306,15 @@ export default function NpcTool() {
               </Table.Tbody>
             </Table>
 
-            <TextInput
-              label={t('npcToolNameLabel')}
-              description={t('npcToolNameDesc')}
-              placeholder={t('npcToolNamePlaceholder')}
-              disabled={!canSave}
-              {...form.getInputProps("name")}
+            <LocalizedTextInput
+              label={t("npcToolNameLabel")}
+              description={t("npcToolNameDesc")}
+              placeholder={t("npcToolNamePlaceholder")}
+              disabled={!hasAll}
+              currentLocale={currentLocale}
+              contentKey={nameKey ?? undefined}
+              onLocaleKeyChange={(newKey) => setNameKey(newKey)}
+              contextButton="label"
             />
 
             <Button
@@ -335,7 +324,7 @@ export default function NpcTool() {
               disabled={!canSave}
               type="submit"
             >
-              {existingNpc ? t('npcToolUpdateNpc') : t('npcToolCreateNpc')}
+              {existingNpc ? t("npcToolUpdateNpc") : t("npcToolCreateNpc")}
             </Button>
           </Stack>
         </Fieldset>

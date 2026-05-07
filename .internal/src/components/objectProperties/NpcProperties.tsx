@@ -8,22 +8,12 @@ import {
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
-import {
-  ActionIcon,
-  Box,
-  Fieldset,
-  Group,
-  Slider,
-  Stack,
-  TextInput,
-  Tooltip,
-} from "@mantine/core";
-import { IconCopy } from "@tabler/icons-react";
+import { Fieldset, Slider, Stack } from "@mantine/core";
 import { memo, ReactElement, useCallback } from "react";
-import { useTranslation } from 'react-i18next';
-import AdvancedSection from "../common/AdvancedSection";
+import { useTranslation } from "react-i18next";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
+import IdInput from "./inputs/IdInput";
 import LocalizedNameInput from "./inputs/LocalizedNameInput";
 
 // Properties that collectPropertyValues needs to access
@@ -60,7 +50,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
 
   const nameInput = (
     <LocalizedNameInput
-      description={t('npcPropNameDescription')}
+      description={t("npcPropNameDescription")}
       values={toCollect.nameKey}
       context="Character name"
       keyPrefix={["char"]}
@@ -75,8 +65,8 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
 
   const walkSpeedInput = (
     <PropertyValue
-      label={t('npcPropWalkSpeedLabel')}
-      description={t('npcPropWalkSpeedDescription')}
+      label={t("npcPropWalkSpeedLabel")}
+      description={t("npcPropWalkSpeedDescription")}
       values={toCollect.walkSpeed}
       defaultValue={constants.defaultNpcWalkSpeed}
       onValueChange={({
@@ -106,8 +96,8 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
 
   const dampenWalkCollisionsInput = (
     <PropertyValue
-      label={t('npcPropDampenWalkCollisionsLabel')}
-      description={t('npcPropDampenWalkCollisionsDescription')}
+      label={t("npcPropDampenWalkCollisionsLabel")}
+      description={t("npcPropDampenWalkCollisionsDescription")}
       values={toCollect.dampenWalkCollisions}
       defaultValue={constants.defaultNpcDampen}
       onValueChange={({
@@ -137,8 +127,8 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
 
   const groundOffsetInput = (
     <GroundOffsetInput
-      description={t('npcPropGroundOffsetDescription')}
-      tooltip={t('npcPropGroundOffsetTooltip')}
+      description={t("npcPropGroundOffsetDescription")}
+      tooltip={t("npcPropGroundOffsetTooltip")}
       values={toCollect.groundOffset}
       onValueChange={({ scope, value }) =>
         updateProps(scope, { groundOffset: value })
@@ -148,37 +138,17 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
 
   let idInput;
   if (objs.length === 1) {
-    const copyId = () => {
-      navigator.clipboard.writeText(objs[0].id);
-    };
-
-    idInput = (
-      <Group gap="xs" wrap="nowrap">
-        <Box style={{ flex: 1 }}>
-          <TextInput
-            label={t('npcPropIdLabel')}
-            description={t('npcPropIdDescription')}
-            value={objs[0].id}
-            disabled
-          />
-        </Box>
-        <Tooltip label={t('npcPropCopyIdTooltip')}>
-          <ActionIcon onClick={copyId} variant="subtle" color="gray" size="sm">
-            <IconCopy size={16} />
-          </ActionIcon>
-        </Tooltip>
-      </Group>
-    );
+    idInput = <IdInput id={objs[0].id} />;
   }
 
   return (
-    <Fieldset legend={t('npcPropLegend')} p="xs">
+    <Fieldset legend={t("npcPropLegend")} p="xs">
       <Stack p={0} gap="xl">
+        {idInput}
         {nameInput}
         {walkSpeedInput}
         {groundOffsetInput}
         {dampenWalkCollisionsInput}
-        <AdvancedSection>{idInput}</AdvancedSection>
       </Stack>
     </Fieldset>
   );

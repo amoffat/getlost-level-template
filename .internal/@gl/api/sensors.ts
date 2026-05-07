@@ -1,1 +1,1 @@
-export declare function toggleSensor(name: string, enabled: boolean): void;
+export declare function toggleSensor(id: string, enabled: boolean): void;

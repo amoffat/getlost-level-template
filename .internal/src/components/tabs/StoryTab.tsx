@@ -74,7 +74,9 @@ export default function StoryTab({
   const { t } = useTranslation();
   const { nodeid: nodeIdParam } = useParams<{ nodeid?: string }>();
   const navigate = useNavigate();
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
+    nodeIdParam ?? null,
+  );
   const [newlyCreatedNodeId, setNewlyCreatedNodeId] = useState<string | null>(
     null,
   );
@@ -403,7 +405,6 @@ export default function StoryTab({
   // Sync node selection from URL parameter on first load.
   useEffect(() => {
     if (!nodeIdParam) {
-      setSelectedNodeId(null);
       return;
     }
     const currentNodes = reactFlowInstance.getNodes();
@@ -411,7 +412,6 @@ export default function StoryTab({
     reactFlowInstance.setNodes(
       currentNodes.map((n) => ({ ...n, selected: n.id === nodeIdParam })),
     );
-    setSelectedNodeId(nodeIdParam);
     requestAnimationFrame(() => {
       reactFlowInstance.fitView({
         nodes: [{ id: nodeIdParam }],

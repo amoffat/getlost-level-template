@@ -1,5 +1,5 @@
 export declare function toggleCollider(
-  name: string,
+  id: string,
   enabled: boolean,
-  updateGraph: boolean
+  updateGraph: boolean,
 ): void;

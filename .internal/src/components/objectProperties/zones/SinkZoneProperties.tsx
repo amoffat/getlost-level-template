@@ -11,7 +11,7 @@ import PropertyValue, {
 } from "../../PropertyValue";
 import BaseZoneProperties from "./BaseZoneProperties";
 
-const RELEVANT_PROPS = ["id", "name", "depth", "padding"] as const;
+const RELEVANT_PROPS = ["id", "padding", "depth"] as const;
 
 function SinkZoneProperties({ objs }: { objs: SinkZoneObj[] }) {
   const { t } = useTranslation();
@@ -29,12 +29,6 @@ function SinkZoneProperties({ objs }: { objs: SinkZoneObj[] }) {
   const depthValues: PropertyValueInfo<number>[] = objs.map((o) => ({
     key: o.id,
     value: o.depth,
-    scope: "instance",
-  }));
-
-  const paddingValues: PropertyValueInfo<number>[] = objs.map((o) => ({
-    key: o.id,
-    value: o.padding,
     scope: "instance",
   }));
 
@@ -67,35 +61,6 @@ function SinkZoneProperties({ objs }: { objs: SinkZoneObj[] }) {
     />
   );
 
-  const paddingInput = (
-    <PropertyValue
-      label={t("zonePaddingLabel")}
-      description={t("zonePaddingDescription")}
-      noTemplate
-      values={paddingValues}
-      defaultValue={0}
-      debounceMs={100}
-      onValueChange={({
-        value,
-      }: {
-        scope: PropertyValueScope;
-        value: number | undefined;
-      }) => {
-        updateObjs({ padding: value });
-      }}
-      renderInput={({ key, defaultValue: value, onChange }): ReactElement => (
-        <Slider
-          key={key}
-          defaultValue={value}
-          min={0}
-          max={100}
-          step={1}
-          onChange={onChange}
-        />
-      )}
-    />
-  );
-
   return (
     <BaseZoneProperties
       objs={objs}
@@ -104,7 +69,6 @@ function SinkZoneProperties({ objs }: { objs: SinkZoneObj[] }) {
       updateObjs={updateObjs}
     >
       {depthInput}
-      {paddingInput}
     </BaseZoneProperties>
   );
 }

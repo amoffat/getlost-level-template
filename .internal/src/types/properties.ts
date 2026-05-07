@@ -50,6 +50,7 @@ export interface LightProps {
 
 export interface TileGroupProps {
   nameKey: string | null;
+  talkable: boolean;
   tags: string[];
   flipX: boolean;
   walkSound: WalkSound;
@@ -62,7 +63,8 @@ export interface TileGroupProps {
 }
 
 export interface AnimationProps {
-  name: string;
+  nameKey: string | null;
+  talkable: boolean;
   tags: string[];
   flipX: boolean;
   tint: string | null;
@@ -75,6 +77,7 @@ export interface AnimationProps {
 
 export interface NpcProps {
   nameKey: string | null;
+  talkable: boolean;
   tags: string[];
   flipX: boolean;
   walkSpeed: number;
@@ -126,6 +129,7 @@ export const LIGHT_PROPS_DEFAULTS: LightProps = {
 
 export const TILE_GROUP_PROPS_DEFAULTS: TileGroupProps = {
   nameKey: null,
+  talkable: false,
   tags: [],
   flipX: false,
   walkSound: defaultWalkSound,
@@ -138,7 +142,8 @@ export const TILE_GROUP_PROPS_DEFAULTS: TileGroupProps = {
 };
 
 export const ANIMATION_PROPS_DEFAULTS: AnimationProps = {
-  name: "",
+  nameKey: null,
+  talkable: false,
   tags: [],
   flipX: false,
   tint: null,
@@ -151,6 +156,7 @@ export const ANIMATION_PROPS_DEFAULTS: AnimationProps = {
 
 export const NPC_PROPS_DEFAULTS: NpcProps = {
   nameKey: null,
+  talkable: true,
   tags: [],
   flipX: false,
   walkSpeed: defaultNpcWalkSpeed,

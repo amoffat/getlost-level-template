@@ -161,6 +161,7 @@ class Filler extends ClickDragListener<Mode> {
           layer,
           tags: undefined,
           nameKey: undefined,
+          talkable: undefined,
           tilesetId: tmpl.tilesetId,
           tint: undefined,
           traction: undefined,

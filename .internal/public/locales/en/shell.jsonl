@@ -175,7 +175,7 @@
 {"k": "groundOffsetInputLabel", "v": "Ground offset", "ctx": "Label for the ground offset slider"}
 {"k": "groundOffsetInputDescription", "v": "Vertical offset of the object from the ground.", "ctx": "Default description for ground offset slider"}
 {"k": "idInputLabel", "v": "ID", "ctx": "Label for the read-only object ID field"}
-{"k": "idInputDescription", "v": "The object's unique identifier.", "ctx": "Description for the read-only object ID field"}
+{"k": "idInputDescription", "v": "The object's unique identifier (read only). Use this in your level's code.", "ctx": "Description for the read-only object ID field"}
 {"k": "idInputCopyTooltip", "v": "Copy id", "ctx": "Tooltip for the button that copies the object ID to clipboard"}
 {"k": "localizedNameInputLabel", "v": "Name", "ctx": "Default label for a localized name input field"}
 {"k": "localizedNameInputDescription", "v": "A name for this object.", "ctx": "Default description for a localized name input field"}

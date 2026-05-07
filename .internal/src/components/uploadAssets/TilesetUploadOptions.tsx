@@ -86,11 +86,14 @@ export default function TilesetUploadOptions({
     }));
 
     if (existingTilesets.length > 0) {
-      groups.push({ group: t("tilesetUploadExistingTilesets"), items: existingTilesets });
+      groups.push({
+        group: t("tilesetUploadExistingTilesets"),
+        items: existingTilesets,
+      });
     }
 
     return groups;
-  }, [tilesets, files.length]);
+  }, [tilesets, files.length, t]);
 
   const renderSelectOption = (item: {
     option: { value: string; label: string };

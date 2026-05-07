@@ -11,7 +11,7 @@ import PropertyValue, {
 } from "../../PropertyValue";
 import BaseZoneProperties from "./BaseZoneProperties";
 
-const RELEVANT_PROPS = ["id", "name", "zoom", "padding"] as const;
+const RELEVANT_PROPS = ["id", "zoom", "padding"] as const;
 
 // Logarithmic scale so that zoom=1 (default) sits at the slider midpoint.
 // To keep 1 centered, ZOOM_MAX should equal 1/ZOOM_MIN (e.g. 0.2 and 5).

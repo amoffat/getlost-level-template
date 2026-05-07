@@ -17,6 +17,7 @@ import {
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 interface MilestoneEditorProps {
@@ -164,13 +165,14 @@ function DialogueRow({
   milestoneNodeId: string;
   onNavigate: (path: string) => void;
 }) {
+  const { t } = useTranslation();
   const obj = useAppSelector((state: RootState) =>
     dialogue.subjectId
       ? mapSelectors.selectObject(state, dialogue.subjectId)
       : undefined,
   ) as SpeakableMapObj | undefined;
 
-  const name = obj?.name ?? dialogue.id;
+  const name = obj?.nameKey ? t(obj.nameKey) : dialogue.id;
   const path = createUrlPath({ id: dialogue.id, milestone: milestoneNodeId });
 
   return (

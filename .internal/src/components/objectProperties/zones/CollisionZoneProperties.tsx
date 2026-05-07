@@ -6,7 +6,7 @@ import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import BaseZoneProperties from "./BaseZoneProperties";
 
-const RELEVANT_PROPS = ["id", "name"] as const;
+const RELEVANT_PROPS = ["id"] as const;
 
 function CollisionZoneProperties({ objs }: { objs: CollisionObj[] }) {
   const { t } = useTranslation();

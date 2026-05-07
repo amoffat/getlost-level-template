@@ -29,6 +29,7 @@ import { memo, ReactElement, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import PropertyValue, { PropertyValueInfo } from "../PropertyValue";
 import classes from "./BackgroundImageProperties.module.css";
+import IdInput from "./inputs/IdInput";
 import SwitchInput from "./inputs/SwitchInput";
 
 interface BackgroundImagePropertiesProps {
@@ -92,7 +93,9 @@ function BackgroundImageProperties({ objs }: BackgroundImagePropertiesProps) {
       const newOrder = [...sorted];
       [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]];
       dispatch(
-        mapActions.updateMany(newOrder.map((o, i) => ({ id: o.id, changes: { z: i } }))),
+        mapActions.updateMany(
+          newOrder.map((o, i) => ({ id: o.id, changes: { z: i } })),
+        ),
       );
     }
   }, [dispatch, singleObj, allBackgroundObjs]);
@@ -105,7 +108,9 @@ function BackgroundImageProperties({ objs }: BackgroundImagePropertiesProps) {
       const newOrder = [...sorted];
       [newOrder[idx], newOrder[idx - 1]] = [newOrder[idx - 1], newOrder[idx]];
       dispatch(
-        mapActions.updateMany(newOrder.map((o, i) => ({ id: o.id, changes: { z: i } }))),
+        mapActions.updateMany(
+          newOrder.map((o, i) => ({ id: o.id, changes: { z: i } })),
+        ),
       );
     }
   }, [dispatch, singleObj, allBackgroundObjs]);
@@ -149,6 +154,11 @@ function BackgroundImageProperties({ objs }: BackgroundImagePropertiesProps) {
     value: o.tileY ?? false,
     scope: "instance",
   }));
+
+  let idInput;
+  if (objs.length === 1) {
+    idInput = <IdInput id={objs[0].id} />;
+  }
 
   return (
     <Fieldset legend={t("bgImagePropLegend")} p="xs">
@@ -212,6 +222,8 @@ function BackgroundImageProperties({ objs }: BackgroundImagePropertiesProps) {
             </Tooltip>
           </Group>
         )}
+
+        {idInput}
 
         {/* Parallax X */}
         <PropertyValue

@@ -11,31 +11,31 @@ export declare function change(uid: number, tileset: string, id: number): void;
 /**
  * Plays an animated tile.
  *
- * @param uid The unique identifier of the tile
+ * @param id The unique identifier of the tile
  * @param tileset The tileset name of the tile to change.
  * @param animName The name of the animation to play.
  */
 export declare function playAnimation(
-  uid: number,
+  id: number,
   tileset: string,
-  animName: string
+  animName: string,
 ): void;
 
 /**
  *
- * @param uid The unique identifier of the tile
+ * @param id The unique identifier of the tile
  * @param tint The tint color
  */
-export declare function setTint(uid: number, tint: number): void;
+export declare function setTint(id: number, tint: number): void;
 
 export declare function getTiles(
   tileset: string,
   tileId: number,
-  layerNames: string[]
+  layerNames: string[],
 ): number[];
 
 /**
- * @param name The name of the object tile to toggle
+ * @param id The name of the tile object to toggle
  * @param enabled Whether the tile should be enabled or disabled
  */
-export declare function toggle(name: string, enabled: boolean): void;
+export declare function toggle(id: string, enabled: boolean): void;

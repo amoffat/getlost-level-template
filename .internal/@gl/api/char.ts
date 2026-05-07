@@ -7,57 +7,56 @@ import type { CharAction } from "@gl/types/character";
  * Fetches the merged stack of properties for a character. This is currently
  * useful for determining the friction and traction of a character, for example.
  *
- * @param name The name of the character to get properties for. "player"
- * means the player.
+ * @param id The name of the character to get properties for.
  */
-export declare function getMoveProps(name: string): CharProps;
-export declare function getPos(name: string): Vector;
-export declare function setPos(name: string, x: number, y: number): void;
-export declare function setSpeed(name: string, speed: number): void;
-export declare function setAction(name: string, anim: CharAction): void;
+export declare function getMoveProps(id: string): CharProps;
+export declare function getPos(id: string): Vector;
+export declare function setPos(id: string, x: number, y: number): void;
+export declare function setSpeed(id: string, speed: number): void;
+export declare function setAction(id: string, anim: CharAction): void;
 export declare function setColorOverlay({
-  name,
+  id,
   color,
   alpha,
 }: {
-  name: string;
+  id: string;
   color: number;
   alpha: number;
 }): void;
 export declare function setAlpha({
-  name,
+  id,
   alpha,
 }: {
-  name: string;
+  id: string;
   alpha: number;
 }): void;
-export declare function setZIndex(name: string, z: number): void;
-export declare function setPivot(name: string, x: number, y: number): void;
-export declare function toggle(name: string, enabled: boolean): void;
+export declare function setZIndex(id: string, z: number): void;
+export declare function setPivot(id: string, x: number, y: number): void;
+export declare function toggle(id: string, enabled: boolean): void;
 export declare function setAnimation(
   refId: number,
-  name: string,
+  id: string,
   opts: SetAnimationOpts,
 ): void;
 export declare function checkCollision({
-  name,
+  id,
   pos,
   translation,
 }: {
-  name: string;
+  id: string;
   pos: Vector;
   translation: Vector;
 }): Vector;
 export declare function setMoveSound({
-  name,
+  id,
   sound,
   volume,
   onlyWhileMoving,
 }: {
-  name: string;
+  id: string;
   sound: string;
   volume?: number;
   onlyWhileMoving: boolean;
 }): void;
-export declare function makeCollidable(name: string, enabled: boolean): void;
+export declare function makeCollidable(id: string, enabled: boolean): void;
 export declare function getAll(): string[];

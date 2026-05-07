@@ -169,7 +169,7 @@ export default function TileAnimationTool({
     },
     validate: {
       names: (value) =>
-        value.length === 0 ? t('tileAnimValidationNames') : null,
+        value.length === 0 ? t("tileAnimValidationNames") : null,
     },
   });
 
@@ -225,7 +225,8 @@ export default function TileAnimationTool({
       // Defaults
       const anim: AnimationTemplate = {
         id,
-        name: "",
+        nameKey: null,
+        talkable: false,
         type: TemplateType.Animation,
         tilesetId: ts!.id,
         gridSize: candFrames[0]!.tileGroup.gridSize,
@@ -249,14 +250,14 @@ export default function TileAnimationTool({
       dispatch(clearCandAnimFramesThunk());
       dispatch(uiActions.setTilesetTab("animations"));
       notifications.show({
-        title: t('tileAnimNotifTitle'),
-        message: t('tileAnimNotifMessage', { names: values.names.join(", ") }),
+        title: t("tileAnimNotifTitle"),
+        message: t("tileAnimNotifMessage", { names: values.names.join(", ") }),
         autoClose: 3000,
       });
 
       form.reset();
     },
-    [frames, ts, candFrames, dispatch, selectedAnimation, form],
+    [frames, ts, candFrames, dispatch, selectedAnimation, form, t],
   );
 
   const formSubmit = form.onSubmit(saveAnimation);
@@ -308,16 +309,16 @@ export default function TileAnimationTool({
   const tips: string[] = useMemo(() => {
     const tipItems: string[] = [];
     if (candFrames.length === 0) {
-      tipItems.push(t('tileAnimTipSelectTiles'));
-      tipItems.push(t('tileAnimTipSameSize'));
+      tipItems.push(t("tileAnimTipSelectTiles"));
+      tipItems.push(t("tileAnimTipSameSize"));
     } else {
-      tipItems.push(t('tileAnimTipAdjustSliders'));
-      tipItems.push(t('tileAnimTipDragReorder'));
-      tipItems.push(t('tileAnimTipDuplicate'));
+      tipItems.push(t("tileAnimTipAdjustSliders"));
+      tipItems.push(t("tileAnimTipDragReorder"));
+      tipItems.push(t("tileAnimTipDuplicate"));
     }
 
     if (hasAllNpcAnims) {
-      tipItems.push(t('tileAnimTipCreateNpc'));
+      tipItems.push(t("tileAnimTipCreateNpc"));
     }
 
     return tipItems;
@@ -329,15 +330,15 @@ export default function TileAnimationTool({
     <>
       <Tip tips={tips} />
       <form onSubmit={formSubmit}>
-        <Fieldset legend={t('tileAnimLegend')} p="xs">
+        <Fieldset legend={t("tileAnimLegend")} p="xs">
           <Stack p={0} gap="xs">
             {!hasFrames && (
               <Alert
-                title={t('tileAnimAlertNoPreviewTitle')}
+                title={t("tileAnimAlertNoPreviewTitle")}
                 variant="light"
                 icon={<IconInfoCircle />}
               >
-                {t('tileAnimAlertNoPreviewMsg')}
+                {t("tileAnimAlertNoPreviewMsg")}
               </Alert>
             )}
             <TileAnimation frames={frames} scale={5} bounded />
@@ -394,7 +395,7 @@ export default function TileAnimationTool({
             </DndContext>
 
             <NumberInput
-              label={t('tileAnimTotalTimeLabel')}
+              label={t("tileAnimTotalTimeLabel")}
               placeholder="1000"
               min={1}
               step={50}
@@ -408,14 +409,14 @@ export default function TileAnimationTool({
             />
 
             <TagsInput
-              label={t('tileAnimNamesLabel')}
-              description={t('tileAnimNamesDesc')}
-              placeholder={t('tileAnimNamesPlaceholder')}
+              label={t("tileAnimNamesLabel")}
+              description={t("tileAnimNamesDesc")}
+              placeholder={t("tileAnimNamesPlaceholder")}
               splitChars={[",", " ", "|"]}
               limit={5}
               data={[
                 {
-                  group: t('tileAnimRequiredForNpcs'),
+                  group: t("tileAnimRequiredForNpcs"),
                   items: [...requiredNpcAnimations],
                 },
               ]}
@@ -449,7 +450,7 @@ export default function TileAnimationTool({
               disabled={!canSave}
               type="submit"
             >
-              {t('tileAnimSaveBtn')}
+              {t("tileAnimSaveBtn")}
             </Button>
           </Stack>
         </Fieldset>
