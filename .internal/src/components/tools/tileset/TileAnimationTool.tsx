@@ -42,7 +42,7 @@ import {
   IconCheck,
   IconInfoCircle,
 } from "@tabler/icons-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TileAnimation from "../../TileAnimation";
 import TilesetGroup from "../../TilesetGroup";
@@ -262,18 +262,21 @@ export default function TileAnimationTool({
 
   const formSubmit = form.onSubmit(saveAnimation);
 
-  // Sync weights when frame count changes (not on every weight update)
-  // Initialize from Redux weights when frames are added/removed
-  useEffect(() => {
+  // Derived state: sync weights when candFrames reference changes (frames added/removed
+  // or weights flushed to Redux). Does not fire during local slider drags because
+  // candFrames is unchanged then.
+  const [prevCandFrames, setPrevCandFrames] = useState(candFrames);
+  if (prevCandFrames !== candFrames) {
+    setPrevCandFrames(candFrames);
     setWeights(candFrames.map((f) => f.weight));
-  }, [candFrames]);
+  }
 
-  // Update form names when selectedAnimation changes
-  useEffect(() => {
-    const names = selectedAnimation?.slotNames ?? [];
-    form.setFieldValue("names", names);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAnimation]);
+  // Derived state: sync form names when the selected animation changes.
+  const [prevAnimId, setPrevAnimId] = useState(selectedAnimation?.id);
+  if (prevAnimId !== selectedAnimation?.id) {
+    setPrevAnimId(selectedAnimation?.id);
+    form.setFieldValue("names", selectedAnimation?.slotNames ?? []);
+  }
 
   // Rebalance all weights when a single slider is changed so that the sum
   // across frames remains exactly 1.0. We preserve other frames' relative

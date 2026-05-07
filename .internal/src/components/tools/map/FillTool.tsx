@@ -40,7 +40,13 @@ export default function FillTool() {
 
   // Store fractional weights per frame (0..1), always normalized so sum == 1
   const [weights, setWeights] = useState<Weights>(cands.map((c) => c.prob));
-  const [density, setDensity] = useState<number>(storeDensity);
+
+  // Derived state: resize weights array when candidate count changes.
+  const [prevCandsLength, setPrevCandsLength] = useState(cands.length);
+  if (prevCandsLength !== cands.length) {
+    setPrevCandsLength(cands.length);
+    setWeights((prev) => resizeWeights(prev, cands.length));
+  }
 
   const n = cands.length;
   const hasCands = n > 1; // 1 for transparent tile
@@ -73,17 +79,6 @@ export default function FillTool() {
     return area <= 300 * 300;
   }, [bounds]);
 
-  // Keep weights in sync with candidate count (index-based). Preserve existing
-  // prefix, assign a small fair share to new frames, then normalize.
-  //
-  // queueMicrotask is for the linter, which prefers that an effect not update
-  // the state during render.
-  useEffect(() => {
-    queueMicrotask(() => {
-      setWeights((prev) => resizeWeights(prev, cands.length));
-    });
-  }, [cands.length]);
-
   useEffect(() => {
     const hasFirstCand = cands.length === 2;
     if (!hasFirstCand) return;
@@ -94,11 +89,6 @@ export default function FillTool() {
 
     dispatch(setActiveLayerThunk({ layer: switchTo, notify: true }));
   }, [dispatch, cands]);
-
-  // Sync local overlap state with Redux store
-  useEffect(() => {
-    setDensity(storeDensity);
-  }, [storeDensity]);
 
   const finalizeWeights = useCallback(
     (weights: Weights) => {
@@ -119,18 +109,6 @@ export default function FillTool() {
     [cands, dispatch],
   );
 
-  // Rebalance all weights when a single slider is changed so that the sum
-  // across frames remains exactly 1.0. We preserve other frames' relative
-  // proportions by scaling them uniformly.
-  const updateWeight = (idx: number, target: number) => {
-    setWeights((prev) => {
-      if (prev.length === 0) return [1];
-      const current: Weights = prev.slice();
-      const weights = rebalanceAfterChange(current, idx, target);
-      return weights;
-    });
-  };
-
   const removeFrame = (idx: number) => {
     setWeights((prev) => removeWeight(prev, idx));
     dispatch(
@@ -140,13 +118,6 @@ export default function FillTool() {
       }),
     );
   };
-
-  useEffect(() => {
-    if (dynamicUpdate) {
-      finalizeWeights(weights);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dynamicUpdate, weights]);
 
   const commitChanges = () => {
     dispatch(commitObjectsThunk());
@@ -205,7 +176,18 @@ export default function FillTool() {
                           value={uiValue}
                           onChange={(v) => {
                             const targetWeight = scaleFn(v);
-                            updateWeight(idx, targetWeight);
+                            const newWeights =
+                              weights.length === 0
+                                ? [1]
+                                : rebalanceAfterChange(
+                                    weights.slice(),
+                                    idx,
+                                    targetWeight,
+                                  );
+                            setWeights(newWeights);
+                            if (dynamicUpdate) {
+                              finalizeWeights(newWeights);
+                            }
                           }}
                           onChangeEnd={(_v) => {
                             if (!dynamicUpdate) {
@@ -237,20 +219,9 @@ export default function FillTool() {
               max={1}
               step={0.01}
               label={null}
-              value={density}
+              value={storeDensity}
               disabled={!canCommit}
-              onChange={(v) => {
-                if (dynamicUpdate) {
-                  updateDensity(v);
-                } else {
-                  setDensity(v);
-                }
-              }}
-              onChangeEnd={(v) => {
-                if (!dynamicUpdate) {
-                  updateDensity(v);
-                }
-              }}
+              onChange={updateDensity}
             />
           </Stack>
 
