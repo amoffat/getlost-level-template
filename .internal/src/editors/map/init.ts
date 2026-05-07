@@ -63,7 +63,7 @@ export async function init(): Promise<P.Application> {
     filterLayer: ({ state, layer }) => {
       const ms = state.mapEditor;
       const layerMatches = layer === ms.layers.active;
-      return !ms.layers.lockInactive || layerMatches;
+      return layerMatches && !ms.layers.hiddenLayers.includes(layer as MapLayerName);
     },
   });
   g.spatialIndex = spatialIndex;

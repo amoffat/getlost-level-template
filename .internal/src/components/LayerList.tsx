@@ -5,14 +5,15 @@ import { setActiveLayerThunk } from "@/thunks/map";
 import { MapLayerName } from "@/types/layer";
 import { mapLayerToName } from "@/utils/layer";
 import {
+  ActionIcon,
   Fieldset,
   Group,
   Overlay,
   Radio,
   Stack,
-  Switch,
   Text,
 } from "@mantine/core";
+import { IconEye, IconEyeOff } from "@tabler/icons-react";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import classes from "./styles/LayerList.module.css";
@@ -34,6 +35,9 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
   const activeLayer = useAppSelector(
     (state: RootState) => state.mapEditor.layers.active,
   );
+  const hiddenLayers = useAppSelector(
+    (state: RootState) => state.mapEditor.layers.hiddenLayers,
+  );
   const dispatch = useAppDispatch();
 
   const changeActiveLayer = useCallback(
@@ -41,6 +45,15 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
       dispatch(setActiveLayerThunk({ layer: id as MapLayerName }));
     },
     [dispatch],
+  );
+
+  const toggleLayerVisibility = useCallback(
+    (e: React.MouseEvent, layerId: MapLayerName) => {
+      e.stopPropagation();
+      const isHidden = hiddenLayers.includes(layerId);
+      dispatch(actions.setLayerHidden({ layer: layerId, hidden: !isHidden }));
+    },
+    [dispatch, hiddenLayers],
   );
 
   const layers: Layer[] = useMemo(() => {
@@ -83,6 +96,7 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
                 layerConstraints !== undefined &&
                 layerConstraints.length > 0 &&
                 !layerConstraints.includes(layer.id);
+              const isVisible = !hiddenLayers.includes(layer.id as MapLayerName);
               return (
                 <Radio.Card
                   className={classes.root}
@@ -95,38 +109,41 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
                   {isDisabled && (
                     <Overlay backgroundOpacity={0.2} radius="md" />
                   )}
-                  <Group wrap="nowrap" align="flex-start">
-                    <Radio.Indicator />
-                    <div>
-                      <Text className={classes.label}>
-                        {mapLayerToName(layer.id)}
-                      </Text>
-                      {activeLayer === layer.id && (
-                        <Text className={classes.description}>
-                          {layer.description}
+                  <Group wrap="nowrap" align="flex-start" justify="space-between">
+                    <Group wrap="nowrap" align="flex-start">
+                      <Radio.Indicator />
+                      <div>
+                        <Text className={classes.label}>
+                          {mapLayerToName(layer.id)}
                         </Text>
+                        {activeLayer === layer.id && (
+                          <Text className={classes.description}>
+                            {layer.description}
+                          </Text>
+                        )}
+                      </div>
+                    </Group>
+                    <ActionIcon
+                      variant="subtle"
+                      color="gray"
+                      size="sm"
+                      aria-label={t("layerListToggleVisibility")}
+                      onClick={(e) =>
+                        toggleLayerVisibility(e, layer.id as MapLayerName)
+                      }
+                    >
+                      {isVisible ? (
+                        <IconEye size={14} />
+                      ) : (
+                        <IconEyeOff size={14} />
                       )}
-                    </div>
+                    </ActionIcon>
                   </Group>
                 </Radio.Card>
               );
             })}
           </Stack>
         </Radio.Group>
-        <Switch
-          label={t("layerListLockInactive")}
-          checked={layerState.lockInactive}
-          onChange={(event) => {
-            dispatch(actions.setLockInactiveLayer(event.currentTarget.checked));
-          }}
-        />
-        <Switch
-          label={t("layerListDimInactive")}
-          checked={layerState.dimInactive}
-          onChange={(event) => {
-            dispatch(actions.setDimInactiveLayer(event.currentTarget.checked));
-          }}
-        />
       </Stack>
     </Fieldset>
   );

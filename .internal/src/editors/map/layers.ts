@@ -5,19 +5,12 @@ import { globals as g } from "./globals";
 
 function setLayerVisibility(layers: RootState["mapEditor"]["layers"]) {
   const lc = g.layerContainers;
-  if (layers.dimInactive) {
-    for (const layer of Object.values(lc)) {
-      layer.alpha = 0.3;
-      layer.eventMode = "none";
-    }
-    const active = lc[layers.active as MapLayerName];
-    active.alpha = 1;
-    active.eventMode = "static";
-  } else {
-    for (const layer of Object.values(lc)) {
-      layer.alpha = 1;
-      layer.eventMode = "static";
-    }
+  for (const [key, container] of Object.entries(lc)) {
+    const layerName = Number(key) as MapLayerName;
+    const isHidden = layers.hiddenLayers.includes(layerName);
+    container.visible = !isHidden;
+    container.alpha = 1;
+    container.eventMode = isHidden ? "none" : "static";
   }
 }
 

@@ -96,8 +96,7 @@ interface MapEditorState {
   layers: {
     active: MapLayerName;
     visible: MapLayerName[];
-    lockInactive: boolean;
-    dimInactive: boolean;
+    hiddenLayers: MapLayerName[];
   };
   templates: {
     lights: LightProps & HasId;
@@ -149,8 +148,7 @@ export const slice = createSlice({
     layers: {
       active: MapLayerName.Exterior,
       visible: [MapLayerName.Ground, MapLayerName.Exterior, MapLayerName.Zones],
-      lockInactive: true,
-      dimInactive: false,
+      hiddenLayers: [],
     },
     templates: {
       lights: {
@@ -223,6 +221,9 @@ export const slice = createSlice({
       const newLayer = action.payload;
       state.layers.active = newLayer;
       state.selectedIds = [];
+      state.layers.hiddenLayers = state.layers.hiddenLayers.filter(
+        (l) => l !== newLayer,
+      );
 
       if (
         state.activeTool === "autotiler" &&
@@ -233,12 +234,20 @@ export const slice = createSlice({
       }
     },
 
-    setLockInactiveLayer(state, action: { payload: boolean }) {
-      state.layers.lockInactive = action.payload;
-    },
-
-    setDimInactiveLayer(state, action: { payload: boolean }) {
-      state.layers.dimInactive = action.payload;
+    setLayerHidden(
+      state,
+      action: { payload: { layer: MapLayerName; hidden: boolean } },
+    ) {
+      const { layer, hidden } = action.payload;
+      if (hidden) {
+        if (!state.layers.hiddenLayers.includes(layer)) {
+          state.layers.hiddenLayers.push(layer);
+        }
+      } else {
+        state.layers.hiddenLayers = state.layers.hiddenLayers.filter(
+          (l) => l !== layer,
+        );
+      }
     },
 
     setPlace(state, action: PayloadAction<TemplateObject | null>) {

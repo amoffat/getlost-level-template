@@ -81,7 +81,6 @@ export const setActiveLayerThunk = createAsyncThunk(
     }
 
     dispatch(mapActions.setActiveLayer(layer));
-    dispatch(mapActions.setLockInactiveLayer(true));
 
     if (notify) {
       notifications.show({

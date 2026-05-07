@@ -172,7 +172,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
     const layerHits = allHits.filter((obj) => {
       const layer = obj.layer ?? 0;
       const layerMatches = layer === ms.layers.active;
-      return !ms.layers.lockInactive || layerMatches;
+      return layerMatches && !ms.layers.hiddenLayers.includes(layer as MapLayerName);
     });
 
     // Nothing selected? Clear either the proposed selection (if any) (first
