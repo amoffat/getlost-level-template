@@ -115,7 +115,7 @@ export default function ObjectAnimationMenu({
     });
 
     closeMenu();
-  }, [obj, closeMenu, dispatch]);
+  }, [obj, closeMenu, dispatch, t]);
 
   // const mapEd = tab === "map-editor";
   const tilesetEd = tab === "tileset-editor";

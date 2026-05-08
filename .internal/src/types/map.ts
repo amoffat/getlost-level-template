@@ -187,7 +187,10 @@ export interface SpeakableProps {
   nameKey: string | null;
 }
 
-export type SpeakableMapObj = MapObj & SpeakableProps;
+export type SpeakableMapObj = Extract<
+  MapObj,
+  RequiredButMaybeUndefined<SpeakableProps>
+>;
 
 export type MapObjProps =
   | LightProps

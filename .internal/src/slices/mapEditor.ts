@@ -162,14 +162,14 @@ export const slice = createSlice({
       },
       entryGateways: {
         id: constants.entryTemplateId,
-        nameKey: null,
+        slug: null,
         tags: [],
         exitIds: [],
         status: null,
       },
       exitGateways: {
         id: constants.exitTemplateId,
-        nameKey: null,
+        slug: null,
         tags: [],
         force: false,
         preferredEntranceId: null,
@@ -488,6 +488,24 @@ export const slice = createSlice({
     },
   },
   selectors: {
+    selectActiveLayer: createMapSelector(
+      [(state) => state.layers.active],
+      (layer) => layer,
+    ),
+    selectProposed: createMapSelector(
+      [(state) => state.layers.active, (state) => state.proposedSelection],
+      (layer, proposed) => {
+        if (proposed) {
+          const valid = proposed?.objects.filter((p) => p.layer === layer);
+          return {
+            ...proposed,
+            objects: valid,
+          };
+        } else {
+          return null;
+        }
+      },
+    ),
     selectCard: createMapSelector(
       [(state) => state.card],
       (card): Card | null => card,
@@ -592,5 +610,5 @@ export const slice = createSlice({
 });
 
 export const selectors = slice.selectors;
-export const mapSelectors = objectsAdapter.getSelectors();
+export const objSelectors = objectsAdapter.getSelectors();
 export const actions = slice.actions;

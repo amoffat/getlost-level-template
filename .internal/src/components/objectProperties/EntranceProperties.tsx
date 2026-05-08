@@ -1,6 +1,5 @@
 import { entryTemplateId } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { selectors as localeSelectors } from "@/slices/locale";
 import {
   actions as mapEditorActions,
   selectors as mapSelectors,
@@ -8,7 +7,6 @@ import {
 import { collectPropertyValues } from "@/store/selectors";
 import { EntranceObj } from "@/types/map";
 import { EntranceProps } from "@/types/properties";
-import { resolveLocaleText } from "@/utils/locale";
 import { updateObjectProperties } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import {
@@ -21,14 +19,14 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { memo, ReactElement, useCallback, useMemo } from "react";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
-import LocalizedNameInput from "./inputs/LocalizedNameInput";
+import SlugInput from "./inputs/SlugInput";
 import { requiredUniqueName } from "./validators/name";
 
 // Properties that collectPropertyValues needs to access
-const COLLECTED_PROPS = ["nameKey", "exitIds"] as const;
+const COLLECTED_PROPS = ["slug", "exitIds"] as const;
 
 // Additional properties needed for identification
 const TEMPLATE_PROPS = ["id"] as const;
@@ -44,7 +42,6 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
   const objsByTemplateId = useAppSelector((state) =>
     mapSelectors.objectsByTemplateId(state, entryTemplateId),
   ) as EntranceObj[];
-  const defaultEntries = useAppSelector(localeSelectors.selectDefaultEntries);
 
   // All entrance objects use the same global entrance template
   const templateUpdate = useCallback(
@@ -100,45 +97,34 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
     [toCollect.exitIds],
   );
 
-  const existingNames = useMemo(() => {
-    const names = new Set<string>();
+  const existingSlugs = useMemo(() => {
+    const slugs = new Set<string>();
     const skipIds = new Set(objs.map((obj) => obj.id));
     objsByTemplateId.forEach((obj) => {
       if (skipIds.has(obj.id)) return;
-      if (!obj.nameKey) return;
-
-      const name = resolveLocaleText({
-        key: obj.nameKey,
-        primaryEntries: defaultEntries,
-      });
-      names.add(name);
+      if (!obj.slug) return;
+      slugs.add(obj.slug);
     });
-    return names;
-  }, [defaultEntries, objsByTemplateId, objs]);
+    return slugs;
+  }, [objsByTemplateId, objs]);
 
-  const nameValidator = useCallback(
+  const slugValidator = useCallback(
     (value: string | undefined) => {
-      return requiredUniqueName(existingNames, value);
+      return requiredUniqueName(existingSlugs, value);
     },
-    [existingNames],
+    [existingSlugs],
   );
 
-  const nameInput = (
-    <LocalizedNameInput
-      description={t('entrancePropNameDescription')}
+  const slugInput = (
+    <SlugInput
+      description={t("entrancePropNameDescription")}
       noTemplate
-      values={toCollect.nameKey}
-      context="Entrance name"
-      keyPrefix={["entrance"]}
-      validator={nameValidator}
+      values={toCollect.slug}
+      validator={slugValidator}
       onValueChange={({ scope, value }): void => {
-        const text = resolveLocaleText({
-          key: value,
-          primaryEntries: defaultEntries,
-        });
         updateProps(scope, {
-          nameKey: value ?? null,
-          status: nameValidator(text) ? "error" : null,
+          slug: value ?? null,
+          status: slugValidator(value ?? undefined) ? "error" : null,
         });
       }}
       required
@@ -150,8 +136,8 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
   const exitIdInput = (
     <Stack p={0} gap="xs">
       <PropertyValue
-        label={t('entrancePropExitConnectionsLabel')}
-        description={t('entrancePropExitConnectionsDescription')}
+        label={t("entrancePropExitConnectionsLabel")}
+        description={t("entrancePropExitConnectionsDescription")}
         noTemplate
         values={toCollect.exitIds}
         onValueChange={({
@@ -173,7 +159,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
                   <TextInput
                     flex={1}
                     value={exitId}
-                    placeholder={t('entrancePropExitIdPlaceholder')}
+                    placeholder={t("entrancePropExitIdPlaceholder")}
                     onChange={(e) => {
                       const newExitIds = [...exitIds];
                       newExitIds[index] = e.target.value;
@@ -195,7 +181,7 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       />
       {numExits < 3 && (
         <Button size="xs" fullWidth onClick={openModal}>
-          {t('entrancePropAddConnection')}
+          {t("entrancePropAddConnection")}
         </Button>
       )}
     </Stack>
@@ -205,9 +191,9 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
 
   return (
     <>
-      <Fieldset legend={t('entrancePropLegend')} p="xs">
+      <Fieldset legend={t("entrancePropLegend")} p="xs">
         <Stack p={0} gap="xl">
-          {singleSelected && nameInput}
+          {singleSelected && slugInput}
           {singleSelected && exitIdInput}
         </Stack>
       </Fieldset>
@@ -216,9 +202,9 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
         opened={modalOpened}
         onClose={closeModal}
         onSubmit={handleModalSubmit}
-        gatewayLabel={t('entrancePropGatewayLabel')}
-        gatewayPlaceholder={t('entrancePropGatewayPlaceholder')}
-        gatewayDescription={t('entrancePropGatewayDescription')}
+        gatewayLabel={t("entrancePropGatewayLabel")}
+        gatewayPlaceholder={t("entrancePropGatewayPlaceholder")}
+        gatewayDescription={t("entrancePropGatewayDescription")}
         filterGateway={filterGateway}
       />
     </>

@@ -1,7 +1,7 @@
 import { ZONE_TYPE_META } from "@/constants/zoneMeta";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { actions } from "@/slices/mapEditor";
+import { actions, selectors as mapSelectors } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { store } from "@/store/store";
 import { AnimationTemplate } from "@/types/animation";
@@ -25,7 +25,7 @@ import TilesetGroup from "./TilesetGroup";
 
 export default function ObjSelHover() {
   const { t } = useTranslation();
-  const proposed = useAppSelector((state) => state.mapEditor.proposedSelection);
+  const proposed = useAppSelector(mapSelectors.selectProposed);
   const curSelected = useAppSelector((state) => state.mapEditor.selectedIds);
   const dispatch = useAppDispatch();
 
@@ -110,7 +110,7 @@ export default function ObjSelHover() {
     });
   }, [curSelected, onChange, proposed?.objects, t]);
 
-  if (!proposed) return null;
+  if (!proposed || proposed.objects.length === 0) return null;
 
   return (
     <DynamicHoverCard x={proposed.pos.x} y={proposed.pos.y} opened={true}>

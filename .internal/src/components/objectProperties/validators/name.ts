@@ -7,7 +7,7 @@ export function requiredName(value: string | undefined): string | null {
 
 export function uniqueName(
   existingNames: Set<string>,
-  value: string | undefined
+  value: string | undefined,
 ): string | null {
   if (value && existingNames.has(value.trim())) {
     return "Must be unique";
@@ -17,7 +17,7 @@ export function uniqueName(
 
 export function requiredUniqueName(
   existingNames: Set<string>,
-  value: string | undefined
+  value: string | undefined,
 ): string | null {
   const nonEmptyError = requiredName(value);
   if (nonEmptyError) {

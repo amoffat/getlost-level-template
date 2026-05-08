@@ -1,6 +1,6 @@
 import * as constants from "@/constants";
 import { globals as gApp } from "@/globals";
-import { actions, mapSelectors, selectors } from "@/slices/mapEditor";
+import { actions, objSelectors, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
@@ -59,11 +59,13 @@ export async function init(): Promise<P.Application> {
 
   const spatialIndex = new SpatialIndex<MapObj>({
     selectById: (state, id) =>
-      mapSelectors.selectById(state.mapEditor.objects, id),
+      objSelectors.selectById(state.mapEditor.objects, id),
     filterLayer: ({ state, layer }) => {
       const ms = state.mapEditor;
       const layerMatches = layer === ms.layers.active;
-      return layerMatches && !ms.layers.hiddenLayers.includes(layer as MapLayerName);
+      return (
+        layerMatches && !ms.layers.hiddenLayers.includes(layer as MapLayerName)
+      );
     },
   });
   g.spatialIndex = spatialIndex;

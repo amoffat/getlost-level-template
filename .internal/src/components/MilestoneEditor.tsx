@@ -6,6 +6,7 @@ import { RootState } from "@/store/store";
 import { Dialogue } from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
 import { createUrlPath } from "@/utils/dialogue";
+import { sanitize } from "@/utils/slug";
 import {
   Button,
   Checkbox,
@@ -68,27 +69,16 @@ export default function MilestoneEditor({
     300,
   );
 
-  const sanitizeName = useCallback((value: string) => {
-    return (
-      value
-        .toLowerCase()
-        // Replace spaces and non-ASCII characters with dashes
-        .replace(/[^\x21-\x7e]/g, "-")
-        // Replace any remaining non-alphanumeric/dash characters with dashes
-        .replace(/[^a-z0-9-]/g, "-")
-    );
-  }, []);
-
   const onNameChange = useCallback(
     (value: string) => {
-      const sanitized = sanitizeName(value);
+      const sanitized = sanitize(value);
       setLocalName(sanitized);
       // Only persist if non-empty and unique
       if (sanitized !== "" && !otherIdsSet.has(sanitized)) {
         debouncedDispatch({ id: sanitized });
       }
     },
-    [sanitizeName, otherIdsSet, debouncedDispatch],
+    [otherIdsSet, debouncedDispatch],
   );
 
   const onPermanentChange = useCallback(

@@ -179,6 +179,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
     // click), or the actual selection (second click).
     if (layerHits.length === 0) {
       const filteredHits = allHits
+        .filter((obj) => !ms.layers.hiddenLayers.includes((obj.layer ?? 0) as MapLayerName))
         .sort((a, b) => sortOrder(b.layer) - sortOrder(a.layer));
 
       // It's more ergonomic to allow selecting an object, even if we're not on

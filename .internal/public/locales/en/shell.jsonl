@@ -182,7 +182,7 @@
 {"k": "localizedNameInputPlaceholder", "v": "Enter name", "ctx": "Default placeholder for a localized name input field"}
 {"k": "localizedNameInputMixedValues", "v": "Mixed values", "ctx": "Placeholder shown when multiple selected objects have different values"}
 {"k": "npcPropLegend", "v": "NPC properties", "ctx": "Fieldset legend for NPC object properties panel"}
-{"k": "npcPropNameDescription", "v": "A name for this character. Must be unique.", "ctx": "Description for the NPC name input"}
+{"k": "npcPropNameDescription", "v": "A name for this character. This will appear in dialogue.", "ctx": "Description for the NPC name input"}
 {"k": "npcPropWalkSpeedLabel", "v": "Walk speed", "ctx": "Label for the NPC walk speed slider"}
 {"k": "npcPropWalkSpeedDescription", "v": "How quickly the NPC moves across the map.", "ctx": "Description for the NPC walk speed slider"}
 {"k": "npcPropDampenWalkCollisionsLabel", "v": "Dampen walk collisions", "ctx": "Label for the NPC dampen walk collisions slider"}
@@ -385,8 +385,7 @@
 {"k": "gatewayModalSelectBtn", "v": "Select gateway", "ctx": "Submit button label in the Gateway lookup modal"}
 {"k": "gatewayModalNoGateways", "v": "No gateways found in this level", "ctx": "Error message shown when the looked-up level contains no gateways"}
 {"k": "layerListLegend", "v": "Layers", "ctx": "Legend text for the fieldset grouping the map layer controls"}
-{"k": "layerListLockInactive", "v": "Lock inactive layers", "ctx": "Switch label that toggles locking of all layers except the active one"}
-{"k": "layerListDimInactive", "v": "Dim inactive layers", "ctx": "Switch label that toggles dimming of all layers except the active one"}
+{"k": "layerListToggleVisibility", "v": "Toggle layer visibility", "ctx": "Aria label for the eye icon button that shows or hides a map layer"}
 {"k": "layerListExteriorDescription", "v": "Outdoor objects that can appear in front of and behind a character", "ctx": "Description for the Exterior map layer shown in the layer selector"}
 {"k": "layerListGroundDescription", "v": "Ground objects are always rendered beneath the character", "ctx": "Description for the Ground map layer shown in the layer selector"}
 {"k": "layerListBackgroundDescription", "v": "Skies and other parallax background images rendered behind everything else", "ctx": "Description for the Background map layer shown in the layer selector"}

@@ -67,7 +67,7 @@ export default function PreviewTab({
   });
   const [isDragging, setIsDragging] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(true);
-  const [audioMode, setAudioMode] = useLocalStorage<"audio" | "muted">({
+  const [audioMode, _setAudioMode] = useLocalStorage<"audio" | "muted">({
     key: "gl-audio-mode",
     defaultValue: "audio",
   });
@@ -150,7 +150,7 @@ export default function PreviewTab({
         import.meta.hot!.off("gl:level-reload", fn);
       };
     }
-  }, [activeTab, autoReload]);
+  }, [activeTab, autoReload, pendingReload]);
 
   // Process queued reload when tab becomes active
   useEffect(() => {

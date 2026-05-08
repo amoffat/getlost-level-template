@@ -4,10 +4,12 @@ import React from "react";
 /**
  * DynamicHoverCard
  *
- * Renders a Mantine Popover dropdown anchored to arbitrary viewport coordinates (x, y).
- * Useful for context menus, inspector hovers, or any UI that should appear at a specific screen point.
+ * Renders a Mantine Popover dropdown anchored to arbitrary viewport coordinates
+ * (x, y). Useful for context menus, inspector hovers, or any UI that should
+ * appear at a specific screen point.
  *
- * Coordinates are treated as viewport pixels (position: fixed), measured from the top-left corner of the window.
+ * Coordinates are treated as viewport pixels (position: fixed), measured from
+ * the top-left corner of the window.
  */
 interface DynamicHoverCardProps extends Omit<
   PopoverProps,

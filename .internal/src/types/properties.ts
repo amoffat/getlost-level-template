@@ -16,15 +16,13 @@ import type { NpcAnimationRecord } from "./npc";
 type InstanceStatus = "error" | "warning";
 
 export interface EntranceProps {
-  nameKey: string | null;
-  tags: string[];
+  slug: string | null;
   exitIds: string[];
   status: InstanceStatus | null;
 }
 
 export interface ExitProps {
-  nameKey: string | null;
-  tags: string[];
+  slug: string | null;
   force: boolean;
   preferredEntranceId: string | null;
   sensorRadius: number;
@@ -95,15 +93,13 @@ export interface NpcProps {
 // migrations when adding or removing properties.
 
 export const ENTRANCE_PROPS_DEFAULTS: EntranceProps = {
-  nameKey: null,
-  tags: [],
+  slug: null,
   exitIds: [],
   status: null,
 };
 
 export const EXIT_PROPS_DEFAULTS: ExitProps = {
-  nameKey: null,
-  tags: [],
+  slug: null,
   force: false,
   preferredEntranceId: null,
   sensorRadius: defaultExitSensorRadius,

@@ -1,6 +1,5 @@
 import * as constants from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { selectors as localeSelectors } from "@/slices/locale";
 import {
   actions as mapEditorActions,
   selectors as mapSelectors,
@@ -8,22 +7,21 @@ import {
 import { collectPropertyValues } from "@/store/selectors";
 import { ExitObj } from "@/types/map";
 import { ExitProps } from "@/types/properties";
-import { resolveLocaleText } from "@/utils/locale";
 import { updateObjectProperties } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Button, Fieldset, Slider, Stack, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { memo, ReactElement, useCallback, useMemo } from "react";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 import GatewayModal from "../GatewayModal";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
-import LocalizedNameInput from "./inputs/LocalizedNameInput";
+import SlugInput from "./inputs/SlugInput";
 import SwitchInput from "./inputs/SwitchInput";
 import { requiredUniqueName } from "./validators/name";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
-  "nameKey",
+  "slug",
   "preferredEntranceId",
   "force",
   "sensorRadius",
@@ -41,7 +39,6 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
   const objsByTemplateId = useAppSelector((state) =>
     mapSelectors.objectsByTemplateId(state, constants.exitTemplateId),
   ) as ExitObj[];
-  const defaultEntries = useAppSelector(localeSelectors.selectDefaultEntries);
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
 
@@ -86,45 +83,34 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
     [updateProps],
   );
 
-  const existingNames = useMemo(() => {
-    const names = new Set<string>();
+  const existingSlugs = useMemo(() => {
+    const slugs = new Set<string>();
     const skipIds = new Set(objs.map((obj) => obj.id));
     objsByTemplateId.forEach((obj) => {
       if (skipIds.has(obj.id)) return;
-      if (!obj.nameKey) return;
-
-      const name = resolveLocaleText({
-        key: obj.nameKey,
-        primaryEntries: defaultEntries,
-      });
-      names.add(name);
+      if (!obj.slug) return;
+      slugs.add(obj.slug);
     });
-    return names;
-  }, [defaultEntries, objsByTemplateId, objs]);
+    return slugs;
+  }, [objsByTemplateId, objs]);
 
-  const nameValidator = useCallback(
+  const slugValidator = useCallback(
     (value: string | undefined) => {
-      return requiredUniqueName(existingNames, value);
+      return requiredUniqueName(existingSlugs, value);
     },
-    [existingNames],
+    [existingSlugs],
   );
 
-  const nameInput = (
-    <LocalizedNameInput
-      description={t('exitPropNameDescription')}
+  const slugInput = (
+    <SlugInput
+      description={t("entrancePropNameDescription")}
       noTemplate
-      values={toCollect.nameKey}
-      context="Exit name"
-      keyPrefix={["exit"]}
-      validator={nameValidator}
+      values={toCollect.slug}
+      validator={slugValidator}
       onValueChange={({ scope, value }): void => {
-        const text = resolveLocaleText({
-          key: value,
-          primaryEntries: defaultEntries,
-        });
         updateProps(scope, {
-          nameKey: value ?? null,
-          status: nameValidator(text) ? "error" : null,
+          slug: value ?? null,
+          status: slugValidator(value ?? undefined) ? "error" : null,
         });
       }}
       required
@@ -136,8 +122,8 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
   const preferredEntranceInput = (
     <PropertyValue<string | null>
-      label={t('exitPropPreferredEntranceLabel')}
-      description={t('exitPropPreferredEntranceDescription')}
+      label={t("exitPropPreferredEntranceLabel")}
+      description={t("exitPropPreferredEntranceDescription")}
       noTemplate
       values={toCollect.preferredEntranceId}
       defaultValue={null}
@@ -157,7 +143,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
             {value && (
               <TextInput
                 defaultValue={value}
-                placeholder={t('exitPropPreferredEntrancePlaceholder')}
+                placeholder={t("exitPropPreferredEntrancePlaceholder")}
                 onChange={(e) => {
                   onChange(e.target.value);
                 }}
@@ -166,7 +152,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
             {!hasPrefEntrance && (
               <Button size="xs" fullWidth onClick={openModal}>
-                {t('exitPropAddConnection')}
+                {t("exitPropAddConnection")}
               </Button>
             )}
           </Stack>
@@ -177,8 +163,8 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
   const forceInput = (
     <SwitchInput
-      label={t('exitPropForceLabel')}
-      description={t('exitPropForceDescription')}
+      label={t("exitPropForceLabel")}
+      description={t("exitPropForceDescription")}
       values={toCollect.force}
       onValueChange={({ scope, value }) => updateProps(scope, { force: value })}
       noTemplate
@@ -188,8 +174,8 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
   const sensorSizeInput = (
     <PropertyValue<number | undefined>
-      label={t('exitPropSensorRadiusLabel')}
-      description={t('exitPropSensorRadiusDescription')}
+      label={t("exitPropSensorRadiusLabel")}
+      description={t("exitPropSensorRadiusDescription")}
       values={toCollect.sensorRadius}
       defaultValue={constants.defaultExitSensorRadius}
       noTemplate
@@ -221,9 +207,9 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
 
   return (
     <>
-      <Fieldset legend={t('exitPropLegend')} p="xs">
+      <Fieldset legend={t("exitPropLegend")} p="xs">
         <Stack p={0} gap="xl">
-          {singleSelected && nameInput}
+          {singleSelected && slugInput}
           {forceInput}
           {singleSelected && preferredEntranceInput}
           {sensorSizeInput}
@@ -234,9 +220,9 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
         opened={modalOpened}
         onClose={closeModal}
         onSubmit={handleModalSubmit}
-        gatewayLabel={t('exitPropGatewayLabel')}
-        gatewayPlaceholder={t('exitPropGatewayPlaceholder')}
-        gatewayDescription={t('exitPropGatewayDescription')}
+        gatewayLabel={t("exitPropGatewayLabel")}
+        gatewayPlaceholder={t("exitPropGatewayPlaceholder")}
+        gatewayDescription={t("exitPropGatewayDescription")}
       />
     </>
   );

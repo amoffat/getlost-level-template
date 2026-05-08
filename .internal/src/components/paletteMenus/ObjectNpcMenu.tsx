@@ -85,7 +85,7 @@ export default function ObjectNpcMenu({
     });
 
     closeMenu();
-  }, [obj, closeMenu, dispatch]);
+  }, [obj, closeMenu, dispatch, t]);
 
   if (!obj) return null;
 

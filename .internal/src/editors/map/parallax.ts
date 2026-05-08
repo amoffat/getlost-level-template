@@ -1,4 +1,4 @@
-import { mapSelectors } from "@/slices/mapEditor";
+import { objSelectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { isBackgroundImageObj } from "@/types/map";
@@ -33,7 +33,7 @@ export function setupParallaxTicker(app: P.Application): void {
     const cameraWorldY = (screenCenterY - g.mapContainer.position.y) / scale;
 
     for (const child of backgroundLayer.children) {
-      const obj = mapSelectors.selectById(state.mapEditor.objects, child.label);
+      const obj = objSelectors.selectById(state.mapEditor.objects, child.label);
       if (!obj || !isBackgroundImageObj(obj)) continue;
 
       const imageCenterX = obj.x + obj.width / 2;

@@ -14,7 +14,7 @@ import {
   Text,
 } from "@mantine/core";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import classes from "./styles/LayerList.module.css";
 
@@ -39,6 +39,28 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
     (state: RootState) => state.mapEditor.layers.hiddenLayers,
   );
   const dispatch = useAppDispatch();
+
+  const HIDDEN_LAYERS_KEY = "layerList:hiddenLayers";
+
+  // Restore hidden layers from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(HIDDEN_LAYERS_KEY);
+      if (stored) {
+        const parsed: MapLayerName[] = JSON.parse(stored);
+        for (const layer of parsed) {
+          dispatch(actions.setLayerHidden({ layer, hidden: true }));
+        }
+      }
+    } catch {
+      // ignore malformed data
+    }
+  }, [dispatch]);
+
+  // Persist hidden layers to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(HIDDEN_LAYERS_KEY, JSON.stringify(hiddenLayers));
+  }, [hiddenLayers]);
 
   const changeActiveLayer = useCallback(
     (id: number) => {
@@ -96,7 +118,9 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
                 layerConstraints !== undefined &&
                 layerConstraints.length > 0 &&
                 !layerConstraints.includes(layer.id);
-              const isVisible = !hiddenLayers.includes(layer.id as MapLayerName);
+              const isVisible = !hiddenLayers.includes(
+                layer.id as MapLayerName,
+              );
               return (
                 <Radio.Card
                   className={classes.root}
@@ -109,7 +133,11 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
                   {isDisabled && (
                     <Overlay backgroundOpacity={0.2} radius="md" />
                   )}
-                  <Group wrap="nowrap" align="flex-start" justify="space-between">
+                  <Group
+                    wrap="nowrap"
+                    align="flex-start"
+                    justify="space-between"
+                  >
                     <Group wrap="nowrap" align="flex-start">
                       <Radio.Indicator />
                       <div>
