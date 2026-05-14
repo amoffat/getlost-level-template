@@ -9,6 +9,7 @@ import {
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Fieldset, Stack } from "@mantine/core";
 import { memo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import AdvancedSection from "../common/AdvancedSection";
 import { PropertyValueScope } from "../PropertyValue";
 import FlipXInput from "./inputs/FlipXInput";
@@ -21,6 +22,7 @@ import TintInput from "./inputs/TintInput";
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
   "tags",
+  "talkable",
   "flipX",
   "tint",
   "autoplay",
@@ -42,6 +44,7 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
   const toCollect = useAppSelector((state) =>
     collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
   );
+  const { t } = useTranslation();
 
   const updateProps = useCallback(
     (scope: PropertyValueScope, props: Partial<AnimationProps>) => {
@@ -62,6 +65,18 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
     />
   );
 
+  const talkableInput = (
+    <SwitchInput
+      label={t("talkableLabel")}
+      noTemplate
+      description={t("talkableDescription")}
+      values={toCollect.talkable}
+      onValueChange={({ scope, value }) =>
+        updateProps(scope, { talkable: value })
+      }
+    />
+  );
+
   const tintInput = (
     <TintInput
       description="A color tint to apply to this animation."
@@ -75,7 +90,9 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
       label="Autoplay"
       description="Start the animation immediately"
       values={toCollect.autoplay}
-      onValueChange={({ scope, value }) => updateProps(scope, { autoplay: value })}
+      onValueChange={({ scope, value }) =>
+        updateProps(scope, { autoplay: value })
+      }
     />
   );
 
@@ -92,7 +109,9 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
     <HiddenInput
       description="Whether this animation starts off hidden on the map."
       values={toCollect.hidden}
-      onValueChange={({ scope, value }) => updateProps(scope, { hidden: value })}
+      onValueChange={({ scope, value }) =>
+        updateProps(scope, { hidden: value })
+      }
     />
   );
 
@@ -115,6 +134,7 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
     <Fieldset legend="Animation properties" p="xs">
       <Stack p={0} gap="xl">
         {flipXInput}
+        {talkableInput}
         {tintInput}
         {autoplayInput}
         {loopInput}

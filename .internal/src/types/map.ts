@@ -185,6 +185,7 @@ export type MapObj =
 export interface SpeakableProps {
   speakerImageId: string | null;
   nameKey: string | null;
+  talkable: boolean;
 }
 
 export type SpeakableMapObj = Extract<

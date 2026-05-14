@@ -8,6 +8,7 @@ import { store } from "@/store/store";
 import { AnimationTemplate } from "@/types/animation";
 import { isMapObjFromTileset } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
+import { copyToClipboard } from "@/utils/copy";
 import { Vector2 } from "@/vec";
 import { Menu } from "@mantine/core";
 import { modals } from "@mantine/modals";
@@ -34,9 +35,9 @@ export default function ObjectAnimationMenu({
 
   const onCopyId = useCallback(() => {
     if (!obj) return;
-    navigator.clipboard.writeText(obj.id);
+    copyToClipboard({ value: obj.id, t });
     closeMenu();
-  }, [obj, closeMenu]);
+  }, [obj, closeMenu, t]);
 
   const deleteObject = useCallback(() => {
     if (!obj) return;

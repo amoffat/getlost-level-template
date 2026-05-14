@@ -43,5 +43,5 @@ export const codeToLanguage = {
   vi: "Tiếng Việt", // Vietnamese
   id: "Bahasa Indonesia", // Indonesian
 } as const;
-export type SupportedLang = keyof typeof codeToLanguage;
-export const supportedLangs = Object.keys(codeToLanguage) as SupportedLang[];
+
+export const LOCALE_FILE = "dialogue";

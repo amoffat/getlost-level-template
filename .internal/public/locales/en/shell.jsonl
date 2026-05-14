@@ -610,3 +610,7 @@
 {"k": "bgImagePropMoveUp", "v": "Move layer up"}
 {"k": "bgImagePropMoveDown", "v": "Move layer down"}
 {"k": "uploadAssetChooseTypeContinue", "v": "Continue"}
+{"k": "talkableLabel", "v": "Talkable"}
+{"k": "talkableDescription", "v": "Whether this object can have dialogue"}
+{"k": "copiedToClipboard", "v": "Copied to clipboard"}
+{"k": "copyIdToClipboard", "v": "Copy id to clipboard"}

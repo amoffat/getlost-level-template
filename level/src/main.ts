@@ -1,3 +1,4 @@
+import * as controls from "@gl/api/controls";
 import * as filters from "@gl/api/filters";
 import * as object from "@gl/api/object";
 import * as story from "@gl/api/story";
@@ -19,19 +20,12 @@ export async function init(): Promise<void> {
   setSunEvent(SunEvent.SolarNoon, 0);
 
   const colors = new ColorMatrixFilter();
-  colors.matrix = [
-    // R output: warm, lifted, slightly fed by green/blue
-    1.08, 0.1, 0.08, 0.0, 0.035,
-
-    // G output: softened, peach/gold support
-    0.06, 0.94, 0.06, 0.0, 0.025,
-
-    // B output: reduced contrast, lavender haze rather than pure blue
-    0.1, 0.04, 0.88, 0.0, 0.04,
-
-    // A output
-    0.0, 0.0, 0.0, 1.0, 0.0,
-  ];
+  // Warm, golden-hour feel: lift reds, soften greens, pull back blues
+  colors.tint(1.05, 0.97, 0.9);
+  // Slight desaturation for a painterly softness with cross-channel bleed
+  colors.saturate(-0.1, true);
+  // Lift shadows with a subtle atmospheric haze
+  colors.overlay(0.04, 0.03, 0.04, true);
 
   const bloom = filters.addBloom({
     brightness: 0.5,
@@ -42,7 +36,7 @@ export async function init(): Promise<void> {
 
   events.on({
     type: "collision",
-    filter: { character: "player", collider: "Jim", enter: true },
+    filter: { charId: "player", colliderId: "Jim", enter: true },
     callback: ({ direction }) => {
       const hurtDirection = Vec2.fromVector(direction).normalize().flip();
       player.hurt(hurtDirection);
@@ -58,7 +52,7 @@ export async function init(): Promise<void> {
 
   events.on({
     type: "collision",
-    filter: { character: "player", collider: "barn", enter: true },
+    filter: { charId: "player", colliderId: "barn", enter: true },
     callback: ({ direction }) => {
       if (story.isSatisfied("find-spells")) {
         const hurtDirection = Vec2.fromVector(direction).normalize().flip();
@@ -72,6 +66,32 @@ export async function init(): Promise<void> {
     type: "state-change",
     callback: ({ ready, satisfied }) => {
       //
+    },
+  });
+
+  events.on({
+    type: "choice-made",
+    filter: { choiceId: "8834ece0-20a2-4189-8fa8-7e136348414b" },
+    callback: () => {
+      console.log("CHOSE IT");
+    },
+  });
+
+  events.on({
+    type: "sensor",
+    filter: { sensorId: "f4620bb5-9056-4fe4-9038-2c44d3f66ea9" },
+    callback: ({ enter }) => {
+      if (enter) {
+        controls.addButton({
+          labelKey: "interact",
+          slug: "interact2",
+          onRelease: () => {
+            console.log("BOOM");
+          },
+        });
+      } else {
+        controls.removeButton("interact2");
+      }
     },
   });
 }

@@ -1,18 +1,17 @@
 import { autosaveLocaleDebounce, defaultLocale } from "@/constants";
-import { supportedLangs } from "@/constants/locale";
+import { LOCALE_FILE } from "@/constants/locale";
 import { log } from "@/log";
 import { saveLocaleFile } from "@/persist/locale/api";
 import { actions as localeActions } from "@/slices/locale";
 import { selectPropertyValue } from "@/store/selectors";
 import { type RootState } from "@/store/store";
+import { supportedLangs } from "@/types/i18n";
 import type { LocaleEntry } from "@/types/locale";
-import { MapObj } from "@/types/map";
+import { isSpeakableObject } from "@/types/map";
 import { AppStartListening } from "@/types/redux";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { EMPTY, from, Subject } from "rxjs";
 import { catchError, concatMap, debounceTime } from "rxjs/operators";
-
-const LOCALE_FILE = "dialogue";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -105,12 +104,8 @@ function collectLiveKeys(state: RootState): Set<string> {
   // Map objects
   for (const objId of state.mapEditor.objects.ids) {
     const obj = state.mapEditor.objects.entities[objId as string];
-    if (obj && Object.hasOwn(obj, "nameKey")) {
-      const nameKey = selectPropertyValue<MapObj, { nameKey: string }>(
-        state,
-        obj,
-        "nameKey",
-      );
+    if (isSpeakableObject(obj)) {
+      const nameKey = selectPropertyValue(state, obj, "nameKey");
       if (nameKey) keys.add(nameKey);
     }
   }

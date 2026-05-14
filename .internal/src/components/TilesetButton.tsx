@@ -5,14 +5,15 @@ import { isAnimationTemplate } from "@/types/animation";
 import { isNpcTemplate } from "@/types/npc";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
+import { copyToClipboard } from "@/utils/copy";
 import { Image, Menu, UnstyledButton } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { IconCopy, IconTrash } from "@tabler/icons-react";
 import classNames from "classnames";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import styles from "./styles/TilesetButton.module.css";
 import { ItemStatus } from "./modals/ItemizedConfirmModal";
+import styles from "./styles/TilesetButton.module.css";
 
 interface TilesetButtonProps {
   onClick: () => void;
@@ -96,7 +97,10 @@ export default function TilesetButton({
 
     items.push({
       ok: npcs === 0,
-      message: npcs > 0 ? t("tilesetBtnContainsNpcs", { count: npcs }) : t("tilesetBtnNoNpcs"),
+      message:
+        npcs > 0
+          ? t("tilesetBtnContainsNpcs", { count: npcs })
+          : t("tilesetBtnNoNpcs"),
     });
 
     modals.openContextModal({
@@ -117,9 +121,9 @@ export default function TilesetButton({
   };
 
   const onCopyId = useCallback(() => {
-    navigator.clipboard.writeText(ts.id);
+    copyToClipboard({ value: ts.id, t });
     setOpened(false);
-  }, [ts]);
+  }, [ts, t]);
 
   return (
     <Menu shadow="md" width={200} opened={opened} position="right" withArrow>

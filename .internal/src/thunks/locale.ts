@@ -1,9 +1,6 @@
-import {
-  codeToLanguage,
-  SupportedLang,
-  supportedLangs,
-} from "@/constants/locale";
+import { codeToLanguage } from "@/constants/locale";
 import { actions } from "@/slices/locale";
+import { SupportedLang, supportedLangs } from "@/types/i18n";
 import type { LocaleEntry } from "@/types/locale";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";

@@ -1,9 +1,5 @@
-import {
-  codeToFlag,
-  codeToLanguage,
-  SupportedLang,
-  supportedLangs,
-} from "@/constants/locale";
+import { codeToFlag, codeToLanguage } from "@/constants/locale";
+import { SupportedLang, supportedLangs } from "@/types/i18n";
 import { Button, Group, Menu, ScrollArea } from "@mantine/core";
 import { IconChevronDown } from "@tabler/icons-react";
 import { ReactElement, useMemo } from "react";

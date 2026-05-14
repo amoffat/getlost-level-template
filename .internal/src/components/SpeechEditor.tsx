@@ -11,7 +11,8 @@ import { selectPropertyValue } from "@/store/selectors";
 import { RootState } from "@/store/store";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import { Choice, DNode, SpeechData } from "@/types/dialogue";
-import { SpeakableMapObj, SpeakableProps } from "@/types/map";
+import { SpeakableMapObj } from "@/types/map";
+import { copyToClipboard } from "@/utils/copy";
 import { extractVariableKeys, getDescription } from "@/utils/variableMap";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
@@ -40,15 +41,16 @@ import {
   Typography,
 } from "@mantine/core";
 import {
+  IconCopy,
   IconGripVertical,
   IconPhoto,
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { useTranslation } from "react-i18next";
 import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import InfoTooltip from "./common/InfoTooltip";
-import { LocalizedTextarea, LocalizedTextInput } from "./l10n";
+import { ActionButton, LocalizedTextarea, LocalizedTextInput } from "./l10n";
 import ResettableInput from "./ResettableInput";
 
 interface SpeechEditorProps {
@@ -87,11 +89,7 @@ export default function SpeechEditor({
     (state: RootState) =>
       data.speakerNameKey ??
       (obj
-        ? (selectPropertyValue<SpeakableMapObj, SpeakableProps>(
-            state,
-            obj,
-            "nameKey",
-          ) ?? undefined)
+        ? (selectPropertyValue(state, obj, "nameKey") ?? undefined)
         : undefined),
   );
 
@@ -388,9 +386,7 @@ function SpeakerImageSection({
       />
       <Text size="sm" fw={500}>
         {t("speechEditorAvatarLabel")}
-        <InfoTooltip>
-          {t("speechEditorAvatarTooltip")}
-        </InfoTooltip>
+        <InfoTooltip>{t("speechEditorAvatarTooltip")}</InfoTooltip>
       </Text>
 
       <Input.Description mb={0}>
@@ -507,6 +503,11 @@ function SortableChoice({
           style={{ flex: 1 }}
           placeholder={t("speechEditorChoicePlaceholder")}
           contextButton="inline"
+        />
+        <ActionButton
+          tooltip={t("copyIdToClipboard")}
+          icon={<IconCopy size={12} />}
+          onClick={() => copyToClipboard({ value: id, t })}
         />
         <CloseButton size="xs" onClick={() => removeChoice(id)} />
       </Group>

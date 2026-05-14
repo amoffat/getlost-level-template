@@ -1,5 +1,5 @@
 import { defaultLocale } from "@/constants";
-import { SupportedLang } from "@/constants/locale";
+import { SupportedLang } from "@/types/i18n";
 import type { LocaleEntry } from "@/types/locale";
 import { PartialNullable } from "@/types/util";
 import {

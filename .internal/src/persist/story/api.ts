@@ -126,7 +126,7 @@ function extractDialogues(
  *
  * Structure: Record<objectId, Record<storyNodeId, Dialogue>>
  *
- * - Top-level key: the NPC / tile-group object ID (dialogue.subjectId).
+ * - Top-level key: The speaker id (npc id, tilegroup id, etc).
  * - Second-level key: the stable ReactFlow story-node UUID stored in
  *   dialogue.milestoneNodeIds.  Using the UUID (not the user-editable milestone
  *   name) means that renaming a milestone does not break existing linkages.

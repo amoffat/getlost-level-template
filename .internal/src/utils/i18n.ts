@@ -1,30 +1,7 @@
+import { codeToLanguage } from "@/constants/locale";
+import { SupportedLang, supportedLangs } from "@/types/i18n";
 import { CSSProperties } from "react";
 import { log } from "../log";
-
-const codeToLanguage = {
-  main: "English",
-  en: "English", // English
-  es: "Español", // Spanish
-  pt: "Português", // Portuguese
-  "pt-br": "Português", // Brazilian Portuguese
-  fr: "Français", // French
-  de: "Deutsch", // German
-  it: "Italiano", // Italian
-  ru: "Русский", // Russian
-  ja: "日本語", // Japanese
-  ko: "한국어", // Korean
-  zh: "简体中文", // Simplified Chinese
-  "zh-cn": "简体中文", // Simplified Chinese
-  "zh-tw": "繁體中文", // Traditional Chinese
-  ar: "العربية", // Arabic
-  tr: "Türkçe", // Turkish
-  pl: "Polski", // Polish
-  th: "ไทย", // Thai
-  vi: "Tiếng Việt", // Vietnamese
-  id: "Bahasa Indonesia", // Indonesian
-} as const;
-export type SupportedLang = keyof typeof codeToLanguage;
-export const supportedLangs = Object.keys(codeToLanguage) as SupportedLang[];
 
 // These fallbacks apply on a per-key basis.
 export const fallbacks: Partial<Record<string, SupportedLang[]>> = {

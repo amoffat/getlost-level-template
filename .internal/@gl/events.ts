@@ -17,17 +17,26 @@ export interface PickupEvent {
 export interface SensorEvent {
   type: "sensor";
   data: {
-    charName: string;
-    sensorName: string;
+    charId: string;
+    sensorId: string;
+    direction: Vector;
     enter: boolean;
+  };
+}
+
+export interface TalkEvent {
+  type: "talk";
+  data: {
+    charId: string;
+    otherId: string;
   };
 }
 
 export interface CharacterCollisionEvent {
   type: "collision";
   data: {
-    character: string;
-    collider: string;
+    charId: string;
+    colliderId: string;
     direction: Vector;
     enter: boolean;
   };
@@ -36,8 +45,7 @@ export interface CharacterCollisionEvent {
 export interface ChoiceMadeEvent {
   type: "choice-made";
   data: {
-    refId: string;
-    choice: string;
+    choiceId: string;
   };
 }
 
@@ -51,7 +59,7 @@ export interface TimerCompletedEvent {
 export interface TileCollisionEvent {
   type: "tile-collision";
   data: {
-    charName: string;
+    charId: string;
     tileId: string;
     enter: boolean;
   };
@@ -71,6 +79,7 @@ export type AnyEvent =
   | PickupEvent
   | SensorEvent
   | CharacterCollisionEvent
+  | TalkEvent
   | TimerCompletedEvent
   | TileCollisionEvent
   | StateChangeEvent

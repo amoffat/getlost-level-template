@@ -1,7 +1,9 @@
 {
   "name": "Get Lost level",
   // "image": "arwmoffat/get-lost-devenv:5.0.0",
-  "build": { "dockerfile": "Dockerfile" },
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   // Don't use the docker-compose file for now. You can't select what `features`
   // apply to other containers, which means you can't use the `desktop-lite`
   // feature in the `tiled` container, without installing it yourself, which is
@@ -20,10 +22,9 @@
       "configureZshAsDefaultShell": true
     }
   },
-  // Ensure the required docker network exists before creating the container.
-  // This runs on the host (not in the container). Safe to ignore error if it already exists.
-  "initializeCommand": "sh -c 'docker network inspect getlost >/dev/null 2>&1 || docker network create getlost'",
-  "runArgs": ["--network=getlost"],
+  "runArgs": [
+    "--network=getlost"
+  ],
   "secrets": {
     "ASSETS_KEY": {
       "description": "License key for unlocking protected assets"
@@ -32,7 +33,9 @@
       "description": "OpenAI API key for LLM access"
     }
   },
-  "forwardPorts": [5173],
+  "forwardPorts": [
+    5173
+  ],
   "customizations": {
     "vscode": {
       "settings": {

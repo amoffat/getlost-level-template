@@ -163,7 +163,9 @@ export default function DialogueTab({
   const treeSelectRef = useRef(tree.select);
   const navigate = useNavigate();
   // Track the currently selected node for the right-pane editor
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
+    nodeIdParam ?? null,
+  );
 
   const sortedSpeakers = useMemo(() => {
     return speakers.sort((a, b) => a[0].localeCompare(b[0]));
@@ -216,15 +218,7 @@ export default function DialogueTab({
       dispatch(dActions.setActiveDialogue(dlgId));
       tree.select(createUrlPath({ id: dlgId, milestone: msId }));
 
-      if (nodeIdParam) {
-        requestAnimationFrame(() => {
-          reactFlowInstance.fitView({
-            nodes: [{ id: nodeIdParam }],
-            padding: 0.5,
-            maxZoom: 1,
-          });
-        });
-      } else {
+      if (!nodeIdParam) {
         requestAnimationFrame(() => {
           reactFlowInstance.fitView({ padding: 0.25 });
         });
@@ -247,6 +241,13 @@ export default function DialogueTab({
     reactFlowInstance.setNodes(
       nodes.map((n) => ({ ...n, selected: n.id === nodeIdParam })),
     );
+    requestAnimationFrame(() => {
+      reactFlowInstance.fitView({
+        nodes: [{ id: nodeIdParam }],
+        padding: 0.5,
+        maxZoom: 1,
+      });
+    });
     queueMicrotask(() => setSelectedNodeId(nodeIdParam));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

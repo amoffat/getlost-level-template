@@ -3,7 +3,6 @@ import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
 import "@xyflow/react/dist/style.css";
 
-import { SupportedLang, supportedLangs } from "@/constants/locale";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
   getMapInitPromise,
@@ -16,6 +15,7 @@ import { selectors as localeSelectors } from "@/slices/locale";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
 import { setActiveLocaleThunk, setUserLocaleThunk } from "@/thunks/locale";
+import { SupportedLang, supportedLangs } from "@/types/i18n";
 import { MainTabName } from "@/types/tab";
 import { hasNewerEngineVersion } from "@/utils/version";
 import { AppShell, Badge, Box, Group, Tabs, Text } from "@mantine/core";

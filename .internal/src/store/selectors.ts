@@ -12,7 +12,6 @@ import {
   MapObj,
   MapObjProps,
   SpeakableMapObj,
-  SpeakableProps,
 } from "@/types/map";
 import { resolveLocaleText } from "@/utils/locale";
 import { HasId } from "@/utils/misc";
@@ -58,9 +57,9 @@ export function selectTemplateProps<
  */
 export function selectPropertyValue<
   TInstance extends MapObj,
-  TProps = ExtractProps<TInstance>,
-  K extends keyof TProps = keyof TProps,
->(state: RootState, obj: TInstance, propName: K): TProps[K] {
+  K extends keyof ExtractProps<TInstance>,
+>(state: RootState, obj: TInstance, propName: K): ExtractProps<TInstance>[K] {
+  type TProps = ExtractProps<TInstance>;
   const instanceValue = obj[propName as unknown as keyof TInstance];
 
   if (instanceValue === undefined) {
@@ -84,25 +83,21 @@ export const speakers = createRootSelector(
   ],
   (potentialSpeakers, defaultEntries, state): [string, SpeakableMapObj][] => {
     return potentialSpeakers
-      .filter((char) => {
-        const nameKey = selectPropertyValue<SpeakableMapObj, SpeakableProps>(
-          state,
-          char,
-          "nameKey",
-        );
+      .filter((obj) => {
+        const talkable = selectPropertyValue(state, obj, "talkable");
+        return talkable;
+      })
+      .filter((obj) => {
+        const nameKey = selectPropertyValue(state, obj, "nameKey");
         return !!nameKey;
       })
-      .map((char) => {
-        const nameKey = selectPropertyValue<SpeakableMapObj, SpeakableProps>(
-          state,
-          char,
-          "nameKey",
-        );
+      .map((obj) => {
+        const nameKey = selectPropertyValue(state, obj, "nameKey");
         const name = resolveLocaleText({
           key: nameKey,
           primaryEntries: defaultEntries,
         });
-        return [name, char];
+        return [name, obj];
       });
   },
 );

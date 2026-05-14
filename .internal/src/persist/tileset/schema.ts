@@ -83,5 +83,10 @@ export interface TilesetDocV24 extends Omit<TilesetDocV23, "version"> {
   tileset: Omit<TilesetDocV23["tileset"], "restricted">;
 }
 
-export type LatestTilesetDoc = TilesetDocV24;
-export const latestVersion = 24;
+// Version 25: Set `talkable = true` on all NpcTemplates.
+export interface TilesetDocV25 extends Omit<TilesetDocV24, "version"> {
+  version: 25;
+}
+
+export type LatestTilesetDoc = TilesetDocV25;
+export const latestVersion = 25;

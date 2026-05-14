@@ -19,11 +19,13 @@ import FlipXInput from "./inputs/FlipXInput";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
 import HiddenInput from "./inputs/HiddenInput";
 import LocalizedNameInput from "./inputs/LocalizedNameInput";
+import SwitchInput from "./inputs/SwitchInput";
 import TintInput from "./inputs/TintInput";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
   "nameKey",
+  "talkable",
   "flipX",
   "tint",
   "hidden",
@@ -72,6 +74,18 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
           nameKey: value,
         });
       }}
+    />
+  );
+
+  const talkableInput = (
+    <SwitchInput
+      label={t("talkableLabel")}
+      noTemplate
+      description={t("talkableDescription")}
+      values={toCollect.talkable}
+      onValueChange={({ scope, value }) =>
+        updateProps(scope, { talkable: value })
+      }
     />
   );
 
@@ -214,6 +228,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
     <Fieldset legend={t("tileGroupPropLegend")} p="xs">
       <Stack p={0} gap="xl">
         {nameInput}
+        {talkableInput}
         {flipXInput}
         {tintInput}
         {hiddenInput}

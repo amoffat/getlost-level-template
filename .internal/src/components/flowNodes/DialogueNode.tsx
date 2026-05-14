@@ -5,7 +5,7 @@ import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { selectPropertyValue } from "@/store/selectors";
 import { RootState } from "@/store/store";
 import { DNode, SpeechData } from "@/types/dialogue";
-import { SpeakableMapObj, SpeakableProps } from "@/types/map";
+import { SpeakableMapObj } from "@/types/map";
 import { Fieldset, Stack, Text, Title } from "@mantine/core";
 import {
   Handle,
@@ -72,13 +72,7 @@ export default function DialogueNode({
   );
 
   const objNameKey = useAppSelector((state) =>
-    obj
-      ? selectPropertyValue<SpeakableMapObj, SpeakableProps>(
-          state,
-          obj,
-          "nameKey",
-        )
-      : undefined,
+    obj ? selectPropertyValue(state, obj, "nameKey") : undefined,
   );
 
   const label =

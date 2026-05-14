@@ -1,8 +1,9 @@
-import { Button } from "@gl/types/api/controls";
+import type { ButtonWithCallbacks } from "@gl/types/api/controls";
 
 /**
- * Alters the player's UI to display the given list of buttons.
+ * Alters the player's UI to display the given button
  *
- * @param buttons The list of buttons to set in the UI.
+ * @param button The button to add to the UI
  */
-export declare function setButtons(buttons: Button[]): void;
+export declare function addButton(button: ButtonWithCallbacks): void;
+export declare function removeButton(slug: string): void;

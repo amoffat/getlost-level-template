@@ -1,4 +1,5 @@
 import { TileGroupTemplate } from "@/types/tilegroup";
+import { copyToClipboard } from "@/utils/copy";
 import { Vector2 } from "@/vec";
 import { Menu } from "@mantine/core";
 import { IconCopy, IconExternalLink } from "@tabler/icons-react";
@@ -22,9 +23,9 @@ export default function TileGroupMenu({
   const navigate = useNavigate();
   const onCopyId = useCallback(() => {
     if (!obj) return;
-    navigator.clipboard.writeText(obj.id);
+    copyToClipboard({ value: obj.id, t });
     closeMenu();
-  }, [obj, closeMenu]);
+  }, [obj, closeMenu, t]);
 
   const onViewInTileset = useCallback(() => {
     if (!obj) return;
