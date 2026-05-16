@@ -14,7 +14,7 @@ import {
   Text,
 } from "@mantine/core";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
-import { useCallback, useEffect, useMemo } from "react";
+import { MouseEvent, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import classes from "./styles/LayerList.module.css";
 
@@ -70,7 +70,7 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
   );
 
   const toggleLayerVisibility = useCallback(
-    (e: React.MouseEvent, layerId: MapLayerName) => {
+    (e: MouseEvent<HTMLElement>, layerId: MapLayerName) => {
       e.stopPropagation();
       const isHidden = hiddenLayers.includes(layerId);
       dispatch(actions.setLayerHidden({ layer: layerId, hidden: !isHidden }));
@@ -152,10 +152,14 @@ export default function LayerList({ layerConstraints }: LayerListProps) {
                       </div>
                     </Group>
                     <ActionIcon
+                      component="span"
                       variant="subtle"
                       color="gray"
                       size="sm"
+                      role="button"
+                      tabIndex={isDisabled ? -1 : 0}
                       aria-label={t("layerListToggleVisibility")}
+                      aria-pressed={!isVisible}
                       onClick={(e) =>
                         toggleLayerVisibility(e, layer.id as MapLayerName)
                       }
