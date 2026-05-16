@@ -83,14 +83,13 @@ export async function init(): Promise<void> {
     callback: ({ enter }) => {
       if (enter) {
         controls.addButton({
-          labelKey: "interact",
-          slug: "interact2",
+          labelKey: "jump",
           onRelease: () => {
-            console.log("BOOM");
+            player.jump();
           },
         });
       } else {
-        controls.removeButton("interact2");
+        controls.removeButton("jump");
       }
     },
   });
@@ -119,6 +118,8 @@ export function movePlayer(dir: Vec2): void {
  */
 export async function tick(timestep: number, paused: boolean) {
   filters.setTiltShiftY(tiltShift, player.pos.y - 10);
+
+  // Animate the clouds
   object.translate("e397031f-ec42-4a1d-8146-50dd937baf1a", {
     x: -0.02 * timestep,
     y: 0,

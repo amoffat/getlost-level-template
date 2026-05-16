@@ -4,6 +4,7 @@ import { hurt } from "@gl/behaviors/hurt";
 import { globalTicker } from "@gl/ticker";
 import { CharAction } from "@gl/types/character";
 
+import { jump } from "@gl/behaviors/jump";
 import { Delay } from "./delay";
 import * as easing from "./easing";
 import { NavPlan, StationaryPlan } from "./navigation";
@@ -460,5 +461,19 @@ export class Character {
   public hurt(dir: Vec2) {
     const behavior = hurt(this, dir);
     behavior.perform();
+  }
+
+  public jump({ distance = 32 }: { distance?: number } = {}) {
+    const jumpDir = this.velocity.normalized().scaled(distance);
+    const behavior = jump(this, jumpDir);
+    behavior.perform();
+  }
+
+  public setHeight(height: number): void {
+    char.setHeight(this.id, height);
+  }
+
+  public getHeight(): number {
+    return char.getHeight(this.id);
   }
 }

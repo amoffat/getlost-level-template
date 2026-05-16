@@ -12,6 +12,8 @@ import type { CharAction } from "@gl/types/character";
 export declare function getMoveProps(id: string): CharProps;
 export declare function getPos(id: string): Vector;
 export declare function setPos(id: string, x: number, y: number): void;
+export declare function getHeight(id: string): number;
+export declare function setHeight(id: string, h: number): void;
 export declare function setSpeed(id: string, speed: number): void;
 export declare function setAction(id: string, anim: CharAction): void;
 export declare function setColorOverlay({

@@ -4,6 +4,12 @@ import { Easings, type EasingFunction } from "./easing";
 
 export type ActionCallback = () => void;
 
+/**
+ * Action is the "atom" of a {@link Behavior}. It represents some simple
+ * tickable action, like a movement, or a sound effect, or a color change. Many
+ * of these actions can be strung together into a {@link Behavior} to create
+ * more complex animations.
+ */
 export abstract class Action<Subject> {
   /**
    * A unique identifier for this type of action, used as part of the key
@@ -36,8 +42,6 @@ export abstract class Action<Subject> {
 
   /**
    * @param subject The subject to operate on
-   * @param delta The timestep in ms
-   * @param elapsed Total time elapsed in ms since this action started
    * @param progress The progress of this action as a value between 0 and 1,
    * calculated as `elapsed / duration` and modified by the internal animator's
    * easing curve if provided.
@@ -88,6 +92,18 @@ export abstract class Action<Subject> {
   onEnd(_args: { subject: Subject }): void {}
 }
 
+/**
+ * A Behavior represents a series of {@link Action} to perform. Some actions may
+ * be performed sequentially, some concurrently, it depends on if they were
+ * added via {@link Behavior.then} or {@link Behavior.also}.
+ *
+ * Conceptually, the Behavior is a collection of separate actions that makes up
+ * some larger...behavior. But the Behavior is itself an {@link Action}, meaning
+ * it can be added to another Behavior. An example might be a "slide-jump"
+ * behavior, which is made up of the "slide" and "jump" behaviors, and the
+ * "slide" behavior might be movement along the ground as an action with a
+ * concurrent sound effect action.
+ */
 export class Behavior<Subject> extends Action<Subject> {
   // Build-time state
   private _actions: Action<Subject>[] = [];

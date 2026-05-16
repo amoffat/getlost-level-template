@@ -1,8 +1,9 @@
 import { Action } from "@gl/utils/behavior";
 import { type EasingFunction, Easings } from "@gl/utils/easing";
+import { Vec2 } from "@gl/utils/vec2";
 
 interface Subject {
-  setPos(x: number, y: number): void;
+  setPos(pos: Vec2): void;
   getPos(): { x: number; y: number };
   setHeight(height: number): void;
   getHeight(): number;
@@ -35,8 +36,8 @@ export class JumpAction extends Action<Subject> {
   constructor({
     name = "jump",
     duration = 600,
-    curve = Easings.jumpGravity,
-    height = 100,
+    curve = Easings.linear,
+    height = 16,
     direction = { x: 0, y: 0 },
   }: {
     name?: string;
@@ -77,8 +78,10 @@ export class JumpAction extends Action<Subject> {
     // Linear interpolation for ground-plane position: moves the entity's
     // shadow/feet along the 2.5D ground from start toward start+direction.
     subject.setPos(
-      this._startX + this._direction.x * progress,
-      this._startY + this._direction.y * progress,
+      new Vec2(
+        this._startX + this._direction.x * progress,
+        this._startY + this._direction.y * progress,
+      ),
     );
   }
 }
