@@ -46,7 +46,7 @@ export abstract class Action<Subject> {
    * calculated as `elapsed / duration` and modified by the internal animator's
    * easing curve if provided.
    */
-  tick(args: { subject: Subject; progress: number }): void {}
+  tick(_args: { subject: Subject; progress: number }): void {}
 
   /**
    * Whether this action has completed. By default this is determined by the
@@ -72,7 +72,6 @@ export abstract class Action<Subject> {
    * internal animator, then calls {@link tick}.
    */
   _internalTick({
-    subject,
     deltaMs,
   }: {
     subject: Subject;

@@ -28,5 +28,5 @@
     }
   },
 
-  "include": ["src", "scripts", "vite.config.ts"]
+  "include": ["src", "scripts", "@gl", "vite.config.ts"]
 }
