@@ -1,0 +1,59 @@
+import { useAppDispatch } from "@/hooks/redux";
+import { uploadAudioThunk } from "@/thunks/audio";
+import { Button, Group, Stack } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import RestrictedControl from "./RestrictedControl";
+
+interface FormValues {
+  restricted: boolean;
+}
+
+interface AudioUploadOptionsProps {
+  files: File[];
+  closeModal: () => void;
+}
+
+export default function AudioUploadOptions({
+  files,
+  closeModal,
+}: AudioUploadOptionsProps) {
+  const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+
+  const form = useForm<FormValues>({
+    name: "audio-upload",
+    mode: "uncontrolled",
+    onSubmitPreventDefault: "always",
+    initialValues: { restricted: false },
+  });
+
+  // Reset form whenever the file set changes
+  useEffect(() => {
+    form.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [files]);
+
+  const handleSubmit = form.onSubmit(({ restricted }) => {
+    closeModal();
+    dispatch(uploadAudioThunk({ files, restricted }));
+  });
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <Stack>
+        <RestrictedControl
+          value={form.values.restricted}
+          onChange={(v) => form.setFieldValue("restricted", v)}
+        />
+
+        <Group mt="lg" justify="flex-end">
+          <Button color="blue" type="submit" radius="md">
+            {t("audioUploadSubmitBtn")}
+          </Button>
+        </Group>
+      </Stack>
+    </form>
+  );
+}

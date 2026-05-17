@@ -293,7 +293,13 @@ const ShellAppContent = memo(function ShellAppContent({
       <Dropzone.FullScreen
         onDrop={onDrop}
         multiple
-        accept={{ "image/png": [".png"] }}
+        accept={{
+          "image/png": [".png"],
+          "audio/ogg": [".ogg"],
+          "audio/mp4": [".m4a"],
+          "audio/wav": [".wav"],
+          "audio/mpeg": [".mp3"],
+        }}
       >
         <Group
           justify="center"

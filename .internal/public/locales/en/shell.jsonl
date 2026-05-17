@@ -614,3 +614,7 @@
 {"k": "talkableDescription", "v": "Whether this object can have dialogue"}
 {"k": "copiedToClipboard", "v": "Copied to clipboard"}
 {"k": "copyIdToClipboard", "v": "Copy id to clipboard"}
+{"k": "uploadAssetChooseTypeAudio", "v": "Audio file", "ctx": "Radio card label for the audio asset type in the upload type chooser"}
+{"k": "uploadAssetChooseTypeAudioDesc", "v": "Sound effect or music track (ogg, mp3, wav, m4a)", "ctx": "Radio card description for the audio asset type in the upload type chooser"}
+{"k": "uploadAssetAudioUpload", "v": "Audio upload", "ctx": "Modal title when uploading an audio file"}
+{"k": "audioUploadSubmitBtn", "v": "Upload", "ctx": "Submit button label in the audio upload form"}
