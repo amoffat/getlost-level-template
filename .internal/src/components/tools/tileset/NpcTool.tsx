@@ -172,7 +172,7 @@ export default function NpcTool() {
 
     notifications.show({
       title: t("npcToolNotifTitle"),
-      message: t("npcToolNotifMessage", { name: nameKey }),
+      message: t("npcToolNotifMessage", { name: t(nameKey!) }),
       autoClose: 3000,
     });
   }, [animationMatches, existingNpc, nameKey, ts, dispatch, t]);
@@ -310,11 +310,12 @@ export default function NpcTool() {
               label={t("npcToolNameLabel")}
               description={t("npcToolNameDesc")}
               placeholder={t("npcToolNamePlaceholder")}
+              keyPrefix={["char"]}
+              defaultContext="Character name"
               disabled={!hasAll}
               currentLocale={currentLocale}
               contentKey={nameKey ?? undefined}
               onLocaleKeyChange={(newKey) => setNameKey(newKey)}
-              contextButton="label"
             />
 
             <Button

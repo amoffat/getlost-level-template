@@ -8,6 +8,8 @@ import { type RootState } from "@/store/store";
 import { supportedLangs } from "@/types/i18n";
 import type { LocaleEntry } from "@/types/locale";
 import { isSpeakableObject } from "@/types/map";
+import { isNpcTemplate } from "@/types/npc";
+import { isTileGroupTemplate } from "@/types/tilegroup";
 import { AppStartListening } from "@/types/redux";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { EMPTY, from, Subject } from "rxjs";
@@ -107,6 +109,17 @@ function collectLiveKeys(state: RootState): Set<string> {
     if (isSpeakableObject(obj)) {
       const nameKey = selectPropertyValue(state, obj, "nameKey");
       if (nameKey) keys.add(nameKey);
+    }
+  }
+
+  // Tileset objects
+  for (const ts of Object.values(state.tilesetEditor.tilesets)) {
+    for (const objId of ts.tiles.ids) {
+      const obj = ts.tiles.entities[objId as string];
+      if (!obj) continue;
+      if (isNpcTemplate(obj) || isTileGroupTemplate(obj)) {
+        if (obj.nameKey) keys.add(obj.nameKey);
+      }
     }
   }
 

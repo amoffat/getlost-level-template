@@ -464,7 +464,10 @@ export class Character {
   }
 
   public jump({ distance = 32 }: { distance?: number } = {}) {
-    const jumpDir = this.velocity.normalized().scaled(distance);
+    const jumpDir = this.velocity
+      .normalized()
+      .scale(distance)
+      .multiply({ x: 1, y: 0.8 }); // Account for 2.5D perspective
     const behavior = jump(this, jumpDir);
     behavior.perform();
   }
