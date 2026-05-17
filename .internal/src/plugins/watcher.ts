@@ -6,7 +6,61 @@ const cwd = process.cwd();
 const repoDir = path.resolve(cwd, "..");
 const internalDir = path.resolve(repoDir, ".internal");
 
-// Triggers a game iframe reload when level assets change
+interface DispatchPath {
+  name: string;
+  matches(changed: string): boolean;
+  dispatch(server: ViteDevServer, changed: string): void;
+}
+
+// Triggers a full game iframe reload when level assets change.
+const gameReloadPath: DispatchPath = {
+  name: "gameReload",
+  matches(changed) {
+    if (changed.includes("__pycache__")) return false;
+    if (changed.includes("syncthing")) return false;
+
+    // Files in the repo's /level directory (with some exclusions)
+    if (changed.startsWith(`${repoDir}/level/`)) {
+      // Ignore dialogue.ts to avoid a reload loop: the dynamic AS compiler
+      // produces a new dialogue.ts, which would otherwise trigger a reload.
+      if (changed.endsWith("dialogue.ts")) return false;
+      if (changed.includes("/locales/")) return false;
+      return true;
+    }
+
+    if (changed.startsWith(`${internalDir}/@gl/`)) return true;
+    if (changed.endsWith("engine_version.txt")) return true;
+    if (changed.endsWith(".cbor")) return true;
+
+    return false;
+  },
+  dispatch(server, changed) {
+    console.log(`[gameReload] Triggering reload: ${changed}`);
+    server.ws.send("gl:level-reload");
+    server.ws.send("gl:log", {
+      msg: `Reload triggered: ${changed}`,
+      className: "info",
+    });
+  },
+};
+
+// Stub: will convert audio files in level/sounds when triggered.
+const audioConversionPath: DispatchPath = {
+  name: "audioConversion",
+  matches(changed) {
+    return changed.startsWith(`${repoDir}/level/sounds/`);
+  },
+  dispatch(_server, changed) {
+    // TODO: implement audio conversion
+    console.log(
+      `[audioConversion] Audio file changed (conversion not yet implemented): ${changed}`,
+    );
+  },
+};
+
+const dispatchPaths: DispatchPath[] = [gameReloadPath, audioConversionPath];
+
+// Triggers dispatch paths when level assets change
 export default function levelWatcher() {
   return {
     name: "level-watcher",
@@ -25,52 +79,10 @@ export default function levelWatcher() {
           changed = path.resolve(internalDir, changed);
           console.log("Changed:", changed);
 
-          let gameReload = false;
-          // If it's in the repo's /level directory, reload the game
-          if (changed.startsWith(`${repoDir}/level/`)) {
-            gameReload = true;
-
-            // Ignore dialogue.ts file, so there isn't a reload loop, because the
-            // dynamic AS compiler will produce a new dialogue.ts file, which will
-            // trigger a reload.
-            if (changed.endsWith("dialogue.ts")) {
-              gameReload = false;
+          for (const dispatchPath of dispatchPaths) {
+            if (dispatchPath.matches(changed)) {
+              dispatchPath.dispatch(server, changed);
             }
-
-            if (changed.includes("/locales/")) {
-              gameReload = false;
-            }
-          }
-
-          // If it's in the /assemblyscript directory, reload the game
-          if (changed.startsWith(`${internalDir}/@gl/`)) {
-            gameReload = true;
-          }
-
-          // If it's a __pycache__ directory, ignore it
-          if (changed.includes("__pycache__")) {
-            gameReload = false;
-          }
-
-          if (changed.endsWith("engine_version.txt")) {
-            gameReload = true;
-          }
-
-          if (changed.endsWith(".cbor")) {
-            gameReload = true;
-          }
-
-          if (changed.includes("syncthing")) {
-            gameReload = false;
-          }
-
-          if (gameReload) {
-            console.log(`Triggering reload: ${changed}`);
-            server.ws.send("gl:level-reload");
-            server.ws.send("gl:log", {
-              msg: `Reload triggered: ${changed}`,
-              className: "info",
-            });
           }
         });
 
