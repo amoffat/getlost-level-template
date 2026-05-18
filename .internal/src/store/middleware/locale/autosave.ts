@@ -6,11 +6,11 @@ import { actions as localeActions } from "@/slices/locale";
 import { selectPropertyValue } from "@/store/selectors";
 import { type RootState } from "@/store/store";
 import { supportedLangs } from "@/types/i18n";
-import type { LocaleEntry } from "@/types/locale";
+import type { LocaleEntry, LocaleStatePayload } from "@/types/locale";
 import { isSpeakableObject } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
-import { isTileGroupTemplate } from "@/types/tilegroup";
 import { AppStartListening } from "@/types/redux";
+import { isTileGroupTemplate } from "@/types/tilegroup";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { EMPTY, from, Subject } from "rxjs";
 import { catchError, concatMap, debounceTime } from "rxjs/operators";
@@ -134,6 +134,8 @@ startAppListening({
     return loadActionTypes.has(action.type);
   },
   effect: async (_action, { dispatch, getState }) => {
+    const allEntries: LocaleStatePayload[] = [];
+
     for (const locale of supportedLangs) {
       getSubject(locale).next(() => {
         const state = getState();
@@ -165,10 +167,11 @@ startAppListening({
         // Now that we have an authoritative view of the entries (because it's
         // going to be written to the locale's file), let's go ahead and set the
         // locale's entries.
-        dispatch(localeActions.setEntries({ locale, entries: merged }));
+        allEntries.push({ locale, entries: merged });
         return merged;
       });
     }
+    dispatch(localeActions.setAllLocaleEntries(allEntries));
   },
 });
 

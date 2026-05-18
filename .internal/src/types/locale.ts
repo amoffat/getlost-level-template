@@ -4,3 +4,8 @@ export interface LocaleEntry {
   original?: string;
   ctx?: string;
 }
+
+export interface LocaleStatePayload {
+  locale: string;
+  entries: LocaleEntry[];
+}

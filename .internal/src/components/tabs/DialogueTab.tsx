@@ -166,6 +166,9 @@ export default function DialogueTab({
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
     nodeIdParam ?? null,
   );
+  // Track which dialogue has already had its initial URL-node centering done, so
+  // that subsequent user-driven selections don't re-center the viewport.
+  const initialCenterDialogueRef = useRef<string | null>(null);
 
   const sortedSpeakers = useMemo(() => {
     return speakers.sort((a, b) => a[0].localeCompare(b[0]));
@@ -241,13 +244,16 @@ export default function DialogueTab({
     reactFlowInstance.setNodes(
       nodes.map((n) => ({ ...n, selected: n.id === nodeIdParam })),
     );
-    requestAnimationFrame(() => {
-      reactFlowInstance.fitView({
-        nodes: [{ id: nodeIdParam }],
-        padding: 0.5,
-        maxZoom: 1,
+    if (initialCenterDialogueRef.current !== activeDialogueId) {
+      initialCenterDialogueRef.current = activeDialogueId;
+      requestAnimationFrame(() => {
+        reactFlowInstance.fitView({
+          nodes: [{ id: nodeIdParam }],
+          padding: 0.5,
+          maxZoom: 1,
+        });
       });
-    });
+    }
     queueMicrotask(() => setSelectedNodeId(nodeIdParam));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

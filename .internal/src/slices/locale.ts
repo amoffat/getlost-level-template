@@ -1,6 +1,6 @@
 import { defaultLocale } from "@/constants";
 import { SupportedLang } from "@/types/i18n";
-import type { LocaleEntry } from "@/types/locale";
+import type { LocaleEntry, LocaleStatePayload } from "@/types/locale";
 import { PartialNullable } from "@/types/util";
 import {
   createEntityAdapter,
@@ -49,12 +49,16 @@ export const slice = createSlice({
       state.userLocale = action.payload;
     },
 
-    setEntries(
-      state,
-      action: PayloadAction<{ locale: string; entries: LocaleEntry[] }>,
-    ) {
+    setEntries(state, action: PayloadAction<LocaleStatePayload>) {
       const bucket = ensureLocale(state, action.payload.locale);
       entryAdapter.setAll(bucket, action.payload.entries);
+    },
+
+    setAllLocaleEntries(state, action: PayloadAction<LocaleStatePayload[]>) {
+      for (const { locale, entries } of action.payload) {
+        const bucket = ensureLocale(state, locale);
+        entryAdapter.setAll(bucket, entries);
+      }
     },
 
     upsertEntry(
