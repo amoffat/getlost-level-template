@@ -123,6 +123,11 @@ function isObjNode(props: Record<string, any>): props is ObjNodeProps {
   return "objId" in props;
 }
 
+const nodeTypes = {
+  dialogue: DialogueNode,
+  sign: DialogueNode,
+};
+
 export default function DialogueTab({
   initPromise,
 }: {
@@ -707,10 +712,7 @@ export default function DialogueTab({
               id="dialogue-flow"
               colorMode="dark"
               //   snapToGrid={true}
-              nodeTypes={{
-                dialogue: DialogueNode,
-                sign: DialogueNode,
-              }}
+              nodeTypes={nodeTypes}
               snapGrid={[20, 20]}
               panOnDrag={[2]}
               deleteKeyCode={["Delete", "Backspace"]}

@@ -1,15 +1,16 @@
 import type { StoryEdge, StoryNode } from "@/slices/story";
-import type { Dialogue } from "@/types/dialogue";
+import type { Dialogue, DNode } from "@/types/dialogue";
 import { MILESTONE_NODE_DEFAULTS } from "@/types/properties";
 import { applyMigrations } from "@/utils/migrations";
 import { applyDefaultProps } from "@/utils/misc";
+import { Edge } from "@xyflow/react";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
 import {
   BaseStoryDoc,
   LatestStoryDoc,
-  SerializedState,
   latestVersion,
+  SerializedState,
 } from "./schema";
 
 /**
@@ -114,11 +115,35 @@ function extractDialogues(
     for (const dlg of Object.values(perObj)) {
       if (!seen.has(dlg.id)) {
         seen.add(dlg.id);
+        cleanupDanglingEdges(dlg);
         result.push(dlg);
       }
     }
   }
   return result;
+}
+
+/**
+ * Removes edges from a dialogue whose source/target node no longer exists, or
+ * whose sourceHandle does not match any choice on the source node.
+ */
+function cleanupDanglingEdges(dlg: Dialogue): void {
+  const validEdges = (dlg.edges.ids as string[])
+    .map((id) => dlg.edges.entities[id] as Edge | undefined)
+    .filter((edge): edge is Edge => {
+      if (!edge) return false;
+      const sourceNode = dlg.nodes.entities[edge.source] as DNode | undefined;
+      if (!sourceNode) return false;
+      if (!dlg.nodes.entities[edge.target]) return false;
+      if (edge.sourceHandle) {
+        return sourceNode.data.choices.some((c) => c.id === edge.sourceHandle);
+      }
+      return true;
+    });
+  dlg.edges.ids = validEdges.map((edge) => edge.id);
+  dlg.edges.entities = Object.fromEntries(
+    validEdges.map((edge) => [edge.id, edge]),
+  );
 }
 
 /**

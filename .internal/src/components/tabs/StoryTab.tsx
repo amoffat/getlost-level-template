@@ -64,6 +64,9 @@ import Tip from "../Tip";
 
 import "@/styles/react-flow.css";
 
+const nodeTypes = { story: StoryNodeComponent, or: OrNode };
+const edgeTypes = { default: StoryEdgeComponent };
+
 export default function StoryTab({
   initPromise,
 }: {
@@ -567,8 +570,8 @@ export default function StoryTab({
                   snapGrid={[20, 20]}
                   panOnDrag={[2]}
                   deleteKeyCode={["Delete", "Backspace"]}
-                  nodeTypes={{ story: StoryNodeComponent, or: OrNode }}
-                  edgeTypes={{ default: StoryEdgeComponent }}
+                  nodeTypes={nodeTypes}
+                  edgeTypes={edgeTypes}
                   defaultNodes={nodes}
                   defaultEdges={edges}
                   onNodesChange={onNodesChange}
