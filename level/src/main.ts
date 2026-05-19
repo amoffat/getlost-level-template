@@ -1,3 +1,4 @@
+import { setZoom } from "@gl/api/camera";
 import * as controls from "@gl/api/controls";
 import * as filters from "@gl/api/filters";
 import * as object from "@gl/api/object";
@@ -18,6 +19,8 @@ let tiltShift!: number;
 export async function init(): Promise<void> {
   tiltShift = filters.addTiltShift(0.0);
   setSunEvent(SunEvent.SolarNoon, 0);
+
+  setZoom(0.7);
 
   const colors = new ColorMatrixFilter();
   // Warm, golden-hour feel: lift reds, soften greens, pull back blues
@@ -65,7 +68,9 @@ export async function init(): Promise<void> {
   events.on({
     type: "state-change",
     callback: ({ ready, satisfied }) => {
-      //
+      if (satisfied.has("think-of-sofia")) {
+        setZoom(0.4);
+      }
     },
   });
 

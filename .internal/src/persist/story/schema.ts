@@ -1,5 +1,6 @@
 import type { StoryEdge, StoryNode } from "@/slices/story";
 import { Dialogue } from "@/types/dialogue";
+import { EngineDialogue } from "@/types/engineDialogue";
 
 export interface StateEdge {
   stateId: string;
@@ -18,9 +19,6 @@ export interface MilestoneState extends StoryState {
 
   // Whether this milestone has been satisfied. Used only by the engine.
   satisfied: boolean;
-
-  // Map of NPC id to dialogue id. Used only by the engine.
-  npcDialogue: Record<string, string>;
 }
 
 export interface OrState extends StoryState {
@@ -62,5 +60,34 @@ export interface StoryDocV7 extends Omit<StoryDocV6, "version" | "dialogues"> {
   dialogues: Record<string, Record<string, Dialogue>>;
 }
 
-export type LatestStoryDoc = StoryDocV7;
-export const latestVersion = 7;
+/**
+ * v8: editor/engine split. No more round-trip conversions.
+ *
+ * `editor` stores the raw, editor-friendly representation used by ReactFlow
+ * and the dialogue editor.
+ *
+ * `engine` stores the derived, engine-compatible representation built on write.
+ * It is never read back by the editor — only the game engine consumes it.
+ */
+export interface StoryDocV8 {
+  version: 8;
+  editor: {
+    nodes: StoryNode[];
+    edges: StoryEdge[];
+    /** Flat array of all Dialogue objects — no indexing needed by the editor. */
+    dialogues: Dialogue[];
+  };
+  engine: {
+    /** Derived dependency graph consumed by the game engine. */
+    states: SerializedState[];
+    /**
+     * Nested lookup: Record<objectId, Record<storyNodeId, EngineDialogue>>.
+     * Built on write so the engine can resolve dialogues by (npc, milestone).
+     * `activationMilestones` inside each node uses slugs, not ReactFlow UUIDs.
+     */
+    dialogues: Record<string, Record<string, EngineDialogue>>;
+  };
+}
+
+export type LatestStoryDoc = StoryDocV8;
+export const latestVersion = 8;

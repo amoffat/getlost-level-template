@@ -28,11 +28,3 @@ export interface Dialogue {
   nodes: EntityState<DNode, string>;
   edges: EntityState<Edge, string>;
 }
-
-export interface SerializedDialogue {
-  id: string;
-  subjectId: string | null;
-  // Milestone NAMES, not node IDs
-  milestones: string[];
-  dependents: SerializedDialogue[];
-}

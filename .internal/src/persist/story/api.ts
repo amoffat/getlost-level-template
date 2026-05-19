@@ -1,5 +1,6 @@
 import type { StoryEdge, StoryNode } from "@/slices/story";
 import type { Dialogue, DNode } from "@/types/dialogue";
+import type { EngineDialogue, EngineSpeechData } from "@/types/engineDialogue";
 import { MILESTONE_NODE_DEFAULTS } from "@/types/properties";
 import { applyMigrations } from "@/utils/migrations";
 import { applyDefaultProps } from "@/utils/misc";
@@ -43,15 +44,12 @@ export function serializeToStates({
       const stateId = node.data.id;
       nodeIdtoStateId.set(node.id, stateId);
 
-      const npcDialogue = milestoneToNpcDialogues[stateId];
-
       nodeIdToState.set(node.id, {
         id: stateId,
         kind,
         dependencies: [],
         dependents: [],
         satisfied: false,
-        npcDialogue,
       });
     } else {
       nodeIdToState.set(node.id, {
@@ -100,7 +98,7 @@ export async function loadStory(): Promise<{
   );
 
   const decoded = baseDecoded as unknown as LatestStoryDoc;
-  const { nodes, edges } = decoded;
+  const { nodes, edges, dialogues } = decoded.editor;
 
   // Fill in any properties absent from persisted story nodes using their
   // defaults. This replaces the need for migrations when adding new properties.
@@ -110,35 +108,16 @@ export async function loadStory(): Promise<{
     }
   }
 
-  // Extract unique Dialogue objects from the nested record
-  const dialogues = extractDialogues(decoded.dialogues);
+  // Defensive cleanup: remove any dangling edges from loaded dialogues.
+  for (const dlg of dialogues) {
+    cleanupDanglingEdges(dlg);
+  }
 
   if (migrated) {
     await saveStory(nodes, edges, dialogues);
   }
 
   return { nodes, edges, dialogues };
-}
-
-/**
- * Flattens the nested Record<objectId, Record<storyNodeId, Dialogue>> into a
- * deduplicated array of Dialogue objects.
- */
-function extractDialogues(
-  dialoguesRecord: Record<string, Record<string, Dialogue>>,
-): Dialogue[] {
-  const seen = new Set<string>();
-  const result: Dialogue[] = [];
-  for (const perObj of Object.values(dialoguesRecord)) {
-    for (const dlg of Object.values(perObj)) {
-      if (!seen.has(dlg.id)) {
-        seen.add(dlg.id);
-        cleanupDanglingEdges(dlg);
-        result.push(dlg);
-      }
-    }
-  }
-  return result;
 }
 
 /**
@@ -165,31 +144,67 @@ function cleanupDanglingEdges(dlg: Dialogue): void {
 }
 
 /**
- * Builds the nested dialogues record for the story doc.
+ * Converts a `Dialogue` into an `EngineDialogue`, milestone ids to milestone
+ * slugs.
+ */
+function toEngineDialogue(
+  dialogue: Dialogue,
+  nodeIdToSlug: Map<string, string>,
+): EngineDialogue {
+  const engineEntities: Record<
+    string,
+    EngineDialogue["nodes"]["entities"][string]
+  > = {};
+  const mapMilestoneSlug = (uuid: string): string =>
+    nodeIdToSlug.get(uuid) ?? uuid;
+
+  for (const id of dialogue.nodes.ids as string[]) {
+    const node = dialogue.nodes.entities[id];
+    if (!node) continue;
+    const engineData: EngineSpeechData = {
+      ...node.data,
+      activationMilestones:
+        node.data.activationMilestones?.map(mapMilestoneSlug),
+    };
+    engineEntities[id] = { ...node, data: engineData };
+  }
+
+  return {
+    id: dialogue.id,
+    subjectId: dialogue.subjectId,
+    milestones: dialogue.milestoneNodeIds.map(mapMilestoneSlug),
+    nodes: { ids: [...dialogue.nodes.ids], entities: engineEntities },
+    edges: dialogue.edges,
+  };
+}
+
+/**
+ * Builds the nested engine dialogues record for the story doc.
  *
- * Structure: Record<objectId, Record<storyNodeId, Dialogue>>
+ * Structure: Record<subjectId, Record<storyNodeId, EngineDialogue>>
  *
  * - Top-level key: The speaker id (npc id, tilegroup id, etc).
  * - Second-level key: the stable ReactFlow story-node UUID stored in
  *   dialogue.milestoneNodeIds.  Using the UUID (not the user-editable milestone
  *   name) means that renaming a milestone does not break existing linkages.
  * - A dialogue with multiple milestones is stored under each of those keys so
- *   any (objectId, milestoneNodeId) pair resolves to the right dialogue.
+ *   any (subjectId, milestoneNodeId) pair resolves to the right dialogue.
+ * - `activationMilestones` in each speech node is converted to slugs.
  *
  * Dialogues without a subjectId or without any milestones are omitted because
  * they have no addressable location in the record.
  */
-function buildDialoguesRecord(
+function buildEngineDialoguesRecord(
   dialogues: Dialogue[],
-): Record<string, Record<string, Dialogue>> {
-  const result: Record<string, Record<string, Dialogue>> = {};
+  nodes: StoryNode[],
+): Record<string, Record<string, EngineDialogue>> {
+  const nodeIdToSlug = new Map(nodes.map((n) => [n.id, n.data.id]));
+  const result: Record<string, Record<string, EngineDialogue>> = {};
   for (const dlg of dialogues) {
     if (!dlg.subjectId || dlg.milestoneNodeIds.length === 0) continue;
-    for (const milestoneId of dlg.milestoneNodeIds) {
-      if (!result[dlg.subjectId]) {
-        result[dlg.subjectId] = {};
-      }
-      result[dlg.subjectId][milestoneId] = dlg;
+    const engineDlg = toEngineDialogue(dlg, nodeIdToSlug);
+    for (const milestone of engineDlg.milestones) {
+      (result[dlg.subjectId] ??= {})[milestone] = engineDlg;
     }
   }
   return result;
@@ -200,13 +215,17 @@ export async function saveStory(
   edges: StoryEdge[],
   dialogues: Dialogue[] = [],
 ): Promise<void> {
-  const states = serializeToStates({ nodes, edges, dialogues });
   const doc: LatestStoryDoc = {
     version: latestVersion,
-    states,
-    dialogues: buildDialoguesRecord(dialogues),
-    nodes,
-    edges,
+    editor: {
+      nodes,
+      edges,
+      dialogues,
+    },
+    engine: {
+      states: serializeToStates({ nodes, edges, dialogues }),
+      dialogues: buildEngineDialoguesRecord(dialogues, nodes),
+    },
   };
   const payload = encode(doc);
 
