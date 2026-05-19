@@ -15,6 +15,12 @@ export interface StoryState {
 
 export interface MilestoneState extends StoryState {
   kind: "story";
+
+  // Whether this milestone has been satisfied. Used only by the engine.
+  satisfied: boolean;
+
+  // Map of NPC id to dialogue id. Used only by the engine.
+  npcDialogue: Record<string, string>;
 }
 
 export interface OrState extends StoryState {

@@ -365,6 +365,11 @@
 {"k": "speechEditorUploadAvatar", "v": "Upload avatar", "ctx": "Button label to upload a speaker portrait when none exists yet"}
 {"k": "speechEditorChoicePlaceholder", "v": "Type response", "ctx": "Placeholder text inside each player-response choice input field"}
 {"k": "speechEditorDetectedVariables", "v": "Detected variables", "ctx": "Label above the list of detected variable badges in the dialogue content textarea"}
+{"k": "speechEditorActivationsLegend", "v": "Activations", "ctx": "Fieldset legend for the activations section in SpeechEditor"}
+{"k": "speechEditorActivationsLabel", "v": "Milestones", "ctx": "Label for the activation milestones multi-select in SpeechEditor"}
+{"k": "speechEditorActivationsDesc", "v": "Which story milestones does reaching this node activate?", "ctx": "Description under the activation milestones multi-select in SpeechEditor"}
+{"k": "speechEditorActivationsTooltip", "v": "When the player reaches this speech node in the dialogue tree, these story milestones will be activated. Use this to advance the story automatically as dialogue progresses, without requiring the player to take an explicit action.", "ctx": "Tooltip explaining the activation milestones multi-select in SpeechEditor"}
+{"k": "speechEditorActivationsNothingFound", "v": "No milestones found", "ctx": "Empty state message in the activation milestones multi-select dropdown in SpeechEditor"}
 {"k": "advancedLabel", "v": "Advanced", "ctx": "Default label for the collapsible advanced section toggle button"}
 {"k": "advancedShow", "v": "Show", "ctx": "Button label to expand/show the advanced section"}
 {"k": "advancedHide", "v": "Hide", "ctx": "Button label to collapse/hide the advanced section"}

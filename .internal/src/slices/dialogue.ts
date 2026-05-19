@@ -281,6 +281,17 @@ const availableMilestones = createSelector(
 );
 
 /**
+ * Returns all story milestones as selectable options.
+ * Unlike availableMilestones, this is not filtered by sibling dialogue usage —
+ * it is used for per-node activation milestone selection.
+ */
+const allMilestones = createSelector(
+  [(state: RootState) => state.story.nodes],
+  (storyNodes): { value: string; label: string }[] =>
+    storyNodes.map((n) => ({ value: n.id, label: n.data.id })),
+);
+
+/**
  * Returns the dialogues for a given milestone.
  */
 const dialogueForMilestone = createSelector(
@@ -307,6 +318,7 @@ const dialogueForMilestone = createSelector(
 export const selectors = {
   ...slice.selectors,
   availableMilestones,
+  allMilestones,
   dialogueForMilestone,
 };
 export const actions = slice.actions;

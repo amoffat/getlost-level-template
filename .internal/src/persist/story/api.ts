@@ -18,25 +18,43 @@ import {
  * Each node becomes a StoryState or OrState, and edges define
  * dependency/dependent relationships.
  */
-export function serializeToStates(
-  nodes: StoryNode[],
-  edges: StoryEdge[],
-): SerializedState[] {
-  const stateMap = new Map<string, SerializedState>();
+export function serializeToStates({
+  nodes,
+  edges,
+  dialogues,
+}: {
+  nodes: StoryNode[];
+  edges: StoryEdge[];
+  dialogues: Dialogue[];
+}): SerializedState[] {
+  const nodeIdToState = new Map<string, SerializedState>();
   const nodeIdtoStateId = new Map<string, string>();
+
+  const milestoneToNpcDialogues: Record<string, Record<string, string>> = {};
+  for (const d of dialogues) {
+    for (const m of d.milestoneNodeIds) {
+      (milestoneToNpcDialogues[m] ??= {})[d.subjectId!] = d.id;
+    }
+  }
 
   for (const node of nodes) {
     const kind = node.type === "or" ? "or" : "story";
     if (kind === "story") {
-      nodeIdtoStateId.set(node.id, node.data.id);
-      stateMap.set(node.id, {
-        id: node.data.id,
+      const stateId = node.data.id;
+      nodeIdtoStateId.set(node.id, stateId);
+
+      const npcDialogue = milestoneToNpcDialogues[stateId];
+
+      nodeIdToState.set(node.id, {
+        id: stateId,
         kind,
         dependencies: [],
         dependents: [],
+        satisfied: false,
+        npcDialogue,
       });
     } else {
-      stateMap.set(node.id, {
+      nodeIdToState.set(node.id, {
         id: node.id,
         kind,
         dependencies: [],
@@ -46,8 +64,8 @@ export function serializeToStates(
   }
 
   for (const edge of edges) {
-    const source = stateMap.get(edge.source)!;
-    const target = stateMap.get(edge.target)!;
+    const source = nodeIdToState.get(edge.source)!;
+    const target = nodeIdToState.get(edge.target)!;
     const negated = edge.data?.negated ?? false;
     if (!target.dependencies.some((d) => d.stateId === edge.source)) {
       const stateId = nodeIdtoStateId.get(edge.source) ?? edge.source;
@@ -59,7 +77,7 @@ export function serializeToStates(
     }
   }
 
-  return Array.from(stateMap.values());
+  return Array.from(nodeIdToState.values());
 }
 
 export async function loadStory(): Promise<{
@@ -182,7 +200,7 @@ export async function saveStory(
   edges: StoryEdge[],
   dialogues: Dialogue[] = [],
 ): Promise<void> {
-  const states = serializeToStates(nodes, edges);
+  const states = serializeToStates({ nodes, edges, dialogues });
   const doc: LatestStoryDoc = {
     version: latestVersion,
     states,

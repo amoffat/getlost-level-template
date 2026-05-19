@@ -1,3 +1,4 @@
+// @refresh reset
 import { defaultMilestone } from "@/constants";
 import { globals as g } from "@/globals";
 import { shallowEqual, useAppDispatch, useAppSelector } from "@/hooks/redux";
@@ -108,6 +109,11 @@ import Tip from "../Tip";
 
 import "@/styles/react-flow.css";
 
+const nodeTypes = {
+  dialogue: DialogueNode,
+  sign: DialogueNode,
+};
+
 interface ObjNodeProps {
   getIcon: (isActive: boolean, expanded: boolean) => ReactElement;
   objId: string;
@@ -122,11 +128,6 @@ interface DialogueNodeProps {
 function isObjNode(props: Record<string, any>): props is ObjNodeProps {
   return "objId" in props;
 }
-
-const nodeTypes = {
-  dialogue: DialogueNode,
-  sign: DialogueNode,
-};
 
 export default function DialogueTab({
   initPromise,

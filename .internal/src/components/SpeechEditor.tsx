@@ -35,6 +35,7 @@ import {
   Group,
   Image,
   Input,
+  MultiSelect,
   Stack,
   Text,
   Tooltip,
@@ -73,6 +74,8 @@ export default function SpeechEditor({
   const activeDialogueId = useAppSelector(
     (state: RootState) => state.dialogue.activeDialogueId,
   )!;
+
+  const allMilestones = useAppSelector(dSelectors.allMilestones);
 
   const data = node.data as SpeechData;
 
@@ -314,6 +317,37 @@ export default function SpeechEditor({
             )}
           </Stack>
         </DndContext>
+      </Fieldset>
+
+      <Fieldset legend={t("speechEditorActivationsLegend")} p="xs">
+        <Stack gap="sm" p={0}>
+          <MultiSelect
+            label={
+              <>
+                {t("speechEditorActivationsLabel")}
+                <InfoTooltip>
+                  <Typography>
+                    <p>{t("speechEditorActivationsTooltip")}</p>
+                  </Typography>
+                </InfoTooltip>
+              </>
+            }
+            description={t("speechEditorActivationsDesc")}
+            searchable
+            value={data.activationMilestones ?? []}
+            onChange={(value) =>
+              dispatch(
+                actions.updateNodeData({
+                  dialogueId: activeDialogueId,
+                  id: node.id,
+                  data: { activationMilestones: value },
+                }),
+              )
+            }
+            data={allMilestones}
+            nothingFoundMessage={t("speechEditorActivationsNothingFound")}
+          />
+        </Stack>
       </Fieldset>
     </Stack>
   );

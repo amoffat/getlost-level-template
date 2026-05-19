@@ -14,6 +14,8 @@ export interface SpeechData extends Record<string, unknown> {
   isOrigin: boolean;
   /** Per-node speaker image override. Overrides the object-level speakerImageId. */
   speakerImageId?: string | null;
+  /** Story milestone IDs activated when the player reaches this speech node. */
+  activationMilestones?: string[];
 }
 
 export type DNode = Node<SpeechData>;
