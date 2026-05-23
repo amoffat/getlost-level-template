@@ -8,6 +8,6 @@ export class PauseAction extends Action<unknown> {
     name?: string;
     duration: number;
   }) {
-    super({ name, duration });
+    super({ name, durationMs: duration });
   }
 }

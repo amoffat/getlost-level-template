@@ -26,7 +26,7 @@ export function hurt(char: Character, dir: Vec2): Behavior<Character> {
     .also(new ColorFadeAction({ color: 0xff0000, duration: colorDuration }))
     .also(
       new AlphaOscillateAction({
-        duration: alphaDuration,
+        durationMs: alphaDuration,
         cycles: Math.round(alphaDuration / 100),
         easing: Easings.easeOutQuad,
       }),

@@ -2,25 +2,68 @@ import { Action } from "@gl/utils/behavior";
 import { Easings } from "@gl/utils/easing";
 
 interface Subject {
+  getAlpha(): number;
   setAlpha(alpha: number): void;
 }
 
 export class AlphaOscillateAction extends Action<Subject> {
   private readonly _cycles: number;
+  private _startAlpha: number = 1;
 
   constructor({
     name = "alphaOscillate",
-    duration,
+    durationMs,
     cycles,
     easing = Easings.linear,
   }: {
     name?: string;
-    duration: number;
+    durationMs: number;
     cycles: number;
     easing?: (t: number) => number;
   }) {
-    super({ name, duration, easing });
+    super({ name, durationMs, easing });
     this._cycles = cycles;
+  }
+
+  public override onStart({ subject }: { subject: Subject }): void {
+    this._startAlpha = subject.getAlpha();
+  }
+
+  public override onEnd({ subject }: { subject: Subject }): void {
+    subject.setAlpha(this._startAlpha);
+  }
+
+  public override tick({
+    subject,
+    progress,
+  }: {
+    subject: Subject;
+    progress: number;
+  }): void {
+    // cos^2 oscillates between 0 and 1, starting and ending at 1. Scaling by
+    // _startAlpha shifts the peak to match the subject's initial alpha.
+    const cos = Math.cos(progress * this._cycles * Math.PI);
+    subject.setAlpha(this._startAlpha * cos * cos);
+  }
+}
+
+export class FadeInAction extends Action<Subject> {
+  private _startAlpha: number = 0;
+
+  constructor({
+    name = "fadeIn",
+    durationMs,
+    easing = Easings.linear,
+  }: {
+    name?: string;
+    durationMs: number;
+    easing?: (t: number) => number;
+  }) {
+    super({ name, durationMs, easing });
+  }
+
+  public override onStart({ subject }: { subject: Subject }): void {
+    this._startAlpha = subject.getAlpha();
   }
 
   public override onEnd({ subject }: { subject: Subject }): void {
@@ -34,9 +77,40 @@ export class AlphaOscillateAction extends Action<Subject> {
     subject: Subject;
     progress: number;
   }): void {
-    // cos^2 can start on 1 (full alpha) and end on 1
-    const cos = Math.cos(progress * this._cycles * Math.PI);
-    const alpha = cos * cos;
-    subject.setAlpha(alpha);
+    subject.setAlpha(this._startAlpha + (1 - this._startAlpha) * progress);
+  }
+}
+
+export class FadeOutAction extends Action<Subject> {
+  private _startAlpha: number = 1;
+
+  constructor({
+    name = "fadeOut",
+    durationMs,
+    easing = Easings.linear,
+  }: {
+    name?: string;
+    durationMs: number;
+    easing?: (t: number) => number;
+  }) {
+    super({ name, durationMs, easing });
+  }
+
+  public override onStart({ subject }: { subject: Subject }): void {
+    this._startAlpha = subject.getAlpha();
+  }
+
+  public override onEnd({ subject }: { subject: Subject }): void {
+    subject.setAlpha(0);
+  }
+
+  public override tick({
+    subject,
+    progress,
+  }: {
+    subject: Subject;
+    progress: number;
+  }): void {
+    subject.setAlpha(this._startAlpha * (1 - progress));
   }
 }

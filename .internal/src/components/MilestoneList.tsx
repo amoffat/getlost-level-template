@@ -13,30 +13,25 @@ import { IconFilter, IconInfinity } from "@tabler/icons-react";
 import { ComponentType, FC, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-interface AncestorHighlight {
-  nodeIds: Set<string>;
-  edgeIds: Set<string>;
-}
-
 interface MilestoneListProps {
   legend?: string;
-  selectedNodeIds: string[];
-  ancestorHighlight?: AncestorHighlight;
-  onSelect?: (nodeIds: string[]) => void;
+  checkboxState: Record<string, boolean>;
+  ancestorHighlight?: Set<string>;
+  onChange?: (state: Record<string, boolean>) => void;
   selectedIcon?: ComponentType<{ size?: number }>;
 }
 
 /**
- * Left-pane fieldset listing all story milestone nodes with ancestor
+ * Fieldset listing all story milestone nodes with ancestor
  * highlighting for the currently selected node.
  *
  * Returns null when there are no milestone nodes in the story.
  */
 export default function MilestoneList({
   legend,
-  selectedNodeIds,
+  checkboxState,
   ancestorHighlight,
-  onSelect,
+  onChange,
   selectedIcon: SelectedIcon,
 }: MilestoneListProps) {
   const { t } = useTranslation();
@@ -108,9 +103,9 @@ export default function MilestoneList({
           size="xs"
         />
         {filteredMilestoneIds.map((nodeId) => {
-          const isSelected = selectedNodeIds.includes(nodeId);
-          const isPermanent = nodeIdToPermanent.get(nodeId) ?? false;
           const milestoneName = nodeIdToMilestoneId.get(nodeId) ?? nodeId;
+          const isSelected = checkboxState[nodeId] ?? false;
+          const isPermanent = nodeIdToPermanent.get(nodeId) ?? false;
           const label = isPermanent ? (
             <Group gap={4} wrap="nowrap">
               {milestoneName}
@@ -125,17 +120,14 @@ export default function MilestoneList({
             <Checkbox
               key={nodeId}
               label={label}
-              checked={!!(isSelected || ancestorHighlight?.nodeIds.has(nodeId))}
+              checked={!!(isSelected || ancestorHighlight?.has(nodeId))}
               onChange={() => {
-                if (onSelect) {
-                  const next = isSelected
-                    ? selectedNodeIds.filter((id) => id !== nodeId)
-                    : [...selectedNodeIds, nodeId];
-                  onSelect(next);
+                if (onChange) {
+                  onChange({ ...checkboxState, [nodeId]: !isSelected });
                 }
               }}
               size="sm"
-              style={{ cursor: onSelect ? "pointer" : "default" }}
+              style={{ cursor: onChange ? "pointer" : "default" }}
               color={isSelected ? "green" : undefined}
               icon={
                 isSelected

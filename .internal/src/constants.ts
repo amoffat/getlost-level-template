@@ -32,7 +32,7 @@ export const walkSounds = [
   "sand",
   "snow",
 ] as const;
-export type WalkSound = (typeof walkSounds)[number];
+export type WalkSound = string;
 
 export const defaultWalkSound: WalkSound = "default";
 // How long until the speed halves?

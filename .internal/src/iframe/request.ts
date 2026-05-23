@@ -47,15 +47,15 @@ export interface SetGameSpeedRequest {
   };
 }
 
-export interface SatisfyMilestonesRequest {
-  type: "satisfy-milestones";
+export interface ChangeMilestonesRequest {
+  type: "change-milestones";
   data: {
     milestones: Record<string, boolean>;
   };
 }
 
-export interface MilestonesSatisfiedMessage {
-  type: "milestones-satisfied";
+export interface MilestonesSyncMessage {
+  type: "milestones-sync";
   data: {
     milestones: Record<string, boolean>;
   };
@@ -89,9 +89,9 @@ export type AnyRequest =
   | ClearMarkerMessage
   | DebugFlag
   | GetTimeRequest
-  | MilestonesSatisfiedMessage
+  | ChangeMilestonesRequest
   | RecordMarkerMessage
-  | SatisfyMilestonesRequest
+  | MilestonesSyncMessage
   | SavePathGraphRequest
   | SetAudioModeRequest
   | SetGameSpeedRequest

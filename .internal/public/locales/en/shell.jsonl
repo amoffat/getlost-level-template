@@ -198,6 +198,10 @@
 {"k": "tileGroupPropWalkSoundDescription", "v": "The sound that will play when a character walks on this tile", "ctx": "Description for the walk sound selector"}
 {"k": "tileGroupPropWalkSoundMixedValues", "v": "Mixed values", "ctx": "Placeholder shown when multiple selected tiles have different walk sound values"}
 {"k": "tileGroupPropWalkSoundPlaceholder", "v": "Select walk sound", "ctx": "Placeholder for the walk sound selector when no value is set"}
+{"k": "selectWithCustomUseValue", "v": "Use \"{{value}}\"", "ctx": "Option shown in a select-with-custom dropdown to confirm using the typed custom value"}
+{"k": "selectWithCustomNoOptions", "v": "No options", "ctx": "Empty state shown in a select-with-custom dropdown when no predefined options match the search"}
+{"k": "selectWithCustomMixedPlaceholder", "v": "Mixed values", "ctx": "Default placeholder for SelectWithCustom when multiple objects have different values"}
+{"k": "selectWithCustomPlaceholder", "v": "Select a value", "ctx": "Default placeholder for SelectWithCustom when no value is set"}
 {"k": "tileGroupPropFrictionLabel", "v": "Friction", "ctx": "Label for the tile friction slider"}
 {"k": "tileGroupPropFrictionDescription", "v": "How many seconds it takes for the player's speed to reduce by half.", "ctx": "Description for the tile friction slider"}
 {"k": "tileGroupPropTractionLabel", "v": "Traction", "ctx": "Label for the tile traction slider"}
@@ -479,7 +483,7 @@
 {"k": "previewGuidelinesRequired", "v": "You must agree to the story guidelines", "ctx": "Validation error shown when the story guidelines checkbox is unchecked on publish"}
 {"k": "previewAssetsRequired", "v": "You must disclose third-party assets", "ctx": "Validation error shown when the third-party assets disclosure checkbox is unchecked on publish"}
 {"k": "previewCommitMsgRequired", "v": "Commit message is required", "ctx": "Validation error shown when the publish commit message field is empty"}
-{"k": "previewNoAudioTip", "v": "No audio? Enable overlays to allow audio to pass through to the iframe.", "ctx": "Tip shown in the preview left panel when overlays are disabled"}
+{"k": "previewNoAudioTip", "v": "No audio? Click in the preview window, or enable overlays below.", "ctx": "Tip shown in the preview left panel for if audio isn't working"}
 {"k": "previewEngineFieldset", "v": "Engine", "ctx": "Legend text for the engine settings fieldset in the preview panel"}
 {"k": "previewEnvironmentLabel", "v": "Environment", "ctx": "Label for the game environment select (local/production/QA)"}
 {"k": "previewEnvLocalhost", "v": "Localhost", "ctx": "Option label for the local game environment"}

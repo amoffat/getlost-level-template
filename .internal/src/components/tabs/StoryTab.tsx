@@ -465,10 +465,18 @@ export default function StoryTab({
     return { nodeIds, edgeIds };
   }, [selectedNodeId, edges]);
 
+  const milestoneListCheckboxState = useMemo<Record<string, boolean>>(
+    () => (selectedNodeId ? { [selectedNodeId]: true } : {}),
+    [selectedNodeId],
+  );
+
   const handleMilestoneSelect = useCallback(
-    (nodeIds: string[]) => {
+    (state: Record<string, boolean>) => {
+      const selectedNodeIds = Object.entries(state)
+        .filter(([, checked]) => checked)
+        .map(([id]) => id);
       const currentNodes = reactFlowInstance.getNodes();
-      const selectedSet = new Set(nodeIds);
+      const selectedSet = new Set(selectedNodeIds);
       const updatedNodes = currentNodes.map((n) => ({
         ...n,
         selected: selectedSet.has(n.id),
@@ -476,7 +484,7 @@ export default function StoryTab({
       reactFlowInstance.setNodes(updatedNodes);
       // setSelectedNodeId is also updated via useOnSelectionChange,
       // but set it immediately so ancestorHighlight reacts without delay.
-      setSelectedNodeId(nodeIds.length === 1 ? nodeIds[0] : null);
+      setSelectedNodeId(selectedNodeIds.length === 1 ? selectedNodeIds[0] : null);
     },
     [reactFlowInstance],
   );
@@ -542,9 +550,9 @@ export default function StoryTab({
               {showDependencyMilestones && (
                 <Stack p={0} pb="xl">
                   <MilestoneList
-                    selectedNodeIds={selectedNodeId ? [selectedNodeId] : []}
-                    ancestorHighlight={ancestorHighlight}
-                    onSelect={handleMilestoneSelect}
+                    checkboxState={milestoneListCheckboxState}
+                    ancestorHighlight={ancestorHighlight.nodeIds}
+                    onChange={handleMilestoneSelect}
                     selectedIcon={IconStarFilled}
                   />
                 </Stack>

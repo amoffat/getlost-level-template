@@ -16,22 +16,22 @@ export abstract class Action<Subject> {
    * when registering listeners on a {@link Behavior}.
    */
   protected readonly _name: string;
-  protected readonly duration: number;
+  protected readonly durationMs: number;
   private _animator: Animator;
 
   constructor({
     name,
-    duration,
+    durationMs,
     easing = Easings.linear,
   }: {
     name: string;
-    duration: number;
+    durationMs: number;
     easing?: EasingFunction;
   }) {
     this._name = name;
-    this.duration = duration;
+    this.durationMs = durationMs;
     this._animator = new Animator({
-      durationMs: duration,
+      durationMs,
       forwardCurve: easing,
     });
   }
@@ -46,7 +46,7 @@ export abstract class Action<Subject> {
    * calculated as `elapsed / duration` and modified by the internal animator's
    * easing curve if provided.
    */
-  tick(_args: { subject: Subject; progress: number }): void {}
+  tick(_args: { subject: Subject; progress: number; elapsed: number }): void {}
 
   /**
    * Whether this action has completed. By default this is determined by the
@@ -61,8 +61,8 @@ export abstract class Action<Subject> {
    * start the internal animator.
    */
   _initAnimator({ subject }: { subject: Subject }): void {
-    this._animator.addProgressCallback((progress) => {
-      this.tick({ subject, progress });
+    this._animator.addProgressCallback(({ progress, elapsed }) => {
+      this.tick({ subject, progress, elapsed });
     });
     this._animator.play();
   }
@@ -71,12 +71,7 @@ export abstract class Action<Subject> {
    * @internal Called by {@link Behavior} each frame. Ticks the
    * internal animator, then calls {@link tick}.
    */
-  _internalTick({
-    deltaMs,
-  }: {
-    subject: Subject;
-    deltaMs: number;
-  }): void {
+  _internalTick({ deltaMs }: { subject: Subject; deltaMs: number }): void {
     this._animator.tick(deltaMs);
   }
 
@@ -125,7 +120,7 @@ export class Behavior<Subject> extends Action<Subject> {
   private _behaviorEndFired: boolean = false;
 
   constructor(name: string, subject: Subject) {
-    super({ name, duration: 0 });
+    super({ name, durationMs: 0 });
     this._subject = subject;
   }
 

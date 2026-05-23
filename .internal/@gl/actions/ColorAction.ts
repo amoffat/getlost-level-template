@@ -23,7 +23,7 @@ export class ColorFadeAction extends Action<Subject> {
     alpha?: number;
     duration?: number;
   }) {
-    super({ name, duration });
+    super({ name, durationMs: duration });
     this._color = color;
     this._alpha = alpha;
   }

@@ -20,7 +20,7 @@ export class DashAction extends Action<Subject> {
     direction: Vec2;
     duration?: number;
   }) {
-    super({ name, duration });
+    super({ name, durationMs: duration });
     this._direction = direction;
   }
 

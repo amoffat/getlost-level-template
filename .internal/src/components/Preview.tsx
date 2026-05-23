@@ -5,7 +5,7 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Comms } from "@/iframe";
 import {
   DebugFlagKey,
-  MilestonesSatisfiedMessage,
+  MilestonesSyncMessage,
   SavePathGraphRequest,
 } from "@/iframe/request";
 import { log } from "@/log";
@@ -102,7 +102,9 @@ export default function PreviewTab({
   const [cardModalOpened, { open: openCardModal, close: closeCardModal }] =
     useDisclosure(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
+  const [checkboxState, setCheckboxState] = useState<Record<string, boolean>>(
+    {},
+  );
 
   const publishForm = useForm({
     initialValues: {
@@ -163,16 +165,16 @@ export default function PreviewTab({
     }
   }, [activeTab, pendingReload]);
 
-  const [milestoneIdsToNodeIds, nodeIdsToMilestoneIds] = useMemo(() => {
-    const m2n = new Map<string, string>();
+  const [nodeIdsToMilestoneIds, milestoneIdsToNodeIds] = useMemo(() => {
     const n2m = new Map<string, string>();
+    const m2n = new Map<string, string>();
     for (const node of nodes) {
       if (node.type === "story") {
-        m2n.set(node.data.id, node.id);
         n2m.set(node.id, node.data.id);
+        m2n.set(node.data.id, node.id);
       }
     }
-    return [m2n, n2m] as const;
+    return [n2m, m2n] as const;
   }, [nodes]);
 
   useEffect(() => {
@@ -193,13 +195,15 @@ export default function PreviewTab({
   }, [comms]);
 
   useEffect(() => {
-    const cleanup = comms?.addMessageListener<MilestonesSatisfiedMessage>({
-      type: "milestones-satisfied",
+    const cleanup = comms?.addMessageListener<MilestonesSyncMessage>({
+      type: "milestones-sync",
       callback: async ({ milestones }) => {
-        const nodeIds = Object.entries(milestones)
-          .filter(([_, satisfied]) => satisfied)
-          .map(([mId, _]) => milestoneIdsToNodeIds.get(mId)!);
-        setSelectedNodeIds(nodeIds);
+        const nodeIdState: Record<string, boolean> = {};
+        for (const [mId, checked] of Object.entries(milestones)) {
+          const nodeId = milestoneIdsToNodeIds.get(mId);
+          if (nodeId) nodeIdState[nodeId] = checked;
+        }
+        setCheckboxState(nodeIdState);
       },
     });
 
@@ -228,7 +232,7 @@ export default function PreviewTab({
 
   const handleIframeLoad = () => {
     if (iframeRef.current?.src === "about:blank") return;
-    setSelectedNodeIds([]);
+    setCheckboxState({});
   };
 
   useEffect(() => {
@@ -461,23 +465,20 @@ export default function PreviewTab({
   };
 
   const handleMilestoneSelect = useCallback(
-    (nodeIds: string[]) => {
-      setSelectedNodeIds(nodeIds);
-
-      const selectedNodeIds = new Set(nodeIds);
-      const allNodeIds = nodes.map((n) => n.id);
+    async (state: Record<string, boolean>) => {
       const milestoneValues: Record<string, boolean> = {};
-      for (const id of allNodeIds) {
-        const mId = nodeIdsToMilestoneIds.get(id)!;
-        milestoneValues[mId] = selectedNodeIds.has(id);
+      for (const [nodeId, checked] of Object.entries(state)) {
+        const mId = nodeIdsToMilestoneIds.get(nodeId);
+        if (mId) milestoneValues[mId] = checked;
       }
-
-      comms?.request({
-        type: "satisfy-milestones",
+      await comms?.request({
+        type: "change-milestones",
         data: { milestones: milestoneValues },
       });
+
+      setCheckboxState(state);
     },
-    [comms, nodeIdsToMilestoneIds, nodes],
+    [comms, nodeIdsToMilestoneIds],
   );
 
   return (
@@ -753,8 +754,8 @@ export default function PreviewTab({
             <Stack gap="xs" p={0}>
               <MilestoneList
                 legend={t("previewStoryProgressLegend")}
-                selectedNodeIds={selectedNodeIds}
-                onSelect={handleMilestoneSelect}
+                checkboxState={checkboxState}
+                onChange={handleMilestoneSelect}
               />
             </Stack>
 

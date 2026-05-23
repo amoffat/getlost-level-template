@@ -68,10 +68,8 @@ export interface TileCollisionEvent {
 export interface StateChangeEvent {
   type: "state-change";
   data: {
-    added: Set<string>;
-    removed: Set<string>;
-    ready: Set<string>;
-    satisfied: Set<string>;
+    state: string;
+    satisfied: boolean;
   };
 }
 
@@ -87,7 +85,7 @@ export type AnyEvent =
 
 interface Listener<T extends EventName> {
   filter: EventFilter<T>;
-  callback: (event: EventData<T>) => void;
+  callback: (event: EventData<T>) => undefined | boolean;
 }
 
 type EventName = AnyEvent["type"];
@@ -98,45 +96,60 @@ type EventFilter<T extends EventName> =
   | ((data: EventData<T>) => boolean)
   | null;
 
-type EventHandlerFunction<T extends EventName> = (data: EventData<T>) => void;
+type EventHandlerFunction<T extends EventName> = (
+  data: EventData<T>,
+) => undefined | boolean;
 
 export class EventDispatcher {
-  private _listeners = new Map<string, Listener<any>[]>();
+  private _listeners = new Map<string, Map<Listener<any>, Listener<any>>>();
 
   public on<T extends EventName>({
     type,
-    filter: filter = null,
-    callback,
+    filter = null,
+    ...rest
   }: {
     type: T;
     filter?: EventFilter<T>;
-    callback: EventHandlerFunction<T>;
-  }): () => void {
+  } & (
+    | { callback: EventHandlerFunction<T>; callbacks?: never }
+    | { callbacks: EventHandlerFunction<T>[]; callback?: never }
+  )): () => void {
     if (!this._listeners.has(type)) {
-      this._listeners.set(type, []);
+      this._listeners.set(type, new Map());
     }
-    const listener: Listener<T> = {
-      filter,
-      callback: callback as (event: EventData<T>) => void,
-    };
-    this._listeners.get(type)!.push(listener);
+    const lmap = this._listeners.get(type)!;
+
+    const cbs: EventHandlerFunction<T>[] =
+      "callbacks" in rest && rest.callbacks != null
+        ? rest.callbacks
+        : [rest.callback!];
+
+    const listeners = cbs.map((cb) => {
+      const listener: Listener<T> = {
+        filter,
+        callback: cb,
+      };
+      lmap.set(listener, listener);
+      return listener;
+    });
 
     return () => {
-      const list = this._listeners.get(type);
-      if (list) {
-        const idx = list.indexOf(listener);
-        if (idx !== -1) list.splice(idx, 1);
+      for (const listener of listeners) {
+        lmap.delete(listener);
       }
     };
   }
 
   public dispatch(event: AnyEvent): void {
-    const list = this._listeners.get(event.type);
-    if (!list) return;
+    const lmap = this._listeners.get(event.type);
+    if (!lmap) return;
 
-    for (const { filter, callback } of list) {
-      if (eventMatches(filter, event.data)) {
-        callback(event.data);
+    for (const listener of lmap.values()) {
+      if (eventMatches(listener.filter, event.data)) {
+        const isDone = listener.callback(event.data);
+        if (isDone) {
+          lmap.delete(listener);
+        }
       }
     }
   }

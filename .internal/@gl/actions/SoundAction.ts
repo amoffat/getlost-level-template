@@ -6,7 +6,7 @@ export class SoundAction extends Action<unknown> {
   private readonly _soundKey: string;
 
   constructor({ name = "sound", key }: { name?: string; key: string }) {
-    super({ name, duration: 0 });
+    super({ name, durationMs: 0 });
     this._soundKey = key;
 
     if (!SoundAction._loadedSounds.has(this._soundKey)) {

@@ -2,7 +2,15 @@ import { globalTicker } from "@gl/ticker";
 import { addListener } from "./callbacks";
 import { type EasingFunction, Easings } from "./easing";
 
-type ProgressCallback = (progress: number, direction: number) => void;
+type ProgressCallback = ({
+  progress,
+  direction,
+  elapsed,
+}: {
+  progress: number;
+  direction: number;
+  elapsed: number;
+}) => void;
 type BoundaryCallback = (forward: boolean) => void;
 
 export function lerp(a: number, b: number, t: number): number {
@@ -111,7 +119,11 @@ export class Animator {
     this._value = value;
 
     for (const callback of this._progressCallbacks) {
-      callback(value, this._direction);
+      callback({
+        progress: value,
+        direction: this._direction,
+        elapsed: this._elapsedTime,
+      });
     }
 
     if (value === 0 || value === 1) {

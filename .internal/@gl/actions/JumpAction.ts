@@ -46,7 +46,7 @@ export class JumpAction extends Action<Subject> {
     height?: number;
     direction?: { x: number; y: number };
   } = {}) {
-    super({ name, duration, easing: curve });
+    super({ name, durationMs: duration, easing: curve });
     this._height = height;
     this._direction = direction;
   }

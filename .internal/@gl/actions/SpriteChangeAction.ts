@@ -19,13 +19,13 @@ export class SpriteChangeAction extends Action<Subject> {
     action: CharAction;
     duration: number;
   }) {
-    super({ name, duration });
+    super({ name, durationMs: duration });
     this._action = action;
   }
 
   public override onStart({ subject }: { subject: Subject }): void {
     this._origAction = subject.action;
-    subject.setAction(this._action, this.duration);
+    subject.setAction(this._action, this.durationMs);
   }
 
   public override onEnd({ subject }: { subject: Subject }): void {

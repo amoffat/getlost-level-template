@@ -4,6 +4,7 @@ import { hurt } from "@gl/behaviors/hurt";
 import { globalTicker } from "@gl/ticker";
 import { CharAction } from "@gl/types/character";
 
+import { WavyParams } from "@gl/actions/WavyAction";
 import { jump } from "@gl/behaviors/jump";
 import { Delay } from "./delay";
 import * as easing from "./easing";
@@ -74,11 +75,11 @@ export class Character {
     });
   }
 
-  static get(name: string): Character {
-    if (!chars.has(name)) {
-      console.error(`No character named ${name}`);
+  static get(id: string): Character | undefined {
+    if (!chars.has(id)) {
+      console.error(`No character with id ${id}`);
     }
-    return chars.get(name)!;
+    return chars.get(id);
   }
 
   /**
@@ -124,8 +125,16 @@ export class Character {
     char.setColorOverlay({ id: this.id, color, alpha });
   }
 
+  public getAlpha(): number {
+    return char.getAlpha(this.id);
+  }
+
   public setAlpha(alpha: number): void {
     char.setAlpha({ id: this.id, alpha });
+  }
+
+  public setWavy(params: Partial<WavyParams>): void {
+    char.setWavy(this.id, params);
   }
 
   public get action(): CharAction {

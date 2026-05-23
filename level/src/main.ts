@@ -2,11 +2,13 @@ import { setZoom } from "@gl/api/camera";
 import * as controls from "@gl/api/controls";
 import * as filters from "@gl/api/filters";
 import * as object from "@gl/api/object";
-import * as story from "@gl/api/story";
 
 import { setSunEvent } from "@gl/api/time";
+import { showhide } from "@gl/behaviors/showhide";
 import { ColorMatrixFilter } from "@gl/filters/colormatrix";
 import { SunEvent } from "@gl/types/time";
+import { Animator } from "@gl/utils/animation";
+import { Character } from "@gl/utils/character";
 import { Vec2 } from "@gl/utils/vec2";
 
 let tiltShift!: number;
@@ -24,79 +26,60 @@ export async function init(): Promise<void> {
 
   const colors = new ColorMatrixFilter();
   // Warm, golden-hour feel: lift reds, soften greens, pull back blues
-  colors.tint(1.05, 0.97, 0.9);
+  // colors.tint(1.05, 0.97, 0.9);
   // Slight desaturation for a painterly softness with cross-channel bleed
-  colors.saturate(-0.1, true);
+  // colors.saturate(-0.1, true);
   // Lift shadows with a subtle atmospheric haze
-  colors.overlay(0.04, 0.03, 0.04, true);
+  // colors.overlay(0.04, 0.03, 0.04, true);
 
-  const bloom = filters.addBloom({
-    brightness: 0.5,
-    threshold: 0.3,
-    bloomScale: 0.55,
-    blur: 5,
-  });
+  // const bloom = filters.addBloom({
+  //   brightness: 0.5,
+  //   threshold: 0.3,
+  //   bloomScale: 0.55,
+  //   blur: 5,
+  // });
 
-  events.on({
-    type: "collision",
-    filter: { charId: "player", colliderId: "Jim", enter: true },
-    callback: ({ direction }) => {
-      const hurtDirection = Vec2.fromVector(direction).normalize().flip();
-      player.hurt(hurtDirection);
-
-      if (story.isSatisfied("talk-to-wizard")) {
-        story.satisfy("destroy-portal", true);
-      } else {
-        story.bulkSatisfy({ "help-wizard": true, "find-spells": true });
-      }
-      // prepare("abcd", true);
-    },
-  });
-
-  events.on({
-    type: "collision",
-    filter: { charId: "player", colliderId: "barn", enter: true },
-    callback: ({ direction }) => {
-      if (story.isSatisfied("find-spells")) {
-        const hurtDirection = Vec2.fromVector(direction).normalize().flip();
-        player.hurt(hurtDirection);
-        story.satisfy("talk-to-wizard", true);
-      }
-    },
-  });
+  const sofia = Character.get("6b01ef44-a1a1-4021-aeca-e8b72477937c")!;
+  sofia.visibility = false;
 
   events.on({
     type: "state-change",
-    callback: ({ ready, satisfied }) => {
-      if (satisfied.has("think-of-sofia")) {
-        setZoom(0.4);
+    filter: { state: "think-of-sofia" },
+    callback: ({ satisfied }) => {
+      if (satisfied) {
+        const anim = new Animator({ durationMs: 1000, selfTick: true });
+        anim.addProgressCallback(({ progress }) => {
+          //const zoom =
+          // setZoom(0.4);
+        });
+        anim.play();
+      } else {
+        setZoom(0.7);
       }
-    },
-  });
-
-  events.on({
-    type: "choice-made",
-    filter: { choiceId: "8834ece0-20a2-4189-8fa8-7e136348414b" },
-    callback: () => {
-      console.log("CHOSE IT");
     },
   });
 
   events.on({
     type: "sensor",
     filter: { sensorId: "f4620bb5-9056-4fe4-9038-2c44d3f66ea9" },
-    callback: ({ enter }) => {
-      if (enter) {
-        controls.addButton({
-          labelKey: "jump",
-          onRelease: () => {
-            player.jump();
-          },
-        });
-      } else {
-        controls.removeButton("jump");
-      }
-    },
+    callbacks: [
+      ({ enter }) => {
+        const behavior = showhide({ char: sofia, show: enter });
+        behavior.perform();
+      },
+      ({ enter }) => {
+        if (enter) {
+          controls.addButton({
+            labelKey: "jump",
+            onRelease: () => {
+              player.jump();
+            },
+          });
+        } else {
+          controls.removeButton("jump");
+        }
+      },
+    ],
   });
 }
 
