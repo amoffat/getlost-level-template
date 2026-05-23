@@ -113,7 +113,13 @@ export default function ObjSelHover() {
   if (!proposed || proposed.objects.length === 0) return null;
 
   return (
-    <DynamicHoverCard x={proposed.pos.x} y={proposed.pos.y} opened={true}>
+    <DynamicHoverCard
+      key={`${proposed.pos.x}-${proposed.pos.y}`}
+      x={proposed.pos.x}
+      y={proposed.pos.y}
+      opened={true}
+      autoHideDelay={3000}
+    >
       <Stack p={0}>{items}</Stack>
     </DynamicHoverCard>
   );
