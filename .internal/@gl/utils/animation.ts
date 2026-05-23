@@ -1,21 +1,20 @@
 import { globalTicker } from "@gl/ticker";
 import { addListener } from "./callbacks";
 import { type EasingFunction, Easings } from "./easing";
+import { lerp } from "./math";
 
 type ProgressCallback = ({
   progress,
   direction,
   elapsed,
+  rangeProgress,
 }: {
   progress: number;
   direction: number;
   elapsed: number;
+  rangeProgress: number | undefined;
 }) => void;
 type BoundaryCallback = (forward: boolean) => void;
-
-export function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * t;
-}
 
 export class Animator {
   private _elapsedTime: number = 0;
@@ -37,6 +36,7 @@ export class Animator {
 
   private _selfTick: boolean;
   private _tickCallback: ((deltaMs: number) => void) | null = null;
+  private _range: { start: number; end: number } | undefined;
 
   constructor({
     durationMs,
@@ -45,6 +45,7 @@ export class Animator {
     repeat = 0,
     pingPong = false,
     selfTick = false,
+    range,
   }: {
     durationMs: number;
     forwardCurve?: EasingFunction;
@@ -52,6 +53,7 @@ export class Animator {
     repeat?: number;
     pingPong?: boolean;
     selfTick?: boolean;
+    range?: { start: number; end: number };
   }) {
     this._durationMs = durationMs;
     this._selfTick = selfTick;
@@ -60,6 +62,7 @@ export class Animator {
     this.repeat = repeat;
     this.pingPong = pingPong;
     this._repeatsLeft = this.repeat;
+    this._range = range;
 
     if (selfTick) {
       this._tickCallback = (deltaMs) => this.tick(deltaMs);
@@ -123,6 +126,9 @@ export class Animator {
         progress: value,
         direction: this._direction,
         elapsed: this._elapsedTime,
+        rangeProgress: this._range
+          ? lerp(this._range.start, this._range.end, value)
+          : undefined,
       });
     }
 

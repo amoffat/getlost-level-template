@@ -9,6 +9,7 @@ import { ColorMatrixFilter } from "@gl/filters/colormatrix";
 import { SunEvent } from "@gl/types/time";
 import { Animator } from "@gl/utils/animation";
 import { Character } from "@gl/utils/character";
+import { Easings } from "@gl/utils/easing";
 import { Vec2 } from "@gl/utils/vec2";
 
 let tiltShift!: number;
@@ -41,32 +42,39 @@ export async function init(): Promise<void> {
 
   const sofia = Character.get("6b01ef44-a1a1-4021-aeca-e8b72477937c")!;
   sofia.visibility = false;
+  const startZoom = 0.7;
 
   events.on({
     type: "state-change",
     filter: { state: "think-of-sofia" },
-    callback: ({ satisfied }) => {
-      if (satisfied) {
-        const anim = new Animator({ durationMs: 1000, selfTick: true });
-        anim.addProgressCallback(({ progress }) => {
-          //const zoom =
-          // setZoom(0.4);
-        });
-        anim.play();
-      } else {
-        setZoom(0.7);
-      }
-    },
+    callbacks: [
+      ({ satisfied }) => {
+        const behavior = showhide({ char: sofia, show: satisfied });
+        behavior.perform();
+      },
+      ({ satisfied }) => {
+        if (satisfied) {
+          const anim = new Animator({
+            durationMs: 3000,
+            selfTick: true,
+            range: { start: startZoom, end: 0.38 },
+            forwardCurve: Easings.easeInOutQuad,
+          });
+          anim.addProgressCallback(({ rangeProgress }) => {
+            setZoom(rangeProgress!);
+          });
+          anim.play();
+        } else {
+          setZoom(startZoom);
+        }
+      },
+    ],
   });
 
   events.on({
     type: "sensor",
     filter: { sensorId: "f4620bb5-9056-4fe4-9038-2c44d3f66ea9" },
     callbacks: [
-      ({ enter }) => {
-        const behavior = showhide({ char: sofia, show: enter });
-        behavior.perform();
-      },
       ({ enter }) => {
         if (enter) {
           controls.addButton({
