@@ -6,6 +6,7 @@ import { CharAction } from "@gl/types/character";
 
 import { WavyParams } from "@gl/actions/WavyAction";
 import { jump } from "@gl/behaviors/jump";
+import { Vector2 } from "@gl/types/api/vector";
 import { Behavior } from "./behavior";
 import { Delay } from "./delay";
 import * as easing from "./easing";
@@ -53,6 +54,7 @@ export class Character {
 
   private _falling: boolean = false;
   private _fallingVelocity: number = 0;
+  private _activeJump: Behavior<Character> | null = null;
 
   private _navPlan: NavPlan;
 
@@ -108,12 +110,12 @@ export class Character {
     this._pos = newPos;
   }
 
-  public get velocity(): Vec2 {
+  public getVelocity(): Vec2 {
     return this._velocity;
   }
 
-  public set velocity(v: Vec2) {
-    this._velocity = v.clone();
+  public setVelocity(v: Vector2): void {
+    this._velocity = Vec2.fromVector(v);
   }
 
   public addImpulse(impulse: Vec2): void {
@@ -482,11 +484,17 @@ export class Character {
   public jump({
     distance = 32,
   }: { distance?: number } = {}): Behavior<Character> {
-    const jumpDir = this.velocity
+    const jumpDir = this.getVelocity()
       .normalized()
       .scale(distance)
       .multiply({ x: 1, y: 0.8 }); // Account for 2.5D perspective
     const behavior = jump(this, jumpDir);
+    this._activeJump = behavior;
+    behavior.onBehaviorEnd(() => {
+      if (this._activeJump === behavior) {
+        this._activeJump = null;
+      }
+    });
     behavior.perform();
     return behavior;
   }
@@ -499,14 +507,28 @@ export class Character {
     return char.getHeight(this.id);
   }
 
-  public get falling(): boolean {
+  public getFalling(): boolean {
     return this._falling;
   }
 
-  public set falling(enabled: boolean) {
+  public setFalling({
+    enabled,
+    startVelocity = 0,
+  }: {
+    enabled: boolean;
+    startVelocity?: number;
+  }): void {
+    // Cancel any in-progress jump so it stops overriding _pos and _velocity.
+    // Without this, JumpAction continues calling setPos() on every tick after
+    // falling starts, causing _pos to be reset to the linear-interpolation
+    // endpoint each frame — which diverges from the falling-physics position
+    // and produces a visible snap/bump when the jump animation finishes.
+    if (enabled && this._activeJump) {
+      this._activeJump.cancel();
+      this._activeJump = null;
+    }
     this._falling = enabled;
-    this._fallingVelocity = 0;
-
-    // this._shadow.visible = enabled ? false : this._visible;
+    this._fallingVelocity = startVelocity;
+    char.setShadow(this.id, false);
   }
 }

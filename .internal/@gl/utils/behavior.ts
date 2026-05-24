@@ -3,6 +3,10 @@ import { Animator } from "./animation";
 import { Easings, type EasingFunction } from "./easing";
 
 export type ActionCallback = () => void;
+export type ProgressCallback = (args: {
+  progress: number;
+  elapsed: number;
+}) => boolean | undefined;
 
 /**
  * Action is the "atom" of a {@link Behavior}. It represents some simple
@@ -38,6 +42,13 @@ export abstract class Action<Subject> {
 
   public get name(): string {
     return this._name;
+  }
+
+  /**
+   * Returns the total duration of this action in milliseconds.
+   */
+  public getDuration(): number {
+    return this.durationMs;
   }
 
   /**
@@ -118,6 +129,10 @@ export class Behavior<Subject> extends Action<Subject> {
   private _validKeys: Set<string> = new Set();
   private _behaviorEndListeners: ActionCallback[] = [];
   private _behaviorEndFired: boolean = false;
+
+  // Progress state
+  private _elapsedMs: number = 0;
+  private _progressCallbacks: ProgressCallback[] = [];
 
   constructor(name: string, subject: Subject) {
     super({ name, durationMs: 0 });
@@ -255,6 +270,44 @@ export class Behavior<Subject> extends Action<Subject> {
     return this;
   }
 
+  /**
+   * Returns the total duration of this behavior in milliseconds, accounting
+   * for serial and concurrent action structure. For each sequential slot, the
+   * slot duration is the maximum of the main action's duration and any
+   * concurrent side-action durations added via {@link also}.
+   */
+  public override getDuration(): number {
+    let total = 0;
+    for (let i = 0; i < this._actions.length; i++) {
+      const mainDuration = this._actions[i]!.getDuration();
+      const sides = this._sideActions.get(i) ?? [];
+      const sideDuration =
+        sides.length > 0 ? Math.max(...sides.map((s) => s.getDuration())) : 0;
+      total += Math.max(mainDuration, sideDuration);
+    }
+    return total;
+  }
+
+  /**
+   * Registers a callback to be invoked each tick with the current progress
+   * (0–1) and elapsed time in milliseconds of this behavior.
+   */
+  public onProgress(callback: ProgressCallback): this {
+    this._progressCallbacks.push(callback);
+    return this;
+  }
+
+  /**
+   * Immediately stops this behavior. Any in-progress background (also) actions
+   * are dropped. The next tick will detect completion and unsubscribe from the
+   * global ticker.
+   */
+  public cancel(): void {
+    if (!this._started || this._behaviorEndFired) return;
+    this._currentIndex = this._actions.length;
+    this._backgroundActions = [];
+  }
+
   public perform(): Behavior<Subject> {
     this.onStart({ subject: this._subject });
     const tick = (deltaMs: number) => this._tickBehavior(deltaMs);
@@ -267,6 +320,8 @@ export class Behavior<Subject> extends Action<Subject> {
 
   private _tickBehavior(deltaMs: number): void {
     const entity = this._subject!;
+
+    this._elapsedMs += deltaMs;
 
     // Tick background (also) actions, removing completed ones
     this._backgroundActions = this._backgroundActions.filter((entry) => {
@@ -337,6 +392,22 @@ export class Behavior<Subject> extends Action<Subject> {
       for (const cb of this._behaviorEndListeners) {
         cb();
       }
+    }
+
+    // Fire progress callbacks
+    if (this._progressCallbacks.length > 0) {
+      const totalDuration = this.getDuration();
+      const progress =
+        totalDuration > 0 ? Math.min(this._elapsedMs / totalDuration, 1) : 1;
+
+      const keep = [];
+      for (const cb of this._progressCallbacks) {
+        const remove = cb({ progress, elapsed: this._elapsedMs });
+        if (!remove) {
+          keep.push(cb);
+        }
+      }
+      this._progressCallbacks = keep;
     }
   }
 

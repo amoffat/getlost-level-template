@@ -1,7 +1,7 @@
-import { type Vector } from "@gl/types/api/vector";
+import { type Vector2 } from "@gl/types/api/vector";
 import type { EasingFunction } from "./easing";
 
-export class Vec2 implements Vector {
+export class Vec2 implements Vector2 {
   x: number;
   y: number;
 
@@ -14,7 +14,7 @@ export class Vec2 implements Vector {
     return new Vec2(0, 0);
   }
 
-  static fromVector(vec: Vector): Vec2 {
+  static fromVector(vec: Vector2): Vec2 {
     return new Vec2(vec.x, vec.y);
   }
 
@@ -27,7 +27,7 @@ export class Vec2 implements Vector {
     return new Vec2(comp, comp);
   }
 
-  public toVector(): Vector {
+  public toVector(): Vector2 {
     return { x: this.x, y: this.y };
   }
 
@@ -37,68 +37,68 @@ export class Vec2 implements Vector {
     return this;
   }
 
-  min(other: Vector): Vec2 {
+  min(other: Vector2): Vec2 {
     this.x = Math.min(this.x, other.x);
     this.y = Math.min(this.y, other.y);
     return this;
   }
 
-  minned(other: Vector): Vec2 {
+  minned(other: Vector2): Vec2 {
     return this.clone().min(other);
   }
 
-  max(other: Vector): Vec2 {
+  max(other: Vector2): Vec2 {
     this.x = Math.max(this.x, other.x);
     this.y = Math.max(this.y, other.y);
     return this;
   }
 
-  multiply(other: Vector): Vec2 {
+  multiply(other: Vector2): Vec2 {
     this.x *= other.x;
     this.y *= other.y;
     return this;
   }
 
-  multiplied(other: Vector): Vec2 {
+  multiplied(other: Vector2): Vec2 {
     return this.clone().multiply(other);
   }
 
-  divide(other: Vector): Vec2 {
+  divide(other: Vector2): Vec2 {
     this.x /= other.x;
     this.y /= other.y;
     return this;
   }
 
-  divided(other: Vector): Vec2 {
+  divided(other: Vector2): Vec2 {
     return this.clone().divide(other);
   }
 
-  maxed(other: Vector): Vec2 {
+  maxed(other: Vector2): Vec2 {
     return this.clone().max(other);
   }
 
-  add(other: Vector): Vec2 {
+  add(other: Vector2): Vec2 {
     this.x += other.x;
     this.y += other.y;
     return this;
   }
 
-  added(other: Vector): Vec2 {
+  added(other: Vector2): Vec2 {
     return this.clone().add(other);
   }
 
-  sub(other: Vector): Vec2 {
+  sub(other: Vector2): Vec2 {
     this.x -= other.x;
     this.y -= other.y;
     return this;
   }
 
-  subbed(other: Vector): Vec2 {
+  subbed(other: Vector2): Vec2 {
     return this.clone().sub(other);
   }
 
   // Dot product of this vector and another
-  dot(other: Vector): number {
+  dot(other: Vector2): number {
     return this.x * other.x + this.y * other.y;
   }
 
@@ -165,13 +165,13 @@ export class Vec2 implements Vector {
     return this.clone().normalize(scale);
   }
 
-  lerp(v2: Vector, t: number): Vec2 {
+  lerp(v2: Vector2, t: number): Vec2 {
     this.x = this.x + (v2.x - this.x) * t;
     this.y = this.y + (v2.y - this.y) * t;
     return this;
   }
 
-  lerped(v2: Vector, t: number): Vec2 {
+  lerped(v2: Vector2, t: number): Vec2 {
     return this.clone().lerp(v2, t);
   }
 
@@ -183,7 +183,7 @@ export class Vec2 implements Vector {
     return this.x === 0 && this.y === 0;
   }
 
-  diffMag(other: Vector): number {
+  diffMag(other: Vector2): number {
     return Math.hypot(this.x - other.x, this.y - other.y);
   }
 
@@ -220,18 +220,18 @@ export class Vec2 implements Vector {
     return `Vec2(${this.x}, ${this.y})`;
   }
 
-  equals(other: Vector): boolean {
+  equals(other: Vector2): boolean {
     return this.x === other.x && this.y === other.y;
   }
 
-  approxEquals(other: Vector, epsilon: number): boolean {
+  approxEquals(other: Vector2, epsilon: number): boolean {
     return (
       Math.abs(this.x - other.x) < epsilon &&
       Math.abs(this.y - other.y) < epsilon
     );
   }
 
-  distanceTo(other: Vector): number {
+  distanceTo(other: Vector2): number {
     return Math.hypot(this.x - other.x, this.y - other.y);
   }
 

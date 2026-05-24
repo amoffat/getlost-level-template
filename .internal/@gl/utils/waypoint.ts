@@ -1,5 +1,5 @@
 import * as navigation from "@gl/api/navigation";
-import { type Vector } from "@gl/types/api/vector";
+import { type Vector2 } from "@gl/types/api/vector";
 import { Waypoint as ApiWaypoint } from "@gl/types/api/waypoint";
 import { Vec2 } from "./vec2";
 
@@ -9,7 +9,7 @@ export class Waypoint {
   public pause: number = 1000; // ms
   public nearestIsOk: boolean = false;
 
-  constructor(pos: Vector, pause: number = 1000, speed: number = 1.0) {
+  constructor(pos: Vector2, pause: number = 1000, speed: number = 1.0) {
     this.pos = Vec2.fromVector(pos);
     this.speed = speed;
     this.pause = pause;

@@ -1,12 +1,15 @@
+import { Vector2 } from "@gl/types/api/vector";
 import { Action } from "@gl/utils/behavior";
 import { type EasingFunction, Easings } from "@gl/utils/easing";
 import { Vec2 } from "@gl/utils/vec2";
 
 interface Subject {
-  setPos(pos: Vec2): void;
-  getPos(): { x: number; y: number };
+  setPos(pos: Vector2): void;
+  getPos(): Vector2;
   setHeight(height: number): void;
   getHeight(): number;
+  getVelocity(): Vector2;
+  setVelocity(v: Vector2): void;
 }
 
 export class JumpAction extends Action<Subject> {
@@ -68,6 +71,7 @@ export class JumpAction extends Action<Subject> {
   }: {
     subject: Subject;
     progress: number;
+    elapsed: number;
   }): void {
     // Parabolic arc for height above ground: peaks at t=0.5, returns to
     // origin at t=1. Applied via setHeight so the entity visually lifts
@@ -77,11 +81,14 @@ export class JumpAction extends Action<Subject> {
 
     // Linear interpolation for ground-plane position: moves the entity's
     // shadow/feet along the 2.5D ground from start toward start+direction.
-    subject.setPos(
-      new Vec2(
-        this._startX + this._direction.x * progress,
-        this._startY + this._direction.y * progress,
-      ),
-    );
+    const newX = this._startX + this._direction.x * progress;
+    const newY = this._startY + this._direction.y * progress;
+    subject.setPos(new Vec2(newX, newY));
+
+    const durationSec = this.durationMs / 1000;
+    subject.setVelocity({
+      x: this._direction.x / durationSec,
+      y: this._direction.y / durationSec,
+    });
   }
 }

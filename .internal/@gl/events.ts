@@ -1,4 +1,4 @@
-import type { Vector } from "./types/api/vector";
+import type { Vector2 } from "./types/api/vector";
 
 /**
  * Called when the player interacts with a pickup
@@ -19,7 +19,7 @@ export interface SensorEvent {
   data: {
     charId: string;
     sensorId: string;
-    direction: Vector;
+    direction: Vector2;
     enter: boolean;
   };
 }
@@ -37,7 +37,7 @@ export interface CharacterCollisionEvent {
   data: {
     charId: string;
     colliderId: string;
-    direction: Vector;
+    direction: Vector2;
     enter: boolean;
   };
 }

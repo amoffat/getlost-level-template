@@ -1,6 +1,6 @@
 import * as navigation from "@gl/api/navigation";
 
-import { type Vector } from "@gl/types/api/vector";
+import { type Vector2 } from "@gl/types/api/vector";
 import type { Character } from "./character";
 import { Delay } from "./delay";
 import { Easings } from "./easing";
@@ -74,7 +74,7 @@ export abstract class NavPlan {
 export class StationaryPlan extends NavPlan {
   private _position: Vec2;
 
-  constructor(position: Vector) {
+  constructor(position: Vector2) {
     super();
     this._position = Vec2.fromVector(position);
   }

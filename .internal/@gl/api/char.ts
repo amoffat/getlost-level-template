@@ -1,7 +1,7 @@
 import type { WavyParams } from "@gl/actions/WavyAction";
 import type { SetAnimationOpts } from "@gl/types/api/animation";
 import type { CharProps } from "@gl/types/api/char";
-import type { Vector } from "@gl/types/api/vector";
+import type { Vector2 } from "@gl/types/api/vector";
 import type { CharAction } from "@gl/types/character";
 
 /**
@@ -11,10 +11,11 @@ import type { CharAction } from "@gl/types/character";
  * @param id The name of the character to get properties for.
  */
 export declare function getMoveProps(id: string): CharProps;
-export declare function getPos(id: string): Vector;
+export declare function getPos(id: string): Vector2;
 export declare function setPos(id: string, x: number, y: number): void;
 export declare function getHeight(id: string): number;
 export declare function setHeight(id: string, h: number): void;
+export declare function setShadow(id: string, enabled: boolean): void;
 export declare function setSpeed(id: string, speed: number): void;
 export declare function setAction(id: string, anim: CharAction): void;
 export declare function setWavy(id: string, params: Partial<WavyParams>): void;
@@ -49,9 +50,9 @@ export declare function checkCollision({
   translation,
 }: {
   id: string;
-  pos: Vector;
-  translation: Vector;
-}): Vector;
+  pos: Vector2;
+  translation: Vector2;
+}): Vector2;
 export declare function setMoveSound({
   id,
   sound,

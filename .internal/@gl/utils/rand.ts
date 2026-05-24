@@ -2,7 +2,7 @@
  * Random utilities for sampling elements and indices with optional avoidance.
  */
 
-import { type Vector } from "@gl/types/api/vector";
+import { type Vector2 } from "@gl/types/api/vector";
 
 // NOTE: int(min,max) is defined later; functions below delegate to it to avoid duplication.
 /**
@@ -154,7 +154,7 @@ export function angle(): number {
  * Random unit vector on the circle perimeter (uniform over angle).
  * Useful for: bullet spread directions, burst effects, wandering headings.
  */
-export function onUnitCircle(): Vector {
+export function onUnitCircle(): Vector2 {
   const a = angle();
   return { x: Math.cos(a), y: Math.sin(a) };
 }
@@ -163,7 +163,7 @@ export function onUnitCircle(): Vector {
  * Random point uniformly inside the unit disk (area-weighted).
  * Useful for: particle spawn regions, splash decals, noise offsets.
  */
-export function inUnitCircle(): Vector {
+export function inUnitCircle(): Vector2 {
   const a = angle();
   const r = Math.sqrt(float01());
   return { x: r * Math.cos(a), y: r * Math.sin(a) };
@@ -173,7 +173,7 @@ export function inUnitCircle(): Vector {
  * Random point uniformly inside a circle with given radius.
  * Useful for: spawn jitter around a point, AoE placement, flock dispersion.
  */
-export function inCircle(radius = 1): Vector {
+export function inCircle(radius = 1): Vector2 {
   const v = inUnitCircle();
   return { x: v.x * radius, y: v.y * radius };
 }
@@ -183,7 +183,7 @@ export function inCircle(radius = 1): Vector {
  * Uses area-correct radius r = sqrt(u*(R^2 - r0^2) + r0^2), angle ~ Uniform[0, 2π).
  * Useful for: donut-shaped spawns, keeping a minimum distance from a center.
  */
-export function inRing(minRadius: number, maxRadius: number): Vector {
+export function inRing(minRadius: number, maxRadius: number): Vector2 {
   let r0 = minRadius;
   let r1 = maxRadius;
   if (r1 < r0) {
@@ -210,7 +210,7 @@ export function jitter(v: number, amount: number): number {
  * Offset a vector by a random vector within a circle of given radius.
  * Useful for: randomizing spawn locations, impact scatter, flock jitter.
  */
-export function jitterVec2(vec: Vector, radius: number): Vector {
+export function jitterVec2(vec: Vector2, radius: number): Vector2 {
   const j = inCircle(radius);
   return { x: vec.x + j.x, y: vec.y + j.y };
 }
@@ -250,7 +250,7 @@ export function gaussian(mean = 0, stddev = 1): number {
  * 2D vector with independent Gaussian components.
  * Useful for: random movement drift, aim shake, wind gust components.
  */
-export function gaussianVec2(meanX = 0, meanY = 0, std = 1): Vector {
+export function gaussianVec2(meanX = 0, meanY = 0, std = 1): Vector2 {
   return { x: gaussian(meanX, std), y: gaussian(meanY, std) };
 }
 

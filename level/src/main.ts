@@ -13,6 +13,7 @@ import { Easings } from "@gl/utils/easing";
 import { Vec2 } from "@gl/utils/vec2";
 
 let tiltShift!: number;
+const fallThresholdX = 354;
 
 /**
  * This function initializes your level. It's called once when the level is
@@ -55,7 +56,7 @@ export async function init(): Promise<void> {
       ({ satisfied }) => {
         if (satisfied) {
           const anim = new Animator({
-            durationMs: 3000,
+            durationMs: 5000,
             selfTick: true,
             range: { start: startZoom, end: 0.38 },
             forwardCurve: Easings.easeInOutQuad,
@@ -80,7 +81,19 @@ export async function init(): Promise<void> {
           controls.addButton({
             labelKey: "jump",
             onRelease: () => {
-              player.jump();
+              const behavior = player.jump();
+              behavior.onProgress(({ progress }) => {
+                if (progress > 0.99 && player.getPos().x > fallThresholdX) {
+                  // behavior.cancel();
+
+                  player.setFalling({
+                    enabled: true,
+                    startVelocity: player.getVelocity().y,
+                  });
+
+                  return true;
+                }
+              });
             },
           });
         } else {
@@ -113,7 +126,7 @@ export function movePlayer(dir: Vec2): void {
  * @param paused Whether the game is currently paused or not.
  */
 export async function tick(timestep: number, paused: boolean) {
-  filters.setTiltShiftY(tiltShift, player.pos.y - 10);
+  filters.setTiltShiftY(tiltShift, player.getPos().y - 10);
 
   // Animate the clouds
   object.translate("e397031f-ec42-4a1d-8146-50dd937baf1a", {
@@ -121,4 +134,13 @@ export async function tick(timestep: number, paused: boolean) {
     y: 0,
   });
   // setSunTime(Date.now());
+
+  // This accounts for the player, walking on the edge, who walks over the edge
+  // (instead of jumping)
+  if (player.getPos().x > fallThresholdX && !player.getFalling()) {
+    player.setFalling({
+      enabled: true,
+      startVelocity: player.getVelocity().y,
+    });
+  }
 }
