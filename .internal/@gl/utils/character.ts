@@ -6,12 +6,17 @@ import { CharAction } from "@gl/types/character";
 
 import { WavyParams } from "@gl/actions/WavyAction";
 import { jump } from "@gl/behaviors/jump";
+import { Behavior } from "./behavior";
 import { Delay } from "./delay";
 import * as easing from "./easing";
 import { NavPlan, StationaryPlan } from "./navigation";
 import { deriveTargetIndex, type TrackResult } from "./paths";
 import { Vec2 } from "./vec2";
 import { Waypoint } from "./waypoint";
+
+// Gravitational acceleration used when a character is falling (pixels per
+// second squared).
+export const fallingGravity = 500;
 
 export enum Direction {
   North,
@@ -45,6 +50,9 @@ export class Character {
   public id: string;
   private _isPlayer: boolean = false;
   private _visible: boolean = true;
+
+  private _falling: boolean = false;
+  private _fallingVelocity: number = 0;
 
   private _navPlan: NavPlan;
 
@@ -92,17 +100,8 @@ export class Character {
     });
   }
 
-  // Get the character's current position. This is used in our game loop tick.
-  public get pos(): Vec2 {
-    return this._pos;
-  }
-
   public getPos(): Vec2 {
     return this._pos;
-  }
-
-  public set pos(newPos: Vec2) {
-    this._pos = newPos.clone();
   }
 
   public setPos(newPos: Vec2): void {
@@ -159,7 +158,7 @@ export class Character {
 
     if (navImmediately) {
       this.state = NavState.waiting;
-      navPlan.getNextWaypoint(this.pos).then((wp) => {
+      navPlan.getNextWaypoint(this._pos).then((wp) => {
         this._setNavWaypoint(wp);
       });
     }
@@ -178,7 +177,7 @@ export class Character {
 
   onReachTarget(): void {
     this.clearTarget();
-    if (this._navPlan.hasNextWaypoint(this.pos)) {
+    if (this._navPlan.hasNextWaypoint(this._pos)) {
       this.state = NavState.waiting;
     } else {
       this.state = NavState.stopped;
@@ -283,26 +282,34 @@ export class Character {
 
   /**
    * Do not call directly. The engine calls this.
-   * @param deltaMS
+   * @param deltaMs
    * @returns
    */
-  public async tick(deltaMS: number): Promise<void> {
+  public async tick(deltaMs: number): Promise<void> {
     if (!this._visible) return;
 
-    const dtSec: number = deltaMS / 1000;
-    this._persistAction.tick(deltaMS);
+    const dtSec: number = deltaMs / 1000;
+    this._persistAction.tick(deltaMs);
+
+    if (this._falling) {
+      this._pos.x += this._velocity.x * dtSec;
+      this._fallingVelocity += fallingGravity * dtSec;
+      this._pos.y = this._pos.y + this._fallingVelocity * dtSec;
+      char.setPos(this.id, this._pos.x, this._pos.y);
+      return;
+    }
 
     if (this._state === NavState.waiting) {
-      if (this._waypointPause.tick(deltaMS)) {
-        const wp = await this._navPlan.getNextWaypoint(this.pos);
+      if (this._waypointPause.tick(deltaMs)) {
+        const wp = await this._navPlan.getNextWaypoint(this._pos);
         this._setNavWaypoint(wp);
       }
     } else {
       // This lets us interrupt our current nav plan. Useful if our plan is to
       // attack if the player is near, and we're moving randomly otherwise.
-      const needsNewWaypoint = await this._navPlan.tick(deltaMS, this.pos);
+      const needsNewWaypoint = await this._navPlan.tick(deltaMs, this._pos);
       if (needsNewWaypoint) {
-        const wp = await this._navPlan.getNextWaypoint(this.pos);
+        const wp = await this._navPlan.getNextWaypoint(this._pos);
         this._setNavWaypoint(wp);
       }
     }
@@ -347,7 +354,7 @@ export class Character {
           this.setTargetPos(this._targetPos);
           return;
         } else {
-          this._stuckTimer += deltaMS;
+          this._stuckTimer += deltaMs;
         }
       } else {
         this._stuckTimer = 0;
@@ -472,13 +479,16 @@ export class Character {
     behavior.perform();
   }
 
-  public jump({ distance = 32 }: { distance?: number } = {}) {
+  public jump({
+    distance = 32,
+  }: { distance?: number } = {}): Behavior<Character> {
     const jumpDir = this.velocity
       .normalized()
       .scale(distance)
       .multiply({ x: 1, y: 0.8 }); // Account for 2.5D perspective
     const behavior = jump(this, jumpDir);
     behavior.perform();
+    return behavior;
   }
 
   public setHeight(height: number): void {
@@ -487,5 +497,16 @@ export class Character {
 
   public getHeight(): number {
     return char.getHeight(this.id);
+  }
+
+  public get falling(): boolean {
+    return this._falling;
+  }
+
+  public set falling(enabled: boolean) {
+    this._falling = enabled;
+    this._fallingVelocity = 0;
+
+    // this._shadow.visible = enabled ? false : this._visible;
   }
 }

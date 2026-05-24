@@ -67,6 +67,7 @@ export default function PreviewTab({
   });
   const [isDragging, setIsDragging] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(true);
+  const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
   const [audioMode, _setAudioMode] = useLocalStorage<"audio" | "muted">({
     key: "gl-audio-mode",
     defaultValue: "audio",
@@ -178,6 +179,40 @@ export default function PreviewTab({
   }, [nodes]);
 
   useEffect(() => {
+    const el = frameContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setFrameSize({ width, height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const iframeSrc = useMemo(() => {
+    const levelUrl = window.location.origin;
+    const targetUrl = constants.gameUrls[gameEnv];
+    const src = new URL(targetUrl);
+    const qs = src.searchParams;
+
+    const debugConfig = {
+      overlays: enableOverlays,
+      device: deviceType,
+      flags: debugFlags,
+      frameGeom: { width: frameSize.width, height: frameSize.height, x: 0, y: 0 },
+    };
+    qs.set("debug", encodeForUrl(debugConfig));
+
+    const parentParams = new URL(window.location.href).searchParams;
+    for (const [key, value] of parentParams.entries()) {
+      qs.set(key, value);
+    }
+
+    qs.set("levelBaseUrl", levelUrl);
+    return src.toString();
+  }, [gameEnv, enableOverlays, deviceType, debugFlags, frameSize]);
+
+  useEffect(() => {
     if (!comms) return;
 
     const cleanup = comms.addMessageListener<SavePathGraphRequest>({
@@ -239,38 +274,11 @@ export default function PreviewTab({
     if (!iframeLoaded) return;
 
     const iframe = iframeRef.current!;
-    const levelUrl = window.location.origin;
-    const targetUrl = constants.gameUrls[gameEnv];
-    const src = new URL(targetUrl);
-
-    const qs = src.searchParams;
-
-    const frameRect = frameContainerRef.current!.getBoundingClientRect();
-    const debugConfig = {
-      overlays: enableOverlays,
-      device: deviceType,
-      flags: debugFlags,
-      frameGeom: {
-        width: frameRect.width,
-        height: frameRect.height,
-        x: 0,
-        y: 0,
-      },
-    };
-    qs.set("debug", encodeForUrl(debugConfig));
-
-    // Copy all search params from parent frame to iframe src
-    const parentParams = new URL(window.location.href).searchParams;
-    for (const [key, value] of parentParams.entries()) {
-      qs.set(key, value);
-    }
-
-    qs.set("levelBaseUrl", levelUrl);
     log.info(
-      { qs: new Map(qs.entries()), dev: true },
-      `Loading game from ${targetUrl}`,
+      { dev: true },
+      `Loading game from ${iframeSrc}`,
     );
-    iframe.src = src.toString();
+    iframe.src = iframeSrc;
 
     const comms = new Comms({
       window,
@@ -278,14 +286,11 @@ export default function PreviewTab({
       role: "parent",
     });
     setComms(comms);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     reloadCount,
     setComms,
-    gameEnv,
     iframeLoaded,
-    enableOverlays,
-    deviceType,
+    iframeSrc,
   ]);
 
   // Send audio mode changes to iframe without reloading (skip on initial mount)
@@ -800,6 +805,9 @@ export default function PreviewTab({
                 <Stack gap="xs" p={0}>
                   <Anchor href="/level/main.js" target="_blank" size="xs">
                     {t("previewOpenCompiledLevelJs")}
+                  </Anchor>
+                  <Anchor href={iframeSrc} target="_blank" size="xs">
+                    iFrame URL
                   </Anchor>
                 </Stack>
               </Fieldset>
