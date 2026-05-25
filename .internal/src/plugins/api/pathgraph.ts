@@ -1,3 +1,4 @@
+import * as crypto from "crypto";
 import express from "express";
 import * as fflate from "fflate";
 import * as fs from "fs";
@@ -10,6 +11,25 @@ const levelDir = resolve(repoDir, "level");
 const graphFile = resolve(levelDir, "pathgraph.gz");
 
 export const router = express.Router({ mergeParams: true });
+
+router.head("/", (_req, res) => {
+  try {
+    if (!fs.existsSync(graphFile)) {
+      res.sendStatus(404);
+      return;
+    }
+    const compressed = fs.readFileSync(graphFile);
+    const uncompressed = fflate.decompressSync(compressed);
+    const hash = crypto
+      .createHash("sha1")
+      .update(uncompressed)
+      .digest("hex");
+    res.set("X-Content-SHA1", hash).sendStatus(200);
+  } catch (error) {
+    console.error("Error handling pathgraph head:", error);
+    res.sendStatus(500);
+  }
+});
 
 router.get("/", (_req, res) => {
   try {

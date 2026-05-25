@@ -68,7 +68,6 @@ export default function PreviewTab({
   });
   const [isDragging, setIsDragging] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(true);
-  const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
   const [audioMode, _setAudioMode] = useLocalStorage<"audio" | "muted">({
     key: "gl-audio-mode",
     defaultValue: "audio",
@@ -107,6 +106,16 @@ export default function PreviewTab({
   const [checkboxState, setCheckboxState] = useState<Record<string, boolean>>(
     {},
   );
+  const [pathgraphHash, setPathgraphHash] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/pathgraph", { method: "HEAD" })
+      .then((res) => {
+        const hash = res.headers.get("X-Content-SHA1");
+        if (hash) setPathgraphHash(hash);
+      })
+      .catch(() => {});
+  }, []);
 
   const publishForm = useForm({
     initialValues: {
@@ -179,34 +188,20 @@ export default function PreviewTab({
     return [n2m, m2n] as const;
   }, [nodes]);
 
-  useEffect(() => {
-    const el = frameContainerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      setFrameSize({ width, height });
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  const iframeSrc = useMemo(() => {
+  const iframeSrc: string = useMemo(() => {
     const levelUrl = window.location.origin;
     const targetUrl = constants.gameUrls[gameEnv];
     const src = new URL(targetUrl);
     const qs = src.searchParams;
 
-    const debugConfig = {
+    const debugConfig: Record<string, unknown> = {
       overlays: enableOverlays,
       device: deviceType,
       flags: debugFlags,
-      frameGeom: {
-        width: frameSize.width,
-        height: frameSize.height,
-        x: 0,
-        y: 0,
-      },
     };
+    if (pathgraphHash !== null) {
+      debugConfig.buildPathgraph = pathgraphHash;
+    }
     qs.set("debug", encodeForUrl(debugConfig));
 
     const parentParams = new URL(window.location.href).searchParams;
@@ -217,7 +212,7 @@ export default function PreviewTab({
     qs.set("levelBaseUrl", levelUrl);
     return src.toString();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameEnv, enableOverlays, deviceType, debugFlags]);
+  }, [gameEnv, enableOverlays, deviceType, debugFlags, pathgraphHash]);
 
   useEffect(() => {
     if (!comms) return;
@@ -430,44 +425,11 @@ export default function PreviewTab({
     [comms],
   );
 
-  const setGameFrameGeom = useCallback(() => {
-    if (!comms) return;
-
-    const container = frameContainerRef.current;
-    if (container) {
-      const rect = container.getBoundingClientRect();
-      comms.request({
-        type: "set-window-geom",
-        data: {
-          width: rect.width,
-          height: rect.height,
-          x: 0,
-          y: 0,
-        },
-      });
-    }
-  }, [comms]);
-
-  useEffect(() => {
-    const el = frameContainerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => {
-      setGameFrameGeom();
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [setGameFrameGeom]);
-
   const handlePaneResizeStart = () => {
     setIsDragging(true);
   };
 
   const handlePaneResizeEnd = () => {
-    // Trigger redrawLayout when panels are resized
-    // Use a small delay to ensure the DOM has updated
-    requestAnimationFrame(() => {
-      window.dispatchEvent(new Event("resize"));
-    });
     setIsDragging(false);
   };
 
@@ -485,7 +447,7 @@ export default function PreviewTab({
 
       setCheckboxState(state);
     },
-    [comms, nodeIdsToMilestoneIds],
+    [comms, nodeIdsToMilestoneIds, setCheckboxState],
   );
 
   return (

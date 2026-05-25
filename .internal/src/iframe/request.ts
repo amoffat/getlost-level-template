@@ -74,16 +74,6 @@ export interface GetTimeRequest {
   response: number;
 }
 
-export interface SetWindowGeomRequest {
-  type: "set-window-geom";
-  data: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
-}
-
 export type AnyRequest =
   | AdvanceGameTimeRequest
   | ClearMarkerMessage
@@ -94,8 +84,7 @@ export type AnyRequest =
   | MilestonesSyncMessage
   | SavePathGraphRequest
   | SetAudioModeRequest
-  | SetGameSpeedRequest
-  | SetWindowGeomRequest;
+  | SetGameSpeedRequest;
 
 export type RequestType = AnyRequest["type"];
 export type ResponseFor<R extends AnyRequest> = R extends {
