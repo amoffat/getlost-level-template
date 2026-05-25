@@ -20,6 +20,7 @@ import {
   Checkbox,
   Fieldset,
   Group,
+  ScrollArea,
   Select,
   Slider,
   Stack,
@@ -199,7 +200,12 @@ export default function PreviewTab({
       overlays: enableOverlays,
       device: deviceType,
       flags: debugFlags,
-      frameGeom: { width: frameSize.width, height: frameSize.height, x: 0, y: 0 },
+      frameGeom: {
+        width: frameSize.width,
+        height: frameSize.height,
+        x: 0,
+        y: 0,
+      },
     };
     qs.set("debug", encodeForUrl(debugConfig));
 
@@ -210,7 +216,8 @@ export default function PreviewTab({
 
     qs.set("levelBaseUrl", levelUrl);
     return src.toString();
-  }, [gameEnv, enableOverlays, deviceType, debugFlags, frameSize]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameEnv, enableOverlays, deviceType, debugFlags]);
 
   useEffect(() => {
     if (!comms) return;
@@ -274,10 +281,7 @@ export default function PreviewTab({
     if (!iframeLoaded) return;
 
     const iframe = iframeRef.current!;
-    log.info(
-      { dev: true },
-      `Loading game from ${iframeSrc}`,
-    );
+    log.info({ dev: true }, `Loading game from ${iframeSrc}`);
     iframe.src = iframeSrc;
 
     const comms = new Comms({
@@ -286,12 +290,7 @@ export default function PreviewTab({
       role: "parent",
     });
     setComms(comms);
-  }, [
-    reloadCount,
-    setComms,
-    iframeLoaded,
-    iframeSrc,
-  ]);
+  }, [reloadCount, setComms, iframeLoaded, iframeSrc]);
 
   // Send audio mode changes to iframe without reloading (skip on initial mount)
   const isInitialMount = useRef(true);
@@ -450,10 +449,13 @@ export default function PreviewTab({
   }, [comms]);
 
   useEffect(() => {
-    window.addEventListener("resize", setGameFrameGeom);
-    return () => {
-      window.removeEventListener("resize", setGameFrameGeom);
-    };
+    const el = frameContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      setGameFrameGeom();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
   }, [setGameFrameGeom]);
 
   const handlePaneResizeStart = () => {
@@ -497,87 +499,77 @@ export default function PreviewTab({
           onResizeStart={handlePaneResizeStart}
           onResizeEnd={handlePaneResizeEnd}
         >
-          <Stack h="100%" style={{ overflow: "hidden" }}>
+          <Stack h="100%" style={{ overflow: "hidden" }} pb="xl">
             <Tip tips={leftTips} />
-            <Fieldset legend={t("previewEngineFieldset")} p="xs">
-              <Stack p={0}>
-                <Select
-                  label={t("previewEnvironmentLabel")}
-                  data={[
-                    { value: "local", label: t("previewEnvLocalhost") },
-                    { value: "prod", label: t("previewEnvProduction") },
-                    { value: "qa", label: t("previewEnvQA") },
-                  ]}
-                  defaultValue={gameEnv}
-                  onChange={(value) => setGameEnv(value as Env)}
-                  allowDeselect={false}
-                  w={"100%"}
-                />
 
-                <Group gap="xs">
-                  <Button
-                    size="xs"
-                    onClick={restartIframe}
-                    disabled={!iframeLoaded}
-                  >
-                    {t("previewRestartBtn")}
-                  </Button>
-                  <Button
-                    size="xs"
-                    onClick={stopIframe}
-                    disabled={!iframeLoaded}
-                  >
-                    {t("previewStopBtn")}
-                  </Button>
-                  <Button
-                    size="xs"
-                    onClick={loadIframe}
-                    disabled={iframeLoaded}
-                  >
-                    {t("previewStartBtn")}
-                  </Button>
-                </Group>
+            <ScrollArea type="never" style={{ flex: 1 }}>
+              <Stack p={0} pb="xl">
+                <Fieldset legend={t("previewEngineFieldset")} p="xs">
+                  <Stack p={0}>
+                    <Group gap="xs">
+                      <Button
+                        size="xs"
+                        onClick={restartIframe}
+                        disabled={!iframeLoaded}
+                      >
+                        {t("previewRestartBtn")}
+                      </Button>
+                      <Button
+                        size="xs"
+                        onClick={stopIframe}
+                        disabled={!iframeLoaded}
+                      >
+                        {t("previewStopBtn")}
+                      </Button>
+                      <Button
+                        size="xs"
+                        onClick={loadIframe}
+                        disabled={iframeLoaded}
+                      >
+                        {t("previewStartBtn")}
+                      </Button>
+                    </Group>
 
-                <Switch
-                  label={t("previewAutoReloadLabel")}
-                  defaultChecked={autoReload}
-                  onChange={(event) =>
-                    setAutoReload(event.currentTarget.checked)
-                  }
-                />
+                    <Switch
+                      label={t("previewAutoReloadLabel")}
+                      defaultChecked={autoReload}
+                      onChange={(event) =>
+                        setAutoReload(event.currentTarget.checked)
+                      }
+                    />
 
-                <Switch
-                  label={t("previewEnableOverlaysLabel")}
-                  defaultChecked={enableOverlays}
-                  onChange={(event) =>
-                    setEnableOverlays(event.currentTarget.checked)
-                  }
-                />
-              </Stack>
-            </Fieldset>
+                    <Switch
+                      label={t("previewEnableOverlaysLabel")}
+                      defaultChecked={enableOverlays}
+                      onChange={(event) =>
+                        setEnableOverlays(event.currentTarget.checked)
+                      }
+                    />
+                  </Stack>
+                </Fieldset>
 
-            <Fieldset legend={t("previewDeviceEmulationFieldset")} p="xs">
-              <Select
-                defaultValue={deviceType}
-                onChange={(value) =>
-                  setDeviceType(value as "desktop" | "mobile")
-                }
-                allowDeselect={false}
-                leftSection={
-                  deviceType === "mobile" ? (
-                    <IconDeviceMobile size={16} />
-                  ) : (
-                    <IconDeviceDesktop size={16} />
-                  )
-                }
-                data={[
-                  { value: "desktop", label: t("previewDeviceDesktop") },
-                  { value: "mobile", label: t("previewDeviceMobile") },
-                ]}
-              />
-            </Fieldset>
+                <Fieldset legend={t("previewDeviceEmulationFieldset")} p="xs">
+                  <Select
+                    defaultValue={deviceType}
+                    onChange={(value) =>
+                      setDeviceType(value as "desktop" | "mobile")
+                    }
+                    allowDeselect={false}
+                    leftSection={
+                      deviceType === "mobile" ? (
+                        <IconDeviceMobile size={16} />
+                      ) : (
+                        <IconDeviceDesktop size={16} />
+                      )
+                    }
+                    data={[
+                      { value: "desktop", label: t("previewDeviceDesktop") },
+                      { value: "mobile", label: t("previewDeviceMobile") },
+                    ]}
+                  />
+                </Fieldset>
 
-            {/* <Fieldset legend="Audio">
+                {/* <Fieldset legend="Audio">
                 <Switch
                   label="Enabled"
                   checked={audioMode === "audio"}
@@ -589,87 +581,109 @@ export default function PreviewTab({
                 />
               </Fieldset> */}
 
-            <Fieldset legend={t("previewPublishFieldset")} p="xs">
-              <Stack p={0} gap="sm">
-                <Checkbox
-                  {...publishForm.getInputProps("licenseAgreed", {
-                    type: "checkbox",
-                  })}
-                  label={
-                    <>
-                      {t("previewAgreeToThe")}{" "}
-                      <Anchor inherit onClick={showLicenseAgreement}>
-                        {t("previewLicenseAgreement")}
-                      </Anchor>{" "}
-                    </>
-                  }
-                />
-                <Checkbox
-                  {...publishForm.getInputProps("guidelinesAgreed", {
-                    type: "checkbox",
-                  })}
-                  label={
-                    <>
-                      {t("previewLevelFollows")}{" "}
-                      <Anchor inherit onClick={showStoryGuidelines}>
-                        {t("previewStoryGuidelines")}
-                      </Anchor>
-                    </>
-                  }
-                />
-                <Checkbox
-                  {...publishForm.getInputProps("assetsDisclosed", {
-                    type: "checkbox",
-                  })}
-                  label={t("previewThirdPartyAssetsLabel")}
-                />
-                <Checkbox
-                  checked={card !== null}
-                  disabled={card === null}
-                  onChange={() => {}}
-                  label={
-                    <>
-                      {t("previewIHaveSetThe")}{" "}
-                      <Anchor
-                        inherit
-                        onClick={(e) => {
-                          e.preventDefault();
-                          openCardModal();
-                        }}
-                      >
-                        {t("previewLevelCreditsLink")}
-                      </Anchor>
-                    </>
-                  }
-                />
+                <Fieldset legend={t("previewPublishFieldset")} p="xs">
+                  <Stack p={0} gap="sm">
+                    <Checkbox
+                      {...publishForm.getInputProps("licenseAgreed", {
+                        type: "checkbox",
+                      })}
+                      label={
+                        <>
+                          {t("previewAgreeToThe")}{" "}
+                          <Anchor inherit onClick={showLicenseAgreement}>
+                            {t("previewLicenseAgreement")}
+                          </Anchor>{" "}
+                        </>
+                      }
+                    />
+                    <Checkbox
+                      {...publishForm.getInputProps("guidelinesAgreed", {
+                        type: "checkbox",
+                      })}
+                      label={
+                        <>
+                          {t("previewLevelFollows")}{" "}
+                          <Anchor inherit onClick={showStoryGuidelines}>
+                            {t("previewStoryGuidelines")}
+                          </Anchor>
+                        </>
+                      }
+                    />
+                    <Checkbox
+                      {...publishForm.getInputProps("assetsDisclosed", {
+                        type: "checkbox",
+                      })}
+                      label={t("previewThirdPartyAssetsLabel")}
+                    />
+                    <Checkbox
+                      checked={card !== null}
+                      disabled={card === null}
+                      onChange={() => {}}
+                      label={
+                        <>
+                          {t("previewIHaveSetThe")}{" "}
+                          <Anchor
+                            inherit
+                            onClick={(e) => {
+                              e.preventDefault();
+                              openCardModal();
+                            }}
+                          >
+                            {t("previewLevelCreditsLink")}
+                          </Anchor>
+                        </>
+                      }
+                    />
 
-                <Textarea
-                  label={t("previewPublishMessageLabel")}
-                  autosize
-                  minRows={1}
-                  maxRows={3}
-                  required
-                  {...publishForm.getInputProps("commitMessage")}
-                />
+                    <Textarea
+                      label={t("previewPublishMessageLabel")}
+                      autosize
+                      minRows={1}
+                      maxRows={3}
+                      required
+                      {...publishForm.getInputProps("commitMessage")}
+                    />
 
-                <Button
-                  fullWidth
-                  size="lg"
-                  leftSection={<IconRocket size={20} />}
-                  variant="gradient"
-                  gradient={{ from: "blue", to: "red", deg: 90 }}
-                  onClick={publish}
-                  loading={isPublishing}
-                  disabled={
-                    !publishForm.values.licenseAgreed ||
-                    !publishForm.values.guidelinesAgreed ||
-                    !publishForm.values.assetsDisclosed
-                  }
-                >
-                  {t("previewPublishLevelBtn")}
-                </Button>
+                    <Button
+                      fullWidth
+                      size="lg"
+                      leftSection={<IconRocket size={20} />}
+                      variant="gradient"
+                      gradient={{ from: "blue", to: "red", deg: 90 }}
+                      onClick={publish}
+                      loading={isPublishing}
+                      disabled={
+                        !publishForm.values.licenseAgreed ||
+                        !publishForm.values.guidelinesAgreed ||
+                        !publishForm.values.assetsDisclosed
+                      }
+                    >
+                      {t("previewPublishLevelBtn")}
+                    </Button>
+                  </Stack>
+                </Fieldset>
+
+                <AdvancedSection>
+                  <Fieldset legend={t("previewDeveloperToolsFieldset")} p="xs">
+                    <Stack gap="xs" p={0}>
+                      <Select
+                        label={t("previewEnvironmentLabel")}
+                        description={t("previewEngineDescription")}
+                        data={[
+                          { value: "local", label: t("previewEnvLocalhost") },
+                          { value: "prod", label: t("previewEnvProduction") },
+                          { value: "qa", label: t("previewEnvQA") },
+                        ]}
+                        defaultValue={gameEnv}
+                        onChange={(value) => setGameEnv(value as Env)}
+                        allowDeselect={false}
+                        w={"100%"}
+                      />
+                    </Stack>
+                  </Fieldset>
+                </AdvancedSection>
               </Stack>
-            </Fieldset>
+            </ScrollArea>
           </Stack>
         </Split.Pane>
 
@@ -755,7 +769,7 @@ export default function PreviewTab({
           onResizeStart={handlePaneResizeStart}
           onResizeEnd={handlePaneResizeEnd}
         >
-          <Stack h="100%" style={{ overflow: "hidden" }}>
+          <Stack h="100%" style={{ overflow: "hidden" }} pb="xl">
             <Stack gap="xs" p={0}>
               <MilestoneList
                 legend={t("previewStoryProgressLegend")}
