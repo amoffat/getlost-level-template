@@ -3,15 +3,13 @@ import { useCommsContext } from "@/context/comms";
 import { useAppSelector } from "@/hooks/redux";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Comms } from "@/iframe";
-import {
-  DebugFlagKey,
-  MilestonesSyncMessage,
-  SavePathGraphRequest,
-} from "@/iframe/request";
+import { MilestonesSyncMessage, SavePathGraphRequest } from "@/iframe/request";
 import { log } from "@/log";
 import { selectors as mapEditorSelectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
+import { DebugFlagKey, DebugSchema } from "@/types/debug";
 import { Env } from "@/types/env";
+import { sha1Hash } from "@/utils/hash";
 import { encodeForUrl } from "@/utils/url";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
@@ -84,7 +82,7 @@ export default function PreviewTab({
     key: "gl-auto-reload",
     defaultValue: true,
   });
-  const [debugFlags, setDebugFlags] = useLocalStorage<Record<string, boolean>>({
+  const [debugFlags, setDebugFlags] = useLocalStorage<DebugSchema["flags"]>({
     key: "gl-debug-flags",
     defaultValue: {},
   });
@@ -106,15 +104,20 @@ export default function PreviewTab({
   const [checkboxState, setCheckboxState] = useState<Record<string, boolean>>(
     {},
   );
-  const [pathgraphHash, setPathgraphHash] = useState<string | null>(null);
+  const pathgraphHash = useRef<string>(undefined);
+  const [pathgraphReady, setPathgraphReady] = useState(false);
 
+  // Load the pathgraph hash, because it's needed to construct the iframe src
   useEffect(() => {
-    fetch("/api/pathgraph", { method: "HEAD" })
+    fetch("/level/pathgraph.gz", { method: "HEAD" })
       .then((res) => {
         const hash = res.headers.get("X-Content-SHA1");
-        if (hash) setPathgraphHash(hash);
+        if (hash) pathgraphHash.current = hash;
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        setPathgraphReady(true);
+      });
   }, []);
 
   const publishForm = useForm({
@@ -188,20 +191,22 @@ export default function PreviewTab({
     return [n2m, m2n] as const;
   }, [nodes]);
 
-  const iframeSrc: string = useMemo(() => {
+  const iframeSrc: string | undefined = useMemo(() => {
+    if (!pathgraphReady) return undefined;
+
     const levelUrl = window.location.origin;
     const targetUrl = constants.gameUrls[gameEnv];
     const src = new URL(targetUrl);
     const qs = src.searchParams;
 
-    const debugConfig: Record<string, unknown> = {
+    const debugConfig: DebugSchema = {
       overlays: enableOverlays,
       device: deviceType,
       flags: debugFlags,
+      // eslint-disable-next-line react-hooks/refs
+      buildPathgraph: pathgraphHash.current,
+      reloadCount, // use it so the linter doesn't complain about deps
     };
-    if (pathgraphHash !== null) {
-      debugConfig.buildPathgraph = pathgraphHash;
-    }
     qs.set("debug", encodeForUrl(debugConfig));
 
     const parentParams = new URL(window.location.href).searchParams;
@@ -211,8 +216,15 @@ export default function PreviewTab({
 
     qs.set("levelBaseUrl", levelUrl);
     return src.toString();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameEnv, enableOverlays, deviceType, debugFlags, pathgraphHash]);
+  }, [
+    gameEnv,
+    enableOverlays,
+    deviceType,
+    debugFlags,
+    pathgraphHash,
+    pathgraphReady,
+    reloadCount,
+  ]);
 
   useEffect(() => {
     if (!comms) return;
@@ -220,11 +232,13 @@ export default function PreviewTab({
     const cleanup = comms.addMessageListener<SavePathGraphRequest>({
       type: "save-path-graph",
       callback: async ({ graph }) => {
-        await fetch("/api/pathgraph", {
+        await fetch("/level/pathgraph.gz", {
           method: "POST",
           headers: { "Content-Type": "application/octet-stream" },
           body: graph,
         });
+        const hash = await sha1Hash(graph.buffer);
+        pathgraphHash.current = hash;
       },
     });
 
@@ -267,6 +281,11 @@ export default function PreviewTab({
     setReloadCount((c) => c + 1);
   };
 
+  const rebuildPathgraph = () => {
+    pathgraphHash.current = undefined;
+    setReloadCount((c) => c + 1);
+  };
+
   const handleIframeLoad = () => {
     if (iframeRef.current?.src === "about:blank") return;
     setCheckboxState({});
@@ -274,6 +293,7 @@ export default function PreviewTab({
 
   useEffect(() => {
     if (!iframeLoaded) return;
+    if (!iframeSrc) return;
 
     const iframe = iframeRef.current!;
     log.info({ dev: true }, `Loading game from ${iframeSrc}`);
@@ -285,7 +305,7 @@ export default function PreviewTab({
       role: "parent",
     });
     setComms(comms);
-  }, [reloadCount, setComms, iframeLoaded, iframeSrc]);
+  }, [setComms, iframeLoaded, iframeSrc]);
 
   // Send audio mode changes to iframe without reloading (skip on initial mount)
   const isInitialMount = useRef(true);
@@ -329,7 +349,7 @@ export default function PreviewTab({
     return (
       <Switch
         label={label}
-        defaultChecked={debugFlags[key] || false}
+        defaultChecked={debugFlags[key] ?? false}
         onChange={(event) => toggleDebug(key, event.currentTarget.checked)}
       />
     );
@@ -529,6 +549,16 @@ export default function PreviewTab({
                       { value: "mobile", label: t("previewDeviceMobile") },
                     ]}
                   />
+                </Fieldset>
+
+                <Fieldset legend={t("previewPathfindingFieldset")} p="xs">
+                  <Button
+                    size="xs"
+                    onClick={rebuildPathgraph}
+                    disabled={!iframeLoaded}
+                  >
+                    {t("previewRebuildGraphBtn")}
+                  </Button>
                 </Fieldset>
 
                 {/* <Fieldset legend="Audio">
@@ -782,7 +812,7 @@ export default function PreviewTab({
                   <Anchor href="/level/main.js" target="_blank" size="xs">
                     {t("previewOpenCompiledLevelJs")}
                   </Anchor>
-                  <Anchor href={iframeSrc} target="_blank" size="xs">
+                  <Anchor href={iframeSrc ?? ""} target="_blank" size="xs">
                     iFrame URL
                   </Anchor>
                 </Stack>

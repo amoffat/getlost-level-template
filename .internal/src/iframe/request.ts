@@ -1,3 +1,5 @@
+import { DebugFlagKey } from "@/types/debug";
+
 export interface RecordMarkerMessage {
   type: "record-marker";
   data: {
@@ -25,12 +27,6 @@ export interface SetAudioModeRequest {
     muted: boolean;
   };
 }
-
-export type DebugFlagKey =
-  | "collisions"
-  | "pathfinding"
-  | "objDetails"
-  | "zSorting";
 
 export interface DebugFlag {
   type: "debug-flag";

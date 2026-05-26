@@ -21,10 +21,7 @@ const gameReloadPath: DispatchPath = {
 
     // Files in the repo's /level directory (with some exclusions)
     if (changed.startsWith(`${repoDir}/level/`)) {
-      // Ignore dialogue.ts to avoid a reload loop: the dynamic AS compiler
-      // produces a new dialogue.ts, which would otherwise trigger a reload.
-      if (changed.endsWith("dialogue.ts")) return false;
-      if (changed.includes("/locales/")) return false;
+      if (changed.endsWith("pathgraph.gz")) return false;
       return true;
     }
 

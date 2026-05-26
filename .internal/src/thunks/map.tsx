@@ -1,5 +1,5 @@
 import { iconTsId, lightIcon, waypointIcon } from "@/constants/tsObjs";
-import { globals as gApp } from "@/globals";
+import { globals as gApp, globals } from "@/globals";
 import { fetchBackgroundImageUrl } from "@/persist/background/api";
 import { loadMap } from "@/persist/map/api";
 import { fetchSpeakerImageUrl as fetchSpeakerImageBlob } from "@/persist/speakerImage/api";
@@ -95,6 +95,8 @@ export const setActiveLayerThunk = createAsyncThunk(
 export const loadMapThunk = createAsyncThunk(
   "map/loadMapThunk",
   async (_: void, { dispatch }) => {
+    globals.autosaveMap = false;
+
     dispatch(uiActions.pushLoadingMessage(i18n.t("mapLoading")));
     const persisted = await loadMap();
     if (persisted) {
@@ -173,6 +175,7 @@ export const loadMapThunk = createAsyncThunk(
       );
     }
     dispatch(uiActions.popLoadingMessage());
+    globals.autosaveMap = true;
   },
 );
 

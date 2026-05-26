@@ -497,6 +497,8 @@
 {"k": "previewDeviceEmulationFieldset", "v": "Device emulation", "ctx": "Legend text for the device emulation fieldset in the preview panel"}
 {"k": "previewDeviceDesktop", "v": "Desktop", "ctx": "Option label for desktop device emulation mode"}
 {"k": "previewDeviceMobile", "v": "Mobile", "ctx": "Option label for mobile device emulation mode"}
+{"k": "previewPathfindingFieldset", "v": "Pathfinding", "ctx": "Legend text for the pathfinding fieldset in the preview left panel"}
+{"k": "previewRebuildGraphBtn", "v": "Rebuild graph", "ctx": "Button label to force a pathfinding graph rebuild in the preview panel"}
 {"k": "previewPublishFieldset", "v": "Publish", "ctx": "Legend text for the publish fieldset in the preview panel"}
 {"k": "previewAgreeToThe", "v": "I agree to the", "ctx": "Start of the license agreement checkbox label (followed by a link)"}
 {"k": "previewLicenseAgreement", "v": "Level Submission License Agreement", "ctx": "Link text for the license agreement; also used as the markdown modal title"}

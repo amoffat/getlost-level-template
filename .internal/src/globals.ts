@@ -25,6 +25,7 @@ interface Globals {
   // This enables O(1) lookups of all objects using a given template,
   // which is critical for performance when updating template properties.
   templateIndex: Map<string, Set<string>>;
+  autosaveMap: boolean;
 }
 
 const tilesetTextureCache = new Map<string, P.CanvasSource>();
@@ -42,4 +43,5 @@ export const globals: Globals = {
   collisionEditorReconciler: new MapObjReconciler(tilesetTextureCache),
   tilesetEditorReconciler: new TileReconciler(),
   templateIndex: new Map(),
+  autosaveMap: true,
 };

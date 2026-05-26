@@ -1,4 +1,5 @@
 import { autosaveMapDebounce, defaultTileSize } from "@/constants";
+import { globals } from "@/globals";
 import { log } from "@/log";
 import { saveMap as persistMap } from "@/persist/map/api";
 import { slice } from "@/slices/mapEditor";
@@ -37,7 +38,8 @@ startAppListening({
   // Any action with a reconcileType
   predicate: (action) =>
     action.type.startsWith(slice.name) &&
-    (action.meta as any)?.reconcileType !== undefined,
+    (action.meta as any)?.reconcileType !== undefined &&
+    globals.autosaveMap,
   effect: async (_action, { getState }) => {
     const state = getState();
     const ms = state.mapEditor;
