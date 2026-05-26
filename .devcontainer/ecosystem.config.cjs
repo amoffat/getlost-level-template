@@ -15,10 +15,10 @@ module.exports = {
     {
       name: "preview",
       cwd: DEVENV_DIR,
-      interpreter: "npx",
-      script: isCodespace
-        ? `vite --port ${VITE_PORT}`
-        : `vite --host --port ${VITE_PORT}`,
+      script: "pnpm",
+      args: isCodespace
+        ? `exec vite --port ${VITE_PORT}`
+        : `exec vite --host --port ${VITE_PORT}`,
       restart_delay: 1000,
       env: {},
     },

@@ -10,6 +10,8 @@ RUN apt-get update \
     # cleanup
     && rm -rf /var/lib/apt/lists/*
 
+RUN corepack enable pnpm
+
 
 ENV HOME=/home/node
 USER node

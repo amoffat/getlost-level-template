@@ -4,8 +4,7 @@ set -euo pipefail
 WORKSPACE_DIR=$(realpath /workspaces/*)
 INTERNAL_DIR="$WORKSPACE_DIR/.internal"
 
-npm update -g
-npm install --prefix "$INTERNAL_DIR"
+pnpm install --dir "$INTERNAL_DIR"
 
 uv self update
 uv venv --allow-existing /home/node/venv

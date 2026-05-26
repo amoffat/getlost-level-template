@@ -8,7 +8,7 @@ INTERNAL_DIR="$WORKSPACE_DIR/.internal"
 LEVEL_DIR="$WORKSPACE_DIR/level"
 KEY_FILE="$LEVEL_DIR/assets.key"
 
-npx --prefix "$INTERNAL_DIR" pm2 resurrect
+pnpm --dir "$INTERNAL_DIR" exec pm2 resurrect
 
 if [[ -n "${ASSETS_KEY:-}" ]]; then
     echo "$ASSETS_KEY" > "$KEY_FILE"

@@ -10,10 +10,8 @@ INTERNAL_DIR="$WORKSPACE_DIR/.internal"
 LEVEL_DIR="$WORKSPACE_DIR/level"
 KEY_FILE="$LEVEL_DIR/assets.key"
 
-# Configure npm to ignore scripts
-npm config set ignore-scripts true
 
-npm ci --prefix "$INTERNAL_DIR"
+pnpm install --dir "$INTERNAL_DIR" --frozen-lockfile
 
 uv self update
 
@@ -28,8 +26,8 @@ uv tool install -e "$INTERNAL_DIR/deployer"
 uv tool install git+https://github.com/amoffat/translator@main
 
 echo "Starting PM2 in the background..."
-npx --prefix "$INTERNAL_DIR" pm2 start "$ECOSYSTEM_FILE"
-npx --prefix "$INTERNAL_DIR" pm2 save
+pnpm --dir "$INTERNAL_DIR" exec pm2 start "$ECOSYSTEM_FILE"
+pnpm --dir "$INTERNAL_DIR" exec pm2 save
 
 # https://github.com/devcontainers/features/issues/453
 # rm ~/.docker/config.json

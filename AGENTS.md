@@ -6,11 +6,11 @@ The architecture is divided into two separate areas: level and internal. Whether
 
 # Commands
 
-All `npm` commands will need to use the prefix `--prefix /workspaces/getlost-level-template/.internal`, because that is where our application root is located. So for example, to install a new package:
+All `pnpm` commands will need to use the `--dir` flag pointing to `/workspaces/getlost-level-template/.internal`, because that is where our application root is located. So for example, to install a new package:
 
-`npm --prefix /workspaces/getlost-level-template/.internal install react-router`
+`pnpm --dir /workspaces/getlost-level-template/.internal add react-router`
 
-All npm and npx commands must use that prefix. Assume that all commands below use that prefix.
+All pnpm and `pnpm exec` commands must use that `--dir` flag. Assume that all commands below use it.
 
-- To restart vite: `npx pm2 restart preview`
-- To check types: `npm run typecheck`
+- To restart vite: `pnpm --dir /workspaces/getlost-level-template/.internal exec pm2 restart preview`
+- To check types: `pnpm --dir /workspaces/getlost-level-template/.internal run typecheck`
