@@ -630,3 +630,12 @@
 {"k": "uploadAssetAudioUpload", "v": "Audio upload", "ctx": "Modal title when uploading an audio file"}
 {"k": "audioUploadSubmitBtn", "v": "Upload", "ctx": "Submit button label in the audio upload form"}
 {"k": "previewEngineDescription", "v": "Where is the engine hosted?"}
+{"k": "tilesetBtnReplaceImageMenuItem", "v": "Replace image", "ctx": "Context menu item on a tileset button that opens a file picker to replace the tileset's PNG image"}
+{"k": "tilesetReplaceImageDimensionMismatch", "v": "Image dimensions do not match", "ctx": "Notification title shown when the replacement image has different dimensions than the tileset"}
+{"k": "tilesetReplaceImageDimensionMismatchMsg", "v": "The selected tileset is {{width}}x{{height}}px, but the new image is {{newWidth}}x{{newHeight}}px.", "ctx": "Notification body shown when the replacement image dimensions differ; {{width}}/{{height}} are the tileset's dimensions, {{newWidth}}/{{newHeight}} are the new image's dimensions"}
+{"k": "tilesetReplaceImageSuccess", "v": "Tileset image replaced", "ctx": "Notification title shown after successfully replacing a tileset's image"}
+{"k": "tilesetReplaceImageSuccessMsg", "v": "The tileset image was replaced successfully.", "ctx": "Notification body shown after successfully replacing a tileset's image"}
+{"k": "tilesetReplaceImageFailed", "v": "Failed to replace tileset image", "ctx": "Notification title shown when replacing a tileset's image fails"}
+{"k": "tilesetReplaceImageFailedMsg", "v": "An error occurred while replacing the tileset image: {{msg}}", "ctx": "Notification body shown when replacing a tileset's image fails; {{msg}} is the error message"}
+{"k": "tilesetUploadReplaceExisting", "v": "Replace existing tilesets", "ctx": "Option group label in the tileset upload select for replacing existing tileset images"}
+{"k": "tilesetUploadReplaceImageOf", "v": "Replace image of {{id}}", "ctx": "Option label for replacing the image of a specific existing tileset; {{id}} is the tileset identifier"}

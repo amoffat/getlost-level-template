@@ -165,6 +165,38 @@ export async function saveTileset(ts: Tileset) {
   if (!res.ok) throw new Error(`saveMeta failed: ${res.status}`);
 }
 
+/**
+ * Replace the PNG image data for an existing tileset without touching its
+ * CBOR metadata (id, tiles, colliders, etc.).
+ */
+export async function replaceTilesetImage(
+  id: string,
+  objectUrl: string,
+): Promise<void> {
+  const imageData = await (await fetch(objectUrl)).bytes();
+
+  const form = new FormData();
+  const ab = new ArrayBuffer(imageData.byteLength);
+  new Uint8Array(ab).set(imageData);
+  const file = new Blob([ab], { type: "image/png" });
+  form.append("image", file, `${id}.png`);
+
+  const res = await fetch(
+    `/level/tilesets/${encodeURIComponent(id)}.cbor.gz`,
+    {
+      method: "PATCH",
+      body: form,
+    },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw Object.assign(new Error(`replaceTilesetImage failed: ${res.status}`), {
+      status: res.status,
+      body,
+    });
+  }
+}
+
 export async function deleteTileset(id: string) {
   const res = await fetch(`/level/tilesets/${encodeURIComponent(id)}.cbor.gz`, {
     method: "DELETE",

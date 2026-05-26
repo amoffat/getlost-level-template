@@ -1,6 +1,6 @@
 import { useAppDispatch } from "@/hooks/redux";
 import { store } from "@/store/store";
-import { removeTilesetThunk } from "@/thunks/tileset";
+import { removeTilesetThunk, replaceTilesetImageThunk } from "@/thunks/tileset";
 import { isAnimationTemplate } from "@/types/animation";
 import { isNpcTemplate } from "@/types/npc";
 import { isTileGroupTemplate } from "@/types/tilegroup";
@@ -8,9 +8,9 @@ import { Tileset } from "@/types/tileset";
 import { copyToClipboard } from "@/utils/copy";
 import { Image, Menu, UnstyledButton } from "@mantine/core";
 import { modals } from "@mantine/modals";
-import { IconCopy, IconTrash } from "@tabler/icons-react";
+import { IconCopy, IconPhoto, IconTrash } from "@tabler/icons-react";
 import classNames from "classnames";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ItemStatus } from "./modals/ItemizedConfirmModal";
 import styles from "./styles/TilesetButton.module.css";
@@ -29,6 +29,7 @@ export default function TilesetButton({
   const { t } = useTranslation();
   const [opened, setOpened] = useState(false);
   const dispatch = useAppDispatch();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const onRightClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -120,6 +121,25 @@ export default function TilesetButton({
     setOpened(false);
   };
 
+  const onReplaceImage = useCallback(() => {
+    fileInputRef.current?.click();
+    setOpened(false);
+  }, []);
+
+  const onFileSelected = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      // Reset input so selecting the same file again triggers onChange
+      e.target.value = "";
+      const objectUrl = URL.createObjectURL(file);
+      dispatch(replaceTilesetImageThunk({ tsId: ts.id, objectUrl })).then(() => {
+        URL.revokeObjectURL(objectUrl);
+      });
+    },
+    [dispatch, ts],
+  );
+
   const onCopyId = useCallback(() => {
     copyToClipboard({ value: ts.id, t });
     setOpened(false);
@@ -134,6 +154,13 @@ export default function TilesetButton({
           onClick={onClick}
           className={classNames(styles.button, { [styles.active]: isActive })}
         >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png"
+            style={{ display: "none" }}
+            onChange={onFileSelected}
+          />
           <Image
             src={ts.objectUrl}
             draggable={false}
@@ -145,6 +172,9 @@ export default function TilesetButton({
       <Menu.Dropdown>
         <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyId}>
           {t("tilesetBtnCopyId")}
+        </Menu.Item>
+        <Menu.Item leftSection={<IconPhoto size={14} />} onClick={onReplaceImage}>
+          {t("tilesetBtnReplaceImageMenuItem")}
         </Menu.Item>
         <Menu.Item
           color="red"

@@ -166,6 +166,33 @@ router.delete("/:id.cbor.gz", (req, res) => {
   }
 });
 
+// PATCH "/:id.cbor.gz" — replace only the PNG image data for an existing tileset.
+// The CBOR metadata (including the immutable tileset ID) is left untouched.
+router.patch("/:id.cbor.gz", async (req, res) => {
+  const id = sanitizeId((req.params as any)["id"]);
+  if (!id) {
+    res.status(400).send("Invalid id in URL");
+    return;
+  }
+
+  try {
+    const parsed = await parseFormUpload(req, "image", 10 * 1024 * 1024);
+    const paths = pathForId(id);
+    if (!paths) {
+      res.status(404).send("Tileset not found");
+      return;
+    }
+
+    // Overwrite the PNG file in place (preserving restricted naming)
+    atomicWriteFileSync(paths.png, parsed.buf);
+
+    res.sendStatus(204);
+  } catch (error) {
+    console.error("Error replacing tileset image:", error);
+    res.sendStatus(500);
+  }
+});
+
 router.put("/:id.cbor.gz", (req, res) => {
   const id = sanitizeId((req.params as any)["id"]);
   if (!id) {

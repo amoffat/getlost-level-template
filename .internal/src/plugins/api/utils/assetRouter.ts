@@ -275,7 +275,8 @@ export function createAssetRouter(config: AssetRouterConfig) {
   // that a path like "/jobs/abc-123/events" doesn't match the asset GET handler.
   // The path `/jobs/:jobid/events` matches the shape expected by `jobProgress$`.
   router.get("/jobs/:jobid/events", (req: Request, res: Response) => {
-    const job = jobs.get(req.params.jobid);
+    const jobId = req.params.jopid as string;
+    const job = jobs.get(jobId);
     if (!job) {
       res.sendStatus(404);
       return;
@@ -301,7 +302,7 @@ export function createAssetRouter(config: AssetRouterConfig) {
 
     if (job.state.status !== "pending") {
       sendSSE(job.state);
-      jobs.delete(req.params.jobid);
+      jobs.delete(jobId);
       return;
     }
 
@@ -319,8 +320,9 @@ export function createAssetRouter(config: AssetRouterConfig) {
   });
 
   router.get("/:filename", (req: Request, res: Response) => {
+    const filename = req.params.filename as string;
     try {
-      const parsed = parseFilename(req.params.filename);
+      const parsed = parseFilename(filename);
       if (!parsed) {
         res.sendStatus(404);
         return;
@@ -349,7 +351,8 @@ export function createAssetRouter(config: AssetRouterConfig) {
   });
 
   router.put("/:filename", async (req: Request, res: Response) => {
-    const parsed = parseFilename(req.params.filename);
+    const filename = req.params.filename as string;
+    const parsed = parseFilename(filename);
     if (!parsed) {
       res.status(400).send("Invalid or disallowed file extension in URL");
       return;
@@ -430,8 +433,9 @@ export function createAssetRouter(config: AssetRouterConfig) {
   });
 
   router.delete("/:filename", (req: Request, res: Response) => {
+    const filename = req.params.filename as string;
     try {
-      const parsed = parseFilename(req.params.filename);
+      const parsed = parseFilename(filename);
       if (!parsed) {
         res.sendStatus(404);
         return;

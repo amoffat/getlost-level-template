@@ -1,21 +1,37 @@
 import { sliceTileset } from "@/editors/tileset/loader";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors } from "@/slices/tilesetEditor";
-import { uploadTilesetThunk } from "@/thunks/tileset";
+import { replaceTilesetImageThunk, uploadTilesetThunk } from "@/thunks/tileset";
 import { Rect } from "@/types/rect";
 import { packSprites } from "@/utils/spritepack";
 import { Button, Group, Image, Select, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { IconLibraryPhoto, IconPhotoPlus } from "@tabler/icons-react";
+import {
+  IconLibraryPhoto,
+  IconPhotoPlus,
+  IconRefresh,
+} from "@tabler/icons-react";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import RestrictedControl from "./RestrictedControl";
 
 const NEW_TILESET = "__new_tileset__";
 const MERGE_UPLOADS = "__merge_uploads__";
+const REPLACE_IMAGE_PREFIX = "__replace_image__:";
+
+function makeReplaceImageValue(tsId: string): string {
+  return `${REPLACE_IMAGE_PREFIX}${tsId}`;
+}
+
+function isReplaceImageValue(v: string): boolean {
+  return v.startsWith(REPLACE_IMAGE_PREFIX);
+}
+
+function getReplaceImageTsId(v: string): string {
+  return v.slice(REPLACE_IMAGE_PREFIX.length);
+}
 
 export type SpecialTilesetOption = typeof NEW_TILESET | typeof MERGE_UPLOADS;
-export { MERGE_UPLOADS, NEW_TILESET };
 
 interface FormValues {
   creationOption: SpecialTilesetOption | string;
@@ -92,6 +108,18 @@ export default function TilesetUploadOptions({
       });
     }
 
+    // "Replace image" group only makes sense for a single-file upload
+    if (files.length === 1 && Object.keys(tilesets).length > 0) {
+      const replaceItems = Object.values(tilesets).map((tileset) => ({
+        value: makeReplaceImageValue(tileset.id),
+        label: t("tilesetUploadReplaceImageOf", { id: tileset.id }),
+      }));
+      groups.push({
+        group: t("tilesetUploadReplaceExisting"),
+        items: replaceItems,
+      });
+    }
+
     return groups;
   }, [tilesets, files.length, t]);
 
@@ -116,7 +144,28 @@ export default function TilesetUploadOptions({
       );
     }
 
-    const tileset = tilesets[value];
+    const tsId = isReplaceImageValue(value)
+      ? getReplaceImageTsId(value)
+      : value;
+    const tileset = tilesets[tsId];
+    if (!tileset) return <span>{label}</span>;
+
+    if (isReplaceImageValue(value)) {
+      return (
+        <Group gap="sm">
+          <IconRefresh size={16} style={{ flexShrink: 0 }} />
+          <Image
+            src={tileset.objectUrl}
+            w={64}
+            h={48}
+            fit="cover"
+            style={{ flexShrink: 0 }}
+          />
+          <span>{label}</span>
+        </Group>
+      );
+    }
+
     return (
       <Group gap="sm">
         <Image
@@ -133,9 +182,29 @@ export default function TilesetUploadOptions({
 
   const handleSubmit = form.onSubmit(async (values) => {
     if (!files.length) return;
-    closeModal();
 
     const { creationOption: copt, restricted } = values;
+
+    if (isReplaceImageValue(copt)) {
+      const tsId = getReplaceImageTsId(copt);
+      if (!tilesets[tsId]) return;
+
+      const objectUrl = URL.createObjectURL(files[0]);
+      try {
+        const result = await dispatch(
+          replaceTilesetImageThunk({ tsId, objectUrl }),
+        ).unwrap();
+        // Close the modal only if the replacement actually succeeded.
+        // On dimension mismatch or API error the thunk shows a notification
+        // and returns { replaced: false }, keeping the modal open.
+        if (result?.replaced) closeModal();
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+      return;
+    }
+
+    closeModal();
 
     if (copt === NEW_TILESET) {
       for (const file of files) {

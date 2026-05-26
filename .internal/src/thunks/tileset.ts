@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { defaultTileSize } from "@/constants";
 import { computeEdgeSignatures } from "@/editors/map/utils/autotile";
 import {
@@ -8,7 +7,12 @@ import {
 } from "@/editors/tileset/loader";
 import { globals as gApp } from "@/globals";
 import { log } from "@/log";
-import { loadTileset, loadTilesets, saveTileset } from "@/persist/tileset/api";
+import {
+  loadTileset,
+  loadTilesets,
+  replaceTilesetImage,
+  saveTileset,
+} from "@/persist/tileset/api";
 import { router } from "@/router";
 import { brokenTileGroups } from "@/selectors/map";
 import { actions as mapActions } from "@/slices/mapEditor";
@@ -31,6 +35,7 @@ import { hasSolidEdges, subImageData } from "@/utils/image";
 import { genTilesetId, loadTilesetImage } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import i18n from "i18next";
 
 export const setActiveTilesetThunk = createAsyncThunk(
   "tilesetEditor/setActiveTilesetThunk",
@@ -98,7 +103,10 @@ export const loadTilesetsThunk = createAsyncThunk(
       } catch (e) {
         notifications.show({
           title: i18n.t("tilesetLoadFailed"),
-          message: i18n.t("tilesetLoadFailedMessage", { tsId, message: (e as Error).message }),
+          message: i18n.t("tilesetLoadFailedMessage", {
+            tsId,
+            message: (e as Error).message,
+          }),
           color: "red",
         });
       }
@@ -275,6 +283,65 @@ export const removeTilesetThunk = createAsyncThunk(
   },
 );
 
+export const replaceTilesetImageThunk = createAsyncThunk(
+  "tilesetEditor/replaceTilesetImageThunk",
+  async (
+    { tsId, objectUrl }: { tsId: string; objectUrl: string },
+    { dispatch, getState },
+  ) => {
+    const state = getState() as RootState;
+    const ts = state.tilesetEditor.tilesets[tsId];
+    if (!ts) {
+      log.error(`replaceTilesetImageThunk: tileset ${tsId} not found`);
+      return;
+    }
+
+    // Client-side dimension check
+    const bitmap = await createImageBitmap(
+      await fetch(objectUrl).then((r) => r.blob()),
+    );
+    const newWidth = bitmap.width;
+    const newHeight = bitmap.height;
+    bitmap.close();
+
+    if (newWidth !== ts.width || newHeight !== ts.height) {
+      notifications.show({
+        title: i18n.t("tilesetReplaceImageDimensionMismatch"),
+        message: i18n.t("tilesetReplaceImageDimensionMismatchMsg", {
+          width: ts.width,
+          height: ts.height,
+          newWidth,
+          newHeight,
+        }),
+        color: "red",
+      });
+      return { replaced: false };
+    }
+
+    try {
+      await replaceTilesetImage(tsId, objectUrl);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      notifications.show({
+        title: i18n.t("tilesetReplaceImageFailed"),
+        message: i18n.t("tilesetReplaceImageFailedMsg", { msg }),
+        color: "red",
+      });
+      return { replaced: false };
+    }
+
+    // Reload the tileset to refresh Redux state, Pixi texture cache, and edge signatures
+    await dispatch(loadTilesetThunk({ tsId })).unwrap();
+
+    notifications.show({
+      title: i18n.t("tilesetReplaceImageSuccess"),
+      message: i18n.t("tilesetReplaceImageSuccessMsg"),
+      color: "green",
+    });
+    return { replaced: true };
+  },
+);
+
 export const retileThunk = createAsyncThunk(
   "tilesetEditor/retileThunk",
   async (
@@ -377,7 +444,12 @@ export const addAnimationFrameThunk = createAsyncThunk(
       if (firstWidth !== newWidth || firstHeight !== newHeight) {
         notifications.show({
           title: i18n.t("tilesetAnimFrameSizeMismatch"),
-          message: i18n.t("tilesetAnimFrameSizeMismatchMessage", { newWidth, newHeight, firstWidth, firstHeight }),
+          message: i18n.t("tilesetAnimFrameSizeMismatchMessage", {
+            newWidth,
+            newHeight,
+            firstWidth,
+            firstHeight,
+          }),
           color: "red",
         });
         return;
@@ -407,7 +479,10 @@ export const setAnimationFramesThunk = createAsyncThunk(
     dispatch(tsActions.setActiveTool("animate"));
     notifications.show({
       title: i18n.t("tilesetAnimationLoaded"),
-      message: i18n.t("tilesetAnimationLoadedMessage", { count: obj.frames.length, name: obj.slotNames.join(", ") }),
+      message: i18n.t("tilesetAnimationLoadedMessage", {
+        count: obj.frames.length,
+        name: obj.slotNames.join(", "),
+      }),
       color: "green",
     });
   },
