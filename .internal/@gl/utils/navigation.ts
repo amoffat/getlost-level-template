@@ -13,7 +13,7 @@ const tryToFindValid: number = 10;
 export abstract class NavPlan {
   public name: string = ""; // For debug logging
 
-  public abstract getNextWaypoint(curPos: Vec2): Promise<Waypoint>;
+  public abstract getNextWaypoint(curPos: Vec2): Promise<Waypoint | null>;
   public hasNextWaypoint(_curPos: Vec2): boolean {
     return true;
   }
@@ -26,15 +26,14 @@ export abstract class NavPlan {
     start: Vec2,
     end: Vec2,
     nearestIsOk: boolean,
-    lengthBound: number = Number.POSITIVE_INFINITY as number,
+    lengthBound?: number,
   ): Promise<boolean> {
-    const path = await navigation.findPath(
-      "",
-      start.toVector(),
-      end.toVector(),
+    const path = await navigation.findPath({
+      startPos: start.toVector(),
+      endPos: end.toVector(),
       nearestIsOk,
-      lengthBound,
-    );
+      max: lengthBound,
+    });
     const hasPath = path.length > 0;
     return hasPath;
   }
@@ -52,19 +51,17 @@ export abstract class NavPlan {
   protected async _randomInCircle(
     curPos: Vec2,
     maxDistance: number,
-  ): Promise<Waypoint> {
-    let wp = Waypoint.null();
-
+  ): Promise<Waypoint | null> {
     for (let i = 0; i < tryToFindValid; i++) {
       const rndPos = inCircle(maxDistance);
       const candPos = curPos.added(rndPos);
       if (await this._checkValid(curPos, candPos, true, maxDistance)) {
-        wp = new Waypoint(candPos.toVector());
-        break;
+        const wp = new Waypoint(candPos.toVector());
+        wp.nearestIsOk = true;
+        return wp;
       }
     }
-    wp.nearestIsOk = true;
-    return wp;
+    return null;
   }
 }
 
@@ -84,11 +81,11 @@ export class StationaryPlan extends NavPlan {
     return new StationaryPlan(wp.pos);
   }
 
-  public async getNextWaypoint(_curPos: Vec2): Promise<Waypoint> {
+  public override async getNextWaypoint(_curPos: Vec2): Promise<Waypoint> {
     return new Waypoint(this._position.toVector());
   }
 
-  public hasNextWaypoint(_curPos: Vec2): boolean {
+  public override hasNextWaypoint(_curPos: Vec2): boolean {
     return false;
   }
 }
@@ -98,17 +95,29 @@ export class RandomWalk extends NavPlan {
   private _minPause: number;
   private _maxPause: number;
 
-  constructor(maxDistance: number, minPause: number, maxPause: number) {
+  constructor({
+    maxDistance,
+    minPause = 0,
+    maxPause = 0,
+  }: {
+    maxDistance: number;
+    minPause?: number;
+    maxPause?: number;
+  }) {
     super();
     this._maxDistance = maxDistance;
     this._minPause = minPause;
     this._maxPause = maxPause;
   }
 
-  public async getNextWaypoint(curPos: Vec2): Promise<Waypoint> {
+  public override async getNextWaypoint(
+    curPos: Vec2,
+  ): Promise<Waypoint | null> {
     const wp = await this._randomInCircle(curPos, this._maxDistance);
-    wp.pause = randFloat(this._minPause, this._maxPause);
-    wp.nearestIsOk = true;
+    if (wp) {
+      wp.pause = randFloat(this._minPause, this._maxPause);
+      wp.nearestIsOk = true;
+    }
     return wp;
   }
 }
@@ -125,7 +134,9 @@ export class PatrolPlan extends NavPlan {
     this._waypoints = waypoints;
   }
 
-  public override async getNextWaypoint(_curPos: Vec2): Promise<Waypoint> {
+  public override async getNextWaypoint(
+    _curPos: Vec2,
+  ): Promise<Waypoint | null> {
     const wp = this._waypoints[this.i]!;
     this.i = (this.i + 1) % this._waypoints.length;
     return wp;
@@ -165,7 +176,9 @@ export class PatrolRandomDetours extends PatrolPlan {
     this._maxRandom = maxRandom;
   }
 
-  public override async getNextWaypoint(_curPos: Vec2): Promise<Waypoint> {
+  public override async getNextWaypoint(
+    _curPos: Vec2,
+  ): Promise<Waypoint | null> {
     const useRandom = this._randomCounter < this._maxRandom;
 
     if (useRandom) {
@@ -177,19 +190,17 @@ export class PatrolRandomDetours extends PatrolPlan {
     return await super.getNextWaypoint(_curPos);
   }
 
-  private async randomWaypoint(curPos: Vec2): Promise<Waypoint> {
-    let wp = Waypoint.null();
-
+  private async randomWaypoint(curPos: Vec2): Promise<Waypoint | null> {
     for (let i = 0; i < tryToFindValid; i++) {
       const rndPos = inCircle(this._maxDistance);
       const candPos = curPos.added(rndPos);
       if (await this._checkValid(curPos, candPos, true)) {
-        wp = new Waypoint(candPos.toVector());
-        break;
+        const wp = new Waypoint(candPos.toVector());
+        wp.nearestIsOk = true;
+        return wp;
       }
     }
-    wp.nearestIsOk = true;
-    return wp;
+    return null;
   }
 }
 
@@ -212,26 +223,27 @@ export class FollowPlan extends NavPlan {
     this._pause = pause;
   }
 
-  public async getNextWaypoint(_curPos: Vec2): Promise<Waypoint> {
-    let wp: Waypoint = Waypoint.null();
-
+  public override async getNextWaypoint(
+    _curPos: Vec2,
+  ): Promise<Waypoint | null> {
     if (this._maxDistance > 0) {
       for (let i = 0; i < tryToFindValid; i++) {
         const rndPos = inRing(this._minDistance, this._maxDistance);
-        const candPos = this._target.pos.added(rndPos);
+        const candPos = this._target.getPos().added(rndPos);
 
         if (await this._checkValid(_curPos, candPos, true)) {
-          wp = new Waypoint(candPos.toVector());
-          break;
+          const wp = new Waypoint(candPos.toVector());
+          wp.pause = this._pause;
+          wp.nearestIsOk = true;
         }
       }
     } else {
-      wp = new Waypoint(this._target.pos.toVector());
+      const wp = new Waypoint(this._target.getPos().toVector());
+      wp.pause = this._pause;
+      wp.nearestIsOk = true;
     }
-    wp.pause = this._pause;
-    wp.nearestIsOk = true;
 
-    return wp;
+    return null;
   }
 }
 
@@ -257,7 +269,7 @@ abstract class AggressiveBasePlan extends NavPlan {
     if (withinRad) {
       return this._checkValid(
         pos,
-        this._target.pos,
+        this._target.getPos(),
         true,
         this._attackDistance,
       );
@@ -268,23 +280,25 @@ abstract class AggressiveBasePlan extends NavPlan {
   // The distance to the target, normalized by the attack distance, so that 0 is
   // right next to the target and 1 is at the attack distance.
   protected _normDistance(pos: Vec2): number {
-    return this._target.pos.distanceTo(pos) / this._attackDistance;
+    return this._target.getPos().distanceTo(pos) / this._attackDistance;
   }
 
-  protected abstract _defaultWaypoint(curPos: Vec2): Promise<Waypoint>;
+  protected abstract _defaultWaypoint(curPos: Vec2): Promise<Waypoint | null>;
 
   protected _shouldAttack(_curPos: Vec2): boolean {
     return true;
   }
 
-  public async getNextWaypoint(curPos: Vec2): Promise<Waypoint> {
+  public override async getNextWaypoint(
+    curPos: Vec2,
+  ): Promise<Waypoint | null> {
     if (
       (await this._targetIsNear(curPos)) &&
       this._shouldAttack(curPos) &&
       !this._attacking
     ) {
       const nd = this._normDistance(curPos);
-      const wp = new Waypoint(this._target.pos.toVector());
+      const wp = new Waypoint(this._target.getPos().toVector());
       wp.pause = nd * 1000 + 100;
       wp.nearestIsOk = true;
       this._attacking = true;
@@ -325,7 +339,9 @@ export class RandomThenAttackPlan extends AggressiveBasePlan {
     return chance(Easings.easeOutCircle(nd));
   }
 
-  protected override async _defaultWaypoint(curPos: Vec2): Promise<Waypoint> {
+  protected override async _defaultWaypoint(
+    curPos: Vec2,
+  ): Promise<Waypoint | null> {
     const wp = this._randomInCircle(curPos, this._randMoveDistance);
     return wp;
   }
@@ -339,9 +355,13 @@ export class DefaultThenAttackPlan extends AggressiveBasePlan {
     this._default = defaultPlan;
   }
 
-  protected override async _defaultWaypoint(curPos: Vec2): Promise<Waypoint> {
+  protected override async _defaultWaypoint(
+    curPos: Vec2,
+  ): Promise<Waypoint | null> {
     const wp = await this._default.getNextWaypoint(curPos);
-    wp.nearestIsOk = true;
+    if (wp) {
+      wp.nearestIsOk = true;
+    }
     return wp;
   }
 }

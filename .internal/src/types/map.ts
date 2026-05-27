@@ -12,6 +12,7 @@ import {
   NpcProps,
   PickupProps,
   TileGroupProps,
+  WaypointProps,
 } from "./properties";
 import { Rect } from "./rect";
 export interface SavedMap {
@@ -151,6 +152,11 @@ export interface PickupObj
   type: MapObjType.Pickup;
 }
 
+export interface WaypointObj
+  extends TilesetMapObj, RequiredButMaybeUndefined<WaypointProps> {
+  type: MapObjType.Waypoint;
+}
+
 export interface BackgroundImageObj extends BaseMapObj {
   type: MapObjType.BackgroundImage;
   /** SHA-1 hash of the PNG bytes — used as the filename on disk. */
@@ -180,6 +186,7 @@ export type MapObj =
   | EntranceObj
   | ExitObj
   | PickupObj
+  | WaypointObj
   | BackgroundImageObj;
 
 export interface SpeakableProps {
@@ -210,13 +217,15 @@ export type ExtractProps<T extends MapObj> = T extends LightObj
       ? ExitProps
       : T extends PickupObj
         ? PickupProps
-        : T extends AnimationInstance
-          ? AnimationProps
-          : T extends TileGroupInstance
-            ? TileGroupProps
-            : T extends NpcInstance
-              ? NpcProps
-              : never;
+        : T extends WaypointObj
+          ? WaypointProps
+          : T extends AnimationInstance
+            ? AnimationProps
+            : T extends TileGroupInstance
+              ? TileGroupProps
+              : T extends NpcInstance
+                ? NpcProps
+                : never;
 
 export function isTileGroupInstance(
   obj: Partial<BaseMapObj>,
@@ -262,6 +271,10 @@ export function isExitObj(obj: Partial<MapObj>): obj is ExitObj {
 
 export function isPickupObj(obj: Partial<MapObj>): obj is PickupObj {
   return obj.type === MapObjType.Pickup;
+}
+
+export function isWaypointObj(obj: Partial<MapObj>): obj is WaypointObj {
+  return obj.type === MapObjType.Waypoint;
 }
 
 export function isBackgroundImageObj(

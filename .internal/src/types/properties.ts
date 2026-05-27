@@ -29,6 +29,11 @@ export interface ExitProps {
   status: InstanceStatus | null;
 }
 
+export interface WaypointProps {
+  slug: string | null;
+  status: InstanceStatus | null;
+}
+
 export interface PickupProps {
   nameKey: string | null;
   assetId: string | null;
@@ -112,6 +117,11 @@ export const PICKUP_PROPS_DEFAULTS: PickupProps = {
   tags: [],
   status: null,
   hidden: false,
+};
+
+export const WAYPOINT_PROPS_DEFAULTS: WaypointProps = {
+  slug: null,
+  status: null,
 };
 
 export const LIGHT_PROPS_DEFAULTS: LightProps = {

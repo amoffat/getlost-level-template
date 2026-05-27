@@ -12,9 +12,9 @@ export class Delay {
   constructor(
     timeMs: number,
     initialDelay: number = 0,
-    repeat: boolean = false
+    repeat: boolean = false,
   ) {
-    this._done = timeMs <= 0;
+    this._done = timeMs <= 0 && !repeat;
     this._timeMs = timeMs;
     this._repeat = repeat;
 

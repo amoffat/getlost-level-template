@@ -76,6 +76,7 @@ import MapBoundsTool from "../tools/map/MapBoundsTool";
 import PaintTool from "../tools/map/PaintTool";
 import PickupTool from "../tools/map/PickupTool";
 import SelectTool from "../tools/map/SelectTool";
+import WaypointTool from "../tools/map/WaypointTool";
 import ZonePaintTool from "../tools/map/ZonePaintTool";
 
 // Created at module-evaluation time (outside React's render cycle) so any
@@ -342,6 +343,7 @@ export default function MapEditorTab({
           name: t("mapEditorSetWaypointTool"),
           icon: <IconMapPin size={16} />,
           layerConstraints: [MapLayerName.Special],
+          options: <WaypointTool />,
         },
         "paint-zone": {
           name: t("mapEditorZoneTool"),

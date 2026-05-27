@@ -3,6 +3,7 @@ import {
   exitIcon,
   lightIcon,
   pickupIcon,
+  waypointIcon,
 } from "@/constants/tsObjs";
 import { drawOutline } from "@/editors/common/outline";
 import { selectStroke } from "@/editors/common/strokes";
@@ -26,6 +27,7 @@ import {
   NpcInstance,
   PickupObj,
   TileGroupInstance,
+  WaypointObj,
 } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
 import { toPixiRect } from "@/types/rect";
@@ -304,6 +306,21 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           status: "error", // New pickups start as error until named
           hidden: undefined,
         } satisfies PickupObj;
+      } else if (obj.id === waypointIcon) {
+        inst = {
+          id,
+          slug: undefined,
+          type: MapObjType.Waypoint,
+          x: pos.x,
+          y: pos.y,
+          z,
+          tsObjId: obj.id,
+          tilesetId: obj.tilesetId,
+          layer,
+          width: obj.pos.width,
+          height: obj.pos.height,
+          status: "error", // New waypoints start as error until named
+        } satisfies WaypointObj;
       } else {
         inst = {
           id,

@@ -15,12 +15,6 @@ export class Waypoint {
     this.pause = pause;
   }
 
-  public static null(): Waypoint {
-    const wp = new Waypoint({ x: 0, y: 0 });
-    wp.speed = -1;
-    return wp;
-  }
-
   public static fromName(
     name: string,
     pause: number = 1000,
@@ -37,14 +31,7 @@ export class Waypoint {
     return new Waypoint(wp.pos);
   }
 
-  public get isNull(): boolean {
-    return this.speed < 0;
-  }
-
   public toString(): string {
-    if (this.isNull) {
-      return `Waypoint(null)`;
-    }
     return `Waypoint(${this.pos.toString()}, ${this.speed}, ${this.pause}, ${this.nearestIsOk})`;
   }
 }

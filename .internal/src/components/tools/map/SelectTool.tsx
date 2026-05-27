@@ -27,6 +27,7 @@ import {
   isSinkZoneObj,
   isSoundZoneObj,
   isTileGroupInstance,
+  isWaypointObj,
   isZoomZoneObj,
   LightObj,
   NpcInstance,
@@ -35,6 +36,7 @@ import {
   SinkZoneObj,
   SoundZoneObj,
   TileGroupInstance,
+  WaypointObj,
   ZoomZoneObj,
 } from "@/types/map";
 import { Alert, Button, Fieldset, Kbd, Stack } from "@mantine/core";
@@ -51,6 +53,7 @@ import LightProperties from "../../objectProperties/LightProperties";
 import NpcProperties from "../../objectProperties/NpcProperties";
 import PickupProperties from "../../objectProperties/PickupProperties";
 import TileGroupProperties from "../../objectProperties/TileGroupProperties";
+import WaypointProperties from "../../objectProperties/WaypointProperties";
 import Tip from "../../Tip";
 
 export default function SelectTool() {
@@ -95,6 +98,7 @@ export default function SelectTool() {
     const entrances: EntranceObj[] = [];
     const exits: ExitObj[] = [];
     const pickups: PickupObj[] = [];
+    const waypoints: WaypointObj[] = [];
     const animatedInstances: AnimationInstance[] = [];
     const collisionZones: CollisionObj[] = [];
     const sensorZones: SensorZoneObj[] = [];
@@ -116,6 +120,8 @@ export default function SelectTool() {
         exits.push(obj);
       } else if (isPickupObj(obj)) {
         pickups.push(obj);
+      } else if (isWaypointObj(obj)) {
+        waypoints.push(obj);
       } else if (isAnimatedInstance(obj)) {
         animatedInstances.push(obj);
       } else if (isSinkZoneObj(obj)) {
@@ -140,6 +146,7 @@ export default function SelectTool() {
       entrances.length > 0,
       exits.length > 0,
       pickups.length > 0,
+      waypoints.length > 0,
       animatedInstances.length > 0,
       sinkZones.length > 0,
       zoomZones.length > 0,
@@ -182,6 +189,10 @@ export default function SelectTool() {
 
     if (pickups.length > 0) {
       return <PickupProperties key="pickup-props" objs={pickups} />;
+    }
+
+    if (waypoints.length > 0) {
+      return <WaypointProperties key="waypoint-props" objs={waypoints} />;
     }
 
     if (animatedInstances.length > 0) {

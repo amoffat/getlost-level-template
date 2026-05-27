@@ -16,6 +16,7 @@ import {
   isNpcInstance,
   isPickupObj,
   isTileGroupInstance,
+  isWaypointObj,
   isZoneObj,
   MapObj,
 } from "@/types/map";
@@ -511,6 +512,9 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         errorIndicator.zIndex = 20;
         spriteContainer.addChild(errorIndicator);
       } else if (isEntranceObj(obj)) {
+        const errorIndicator = this.createErrorIndicator(sprite);
+        spriteContainer.addChild(errorIndicator);
+      } else if (isWaypointObj(obj)) {
         const errorIndicator = this.createErrorIndicator(sprite);
         spriteContainer.addChild(errorIndicator);
       } else if (isPickupObj(obj)) {

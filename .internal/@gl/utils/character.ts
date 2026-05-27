@@ -159,30 +159,30 @@ export class Character {
     this._navPlan = navPlan;
 
     if (navImmediately) {
-      this.state = NavState.waiting;
+      this._state = NavState.waiting;
       navPlan.getNextWaypoint(this._pos).then((wp) => {
-        this._setNavWaypoint(wp);
+        if (wp) {
+          this._setNavWaypoint(wp);
+        }
       });
     }
   }
 
   private _setNavWaypoint(wp: Waypoint): void {
-    if (!wp.isNull) {
-      const hasPath = this.setTargetPos(wp.pos, wp.nearestIsOk);
-      this._navSpeed = wp.speed;
-      if (!hasPath) {
-        console.error(`Failed to find path to waypoint ${wp}`);
-      }
-      this._waypointPause = new Delay(wp.pause, wp.pause, true);
+    const hasPath = this.setTargetPos(wp.pos, wp.nearestIsOk);
+    this._navSpeed = wp.speed;
+    if (!hasPath) {
+      console.error(`Failed to find path to waypoint ${wp}`);
     }
+    this._waypointPause = new Delay(wp.pause, wp.pause, true);
   }
 
   onReachTarget(): void {
     this.clearTarget();
     if (this._navPlan.hasNextWaypoint(this._pos)) {
-      this.state = NavState.waiting;
+      this._state = NavState.waiting;
     } else {
-      this.state = NavState.stopped;
+      this._state = NavState.stopped;
     }
   }
 
@@ -193,13 +193,12 @@ export class Character {
     this.clearTarget();
 
     this._targetPath = (
-      await navigation.findPath(
-        this.id,
-        this._pos.toVector(),
-        targetPos.toVector(),
+      await navigation.findPath({
+        graphicsKey: this.id,
+        startPos: this._pos.toVector(),
+        endPos: targetPos.toVector(),
         nearestIsOk,
-        Number.POSITIVE_INFINITY as number,
-      )
+      })
     ).map((v) => Vec2.fromVector(v));
     this._targetPathLen = this._pathProgress();
 
@@ -210,7 +209,7 @@ export class Character {
       this._targetPos = targetPos;
 
       this.collisions = false;
-      this.state = NavState.moving;
+      this._state = NavState.moving;
     }
 
     return this._targetPath.length > 0;
@@ -222,10 +221,6 @@ export class Character {
     onlyWhileMoving: boolean = false,
   ): void {
     char.setMoveSound({ id: this.id, sound, volume, onlyWhileMoving });
-  }
-
-  private set state(state: NavState) {
-    this._state = state;
   }
 
   public set visibility(enabled: boolean) {
@@ -261,7 +256,7 @@ export class Character {
   }
 
   clearTarget(): void {
-    this.state = NavState.waiting;
+    this._state = NavState.waiting;
     this._targetPath = [];
     this._targetPos = new Vec2(0, 0);
     this._lastTrackResult = { index: -1, distance: 0, t: 0 };
@@ -304,7 +299,9 @@ export class Character {
     if (this._state === NavState.waiting) {
       if (this._waypointPause.tick(deltaMs)) {
         const wp = await this._navPlan.getNextWaypoint(this._pos);
-        this._setNavWaypoint(wp);
+        if (wp) {
+          this._setNavWaypoint(wp);
+        }
       }
     } else {
       // This lets us interrupt our current nav plan. Useful if our plan is to
@@ -312,7 +309,9 @@ export class Character {
       const needsNewWaypoint = await this._navPlan.tick(deltaMs, this._pos);
       if (needsNewWaypoint) {
         const wp = await this._navPlan.getNextWaypoint(this._pos);
-        this._setNavWaypoint(wp);
+        if (wp) {
+          this._setNavWaypoint(wp);
+        }
       }
     }
 

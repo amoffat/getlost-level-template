@@ -241,6 +241,10 @@
 {"k": "exitPropGatewayLabel", "v": "Entrance name", "ctx": "Label for the entrance gateway selector in the exit connection modal"}
 {"k": "exitPropGatewayPlaceholder", "v": "Select an entrance", "ctx": "Placeholder for the entrance gateway selector in the exit connection modal"}
 {"k": "exitPropGatewayDescription", "v": "Enter a Github repository ID first", "ctx": "Description shown in the exit connection modal to guide the user"}
+{"k": "waypointPropLegend", "v": "Waypoint properties", "ctx": "Fieldset legend for waypoint object properties panel"}
+{"k": "waypointPropSlugDescription", "v": "A unique name for this waypoint.", "ctx": "Description for the waypoint slug input"}
+{"k": "waypointTip1", "v": "Waypoints mark named positions on the map that can be referenced by scripts.", "ctx": "First tooltip tip for the waypoint tool"}
+{"k": "waypointTip2", "v": "Click on the map to place a waypoint.", "ctx": "Second tooltip tip for the waypoint tool"}
 {"k": "lightPropLegend", "v": "Light properties", "ctx": "Fieldset legend for light object properties panel"}
 {"k": "lightPropNameLabel", "v": "Name", "ctx": "Label for the light name input"}
 {"k": "lightPropNameDescription", "v": "A name for the light. Does not have to be unique.", "ctx": "Description for the light name input"}
