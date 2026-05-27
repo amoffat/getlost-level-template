@@ -4,7 +4,7 @@
     {
       "label": "Restart Vite",
       "type": "shell",
-      "command": "npx pm2 restart preview",
+      "command": "pnpm exec pm2 restart preview",
       "isBackground": true,
       "problemMatcher": [],
       "options": {

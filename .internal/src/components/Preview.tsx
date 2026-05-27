@@ -34,7 +34,15 @@ import {
   IconDeviceMobile,
   IconRocket,
 } from "@tabler/icons-react";
-import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ReactNode,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import CardModal from "./CardModal";
 import AdvancedSection from "./common/AdvancedSection";
@@ -104,7 +112,9 @@ export default function PreviewTab({
   const [checkboxState, setCheckboxState] = useState<Record<string, boolean>>(
     {},
   );
-  const pathgraphHash = useRef<string>(undefined);
+  const [pathgraphHash, setPathgraphHash] = useState<string | undefined>(
+    undefined,
+  );
   const [pathgraphReady, setPathgraphReady] = useState(false);
 
   // Load the pathgraph hash, because it's needed to construct the iframe src
@@ -112,13 +122,13 @@ export default function PreviewTab({
     fetch("/level/pathgraph.gz", { method: "HEAD" })
       .then((res) => {
         const hash = res.headers.get("X-Content-SHA1");
-        if (hash) pathgraphHash.current = hash;
+        if (hash) setPathgraphHash(hash);
       })
       .catch(() => {})
       .finally(() => {
         setPathgraphReady(true);
       });
-  }, []);
+  }, [setPathgraphHash]);
 
   const publishForm = useForm({
     initialValues: {
@@ -203,8 +213,7 @@ export default function PreviewTab({
       overlays: enableOverlays,
       device: deviceType,
       flags: debugFlags,
-      // eslint-disable-next-line react-hooks/refs
-      buildPathgraph: pathgraphHash.current,
+      buildPathgraph: pathgraphHash,
       reloadCount, // use it so the linter doesn't complain about deps
     };
     qs.set("debug", encodeForUrl(debugConfig));
@@ -216,12 +225,13 @@ export default function PreviewTab({
 
     qs.set("levelBaseUrl", levelUrl);
     return src.toString();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     gameEnv,
     enableOverlays,
     deviceType,
-    debugFlags,
-    pathgraphHash,
+    // debugFlags,
+    // pathgraphHash,
     pathgraphReady,
     reloadCount,
   ]);
@@ -238,12 +248,12 @@ export default function PreviewTab({
           body: graph,
         });
         const hash = await sha1Hash(graph.buffer);
-        pathgraphHash.current = hash;
+        setPathgraphHash(hash);
       },
     });
 
     return cleanup;
-  }, [comms]);
+  }, [comms, setPathgraphHash]);
 
   useEffect(() => {
     const cleanup = comms?.addMessageListener<MilestonesSyncMessage>({
@@ -282,7 +292,7 @@ export default function PreviewTab({
   };
 
   const rebuildPathgraph = () => {
-    pathgraphHash.current = undefined;
+    setPathgraphHash(undefined);
     setReloadCount((c) => c + 1);
   };
 
@@ -335,12 +345,9 @@ export default function PreviewTab({
   };
 
   const leftTips = useMemo(() => {
-    const tips = [];
-    if (!enableOverlays) {
-      tips.push(t("previewNoAudioTip"));
-    }
+    const tips: ReactNode[] = [];
     return tips;
-  }, [enableOverlays, t]);
+  }, []);
 
   const createDebugSwitch = (
     label: string,

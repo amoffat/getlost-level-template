@@ -10,7 +10,8 @@ import {
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
-import { Fieldset, Slider, Stack } from "@mantine/core";
+import { Fieldset, Select, Slider, Stack } from "@mantine/core";
+import { IconAlertTriangle } from "@tabler/icons-react";
 import { memo, ReactElement, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
@@ -18,7 +19,6 @@ import FlipXInput from "./inputs/FlipXInput";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
 import HiddenInput from "./inputs/HiddenInput";
 import LocalizedNameInput from "./inputs/LocalizedNameInput";
-import SelectWithCustom from "./inputs/SelectWithCustom";
 import SwitchInput from "./inputs/SwitchInput";
 import TintInput from "./inputs/TintInput";
 
@@ -106,14 +106,21 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       defaultValue={constants.defaultWalkSound}
       debounceMs={100}
       renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
+        const isMixed = value === undefined;
         return (
-          <SelectWithCustom
+          <Select
             key={key}
-            options={walkSounds}
-            defaultValue={value}
-            placeholder={t("tileGroupPropWalkSoundPlaceholder")}
-            mixedPlaceholder={t("tileGroupPropWalkSoundMixedValues")}
-            onChange={onChange}
+            data={[...walkSounds]}
+            defaultValue={value ?? null}
+            placeholder={
+              isMixed
+                ? t("tileGroupPropWalkSoundMixedValues")
+                : t("tileGroupPropWalkSoundPlaceholder")
+            }
+            leftSection={isMixed ? <IconAlertTriangle size={14} /> : undefined}
+            onChange={(val) => {
+              if (val !== null) onChange(val as WalkSound);
+            }}
           />
         );
       }}

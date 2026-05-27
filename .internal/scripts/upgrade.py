@@ -67,7 +67,8 @@ def upgrade_repo(
     if not dry_run:
         subprocess.run(
             [
-                "npx",
+                "pnpm",
+                "exec",
                 "--prefix",
                 str(internal_dir),
                 "pm2",

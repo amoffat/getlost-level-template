@@ -10,6 +10,7 @@ import { SunEvent } from "@gl/types/time";
 import { Animator } from "@gl/utils/animation";
 import { Character } from "@gl/utils/character";
 import { Easings } from "@gl/utils/easing";
+import { RandomWalk } from "@gl/utils/navigation";
 import { Vec2 } from "@gl/utils/vec2";
 
 let tiltShift!: number;
@@ -28,11 +29,11 @@ export async function init(): Promise<void> {
 
   const colors = new ColorMatrixFilter();
   // Warm, golden-hour feel: lift reds, soften greens, pull back blues
-  // colors.tint(1.05, 0.97, 0.9);
+  colors.tint(1.05, 0.97, 0.9);
   // Slight desaturation for a painterly softness with cross-channel bleed
   // colors.saturate(-0.1, true);
   // Lift shadows with a subtle atmospheric haze
-  // colors.overlay(0.04, 0.03, 0.04, true);
+  colors.overlay(0.04, 0.03, 0.04, true);
 
   // const bloom = filters.addBloom({
   //   brightness: 0.5,
@@ -44,6 +45,14 @@ export async function init(): Promise<void> {
   const sofia = Character.get("6b01ef44-a1a1-4021-aeca-e8b72477937c")!;
   sofia.visibility = false;
   const startZoom = 0.7;
+
+  const tech = Character.get("e0164411-13f4-4ec8-867a-3b2aba4c2a0f")!;
+  tech.setNavPlan(
+    new RandomWalk({
+      maxDistance: 64,
+      minPause: 1000,
+    }),
+  );
 
   events.on({
     type: "state-change",
@@ -74,7 +83,10 @@ export async function init(): Promise<void> {
 
   events.on({
     type: "sensor",
-    filter: { sensorId: "f4620bb5-9056-4fe4-9038-2c44d3f66ea9" },
+    filter: {
+      sensorId: "f4620bb5-9056-4fe4-9038-2c44d3f66ea9",
+      charId: "player",
+    },
     callbacks: [
       ({ enter }) => {
         if (enter) {

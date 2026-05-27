@@ -97,8 +97,8 @@ export class RandomWalk extends NavPlan {
 
   constructor({
     maxDistance,
-    minPause = 0,
-    maxPause = 0,
+    minPause,
+    maxPause,
   }: {
     maxDistance: number;
     minPause?: number;
@@ -106,8 +106,8 @@ export class RandomWalk extends NavPlan {
   }) {
     super();
     this._maxDistance = maxDistance;
-    this._minPause = minPause;
-    this._maxPause = maxPause;
+    this._minPause = minPause ?? 0;
+    this._maxPause = maxPause ?? this._minPause;
   }
 
   public override async getNextWaypoint(
@@ -210,12 +210,17 @@ export class FollowPlan extends NavPlan {
   private _maxDistance: number = 0;
   private _pause: number = 0;
 
-  constructor(
-    target: Character,
-    minDistance: number = 0,
-    maxDistance: number = 0,
-    pause: number = 0,
-  ) {
+  constructor({
+    target,
+    minDistance = 0,
+    maxDistance = 0,
+    pause = 0,
+  }: {
+    target: Character;
+    minDistance?: number;
+    maxDistance?: number;
+    pause?: number;
+  }) {
     super();
     this._target = target;
     this._minDistance = minDistance;
@@ -224,23 +229,32 @@ export class FollowPlan extends NavPlan {
   }
 
   public override async getNextWaypoint(
-    _curPos: Vec2,
+    curPos: Vec2,
   ): Promise<Waypoint | null> {
+    const curTargetPos = this._target.getPos();
+
     if (this._maxDistance > 0) {
+      const curDist = curTargetPos.distanceTo(curPos);
+      if (curDist >= this._minDistance && curDist <= this._maxDistance) {
+        return null;
+      }
+
       for (let i = 0; i < tryToFindValid; i++) {
         const rndPos = inRing(this._minDistance, this._maxDistance);
-        const candPos = this._target.getPos().added(rndPos);
+        const candPos = curTargetPos.added(rndPos);
 
-        if (await this._checkValid(_curPos, candPos, true)) {
+        if (await this._checkValid(curPos, candPos, true)) {
           const wp = new Waypoint(candPos.toVector());
           wp.pause = this._pause;
           wp.nearestIsOk = true;
+          return wp;
         }
       }
     } else {
-      const wp = new Waypoint(this._target.getPos().toVector());
+      const wp = new Waypoint(curTargetPos.toVector());
       wp.pause = this._pause;
       wp.nearestIsOk = true;
+      return wp;
     }
 
     return null;

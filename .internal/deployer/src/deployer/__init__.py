@@ -95,10 +95,11 @@ def collect_bundle(
     internal_dir = level_dir.parent / ".internal"
     script_dir = (internal_dir / "scripts").resolve()
     bundle_script = script_dir / "bundle-code.ts"
-    # Use npx tsx to run the script, passing the output directory
+    
     result = subprocess.run(
         [
-            "npx",
+            "pnpm",
+            "exec",
             "tsx",
             str(bundle_script),
             "--release",

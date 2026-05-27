@@ -47,6 +47,15 @@ export class Delay {
 
     this._accumulatedMs += deltaMs;
 
+    // 0 is an edge case where we can't use %, like we do below.
+    if (this._timeMs === 0) {
+      if (!this._repeat) {
+        this._done = true;
+      }
+      this._accumulatedMs = 0;
+      return true;
+    }
+
     if (this._accumulatedMs >= this._timeMs) {
       // If a very large delta pushed accumulatedMs far past frequencyMs, reduce
       // it to the remainder after removing whole frequency periods. This keeps
