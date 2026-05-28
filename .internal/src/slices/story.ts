@@ -1,9 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { Edge, Node } from "@xyflow/react";
 
+export interface MilestoneWaypoint {
+  characterId: string;
+  waypointId: string;
+  speed: number;
+}
+
 export interface StoryNodeData extends Record<string, unknown> {
   id: string;
   permanent?: boolean;
+  waypoints?: MilestoneWaypoint[];
 }
 
 export interface StoryEdgeData extends Record<string, unknown> {

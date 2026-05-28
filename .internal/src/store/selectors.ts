@@ -50,10 +50,6 @@ export function selectTemplateProps<
 /**
  * Resolves the effective value of a single property on a map object instance,
  * falling back to the template value if the instance has no override.
- *
- * Unlike `resolvePropertyValue` in utils/propertyEditor.ts, this function
- * accepts explicit state and can therefore be used as a dependency inside
- * reselect selectors.
  */
 export function selectPropertyValue<
   TInstance extends MapObj,

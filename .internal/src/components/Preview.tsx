@@ -517,6 +517,13 @@ export default function PreviewTab({
                       >
                         {t("previewStartBtn")}
                       </Button>
+                      <Button
+                        size="xs"
+                        onClick={rebuildPathgraph}
+                        disabled={!iframeLoaded}
+                      >
+                        {t("previewRebuildGraphBtn")}
+                      </Button>
                     </Group>
 
                     <Switch
@@ -556,16 +563,6 @@ export default function PreviewTab({
                       { value: "mobile", label: t("previewDeviceMobile") },
                     ]}
                   />
-                </Fieldset>
-
-                <Fieldset legend={t("previewPathfindingFieldset")} p="xs">
-                  <Button
-                    size="xs"
-                    onClick={rebuildPathgraph}
-                    disabled={!iframeLoaded}
-                  >
-                    {t("previewRebuildGraphBtn")}
-                  </Button>
                 </Fieldset>
 
                 {/* <Fieldset legend="Audio">

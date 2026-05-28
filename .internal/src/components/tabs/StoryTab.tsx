@@ -1,9 +1,12 @@
 // @refresh reset
 import { AncestorHighlightContext } from "@/contexts/AncestorHighlightContext";
+import { WaypointModalContext } from "@/contexts/WaypointModalContext";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
   JunctionNode,
+  MilestoneWaypoint,
   setEdges,
+  setNodeData,
   setNodes,
   StoryEdge,
   StoryNode,
@@ -13,7 +16,7 @@ import { reflowStoryThunk } from "@/thunks/story";
 import { showNotification } from "@/utils/notifications";
 import { Split } from "@gfazioli/mantine-split-pane";
 import { Button, Flex, ScrollArea, Stack } from "@mantine/core";
-import { useDebouncedCallback } from "@mantine/hooks";
+import { useDebouncedCallback, useDisclosure } from "@mantine/hooks";
 import {
   IconLogicOr,
   IconScriptPlus,
@@ -62,6 +65,7 @@ import StoryNodeComponent from "../flowNodes/StoryNode";
 import MilestoneEditor from "../MilestoneEditor";
 import MilestoneList from "../MilestoneList";
 import Tip from "../Tip";
+import WaypointLinkModal from "../WaypointLinkModal";
 
 import "@/styles/react-flow.css";
 
@@ -85,6 +89,48 @@ export default function StoryTab({
     null,
   );
   const dispatch = useAppDispatch();
+
+  // Waypoint modal — single shared instance for the whole tab
+  const [
+    waypointModalOpen,
+    { open: openWaypointModalDisc, close: closeWaypointModal },
+  ] = useDisclosure(false);
+  const [waypointModalNodeId, setWaypointModalNodeId] = useState<string | null>(
+    null,
+  );
+  const [editingWaypoint, setEditingWaypoint] =
+    useState<MilestoneWaypoint | null>(null);
+
+  const openWaypointModal = useCallback(
+    (nodeId: string, waypoint: MilestoneWaypoint | null) => {
+      setWaypointModalNodeId(nodeId);
+      setEditingWaypoint(waypoint);
+      openWaypointModalDisc();
+    },
+    [openWaypointModalDisc],
+  );
+
+  const waypointModalNode = useAppSelector((state: RootState) =>
+    waypointModalNodeId
+      ? state.story.nodes.find((n) => n.id === waypointModalNodeId)
+      : undefined,
+  );
+
+  const onSaveWaypoint = useCallback(
+    (wp: MilestoneWaypoint) => {
+      if (!waypointModalNodeId) return;
+      const existing = waypointModalNode?.data.waypoints ?? [];
+      const updated = editingWaypoint
+        ? existing.map((w) =>
+            w.characterId === editingWaypoint.characterId ? wp : w,
+          )
+        : [...existing, wp];
+      dispatch(
+        setNodeData({ id: waypointModalNodeId, data: { waypoints: updated } }),
+      );
+    },
+    [dispatch, waypointModalNodeId, waypointModalNode, editingWaypoint],
+  );
 
   const { nodes, edges, instanceKey } = useAppSelector(
     (state: RootState) => state.story,
@@ -484,7 +530,9 @@ export default function StoryTab({
       reactFlowInstance.setNodes(updatedNodes);
       // setSelectedNodeId is also updated via useOnSelectionChange,
       // but set it immediately so ancestorHighlight reacts without delay.
-      setSelectedNodeId(selectedNodeIds.length === 1 ? selectedNodeIds[0] : null);
+      setSelectedNodeId(
+        selectedNodeIds.length === 1 ? selectedNodeIds[0] : null,
+      );
     },
     [reactFlowInstance],
   );
@@ -536,7 +584,7 @@ export default function StoryTab({
   }, [nodes, edges, t]);
 
   return (
-    <>
+    <WaypointModalContext.Provider value={{ openWaypointModal }}>
       <Split h="100dvh" style={{ flex: 1 }}>
         {/* Left panel */}
         <Split.Pane
@@ -645,9 +693,9 @@ export default function StoryTab({
 
         {/* Right panel */}
         <Split.Pane
-          initialWidth={300}
+          initialWidth={400}
           minWidth={200}
-          maxWidth={500}
+          maxWidth={600}
           onResizeEnd={handlePaneResize}
         >
           <Stack h="100%" style={{ overflow: "hidden" }} pb="xl">
@@ -676,6 +724,16 @@ export default function StoryTab({
         <Menu.Label>Story Node Actions</Menu.Label>
         <Menu.Item onClick={handleAddDialogue}>Link NPC dialogue</Menu.Item>
       </FloatingMenu> */}
-    </>
+
+      <WaypointLinkModal
+        opened={waypointModalOpen}
+        onClose={closeWaypointModal}
+        onSave={onSaveWaypoint}
+        initialValues={editingWaypoint ?? undefined}
+        usedCharacterIds={
+          waypointModalNode?.data.waypoints?.map((w) => w.characterId) ?? []
+        }
+      />
+    </WaypointModalContext.Provider>
   );
 }

@@ -9,10 +9,12 @@ import {
   isNpcInstance,
   isSpeakableObject,
   isTileGroupInstance,
+  isWaypointObj,
   MapObj,
   MapObjType,
   NpcInstance,
   SpeakableMapObj,
+  WaypointObj,
 } from "@/types/map";
 import {
   EntranceProps,
@@ -532,6 +534,13 @@ export const slice = createSlice({
       (entities): NpcInstance[] =>
         Object.values(entities).filter((obj): obj is NpcInstance =>
           isNpcInstance(obj),
+        ),
+    ),
+    selectWaypoints: createMapSelector(
+      [(state) => state.objects.entities],
+      (entities): WaypointObj[] =>
+        Object.values(entities).filter((obj): obj is WaypointObj =>
+          isWaypointObj(obj),
         ),
     ),
     selectSpeakers: createMapSelector(

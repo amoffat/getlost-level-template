@@ -1,8 +1,12 @@
 import { useAncestorHighlight } from "@/contexts/AncestorHighlightContext";
+import { useWaypointModal } from "@/contexts/WaypointModalContext";
 import { useAppSelector } from "@/hooks/redux";
 import { selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
-import type { StoryNode as DNode } from "@/slices/story";
+import {
+  MilestoneWaypoint,
+  type StoryNode as DNode,
+} from "@/slices/story";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import type { RootState } from "@/store/store";
 import { isNpcInstance, isTileGroupInstance, type MapObj } from "@/types/map";
@@ -18,34 +22,22 @@ import { useNavigate } from "react-router";
 import TilesetGroup from "../TilesetGroup";
 import styles from "./styles/StoryNode.module.css";
 
-function SpeakerIcon({
+function CharacterIcon({
   objId,
-  dialogueId,
-  milestoneNodeId,
+  onClick,
 }: {
   objId: string;
-  dialogueId: string;
-  milestoneNodeId: string;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }) {
   const obj = useAppSelector((state: RootState) =>
     mapSelectors.selectObject(state, objId),
   ) as MapObj | undefined;
-  const navigate = useNavigate();
 
   const tmpl = useAppSelector((state: RootState) => {
     if (!obj) return null;
     if (!isNpcInstance(obj) && !isTileGroupInstance(obj)) return null;
     return tsSelectors.templateFromId(state, obj.tsObjId);
   });
-
-  const onSpeakerClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.stopPropagation();
-      // milestoneId in the URL is the stable story-node UUID, not the display name
-      navigate(createUrlPath({ id: dialogueId, milestone: milestoneNodeId }));
-    },
-    [navigate, dialogueId, milestoneNodeId],
-  );
 
   if (!obj || !tmpl) return null;
 
@@ -62,7 +54,7 @@ function SpeakerIcon({
   if (!icon) return null;
 
   return (
-    <UnstyledButton w={32} h={32} onClick={onSpeakerClick}>
+    <UnstyledButton w={32} h={32} onClick={onClick}>
       {icon}
     </UnstyledButton>
   );
@@ -72,6 +64,9 @@ function SpeakerIcon({
 // Displays the node label and exposes top/bottom handles for connections.
 export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
   const { nodeIds: ancestorNodeIds } = useAncestorHighlight();
+  const { openWaypointModal } = useWaypointModal();
+  const navigate = useNavigate();
+
   // Read node data from Redux so the label stays in sync when edited via
   // MilestoneEditor (which writes to Redux without going through ReactFlow's
   // internal state, just like DialogueNode does).
@@ -86,22 +81,40 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
     dSelectors.dialogueForMilestone(state, id),
   );
 
-  let speakers = null;
-  if (dialogues.length > 0) {
-    speakers = (
-      <Flex wrap="wrap" gap={0}>
-        {dialogues.map((dlg) => (
-          <Box key={dlg.id} w={32} h={32}>
-            <SpeakerIcon
-              objId={dlg.subjectId!}
-              dialogueId={dlg.id}
-              milestoneNodeId={id}
-            />
-          </Box>
-        ))}
-      </Flex>
-    );
-  }
+  const waypoints: MilestoneWaypoint[] = reduxNode?.data.waypoints ?? [];
+
+  const onWaypointIconClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>, wp: MilestoneWaypoint) => {
+      e.stopPropagation();
+      openWaypointModal(id, wp);
+    },
+    [openWaypointModal, id],
+  );
+
+  const hasIcons = dialogues.length > 0 || waypoints.length > 0;
+  const icons = hasIcons ? (
+    <Flex wrap="wrap" gap={0}>
+      {dialogues.map((dlg) => (
+        <Box key={dlg.id} w={32} h={32}>
+          <CharacterIcon
+            objId={dlg.subjectId!}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(createUrlPath({ id: dlg.id, milestone: id }));
+            }}
+          />
+        </Box>
+      ))}
+      {waypoints.map((wp) => (
+        <Box key={wp.characterId} w={32} h={32}>
+          <CharacterIcon
+            objId={wp.characterId}
+            onClick={(e) => onWaypointIconClick(e, wp)}
+          />
+        </Box>
+      ))}
+    </Flex>
+  ) : null;
 
   const isPermanent = reduxNode?.data.permanent === true;
 
@@ -119,7 +132,7 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
           {milestoneName}
           {isPermanent && <IconInfinity color="gold" />}
         </Group>
-        {speakers}
+        {icons}
       </Stack>
       <Handle type="source" position={Position.Bottom} />
     </div>

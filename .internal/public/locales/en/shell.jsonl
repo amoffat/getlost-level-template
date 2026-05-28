@@ -345,7 +345,7 @@
 {"k": "storyTabInvalidConnectionMsg", "v": "Creating this connection would create a cycle.", "ctx": "Notification message explaining why a story node connection is invalid"}
 {"k": "storyTabTip1", "v": "Create new story milestone nodes.", "ctx": "Tip shown in the story tab right panel when no nodes exist yet"}
 {"k": "storyTabTip2", "v": "Give nodes good names by selecting them and editing them below.", "ctx": "Tip shown in the story tab right panel about naming milestone nodes"}
-{"k": "storyTabTip3", "v": "A milestone should be a thing that can be achieved in the level.", "ctx": "Tip shown in the story tab right panel about what a milestone represents"}
+{"k": "storyTabTip3", "v": "A milestone is a thing that can be achieved in the level. Achieving it progresses the story in a meaningful way.", "ctx": "Tip shown in the story tab right panel about what a milestone represents"}
 {"k": "storyTabTip4", "v": "New nodes can be created by dragging off of an existing node.", "ctx": "Tip shown in the story tab right panel about creating nodes via drag"}
 {"k": "storyTabTip5", "v": "A node can be inserted into an existing connection by dragging it over the connection.", "ctx": "Tip shown in the story tab right panel about inserting nodes into edges"}
 {"k": "storyTabTip6", "v": "Delete an node or connection by selecting it and pressing the delete key.", "ctx": "Tip shown in the story tab right panel about deleting nodes or edges"}
@@ -643,3 +643,23 @@
 {"k": "tilesetReplaceImageFailedMsg", "v": "An error occurred while replacing the tileset image: {{msg}}", "ctx": "Notification body shown when replacing a tileset's image fails; {{msg}} is the error message"}
 {"k": "tilesetUploadReplaceExisting", "v": "Replace existing tilesets", "ctx": "Option group label in the tileset upload select for replacing existing tileset images"}
 {"k": "tilesetUploadReplaceImageOf", "v": "Replace image of {{id}}", "ctx": "Option label for replacing the image of a specific existing tileset; {{id}} is the tileset identifier"}
+{"k": "milestoneEditorWaypointsLegend", "v": "Waypoints", "ctx": "Fieldset legend for the waypoints section in the milestone editor right panel"}
+{"k": "milestoneEditorWaypointsInfo", "v": "These are waypoint-character pairings that will trigger when this milestone is satisfied. What this means is that when the milestone becomes satisfied, the character will automatically move to this waypoint. This saves you significant amount of custom code."}
+{"k": "milestoneEditorAddWaypointPair", "v": "Add waypoint pair", "ctx": "Button label to open the add-waypoint modal in the milestone editor"}
+{"k": "milestoneEditorEditWaypointLink", "v": "Edit waypoint link", "ctx": "Accessible label for the edit icon button on a waypoint-character row in the milestone editor"}
+{"k": "milestoneEditorDeleteWaypointLink", "v": "Delete waypoint link", "ctx": "Accessible label for the delete icon button on a waypoint-character row in the milestone editor"}
+{"k": "waypointLinkModalAddTitle", "v": "Add Waypoint pairing", "ctx": "Title of the modal for adding a new character-waypoint pair to a story milestone"}
+{"k": "waypointLinkModalEditTitle", "v": "Edit Waypoint pairing", "ctx": "Title of the modal for editing an existing character-waypoint pair on a story milestone"}
+{"k": "waypointLinkModalCharacterLabel", "v": "Character", "ctx": "Label for the character dropdown in the waypoint link modal"}
+{"k": "waypointLinkModalCharacterDescription", "v": "The NPC character to send to the waypoint.", "ctx": "Description under the character dropdown in the waypoint link modal"}
+{"k": "waypointLinkModalCharacterPlaceholder", "v": "Select a character", "ctx": "Placeholder text for the character dropdown in the waypoint link modal"}
+{"k": "waypointLinkModalWaypointLabel", "v": "Waypoint", "ctx": "Label for the waypoint dropdown in the waypoint link modal"}
+{"k": "waypointLinkModalWaypointDescription", "v": "The waypoint the character should walk to.", "ctx": "Description under the waypoint dropdown in the waypoint link modal"}
+{"k": "waypointLinkModalWaypointPlaceholder", "v": "Select a waypoint", "ctx": "Placeholder text for the waypoint dropdown in the waypoint link modal"}
+{"k": "waypointLinkModalSpeedLabel", "v": "Speed", "ctx": "Label for the speed slider in the waypoint link modal"}
+{"k": "waypointLinkModalSpeedDescription", "v": "Walk speed for this character toward the waypoint.", "ctx": "Description under the speed slider in the waypoint link modal"}
+{"k": "waypointLinkModalSaveBtn", "v": "Save", "ctx": "Submit button label in the waypoint link modal"}
+{"k": "waypointLinkModalCharacterRequired", "v": "A character is required.", "ctx": "Validation error shown on the character dropdown in the waypoint link modal"}
+{"k": "waypointLinkModalWaypointRequired", "v": "A waypoint is required.", "ctx": "Validation error shown on the waypoint dropdown in the waypoint link modal"}
+{"k": "milestoneEditorDialoguesLegend", "v": "Dialogues"}
+{"k": "milestoneEditorDialoguesInfo", "v": "These are dialogues that are triggered when this milestone is satisfied. This allows the level's NPCs to react dynamically to changes in the level by changing what they have to say as different milestones become satisfied.\n\nThese dialogues must be in the Dialogue Tab, by setting the milestones that should be linked to the dialogue."}

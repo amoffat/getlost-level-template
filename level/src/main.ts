@@ -10,7 +10,6 @@ import { SunEvent } from "@gl/types/time";
 import { Animator } from "@gl/utils/animation";
 import { Character } from "@gl/utils/character";
 import { Easings } from "@gl/utils/easing";
-import { RandomWalk } from "@gl/utils/navigation";
 import { Vec2 } from "@gl/utils/vec2";
 
 let tiltShift!: number;
@@ -47,12 +46,6 @@ export async function init(): Promise<void> {
   const startZoom = 0.7;
 
   const tech = Character.get("e0164411-13f4-4ec8-867a-3b2aba4c2a0f")!;
-  tech.setNavPlan(
-    new RandomWalk({
-      maxDistance: 64,
-      minPause: 1000,
-    }),
-  );
 
   events.on({
     type: "state-change",
