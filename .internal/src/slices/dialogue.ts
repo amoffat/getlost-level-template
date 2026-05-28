@@ -1,4 +1,4 @@
-import { defaultMilestone } from "@/constants";
+import { defaultLocale, defaultMilestone } from "@/constants";
 import type { RootState } from "@/store/store";
 import {
   createEntityAdapter,
@@ -315,11 +315,44 @@ const dialogueForMilestone = createSelector(
   },
 );
 
+/**
+ * Returns the text of the first (origin) node in the given dialogue, resolved
+ * against the currently active story locale. Falls back to the default locale,
+ * and then to "..." if no text is found.
+ */
+const selectFirstNodeText = createSelector(
+  [
+    (state: RootState) => state.dialogue.dialogues,
+    (state: RootState) => state.locale,
+    (_: RootState, dialogueId: string) => dialogueId,
+  ],
+  (dialogues, locale, dialogueId): string => {
+    const dlg = dialogues.entities[dialogueId];
+    if (!dlg) return "...";
+
+    const originNode = (Object.values(dlg.nodes.entities) as (DNode | undefined)[]).find(
+      (n) => n?.data.isOrigin,
+    );
+    if (!originNode) return "...";
+
+    const contentKey = originNode.data.contentKey;
+    if (!contentKey) return "...";
+
+    const activeLocale = locale.activeLocale;
+    const activeText = locale.entries[activeLocale]?.entities[contentKey]?.v;
+    if (activeText) return activeText;
+
+    const defaultText = locale.entries[defaultLocale]?.entities[contentKey]?.v;
+    return defaultText ?? "...";
+  },
+);
+
 export const selectors = {
   ...slice.selectors,
   availableMilestones,
   allMilestones,
   dialogueForMilestone,
+  selectFirstNodeText,
 };
 export const actions = slice.actions;
 

@@ -1,5 +1,5 @@
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { useWaypointModal } from "@/contexts/WaypointModalContext";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as localeSelectors } from "@/slices/locale";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
@@ -9,7 +9,8 @@ import { selectPropertyValue } from "@/store/selectors";
 import { RootState, store } from "@/store/store";
 import { Dialogue } from "@/types/dialogue";
 import { NpcInstance, SpeakableMapObj, WaypointObj } from "@/types/map";
-import type { NpcTemplate } from "@/types/npc";
+import { isNpcTemplate, type NpcTemplate } from "@/types/npc";
+import { isTileGroupTemplate } from "@/types/tilegroup";
 import { createUrlPath } from "@/utils/dialogue";
 import { resolveLocaleText } from "@/utils/locale";
 import { sanitize } from "@/utils/slug";
@@ -23,6 +24,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
+
 import { useDebouncedCallback } from "@mantine/hooks";
 import {
   IconArrowNarrowRight,
@@ -119,25 +121,25 @@ export default function MilestoneEditor({
     return (
       <Stack align="center" justify="center" style={{ height: "100%" }}>
         <Text size="sm" c="dimmed">
-          Select a milestone node to edit its properties.
+          {t("milestoneEditorEmptyState")}
         </Text>
       </Stack>
     );
   }
 
   const nameError = isEmpty
-    ? "Name cannot be empty."
+    ? t("milestoneEditorNameEmpty")
     : isDuplicate
-      ? "This milestone name is already in use."
+      ? t("milestoneEditorNameDuplicate")
       : undefined;
 
   return (
     <>
-      <Fieldset legend="Milestone Details" p="xs">
+      <Fieldset legend={t("milestoneEditorDetailsLegend")} p="xs">
         <Stack p={0} gap="md">
           <TextInput
-            label="Name"
-            description="A name to reference this milestone. Must be unique."
+            label={t("milestoneEditorNameLabel")}
+            description={t("milestoneEditorNameDesc")}
             required
             value={localName}
             onChange={(e) => onNameChange(e.currentTarget.value)}
@@ -146,8 +148,8 @@ export default function MilestoneEditor({
             onFocus={(e) => e.currentTarget.select()}
           />
           <Checkbox
-            label="Permanent"
-            description="Should this become part of the player's permanent action history?"
+            label={t("milestoneEditorPermanentLabel")}
+            description={t("milestoneEditorPermanentDesc")}
             defaultChecked={node.data.permanent ?? false}
             onChange={(e) => onPermanentChange(e.currentTarget.checked)}
           />
@@ -224,17 +226,36 @@ function DialogueRow({
       ? mapSelectors.selectObject(state, dialogue.subjectId)
       : undefined,
   ) as SpeakableMapObj | undefined;
+  const template = useAppSelector((state) =>
+    tsSelectors.templateFromId(state, obj?.tsObjId),
+  );
 
-  const name = obj?.nameKey ? t(obj.nameKey) : dialogue.id;
+  const firstNodeText = useAppSelector((state: RootState) =>
+    dSelectors.selectFirstNodeText(state, dialogue.id),
+  );
+
+  const spriteFrame = useMemo(() => {
+    if (!obj) return null;
+    if (!template) return null;
+    if (isNpcTemplate(template)) {
+      return template.animations["WalkDown"]?.animation.frames[0]?.tg ?? null;
+    }
+    if (isTileGroupTemplate(template)) {
+      return template;
+    }
+    return null;
+  }, [obj, template]);
+
   const path = createUrlPath({ id: dialogue.id, milestone: milestoneNodeId });
 
   return (
     <Group gap="xs" wrap="nowrap">
-      <Text size="sm" style={{ flex: 1 }}>
-        {name}
+      {spriteFrame && <TilesetGroup scale={1.2} group={spriteFrame} bounded />}
+      <Text size="sm" truncate="end" style={{ flex: 1 }}>
+        {firstNodeText}
       </Text>
       <Button variant="subtle" size="xs" onClick={() => onNavigate(path)}>
-        Edit
+        {t("milestoneEditorEditDialogue")}
       </Button>
     </Group>
   );

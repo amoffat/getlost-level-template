@@ -144,13 +144,14 @@ const templateFromId = createTsSelector(
   [
     (state) => state.tilesets,
     (state) => state.objIdToTs,
-    (_, instanceId: string) => instanceId,
+    (_, instanceId: string | undefined) => instanceId,
   ],
   (
     tilesets: Record<string, Tileset>,
     objIdToTs: Record<string, string>,
-    instanceId: string,
+    instanceId: string | undefined,
   ): TemplateObject | null => {
+    if (instanceId === undefined) return null;
     const tsId = objIdToTs[instanceId];
     if (!tsId) return null;
     const ts = tilesets[tsId];

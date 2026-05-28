@@ -644,7 +644,7 @@
 {"k": "tilesetUploadReplaceExisting", "v": "Replace existing tilesets", "ctx": "Option group label in the tileset upload select for replacing existing tileset images"}
 {"k": "tilesetUploadReplaceImageOf", "v": "Replace image of {{id}}", "ctx": "Option label for replacing the image of a specific existing tileset; {{id}} is the tileset identifier"}
 {"k": "milestoneEditorWaypointsLegend", "v": "Waypoints", "ctx": "Fieldset legend for the waypoints section in the milestone editor right panel"}
-{"k": "milestoneEditorWaypointsInfo", "v": "These are waypoint-character pairings that will trigger when this milestone is satisfied. What this means is that when the milestone becomes satisfied, the character will automatically move to this waypoint. This saves you significant amount of custom code."}
+{"k": "milestoneEditorWaypointsInfo", "v": "These are waypoint-character pairings that will trigger when this milestone is satisfied. What this means is that when the milestone becomes satisfied, the character will automatically move to this waypoint. This saves you significant amount code which would otherwise be required to coordinate this common behavior."}
 {"k": "milestoneEditorAddWaypointPair", "v": "Add waypoint pair", "ctx": "Button label to open the add-waypoint modal in the milestone editor"}
 {"k": "milestoneEditorEditWaypointLink", "v": "Edit waypoint link", "ctx": "Accessible label for the edit icon button on a waypoint-character row in the milestone editor"}
 {"k": "milestoneEditorDeleteWaypointLink", "v": "Delete waypoint link", "ctx": "Accessible label for the delete icon button on a waypoint-character row in the milestone editor"}
@@ -661,5 +661,14 @@
 {"k": "waypointLinkModalSaveBtn", "v": "Save", "ctx": "Submit button label in the waypoint link modal"}
 {"k": "waypointLinkModalCharacterRequired", "v": "A character is required.", "ctx": "Validation error shown on the character dropdown in the waypoint link modal"}
 {"k": "waypointLinkModalWaypointRequired", "v": "A waypoint is required.", "ctx": "Validation error shown on the waypoint dropdown in the waypoint link modal"}
-{"k": "milestoneEditorDialoguesLegend", "v": "Dialogues"}
-{"k": "milestoneEditorDialoguesInfo", "v": "These are dialogues that are triggered when this milestone is satisfied. This allows the level's NPCs to react dynamically to changes in the level by changing what they have to say as different milestones become satisfied.\n\nThese dialogues must be in the Dialogue Tab, by setting the milestones that should be linked to the dialogue."}
+{"k": "milestoneEditorDialoguesLegend", "v": "Dialogues", "ctx": "Fieldset legend for the dialogues section in the milestone editor right panel"}
+{"k": "milestoneEditorDialoguesInfo", "v": "These are dialogues that are made active when this milestone is satisfied. This allows the level's NPCs to react dynamically to changes in the level by changing what they have to say as different milestones become satisfied.\n\nThese dialogues must be in the Dialogue Tab, by setting the milestones that should be linked to the dialogue.", "ctx": "Tooltip text for the dialogues fieldset in the milestone editor"}
+{"k": "milestoneEditorEmptyState", "v": "Select a milestone node to edit its properties.", "ctx": "Placeholder shown in the milestone editor right panel when no node is selected"}
+{"k": "milestoneEditorDetailsLegend", "v": "Milestone Details", "ctx": "Fieldset legend for the main details section in the milestone editor"}
+{"k": "milestoneEditorNameLabel", "v": "Name", "ctx": "Label for the milestone name input in the milestone editor"}
+{"k": "milestoneEditorNameDesc", "v": "A name to reference this milestone. Must be unique.", "ctx": "Description under the milestone name input"}
+{"k": "milestoneEditorNameEmpty", "v": "Name cannot be empty.", "ctx": "Validation error shown on the milestone name input when it is blank"}
+{"k": "milestoneEditorNameDuplicate", "v": "This milestone name is already in use.", "ctx": "Validation error shown on the milestone name input when the name is not unique"}
+{"k": "milestoneEditorPermanentLabel", "v": "Permanent", "ctx": "Label for the permanent checkbox in the milestone editor"}
+{"k": "milestoneEditorPermanentDesc", "v": "Should this become part of the player's permanent action history?", "ctx": "Description under the permanent checkbox in the milestone editor"}
+{"k": "milestoneEditorEditDialogue", "v": "Edit", "ctx": "Button label to open the dialogue editor from a dialogue row in the milestone editor"}

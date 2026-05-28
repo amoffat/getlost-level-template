@@ -10,7 +10,7 @@ import {
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import type { RootState } from "@/store/store";
 import { isNpcInstance, isTileGroupInstance, type MapObj } from "@/types/map";
-import { NpcTemplate } from "@/types/npc";
+import { NpcRequiredAnimation, NpcTemplate } from "@/types/npc";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { createUrlPath } from "@/utils/dialogue";
 import { Box, Flex, Group, Stack, UnstyledButton } from "@mantine/core";
@@ -19,15 +19,18 @@ import { Handle, Position, type NodeProps } from "@xyflow/react";
 import classNames from "classnames";
 import { useCallback } from "react";
 import { useNavigate } from "react-router";
+import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
 import styles from "./styles/StoryNode.module.css";
 
 function CharacterIcon({
   objId,
   onClick,
+  animation,
 }: {
   objId: string;
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  animation?: NpcRequiredAnimation;
 }) {
   const obj = useAppSelector((state: RootState) =>
     mapSelectors.selectObject(state, objId),
@@ -44,8 +47,20 @@ function CharacterIcon({
   let icon;
   if (isNpcInstance(obj)) {
     const npcTmpl = tmpl as NpcTemplate;
-    const tg = npcTmpl.animations.Idle.animation.frames[0]!.tg;
-    icon = <TilesetGroup scale={1.5} group={tg} bounded />;
+    if (animation) {
+      const npcAnim = npcTmpl.animations[animation];
+      icon = (
+        <TileAnimation
+          scale={1.5}
+          frames={npcAnim.animation.frames}
+          flipX={npcAnim.flipX}
+          bounded
+        />
+      );
+    } else {
+      const tg = npcTmpl.animations.Idle.animation.frames[0]!.tg;
+      icon = <TilesetGroup scale={1.5} group={tg} bounded />;
+    }
   } else if (isTileGroupInstance(obj)) {
     const tgTmpl = tmpl as TileGroupTemplate;
     icon = <TilesetGroup scale={1.5} group={tgTmpl} bounded />;
@@ -109,6 +124,7 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
         <Box key={wp.characterId} w={32} h={32}>
           <CharacterIcon
             objId={wp.characterId}
+            animation="WalkDown"
             onClick={(e) => onWaypointIconClick(e, wp)}
           />
         </Box>
