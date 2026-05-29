@@ -1,3 +1,4 @@
+import { storyOriginNodeId } from "@/constants";
 import { useWaypointModal } from "@/contexts/WaypointModalContext";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors as dSelectors } from "@/slices/dialogue";
@@ -58,6 +59,8 @@ export default function MilestoneEditor({
   const node = useAppSelector((state: RootState) =>
     state.story.nodes.find((n) => n.id === nodeId),
   );
+
+  const isOrigin = nodeId === storyOriginNodeId;
 
   // data.id is the human-readable milestone name shown in the UI.
   // node.id (nodeId) is the stable UUID used for dialogue linkage.
@@ -146,13 +149,17 @@ export default function MilestoneEditor({
             error={nameError}
             autoFocus={autoFocus}
             onFocus={(e) => e.currentTarget.select()}
+            readOnly={isOrigin}
+            disabled={isOrigin}
           />
-          <Checkbox
-            label={t("milestoneEditorPermanentLabel")}
-            description={t("milestoneEditorPermanentDesc")}
-            defaultChecked={node.data.permanent ?? false}
-            onChange={(e) => onPermanentChange(e.currentTarget.checked)}
-          />
+          {!isOrigin && (
+            <Checkbox
+              label={t("milestoneEditorPermanentLabel")}
+              description={t("milestoneEditorPermanentDesc")}
+              defaultChecked={node.data.permanent ?? false}
+              onChange={(e) => onPermanentChange(e.currentTarget.checked)}
+            />
+          )}
         </Stack>
       </Fieldset>
 

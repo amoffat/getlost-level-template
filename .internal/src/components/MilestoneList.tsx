@@ -1,3 +1,4 @@
+import { storyOriginNodeId } from "@/constants";
 import { useAppSelector } from "@/hooks/redux";
 import { RootState } from "@/store/store";
 import {
@@ -9,7 +10,7 @@ import {
   TextInput,
   Tooltip,
 } from "@mantine/core";
-import { IconFilter, IconInfinity } from "@tabler/icons-react";
+import { IconFilter, IconInfinity, IconLock } from "@tabler/icons-react";
 import { ComponentType, FC, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -104,9 +105,17 @@ export default function MilestoneList({
         />
         {filteredMilestoneIds.map((nodeId) => {
           const milestoneName = nodeIdToMilestoneId.get(nodeId) ?? nodeId;
-          const isSelected = checkboxState[nodeId] ?? false;
+          const isOrigin = nodeId === storyOriginNodeId;
+          const isSelected = isOrigin || (checkboxState[nodeId] ?? false);
           const isPermanent = nodeIdToPermanent.get(nodeId) ?? false;
-          const label = isPermanent ? (
+          const label = isOrigin ? (
+            <Group gap={4} wrap="nowrap">
+              {milestoneName}
+              <Tooltip label={t("milestoneListOriginTooltip")} withArrow>
+                <IconLock size={14} color="green" />
+              </Tooltip>
+            </Group>
+          ) : isPermanent ? (
             <Group gap={4} wrap="nowrap">
               {milestoneName}
               <Tooltip label={t("milestoneListPermanentTooltip")} withArrow>
@@ -121,13 +130,14 @@ export default function MilestoneList({
               key={nodeId}
               label={label}
               checked={!!(isSelected || ancestorHighlight?.has(nodeId))}
+              disabled={isOrigin}
               onChange={() => {
-                if (onChange) {
+                if (onChange && !isOrigin) {
                   onChange({ ...checkboxState, [nodeId]: !isSelected });
                 }
               }}
               size="sm"
-              style={{ cursor: onChange ? "pointer" : "default" }}
+              style={{ cursor: onChange && !isOrigin ? "pointer" : "default" }}
               color={isSelected ? "green" : undefined}
               icon={
                 isSelected

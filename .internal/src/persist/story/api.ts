@@ -1,4 +1,4 @@
-import type { StoryEdge, StoryNode } from "@/slices/story";
+import { ORIGIN_NODE, type StoryEdge, type StoryNode } from "@/slices/story";
 import type { Dialogue, DNode } from "@/types/dialogue";
 import type { EngineDialogue, EngineSpeechData } from "@/types/engineDialogue";
 import { MILESTONE_NODE_DEFAULTS } from "@/types/properties";
@@ -85,7 +85,7 @@ export async function loadStory(): Promise<{
 }> {
   const res = await fetch("/level/story.cbor.gz", { method: "GET" });
   if (res.status === 404) {
-    return { nodes: [], edges: [], dialogues: [] };
+    return { nodes: [ORIGIN_NODE], edges: [], dialogues: [] };
   }
   if (!res.ok) throw new Error(`loadStory failed: ${res.status}`);
 

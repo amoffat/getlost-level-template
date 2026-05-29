@@ -343,6 +343,8 @@
 {"k": "dialogueTabUnlinkDialogue", "v": "Unlink from active dialogue", "ctx": "Tooltip on the unlink button shown when a dialogue leaf is selected and has multiple milestones"}
 {"k": "storyTabInvalidConnection", "v": "Invalid connection", "ctx": "Notification title shown when the user tries to create a connection that would form a cycle"}
 {"k": "storyTabInvalidConnectionMsg", "v": "Creating this connection would create a cycle.", "ctx": "Notification message explaining why a story node connection is invalid"}
+{"k": "storyTabCannotDeleteOrigin", "v": "Cannot delete", "ctx": "Notification title when user tries to delete the story origin (start) node"}
+{"k": "storyTabCannotDeleteOriginMsg", "v": "The start node cannot be deleted.", "ctx": "Notification message when user tries to delete the story origin (start) node"}
 {"k": "storyTabTip1", "v": "Create new story milestone nodes.", "ctx": "Tip shown in the story tab right panel when no nodes exist yet"}
 {"k": "storyTabTip2", "v": "Give nodes good names by selecting them and editing them below.", "ctx": "Tip shown in the story tab right panel about naming milestone nodes"}
 {"k": "storyTabTip3", "v": "A milestone is a thing that can be achieved in the level. Achieving it progresses the story in a meaningful way.", "ctx": "Tip shown in the story tab right panel about what a milestone represents"}
@@ -437,6 +439,7 @@
 {"k": "milestoneListDefaultLegend", "v": "Milestones", "ctx": "Default legend text for the milestone list fieldset when no custom legend is provided"}
 {"k": "milestoneListFilterPlaceholder", "v": "Filter...", "ctx": "Placeholder text for the milestone filter input"}
 {"k": "milestoneListPermanentTooltip", "v": "Permanent milestone", "ctx": "Tooltip on the infinity icon next to milestones that are permanent"}
+{"k": "milestoneListOriginTooltip", "v": "Automatically satisfied at level start", "ctx": "Tooltip on the lock icon next to the origin (start) milestone in the milestone list"}
 {"k": "objectPaletteFilterByTags", "v": "Filter by tags", "ctx": "Placeholder for the (currently disabled) tag filter input in the object palette"}
 {"k": "tilesetBtnMapObjectsUseTileset", "v": "{{count}} map objects use this tileset.", "ctx": "Status message shown in delete confirmation when map objects reference the tileset; {{count}} is the number of objects"}
 {"k": "tilesetBtnNoMapObjects", "v": "No map objects are using this tileset.", "ctx": "Status message shown in delete confirmation when no map objects reference the tileset"}

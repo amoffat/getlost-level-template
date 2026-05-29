@@ -1,5 +1,6 @@
 import { useAncestorHighlight } from "@/contexts/AncestorHighlightContext";
 import { useWaypointModal } from "@/contexts/WaypointModalContext";
+import { storyOriginNodeId } from "@/constants";
 import { useAppSelector } from "@/hooks/redux";
 import { selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
@@ -133,16 +134,18 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
   ) : null;
 
   const isPermanent = reduxNode?.data.permanent === true;
+  const isOrigin = id === storyOriginNodeId;
 
   const cls = classNames(styles.node, {
     "react-flow__node-default": true,
     [styles.selected]: selected,
     [styles.ancestorHighlight]: !selected && ancestorNodeIds.has(id),
+    [styles.origin]: isOrigin,
   });
 
   return (
     <div className={cls}>
-      <Handle type="target" position={Position.Top} />
+      {!isOrigin && <Handle type="target" position={Position.Top} />}
       <Stack p={0} align="center">
         <Group gap={4} wrap="nowrap">
           {milestoneName}

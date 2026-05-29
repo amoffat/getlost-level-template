@@ -75,4 +75,9 @@ export const maxBoundsArea = 1750 * 1750;
 export const maxDialogueChoices = 5;
 export const defaultMilestone = "default";
 
+/** Fixed ReactFlow node ID for the story origin (start) node. */
+export const storyOriginNodeId = defaultMilestone;
+/** Human-readable milestone name displayed for the story origin node. */
+export const storyOriginNodeName = "start";
+
 export const defaultLocale = "main";

@@ -1,4 +1,4 @@
-import { defaultLocale, defaultMilestone } from "@/constants";
+import { defaultLocale } from "@/constants";
 import type { RootState } from "@/store/store";
 import {
   createEntityAdapter,
@@ -253,7 +253,6 @@ const availableMilestones = createSelector(
     dialogues,
   ): { value: string; label: string }[] => {
     const allItems: { value: string; label: string }[] = [
-      { value: defaultMilestone, label: "Default" },
       ...storyNodes.map((n) => ({ value: n.id, label: n.data.id })),
     ];
 

@@ -1,3 +1,4 @@
+import { storyOriginNodeId, storyOriginNodeName } from "@/constants";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { Edge, Node } from "@xyflow/react";
 
@@ -10,6 +11,7 @@ export interface MilestoneWaypoint {
 export interface StoryNodeData extends Record<string, unknown> {
   id: string;
   permanent?: boolean;
+  isOrigin?: boolean;
   waypoints?: MilestoneWaypoint[];
 }
 
@@ -25,6 +27,14 @@ export type StoryNode = Node<StoryNodeData>;
 export type StoryEdge = Edge<StoryEdgeData>;
 export type JunctionNode = Node<JunctionNodeData>;
 
+/** The story origin node that is always present and cannot be deleted. */
+export const ORIGIN_NODE: StoryNode = {
+  id: storyOriginNodeId,
+  position: { x: 0, y: 0 },
+  type: "story",
+  data: { id: storyOriginNodeName, isOrigin: true },
+};
+
 interface StoryState {
   nodes: StoryNode[];
   edges: StoryEdge[];
@@ -37,7 +47,7 @@ interface StoryState {
 }
 
 const initialState: StoryState = {
-  nodes: [],
+  nodes: [ORIGIN_NODE],
   edges: [],
   loading: false,
   error: undefined,
@@ -82,7 +92,7 @@ export const slice = createSlice({
       state.error = action.payload;
     },
     resetInstance(state) {
-      state.nodes = [];
+      state.nodes = [ORIGIN_NODE];
       state.edges = [];
       state.instanceKey += 1;
     },

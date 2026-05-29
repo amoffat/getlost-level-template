@@ -89,5 +89,14 @@ export interface StoryDocV8 {
   };
 }
 
-export type LatestStoryDoc = StoryDocV8;
-export const latestVersion = 8;
+/**
+ * v9: Introduces the story origin node (id = "default", data.id = "start").
+ * No structural changes to the schema — the migration just ensures the origin
+ * node is present in editor.nodes.
+ */
+export interface StoryDocV9 extends Omit<StoryDocV8, "version"> {
+  version: 9;
+}
+
+export type LatestStoryDoc = StoryDocV9;
+export const latestVersion = 9;

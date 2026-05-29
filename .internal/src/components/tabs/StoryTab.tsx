@@ -1,6 +1,7 @@
 // @refresh reset
 import { AncestorHighlightContext } from "@/contexts/AncestorHighlightContext";
 import { WaypointModalContext } from "@/contexts/WaypointModalContext";
+import { storyOriginNodeId } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
   JunctionNode,
@@ -147,6 +148,17 @@ export default function StoryTab({
   // that was connected to the deleted node(s).
   const onBeforeDelete: OnBeforeDelete<StoryNode, StoryEdge> = useCallback(
     async ({ nodes: nodesToDelete }) => {
+      // Prevent deletion of the undeletable origin node.
+      const hasOrigin = nodesToDelete.some((n) => n.id === storyOriginNodeId);
+      if (hasOrigin) {
+        showNotification({
+          title: t("storyTabCannotDeleteOrigin"),
+          message: t("storyTabCannotDeleteOriginMsg"),
+          color: "orange",
+        });
+        return false;
+      }
+
       const currentEdges = reactFlowInstance.getEdges();
       const removedIds = new Set(nodesToDelete.map((n) => n.id));
 
@@ -183,7 +195,7 @@ export default function StoryTab({
       pendingBridgingEdgesRef.current = bridgingEdges;
       return true;
     },
-    [reactFlowInstance],
+    [reactFlowInstance, t],
   );
 
   // After deletion completes, inject the bridging edges
@@ -561,13 +573,17 @@ export default function StoryTab({
     return selectedNode?.type === "story";
   }, [nodes, selectedNodeId]);
 
+  // The origin node always exists, so treat "only origin node present" the same
+  // as empty for UX purposes (milestone list, tips).
+  const hasUserNodes = nodes.some((n) => n.id !== storyOriginNodeId);
+
   const showMilestoneEditor = selectedNodeId && isStoryNode;
   const showDependencyMilestones = nodes.length > 0;
 
   const rightTips: ReactNode[] = useMemo(() => {
     const tips = [];
 
-    if (nodes.length === 0) {
+    if (!hasUserNodes) {
       tips.push(t("storyTabTip1"));
     } else {
       tips.push(t("storyTabTip2"));
@@ -575,13 +591,13 @@ export default function StoryTab({
       tips.push(t("storyTabTip4"));
     }
 
-    if (nodes.length > 0 && edges.length > 0) {
+    if (hasUserNodes && edges.length > 0) {
       tips.push(t("storyTabTip5"));
       tips.push(t("storyTabTip6"));
     }
 
     return tips;
-  }, [nodes, edges, t]);
+  }, [hasUserNodes, edges, t]);
 
   return (
     <WaypointModalContext.Provider value={{ openWaypointModal }}>
