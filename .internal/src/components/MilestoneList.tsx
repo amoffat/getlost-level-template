@@ -40,14 +40,14 @@ export default function MilestoneList({
   const nodes = useAppSelector((state: RootState) => state.story.nodes);
   const [filter, setFilter] = useState("");
 
-  // Alphabetical sort milestone nodes
+  // Alphabetical sort milestone nodes, origin node always first
   const sortedMilestoneIds = useMemo(() => {
     const sorted = nodes
       .filter((n) => n.type === "story")
       .sort((a, b) => {
-        const nameA = a.data.id;
-        const nameB = b.data.id;
-        return nameA.localeCompare(nameB);
+        if (a.id === storyOriginNodeId) return -1;
+        if (b.id === storyOriginNodeId) return 1;
+        return (a.data.id as string).localeCompare(b.data.id as string);
       });
 
     return sorted.map((n) => n.id);
@@ -140,7 +140,7 @@ export default function MilestoneList({
               style={{ cursor: onChange && !isOrigin ? "pointer" : "default" }}
               color={isSelected ? "green" : undefined}
               icon={
-                isSelected
+                isSelected && !isOrigin
                   ? (SelectedIcon as unknown as FC<{
                       indeterminate: boolean | undefined;
                       className: string;

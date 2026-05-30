@@ -2,6 +2,7 @@ import { setZoom } from "@gl/api/camera";
 import * as controls from "@gl/api/controls";
 import * as filters from "@gl/api/filters";
 import * as object from "@gl/api/object";
+import * as story from "@gl/api/story";
 
 import { setSunEvent } from "@gl/api/time";
 import { showhide } from "@gl/behaviors/showhide";
@@ -82,7 +83,7 @@ export async function init(): Promise<void> {
     },
     callbacks: [
       ({ enter }) => {
-        if (enter) {
+        if (enter && story.isAnySatisfied(["meet-tech-support"])) {
           controls.addButton({
             labelKey: "jump",
             onRelease: () => {

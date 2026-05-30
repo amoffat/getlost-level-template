@@ -58,7 +58,7 @@ export class Character {
 
   private _navPlan: NavPlan;
 
-  private _sourcePos: Vec2 = new Vec2(0, 0);
+  private _initialPos: Vec2 = new Vec2(0, 0);
   private _targetPos: Vec2 = new Vec2(0, 0);
   private _targetPath: Vec2[] = [];
   private _targetPathLen: number = 0; // total length of the target path
@@ -73,10 +73,9 @@ export class Character {
 
   constructor(id: string) {
     this.id = id;
-    const initialPos = char.getPos(id);
-    this._navPlan = new StationaryPlan(initialPos);
-    this._pos = Vec2.fromVector(initialPos);
-    this._sourcePos = this._pos;
+    this._initialPos = Vec2.fromVector2(char.getPos(id));
+    this._navPlan = new StationaryPlan(this._initialPos);
+    this._pos = Vec2.fromVector2(this._initialPos);
     this._isPlayer = this.id == "player";
     chars.set(id, this);
 
@@ -115,7 +114,7 @@ export class Character {
   }
 
   public setVelocity(v: Vector2): void {
-    this._velocity = Vec2.fromVector(v);
+    this._velocity = Vec2.fromVector2(v);
   }
 
   public addImpulse(impulse: Vec2): void {
@@ -187,7 +186,7 @@ export class Character {
   }
 
   async setTargetPos(
-    targetPos: Vec2,
+    targetPos: Vector2,
     nearestIsOk: boolean = true,
   ): Promise<boolean> {
     this.clearTarget();
@@ -196,17 +195,17 @@ export class Character {
       await navigation.findPath({
         graphicsKey: this.id,
         startPos: this._pos.toVector(),
-        endPos: targetPos.toVector(),
+        endPos: targetPos,
         nearestIsOk,
       })
-    ).map((v) => Vec2.fromVector(v));
+    ).map((v) => Vec2.fromVector2(v));
     this._targetPathLen = this._pathProgress();
 
     // Even if `nearestIsOk` is true, it's still possible not to find a path, if
     // your start and end are two separate "islands" of nodes.
     if (this._targetPath.length > 0) {
-      this._sourcePos = this._pos;
-      this._targetPos = targetPos;
+      this._initialPos = this._pos;
+      this._targetPos = Vec2.fromVector2(targetPos);
 
       this.collisions = false;
       this._state = NavState.moving;
@@ -530,4 +529,14 @@ export class Character {
     this._fallingVelocity = startVelocity;
     char.setShadow(this.id, false);
   }
+}
+
+/**
+ * Called by the engine only to move a character to a location in response to a
+ * milestone state change.
+ * @private
+ */
+export function setCharacterTargetPos(id: string, pos: Vector2): void {
+  const c = chars.get(id);
+  c?.setTargetPos(pos);
 }

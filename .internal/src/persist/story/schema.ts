@@ -1,41 +1,7 @@
 import type { StoryEdge, StoryNode } from "@/slices/story";
 import { Dialogue } from "@/types/dialogue";
 import { EngineDialogue } from "@/types/engineDialogue";
-
-export interface StateEdge {
-  stateId: string;
-  negated: boolean;
-}
-
-export interface StoryState {
-  id: string;
-  kind: "story" | "or";
-  dependencies: StateEdge[];
-  dependents: StateEdge[];
-}
-
-export interface MilestoneState extends StoryState {
-  kind: "story";
-
-  // Whether this milestone has been satisfied. Used only by the engine.
-  satisfied: boolean;
-}
-
-export interface OrState extends StoryState {
-  kind: "or";
-}
-
-export type SerializedState = MilestoneState | OrState;
-
-export function isMilestoneState(
-  state: SerializedState,
-): state is MilestoneState {
-  return state.kind === "story";
-}
-
-export function isOrState(state: SerializedState): state is OrState {
-  return state.kind === "or";
-}
+import { SerializedState } from "@/types/state";
 
 export interface BaseStoryDoc {
   version: number;

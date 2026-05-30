@@ -73,7 +73,7 @@ export class StationaryPlan extends NavPlan {
 
   constructor(position: Vector2) {
     super();
-    this._position = Vec2.fromVector(position);
+    this._position = Vec2.fromVector2(position);
   }
 
   static fromWaypoint(name: string): StationaryPlan {

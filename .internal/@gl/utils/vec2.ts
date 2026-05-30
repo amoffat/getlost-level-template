@@ -14,7 +14,7 @@ export class Vec2 implements Vector2 {
     return new Vec2(0, 0);
   }
 
-  static fromVector(vec: Vector2): Vec2 {
+  static fromVector2(vec: Vector2): Vec2 {
     return new Vec2(vec.x, vec.y);
   }
 

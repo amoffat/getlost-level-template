@@ -3,7 +3,7 @@ import { saveStory } from "@/persist/story/api";
 import { slice as dialogueSlice } from "@/slices/dialogue";
 import { setLoading, slice as storySlice } from "@/slices/story";
 import { type RootState } from "@/store/store";
-import type { Dialogue } from "@/types/dialogue";
+import { Dialogue } from "@/types/dialogue";
 import { AppStartListening } from "@/types/redux";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { EMPTY, Subject, from } from "rxjs";
@@ -21,7 +21,9 @@ saveRequests$
   .pipe(
     debounceTime(500), // collapse rapid bursts of actions
     concatMap(({ story, dialogues }) =>
-      from(saveStory(story.nodes, story.edges, dialogues)).pipe(
+      from(
+        saveStory({ nodes: story.nodes, edges: story.edges, dialogues }),
+      ).pipe(
         tap(() => {
           log.info(
             "[autosave] Story saved (nodes: %d, edges: %d, dialogues: %d)",
@@ -57,9 +59,9 @@ startAppListening({
   },
   effect: async (_action, { getState }) => {
     const state = getState();
-    const dialogues = state.dialogue.dialogues.ids
-      .map((id) => state.dialogue.dialogues.entities[id])
-      .filter((d): d is Dialogue => d !== undefined);
+    const dialogues = state.dialogue.dialogues.ids.map(
+      (id) => state.dialogue.dialogues.entities[id],
+    );
     saveRequests$.next({ story: state.story, dialogues });
   },
 });

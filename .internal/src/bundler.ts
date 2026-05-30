@@ -106,8 +106,8 @@ export function __internal__init() {
   player = new __internal__.Player();
   events = new __internal__.EventDispatcher();
 
-  for (const name of __internal__.getAllChars()) {
-    new __internal__.Character(name);
+  for (const id of __internal__.getAllChars()) {
+    new __internal__.Character(id);
   }
 }
 
@@ -228,6 +228,11 @@ export async function bundleWithRollup(
     {
       symbolNames: ["dispatchEvent"],
       importPath: "@gl/events",
+      internal: false,
+    },
+    {
+      symbolNames: ["setCharacterTargetPos"],
+      importPath: "@gl/utils/character",
       internal: false,
     },
   ];

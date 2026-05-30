@@ -2,54 +2,46 @@ import { ORIGIN_NODE, type StoryEdge, type StoryNode } from "@/slices/story";
 import type { Dialogue, DNode } from "@/types/dialogue";
 import type { EngineDialogue, EngineSpeechData } from "@/types/engineDialogue";
 import { MILESTONE_NODE_DEFAULTS } from "@/types/properties";
+import { SerializedState } from "@/types/state";
 import { applyMigrations } from "@/utils/migrations";
 import { applyDefaultProps } from "@/utils/misc";
 import { Edge } from "@xyflow/react";
 import { decode, encode } from "cbor2";
 import { getMigrations } from "./migrations";
-import {
-  BaseStoryDoc,
-  LatestStoryDoc,
-  latestVersion,
-  SerializedState,
-} from "./schema";
+import { BaseStoryDoc, LatestStoryDoc, latestVersion } from "./schema";
 
 /**
  * Converts ReactFlow nodes and edges into an array of serialized State objects.
  * Each node becomes a StoryState or OrState, and edges define
  * dependency/dependent relationships.
  */
-export function serializeToStates({
+export function serializeToMilestoneStates({
   nodes,
   edges,
-  dialogues,
 }: {
   nodes: StoryNode[];
   edges: StoryEdge[];
-  dialogues: Dialogue[];
 }): SerializedState[] {
   const nodeIdToState = new Map<string, SerializedState>();
-  const nodeIdtoStateId = new Map<string, string>();
-
-  const milestoneToNpcDialogues: Record<string, Record<string, string>> = {};
-  for (const d of dialogues) {
-    for (const m of d.milestoneNodeIds) {
-      (milestoneToNpcDialogues[m] ??= {})[d.subjectId!] = d.id;
-    }
-  }
+  const nodeIdtoStateName = new Map<string, string>();
 
   for (const node of nodes) {
     const kind = node.type === "or" ? "or" : "story";
     if (kind === "story") {
-      const stateId = node.data.id;
-      nodeIdtoStateId.set(node.id, stateId);
+      const stateName = node.data.id;
+      nodeIdtoStateName.set(node.id, stateName);
+      const waypoints = new Map(
+        node.data.waypoints?.map((mw) => [mw.characterId, mw]),
+      );
 
       nodeIdToState.set(node.id, {
-        id: stateId,
+        id: node.id,
+        name: stateName,
         kind,
         dependencies: [],
         dependents: [],
         satisfied: false,
+        waypoints,
       });
     } else {
       nodeIdToState.set(node.id, {
@@ -66,11 +58,11 @@ export function serializeToStates({
     const target = nodeIdToState.get(edge.target)!;
     const negated = edge.data?.negated ?? false;
     if (!target.dependencies.some((d) => d.stateId === edge.source)) {
-      const stateId = nodeIdtoStateId.get(edge.source) ?? edge.source;
+      const stateId = nodeIdtoStateName.get(edge.source) ?? edge.source;
       target.dependencies.push({ stateId, negated });
     }
     if (!source.dependents.some((d) => d.stateId === edge.target)) {
-      const stateId = nodeIdtoStateId.get(edge.target) ?? edge.target;
+      const stateId = nodeIdtoStateName.get(edge.target) ?? edge.target;
       source.dependents.push({ stateId, negated });
     }
   }
@@ -114,7 +106,7 @@ export async function loadStory(): Promise<{
   }
 
   if (migrated) {
-    await saveStory(nodes, edges, dialogues);
+    await saveStory({ nodes, edges, dialogues });
   }
 
   return { nodes, edges, dialogues };
@@ -210,11 +202,15 @@ function buildEngineDialoguesRecord(
   return result;
 }
 
-export async function saveStory(
-  nodes: StoryNode[],
-  edges: StoryEdge[],
-  dialogues: Dialogue[] = [],
-): Promise<void> {
+export async function saveStory({
+  nodes,
+  edges,
+  dialogues,
+}: {
+  nodes: StoryNode[];
+  edges: StoryEdge[];
+  dialogues: Dialogue[];
+}): Promise<void> {
   const doc: LatestStoryDoc = {
     version: latestVersion,
     editor: {
@@ -223,7 +219,7 @@ export async function saveStory(
       dialogues,
     },
     engine: {
-      states: serializeToStates({ nodes, edges, dialogues }),
+      states: serializeToMilestoneStates({ nodes, edges }),
       dialogues: buildEngineDialoguesRecord(dialogues, nodes),
     },
   };

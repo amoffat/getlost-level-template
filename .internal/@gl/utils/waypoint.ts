@@ -10,7 +10,7 @@ export class Waypoint {
   public nearestIsOk: boolean = false;
 
   constructor(pos: Vector2, pause: number = 1000, speed: number = 1.0) {
-    this.pos = Vec2.fromVector(pos);
+    this.pos = Vec2.fromVector2(pos);
     this.speed = speed;
     this.pause = pause;
   }

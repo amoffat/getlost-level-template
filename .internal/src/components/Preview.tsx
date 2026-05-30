@@ -32,7 +32,11 @@ import { notifications } from "@mantine/notifications";
 import {
   IconDeviceDesktop,
   IconDeviceMobile,
+  IconPlayerPlay,
+  IconPlayerStop,
+  IconRefresh,
   IconRocket,
+  IconRoute,
 } from "@tabler/icons-react";
 import {
   ReactNode,
@@ -500,6 +504,7 @@ export default function PreviewTab({
                         size="xs"
                         onClick={restartIframe}
                         disabled={!iframeLoaded}
+                        leftSection={<IconRefresh size={14} />}
                       >
                         {t("previewRestartBtn")}
                       </Button>
@@ -507,6 +512,7 @@ export default function PreviewTab({
                         size="xs"
                         onClick={stopIframe}
                         disabled={!iframeLoaded}
+                        leftSection={<IconPlayerStop size={14} />}
                       >
                         {t("previewStopBtn")}
                       </Button>
@@ -514,6 +520,7 @@ export default function PreviewTab({
                         size="xs"
                         onClick={loadIframe}
                         disabled={iframeLoaded}
+                        leftSection={<IconPlayerPlay size={14} />}
                       >
                         {t("previewStartBtn")}
                       </Button>
@@ -521,6 +528,7 @@ export default function PreviewTab({
                         size="xs"
                         onClick={rebuildPathgraph}
                         disabled={!iframeLoaded}
+                        leftSection={<IconRoute size={14} />}
                       >
                         {t("previewRebuildGraphBtn")}
                       </Button>
