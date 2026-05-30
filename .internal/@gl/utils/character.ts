@@ -168,7 +168,10 @@ export class Character {
   }
 
   private _setNavWaypoint(wp: Waypoint): void {
-    const hasPath = this.setTargetPos(wp.pos, wp.nearestIsOk);
+    const hasPath = this.setTargetPos({
+      targetPos: wp.pos,
+      nearestIsOk: wp.nearestIsOk,
+    });
     this._navSpeed = wp.speed;
     if (!hasPath) {
       console.error(`Failed to find path to waypoint ${wp}`);
@@ -185,10 +188,15 @@ export class Character {
     }
   }
 
-  async setTargetPos(
-    targetPos: Vector2,
-    nearestIsOk: boolean = true,
-  ): Promise<boolean> {
+  async setTargetPos({
+    targetPos,
+    nearestIsOk = true,
+    speed = 1.0,
+  }: {
+    targetPos: Vector2;
+    nearestIsOk?: boolean;
+    speed?: number;
+  }): Promise<boolean> {
     this.clearTarget();
 
     this._targetPath = (
@@ -206,6 +214,7 @@ export class Character {
     if (this._targetPath.length > 0) {
       this._initialPos = this._pos;
       this._targetPos = Vec2.fromVector2(targetPos);
+      this._navSpeed = speed;
 
       this.collisions = false;
       this._state = NavState.moving;
@@ -225,7 +234,6 @@ export class Character {
   public set visibility(enabled: boolean) {
     char.toggle(this.id, enabled);
     this._visible = enabled;
-    navigation.clearPath(this.id);
   }
 
   /**
@@ -282,8 +290,6 @@ export class Character {
    * @returns
    */
   public async tick(deltaMs: number): Promise<void> {
-    if (!this._visible) return;
-
     const dtSec: number = deltaMs / 1000;
     this._persistAction.tick(deltaMs);
 
@@ -351,7 +357,7 @@ export class Character {
       if (maybeStuck) {
         // FIXME
         if (this._stuckTimer > stuckTimeout) {
-          this.setTargetPos(this._targetPos);
+          this.setTargetPos({ targetPos: this._targetPos });
           return;
         } else {
           this._stuckTimer += deltaMs;
@@ -366,7 +372,7 @@ export class Character {
       }
       // If we're too far away from our path, recalc our path
       else if (trackResult.distance > 32) {
-        this.setTargetPos(this._targetPos);
+        this.setTargetPos({ targetPos: this._targetPos });
       }
       // Happy path
       else {
@@ -536,7 +542,15 @@ export class Character {
  * milestone state change.
  * @private
  */
-export function setCharacterTargetPos(id: string, pos: Vector2): void {
-  const c = chars.get(id);
-  c?.setTargetPos(pos);
+export function setCharacterTargetPos({
+  charId,
+  pos,
+  speed = 1.0,
+}: {
+  charId: string;
+  pos: Vector2;
+  speed?: number;
+}): void {
+  const c = chars.get(charId);
+  c?.setTargetPos({ targetPos: pos, speed });
 }
