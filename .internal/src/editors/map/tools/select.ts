@@ -163,6 +163,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
     const state = store.getState();
     const ms = state.mapEditor;
 
+    const curSelected = ms.selectedIds;
     const searchBounds = rectToBBox(e.hitbox);
 
     const allHits = this.spatialIndex.getObjects({
@@ -172,20 +173,25 @@ class Selector extends ClickDragListener<Mode> implements Tool {
     const layerHits = allHits.filter((obj) => {
       const layer = obj.layer ?? 0;
       const layerMatches = layer === ms.layers.active;
-      return layerMatches && !ms.layers.hiddenLayers.includes(layer as MapLayerName);
+      return (
+        layerMatches && !ms.layers.hiddenLayers.includes(layer as MapLayerName)
+      );
     });
 
     // Nothing selected? Clear either the proposed selection (if any) (first
     // click), or the actual selection (second click).
     if (layerHits.length === 0) {
-      const filteredHits = allHits
-        .filter((obj) => !ms.layers.hiddenLayers.includes((obj.layer ?? 0) as MapLayerName))
+      const nonHiddenHits = allHits
+        .filter(
+          (obj) =>
+            !ms.layers.hiddenLayers.includes((obj.layer ?? 0) as MapLayerName),
+        )
         .sort((a, b) => sortOrder(b.layer) - sortOrder(a.layer));
 
       // It's more ergonomic to allow selecting an object, even if we're not on
       // that layer, if it's the only object under the cursor.
-      if (filteredHits.length > 0) {
-        const obj = filteredHits[0];
+      if (nonHiddenHits.length > 0 && curSelected.length === 0) {
+        const obj = nonHiddenHits[0];
         store
           .dispatch(setActiveLayerThunk({ layer: obj.layer, notify: true }))
           .unwrap();
@@ -223,7 +229,6 @@ class Selector extends ClickDragListener<Mode> implements Tool {
       if (layerHits.length === 1) {
         const obj = layerHits[0];
 
-        const curSelected = ms.selectedIds;
         const alreadySelected = curSelected.includes(obj.id);
 
         if (alreadySelected && this._addToSelection) {
