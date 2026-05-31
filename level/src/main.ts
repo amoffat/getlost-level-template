@@ -22,7 +22,7 @@ const fallThresholdX = 354;
  * filters, or setting up event handlers.
  */
 export async function init(): Promise<void> {
-  tiltShift = filters.addTiltShift(0.0);
+  tiltShift = filters.addTiltShift(0.06);
   setSunEvent(SunEvent.SolarNoon, 0);
 
   setZoom(0.7);
@@ -31,7 +31,7 @@ export async function init(): Promise<void> {
   // Warm, golden-hour feel: lift reds, soften greens, pull back blues
   colors.tint(1.05, 0.97, 0.9);
   // Slight desaturation for a painterly softness with cross-channel bleed
-  // colors.saturate(-0.1, true);
+  colors.saturate(-0.1, true);
   // Lift shadows with a subtle atmospheric haze
   colors.overlay(0.04, 0.03, 0.04, true);
 

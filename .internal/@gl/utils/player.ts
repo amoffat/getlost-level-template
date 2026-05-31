@@ -13,8 +13,8 @@ export class Player extends Character {
     super("player");
   }
 
-  protected getMoveAction(velocity: Vec2): CharAction {
-    return velocity.x < 0 ? CharAction.WalkLeft : CharAction.WalkRight;
+  protected override getMoveAction(dir: Vec2): CharAction {
+    return dir.x < 0 ? CharAction.WalkLeft : CharAction.WalkRight;
   }
 
   public override hurt(dir: Vec2): boolean {
@@ -35,7 +35,7 @@ export class Player extends Character {
   }
 
   public setGuideTarget(char: Character): void {
-    const pos = char.pos.subbed(new Vec2(0, 10));
+    const pos = char.getPos().subbed(new Vec2(0, 10));
     this._guideTarget = pos;
     player.setGuideTarget(pos.x, pos.y);
   }
