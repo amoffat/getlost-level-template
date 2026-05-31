@@ -500,8 +500,9 @@ export default function PreviewTab({
                 <Fieldset legend={t("previewEngineFieldset")} p="xs">
                   <Stack p={0}>
                     <Group gap="xs">
-                      <Button.Group>
+                      <Button.Group w="100%">
                         <Button
+                          fullWidth
                           size="xs"
                           onClick={restartIframe}
                           disabled={!iframeLoaded}
@@ -510,6 +511,7 @@ export default function PreviewTab({
                           {t("previewRestartBtn")}
                         </Button>
                         <Button
+                          fullWidth
                           size="xs"
                           variant="default"
                           onClick={stopIframe}
@@ -519,6 +521,7 @@ export default function PreviewTab({
                           {t("previewStopBtn")}
                         </Button>
                         <Button
+                          fullWidth
                           size="xs"
                           onClick={loadIframe}
                           disabled={iframeLoaded}
@@ -545,36 +548,7 @@ export default function PreviewTab({
                         setAutoReload(event.currentTarget.checked)
                       }
                     />
-
-                    <Switch
-                      label={t("previewEnableOverlaysLabel")}
-                      defaultChecked={enableOverlays}
-                      onChange={(event) =>
-                        setEnableOverlays(event.currentTarget.checked)
-                      }
-                    />
                   </Stack>
-                </Fieldset>
-
-                <Fieldset legend={t("previewDeviceEmulationFieldset")} p="xs">
-                  <Select
-                    defaultValue={deviceType}
-                    onChange={(value) =>
-                      setDeviceType(value as "desktop" | "mobile")
-                    }
-                    allowDeselect={false}
-                    leftSection={
-                      deviceType === "mobile" ? (
-                        <IconDeviceMobile size={16} />
-                      ) : (
-                        <IconDeviceDesktop size={16} />
-                      )
-                    }
-                    data={[
-                      { value: "desktop", label: t("previewDeviceDesktop") },
-                      { value: "mobile", label: t("previewDeviceMobile") },
-                    ]}
-                  />
                 </Fieldset>
 
                 {/* <Fieldset legend="Audio">
@@ -672,23 +646,62 @@ export default function PreviewTab({
                 </Fieldset>
 
                 <AdvancedSection>
-                  <Fieldset legend={t("previewDeveloperToolsFieldset")} p="xs">
-                    <Stack gap="xs" p={0}>
+                  <Stack p={0} pb="xl">
+                    <Fieldset
+                      legend={t("previewDeveloperToolsFieldset")}
+                      p="xs"
+                    >
+                      <Stack gap="xs" p={0}>
+                        <Select
+                          label={t("previewEnvironmentLabel")}
+                          description={t("previewEngineDescription")}
+                          data={[
+                            { value: "local", label: t("previewEnvLocalhost") },
+                            { value: "prod", label: t("previewEnvProduction") },
+                            { value: "qa", label: t("previewEnvQA") },
+                          ]}
+                          defaultValue={gameEnv}
+                          onChange={(value) => setGameEnv(value as Env)}
+                          allowDeselect={false}
+                          w={"100%"}
+                        />
+                        <Switch
+                          label={t("previewEnableOverlaysLabel")}
+                          defaultChecked={enableOverlays}
+                          onChange={(event) =>
+                            setEnableOverlays(event.currentTarget.checked)
+                          }
+                        />
+                      </Stack>
+                    </Fieldset>
+
+                    <Fieldset
+                      legend={t("previewDeviceEmulationFieldset")}
+                      p="xs"
+                    >
                       <Select
-                        label={t("previewEnvironmentLabel")}
-                        description={t("previewEngineDescription")}
-                        data={[
-                          { value: "local", label: t("previewEnvLocalhost") },
-                          { value: "prod", label: t("previewEnvProduction") },
-                          { value: "qa", label: t("previewEnvQA") },
-                        ]}
-                        defaultValue={gameEnv}
-                        onChange={(value) => setGameEnv(value as Env)}
+                        defaultValue={deviceType}
+                        onChange={(value) =>
+                          setDeviceType(value as "desktop" | "mobile")
+                        }
                         allowDeselect={false}
-                        w={"100%"}
+                        leftSection={
+                          deviceType === "mobile" ? (
+                            <IconDeviceMobile size={16} />
+                          ) : (
+                            <IconDeviceDesktop size={16} />
+                          )
+                        }
+                        data={[
+                          {
+                            value: "desktop",
+                            label: t("previewDeviceDesktop"),
+                          },
+                          { value: "mobile", label: t("previewDeviceMobile") },
+                        ]}
                       />
-                    </Stack>
-                  </Fieldset>
+                    </Fieldset>
+                  </Stack>
                 </AdvancedSection>
               </Stack>
             </ScrollArea>
