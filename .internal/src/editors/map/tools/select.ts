@@ -45,6 +45,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
   private _marqueeEnabled = false;
   private _hoveringObjects = false;
   private _recentlyClosedMenu = false;
+  private _pointerDownDidSelection = false;
 
   constructor(private spatialIndex: SpatialIndex<MapObj>) {
     super((state) => mapEdSelectors.selectMode(state));
@@ -61,6 +62,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
   public override pointerDown(e: PointerEventData): boolean {
     if (!this.modeMatches()) return false;
 
+    this._pointerDownDidSelection = false;
     const state = store.getState();
     const isGroundLayer = state.mapEditor.layers.active === MapLayerName.Ground;
 
@@ -93,6 +95,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
         return true;
       } else {
         this._marqueeEnabled = false;
+        this._pointerDownDidSelection = true;
         this._doSelection(e);
         // Let the mover handle the rest, but we still select the object here.
         return false;
@@ -118,19 +121,23 @@ class Selector extends ClickDragListener<Mode> implements Tool {
       return false;
     }
 
-    // In pointerDown, we may have deferred to our mover if we clicked "over" an
-    // element. However, if we've now determined that we never moved, we should
-    // handle the click selection here. We should be able to trigger this branch
-    // by simply clicking on an object.
+    // In pointerDown, we may have deferred to our mover if we clicked over a
+    // selected element. However, if we've now determined that we never moved,
+    // we should handle the click selection here. We should be able to trigger
+    // this branch by simply clicking on an object.
     if (e.hoverIds.length > 0 && !e.moved && !this._addToSelection) {
       this._marqueeEnabled = false;
-      this._doSelection(e);
+      if (!this._pointerDownDidSelection) {
+        this._doSelection(e);
+      }
       return true;
     }
 
     if (!this._marqueeEnabled) return false;
 
-    this._doSelection(e);
+    if (!this._pointerDownDidSelection) {
+      this._doSelection(e);
+    }
     this._marqueeEnabled = false;
     return true;
   }
@@ -164,6 +171,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
     const ms = state.mapEditor;
 
     const curSelected = ms.selectedIds;
+    const hasProposed = ms.proposedSelection;
     const searchBounds = rectToBBox(e.hitbox);
 
     const allHits = this.spatialIndex.getObjects({
@@ -206,7 +214,6 @@ class Selector extends ClickDragListener<Mode> implements Tool {
       // We just want to clear the "proposed selection" menu or the current
       // selection.
       else {
-        const hasProposed = ms.proposedSelection;
         if (hasProposed) {
           store.dispatch(actions.setProposedSelection(null));
         } else if (!this._addToSelection) {
@@ -225,41 +232,47 @@ class Selector extends ClickDragListener<Mode> implements Tool {
     // We'll use proposed selection if there's more than one object under the
     // cursor. If there's just one, select it directly.
     else {
-      store.dispatch(actions.setProposedSelection(null));
-      if (layerHits.length === 1) {
-        const obj = layerHits[0];
+      if (hasProposed) {
+        store.dispatch(actions.setProposedSelection(null));
+      } else if (curSelected.length > 0) {
+        store.dispatch(actions.clearSelection());
+      } else {
+        store.dispatch(actions.setProposedSelection(null));
+        if (layerHits.length === 1) {
+          const obj = layerHits[0];
 
-        const alreadySelected = curSelected.includes(obj.id);
+          const alreadySelected = curSelected.includes(obj.id);
 
-        if (alreadySelected && this._addToSelection) {
-          // If the object is already selected, and we're adding to selection,
-          // just deselect it.
-          store.dispatch(actions.removeOneSelected(obj.id));
-        } else {
-          const action = this._addToSelection
-            ? actions.addOneSelected
-            : actions.setOneSelected;
-          store.dispatch(action(obj.id));
-          if (isTileGroupInstance(obj)) {
-            const tmpl = tsSelectors.templateFromId(state, obj.tsObjId);
-            if (tmpl) {
-              store.dispatch(actions.setPlace(tmpl));
+          if (alreadySelected && this._addToSelection) {
+            // If the object is already selected, and we're adding to selection,
+            // just deselect it.
+            store.dispatch(actions.removeOneSelected(obj.id));
+          } else {
+            const action = this._addToSelection
+              ? actions.addOneSelected
+              : actions.setOneSelected;
+            store.dispatch(action(obj.id));
+            if (isTileGroupInstance(obj)) {
+              const tmpl = tsSelectors.templateFromId(state, obj.tsObjId);
+              if (tmpl) {
+                store.dispatch(actions.setPlace(tmpl));
+              }
             }
           }
         }
-      }
-      // There's multiple objects under the cursor, so we'll show the proposed
-      // selection menu.
-      else {
-        if (!this._addToSelection) {
-          store.dispatch(actions.clearSelection());
+        // There's multiple objects under the cursor, so we'll show the proposed
+        // selection menu.
+        else {
+          if (!this._addToSelection) {
+            store.dispatch(actions.clearSelection());
+          }
+          store.dispatch(
+            actions.setProposedSelection({
+              objects: layerHits,
+              pos: e.pagePos,
+            }),
+          );
         }
-        store.dispatch(
-          actions.setProposedSelection({
-            objects: layerHits,
-            pos: e.pagePos,
-          }),
-        );
       }
     }
   }
