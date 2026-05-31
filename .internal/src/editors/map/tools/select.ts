@@ -234,7 +234,11 @@ class Selector extends ClickDragListener<Mode> implements Tool {
     else {
       if (hasProposed) {
         store.dispatch(actions.setProposedSelection(null));
-      } else if (curSelected.length > 0) {
+      } else if (
+        curSelected.length > 0 &&
+        !this._addToSelection &&
+        layerHits.length === 0
+      ) {
         store.dispatch(actions.clearSelection());
       } else {
         store.dispatch(actions.setProposedSelection(null));
