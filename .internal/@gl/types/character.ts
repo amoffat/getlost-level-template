@@ -6,4 +6,8 @@ export enum CharAction {
   WalkDown,
   HurtLeft,
   HurtRight,
+  StandLeft,
+  StandRight,
+  StandUp,
+  StandDown,
 }

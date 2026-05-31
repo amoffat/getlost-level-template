@@ -47,6 +47,8 @@ export async function init(): Promise<void> {
   const startZoom = 0.7;
 
   const tech = Character.get("e0164411-13f4-4ec8-867a-3b2aba4c2a0f")!;
+  tech.lookAt({ fn: () => player.getPos() });
+  sofia.lookAt({ fn: () => player.getPos() });
 
   events.on({
     type: "state-change",

@@ -46,6 +46,9 @@ export class Character {
   private _persistAction: Delay = new Delay(0);
 
   public movement: MovementManager;
+  private _lookAtFn: (() => Vec2) | null = null;
+  private _lookAtWhileMoving: boolean = false;
+  private _standingDir: Vec2 = new Vec2(0, 1);
 
   constructor(id: string) {
     this.id = id;
@@ -92,6 +95,10 @@ export class Character {
 
   public setControlDirection(dir: Vec2): void {
     this._controlDirection = dir;
+  }
+
+  public setStandingDir(dir: Vec2): void {
+    this._standingDir = dir;
   }
 
   public getVelocity(): Vec2 {
@@ -152,13 +159,33 @@ export class Character {
     this._visible = enabled;
   }
 
-  protected getMoveAction(velocity: Vec2): CharAction {
+  public lookAt(
+    args: { fn: (() => Vec2) | null; whileMoving?: boolean } | null,
+  ): void {
+    if (args === null) {
+      this._lookAtFn = null;
+      this._lookAtWhileMoving = false;
+    } else {
+      this._lookAtFn = args.fn;
+      this._lookAtWhileMoving = args.whileMoving ?? false;
+    }
+  }
+
+  protected getMoveAction(dir: Vec2): CharAction {
     // Choose the walk action based on the direction of movement, considering
     // that this is a 2.5D game, so up and down are not as pronounced.
-    if (Math.abs(velocity.x) > Math.abs(velocity.y * 0.5)) {
-      return velocity.x < 0 ? CharAction.WalkLeft : CharAction.WalkRight;
+    if (Math.abs(dir.x) > Math.abs(dir.y * 0.5)) {
+      return dir.x < 0 ? CharAction.WalkLeft : CharAction.WalkRight;
     } else {
-      return velocity.y < 0 ? CharAction.WalkUp : CharAction.WalkDown;
+      return dir.y < 0 ? CharAction.WalkUp : CharAction.WalkDown;
+    }
+  }
+
+  protected getStandAction(dir: Vec2): CharAction {
+    if (Math.abs(dir.x) > Math.abs(dir.y * 0.5)) {
+      return dir.x < 0 ? CharAction.StandLeft : CharAction.StandRight;
+    } else {
+      return dir.y < 0 ? CharAction.StandUp : CharAction.StandDown;
     }
   }
 
@@ -277,7 +304,23 @@ export class Character {
         this._pos.y += proposedTrans.y;
       }
 
-      moveAction = CharAction.Idle;
+      moveAction = this.getStandAction(this._standingDir);
+    }
+
+    // If a look-at target is set, override the facing direction based on the
+    // whileMoving option. When false (default), lookAt only applies while the
+    // character is standing still; when true it also applies while moving.
+    if (this._lookAtFn !== null) {
+      const target = this._lookAtFn();
+      const dir = target.subbed(this._pos);
+      if (!dir.isZero) {
+        const isMoving = moveDir.x != 0 || moveDir.y != 0;
+        if (this._lookAtWhileMoving || !isMoving) {
+          moveAction = isMoving
+            ? this.getMoveAction(dir)
+            : this.getStandAction(dir);
+        }
+      }
     }
 
     // Slow down our animation speed based on our speed relative to our max speed.
