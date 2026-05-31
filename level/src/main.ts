@@ -116,12 +116,10 @@ export async function init(): Promise<void> {
  * function does not receive an absolute position, but a direction to move the
  * player.
  *
- * @param x The x *direction* to move the player.
- * @param y The y *direction* to move the player.
+ * @param dir The *direction* to move the player.
  */
 export function movePlayer(dir: Vec2): void {
-  player.direction.x = dir.x;
-  player.direction.y = dir.y;
+  player.setControlDirection(dir);
 }
 
 /**
