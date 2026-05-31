@@ -500,32 +500,36 @@ export default function PreviewTab({
                 <Fieldset legend={t("previewEngineFieldset")} p="xs">
                   <Stack p={0}>
                     <Group gap="xs">
+                      <Button.Group>
+                        <Button
+                          size="xs"
+                          onClick={restartIframe}
+                          disabled={!iframeLoaded}
+                          leftSection={<IconRefresh size={14} />}
+                        >
+                          {t("previewRestartBtn")}
+                        </Button>
+                        <Button
+                          size="xs"
+                          variant="default"
+                          onClick={stopIframe}
+                          disabled={!iframeLoaded}
+                          leftSection={<IconPlayerStop size={14} />}
+                        >
+                          {t("previewStopBtn")}
+                        </Button>
+                        <Button
+                          size="xs"
+                          onClick={loadIframe}
+                          disabled={iframeLoaded}
+                          leftSection={<IconPlayerPlay size={14} />}
+                        >
+                          {t("previewStartBtn")}
+                        </Button>
+                      </Button.Group>
                       <Button
                         size="xs"
-                        onClick={restartIframe}
-                        disabled={!iframeLoaded}
-                        leftSection={<IconRefresh size={14} />}
-                      >
-                        {t("previewRestartBtn")}
-                      </Button>
-                      <Button
-                        size="xs"
-                        onClick={stopIframe}
-                        disabled={!iframeLoaded}
-                        leftSection={<IconPlayerStop size={14} />}
-                      >
-                        {t("previewStopBtn")}
-                      </Button>
-                      <Button
-                        size="xs"
-                        onClick={loadIframe}
-                        disabled={iframeLoaded}
-                        leftSection={<IconPlayerPlay size={14} />}
-                      >
-                        {t("previewStartBtn")}
-                      </Button>
-                      <Button
-                        size="xs"
+                        variant="default"
                         onClick={rebuildPathgraph}
                         disabled={!iframeLoaded}
                         leftSection={<IconRoute size={14} />}
