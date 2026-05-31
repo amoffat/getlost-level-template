@@ -32,8 +32,13 @@ const stuckTimeout: number = 2000; // ms
 const baseMoveForce: number = 10000;
 
 enum NavState {
+  /** All movement stopped */
   stopped,
+  /** Awaiting for a move command to be determined */
+  pending,
+  /** Processing a move command */
   moving,
+  /** Waiting for the next move command */
   waiting,
 }
 
@@ -199,6 +204,7 @@ export class Character {
   }): Promise<boolean> {
     this.clearTarget();
 
+    this._state = NavState.pending;
     this._targetPath = (
       await navigation.findPath({
         graphicsKey: this.id,
@@ -308,7 +314,7 @@ export class Character {
           this._setNavWaypoint(wp);
         }
       }
-    } else {
+    } else if (this._state === NavState.moving) {
       // This lets us interrupt our current nav plan. Useful if our plan is to
       // attack if the player is near, and we're moving randomly otherwise.
       const needsNewWaypoint = await this._navPlan.tick(deltaMs, this._pos);
@@ -551,6 +557,7 @@ export function setCharacterTargetPos({
   pos: Vector2;
   speed?: number;
 }): void {
+  console.log({ dev: true, charId, pos }, `Setting target position`);
   const c = chars.get(charId);
   c?.setTargetPos({ targetPos: pos, speed });
 }
