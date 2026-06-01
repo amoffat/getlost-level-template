@@ -30,8 +30,8 @@ export function serializeToMilestoneStates({
     if (kind === "story") {
       const stateName = node.data.id;
       nodeIdtoStateName.set(node.id, stateName);
-      const waypoints = new Map(
-        node.data.waypoints?.map((mw) => [mw.characterId, mw]),
+      const waypoints = Object.fromEntries(
+        (node.data.waypoints ?? []).map((mw) => [mw.characterId, mw]),
       );
 
       nodeIdToState.set(node.id, {

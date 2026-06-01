@@ -1,6 +1,7 @@
 import { loadStory } from "@/persist/story/api";
 import { actions as dActions } from "@/slices/dialogue";
 import {
+  loadNodes,
   resetInstance,
   setEdges,
   setError,
@@ -24,7 +25,7 @@ export const loadStoryThunk = createAsyncThunk(
       dispatch(dActions.setDialogues(dialogues));
       await dispatch(loadAllLocalesThunk()).unwrap();
 
-      dispatch(setNodes(nodes));
+      dispatch(loadNodes(nodes));
       dispatch(setEdges(edges));
     } catch (err: any) {
       dispatch(setError(err?.message ?? String(err)));

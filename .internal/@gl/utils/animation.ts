@@ -188,6 +188,15 @@ export class Animator {
   }
 
   play() {
+    if (this._isPlaying && this._direction === -1) {
+      // Mid-reverse: flip direction and continue from current position.
+      this._direction = 1;
+      for (const callback of this._startCallbacks) {
+        callback(true);
+      }
+      return;
+    }
+
     this._direction = 1;
     this._isPlaying = true;
     this._elapsedTime = 0;
@@ -202,6 +211,14 @@ export class Animator {
   }
 
   reverse() {
+    if (this._isPlaying && this._direction === 1) {
+      // Mid-play: flip direction and continue from current position.
+      this._direction = -1;
+      for (const callback of this._startCallbacks) {
+        callback(false);
+      }
+      return;
+    }
     this._direction = -1;
     this._isPlaying = true;
     this._elapsedTime = this._adjustedDuration;

@@ -21,13 +21,6 @@ export interface SavePathGraphRequest {
   };
 }
 
-export interface SetAudioModeRequest {
-  type: "set-audio-mode";
-  data: {
-    muted: boolean;
-  };
-}
-
 export interface DebugFlag {
   type: "debug-flag";
   data: {
@@ -40,6 +33,13 @@ export interface SetGameSpeedRequest {
   type: "set-game-speed";
   data: {
     speed: number;
+  };
+}
+
+export interface SetVolumeRequest {
+  type: "set-volume";
+  data: {
+    volume: number;
   };
 }
 
@@ -79,8 +79,8 @@ export type AnyRequest =
   | RecordMarkerMessage
   | MilestonesSyncMessage
   | SavePathGraphRequest
-  | SetAudioModeRequest
-  | SetGameSpeedRequest;
+  | SetGameSpeedRequest
+  | SetVolumeRequest;
 
 export type RequestType = AnyRequest["type"];
 export type ResponseFor<R extends AnyRequest> = R extends {

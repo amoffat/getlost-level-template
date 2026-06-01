@@ -96,6 +96,12 @@ export const slice = createSlice({
       state.edges = [];
       state.instanceKey += 1;
     },
+    // Replaces nodes wholesale from a persisted source (e.g. disk load).
+    // Unlike setNodes, this does NOT preserve existing node data, so loaded
+    // data (e.g. waypoints on the origin node) is never silently discarded.
+    loadNodes(state, action: PayloadAction<StoryNode[]>) {
+      state.nodes = action.payload;
+    },
   },
   selectors: {},
 });
@@ -107,6 +113,7 @@ export const {
   setLoading,
   setError,
   resetInstance,
+  loadNodes,
 } = slice.actions;
 
 export type { StoryState };

@@ -3,7 +3,11 @@ import { useCommsContext } from "@/context/comms";
 import { useAppSelector } from "@/hooks/redux";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Comms } from "@/iframe";
-import { MilestonesSyncMessage, SavePathGraphRequest } from "@/iframe/request";
+import {
+  MilestonesSyncMessage,
+  SavePathGraphRequest,
+  SetVolumeRequest,
+} from "@/iframe/request";
 import { log } from "@/log";
 import { selectors as mapEditorSelectors } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
@@ -93,6 +97,10 @@ export default function PreviewTab({
   const [autoReload, setAutoReload] = useLocalStorage<boolean>({
     key: "gl-auto-reload",
     defaultValue: true,
+  });
+  const [volume, setVolume] = useLocalStorage<number>({
+    key: "gl-preview-volume",
+    defaultValue: 100,
   });
   const [debugFlags, setDebugFlags] = useLocalStorage<DebugSchema["flags"]>({
     key: "gl-debug-flags",
@@ -321,22 +329,6 @@ export default function PreviewTab({
     setComms(comms);
   }, [setComms, iframeLoaded, iframeSrc]);
 
-  // Send audio mode changes to iframe without reloading (skip on initial mount)
-  const isInitialMount = useRef(true);
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-
-    if (!comms || !iframeLoaded) return;
-
-    comms.request({
-      type: "set-audio-mode",
-      data: { muted: audioMode === "muted" },
-    });
-  }, [audioMode, comms, iframeLoaded]);
-
   const toggleDebug = (flag: DebugFlagKey, enabled: boolean) => {
     setDebugFlags((prev) => ({ ...prev, [flag]: enabled }));
 
@@ -454,6 +446,23 @@ export default function PreviewTab({
       });
     },
     [comms],
+  );
+
+  const handleVolumeChange = useCallback(
+    (value: number) => {
+      comms?.request<SetVolumeRequest>({
+        type: "set-volume",
+        data: { volume: value / 100 },
+      });
+    },
+    [comms],
+  );
+
+  const handleVolumeChangeEnd = useCallback(
+    (value: number) => {
+      setVolume(value);
+    },
+    [setVolume],
   );
 
   const handlePaneResizeStart = () => {
@@ -824,6 +833,23 @@ export default function PreviewTab({
               </Stack>
 
               <TimeDisplay comms={comms} />
+            </Fieldset>
+
+            <Fieldset legend={t("previewSoundFieldset")}>
+              <Stack gap="xs" p={0}>
+                <Text size="sm" fw={500}>
+                  {t("previewVolumeLabel")}
+                </Text>
+                <Slider
+                  mb="xs"
+                  defaultValue={volume}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onChange={handleVolumeChange}
+                  onChangeEnd={handleVolumeChangeEnd}
+                />
+              </Stack>
             </Fieldset>
 
             <Fieldset legend={t("previewVisualizationFieldset")}>

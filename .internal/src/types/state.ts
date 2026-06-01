@@ -18,8 +18,8 @@ export interface MilestoneState extends StoryState {
 
   /** Whether this milestone has been satisfied. Used only by the engine. */
   satisfied: boolean;
-  /** Character id to waypoint id */
-  waypoints: Map<string, MilestoneWaypoint>;
+  /** Character id to waypoint */
+  waypoints: Record<string, MilestoneWaypoint>;
 }
 
 export interface OrState extends StoryState {

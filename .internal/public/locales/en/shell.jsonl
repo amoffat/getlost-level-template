@@ -675,3 +675,5 @@
 {"k": "milestoneEditorPermanentLabel", "v": "Permanent", "ctx": "Label for the permanent checkbox in the milestone editor"}
 {"k": "milestoneEditorPermanentDesc", "v": "Should this become part of the player's permanent action history?", "ctx": "Description under the permanent checkbox in the milestone editor"}
 {"k": "milestoneEditorEditDialogue", "v": "Edit", "ctx": "Button label to open the dialogue editor from a dialogue row in the milestone editor"}
+{"k": "previewSoundFieldset", "v": "Sound", "ctx": "Legend text for the sound control fieldset in the preview right panel"}
+{"k": "previewVolumeLabel", "v": "Volume", "ctx": "Label above the volume slider in the preview right panel"}
