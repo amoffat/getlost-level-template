@@ -1,1 +1,0 @@
-Put restricted assets here and they will be encrypted. This way you can still upload the repository publicly, but only grant access to contributors who are complying with the relevant license agreements.

@@ -1,4 +1,4 @@
-import { Vector2 } from "@gl/types/api/vector";
+import { type Vector2 } from "@gl/types/api/vector";
 import { Action } from "@gl/utils/behavior";
 import { type EasingFunction, Easings } from "@gl/utils/easing";
 import { Vec2 } from "@gl/utils/vec2";

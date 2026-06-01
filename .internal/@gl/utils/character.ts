@@ -3,9 +3,9 @@ import { hurt } from "@gl/behaviors/hurt";
 import { globalTicker } from "@gl/ticker";
 import { CharAction } from "@gl/types/character";
 
-import { WavyParams } from "@gl/actions/WavyAction";
+import { type WavyParams } from "@gl/actions/WavyAction";
 import { jump } from "@gl/behaviors/jump";
-import { Vector2 } from "@gl/types/api/vector";
+import { type Vector2 } from "@gl/types/api/vector";
 import { Behavior } from "./behavior";
 import { Delay } from "./delay";
 import { MovementManager } from "./movement";

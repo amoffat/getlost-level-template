@@ -13,6 +13,6 @@ export declare function findPath({
   startPos: Vector2;
   endPos: Vector2;
   nearestIsOk: boolean;
-  max?: number;
+  max?: number | undefined;
 }): Promise<Vector2[]>;
 export declare function clearPath(graphicsKey: string): void;

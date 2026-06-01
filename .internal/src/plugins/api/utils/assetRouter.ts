@@ -64,7 +64,7 @@ export function parseFormUpload(
       if (err) {
         const e: FormUploadError = {
           status: 400,
-          message: "Invalid form data",
+          message: `Invalid form data: ${err.toString()}`,
         };
         return reject(e);
       }

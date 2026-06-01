@@ -60,7 +60,7 @@ async function convertAudio(
 export const router = createAudioRouter({
   dir: soundsDir,
   fieldName: "audio",
-  maxFileSize: 20 * 1024 * 1024,
+  maxFileSize: 100 * 1024 * 1024,
   allowRestricted: true,
   onPut: async ({ ext, buf }): Promise<PutOutputEntry[]> => {
     if (ext === ".ogg") {

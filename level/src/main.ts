@@ -2,6 +2,7 @@ import { setZoom } from "@gl/api/camera";
 import * as controls from "@gl/api/controls";
 import * as filters from "@gl/api/filters";
 import * as object from "@gl/api/object";
+import * as sound from "@gl/api/sound";
 import * as story from "@gl/api/story";
 
 import { setSunEvent } from "@gl/api/time";
@@ -11,6 +12,7 @@ import { SunEvent } from "@gl/types/time";
 import { Animator } from "@gl/utils/animation";
 import { Character } from "@gl/utils/character";
 import { Easings } from "@gl/utils/easing";
+import { lerp } from "@gl/utils/math";
 import { Vec2 } from "@gl/utils/vec2";
 
 let tiltShift!: number;
@@ -24,8 +26,6 @@ const fallThresholdX = 354;
 export async function init(): Promise<void> {
   tiltShift = filters.addTiltShift(0.06);
   setSunEvent(SunEvent.SolarNoon, 0);
-
-  setZoom(0.7);
 
   const colors = new ColorMatrixFilter();
   // Warm, golden-hour feel: lift reds, soften greens, pull back blues
@@ -44,11 +44,30 @@ export async function init(): Promise<void> {
 
   const sofia = Character.get("6b01ef44-a1a1-4021-aeca-e8b72477937c")!;
   sofia.visibility = false;
-  const startZoom = 0.7;
+  const startZoom = 1;
+  const startWind = 0.3;
+  const maxWind = 1.2;
+
+  setZoom(startZoom);
 
   const tech = Character.get("e0164411-13f4-4ec8-867a-3b2aba4c2a0f")!;
   tech.lookAt({ fn: () => player.getPos() });
   sofia.lookAt({ fn: () => player.getPos() });
+
+  // music
+  await sound.loadSound({
+    name: "4de57fdcf89087acd6cd7774810bcd6536f1bea1",
+    autoplay: true,
+    loop: true,
+  });
+
+  // wind
+  const windAssetId = await sound.loadSound({
+    name: "f5d2b9859d82ce4ff9c1676b3a9bde2568350ade",
+    autoplay: true,
+    loop: true,
+    volume: startWind,
+  });
 
   events.on({
     type: "state-change",
@@ -66,11 +85,19 @@ export async function init(): Promise<void> {
             range: { start: startZoom, end: 0.38 },
             forwardCurve: Easings.easeInOutQuad,
           });
-          anim.addProgressCallback(({ rangeProgress }) => {
+          anim.addProgressCallback(({ rangeProgress, progress }) => {
             setZoom(rangeProgress!);
+            sound.setVolume({
+              assetId: windAssetId,
+              volume: lerp(startWind, maxWind, progress),
+            });
           });
           anim.play();
         } else {
+          sound.setVolume({
+            assetId: windAssetId,
+            volume: startWind,
+          });
           setZoom(startZoom);
         }
       },
@@ -132,7 +159,9 @@ export function movePlayer(dir: Vec2): void {
  * @param paused Whether the game is currently paused or not.
  */
 export async function tick(timestep: number, paused: boolean) {
-  filters.setTiltShiftY(tiltShift, player.getPos().y - 10);
+  if (!player.getFalling()) {
+    filters.setTiltShiftY(tiltShift, player.getPos().y - 10);
+  }
 
   // Animate the clouds
   object.translate("e397031f-ec42-4a1d-8146-50dd937baf1a", {

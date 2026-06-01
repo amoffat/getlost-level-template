@@ -14,9 +14,13 @@ export declare function pauseSound(
   soundId: number,
 ): void;
 export declare function stopSound(assetId: number, soundId: number): void;
-export declare function setVolume(
-  assetId: number,
-  soundId: number,
-  volume: number,
-): void;
+export declare function setVolume({
+  assetId,
+  soundId,
+  volume,
+}: {
+  assetId: number;
+  soundId?: number;
+  volume: number;
+}): void;
 export declare function crossfade(opts: CrossFadeSpec): void;
