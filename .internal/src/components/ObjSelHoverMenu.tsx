@@ -83,7 +83,12 @@ export default function ObjSelHover() {
       } else if (isZoneObj(obj)) {
         const typeMeta = ZONE_TYPE_META[obj.type]!;
         view = (
-          <Badge color={typeMeta.cssColor} variant="filled" size="sm">
+          <Badge
+            color={typeMeta.cssColor}
+            variant="filled"
+            size="sm"
+            autoContrast
+          >
             {t(typeMeta.label)}
           </Badge>
         );

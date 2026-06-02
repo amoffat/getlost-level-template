@@ -1,32 +1,65 @@
-import { loadSound, playSound } from "@gl/api/sound";
+import * as sound from "@gl/api/sound";
 import { Action } from "@gl/utils/behavior";
 
 export class SoundAction extends Action<unknown> {
   private static _loadedSounds: Map<string, Promise<number>> = new Map();
   private readonly _soundKey: string;
+  private readonly _fadeOutMs: number;
+  private _fading: boolean = false;
+  private _volume: number;
 
-  constructor({ name = "sound", key }: { name?: string; key: string }) {
-    super({ name, durationMs: 0 });
+  constructor({
+    name = "sound",
+    key,
+    volume = 1.0,
+    durationMs = 0,
+    fadeOutMs = 0,
+  }: {
+    name?: string;
+    key: string;
+    volume?: number;
+    durationMs?: number;
+    fadeOutMs?: number;
+  }) {
+    super({ name, durationMs });
     this._soundKey = key;
+    this._fadeOutMs = fadeOutMs;
+    this._volume = volume;
 
-    if (!SoundAction._loadedSounds.has(this._soundKey)) {
-      SoundAction._loadedSounds.set(
-        this._soundKey,
-        loadSound({
-          name: this._soundKey,
-          autoplay: false,
-          loop: false,
-          volume: 1.0,
-          sprites: [],
-        }),
-      );
+    let loadPromise = SoundAction._loadedSounds.get(key);
+    if (!loadPromise) {
+      loadPromise = sound.loadSound({
+        name: key,
+        autoplay: false,
+        loop: false,
+        volume,
+        sprites: [],
+      });
+      SoundAction._loadedSounds.set(key, loadPromise);
     }
   }
 
+  public async soundId(): Promise<number> {
+    return SoundAction._loadedSounds.get(this._soundKey)!;
+  }
+
   public override onStart(): void {
-    const assetIdPromise = SoundAction._loadedSounds.get(this._soundKey)!;
-    assetIdPromise.then((assetId) => {
-      playSound({ assetId });
+    this.soundId().then((assetId) => {
+      sound.setVolume({ assetId, volume: this._volume });
+      sound.seek({ assetId, pos: 0 });
+      sound.playSound({ assetId });
     });
+  }
+
+  public override tick({ elapsed }: { elapsed: number }): void {
+    if (!this._fading && this._fadeOutMs > 0) {
+      const startFadingAt = Math.max(0, this.durationMs - this._fadeOutMs);
+      if (elapsed >= startFadingAt) {
+        this._fading = true;
+        this.soundId().then((assetId) => {
+          sound.fade({ assetId, durationMs: this._fadeOutMs });
+        });
+      }
+    }
   }
 }

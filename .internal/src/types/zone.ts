@@ -18,7 +18,7 @@ export const zoneTypes: ZoneType[] = [
   MapObjType.CollisionZone,
   MapObjType.SinkZone,
   MapObjType.SoundZone,
-  MapObjType.ZoomZone,
+  MapObjType.CameraZone,
   MapObjType.SensorZone,
 ];
 

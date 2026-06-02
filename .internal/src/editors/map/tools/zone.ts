@@ -4,7 +4,12 @@ import { actions, actions as mapActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
-import { isZoneObj, MapObjType, ZoneObj } from "@/types/map";
+import {
+  isZoneObj,
+  MapObjType,
+  ZoneObj,
+  zoneTypeWithPadding,
+} from "@/types/map";
 import { ZonePaintOpts } from "@/types/tools";
 import { BrushShape, ZoneType } from "@/types/zone";
 import { shallowEquals } from "@/utils/array";
@@ -367,6 +372,7 @@ export class ZonePaintTool implements Tool {
     const isFirstCommit = this.workingObjId === null;
 
     if (isFirstCommit) {
+      const padding = zoneTypeWithPadding(activeZoneType) ? 0 : undefined;
       const objId = crypto.randomUUID();
       const obj = {
         id: objId,
@@ -382,6 +388,7 @@ export class ZonePaintTool implements Tool {
         type: activeZoneType,
         simplify: this._simplify,
         name: "",
+        padding,
       } as ZoneObj;
 
       this.workingObjId = objId;

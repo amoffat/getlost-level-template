@@ -1,6 +1,6 @@
 import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
-import { MapObjType, ZoomZoneObj } from "@/types/map";
+import { CameraZoneObj, MapObjType } from "@/types/map";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Slider } from "@mantine/core";
 import { memo, ReactElement, useCallback } from "react";
@@ -22,12 +22,12 @@ const ZOOM_SCALE = (raw: number) =>
 const ZOOM_SCALE_INV = (zoom: number) =>
   Math.log(zoom / ZOOM_MIN) / Math.log(ZOOM_MAX / ZOOM_MIN);
 
-function ZoomZoneProperties({ objs }: { objs: ZoomZoneObj[] }) {
+function CameraZoneProperties({ objs }: { objs: CameraZoneObj[] }) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const updateObjs = useCallback(
-    (changes: Partial<ZoomZoneObj>) => {
+    (changes: Partial<CameraZoneObj>) => {
       dispatch(
         mapEditorActions.updateMany(objs.map((o) => ({ id: o.id, changes }))),
       );
@@ -75,7 +75,7 @@ function ZoomZoneProperties({ objs }: { objs: ZoomZoneObj[] }) {
     <BaseZoneProperties
       objs={objs}
       legend={t("zoomZonePropLegend")}
-      zoneType={MapObjType.ZoomZone}
+      zoneType={MapObjType.CameraZone}
       updateObjs={updateObjs}
     >
       {zoomInput}
@@ -84,6 +84,6 @@ function ZoomZoneProperties({ objs }: { objs: ZoomZoneObj[] }) {
 }
 
 export default memo(
-  ZoomZoneProperties,
-  createPropsEqualFn<ZoomZoneObj>(RELEVANT_PROPS),
+  CameraZoneProperties,
+  createPropsEqualFn<CameraZoneObj>(RELEVANT_PROPS),
 );

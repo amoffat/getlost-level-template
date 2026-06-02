@@ -42,7 +42,7 @@ export enum MapObjType {
   BackgroundImage = 11,
   SinkZone = 12,
   SoundZone = 13,
-  ZoomZone = 14,
+  CameraZone = 14,
   SensorZone = 15,
 }
 
@@ -127,9 +127,10 @@ export interface SoundZoneObj extends BaseZoneObj {
   volume: number;
 }
 
-export interface ZoomZoneObj extends BaseZoneObj {
-  type: MapObjType.ZoomZone;
+export interface CameraZoneObj extends BaseZoneObj {
+  type: MapObjType.CameraZone;
   zoom: number;
+  offset: Vector2;
   padding: number;
 }
 
@@ -181,7 +182,7 @@ export type MapObj =
   | CollisionObj
   | SinkZoneObj
   | SoundZoneObj
-  | ZoomZoneObj
+  | CameraZoneObj
   | SensorZoneObj
   | EntranceObj
   | ExitObj
@@ -297,8 +298,10 @@ export function isSoundZoneObj(obj: Partial<BaseMapObj>): obj is SoundZoneObj {
   return obj.type === MapObjType.SoundZone;
 }
 
-export function isZoomZoneObj(obj: Partial<BaseMapObj>): obj is ZoomZoneObj {
-  return obj.type === MapObjType.ZoomZone;
+export function isCameraZoneObj(
+  obj: Partial<BaseMapObj>,
+): obj is CameraZoneObj {
+  return obj.type === MapObjType.CameraZone;
 }
 
 export function isSensorZoneObj(
@@ -311,7 +314,7 @@ export type ZoneObj =
   | CollisionObj
   | SinkZoneObj
   | SoundZoneObj
-  | ZoomZoneObj
+  | CameraZoneObj
   | SensorZoneObj;
 
 /** Returns true if the object is any painted zone type */
@@ -320,7 +323,11 @@ export function isZoneObj(obj: Partial<BaseMapObj>): obj is ZoneObj {
     obj.type === MapObjType.CollisionZone ||
     obj.type === MapObjType.SinkZone ||
     obj.type === MapObjType.SoundZone ||
-    obj.type === MapObjType.ZoomZone ||
+    obj.type === MapObjType.CameraZone ||
     obj.type === MapObjType.SensorZone
   );
+}
+
+export function zoneTypeWithPadding(type: MapObjType): boolean {
+  return type === MapObjType.SinkZone || type === MapObjType.CameraZone;
 }

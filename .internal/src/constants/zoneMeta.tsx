@@ -30,7 +30,7 @@ export const ZONE_TYPE_META: Record<ZoneType, ZoneTypeMeta> = {
     label: "zoneTypeSound",
     icon: <IconVolume size={14} />,
   },
-  [MapObjType.ZoomZone]: {
+  [MapObjType.CameraZone]: {
     slug: "zoom",
     color: 0xaa44ff,
     cssColor: "#aa44ff",

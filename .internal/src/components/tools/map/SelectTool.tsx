@@ -1,22 +1,24 @@
 import AnimationProperties from "@/components/objectProperties/AnimationProperties";
 import BackgroundImageProperties from "@/components/objectProperties/BackgroundImageProperties";
-import SinkZoneProperties from "@/components/objectProperties/zones/SinkZoneProperties";
-import SoundZoneProperties from "@/components/objectProperties/zones/SoundZoneProperties";
-import ZoomZoneProperties from "@/components/objectProperties/zones/ZoomZoneProperties";
+import CameraZoneProperties from "@/components/objectProperties/zones/CameraZoneProperties";
 import CollisionZoneProperties from "@/components/objectProperties/zones/CollisionZoneProperties";
 import SensorZoneProperties from "@/components/objectProperties/zones/SensorZoneProperties";
+import SinkZoneProperties from "@/components/objectProperties/zones/SinkZoneProperties";
+import SoundZoneProperties from "@/components/objectProperties/zones/SoundZoneProperties";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { bringToTopThunk, sendToBottomThunk } from "@/thunks/map";
 import { MapLayerName } from "@/types/layer";
 import {
   AnimationInstance,
+  BackgroundImageObj,
+  CameraZoneObj,
   CollisionObj,
   EntranceObj,
   ExitObj,
   isAnimatedInstance,
-  BackgroundImageObj,
   isBackgroundImageObj,
+  isCameraZoneObj,
   isCollisionZone,
   isEntranceObj,
   isExitObj,
@@ -28,7 +30,6 @@ import {
   isSoundZoneObj,
   isTileGroupInstance,
   isWaypointObj,
-  isZoomZoneObj,
   LightObj,
   NpcInstance,
   PickupObj,
@@ -37,7 +38,6 @@ import {
   SoundZoneObj,
   TileGroupInstance,
   WaypointObj,
-  ZoomZoneObj,
 } from "@/types/map";
 import { Alert, Button, Fieldset, Kbd, Stack } from "@mantine/core";
 import {
@@ -103,7 +103,7 @@ export default function SelectTool() {
     const collisionZones: CollisionObj[] = [];
     const sensorZones: SensorZoneObj[] = [];
     const sinkZones: SinkZoneObj[] = [];
-    const zoomZones: ZoomZoneObj[] = [];
+    const cameraZones: CameraZoneObj[] = [];
     const soundZones: SoundZoneObj[] = [];
     const backgroundImages: BackgroundImageObj[] = [];
 
@@ -126,8 +126,8 @@ export default function SelectTool() {
         animatedInstances.push(obj);
       } else if (isSinkZoneObj(obj)) {
         sinkZones.push(obj);
-      } else if (isZoomZoneObj(obj)) {
-        zoomZones.push(obj);
+      } else if (isCameraZoneObj(obj)) {
+        cameraZones.push(obj);
       } else if (isSoundZoneObj(obj)) {
         soundZones.push(obj);
       } else if (isSensorZoneObj(obj)) {
@@ -149,7 +149,7 @@ export default function SelectTool() {
       waypoints.length > 0,
       animatedInstances.length > 0,
       sinkZones.length > 0,
-      zoomZones.length > 0,
+      cameraZones.length > 0,
       soundZones.length > 0,
       backgroundImages.length > 0,
     ].filter(Boolean).length;
@@ -205,8 +205,8 @@ export default function SelectTool() {
       return <SinkZoneProperties key="sink-zone-props" objs={sinkZones} />;
     }
 
-    if (zoomZones.length > 0) {
-      return <ZoomZoneProperties key="zoom-zone-props" objs={zoomZones} />;
+    if (cameraZones.length > 0) {
+      return <CameraZoneProperties key="zoom-zone-props" objs={cameraZones} />;
     }
 
     if (soundZones.length > 0) {
@@ -214,16 +214,26 @@ export default function SelectTool() {
     }
 
     if (sensorZones.length > 0) {
-      return <SensorZoneProperties key="sensor-zone-props" objs={sensorZones} />;
+      return (
+        <SensorZoneProperties key="sensor-zone-props" objs={sensorZones} />
+      );
     }
 
     if (collisionZones.length > 0) {
-      return <CollisionZoneProperties key="collision-zone-props" objs={collisionZones} />;
+      return (
+        <CollisionZoneProperties
+          key="collision-zone-props"
+          objs={collisionZones}
+        />
+      );
     }
 
     if (backgroundImages.length > 0) {
       return (
-        <BackgroundImageProperties key="bg-image-props" objs={backgroundImages} />
+        <BackgroundImageProperties
+          key="bg-image-props"
+          objs={backgroundImages}
+        />
       );
     }
 

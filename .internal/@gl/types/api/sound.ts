@@ -17,9 +17,10 @@ export interface LoadOpts {
   /** The volume of the sound. */
   volume?: number;
   sprites?: Sprite[];
+  offsetMs?: number;
 }
 
-export interface PlayOpts {
+export interface SoundSpec {
   assetId: number;
   spriteId?: number;
 }
@@ -30,4 +31,8 @@ export interface CrossFadeSpec {
   duration?: number; // ms
   volumeAStart?: number;
   volumeBEnd: number;
+}
+
+export interface SoundMeta {
+  durationMs: number;
 }

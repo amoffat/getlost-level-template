@@ -182,7 +182,7 @@ export class Character {
   }
 
   protected getStandAction(dir: Vec2): CharAction {
-    if (Math.abs(dir.x) > Math.abs(dir.y * 0.5)) {
+    if (Math.abs(dir.x) > Math.abs(dir.y)) {
       return dir.x < 0 ? CharAction.StandLeft : CharAction.StandRight;
     } else {
       return dir.y < 0 ? CharAction.StandUp : CharAction.StandDown;

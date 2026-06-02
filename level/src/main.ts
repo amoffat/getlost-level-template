@@ -1,3 +1,4 @@
+import * as camera from "@gl/api/camera";
 import { setZoom } from "@gl/api/camera";
 import * as controls from "@gl/api/controls";
 import * as filters from "@gl/api/filters";
@@ -17,6 +18,7 @@ import { Vec2 } from "@gl/utils/vec2";
 
 let tiltShift!: number;
 const fallThresholdX = 354;
+let musicAssetId!: number;
 
 /**
  * This function initializes your level. It's called once when the level is
@@ -55,10 +57,11 @@ export async function init(): Promise<void> {
   sofia.lookAt({ fn: () => player.getPos() });
 
   // music
-  await sound.loadSound({
+  musicAssetId = await sound.loadSound({
     name: "4de57fdcf89087acd6cd7774810bcd6536f1bea1",
     autoplay: true,
     loop: true,
+    offsetMs: 15000,
   });
 
   // wind
@@ -68,6 +71,13 @@ export async function init(): Promise<void> {
     loop: true,
     volume: startWind,
   });
+
+  const deathSndId = await sound.loadSound({
+    name: "gl:death",
+    volume: 0.2,
+  });
+
+  camera.setOffset({ x: 0, y: -50 });
 
   events.on({
     type: "state-change",
@@ -112,23 +122,11 @@ export async function init(): Promise<void> {
     },
     callbacks: [
       ({ enter }) => {
-        if (enter && story.isAnySatisfied(["meet-tech-support"])) {
+        if (enter && story.isReady("jump")) {
           controls.addButton({
             labelKey: "jump",
             onRelease: () => {
-              const behavior = player.jump();
-              behavior.onProgress(({ progress }) => {
-                if (progress > 0.99 && player.getPos().x > fallThresholdX) {
-                  // behavior.cancel();
-
-                  player.setFalling({
-                    enabled: true,
-                    startVelocity: player.getVelocity().y,
-                  });
-
-                  return true;
-                }
-              });
+              player.jump();
             },
           });
         } else {
@@ -136,6 +134,19 @@ export async function init(): Promise<void> {
         }
       },
     ],
+  });
+
+  events.on({
+    type: "sensor",
+    filter: {
+      sensorId: "d9177cc0-90ed-4e5b-a103-a89857adc643",
+      charId: "player",
+    },
+    callback: ({ enter }) => {
+      if (enter) {
+        sound.playSound({ assetId: deathSndId });
+      }
+    },
   });
 }
 
@@ -173,6 +184,7 @@ export async function tick(timestep: number, paused: boolean) {
   // This accounts for the player, walking on the edge, who walks over the edge
   // (instead of jumping)
   if (player.getPos().x > fallThresholdX && !player.getFalling()) {
+    sound.fade({ assetId: musicAssetId, durationMs: 1000 });
     player.setFalling({
       enabled: true,
       startVelocity: player.getVelocity().y,
