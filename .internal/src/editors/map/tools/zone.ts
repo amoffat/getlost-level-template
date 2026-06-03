@@ -389,6 +389,7 @@ export class ZonePaintTool implements Tool {
         simplify: this._simplify,
         name: "",
         padding,
+        enabled: true,
       } as ZoneObj;
 
       this.workingObjId = objId;

@@ -19,9 +19,11 @@ import { Split } from "@gfazioli/mantine-split-pane";
 import {
   Anchor,
   Button,
+  Center,
   Checkbox,
   Fieldset,
   Group,
+  Overlay,
   ScrollArea,
   Select,
   Slider,
@@ -81,7 +83,7 @@ export default function PreviewTab({
     defaultValue: "prod",
   });
   const [isDragging, setIsDragging] = useState(false);
-  const [iframeLoaded, setIframeLoaded] = useState(true);
+  const [iframeActivated, setIframeActivated] = useState(true);
   const [audioMode, _setAudioMode] = useLocalStorage<"audio" | "muted">({
     key: "gl-audio-mode",
     defaultValue: "audio",
@@ -284,8 +286,8 @@ export default function PreviewTab({
   }, [comms, nodes, milestoneIdsToNodeIds]);
 
   const loadIframe = () => {
-    if (!iframeLoaded) {
-      setIframeLoaded(true);
+    if (!iframeActivated) {
+      setIframeActivated(true);
       setReloadCount((c) => c + 1);
     }
   };
@@ -294,7 +296,7 @@ export default function PreviewTab({
     const iframe = iframeRef.current;
     if (iframe) {
       iframe.src = "about:blank";
-      setIframeLoaded(false);
+      setIframeActivated(false);
       setComms(null);
     }
   };
@@ -314,7 +316,7 @@ export default function PreviewTab({
   };
 
   useEffect(() => {
-    if (!iframeLoaded) return;
+    if (!iframeActivated) return;
     if (!iframeSrc) return;
 
     const iframe = iframeRef.current!;
@@ -327,12 +329,12 @@ export default function PreviewTab({
       role: "parent",
     });
     setComms(comms);
-  }, [setComms, iframeLoaded, iframeSrc]);
+  }, [setComms, iframeActivated, iframeSrc]);
 
   const toggleDebug = (flag: DebugFlagKey, enabled: boolean) => {
     setDebugFlags((prev) => ({ ...prev, [flag]: enabled }));
 
-    if (!comms || !iframeLoaded) return;
+    if (!comms || !iframeActivated) return;
 
     comms.request({
       type: "debug-flag",
@@ -514,7 +516,7 @@ export default function PreviewTab({
                           fullWidth
                           size="xs"
                           onClick={restartIframe}
-                          disabled={!iframeLoaded}
+                          disabled={!iframeActivated}
                           leftSection={<IconRefresh size={14} />}
                         >
                           {t("previewRestartBtn")}
@@ -524,7 +526,7 @@ export default function PreviewTab({
                           size="xs"
                           variant="default"
                           onClick={stopIframe}
-                          disabled={!iframeLoaded}
+                          disabled={!iframeActivated}
                           leftSection={<IconPlayerStop size={14} />}
                         >
                           {t("previewStopBtn")}
@@ -533,7 +535,7 @@ export default function PreviewTab({
                           fullWidth
                           size="xs"
                           onClick={loadIframe}
-                          disabled={iframeLoaded}
+                          disabled={iframeActivated}
                           leftSection={<IconPlayerPlay size={14} />}
                         >
                           {t("previewStartBtn")}
@@ -543,7 +545,7 @@ export default function PreviewTab({
                         size="xs"
                         variant="default"
                         onClick={rebuildPathgraph}
-                        disabled={!iframeLoaded}
+                        disabled={!iframeActivated}
                         leftSection={<IconRoute size={14} />}
                       >
                         {t("previewRebuildGraphBtn")}
@@ -747,6 +749,32 @@ export default function PreviewTab({
                   position: "relative",
                 }}
               >
+                {!iframeActivated && (
+                  <>
+                    <Overlay color="red" backgroundOpacity={1} zIndex={10} />
+
+                    <Center
+                      pos="absolute"
+                      inset={0}
+                      style={{ zIndex: 11, pointerEvents: "none" }}
+                    >
+                      <Stack
+                        align="center"
+                        gap="sm"
+                        style={{ pointerEvents: "auto" }}
+                      >
+                        <Button
+                          size="lg"
+                          onClick={loadIframe}
+                          disabled={iframeActivated}
+                          leftSection={<IconPlayerPlay size={14} />}
+                        >
+                          {t("previewStartBtn")}
+                        </Button>
+                      </Stack>
+                    </Center>
+                  </>
+                )}
                 <iframe
                   tabIndex={-1}
                   ref={iframeRef}

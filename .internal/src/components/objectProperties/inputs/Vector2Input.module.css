@@ -1,0 +1,53 @@
+.plane {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--mantine-color-dark-7);
+  border: 1px solid var(--mantine-color-dark-4);
+  border-radius: var(--mantine-radius-sm);
+  cursor: crosshair;
+  user-select: none;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.planeActive {
+  border-color: var(--mantine-color-blue-5);
+}
+
+.zeroLineV {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--mantine-color-dark-2);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.zeroLineH {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--mantine-color-dark-2);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--mantine-color-blue-5);
+  border: 2px solid var(--mantine-color-white);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: transform 0.05s ease;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+.dotActive {
+  transform: translate(-50%, -50%) scale(1.3);
+}

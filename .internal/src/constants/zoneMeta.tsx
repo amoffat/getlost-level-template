@@ -34,7 +34,7 @@ export const ZONE_TYPE_META: Record<ZoneType, ZoneTypeMeta> = {
     slug: "zoom",
     color: 0xaa44ff,
     cssColor: "#aa44ff",
-    label: "zoneTypeZoom",
+    label: "cameraTypeZone",
     icon: <IconCameraSearch size={14} />,
   },
   [MapObjType.SensorZone]: {

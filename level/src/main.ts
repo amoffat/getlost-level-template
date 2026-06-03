@@ -1,10 +1,10 @@
-import * as camera from "@gl/api/camera";
 import { setZoom } from "@gl/api/camera";
-import * as controls from "@gl/api/controls";
-import * as filters from "@gl/api/filters";
+import * as control from "@gl/api/control";
+import * as filter from "@gl/api/filter";
 import * as object from "@gl/api/object";
 import * as sound from "@gl/api/sound";
 import * as story from "@gl/api/story";
+import * as zone from "@gl/api/zone";
 
 import { setSunEvent } from "@gl/api/time";
 import { showhide } from "@gl/behaviors/showhide";
@@ -26,7 +26,7 @@ let musicAssetId!: number;
  * filters, or setting up event handlers.
  */
 export async function init(): Promise<void> {
-  tiltShift = filters.addTiltShift(0.06);
+  tiltShift = filter.addTiltShift(0.06);
   setSunEvent(SunEvent.SolarNoon, 0);
 
   const colors = new ColorMatrixFilter();
@@ -61,7 +61,7 @@ export async function init(): Promise<void> {
     name: "4de57fdcf89087acd6cd7774810bcd6536f1bea1",
     autoplay: true,
     loop: true,
-    offsetMs: 15000,
+    offsetMs: 13000,
   });
 
   // wind
@@ -77,12 +77,13 @@ export async function init(): Promise<void> {
     volume: 0.2,
   });
 
-  camera.setOffset({ x: 0, y: -50 });
-
   events.on({
     type: "state-change",
     filter: { state: "think-of-sofia" },
     callbacks: [
+      ({ satisfied }) => {
+        zone.toggle("849f2b2d-522f-40c0-89da-b9de32fa0de9", satisfied);
+      },
       ({ satisfied }) => {
         const behavior = showhide({ char: sofia, show: satisfied });
         behavior.perform();
@@ -123,14 +124,14 @@ export async function init(): Promise<void> {
     callbacks: [
       ({ enter }) => {
         if (enter && story.isReady("jump")) {
-          controls.addButton({
+          control.addButton({
             labelKey: "jump",
             onRelease: () => {
               player.jump();
             },
           });
         } else {
-          controls.removeButton("jump");
+          control.removeButton("jump");
         }
       },
     ],
@@ -171,7 +172,7 @@ export function movePlayer(dir: Vec2): void {
  */
 export async function tick(timestep: number, paused: boolean) {
   if (!player.getFalling()) {
-    filters.setTiltShiftY(tiltShift, player.getPos().y - 10);
+    filter.setTiltShiftY(tiltShift, player.getPos().y - 10);
   }
 
   // Animate the clouds

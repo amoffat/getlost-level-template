@@ -1,4 +1,4 @@
-import * as filters from "@gl/api/filters";
+import * as filters from "@gl/api/filter";
 
 // prettier-ignore
 type ColorMatrix = [number, number, number, number, number,

@@ -570,12 +570,11 @@
 {"k": "zoneTypeCollision", "v": "Collision", "ctx": "Zone type label for collision areas"}
 {"k": "zoneTypeSink", "v": "Sink", "ctx": "Zone type label for sink (liquid) areas"}
 {"k": "zoneTypeSound", "v": "Sound", "ctx": "Zone type label for sound zones"}
-{"k": "zoneTypeZoom", "v": "Zoom", "ctx": "Zone type label for camera zoom zones"}
+{"k": "cameraTypeZone", "v": "Camera", "ctx": "Zone type label for camera zoom zones"}
 {"k": "zoneTypeSensor", "v": "Sensor", "ctx": "Zone type label for sensor trigger zones"}
 {"k": "zoneTypeTooltipSink", "v": "Makes characters sink into the ground", "ctx": "Sink zone type tooltip"}
 {"k": "zoneTypeTooltipCollision", "v": "Blocks characters from moving through", "ctx": "Collision zone type tooltip"}
 {"k": "zoneTypeTooltipSound", "v": "Plays some sound as the player approaches", "ctx": "Sound zone type tooltip"}
-{"k": "zoneTypeTooltipZoom", "v": "Zooms the camera in or out", "ctx": "Zoom zone type tooltip"}
 {"k": "zoneTypeTooltipSensor", "v": "Triggers a code event", "ctx": "Sensor zone type tooltip"}
 {"k": "groundLayerName", "v": "Ground", "ctx": "The layer name for the ground"}
 {"k": "exteriorLayerName", "v": "Exterior", "ctx": "The layer name for the ground"}
@@ -592,10 +591,10 @@
 {"k": "collisionZonePropLegend", "v": "Collision Zone", "ctx": "Fieldset legend for collision zone properties"}
 {"k": "sensorZonePropLegend", "v": "Sensor Zone", "ctx": "Fieldset legend for sensor zone properties"}
 {"k": "sinkZonePropDepthLabel", "v": "Depth", "ctx": "Label for the sink zone"}
-{"k": "zoomZonePropZoomLabel", "v": "Zoom", "ctx": "Label for the zoom value input in Zoom Zone properties"}
-{"k": "zoomZonePropZoomDescription", "v": "The amount of camera zoom. Less than 1 means zoom out, greater than 1 zoom in"}
-{"k": "zoomZonePropPaddingLabel", "v": "Padding", "ctx": "Label for the padding value input in Zoom Zone properties"}
-{"k": "zoomZonePropLegend", "v": "Zoom Zone", "ctx": "Legend title for Zoom Zone properties"}
+{"k": "cameraZonePropPaddingLabel", "v": "Padding", "ctx": "Label for the padding value input in Camera Zone properties"}
+{"k": "cameraZonePropZoomDescription", "v": "The amount of camera zoom. Less than 1 means zoom out, greater than 1 zoom in"}
+{"k": "cameraZonePropZoomLabel", "v": "Zoom", "ctx": "Label for the zoom value input in Camera Zone properties"}
+{"k": "cameraZonePropLegend", "v": "Camera Zone", "ctx": "Legend title for Camera Zone properties"}
 {"k": "soundZonePropSoundLabel", "v": "Sound", "ctx": "Label for the sound asset input in Sound Zone properties"}
 {"k": "soundZonePropSoundPlaceholder", "v": "Sound asset path", "ctx": "Placeholder for the sound asset input in Sound Zone properties"}
 {"k": "soundZonePropPaddingLabel", "v": "Padding", "ctx": "Label for the padding value input in Sound Zone properties"}
@@ -677,3 +676,8 @@
 {"k": "milestoneEditorEditDialogue", "v": "Edit", "ctx": "Button label to open the dialogue editor from a dialogue row in the milestone editor"}
 {"k": "previewSoundFieldset", "v": "Sound", "ctx": "Legend text for the sound control fieldset in the preview right panel"}
 {"k": "previewVolumeLabel", "v": "Volume", "ctx": "Label above the volume slider in the preview right panel"}
+{"k": "cameraZonePropOffsetLabel", "v": "Target offset", "ctx": "Label for camera offset 2D input in Camera Zone properties"}
+{"k": "cameraZonePropOffsetDescription", "v": "The camera will adjust the target position by this amount before centering on it.", "ctx": "Description for camera offset 2D input in Camera Zone properties"}
+{"k": "propertyValueSetUndefinedTooltip", "v": "Set value to undefined", "ctx": "Tooltip on the 'set to undefined' button in PropertyValue component"}
+{"k": "zoneEnabledLabel", "v": "Enabled"}
+{"k": "zoneEnabledDescription", "v": "Should the zone start enabled?"}

@@ -108,6 +108,7 @@ export interface BaseZoneObj extends BaseMapObj {
   quadMask: Record<string, boolean>;
   // We hide the object while painting
   hidden: boolean;
+  enabled: boolean;
 }
 
 export interface CollisionObj extends BaseZoneObj {
@@ -129,8 +130,8 @@ export interface SoundZoneObj extends BaseZoneObj {
 
 export interface CameraZoneObj extends BaseZoneObj {
   type: MapObjType.CameraZone;
-  zoom: number;
-  offset: Vector2;
+  zoom: number | undefined;
+  offset: Vector2 | undefined;
   padding: number;
 }
 

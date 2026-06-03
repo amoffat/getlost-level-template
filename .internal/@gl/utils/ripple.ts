@@ -1,4 +1,4 @@
-import * as filters from "@gl/api/filters";
+import * as filters from "@gl/api/filter";
 import type { RippleFilterOpts } from "@gl/types/api/filter";
 
 export class RippleFilter {

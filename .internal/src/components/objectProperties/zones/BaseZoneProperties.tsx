@@ -11,9 +11,11 @@ import PropertyValue, {
   PropertyValueScope,
 } from "../../PropertyValue";
 import IdInput from "../inputs/IdInput";
+import SwitchInput from "../inputs/SwitchInput";
 
 type CommonZoneInterface = {
   id: string;
+  enabled: boolean;
   padding?: number;
 };
 
@@ -40,6 +42,29 @@ export default function BaseZoneProperties<T extends CommonZoneInterface>({
     idInput = <IdInput id={objs[0].id} />;
   }
 
+  const enabledValues: PropertyValueInfo<boolean>[] = objs.map((o) => ({
+    key: o.id,
+    value: o.enabled,
+    scope: "instance",
+  }));
+
+  const enabledInput = (
+    <SwitchInput
+      label={t("zoneEnabledLabel")}
+      description={t("zoneEnabledDescription")}
+      noTemplate
+      values={enabledValues}
+      onValueChange={({
+        value,
+      }: {
+        scope: PropertyValueScope;
+        value: boolean | undefined;
+      }) => {
+        updateObjs({ enabled: value } as Partial<T>);
+      }}
+    />
+  );
+
   const paddingValues: PropertyValueInfo<number>[] = objs.map((o) => ({
     key: o.id,
     value: o.padding ?? 0,
@@ -50,7 +75,7 @@ export default function BaseZoneProperties<T extends CommonZoneInterface>({
 
   const paddingInput = (
     <PropertyValue
-      label={t("zoomZonePropPaddingLabel")}
+      label={t("cameraZonePropPaddingLabel")}
       noTemplate
       values={paddingValues}
       defaultValue={0}
@@ -90,6 +115,7 @@ export default function BaseZoneProperties<T extends CommonZoneInterface>({
     <Fieldset legend={legend} p="xs">
       <Stack p={0} gap="xl">
         {idInput}
+        {enabledInput}
         {zonesWithPadding && paddingInput}
 
         {children}

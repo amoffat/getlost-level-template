@@ -45,7 +45,7 @@ export function showhide({
   behavior.also(
     new SoundAction({
       key: "gl:magic-noise",
-      volume: 0.1,
+      volume: 0.5,
       durationMs: durationMs - 700,
       fadeOutMs: 1000,
     }),

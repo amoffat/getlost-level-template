@@ -1,6 +1,8 @@
 import { overlayProps } from "@/constants";
 import {
+  ActionIcon,
   Alert,
+  Badge,
   Box,
   Group,
   Input,
@@ -14,7 +16,9 @@ import { useDebouncedCallback } from "@mantine/hooks";
 import {
   IconAlertTriangle,
   IconCircleFilled,
+  IconCircleOff,
   IconCirclesFilled,
+  IconRestore,
 } from "@tabler/icons-react";
 import { x64 } from "murmurhash3js";
 import {
@@ -27,8 +31,8 @@ import {
   useState,
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { useTranslation } from "react-i18next";
 import InfoTooltip from "./common/InfoTooltip";
-import ResettableInput from "./ResettableInput";
 
 export type PropertyValueScope = "template" | "instance" | "mixed";
 export type SelectableScope = Extract<
@@ -64,13 +68,13 @@ interface PropertyValueProps<T> {
   /** Description text shown below the label */
   description?: string;
   /** Array of value info from all selected objects */
-  values: PropertyValueInfo<T>[];
+  values: PropertyValueInfo<T | undefined>[];
   /** The input component to render. Receives the effective value and onChange callback */
   renderInput: (args: RenderInputArgs<T>) => ReactElement;
   /** Callback when the user changes the value */
   onValueChange: (args: OnValueChangeArgs<T>) => void;
   /** Optional function to determine if two values are equal (defaults to ===) */
-  areEqual?: (a: T, b: T) => boolean;
+  areEqual?: (a: T | undefined, b: T | undefined) => boolean;
   /**
    * Optional debounce delay in ms for onValueChange callback.
    * When set, the component will use local state for immediate updates
@@ -82,6 +86,13 @@ interface PropertyValueProps<T> {
   /** Optional default value to reset to when the reset button is clicked */
   defaultValue?: T;
   tooltip?: ReactNode;
+  /**
+   * If true, adds an action button to set the value to undefined, and shows an
+   * "undefined" badge next to the label when the value is currently undefined.
+   * Useful for properties where the user wants to signal "I don't care / use a
+   * derived value" rather than specifying a concrete value.
+   */
+  allowUndefined?: boolean;
 }
 
 /**
@@ -105,8 +116,10 @@ function PropertyValueInner<T>({
   noTemplate = false,
   defaultValue,
   tooltip,
+  allowUndefined = false,
   refreshKey,
 }: PropertyValueProps<T> & { refreshKey: string }) {
+  const { t } = useTranslation();
   const [resetCounter, setResetCounter] = useState(0);
 
   // Because the component returned from renderInput is an uncontrolled
@@ -126,7 +139,7 @@ function PropertyValueInner<T>({
       };
     }
 
-    const uniqueValues: T[] = [];
+    const uniqueValues: (T | undefined)[] = [];
     const scopes = new Set<SelectableScope>();
 
     // Collect unique values and scopes
@@ -179,13 +192,16 @@ function PropertyValueInner<T>({
   );
 
   const [hasPendingValue, setHasPendingValue] = useState(false);
+  const [isExplicitlyUndefined, setIsExplicitlyUndefined] = useState(
+    analysis.effectiveValue === undefined,
+  );
 
   // Tracks the last value passed to onValueChange so prevValue is accurate
   // across re-renders and debounced calls.
   const lastCommittedValue = useRef<T | undefined>(analysis.effectiveValue);
 
   const setValue = useCallback(
-    (value: T) => {
+    (value: T | undefined) => {
       onValueChange({
         scope: noTemplate ? "instance" : localScope,
         value,
@@ -196,7 +212,7 @@ function PropertyValueInner<T>({
     [localScope, noTemplate, onValueChange],
   );
 
-  const debouncedSetValue = useDebouncedCallback((value: T) => {
+  const debouncedSetValue = useDebouncedCallback((value: T | undefined) => {
     setValue(value);
   }, debounceMs ?? 0);
 
@@ -238,6 +254,7 @@ function PropertyValueInner<T>({
 
   const handleInputChange = useCallback(
     (value: T) => {
+      setIsExplicitlyUndefined(false);
       setLocalValue(value);
 
       if (analysis.hasMixedValues && analysis.hasMixedScopes) {
@@ -276,6 +293,7 @@ function PropertyValueInner<T>({
 
   const handleReset = useCallback(() => {
     if (defaultValue !== undefined) {
+      setIsExplicitlyUndefined(false);
       setLocalValue(defaultValue);
       setResetCounter((prev) => prev + 1);
       if (debounceMs !== undefined) {
@@ -285,6 +303,13 @@ function PropertyValueInner<T>({
       }
     }
   }, [defaultValue, debounceMs, debouncedSetValue, setValue]);
+
+  const handleSetUndefined = useCallback(() => {
+    setIsExplicitlyUndefined(true);
+    setLocalValue(undefined);
+    setResetCounter((prev) => prev + 1);
+    setValue(undefined);
+  }, [setValue]);
 
   const scopes = useMemo(() => {
     const scopes = [];
@@ -356,12 +381,48 @@ function PropertyValueInner<T>({
     throw new Error("renderInput should only return uncontrolled components.");
   }
 
+  const isResetDisabled = isExplicitlyUndefined
+    ? defaultValue === undefined
+    : localValue !== undefined
+      ? areEqual(defaultValue!, localValue)
+      : defaultValue === localValue;
+
   return (
     <Stack gap="xs" p={0}>
       {label && (
         <div>
-          <Input.Label>{label}</Input.Label>
-          {tooltip && <InfoTooltip>{tooltip}</InfoTooltip>}
+          <Group gap={4} align="center" wrap="nowrap">
+            <Input.Label mb={0}>{label}</Input.Label>
+            {tooltip && <InfoTooltip>{tooltip}</InfoTooltip>}
+            <Tooltip label={t("resettableResetTooltip")}>
+              <ActionIcon
+                onClick={handleReset}
+                disabled={isResetDisabled}
+                variant="subtle"
+                color="gray"
+                size="sm"
+              >
+                <IconRestore size={16} />
+              </ActionIcon>
+            </Tooltip>
+            {allowUndefined &&
+              (isExplicitlyUndefined ? (
+                <Badge size="xs" color="gray" variant="light" autoContrast>
+                  undefined
+                </Badge>
+              ) : (
+                <Tooltip label={t("propertyValueSetUndefinedTooltip")}>
+                  <ActionIcon
+                    onClick={handleSetUndefined}
+                    variant="subtle"
+                    color="gray"
+                    size="sm"
+                  >
+                    <IconCircleOff size={16} />
+                  </ActionIcon>
+                </Tooltip>
+              ))}
+          </Group>
           {description && <Input.Description>{description}</Input.Description>}
         </div>
       )}
@@ -407,16 +468,7 @@ function PropertyValueInner<T>({
           overlayProps={overlayProps}
           loaderProps={{ type: "bars", size: "xs" }}
         />
-        <ResettableInput
-          disabled={
-            localValue !== undefined
-              ? areEqual(defaultValue!, localValue)
-              : defaultValue === localValue
-          }
-          onReset={handleReset}
-        >
-          {inputField}
-        </ResettableInput>
+        {inputField}
       </Box>
     </Stack>
   );
