@@ -61,7 +61,7 @@ export async function init(): Promise<void> {
     name: "4de57fdcf89087acd6cd7774810bcd6536f1bea1",
     autoplay: true,
     loop: true,
-    offsetMs: 13000,
+    offsetMs: 12000,
   });
 
   // wind
@@ -186,6 +186,7 @@ export async function tick(timestep: number, paused: boolean) {
   // (instead of jumping)
   if (player.getPos().x > fallThresholdX && !player.getFalling()) {
     sound.fade({ assetId: musicAssetId, durationMs: 1000 });
+    story.satisfy("jump", true);
     player.setFalling({
       enabled: true,
       startVelocity: player.getVelocity().y,

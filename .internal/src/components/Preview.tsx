@@ -767,7 +767,7 @@ export default function PreviewTab({
                           size="lg"
                           onClick={loadIframe}
                           disabled={iframeActivated}
-                          leftSection={<IconPlayerPlay size={14} />}
+                          leftSection={<IconPlayerPlay size={24} />}
                         >
                           {t("previewStartBtn")}
                         </Button>

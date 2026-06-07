@@ -82,14 +82,16 @@ function CameraZoneProperties({ objs }: { objs: CameraZoneObj[] }) {
     />
   );
 
+  const range = 128;
+
   const offsetInput = (
     <Vector2Input
       label={t("cameraZonePropOffsetLabel")}
       description={t("cameraZonePropOffsetDescription")}
       values={offsetValues}
       allowUndefined={true}
-      xRange={[-64, 64]}
-      yRange={[-64, 64]}
+      xRange={[-range, range]}
+      yRange={[-range, range]}
       snapInterval={1}
       snapToZero={true}
       onValueChange={({
