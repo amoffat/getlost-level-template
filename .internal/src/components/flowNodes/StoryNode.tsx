@@ -1,13 +1,10 @@
+import { storyOriginNodeId } from "@/constants";
 import { useAncestorHighlight } from "@/contexts/AncestorHighlightContext";
 import { useWaypointModal } from "@/contexts/WaypointModalContext";
-import { storyOriginNodeId } from "@/constants";
 import { useAppSelector } from "@/hooks/redux";
 import { selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
-import {
-  MilestoneWaypoint,
-  type StoryNode as DNode,
-} from "@/slices/story";
+import { MilestoneWaypoint, type StoryNode as DNode } from "@/slices/story";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import type { RootState } from "@/store/store";
 import { isNpcInstance, isTileGroupInstance, type MapObj } from "@/types/map";
@@ -15,7 +12,7 @@ import { NpcRequiredAnimation, NpcTemplate } from "@/types/npc";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { createUrlPath } from "@/utils/dialogue";
 import { Box, Flex, Group, Stack, UnstyledButton } from "@mantine/core";
-import { IconInfinity } from "@tabler/icons-react";
+import { IconInfinity, IconMessageFilled } from "@tabler/icons-react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import classNames from "classnames";
 import { useCallback } from "react";
@@ -111,7 +108,8 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
   const icons = hasIcons ? (
     <Flex wrap="wrap" gap={0}>
       {dialogues.map((dlg) => (
-        <Box key={dlg.id} w={32} h={32}>
+        <Box key={dlg.id} w={32} h={32} style={{ position: "relative" }}>
+          <IconMessageFilled className={styles.speechBubble} size="16" />
           <CharacterIcon
             objId={dlg.subjectId!}
             onClick={(e) => {

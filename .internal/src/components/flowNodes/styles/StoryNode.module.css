@@ -17,3 +17,10 @@
   width: 1em;
   height: 1em;
 }
+
+.node .speechBubble {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 100;
+}
