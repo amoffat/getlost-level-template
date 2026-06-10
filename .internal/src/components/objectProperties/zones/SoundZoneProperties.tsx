@@ -1,21 +1,23 @@
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
+import { collectPropertyValues } from "@/store/selectors";
 import { MapObjType, SoundZoneObj } from "@/types/map";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Slider, TextInput } from "@mantine/core";
 import { ChangeEvent, memo, ReactElement, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import PropertyValue, {
-  PropertyValueInfo,
-  PropertyValueScope,
-} from "../../PropertyValue";
+import PropertyValue, { PropertyValueScope } from "../../PropertyValue";
 import BaseZoneProperties from "./BaseZoneProperties";
 
-const RELEVANT_PROPS = ["id", "sound", "padding", "volume"] as const;
+const RELEVANT_PROPS = ["id", "sound", "volume"] as const;
 
 function SoundZoneProperties({ objs }: { objs: SoundZoneObj[] }) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+
+  const toCollect = useAppSelector((state) =>
+    collectPropertyValues(state, objs, [...RELEVANT_PROPS]),
+  );
 
   const updateObjs = useCallback(
     (changes: Partial<SoundZoneObj>) => {
@@ -26,23 +28,11 @@ function SoundZoneProperties({ objs }: { objs: SoundZoneObj[] }) {
     [dispatch, objs],
   );
 
-  const soundValues: PropertyValueInfo<string>[] = objs.map((o) => ({
-    key: o.id,
-    value: o.sound ?? "",
-    scope: "instance",
-  }));
-
-  const volumeValues: PropertyValueInfo<number>[] = objs.map((o) => ({
-    key: o.id,
-    value: o.volume ?? 1,
-    scope: "instance",
-  }));
-
   const soundInput = (
     <PropertyValue
       label={t("soundZonePropSoundLabel")}
       noTemplate
-      values={soundValues}
+      values={toCollect.sound}
       defaultValue=""
       debounceMs={100}
       onValueChange={({
@@ -70,7 +60,7 @@ function SoundZoneProperties({ objs }: { objs: SoundZoneObj[] }) {
     <PropertyValue
       label={t("soundZonePropVolumeLabel")}
       noTemplate
-      values={volumeValues}
+      values={toCollect.volume}
       defaultValue={1}
       debounceMs={100}
       onValueChange={({

@@ -49,8 +49,8 @@ export function setupParallaxTicker(app: P.Application): void {
         child.position.x = obj.x;
         child.position.y = obj.y;
       } else {
-        child.position.x = obj.x + camOffsetX * (1 - obj.parallax.x);
-        child.position.y = obj.y + camOffsetY * (1 - obj.parallax.y);
+        child.position.x = obj.x + camOffsetX * (1 - obj.parallaxX);
+        child.position.y = obj.y + camOffsetY * (1 - obj.parallaxY);
       }
     }
   });

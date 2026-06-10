@@ -1,32 +1,26 @@
-import * as constants from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { selectors as localeSelectors } from "@/slices/locale";
-import {
-  actions as mapEditorActions,
-  selectors as mapSelectors,
-} from "@/slices/mapEditor";
+import { actions as mapEditorActions } from "@/slices/mapEditor";
 import { collectPropertyValues } from "@/store/selectors";
 import { PickupObj } from "@/types/map";
 import { PickupProps } from "@/types/properties";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { shallowEquals } from "@/utils/array";
-import { resolveLocaleText } from "@/utils/locale";
 import { updateObjectProperties } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Fieldset, Stack, TagsInput, TextInput } from "@mantine/core";
-import { memo, ReactElement, useCallback, useMemo } from "react";
+import { memo, ReactElement, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import TilesetGroup from "../TilesetGroup";
 import HiddenInput from "./inputs/HiddenInput";
+import IdInput from "./inputs/IdInput";
 import LocalizedNameInput from "./inputs/LocalizedNameInput";
-import { requiredUniqueName } from "./validators/name";
 
 // Properties that collectPropertyValues needs to access
-const COLLECTED_PROPS = ["nameKey", "tags", "assetId", "hidden"] as const;
+const COLLECTED_PROPS = ["id", "tags", "nameKey", "assetId", "hidden"] as const;
 
 // Additional properties needed for identification
-const TEMPLATE_PROPS = ["id"] as const;
+const TEMPLATE_PROPS = [] as const;
 
 // All properties relevant for memo comparison
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
@@ -34,10 +28,6 @@ const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 function PickupProperties({ objs }: { objs: PickupObj[] }) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const objsByTemplateId = useAppSelector((state) =>
-    mapSelectors.objectsByTemplateId(state, constants.pickupTemplateId),
-  ) as PickupObj[];
-  const defaultEntries = useAppSelector(localeSelectors.selectDefaultEntries);
 
   // All pickup objects use the same global pickup template
   const templateUpdate = useCallback(
@@ -68,46 +58,18 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
     collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
   );
 
-  const existingNames = useMemo(() => {
-    const names = new Set<string>();
-    const skipIds = new Set(objs.map((obj) => obj.id));
-    objsByTemplateId.forEach((obj) => {
-      if (skipIds.has(obj.id)) return;
-      if (!obj.nameKey) return;
-
-      const name = resolveLocaleText({
-        key: obj.nameKey,
-        primaryEntries: defaultEntries,
-      });
-      names.add(name);
-    });
-    return names;
-  }, [defaultEntries, objsByTemplateId, objs]);
-
-  const nameValidator = useCallback(
-    (value: string | undefined) => {
-      return requiredUniqueName(existingNames, value);
-    },
-    [existingNames],
-  );
-
   const nameInput = (
     <LocalizedNameInput
       description={t("pickupPropNameDescription")}
       noTemplate
       values={toCollect.nameKey}
-      context="Pickup name"
+      context={t("pickupPropNameContext")}
       keyPrefix={["pickup"]}
-      validator={nameValidator}
       placeholder={t("pickupPropNamePlaceholder")}
       onValueChange={({ scope, value }): void => {
-        const text = resolveLocaleText({
-          key: value,
-          primaryEntries: defaultEntries,
-        });
         updateProps(scope, {
           nameKey: value ?? null,
-          status: nameValidator(text) ? "error" : null,
+          status: value ? null : "error",
         });
       }}
       required
@@ -119,6 +81,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       label={t("pickupPropTagsLabel")}
       description={t("pickupPropTagsDescription")}
       values={toCollect.tags}
+      noTemplate
       defaultValue={[]}
       areEqual={shallowEquals}
       onValueChange={({
@@ -135,6 +98,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
         return (
           <TagsInput
             key={key}
+            error={validator?.(value ?? undefined)}
             defaultValue={value}
             onChange={onChange}
             placeholder={t("pickupPropTagsPlaceholder")}
@@ -210,13 +174,16 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
     />
   );
 
+  const idInput = <IdInput values={toCollect.id} />;
+
   return (
     <Fieldset legend={t("pickupPropLegend")} p="xs">
       <Stack p={0} gap="xl">
+        {idInput}
         {nameInput}
         {tgIdInput}
-        {hiddenInput}
         {tagsInput}
+        {hiddenInput}
       </Stack>
     </Fieldset>
   );

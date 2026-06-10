@@ -564,7 +564,9 @@ export const slice = createSlice({
     objectsByTemplateId: createMapSelector(
       [(state) => state.objects.entities, (_, tmplId: string) => tmplId],
       (entities, tmplId): MapObj[] => {
-        const ids = globals.templateIndex.get(tmplId)!;
+        const ids = globals.templateIndex.get(tmplId);
+        if (!ids) return [];
+
         const objs = [];
         for (const id of ids) {
           const obj = entities[id]!;

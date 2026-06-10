@@ -37,8 +37,8 @@ export interface WaypointProps {
 export interface PickupProps {
   nameKey: string | null;
   assetId: string | null;
-  tags: string[];
   status: InstanceStatus | null;
+  tags: string[];
   hidden: boolean;
 }
 
@@ -114,9 +114,9 @@ export const EXIT_PROPS_DEFAULTS: ExitProps = {
 export const PICKUP_PROPS_DEFAULTS: PickupProps = {
   nameKey: null,
   assetId: null,
-  tags: [],
   status: null,
   hidden: false,
+  tags: [],
 };
 
 export const WAYPOINT_PROPS_DEFAULTS: WaypointProps = {

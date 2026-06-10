@@ -124,7 +124,6 @@ export interface SinkZoneObj extends BaseZoneObj {
 export interface SoundZoneObj extends BaseZoneObj {
   type: MapObjType.SoundZone;
   sound: string;
-  padding: number;
   volume: number;
 }
 
@@ -164,11 +163,11 @@ export interface BackgroundImageObj extends BaseMapObj {
   /** SHA-1 hash of the PNG bytes — used as the filename on disk. */
   imageId: string;
   /**
-   * Parallax scroll factor. `{ x: 1, y: 1 }` means the layer moves at the
-   * same speed as the camera (no parallax). Values < 1 scroll slower (appear
-   * further away);
+   * Parallax scroll factor. 1 means the layer moves at the same speed as the
+   * camera (no parallax). Values < 1 scroll slower (appear further away);
    */
-  parallax: Vector2;
+  parallaxX: number;
+  parallaxY: number;
   /** When true, the image tiles infinitely in the horizontal direction. */
   tileX: boolean;
   /** When true, the image tiles infinitely in the vertical direction. */
@@ -189,7 +188,8 @@ export type MapObj =
   | ExitObj
   | PickupObj
   | WaypointObj
-  | BackgroundImageObj;
+  | BackgroundImageObj
+  | BaseZoneObj;
 
 export interface SpeakableProps {
   speakerImageId: string | null;
@@ -227,7 +227,9 @@ export type ExtractProps<T extends MapObj> = T extends LightObj
               ? TileGroupProps
               : T extends NpcInstance
                 ? NpcProps
-                : never;
+                : T extends BaseZoneObj
+                  ? BaseZoneObj
+                  : never;
 
 export function isTileGroupInstance(
   obj: Partial<BaseMapObj>,

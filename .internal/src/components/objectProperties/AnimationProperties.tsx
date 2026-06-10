@@ -21,6 +21,7 @@ import TintInput from "./inputs/TintInput";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
+  "id",
   "tags",
   "talkable",
   "flipX",
@@ -32,7 +33,7 @@ const COLLECTED_PROPS = [
 ] as const;
 
 // Additional properties needed for template resolution
-const TEMPLATE_PROPS = ["id", "tsObjId", "tilesetId"] as const;
+const TEMPLATE_PROPS = ["tsObjId", "tilesetId"] as const;
 
 // All properties relevant for memo comparison
 const RELEVANT_PROPS: readonly (keyof AnimationInstance)[] = [
@@ -125,10 +126,7 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
     />
   );
 
-  let idInput;
-  if (objs.length === 1) {
-    idInput = <IdInput id={objs[0].id} />;
-  }
+  const idInput = <IdInput values={toCollect.id} />;
 
   return (
     <Fieldset legend="Animation properties" p="xs">

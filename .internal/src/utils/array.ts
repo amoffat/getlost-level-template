@@ -1,4 +1,10 @@
-export function shallowEquals<T>(a: T[], b: T[]): boolean {
+export function shallowEquals<T>(
+  a: T[] | undefined,
+  b: T[] | undefined,
+): boolean {
+  if (a === undefined) return b === undefined;
+  if (b === undefined) return a === undefined;
+
   if (a === b) {
     return true;
   }

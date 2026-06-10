@@ -111,9 +111,9 @@ export const speakers = createRootSelector(
  */
 export function collectPropertyValues<
   TInstance extends MapObj,
-  K extends keyof ExtractProps<TInstance>,
+  K extends keyof (ExtractProps<TInstance> & TInstance),
 >(state: RootState, objs: TInstance[], propertyNames: K[]) {
-  type TProps = ExtractProps<TInstance>;
+  type TProps = ExtractProps<TInstance> & TInstance;
   const collected = {} as { [P in K]: PropertyValueInfo<TProps[P]>[] };
 
   // Initialize arrays for each property

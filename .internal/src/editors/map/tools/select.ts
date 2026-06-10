@@ -70,7 +70,6 @@ class Selector extends ClickDragListener<Mode> implements Tool {
     // start a marquee. This will always be true if we're on the ground layer,
     // so we'll do some extra checks related to the ground layer in this block.
     if (e.hoverIds.length > 0) {
-      store.dispatch(actions.setActiveTool("select"));
       const sel = state.mapEditor.selectedIds;
       const selIds = new Set(sel);
 
@@ -169,6 +168,7 @@ class Selector extends ClickDragListener<Mode> implements Tool {
 
     const state = store.getState();
     const ms = state.mapEditor;
+    store.dispatch(actions.setActiveTool("select"));
 
     const curSelected = ms.selectedIds;
     const hasProposed = ms.proposedSelection;

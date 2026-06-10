@@ -13,8 +13,8 @@ import { PropertyValueScope } from "../PropertyValue";
 import SlugInput from "./inputs/SlugInput";
 import { requiredUniqueName } from "./validators/name";
 
-const COLLECTED_PROPS = ["slug"] as const;
-const TEMPLATE_PROPS = ["id"] as const;
+const COLLECTED_PROPS = ["id", "slug"] as const;
+const TEMPLATE_PROPS = [] as const;
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function WaypointProperties({ objs }: { objs: WaypointObj[] }) {

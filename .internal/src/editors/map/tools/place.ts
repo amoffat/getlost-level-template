@@ -130,7 +130,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
 
     const gridSize = state.mapEditor.place.obj!.gridSize;
     const rawPos = e.localPos;
-    let finalPos: Vector2 = rawPos;
+    let finalPos: Vector2;
     const snap = state.mapEditor.grid.snap;
     if (snap) {
       finalPos = {

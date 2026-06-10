@@ -1,14 +1,12 @@
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
+import { collectPropertyValues } from "@/store/selectors";
 import { MapObjType, SinkZoneObj } from "@/types/map";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Slider } from "@mantine/core";
 import { memo, ReactElement, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import PropertyValue, {
-  PropertyValueInfo,
-  PropertyValueScope,
-} from "../../PropertyValue";
+import PropertyValue, { PropertyValueScope } from "../../PropertyValue";
 import BaseZoneProperties from "./BaseZoneProperties";
 
 const RELEVANT_PROPS = ["id", "padding", "depth"] as const;
@@ -16,6 +14,10 @@ const RELEVANT_PROPS = ["id", "padding", "depth"] as const;
 function SinkZoneProperties({ objs }: { objs: SinkZoneObj[] }) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+
+  const toCollect = useAppSelector((state) =>
+    collectPropertyValues(state, objs, [...RELEVANT_PROPS]),
+  );
 
   const updateObjs = useCallback(
     (changes: Partial<SinkZoneObj>) => {
@@ -26,18 +28,12 @@ function SinkZoneProperties({ objs }: { objs: SinkZoneObj[] }) {
     [dispatch, objs],
   );
 
-  const depthValues: PropertyValueInfo<number>[] = objs.map((o) => ({
-    key: o.id,
-    value: o.depth,
-    scope: "instance",
-  }));
-
   const depthInput = (
     <PropertyValue
       label={t("sinkZonePropDepthLabel")}
       description={t("sinkZoneDepthDescription")}
       noTemplate
-      values={depthValues}
+      values={toCollect.depth}
       defaultValue={1}
       debounceMs={100}
       onValueChange={({

@@ -1,5 +1,6 @@
 import { PropertyValueScope } from "@/components/PropertyValue";
 import { globals } from "@/globals";
+import { log } from "@/log";
 import { actions as mapActions } from "@/slices/mapEditor";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { selectTemplateProps } from "@/store/selectors";
@@ -9,11 +10,11 @@ import { ExtractProps, MapObj, TilesetMapObj } from "@/types/map";
 /**
  * Updates properties on instance objects and/or their templates.
  *
- * When level is "template":
+ * When scope is "template":
  * - Calls the templateUpdate callback to update the templates
  * - Unsets the instance values so they inherit from the updated templates
  *
- * When level is "instance":
+ * When scope is "instance":
  * - Updates the instance objects directly
  *
  * @param level - Whether to update at the template or instance level
@@ -33,9 +34,15 @@ export function updateObjectProperties<
   scope: PropertyValueScope;
   objs: TInstance[];
   props: Partial<TInstance>;
-  templateUpdate: (objs: TInstance[], props: Partial<TProps>) => void;
+  templateUpdate?: (objs: TInstance[], props: Partial<TProps>) => void;
 }): void {
   if (scope === "template") {
+    if (!templateUpdate) {
+      log.error(
+        "Tried to perform a template update, but no update function specified",
+      );
+      return;
+    }
     // Filter out undefined props before passing to templateUpdate. A value may
     // be undefined if we're switching from instance to template level.
     const definedProps = Object.entries(props).reduce((acc, [key, value]) => {

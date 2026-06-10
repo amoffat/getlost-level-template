@@ -26,10 +26,10 @@ import SlugInput from "./inputs/SlugInput";
 import { requiredUniqueName } from "./validators/name";
 
 // Properties that collectPropertyValues needs to access
-const COLLECTED_PROPS = ["slug", "exitIds"] as const;
+const COLLECTED_PROPS = ["id", "slug", "exitIds"] as const;
 
 // Additional properties needed for identification
-const TEMPLATE_PROPS = ["id"] as const;
+const TEMPLATE_PROPS = [] as const;
 
 // All properties relevant for memo comparison
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;

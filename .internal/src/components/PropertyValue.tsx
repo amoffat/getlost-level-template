@@ -1,4 +1,5 @@
 import { overlayProps } from "@/constants";
+import { copyToClipboard } from "@/utils/copy";
 import {
   ActionIcon,
   Alert,
@@ -18,6 +19,7 @@ import {
   IconCircleFilled,
   IconCircleOff,
   IconCirclesFilled,
+  IconCopy,
   IconRestore,
 } from "@tabler/icons-react";
 import { x64 } from "murmurhash3js";
@@ -47,7 +49,7 @@ export interface OnValueChangeArgs<T> {
 }
 
 export interface PropertyValueInfo<T> {
-  // Used purely for key generation/stability for react components
+  /** Used purely for key generation/stability for react components */
   key: string;
   /** The actual value */
   value: T;
@@ -72,7 +74,7 @@ interface PropertyValueProps<T> {
   /** The input component to render. Receives the effective value and onChange callback */
   renderInput: (args: RenderInputArgs<T>) => ReactElement;
   /** Callback when the user changes the value */
-  onValueChange: (args: OnValueChangeArgs<T>) => void;
+  onValueChange?: (args: OnValueChangeArgs<T>) => void;
   /** Optional function to determine if two values are equal (defaults to ===) */
   areEqual?: (a: T | undefined, b: T | undefined) => boolean;
   /**
@@ -93,6 +95,8 @@ interface PropertyValueProps<T> {
    * derived value" rather than specifying a concrete value.
    */
   allowUndefined?: boolean;
+  allowCopy?: boolean;
+  noReset?: boolean;
 }
 
 /**
@@ -117,6 +121,8 @@ function PropertyValueInner<T>({
   defaultValue,
   tooltip,
   allowUndefined = false,
+  allowCopy = false,
+  noReset = false,
   refreshKey,
 }: PropertyValueProps<T> & { refreshKey: string }) {
   const { t } = useTranslation();
@@ -200,9 +206,15 @@ function PropertyValueInner<T>({
   // across re-renders and debounced calls.
   const lastCommittedValue = useRef<T | undefined>(analysis.effectiveValue);
 
+  const copyValue = useCallback(() => {
+    if (typeof localValue === "string") {
+      copyToClipboard({ value: localValue, t });
+    }
+  }, [localValue, t]);
+
   const setValue = useCallback(
     (value: T | undefined) => {
-      onValueChange({
+      onValueChange?.({
         scope: noTemplate ? "instance" : localScope,
         value,
         prevValue: lastCommittedValue.current,
@@ -236,7 +248,7 @@ function PropertyValueInner<T>({
       requestIdleCallback(() => {
         const changeValue = scope === "template";
         const newValue = changeValue ? undefined : localValue;
-        onValueChange({
+        onValueChange?.({
           scope,
           value: newValue,
           prevValue: lastCommittedValue.current,
@@ -394,17 +406,19 @@ function PropertyValueInner<T>({
           <Group gap={4} align="center" wrap="nowrap">
             <Input.Label mb={0}>{label}</Input.Label>
             {tooltip && <InfoTooltip>{tooltip}</InfoTooltip>}
-            <Tooltip label={t("resettableResetTooltip")}>
-              <ActionIcon
-                onClick={handleReset}
-                disabled={isResetDisabled}
-                variant="subtle"
-                color="gray"
-                size="sm"
-              >
-                <IconRestore size={16} />
-              </ActionIcon>
-            </Tooltip>
+            {!noReset && (
+              <Tooltip label={t("resettableResetTooltip")}>
+                <ActionIcon
+                  onClick={handleReset}
+                  disabled={isResetDisabled}
+                  variant="subtle"
+                  color="gray"
+                  size="sm"
+                >
+                  <IconRestore size={16} />
+                </ActionIcon>
+              </Tooltip>
+            )}
             {allowUndefined &&
               (isExplicitlyUndefined ? (
                 <Badge size="xs" color="gray" variant="light" autoContrast>
@@ -422,6 +436,18 @@ function PropertyValueInner<T>({
                   </ActionIcon>
                 </Tooltip>
               ))}
+            {allowCopy && localValue !== undefined && (
+              <Tooltip label={t("copyValueTooltip")}>
+                <ActionIcon
+                  onClick={copyValue}
+                  variant="subtle"
+                  color="gray"
+                  size="sm"
+                >
+                  <IconCopy size={16} />
+                </ActionIcon>
+              </Tooltip>
+            )}
           </Group>
           {description && <Input.Description>{description}</Input.Description>}
         </div>
@@ -449,15 +475,14 @@ function PropertyValueInner<T>({
         />
       )}
 
-      {analysis.hasMixedValues && (
+      {analysis.hasMixedValues && onValueChange && (
         <Alert
           p="xs"
           variant="light"
           color="orange"
           icon={<IconAlertTriangle size={16} />}
         >
-          Changing this property will set the same value for all selected
-          objects
+          {t("changingPropertyAlert")}
         </Alert>
       )}
 
@@ -498,7 +523,7 @@ export default function PropertyValue<T>(props: PropertyValueProps<T>) {
         </Alert>
       }
     >
-      <PropertyValueInner key={key} refreshKey={key} {...props} />
+      <PropertyValueInner<T> key={key} refreshKey={key} {...props} />
     </ErrorBoundary>
   );
 }

@@ -12,7 +12,11 @@ import { NpcRequiredAnimation, NpcTemplate } from "@/types/npc";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { createUrlPath } from "@/utils/dialogue";
 import { Box, Flex, Group, Stack, UnstyledButton } from "@mantine/core";
-import { IconInfinity, IconMessageFilled } from "@tabler/icons-react";
+import {
+  IconInfinity,
+  IconMapPin,
+  IconMessageFilled,
+} from "@tabler/icons-react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import classNames from "classnames";
 import { useCallback } from "react";
@@ -120,10 +124,16 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
         </Box>
       ))}
       {waypoints.map((wp) => (
-        <Box key={wp.characterId} w={32} h={32}>
+        <Box
+          key={wp.characterId}
+          w={32}
+          h={32}
+          style={{ position: "relative" }}
+        >
+          <IconMapPin className={styles.speechBubble} size="16" />
           <CharacterIcon
             objId={wp.characterId}
-            animation="WalkDown"
+            animation="WalkUp"
             onClick={(e) => onWaypointIconClick(e, wp)}
           />
         </Box>

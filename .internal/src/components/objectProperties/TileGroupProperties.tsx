@@ -24,6 +24,7 @@ import TintInput from "./inputs/TintInput";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
+  "id",
   "nameKey",
   "talkable",
   "flipX",
@@ -36,7 +37,7 @@ const COLLECTED_PROPS = [
 ] as const;
 
 // Additional properties needed for template resolution
-const TEMPLATE_PROPS = ["id", "tsObjId", "tilesetId"] as const;
+const TEMPLATE_PROPS = ["tsObjId", "tilesetId"] as const;
 
 // All properties relevant for memo comparison
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
@@ -67,7 +68,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
     <LocalizedNameInput
       description={t("tileGroupPropNameDescription")}
       values={toCollect.nameKey}
-      context="Object name"
+      context={t("tileGroupPropNameContext")}
       keyPrefix={["tg"]}
       onValueChange={({ scope, value }): void => {
         updateProps(scope, {

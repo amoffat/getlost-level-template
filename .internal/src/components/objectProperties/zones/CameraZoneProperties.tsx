@@ -1,5 +1,6 @@
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
+import { collectPropertyValues } from "@/store/selectors";
 import { CameraZoneObj, MapObjType } from "@/types/map";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Vector2 } from "@/vec";
@@ -28,6 +29,10 @@ function CameraZoneProperties({ objs }: { objs: CameraZoneObj[] }) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
+  const toCollect = useAppSelector((state) =>
+    collectPropertyValues(state, objs, [...RELEVANT_PROPS]),
+  );
+
   const updateObjs = useCallback(
     (changes: Partial<CameraZoneObj>) => {
       dispatch(
@@ -37,27 +42,13 @@ function CameraZoneProperties({ objs }: { objs: CameraZoneObj[] }) {
     [dispatch, objs],
   );
 
-  const zoomValues: PropertyValueInfo<number | undefined>[] = objs.map((o) => ({
-    key: o.id,
-    value: o.zoom,
-    scope: "instance",
-  }));
-
-  const offsetValues: PropertyValueInfo<Vector2 | undefined>[] = objs.map(
-    (o) => ({
-      key: o.id,
-      value: o.offset,
-      scope: "instance",
-    }),
-  );
-
   const zoomInput = (
     <PropertyValue<number | undefined>
       label={t("cameraZonePropZoomLabel")}
       description={t("cameraZonePropZoomDescription")}
       noTemplate
       allowUndefined
-      values={zoomValues}
+      values={toCollect.zoom}
       defaultValue={1}
       debounceMs={100}
       onValueChange={({
@@ -88,7 +79,7 @@ function CameraZoneProperties({ objs }: { objs: CameraZoneObj[] }) {
     <Vector2Input
       label={t("cameraZonePropOffsetLabel")}
       description={t("cameraZonePropOffsetDescription")}
-      values={offsetValues}
+      values={toCollect.offset}
       allowUndefined={true}
       xRange={[-range, range]}
       yRange={[-range, range]}
@@ -105,6 +96,40 @@ function CameraZoneProperties({ objs }: { objs: CameraZoneObj[] }) {
     />
   );
 
+  const paddingValues: PropertyValueInfo<number>[] = objs.map((o) => ({
+    key: o.id,
+    value: o.padding ?? 0,
+    scope: "instance",
+  }));
+
+  const paddingInput = (
+    <PropertyValue
+      label={t("cameraZonePropPaddingLabel")}
+      noTemplate
+      values={paddingValues}
+      defaultValue={0}
+      // debounceMs={100}
+      onValueChange={({
+        value,
+      }: {
+        scope: PropertyValueScope;
+        value: number | undefined;
+      }) => {
+        updateObjs({ padding: value });
+      }}
+      renderInput={({ key, defaultValue: value, onChange }): ReactElement => (
+        <Slider
+          key={key}
+          defaultValue={value}
+          min={0}
+          max={100}
+          step={1}
+          onChange={onChange}
+        />
+      )}
+    />
+  );
+
   return (
     <BaseZoneProperties
       objs={objs}
@@ -112,6 +137,7 @@ function CameraZoneProperties({ objs }: { objs: CameraZoneObj[] }) {
       zoneType={MapObjType.CameraZone}
       updateObjs={updateObjs}
     >
+      {paddingInput}
       {zoomInput}
       {offsetInput}
     </BaseZoneProperties>

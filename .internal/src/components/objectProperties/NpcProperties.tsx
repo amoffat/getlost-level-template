@@ -18,6 +18,7 @@ import LocalizedNameInput from "./inputs/LocalizedNameInput";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
+  "id",
   "nameKey",
   "walkSpeed",
   "dampenWalkCollisions",
@@ -25,7 +26,7 @@ const COLLECTED_PROPS = [
 ] as const;
 
 // Additional properties needed for template resolution
-const TEMPLATE_PROPS = ["id", "tsObjId", "tilesetId"] as const;
+const TEMPLATE_PROPS = ["tsObjId", "tilesetId"] as const;
 
 // All properties relevant for memo comparison
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
@@ -52,7 +53,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
     <LocalizedNameInput
       description={t("npcPropNameDescription")}
       values={toCollect.nameKey}
-      context="Character name"
+      context={t("npcPropNameContext")}
       keyPrefix={["char"]}
       onValueChange={({ scope, value }): void => {
         updateProps(scope, {
@@ -136,10 +137,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
     />
   );
 
-  let idInput;
-  if (objs.length === 1) {
-    idInput = <IdInput id={objs[0].id} />;
-  }
+  const idInput = <IdInput values={toCollect.id} />;
 
   return (
     <Fieldset legend={t("npcPropLegend")} p="xs">

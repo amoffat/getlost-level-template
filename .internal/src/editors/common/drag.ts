@@ -174,7 +174,6 @@ export class ClickDragger<ModeType extends string> implements Tool {
             }
           }
         }
-        return true;
       } else {
         this.moved = true;
 

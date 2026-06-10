@@ -1,25 +1,20 @@
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
+import { collectPropertyValues } from "@/store/selectors";
 import { setToolThunk } from "@/thunks/map";
+import { BaseZoneObj } from "@/types/map";
 import { ZoneType } from "@/types/zone";
-import { Button, Fieldset, Slider, Stack } from "@mantine/core";
+import { Button, Fieldset, Stack } from "@mantine/core";
 import { IconBrush } from "@tabler/icons-react";
-import { ReactElement, useCallback } from "react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import PropertyValue, {
-  PropertyValueInfo,
-  PropertyValueScope,
-} from "../../PropertyValue";
+import { PropertyValueScope } from "../../PropertyValue";
 import IdInput from "../inputs/IdInput";
 import SwitchInput from "../inputs/SwitchInput";
 
-type CommonZoneInterface = {
-  id: string;
-  enabled: boolean;
-  padding?: number;
-};
+const COLLECTED_PROPS = ["id", "enabled"] as const;
 
-type BaseZoneProps<T extends CommonZoneInterface> = {
+type BaseZoneProps<T extends BaseZoneObj> = {
   objs: T[];
   legend?: React.ReactNode | string;
   zoneType: ZoneType;
@@ -27,7 +22,7 @@ type BaseZoneProps<T extends CommonZoneInterface> = {
   children?: React.ReactNode;
 };
 
-export default function BaseZoneProperties<T extends CommonZoneInterface>({
+export default function BaseZoneProperties<T extends BaseZoneObj>({
   objs,
   legend,
   zoneType,
@@ -37,23 +32,18 @@ export default function BaseZoneProperties<T extends CommonZoneInterface>({
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
-  let idInput;
-  if (objs.length === 1) {
-    idInput = <IdInput id={objs[0].id} />;
-  }
+  const toCollect = useAppSelector((state) =>
+    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
+  );
 
-  const enabledValues: PropertyValueInfo<boolean>[] = objs.map((o) => ({
-    key: o.id,
-    value: o.enabled,
-    scope: "instance",
-  }));
+  const idInput = <IdInput values={toCollect.id} />;
 
   const enabledInput = (
     <SwitchInput
       label={t("zoneEnabledLabel")}
       description={t("zoneEnabledDescription")}
       noTemplate
-      values={enabledValues}
+      values={toCollect.enabled}
       onValueChange={({
         value,
       }: {
@@ -62,42 +52,6 @@ export default function BaseZoneProperties<T extends CommonZoneInterface>({
       }) => {
         updateObjs({ enabled: value } as Partial<T>);
       }}
-    />
-  );
-
-  const paddingValues: PropertyValueInfo<number>[] = objs.map((o) => ({
-    key: o.id,
-    value: o.padding ?? 0,
-    scope: "instance",
-  }));
-
-  const zonesWithPadding = objs.every((obj) => obj.padding !== undefined);
-
-  const paddingInput = (
-    <PropertyValue
-      label={t("cameraZonePropPaddingLabel")}
-      noTemplate
-      values={paddingValues}
-      defaultValue={0}
-      // debounceMs={100}
-      onValueChange={({
-        value,
-      }: {
-        scope: PropertyValueScope;
-        value: number | undefined;
-      }) => {
-        updateObjs({ padding: value } as Partial<T>);
-      }}
-      renderInput={({ key, defaultValue: value, onChange }): ReactElement => (
-        <Slider
-          key={key}
-          defaultValue={value}
-          min={0}
-          max={100}
-          step={1}
-          onChange={onChange}
-        />
-      )}
     />
   );
 
@@ -116,8 +70,6 @@ export default function BaseZoneProperties<T extends CommonZoneInterface>({
       <Stack p={0} gap="xl">
         {idInput}
         {enabledInput}
-        {zonesWithPadding && paddingInput}
-
         {children}
         <Button
           leftSection={<IconBrush size={16} />}

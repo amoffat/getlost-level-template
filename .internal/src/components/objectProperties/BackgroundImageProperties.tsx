@@ -2,6 +2,7 @@ import { globals as mapEditorGlobals } from "@/editors/map/globals";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as mapActions } from "@/slices/mapEditor";
+import { collectPropertyValues } from "@/store/selectors";
 import { RootState } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { BackgroundImageObj, isBackgroundImageObj } from "@/types/map";
@@ -27,7 +28,7 @@ import {
 } from "@tabler/icons-react";
 import { memo, ReactElement, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import PropertyValue, { PropertyValueInfo } from "../PropertyValue";
+import PropertyValue from "../PropertyValue";
 import classes from "./BackgroundImageProperties.module.css";
 import IdInput from "./inputs/IdInput";
 import SwitchInput from "./inputs/SwitchInput";
@@ -36,7 +37,19 @@ interface BackgroundImagePropertiesProps {
   objs: BackgroundImageObj[];
 }
 
+const COLLECTED_PROPS = [
+  "id",
+  "parallaxX",
+  "parallaxY",
+  "tileX",
+  "tileY",
+] as const;
+
 function BackgroundImageProperties({ objs }: BackgroundImagePropertiesProps) {
+  const toCollect = useAppSelector((state) =>
+    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
+  );
+
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
@@ -55,19 +68,9 @@ function BackgroundImageProperties({ objs }: BackgroundImagePropertiesProps) {
   const isSingle = objs.length === 1;
   const singleObj = isSingle ? objs[0] : null;
 
-  const updateProp = useCallback(
-    <K extends keyof BackgroundImageObj>(
-      key: K,
-      getValue: (obj: BackgroundImageObj) => BackgroundImageObj[K],
-    ) => {
-      dispatch(
-        mapActions.updateMany(
-          objs.map((o) => ({
-            id: o.id,
-            changes: { [key]: getValue(o) } as Partial<BackgroundImageObj>,
-          })),
-        ),
-      );
+  const updateObjs = useCallback(
+    (changes: Partial<BackgroundImageObj>) => {
+      dispatch(mapActions.updateMany(objs.map((o) => ({ id: o.id, changes }))));
     },
     [dispatch, objs],
   );
@@ -131,34 +134,7 @@ function BackgroundImageProperties({ objs }: BackgroundImagePropertiesProps) {
     ? !parallaxDisabledIds.has(singleObj.id)
     : false;
 
-  const parallaxXValues: PropertyValueInfo<number>[] = objs.map((o) => ({
-    key: o.id,
-    value: o.parallax.x,
-    scope: "instance",
-  }));
-
-  const parallaxYValues: PropertyValueInfo<number>[] = objs.map((o) => ({
-    key: o.id,
-    value: o.parallax.y,
-    scope: "instance",
-  }));
-
-  const tileXValues: PropertyValueInfo<boolean>[] = objs.map((o) => ({
-    key: o.id,
-    value: o.tileX ?? false,
-    scope: "instance",
-  }));
-
-  const tileYValues: PropertyValueInfo<boolean>[] = objs.map((o) => ({
-    key: o.id,
-    value: o.tileY ?? false,
-    scope: "instance",
-  }));
-
-  let idInput;
-  if (objs.length === 1) {
-    idInput = <IdInput id={objs[0].id} />;
-  }
+  const idInput = <IdInput values={toCollect.id} />;
 
   return (
     <Fieldset legend={t("bgImagePropLegend")} p="xs">
@@ -230,12 +206,11 @@ function BackgroundImageProperties({ objs }: BackgroundImagePropertiesProps) {
           label={t("bgImagePropParallaxXLabel")}
           description={t("bgImagePropParallaxXDesc")}
           noTemplate
-          values={parallaxXValues}
+          values={toCollect.parallaxX}
           defaultValue={0}
           debounceMs={100}
           onValueChange={({ value }) => {
-            if (value !== undefined)
-              updateProp("parallax", (o) => ({ ...o.parallax, x: value }));
+            updateObjs({ parallaxX: value });
           }}
           renderInput={({
             key,
@@ -258,12 +233,11 @@ function BackgroundImageProperties({ objs }: BackgroundImagePropertiesProps) {
           label={t("bgImagePropParallaxYLabel")}
           description={t("bgImagePropParallaxYDesc")}
           noTemplate
-          values={parallaxYValues}
+          values={toCollect.parallaxY}
           defaultValue={0}
           debounceMs={100}
           onValueChange={({ value }) => {
-            if (value !== undefined)
-              updateProp("parallax", (o) => ({ ...o.parallax, y: value }));
+            updateObjs({ parallaxY: value });
           }}
           renderInput={({
             key,
@@ -286,9 +260,9 @@ function BackgroundImageProperties({ objs }: BackgroundImagePropertiesProps) {
           noTemplate
           label={t("bgImagePropTileXLabel")}
           description={t("bgImagePropTileXDesc")}
-          values={tileXValues}
+          values={toCollect.tileX}
           onValueChange={({ value }) => {
-            if (value !== undefined) updateProp("tileX", () => value);
+            updateObjs({ tileX: value });
           }}
         />
 
@@ -297,9 +271,9 @@ function BackgroundImageProperties({ objs }: BackgroundImagePropertiesProps) {
           noTemplate
           label={t("bgImagePropTileYLabel")}
           description={t("bgImagePropTileYDesc")}
-          values={tileYValues}
+          values={toCollect.tileY}
           onValueChange={({ value }) => {
-            if (value !== undefined) updateProp("tileY", () => value);
+            updateObjs({ tileY: value });
           }}
         />
 

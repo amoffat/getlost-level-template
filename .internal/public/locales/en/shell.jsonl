@@ -176,13 +176,14 @@
 {"k": "groundOffsetInputDescription", "v": "Vertical offset of the object from the ground.", "ctx": "Default description for ground offset slider"}
 {"k": "idInputLabel", "v": "ID", "ctx": "Label for the read-only object ID field"}
 {"k": "idInputDescription", "v": "The object's unique identifier (read only). Use this in your level's code.", "ctx": "Description for the read-only object ID field"}
-{"k": "idInputCopyTooltip", "v": "Copy id", "ctx": "Tooltip for the button that copies the object ID to clipboard"}
+{"k": "copyValueTooltip", "v": "Copy value", "ctx": "Tooltip for the button that copies the value to clipboard"}
 {"k": "localizedNameInputLabel", "v": "Name", "ctx": "Default label for a localized name input field"}
 {"k": "localizedNameInputDescription", "v": "A name for this object.", "ctx": "Default description for a localized name input field"}
 {"k": "localizedNameInputPlaceholder", "v": "Enter name", "ctx": "Default placeholder for a localized name input field"}
 {"k": "localizedNameInputMixedValues", "v": "Mixed values", "ctx": "Placeholder shown when multiple selected objects have different values"}
 {"k": "npcPropLegend", "v": "NPC properties", "ctx": "Fieldset legend for NPC object properties panel"}
 {"k": "npcPropNameDescription", "v": "A name for this character. This will appear in dialogue.", "ctx": "Description for the NPC name input"}
+{"k": "npcPropNameContext", "v": "Character name"}
 {"k": "npcPropWalkSpeedLabel", "v": "Walk speed", "ctx": "Label for the NPC walk speed slider"}
 {"k": "npcPropWalkSpeedDescription", "v": "How quickly the NPC moves across the map.", "ctx": "Description for the NPC walk speed slider"}
 {"k": "npcPropDampenWalkCollisionsLabel", "v": "Dampen walk collisions", "ctx": "Label for the NPC dampen walk collisions slider"}
@@ -194,6 +195,7 @@
 {"k": "npcPropCopyIdTooltip", "v": "Copy id", "ctx": "Tooltip for the button that copies the NPC object ID to clipboard"}
 {"k": "tileGroupPropLegend", "v": "Object properties", "ctx": "Fieldset legend for tile group object properties panel"}
 {"k": "tileGroupPropNameDescription", "v": "A name for this object. Does not have to be unique.", "ctx": "Description for the tile group name input"}
+{"k": "tileGroupPropNameContext", "v": "Object name"}
 {"k": "tileGroupPropWalkSoundLabel", "v": "Walk sound", "ctx": "Label for the walk sound selector"}
 {"k": "tileGroupPropWalkSoundDescription", "v": "The sound that will play when a character walks on this tile", "ctx": "Description for the walk sound selector"}
 {"k": "tileGroupPropWalkSoundMixedValues", "v": "Mixed values", "ctx": "Placeholder shown when multiple selected tiles have different walk sound values"}
@@ -210,7 +212,8 @@
 {"k": "tileGroupPropHiddenDescription", "v": "Whether this object starts off hidden on the map.", "ctx": "Description for the tile group hidden toggle"}
 {"k": "tileGroupPropGroundOffsetDescription", "v": "Vertical offset of the object from the ground.", "ctx": "Description for the tile group ground offset slider"}
 {"k": "pickupPropLegend", "v": "Pickup Properties", "ctx": "Fieldset legend for pickup object properties panel"}
-{"k": "pickupPropNameDescription", "v": "Unique identifier for this pickup", "ctx": "Description for the pickup name input"}
+{"k": "pickupPropNameDescription", "v": "The name as it will appear in the player's inventory", "ctx": "Description for the pickup name input"}
+{"k": "pickupPropNameContext", "v": "Pickup name"}
 {"k": "pickupPropNamePlaceholder", "v": "Enter pickup name", "ctx": "Placeholder for the pickup name input"}
 {"k": "pickupPropTagsLabel", "v": "Tags", "ctx": "Label for the pickup tags input"}
 {"k": "pickupPropTagsDescription", "v": "Tags for categorizing this pickup", "ctx": "Description for the pickup tags input"}
@@ -681,3 +684,4 @@
 {"k": "propertyValueSetUndefinedTooltip", "v": "Set value to undefined", "ctx": "Tooltip on the 'set to undefined' button in PropertyValue component"}
 {"k": "zoneEnabledLabel", "v": "Enabled"}
 {"k": "zoneEnabledDescription", "v": "Should the zone start enabled?"}
+{"k": "changingPropertyAlert", "v": "Changing this property will set the same value for all selected objects"}

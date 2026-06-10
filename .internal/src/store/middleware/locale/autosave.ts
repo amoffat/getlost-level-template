@@ -7,7 +7,7 @@ import { selectPropertyValue } from "@/store/selectors";
 import { type RootState } from "@/store/store";
 import { supportedLangs } from "@/types/i18n";
 import type { LocaleEntry, LocaleStatePayload } from "@/types/locale";
-import { isSpeakableObject } from "@/types/map";
+import { isPickupObj, isSpeakableObject } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
 import { AppStartListening } from "@/types/redux";
 import { isTileGroupTemplate } from "@/types/tilegroup";
@@ -109,6 +109,9 @@ function collectLiveKeys(state: RootState): Set<string> {
     if (isSpeakableObject(obj)) {
       const nameKey = selectPropertyValue(state, obj, "nameKey");
       if (nameKey) keys.add(nameKey);
+    } else if (isPickupObj(obj)) {
+      const nameKey = selectPropertyValue(state, obj, "nameKey");
+      if (nameKey) keys.add(nameKey);
     }
   }
 
@@ -138,6 +141,8 @@ startAppListening({
 
     for (const locale of supportedLangs) {
       getSubject(locale).next(() => {
+        // Important that state is snapshotted at the time the entries are being
+        // fetched to be saved.
         const state = getState();
 
         // Find all main entries that are *live*, meaning, used by some object

@@ -1,33 +1,26 @@
-import { copyToClipboard } from "@/utils/copy";
-import { ActionIcon, Box, Group, TextInput, Tooltip } from "@mantine/core";
-import { IconCopy } from "@tabler/icons-react";
+import PropertyValue, { PropertyValueInfo } from "@/components/PropertyValue";
+import { TextInput } from "@mantine/core";
+import { ReactElement } from "react";
 import { useTranslation } from "react-i18next";
 
 interface IdInputProps {
-  id: string;
+  values: PropertyValueInfo<string>[];
 }
 
-export default function IdInput({ id }: IdInputProps) {
+export default function IdInput({ values }: IdInputProps) {
   const { t } = useTranslation();
-  const copyId = () => {
-    copyToClipboard({ value: id, t });
-  };
 
   return (
-    <Group gap="xs" wrap="nowrap">
-      <Box style={{ flex: 1 }}>
-        <TextInput
-          label={t("idInputLabel")}
-          description={t("idInputDescription")}
-          value={id}
-          disabled
-        />
-      </Box>
-      <Tooltip label={t("idInputCopyTooltip")}>
-        <ActionIcon onClick={copyId} variant="subtle" color="gray" size="sm">
-          <IconCopy size={16} />
-        </ActionIcon>
-      </Tooltip>
-    </Group>
+    <PropertyValue
+      label={t("idInputLabel")}
+      description={t("idInputDescription")}
+      noTemplate
+      noReset
+      allowCopy
+      values={values}
+      renderInput={({ key, defaultValue: value }): ReactElement => (
+        <TextInput key={key} defaultValue={value} disabled />
+      )}
+    />
   );
 }
