@@ -1,20 +1,16 @@
 import * as constants from "@/constants";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import {
-  actions as mapEditorActions,
-  selectors as mapSelectors,
-} from "@/slices/mapEditor";
+import { useAppSelector } from "@/hooks/redux";
+import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { collectPropertyValues } from "@/store/selectors";
 import { ExitObj } from "@/types/map";
-import { ExitProps } from "@/types/properties";
-import { updateObjectProperties } from "@/utils/propertyEditor";
+import { updateObjects } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Button, Fieldset, Slider, Stack, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { memo, ReactElement, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import GatewayModal from "../GatewayModal";
-import PropertyValue, { PropertyValueScope } from "../PropertyValue";
+import PropertyValue from "../PropertyValue";
 import SlugInput from "./inputs/SlugInput";
 import SwitchInput from "./inputs/SwitchInput";
 import { requiredUniqueName } from "./validators/name";
@@ -36,37 +32,11 @@ const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function ExitProperties({ objs }: { objs: ExitObj[] }) {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
   const objsByTemplateId = useAppSelector((state) =>
     mapSelectors.objectsByTemplateId(state, constants.exitTemplateId),
   ) as ExitObj[];
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
-
-  // All exit objects use the same global exit template
-  const templateUpdate = useCallback(
-    (_objs: ExitObj[], props: Partial<ExitProps>) => {
-      dispatch(
-        mapEditorActions.updateTemplate({
-          name: "exitGateways",
-          updates: props,
-        }),
-      );
-    },
-    [dispatch],
-  );
-
-  const updateProps = useCallback(
-    (scope: PropertyValueScope, props: Partial<ExitProps>) => {
-      updateObjectProperties({
-        scope,
-        objs,
-        props,
-        templateUpdate,
-      });
-    },
-    [objs, templateUpdate],
-  );
 
   const toCollect = useAppSelector((state) =>
     collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
@@ -79,9 +49,12 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
         ? `${numericRepoId}/${gatewayId}`
         : gatewayId;
 
-      updateProps("instance", { preferredEntranceId: formattedEntranceId });
+      updateObjects({
+        objs,
+        changes: { preferredEntranceId: formattedEntranceId },
+      });
     },
-    [updateProps],
+    [objs],
   );
 
   const existingSlugs = useMemo(() => {
@@ -108,10 +81,13 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       noTemplate
       values={toCollect.slug}
       validator={slugValidator}
-      onValueChange={({ scope, value }): void => {
-        updateProps(scope, {
-          slug: value ?? null,
-          status: slugValidator(value ?? undefined) ? "error" : null,
+      onValueChange={({ value }): void => {
+        updateObjects({
+          objs,
+          changes: {
+            slug: value ?? null,
+            status: slugValidator(value ?? undefined) ? "error" : null,
+          },
         });
       }}
       required
@@ -130,13 +106,11 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       defaultValue={null}
       debounceMs={100}
       onValueChange={({
-        scope,
         value,
       }: {
-        scope: PropertyValueScope;
         value: string | null | undefined;
       }): void => {
-        updateProps(scope, { preferredEntranceId: value });
+        updateObjects({ objs, changes: { preferredEntranceId: value } });
       }}
       renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         return (
@@ -167,7 +141,9 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       label={t("exitPropForceLabel")}
       description={t("exitPropForceDescription")}
       values={toCollect.force}
-      onValueChange={({ scope, value }) => updateProps(scope, { force: value })}
+      onValueChange={({ value }) =>
+        updateObjects({ objs, changes: { force: value } })
+      }
       noTemplate
       debounceMs={100}
     />
@@ -180,14 +156,8 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
       values={toCollect.sensorRadius}
       defaultValue={constants.defaultExitSensorRadius}
       noTemplate
-      onValueChange={({
-        scope,
-        value,
-      }: {
-        scope: PropertyValueScope;
-        value: number | undefined;
-      }): void => {
-        updateProps(scope, { sensorRadius: value });
+      onValueChange={({ value }: { value: number | undefined }): void => {
+        updateObjects({ objs, changes: { sensorRadius: value } });
       }}
       renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         return (

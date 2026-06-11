@@ -7,6 +7,17 @@ import { selectTemplateProps } from "@/store/selectors";
 import { store } from "@/store/store";
 import { ExtractProps, MapObj, TilesetMapObj } from "@/types/map";
 
+export function updateObjects<TInstance extends MapObj>({
+  objs,
+  changes,
+}: {
+  objs: TInstance[];
+  changes: Partial<TInstance>;
+}) {
+  const payload = objs.map((obj) => ({ id: obj.id, changes }));
+  store.dispatch(mapActions.updateMany(payload));
+}
+
 /**
  * Updates properties on instance objects and/or their templates.
  *
@@ -22,7 +33,7 @@ import { ExtractProps, MapObj, TilesetMapObj } from "@/types/map";
  * @param props - Object containing the properties to update
  * @param templateUpdate - Callback to update templates when level is "template"
  */
-export function updateObjectProperties<
+export function updateObjectOrTemplate<
   TInstance extends MapObj,
   TProps extends ExtractProps<TInstance> = ExtractProps<TInstance>,
 >({

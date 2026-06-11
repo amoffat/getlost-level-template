@@ -5,7 +5,7 @@ import { collectPropertyValues } from "@/store/selectors";
 import { LightFlicker, lightFlickerTypes } from "@/types/lights";
 import { LightObj } from "@/types/map";
 import { LightProps } from "@/types/properties";
-import { updateObjectProperties } from "@/utils/propertyEditor";
+import { updateObjectOrTemplate } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import {
   ColorInput,
@@ -59,7 +59,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
 
   const updateProps = useCallback(
     (scope: PropertyValueScope, props: Partial<LightProps>) => {
-      updateObjectProperties({
+      updateObjectOrTemplate({
         scope,
         objs,
         props,

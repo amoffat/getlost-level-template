@@ -16,12 +16,7 @@ import {
   SpeakableMapObj,
   WaypointObj,
 } from "@/types/map";
-import {
-  EntranceProps,
-  ExitProps,
-  LightProps,
-  PickupProps,
-} from "@/types/properties";
+import { LightProps } from "@/types/properties";
 import { Rect } from "@/types/rect";
 import { isTileGroupTemplate } from "@/types/tilegroup";
 import { TemplateObject } from "@/types/tilesetobject";
@@ -67,7 +62,7 @@ const createMapSelector = createSelector.withTypes<MapEditorState>();
 
 const reconcilePrefix = "map";
 
-interface MapEditorState {
+export interface MapEditorState {
   grid: {
     size: Vector2;
     visible: boolean;
@@ -102,9 +97,6 @@ interface MapEditorState {
   };
   templates: {
     lights: LightProps & HasId;
-    entryGateways: EntranceProps & HasId;
-    exitGateways: ExitProps & HasId;
-    pickups: PickupProps & HasId;
   };
 }
 

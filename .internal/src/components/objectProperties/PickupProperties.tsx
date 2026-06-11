@@ -1,20 +1,18 @@
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { actions as mapEditorActions } from "@/slices/mapEditor";
+import { useAppSelector } from "@/hooks/redux";
 import { collectPropertyValues } from "@/store/selectors";
 import { PickupObj } from "@/types/map";
-import { PickupProps } from "@/types/properties";
 import { TileGroupTemplate } from "@/types/tilegroup";
-import { shallowEquals } from "@/utils/array";
-import { updateObjectProperties } from "@/utils/propertyEditor";
+import { updateObjects } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
-import { Fieldset, Stack, TagsInput, TextInput } from "@mantine/core";
+import { Fieldset, Stack, TextInput } from "@mantine/core";
 import { memo, ReactElement, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import PropertyValue, { PropertyValueScope } from "../PropertyValue";
+import PropertyValue from "../PropertyValue";
 import TilesetGroup from "../TilesetGroup";
 import HiddenInput from "./inputs/HiddenInput";
 import IdInput from "./inputs/IdInput";
 import LocalizedNameInput from "./inputs/LocalizedNameInput";
+import TagsInput from "./inputs/TagsInput";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = ["id", "tags", "nameKey", "assetId", "hidden"] as const;
@@ -27,32 +25,6 @@ const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function PickupProperties({ objs }: { objs: PickupObj[] }) {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
-
-  // All pickup objects use the same global pickup template
-  const templateUpdate = useCallback(
-    (_objs: PickupObj[], props: Partial<PickupProps>) => {
-      dispatch(
-        mapEditorActions.updateTemplate({
-          name: "pickups",
-          updates: props,
-        }),
-      );
-    },
-    [dispatch],
-  );
-
-  const updateProps = useCallback(
-    (scope: PropertyValueScope, props: Partial<PickupProps>) => {
-      updateObjectProperties({
-        scope,
-        objs,
-        props,
-        templateUpdate,
-      });
-    },
-    [objs, templateUpdate],
-  );
 
   const toCollect = useAppSelector((state) =>
     collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
@@ -66,10 +38,13 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       context={t("pickupPropNameContext")}
       keyPrefix={["pickup"]}
       placeholder={t("pickupPropNamePlaceholder")}
-      onValueChange={({ scope, value }): void => {
-        updateProps(scope, {
-          nameKey: value ?? null,
-          status: value ? null : "error",
+      onValueChange={({ value }): void => {
+        updateObjects({
+          objs,
+          changes: {
+            nameKey: value ?? null,
+            status: value ? null : "error",
+          },
         });
       }}
       required
@@ -77,35 +52,17 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
   );
 
   const tagsInput = (
-    <PropertyValue
+    <TagsInput
       label={t("pickupPropTagsLabel")}
       description={t("pickupPropTagsDescription")}
+      max={3}
       values={toCollect.tags}
       noTemplate
-      defaultValue={[]}
-      areEqual={shallowEquals}
-      onValueChange={({
-        scope,
-        value,
-      }: {
-        scope: PropertyValueScope;
-        value: string[] | undefined;
-      }) => {
-        updateProps(scope, { tags: value });
+      onValueChange={({ value }: { value: string[] | undefined }) => {
+        updateObjects({ objs, changes: { tags: value } });
       }}
       debounceMs={100}
-      renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
-        return (
-          <TagsInput
-            key={key}
-            error={validator?.(value ?? undefined)}
-            defaultValue={value}
-            onChange={onChange}
-            placeholder={t("pickupPropTagsPlaceholder")}
-            splitChars={[",", " ", "|"]}
-          />
-        );
-      }}
+      placeholder={t("pickupPropTagsPlaceholder")}
     />
   );
 
@@ -135,13 +92,11 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       defaultValue={null}
       noTemplate={true}
       onValueChange={({
-        scope,
         value,
       }: {
-        scope: PropertyValueScope;
         value: string | null | undefined;
       }): void => {
-        updateProps(scope, { assetId: value });
+        updateObjects({ objs, changes: { assetId: value } });
       }}
       debounceMs={100}
       renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
@@ -166,8 +121,8 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
     <HiddenInput
       description={t("pickupPropHiddenDescription")}
       values={toCollect.hidden}
-      onValueChange={({ scope, value }) =>
-        updateProps(scope, { hidden: value })
+      onValueChange={({ value }) =>
+        updateObjects({ objs, changes: { hidden: value } })
       }
       noTemplate
       debounceMs={100}

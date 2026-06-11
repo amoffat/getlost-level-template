@@ -6,7 +6,7 @@ import { MapLayerName } from "@/types/layer";
 import { TileGroupInstance } from "@/types/map";
 import { TileGroupProps } from "@/types/properties";
 import {
-  updateObjectProperties,
+  updateObjectOrTemplate,
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
@@ -54,7 +54,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
 
   const updateProps = useCallback(
     (scope: PropertyValueScope, props: Partial<TileGroupProps>) => {
-      updateObjectProperties({
+      updateObjectOrTemplate({
         scope,
         objs,
         props,

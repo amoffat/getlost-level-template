@@ -3,13 +3,11 @@ import { useAppSelector } from "@/hooks/redux";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { collectPropertyValues } from "@/store/selectors";
 import { WaypointObj } from "@/types/map";
-import { WaypointProps } from "@/types/properties";
-import { updateObjectProperties } from "@/utils/propertyEditor";
+import { updateObjects } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Fieldset, Stack } from "@mantine/core";
 import { memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { PropertyValueScope } from "../PropertyValue";
 import SlugInput from "./inputs/SlugInput";
 import { requiredUniqueName } from "./validators/name";
 
@@ -23,19 +21,6 @@ function WaypointProperties({ objs }: { objs: WaypointObj[] }) {
   const objsByTemplateId = useAppSelector((state) =>
     mapSelectors.objectsByTemplateId(state, waypointIcon),
   ) as WaypointObj[];
-
-  const updateProps = useCallback(
-    (scope: PropertyValueScope, props: Partial<WaypointProps>) => {
-      updateObjectProperties({
-        scope,
-        objs,
-        props,
-        // Waypoints have no shared global template — all properties are per-instance.
-        templateUpdate: () => {},
-      });
-    },
-    [objs],
-  );
 
   const toCollect = useAppSelector((state) =>
     collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
@@ -70,10 +55,13 @@ function WaypointProperties({ objs }: { objs: WaypointObj[] }) {
             noTemplate
             values={toCollect.slug}
             validator={slugValidator}
-            onValueChange={({ scope, value }): void => {
-              updateProps(scope, {
-                slug: value ?? null,
-                status: slugValidator(value ?? undefined) ? "error" : null,
+            onValueChange={({ value }): void => {
+              updateObjects({
+                objs,
+                changes: {
+                  slug: value ?? null,
+                  status: slugValidator(value ?? undefined) ? "error" : null,
+                },
               });
             }}
             required

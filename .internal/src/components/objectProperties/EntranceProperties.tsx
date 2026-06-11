@@ -1,13 +1,9 @@
 import { entryTemplateId } from "@/constants";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import {
-  actions as mapEditorActions,
-  selectors as mapSelectors,
-} from "@/slices/mapEditor";
+import { useAppSelector } from "@/hooks/redux";
+import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { collectPropertyValues } from "@/store/selectors";
 import { EntranceObj } from "@/types/map";
-import { EntranceProps } from "@/types/properties";
-import { updateObjectProperties } from "@/utils/propertyEditor";
+import { updateObjects } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import {
   Button,
@@ -21,7 +17,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { memo, ReactElement, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import GatewayModal from "../GatewayModal";
-import PropertyValue, { PropertyValueScope } from "../PropertyValue";
+import PropertyValue from "../PropertyValue";
 import SlugInput from "./inputs/SlugInput";
 import { requiredUniqueName } from "./validators/name";
 
@@ -36,37 +32,11 @@ const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
   const objsByTemplateId = useAppSelector((state) =>
     mapSelectors.objectsByTemplateId(state, entryTemplateId),
   ) as EntranceObj[];
-
-  // All entrance objects use the same global entrance template
-  const templateUpdate = useCallback(
-    (_objs: EntranceObj[], props: Partial<EntranceProps>) => {
-      dispatch(
-        mapEditorActions.updateTemplate({
-          name: "entryGateways",
-          updates: props,
-        }),
-      );
-    },
-    [dispatch],
-  );
-
-  const updateProps = useCallback(
-    (scope: PropertyValueScope, props: Partial<EntranceProps>) => {
-      updateObjectProperties({
-        scope: scope,
-        objs,
-        props,
-        templateUpdate,
-      });
-    },
-    [objs, templateUpdate],
-  );
 
   const toCollect = useAppSelector((state) =>
     collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
@@ -82,9 +52,9 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       // Add the new exit ID to the array
       const currentExitIds = toCollect.exitIds[0]?.value ?? [];
       const newExitIds = [...currentExitIds, formattedExitId];
-      updateProps("instance", { exitIds: newExitIds });
+      updateObjects({ objs, changes: { exitIds: newExitIds } });
     },
-    [toCollect.exitIds, updateProps],
+    [toCollect.exitIds, objs],
   );
 
   const filterGateway = useCallback(
@@ -121,10 +91,13 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
       noTemplate
       values={toCollect.slug}
       validator={slugValidator}
-      onValueChange={({ scope, value }): void => {
-        updateProps(scope, {
-          slug: value ?? null,
-          status: slugValidator(value ?? undefined) ? "error" : null,
+      onValueChange={({ value }): void => {
+        updateObjects({
+          objs,
+          changes: {
+            slug: value ?? null,
+            status: slugValidator(value ?? undefined) ? "error" : null,
+          },
         });
       }}
       required
@@ -140,14 +113,8 @@ function EntranceProperties({ objs }: { objs: EntranceObj[] }) {
         description={t("entrancePropExitConnectionsDescription")}
         noTemplate
         values={toCollect.exitIds}
-        onValueChange={({
-          scope,
-          value,
-        }: {
-          scope: PropertyValueScope;
-          value: string[] | undefined;
-        }): void => {
-          updateProps(scope, { exitIds: value });
+        onValueChange={({ value }: { value: string[] | undefined }): void => {
+          updateObjects({ objs, changes: { exitIds: value } });
         }}
         renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
           const exitIds = value ?? [];

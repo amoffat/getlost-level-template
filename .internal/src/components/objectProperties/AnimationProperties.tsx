@@ -3,7 +3,7 @@ import { collectPropertyValues } from "@/store/selectors";
 import { AnimationInstance } from "@/types/map";
 import { AnimationProps } from "@/types/properties";
 import {
-  updateObjectProperties,
+  updateObjectOrTemplate,
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
@@ -49,7 +49,7 @@ function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
 
   const updateProps = useCallback(
     (scope: PropertyValueScope, props: Partial<AnimationProps>) => {
-      updateObjectProperties({
+      updateObjectOrTemplate({
         scope,
         objs,
         props,

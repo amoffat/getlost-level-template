@@ -1,5 +1,4 @@
 import {
-  defaultExitSensorRadius,
   defaultFriction,
   defaultLightColor,
   defaultLightFlicker,
@@ -12,35 +11,6 @@ import {
 } from "@/constants";
 import type { LightFlicker } from "./lights";
 import type { NpcAnimationRecord } from "./npc";
-
-type InstanceStatus = "error" | "warning";
-
-export interface EntranceProps {
-  slug: string | null;
-  exitIds: string[];
-  status: InstanceStatus | null;
-}
-
-export interface ExitProps {
-  slug: string | null;
-  force: boolean;
-  preferredEntranceId: string | null;
-  sensorRadius: number;
-  status: InstanceStatus | null;
-}
-
-export interface WaypointProps {
-  slug: string | null;
-  status: InstanceStatus | null;
-}
-
-export interface PickupProps {
-  nameKey: string | null;
-  assetId: string | null;
-  status: InstanceStatus | null;
-  tags: string[];
-  hidden: boolean;
-}
 
 export interface LightProps {
   name: string;
@@ -89,40 +59,12 @@ export interface NpcProps {
   defaultAnimation: keyof NpcAnimationRecord;
   groundOffset: number;
   dampenWalkCollisions: number;
-  status: InstanceStatus | null;
   speakerImageId: string | null;
 }
 
 // Default values for each Props type. These are applied at load time to fill in
 // any properties that are absent from persisted data, eliminating the need for
 // migrations when adding or removing properties.
-
-export const ENTRANCE_PROPS_DEFAULTS: EntranceProps = {
-  slug: null,
-  exitIds: [],
-  status: null,
-};
-
-export const EXIT_PROPS_DEFAULTS: ExitProps = {
-  slug: null,
-  force: false,
-  preferredEntranceId: null,
-  sensorRadius: defaultExitSensorRadius,
-  status: null,
-};
-
-export const PICKUP_PROPS_DEFAULTS: PickupProps = {
-  nameKey: null,
-  assetId: null,
-  status: null,
-  hidden: false,
-  tags: [],
-};
-
-export const WAYPOINT_PROPS_DEFAULTS: WaypointProps = {
-  slug: null,
-  status: null,
-};
 
 export const LIGHT_PROPS_DEFAULTS: LightProps = {
   name: "",
@@ -171,7 +113,6 @@ export const NPC_PROPS_DEFAULTS: NpcProps = {
   defaultAnimation: "Idle",
   groundOffset: 0,
   dampenWalkCollisions: defaultNpcDampen,
-  status: null,
   speakerImageId: null,
 };
 

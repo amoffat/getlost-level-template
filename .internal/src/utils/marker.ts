@@ -8,6 +8,9 @@ export function sanitize(value: string): string {
       .replace(/[^a-z0-9-=]/g, "-")
       // Replace multiple dashes with a single dash
       .replace(/-+/g, "-")
+      // Strip start and end dashes
+      .replace(/^-/g, "")
+      .replace(/-$/g, "")
       // Replace only a dash with nothing
       .replace(/^-$/g, "")
   );

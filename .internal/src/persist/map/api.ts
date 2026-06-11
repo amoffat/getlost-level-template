@@ -1,11 +1,6 @@
 import { log } from "@/log";
 import { SavedMap } from "@/types/map";
-import {
-  ENTRANCE_PROPS_DEFAULTS,
-  EXIT_PROPS_DEFAULTS,
-  LIGHT_PROPS_DEFAULTS,
-  PICKUP_PROPS_DEFAULTS,
-} from "@/types/properties";
+import { LIGHT_PROPS_DEFAULTS } from "@/types/properties";
 import { applyMigrations } from "@/utils/migrations";
 import { applyDefaultProps } from "@/utils/misc";
 import { decode, encode } from "cbor2";
@@ -25,7 +20,7 @@ export async function loadMap(): Promise<SavedMap | undefined> {
   const migrated = await applyMigrations(
     baseDecoded,
     migrations,
-    latestVersion
+    latestVersion,
   );
 
   const decoded = baseDecoded as LatestMapDoc;
@@ -35,9 +30,6 @@ export async function loadMap(): Promise<SavedMap | undefined> {
   if (decoded.map?.templates) {
     const t = decoded.map.templates;
     applyDefaultProps(t.lights, LIGHT_PROPS_DEFAULTS);
-    applyDefaultProps(t.entryGateways, ENTRANCE_PROPS_DEFAULTS);
-    applyDefaultProps(t.exitGateways, EXIT_PROPS_DEFAULTS);
-    applyDefaultProps(t.pickups, PICKUP_PROPS_DEFAULTS);
   }
 
   if (migrated) {

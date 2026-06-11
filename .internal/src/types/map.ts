@@ -1,18 +1,16 @@
-import { HasId, RequiredButMaybeUndefined } from "@/utils/misc";
+import { MapEditorState } from "@/slices/mapEditor";
+import { RequiredButMaybeUndefined } from "@/utils/misc";
 import type { Vector2 } from "@/vec";
 import { EntityState } from "@reduxjs/toolkit";
 import { Card } from "./card";
+import { InstanceStatus } from "./error";
 import type { MapLayerName } from "./layer";
 import { ConcavePolygon } from "./polygon";
 import {
   AnimationProps,
-  EntranceProps,
-  ExitProps,
   LightProps,
   NpcProps,
-  PickupProps,
   TileGroupProps,
-  WaypointProps,
 } from "./properties";
 import { Rect } from "./rect";
 export interface SavedMap {
@@ -21,12 +19,7 @@ export interface SavedMap {
   card: Card | null;
   bounds: Rect;
   objects: EntityState<MapObj, string>;
-  templates: {
-    lights: LightProps & HasId;
-    entryGateways: EntranceProps & HasId;
-    exitGateways: ExitProps & HasId;
-    pickups: PickupProps & HasId;
-  };
+  templates: MapEditorState["templates"];
 }
 
 export enum MapObjType {
@@ -89,6 +82,8 @@ export interface AnimationInstance
 export interface NpcInstance
   extends TilesetMapObj, RequiredButMaybeUndefined<NpcProps> {
   type: MapObjType.NpcInstance;
+
+  status: InstanceStatus | null;
 }
 
 export interface LightObj
@@ -138,24 +133,39 @@ export interface SensorZoneObj extends BaseZoneObj {
   type: MapObjType.SensorZone;
 }
 
-export interface EntranceObj
-  extends TilesetMapObj, RequiredButMaybeUndefined<EntranceProps> {
+export interface EntranceObj extends TilesetMapObj {
   type: MapObjType.Entry;
+
+  slug: string | null;
+  exitIds: string[];
+  status: InstanceStatus | null;
 }
 
-export interface ExitObj
-  extends TilesetMapObj, RequiredButMaybeUndefined<ExitProps> {
+export interface ExitObj extends TilesetMapObj {
   type: MapObjType.Exit;
+
+  slug: string | null;
+  force: boolean;
+  preferredEntranceId: string | null;
+  sensorRadius: number;
+  status: InstanceStatus | null;
 }
 
-export interface PickupObj
-  extends TilesetMapObj, RequiredButMaybeUndefined<PickupProps> {
+export interface PickupObj extends TilesetMapObj {
   type: MapObjType.Pickup;
+
+  nameKey: string | null;
+  assetId: string | null;
+  status: InstanceStatus | null;
+  tags: string[];
+  hidden: boolean;
 }
 
-export interface WaypointObj
-  extends TilesetMapObj, RequiredButMaybeUndefined<WaypointProps> {
+export interface WaypointObj extends TilesetMapObj {
   type: MapObjType.Waypoint;
+
+  slug: string | null;
+  status: InstanceStatus | null;
 }
 
 export interface BackgroundImageObj extends BaseMapObj {
@@ -204,9 +214,6 @@ export type SpeakableMapObj = Extract<
 
 export type MapObjProps =
   | LightProps
-  | EntranceProps
-  | ExitProps
-  | PickupProps
   | AnimationProps
   | TileGroupProps
   | NpcProps;
@@ -214,13 +221,13 @@ export type MapObjProps =
 export type ExtractProps<T extends MapObj> = T extends LightObj
   ? LightProps
   : T extends EntranceObj
-    ? EntranceProps
+    ? EntranceObj
     : T extends ExitObj
-      ? ExitProps
+      ? ExitObj
       : T extends PickupObj
-        ? PickupProps
+        ? PickupObj
         : T extends WaypointObj
-          ? WaypointProps
+          ? WaypointObj
           : T extends AnimationInstance
             ? AnimationProps
             : T extends TileGroupInstance

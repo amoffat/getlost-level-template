@@ -4,11 +4,8 @@ import { selectors as mapEditorSelectors } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import {
   ExtractProps,
-  isEntranceObj,
-  isExitObj,
   isLightInstance,
   isMapObjFromTileset,
-  isPickupObj,
   MapObj,
   MapObjProps,
   SpeakableMapObj,
@@ -35,12 +32,6 @@ export function selectTemplateProps<
 >(state: RootState, obj: TInstance): TProps | null {
   if (isLightInstance(obj)) {
     return state.mapEditor.templates.lights as unknown as TProps;
-  } else if (isEntranceObj(obj)) {
-    return state.mapEditor.templates.entryGateways as unknown as TProps;
-  } else if (isExitObj(obj)) {
-    return state.mapEditor.templates.exitGateways as unknown as TProps;
-  } else if (isPickupObj(obj)) {
-    return state.mapEditor.templates.pickups as unknown as TProps;
   } else if (isMapObjFromTileset(obj)) {
     return tsSelectors.templateFromId(state, obj.tsObjId) as unknown as TProps;
   }

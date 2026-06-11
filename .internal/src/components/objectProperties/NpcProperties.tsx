@@ -4,7 +4,7 @@ import { collectPropertyValues } from "@/store/selectors";
 import { NpcInstance } from "@/types/map";
 import { NpcProps } from "@/types/properties";
 import {
-  updateObjectProperties,
+  updateObjectOrTemplate,
   updateTilesetTemplates,
 } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
@@ -39,7 +39,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
 
   const updateProps = useCallback(
     (scope: PropertyValueScope, props: Partial<NpcProps>) => {
-      updateObjectProperties({
+      updateObjectOrTemplate({
         scope,
         objs,
         props,
