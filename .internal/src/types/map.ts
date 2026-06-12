@@ -155,6 +155,7 @@ export interface PickupObj extends TilesetMapObj {
   type: MapObjType.Pickup;
 
   nameKey: string | null;
+  descriptionKey: string | null;
   assetId: string | null;
   status: InstanceStatus | null;
   tags: string[];

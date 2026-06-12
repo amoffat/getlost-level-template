@@ -11,7 +11,7 @@
 {"k": "okUpgrade", "v": "Ok, upgrade", "ctx": "Confirm button label in the upgrade modal"}
 {"k": "updateEditorMsg", "v": "There's a new version of the editor available. Please update now.", "ctx": "Body message in the upgrade modal"}
 {"k": "upgradeFailed", "v": "Upgrade Failed", "ctx": "Notification title when the upgrade API call fails"}
-{"k": "upgradeFailedMsg", "v": "Failed to upgrade: {{msg}}", "ctx": "Notification message when upgrade fails; {{msg}} is the server error text"}
+{"k": "upgradeFailedMsg", "v": "Failed to upgrade: {msg}", "ctx": "Notification message when upgrade fails; {msg} is the server error text"}
 {"k": "upgradeSuccessful", "v": "Upgrade successful", "ctx": "Notification title when upgrade completes (source had typo 'succesful')"}
 {"k": "upgradeSuccessMsg", "v": "The editor has been upgraded successfully. The page will now reload.", "ctx": "Notification body after a successful upgrade"}
 {"k": "dragAssetsHere", "v": "Drag assets here", "ctx": "Primary text shown in the full-screen dropzone overlay"}
@@ -19,9 +19,9 @@
 {"k": "yourLanguage", "v": "Your language", "ctx": "Label for the locale selector that sets the editor UI language"}
 {"k": "levelLanguage", "v": "Level language", "ctx": "Label for the locale selector that sets the active level/game language"}
 {"k": "mapMovedObjects", "v": "Moved objects", "ctx": "Notification title when selected objects are moved to a different map layer"}
-{"k": "mapMovedObjectsMessage", "v": "{{count}} objects were moved to the \"{{name}}\" layer.", "ctx": "Notification message; count = number of objects, name = layer name"}
+{"k": "mapMovedObjectsMessage", "v": "{count} objects were moved to the \"{name}\" layer.", "ctx": "Notification message; count = number of objects, name = layer name"}
 {"k": "mapLayerSwitched", "v": "Layer switched", "ctx": "Notification title when the active map editing layer changes"}
-{"k": "mapLayerSwitchedMessage", "v": "You're now editing the \"{{name}}\" layer.", "ctx": "Notification message; name = layer name"}
+{"k": "mapLayerSwitchedMessage", "v": "You're now editing the \"{name}\" layer.", "ctx": "Notification message; name = layer name"}
 {"k": "mapLoading", "v": "Loading map...", "ctx": "Loading spinner message while the map is being loaded"}
 {"k": "mapResetting", "v": "Resetting map...", "ctx": "Loading spinner message while the map is being reset"}
 {"k": "mapReset", "v": "Map reset", "ctx": "Notification title after the map has been cleared"}
@@ -31,17 +31,17 @@
 {"k": "mapAllDataResetMessage", "v": "All data has been cleared.", "ctx": "Notification message after a full reset of all data"}
 {"k": "tilesetLoadingIds", "v": "Loading tilesets ids...", "ctx": "Loading spinner message while tileset IDs are being fetched"}
 {"k": "tilesetLoadFailed", "v": "Failed to load tileset", "ctx": "Notification title when a tileset fails to load"}
-{"k": "tilesetLoadFailedMessage", "v": "Tileset {{tsId}} failed to load: {{message}}", "ctx": "Notification message; tsId = tileset ID, message = error message"}
-{"k": "tilesetLoading", "v": "Loading tileset {{tsId}}...", "ctx": "Loading spinner message; tsId = tileset ID being loaded"}
-{"k": "tilesetIndexingEdges", "v": "Indexing edges for tileset {{tsId}}...", "ctx": "Loading spinner message during autotile edge-signature computation; tsId = tileset ID"}
+{"k": "tilesetLoadFailedMessage", "v": "Tileset {tsId} failed to load: {message}", "ctx": "Notification message; tsId = tileset ID, message = error message"}
+{"k": "tilesetLoading", "v": "Loading tileset {tsId}...", "ctx": "Loading spinner message; tsId = tileset ID being loaded"}
+{"k": "tilesetIndexingEdges", "v": "Indexing edges for tileset {tsId}...", "ctx": "Loading spinner message during autotile edge-signature computation; tsId = tileset ID"}
 {"k": "tilesetRemoved", "v": "Tileset removed", "ctx": "Notification title after a tileset is deleted"}
-{"k": "tilesetRemovedMessage", "v": "Tileset {{tsId}} has been removed.", "ctx": "Notification message; tsId = tileset ID that was removed"}
+{"k": "tilesetRemovedMessage", "v": "Tileset {tsId} has been removed.", "ctx": "Notification message; tsId = tileset ID that was removed"}
 {"k": "tilesetAnimFrameSizeMismatch", "v": "Animation frame size mismatch", "ctx": "Notification title when an animation frame has a different size than the first frame"}
-{"k": "tilesetAnimFrameSizeMismatchMessage", "v": "The new frame is {{newWidth}}x{{newHeight}}, but the first frame is {{firstWidth}}x{{firstHeight}}. All frames must be the same size.", "ctx": "Notification message; dimensions are pixel sizes of the frames"}
+{"k": "tilesetAnimFrameSizeMismatchMessage", "v": "The new frame is {newWidth}x{newHeight}, but the first frame is {firstWidth}x{firstHeight}. All frames must be the same size.", "ctx": "Notification message; dimensions are pixel sizes of the frames"}
 {"k": "tilesetAnimationLoaded", "v": "Animation loaded", "ctx": "Notification title when an animation template is loaded into the animator tool"}
-{"k": "tilesetAnimationLoadedMessage", "v": "Loaded {{count}} frames for animation \"{{name}}\".", "ctx": "Notification message; count = number of frames, name = comma-joined slot names"}
+{"k": "tilesetAnimationLoadedMessage", "v": "Loaded {count} frames for animation \"{name}\".", "ctx": "Notification message; count = number of frames, name = comma-joined slot names"}
 {"k": "tilesetNpcLoaded", "v": "NPC loaded", "ctx": "Notification title when an NPC template is loaded into the NPC tool"}
-{"k": "tilesetNpcLoadedMessage", "v": "NPC \"{{name}}\" loaded.", "ctx": "Notification message; name = NPC name"}
+{"k": "tilesetNpcLoadedMessage", "v": "NPC \"{name}\" loaded.", "ctx": "Notification message; name = NPC name"}
 {"k": "paintToolTip1", "v": "The paint tool allows you to place tiles or objects on the map."}
 {"k": "paintToolTip2", "v": "Paint tiles on the ground layer and objects on the world layer."}
 {"k": "paintToolNoObjectTitle", "v": "No object selected"}
@@ -91,8 +91,8 @@
 {"k": "autotilerTip3", "v": "Moving the cursor slightly within a grid cell will result in candidates that allow more change in that direction."}
 {"k": "autotilerCandidatesLegend", "v": "Autotiler candidates"}
 {"k": "autotilerPressNumKeys", "v": "Press number keys to choose a different tile"}
-{"k": "autotilerPressToSelect", "v": "Press {{number}} to select", "ctx": "Button title for autotiler candidate key. {{number}} is the 1-based key number"}
-{"k": "autotilerKeyAriaLabel", "v": "Key {{number}}", "ctx": "Aria label for autotiler candidate key. {{number}} is the 1-based key number"}
+{"k": "autotilerPressToSelect", "v": "Press {number} to select", "ctx": "Button title for autotiler candidate key. {number} is the 1-based key number"}
+{"k": "autotilerKeyAriaLabel", "v": "Key {number}", "ctx": "Aria label for autotiler candidate key. {number} is the 1-based key number"}
 {"k": "gatewayTip1", "v": "Click on a gateway to select it."}
 {"k": "gatewayTip2", "v": "Click on the map to place the gateway."}
 {"k": "gatewayTip3", "v": "Gateways can only be placed on the Special layer."}
@@ -127,7 +127,7 @@
 {"k": "npcToolTipUseAnimator", "v": "To create a required animation, use the <1>Animator tool.</1>", "ctx": "NPC tool tip - <1> wraps a clickable Anchor link that activates the Animator tool"}
 {"k": "npcToolNameRequired", "v": "Name is required", "ctx": "NPC form validation error for empty name"}
 {"k": "npcToolNotifTitle", "v": "NPC saved", "ctx": "NPC save success notification title"}
-{"k": "npcToolNotifMessage", "v": "Saved NPC \"{{name}}\".", "ctx": "NPC save success notification message, {{name}} is the NPC name"}
+{"k": "npcToolNotifMessage", "v": "Saved NPC \"{name}\".", "ctx": "NPC save success notification message, {name} is the NPC name"}
 {"k": "npcToolLegend", "v": "NPC animations", "ctx": "Fieldset legend for NPC tool"}
 {"k": "npcToolTableRequired", "v": "Required", "ctx": "Table column header for required animation slots"}
 {"k": "npcToolTableAnimation", "v": "Animation", "ctx": "Table column header for assigned animation"}
@@ -146,7 +146,7 @@
 {"k": "tileAnimTipCreateNpc", "v": "When all required NPC animations are present, you can create an NPC with the NPC tool.", "ctx": "Animation tool tip shown when all NPC animation slots are filled"}
 {"k": "tileAnimValidationNames", "v": "Please enter at least one animation name.", "ctx": "Form validation error for empty animation names"}
 {"k": "tileAnimNotifTitle", "v": "Animation saved", "ctx": "Animation save success notification title"}
-{"k": "tileAnimNotifMessage", "v": "Saved animation \"{{names}}\".", "ctx": "Animation save success notification message, {{names}} is the comma-separated animation name(s)"}
+{"k": "tileAnimNotifMessage", "v": "Saved animation \"{names}\".", "ctx": "Animation save success notification message, {names} is the comma-separated animation name(s)"}
 {"k": "tileAnimLegend", "v": "Animation preview", "ctx": "Fieldset legend for the animation tool"}
 {"k": "tileAnimAlertNoPreviewTitle", "v": "No preview", "ctx": "Alert title when no animation frames are selected"}
 {"k": "tileAnimAlertNoPreviewMsg", "v": "Please select tiles from the tileset.", "ctx": "Alert message when no animation frames are selected"}
@@ -181,6 +181,10 @@
 {"k": "localizedNameInputDescription", "v": "A name for this object.", "ctx": "Default description for a localized name input field"}
 {"k": "localizedNameInputPlaceholder", "v": "Enter name", "ctx": "Default placeholder for a localized name input field"}
 {"k": "localizedNameInputMixedValues", "v": "Mixed values", "ctx": "Placeholder shown when multiple selected objects have different values"}
+{"k": "localizedDescriptionInputLabel", "v": "Description", "ctx": "Default label for a localized description input field"}
+{"k": "localizedDescriptionInputDescription", "v": "A description for this object.", "ctx": "Default description for a localized description input field"}
+{"k": "localizedDescriptionInputPlaceholder", "v": "Enter description", "ctx": "Default placeholder for a localized description input field"}
+{"k": "localizedDescriptionInputMixedValues", "v": "Mixed values", "ctx": "Placeholder shown when multiple selected objects have different values"}
 {"k": "npcPropLegend", "v": "NPC properties", "ctx": "Fieldset legend for NPC object properties panel"}
 {"k": "npcPropNameDescription", "v": "A name for this character. This will appear in dialogue.", "ctx": "Description for the NPC name input"}
 {"k": "npcPropNameContext", "v": "Character name"}
@@ -200,7 +204,7 @@
 {"k": "tileGroupPropWalkSoundDescription", "v": "The sound that will play when a character walks on this tile", "ctx": "Description for the walk sound selector"}
 {"k": "tileGroupPropWalkSoundMixedValues", "v": "Mixed values", "ctx": "Placeholder shown when multiple selected tiles have different walk sound values"}
 {"k": "tileGroupPropWalkSoundPlaceholder", "v": "Select walk sound", "ctx": "Placeholder for the walk sound selector when no value is set"}
-{"k": "selectWithCustomUseValue", "v": "Use \"{{value}}\"", "ctx": "Option shown in a select-with-custom dropdown to confirm using the typed custom value"}
+{"k": "selectWithCustomUseValue", "v": "Use \"{value}\"", "ctx": "Option shown in a select-with-custom dropdown to confirm using the typed custom value"}
 {"k": "selectWithCustomNoOptions", "v": "No options", "ctx": "Empty state shown in a select-with-custom dropdown when no predefined options match the search"}
 {"k": "selectWithCustomMixedPlaceholder", "v": "Mixed values", "ctx": "Default placeholder for SelectWithCustom when multiple objects have different values"}
 {"k": "selectWithCustomPlaceholder", "v": "Select a value", "ctx": "Default placeholder for SelectWithCustom when no value is set"}
@@ -213,7 +217,9 @@
 {"k": "tileGroupPropGroundOffsetDescription", "v": "Vertical offset of the object from the ground.", "ctx": "Description for the tile group ground offset slider"}
 {"k": "pickupPropLegend", "v": "Pickup Properties", "ctx": "Fieldset legend for pickup object properties panel"}
 {"k": "pickupPropNameDescription", "v": "The name as it will appear in the player's inventory", "ctx": "Description for the pickup name input"}
+{"k": "pickupPropDescriptionDescription", "v": "A description for the pickup", "ctx": "Description for the pickup description input"}
 {"k": "pickupPropNameContext", "v": "Pickup name"}
+{"k": "pickupPropDescriptionContext", "v": "Pickup description"}
 {"k": "pickupPropNamePlaceholder", "v": "Enter pickup name", "ctx": "Placeholder for the pickup name input"}
 {"k": "pickupPropTagsLabel", "v": "Tags", "ctx": "Label for the pickup tags input"}
 {"k": "pickupPropTagsDescription", "v": "Tags for categorizing this pickup", "ctx": "Description for the pickup tags input"}
@@ -264,7 +270,7 @@
 {"k": "mapEditorClearBrokenDescription", "v": "Remove references to missing tilesets or objects from the map", "ctx": "Spotlight action description for clearing broken map object references"}
 {"k": "mapEditorClearBrokenTitle", "v": "Clear broken references?", "ctx": "Modal title when confirming clearing of broken map references"}
 {"k": "mapEditorNoBrokenTilesFound", "v": "No broken tiles found.", "ctx": "Status message shown when no broken tiles exist in the map"}
-{"k": "mapEditorFoundBrokenTiles", "v": "Found {{count}} broken tiles", "ctx": "Status message showing how many broken tiles were found; {{count}} is the number"}
+{"k": "mapEditorFoundBrokenTiles", "v": "Found {count} broken tiles", "ctx": "Status message showing how many broken tiles were found; {count} is the number"}
 {"k": "mapEditorClearBrokenConfirmLabel", "v": "Yes, clear references", "ctx": "Confirm button label in the clear broken references modal"}
 {"k": "mapEditorClearBrokenMsg", "v": "Are you sure you want to clear all broken references? This will delete all map objects that are not backed by a tileset. This action cannot be undone.", "ctx": "Warning message body in the clear broken references confirmation modal"}
 {"k": "mapEditorResetMapLabel", "v": "Reset map", "ctx": "Spotlight action label for resetting the entire map"}
@@ -323,6 +329,7 @@
 {"k": "dialogueTabDialogueLegend", "v": "Dialogue", "ctx": "Fieldset legend in the dialogue tab right panel"}
 {"k": "dialogueTabMilestonesLabel", "v": "Milestones", "ctx": "Label for the milestone multi-select in the dialogue right panel"}
 {"k": "dialogueTabMilestonesDesc", "v": "Which story milestones activate this dialogue?", "ctx": "Description under the milestones multi-select"}
+{"k": "dialogueTabMilestonesTooltip", "v": "When these story milestones are triggered in the game, this dialogue becomes active for this NPC. Interacting with the NPC will then show this dialogue. You should write distinct  dialogues for different story milestones to make the NPC feel more responsive to the player's progress.\n\nUsually, you only want one milestone per dialogue, but you can assign multiple milestones if you want the same dialogue to be used in different parts of the story.\n\nThe \"default\" milestone is a special milestone that applies when no other milestones are active. You can use it to create a fallback dialogue that will always have something to say, even if you forget to assign milestones to a new dialogue."}
 {"k": "dialogueTabNoMilestonesFound", "v": "No milestones found", "ctx": "Empty state message in the milestones multi-select dropdown"}
 {"k": "dialogueTabChangeSpeakerImage", "v": "Change speaker image", "ctx": "Tooltip on the speaker image action icon button in the dialogue tree"}
 {"k": "dialogueTabReplaceImage", "v": "Replace image", "ctx": "Menu item to replace the current speaker image"}
@@ -333,12 +340,12 @@
 {"k": "dialogueTabUnlinkTitle", "v": "Unlink dialogue?", "ctx": "Title of the confirmation modal for unlinking a milestone from a shared dialogue"}
 {"k": "dialogueTabUnlinkMsg", "v": "Are you sure you want to unlink this milestone into its own separate dialogue?", "ctx": "Body text of the unlink dialogue confirmation modal"}
 {"k": "dialogueTabUnlinkConfirm", "v": "Yes, unlink", "ctx": "Confirm button label in the unlink dialogue modal"}
-{"k": "dialogueTabUnlinkItem1", "v": "A new copy of this dialogue will be created for the \"{{label}}\" milestone.", "ctx": "Info item in the unlink dialogue modal; {{label}} is the milestone name"}
-{"k": "dialogueTabUnlinkItem2", "v": "The original dialogue will keep its remaining {{count}} milestone(s).", "ctx": "Info item in the unlink dialogue modal; {{count}} is the number of remaining milestones"}
+{"k": "dialogueTabUnlinkItem1", "v": "A new copy of this dialogue will be created for the \"{label}\" milestone.", "ctx": "Info item in the unlink dialogue modal; {label} is the milestone name"}
+{"k": "dialogueTabUnlinkItem2", "v": "The original dialogue will keep its remaining {count} milestone(s).", "ctx": "Info item in the unlink dialogue modal; {count} is the number of remaining milestones"}
 {"k": "dialogueTabDeleteTitle", "v": "Delete dialogue?", "ctx": "Title of the delete dialogue confirmation modal"}
 {"k": "dialogueTabDeleteMsg", "v": "Are you sure you want to delete this dialogue? This action cannot be undone.", "ctx": "Body text of the delete dialogue confirmation modal"}
 {"k": "dialogueTabDeleteConfirm", "v": "Yes, delete", "ctx": "Confirm button label in the delete dialogue modal"}
-{"k": "dialogueTabDeleteItem1", "v": "This dialogue belongs to {{count}} other milestones.", "ctx": "Info item in delete modal when dialogue is shared; {{count}} is other-milestone count"}
+{"k": "dialogueTabDeleteItem1", "v": "This dialogue belongs to {count} other milestones.", "ctx": "Info item in delete modal when dialogue is shared; {count} is other-milestone count"}
 {"k": "dialogueTabDeleteItem2", "v": "Deleting it will only remove the dialogue from the current milestone.", "ctx": "Info item in delete modal when dialogue is shared with other milestones"}
 {"k": "dialogueTabDeleteItem3", "v": "This dialogue does not belong to any other milestones.", "ctx": "Warning item in delete modal when dialogue has no other milestones"}
 {"k": "dialogueTabDeleteItem4", "v": "Deleting it will remove the dialogue permanently.", "ctx": "Warning item in delete modal indicating permanent deletion"}
@@ -365,6 +372,7 @@
 {"k": "speechEditorContentLegend", "v": "Content", "ctx": "Fieldset legend for the dialogue content section in the SpeechEditor"}
 {"k": "speechEditorTextLabel", "v": "Text", "ctx": "Label for the dialogue content textarea in the SpeechEditor"}
 {"k": "speechEditorContentDesc", "v": "The text that will be displayed to the player.", "ctx": "Description text under the dialogue content textarea"}
+{"k": "speechEditorTextTooltip", "v": "This is the contents of the NPC's dialogue to the player.\n\nYou may use special variable placeholders to insert things like the player's name."}
 {"k": "speechEditorPlaceholder", "v": "Please write character text here...", "ctx": "Placeholder text inside the dialogue content textarea"}
 {"k": "speechEditorResponsesLabel", "v": "Responses", "ctx": "Label for the responses list section in the SpeechEditor"}
 {"k": "speechEditorResponsesDesc", "v": "These are possible responses the player can choose from.", "ctx": "Description text above the responses list"}
@@ -411,13 +419,13 @@
 {"k": "layerListSpecialDescription", "v": "Special objects like gateways, lights, and waypoints", "ctx": "Description for the Special map layer shown in the layer selector"}
 {"k": "resettableResetTooltip", "v": "Reset to default", "ctx": "Tooltip on the reset button in the ResettableInput component"}
 {"k": "uploadAssetUploadBackground", "v": "Upload background image", "ctx": "Modal title when uploading a single background image"}
-{"k": "uploadAssetUploadBackgroundPlural", "v": "Upload {{count}} background images", "ctx": "Modal title when uploading multiple background images; {{count}} is the number of files"}
+{"k": "uploadAssetUploadBackgroundPlural", "v": "Upload {count} background images", "ctx": "Modal title when uploading multiple background images; {count} is the number of files"}
 {"k": "uploadAssetTilesetUpload", "v": "Tileset upload", "ctx": "Modal title when uploading a tileset"}
 {"k": "tilesetUploadNewTilesets", "v": "New tilesets", "ctx": "Option group label in tileset creation select"}
 {"k": "tilesetUploadCreateNew", "v": "Create a new tileset", "ctx": "Option label for creating a single new tileset from one uploaded file"}
 {"k": "tilesetUploadCreateNewForEach", "v": "Create a new tileset for each upload", "ctx": "Option label for creating separate tilesets for each uploaded file"}
-{"k": "tilesetUploadMergeUploads", "v": "Merge the {{count}} uploads into a single new tileset", "ctx": "Option label for merging multiple uploads into one tileset; {{count}} is the number of files"}
-{"k": "tilesetUploadMergeInto", "v": "Merge into {{id}}", "ctx": "Option label for merging into an existing tileset; {{id}} is the tileset identifier"}
+{"k": "tilesetUploadMergeUploads", "v": "Merge the {count} uploads into a single new tileset", "ctx": "Option label for merging multiple uploads into one tileset; {count} is the number of files"}
+{"k": "tilesetUploadMergeInto", "v": "Merge into {id}", "ctx": "Option label for merging into an existing tileset; {id} is the tileset identifier"}
 {"k": "tilesetUploadExistingTilesets", "v": "Existing tilesets", "ctx": "Option group label for existing tilesets in tileset creation select"}
 {"k": "tilesetUploadAssetCreation", "v": "Asset creation", "ctx": "Label for the tileset creation method select input"}
 {"k": "tilesetUploadAssetCreationDesc", "v": "How should the uploaded assets be organized into tilesets?", "ctx": "Description text below the asset creation select input"}
@@ -444,13 +452,13 @@
 {"k": "milestoneListPermanentTooltip", "v": "Permanent milestone", "ctx": "Tooltip on the infinity icon next to milestones that are permanent"}
 {"k": "milestoneListOriginTooltip", "v": "Automatically satisfied at level start", "ctx": "Tooltip on the lock icon next to the origin (start) milestone in the milestone list"}
 {"k": "objectPaletteFilterByTags", "v": "Filter by tags", "ctx": "Placeholder for the (currently disabled) tag filter input in the object palette"}
-{"k": "tilesetBtnMapObjectsUseTileset", "v": "{{count}} map objects use this tileset.", "ctx": "Status message shown in delete confirmation when map objects reference the tileset; {{count}} is the number of objects"}
+{"k": "tilesetBtnMapObjectsUseTileset", "v": "{count} map objects use this tileset.", "ctx": "Status message shown in delete confirmation when map objects reference the tileset; {count} is the number of objects"}
 {"k": "tilesetBtnNoMapObjects", "v": "No map objects are using this tileset.", "ctx": "Status message shown in delete confirmation when no map objects reference the tileset"}
-{"k": "tilesetBtnContainsTileGroups", "v": "It contains custom {{count}} tile groups.", "ctx": "Status message shown in delete confirmation when the tileset has pinned tile groups; {{count}} is the number of groups"}
+{"k": "tilesetBtnContainsTileGroups", "v": "It contains custom {count} tile groups.", "ctx": "Status message shown in delete confirmation when the tileset has pinned tile groups; {count} is the number of groups"}
 {"k": "tilesetBtnNoCustomTileGroups", "v": "It contains no custom tile groups.", "ctx": "Status message shown in delete confirmation when the tileset has no pinned tile groups"}
-{"k": "tilesetBtnContainsAnimations", "v": "It contains {{count}} animations.", "ctx": "Status message shown in delete confirmation when the tileset has animations; {{count}} is the number of animations"}
+{"k": "tilesetBtnContainsAnimations", "v": "It contains {count} animations.", "ctx": "Status message shown in delete confirmation when the tileset has animations; {count} is the number of animations"}
 {"k": "tilesetBtnNoAnimations", "v": "It contains no animations.", "ctx": "Status message shown in delete confirmation when the tileset has no animations"}
-{"k": "tilesetBtnContainsNpcs", "v": "It contains {{count}} NPCs.", "ctx": "Status message shown in delete confirmation when the tileset has NPCs; {{count}} is the number of NPCs"}
+{"k": "tilesetBtnContainsNpcs", "v": "It contains {count} NPCs.", "ctx": "Status message shown in delete confirmation when the tileset has NPCs; {count} is the number of NPCs"}
 {"k": "tilesetBtnNoNpcs", "v": "It contains no NPCs.", "ctx": "Status message shown in delete confirmation when the tileset has no NPCs"}
 {"k": "tilesetBtnDeleteTitle", "v": "Delete tileset?", "ctx": "Title of the confirmation modal for deleting a tileset"}
 {"k": "tilesetBtnDeleteConfirmLabel", "v": "Yes, delete tileset", "ctx": "Confirm button label in the delete tileset confirmation modal"}
@@ -464,12 +472,12 @@
 {"k": "objAnimMenuCopyId", "v": "Copy object id", "ctx": "Menu item that copies the animation object ID to clipboard"}
 {"k": "objAnimMenuDangerZone", "v": "Danger zone", "ctx": "Menu section label for destructive actions in the animation context menu"}
 {"k": "objAnimMenuDeleteMenuItem", "v": "Delete", "ctx": "Menu item that opens delete confirmation for an animation object"}
-{"k": "objAnimMenuUsedByNpcs", "v": "It is used by {{count}} NPCs.", "ctx": "Status message in delete animation confirmation when the animation is used by NPCs; {{count}} is the number of NPCs"}
+{"k": "objAnimMenuUsedByNpcs", "v": "It is used by {count} NPCs.", "ctx": "Status message in delete animation confirmation when the animation is used by NPCs; {count} is the number of NPCs"}
 {"k": "objAnimMenuNoNpcs", "v": "No NPCs use this animation.", "ctx": "Status message in delete animation confirmation when no NPCs use the animation"}
-{"k": "objAnimMenuMapObjectsUse", "v": "{{count}} map objects use this animation.", "ctx": "Status message in delete animation confirmation when map objects reference it; {{count}} is the number of objects"}
+{"k": "objAnimMenuMapObjectsUse", "v": "{count} map objects use this animation.", "ctx": "Status message in delete animation confirmation when map objects reference it; {count} is the number of objects"}
 {"k": "objAnimMenuNotUsedInMap", "v": "This animation is not used in the map.", "ctx": "Status message in delete animation confirmation when no map objects use it"}
 {"k": "objAnimMenuDeletedTitle", "v": "Animation deleted", "ctx": "Title of the success notification after deleting an animation"}
-{"k": "objAnimMenuDeletedMsg", "v": "Deleted animation \"{{name}}\".", "ctx": "Body of the success notification after deleting an animation; {{name}} is the animation slot names"}
+{"k": "objAnimMenuDeletedMsg", "v": "Deleted animation \"{name}\".", "ctx": "Body of the success notification after deleting an animation; {name} is the animation slot names"}
 {"k": "objAnimMenuDeleteModalTitle", "v": "Delete animation?", "ctx": "Title of the confirmation modal for deleting an animation"}
 {"k": "objAnimMenuDeleteConfirmLabel", "v": "Yes, delete animation", "ctx": "Confirm button label in the delete animation confirmation modal"}
 {"k": "objAnimMenuDeleteMsg", "v": "Are you sure you want to delete this animation? This action cannot be undone.", "ctx": "Body message in the delete animation confirmation modal"}
@@ -477,10 +485,10 @@
 {"k": "objNpcMenuCopyId", "v": "Copy object id", "ctx": "Menu item that copies the NPC object ID to clipboard"}
 {"k": "objNpcMenuDangerZone", "v": "Danger zone", "ctx": "Menu section label for destructive actions in the NPC context menu"}
 {"k": "objNpcMenuDeleteMenuItem", "v": "Delete", "ctx": "Menu item that opens delete confirmation for an NPC object"}
-{"k": "objNpcMenuMapObjectsUse", "v": "{{count}} map objects use this NPC.", "ctx": "Status message in delete NPC confirmation when map objects reference it; {{count}} is the number of objects"}
+{"k": "objNpcMenuMapObjectsUse", "v": "{count} map objects use this NPC.", "ctx": "Status message in delete NPC confirmation when map objects reference it; {count} is the number of objects"}
 {"k": "objNpcMenuNotUsedInMap", "v": "This NPC is not used in the map.", "ctx": "Status message in delete NPC confirmation when no map objects use it"}
 {"k": "objNpcMenuDeletedTitle", "v": "NPC deleted", "ctx": "Title of the success notification after deleting an NPC"}
-{"k": "objNpcMenuDeletedMsg", "v": "Deleted NPC \"{{name}}\".", "ctx": "Body of the success notification after deleting an NPC; {{name}} is the NPC name"}
+{"k": "objNpcMenuDeletedMsg", "v": "Deleted NPC \"{name}\".", "ctx": "Body of the success notification after deleting an NPC; {name} is the NPC name"}
 {"k": "objNpcMenuDeleteModalTitle", "v": "Delete NPC?", "ctx": "Title of the confirmation modal for deleting an NPC"}
 {"k": "objNpcMenuDeleteConfirmLabel", "v": "Yes, delete NPC", "ctx": "Confirm button label in the delete NPC confirmation modal"}
 {"k": "objNpcMenuDeleteMsg", "v": "Are you sure you want to delete this NPC? This action cannot be undone.", "ctx": "Body message in the delete NPC confirmation modal"}
@@ -520,13 +528,13 @@
 {"k": "previewPublishMessageLabel", "v": "Publish message", "ctx": "Label for the commit message textarea in the publish section"}
 {"k": "previewPublishLevelBtn", "v": "Publish Level", "ctx": "Button label to submit the level for publishing"}
 {"k": "previewPublishedSuccessTitle", "v": "Published Successfully", "ctx": "Title of the success notification after publishing a level"}
-{"k": "previewPublishedSuccessMsg", "v": "Level changes published to branch: {{branch}}", "ctx": "Body of the success notification after publishing; {{branch}} is the git branch name"}
+{"k": "previewPublishedSuccessMsg", "v": "Level changes published to branch: {branch}", "ctx": "Body of the success notification after publishing; {branch} is the git branch name"}
 {"k": "previewPublishFailedTitle", "v": "Publish Failed", "ctx": "Title of the error notification when publishing fails on the server"}
 {"k": "previewPublishFailedMsg", "v": "Failed to publish level changes", "ctx": "Fallback body of the error notification when the server returns no specific error message"}
 {"k": "previewPublishErrorTitle", "v": "Publish Error", "ctx": "Title of the error notification when a network/fetch error occurs during publish"}
 {"k": "previewPublishErrorMsg", "v": "An error occurred while publishing", "ctx": "Fallback body of the error notification when a generic publish error occurs"}
 {"k": "previewLoadFileErrorTitle", "v": "Error", "ctx": "Title of the notification when a file (e.g. license or guidelines markdown) fails to load"}
-{"k": "previewLoadFileErrorMsg", "v": "Failed to load file, please see {{path}}", "ctx": "Body of the file-load error notification; {{path}} is the file path"}
+{"k": "previewLoadFileErrorMsg", "v": "Failed to load file, please see {path}", "ctx": "Body of the file-load error notification; {path} is the file path"}
 {"k": "previewStoryProgressLegend", "v": "Story progress", "ctx": "Legend text for the story milestone list fieldset in the preview right panel"}
 {"k": "previewTimeControlFieldset", "v": "Time Control", "ctx": "Legend text for the time/game speed control fieldset in the preview right panel"}
 {"k": "previewGameSpeedLabel", "v": "Game speed", "ctx": "Label above the game speed slider in the preview panel"}
@@ -541,13 +549,13 @@
 {"k": "spotlightResetAllDesc", "v": "Delete everything in the project", "ctx": "Spotlight command description for the reset all action"}
 {"k": "spotlightResetModalTitle", "v": "Reset the project?", "ctx": "Title of the confirmation modal for resetting the entire project"}
 {"k": "spotlightNoMapObjects", "v": "You have no objects in the map.", "ctx": "Status message in reset confirmation when the map has no objects"}
-{"k": "spotlightMapObjsWillBeDeleted", "v": "{{count}} map objects will be deleted.", "ctx": "Status message in reset confirmation when the map has objects; {{count}} is the number of objects"}
+{"k": "spotlightMapObjsWillBeDeleted", "v": "{count} map objects will be deleted.", "ctx": "Status message in reset confirmation when the map has objects; {count} is the number of objects"}
 {"k": "spotlightNoTilesets", "v": "You have no tilesets.", "ctx": "Status message in reset confirmation when there are no tilesets"}
-{"k": "spotlightTilesetsWillBeDeleted", "v": "{{count}} tilesets will be deleted.", "ctx": "Status message in reset confirmation when there are tilesets; {{count}} is the number"}
+{"k": "spotlightTilesetsWillBeDeleted", "v": "{count} tilesets will be deleted.", "ctx": "Status message in reset confirmation when there are tilesets; {count} is the number"}
 {"k": "spotlightNoNpcDialogue", "v": "You have no NPC dialogue.", "ctx": "Status message in reset confirmation when there are no NPC dialogues"}
-{"k": "spotlightNpcDialoguesWillBeDeleted", "v": "{{count}} NPC dialogues will be deleted.", "ctx": "Status message in reset confirmation when there are NPC dialogues; {{count}} is the number"}
+{"k": "spotlightNpcDialoguesWillBeDeleted", "v": "{count} NPC dialogues will be deleted.", "ctx": "Status message in reset confirmation when there are NPC dialogues; {count} is the number"}
 {"k": "spotlightNoStoryNodes", "v": "You have no story nodes.", "ctx": "Status message in reset confirmation when there are no story nodes"}
-{"k": "spotlightStoryNodesWillBeDeleted", "v": "{{count}} story nodes will be deleted.", "ctx": "Status message in reset confirmation when there are story nodes; {{count}} is the number"}
+{"k": "spotlightStoryNodesWillBeDeleted", "v": "{count} story nodes will be deleted.", "ctx": "Status message in reset confirmation when there are story nodes; {count} is the number"}
 {"k": "spotlightResetConfirmLabel", "v": "Yes, reset all", "ctx": "Confirm button label in the reset project confirmation modal"}
 {"k": "spotlightResetMsg", "v": "Are you sure you want to reset everything? This action cannot be undone.", "ctx": "Body message in the reset project confirmation modal"}
 {"k": "spotlightNothingFound", "v": "Nothing found...", "ctx": "Message shown in the spotlight search when no actions match the query"}
@@ -605,7 +613,7 @@
 {"k": "soundZonePropLegend", "v": "Sound Zone", "ctx": "Legend title for Sound Zone properties"}
 {"k": "sinkZonePropLegend", "v": "Sink Zone", "ctx": "Legend title for Sink Zone properties"}
 {"k": "layerMoveModalTitle", "v": "Move objects?", "ctx": "The title for the modal asking if the user wants to move objects to a new layer"}
-{"k": "layerMoveModalBody", "v": "You're switching layers with {{count}} objects selected. Would you like to move them to layer {{name}}?", "ctx": "The body of the modal for asking the user if they want to move objects to a new layer"}
+{"k": "layerMoveModalBody", "v": "You're switching layers with {count} objects selected. Would you like to move them to layer {name}?", "ctx": "The body of the modal for asking the user if they want to move objects to a new layer"}
 {"k": "moveObjects", "v": "Yes, move objects"}
 {"k": "no", "v": "No", "ctx": "no"}
 {"k": "bgImagePropLegend", "v": "Background Image"}
@@ -626,7 +634,7 @@
 {"k": "uploadAssetChooseTypeBackgroundDesc", "v": "Parallax background image (sky, distant scenery, etc.)"}
 {"k": "uploadAssetChooseTypeTileset", "v": "Tileset"}
 {"k": "uploadAssetChooseTypeTilesetDesc", "v": "Tile-based sprite sheet for use in the map editor"}
-{"k": "bgImagePropMultipleSelected", "v": "{{count}} background images selected", "ctx": "Alert shown when multiple background images are selected at once"}
+{"k": "bgImagePropMultipleSelected", "v": "{count} background images selected", "ctx": "Alert shown when multiple background images are selected at once"}
 {"k": "bgImagePropMoveUp", "v": "Move layer up"}
 {"k": "bgImagePropMoveDown", "v": "Move layer down"}
 {"k": "uploadAssetChooseTypeContinue", "v": "Continue"}
@@ -641,13 +649,13 @@
 {"k": "previewEngineDescription", "v": "Where is the engine hosted?"}
 {"k": "tilesetBtnReplaceImageMenuItem", "v": "Replace image", "ctx": "Context menu item on a tileset button that opens a file picker to replace the tileset's PNG image"}
 {"k": "tilesetReplaceImageDimensionMismatch", "v": "Image dimensions do not match", "ctx": "Notification title shown when the replacement image has different dimensions than the tileset"}
-{"k": "tilesetReplaceImageDimensionMismatchMsg", "v": "The selected tileset is {{width}}x{{height}}px, but the new image is {{newWidth}}x{{newHeight}}px.", "ctx": "Notification body shown when the replacement image dimensions differ; {{width}}/{{height}} are the tileset's dimensions, {{newWidth}}/{{newHeight}} are the new image's dimensions"}
+{"k": "tilesetReplaceImageDimensionMismatchMsg", "v": "The selected tileset is {width}x{height}px, but the new image is {newWidth}x{newHeight}px.", "ctx": "Notification body shown when the replacement image dimensions differ; {width}/{height} are the tileset's dimensions, {newWidth}/{newHeight} are the new image's dimensions"}
 {"k": "tilesetReplaceImageSuccess", "v": "Tileset image replaced", "ctx": "Notification title shown after successfully replacing a tileset's image"}
 {"k": "tilesetReplaceImageSuccessMsg", "v": "The tileset image was replaced successfully.", "ctx": "Notification body shown after successfully replacing a tileset's image"}
 {"k": "tilesetReplaceImageFailed", "v": "Failed to replace tileset image", "ctx": "Notification title shown when replacing a tileset's image fails"}
-{"k": "tilesetReplaceImageFailedMsg", "v": "An error occurred while replacing the tileset image: {{msg}}", "ctx": "Notification body shown when replacing a tileset's image fails; {{msg}} is the error message"}
+{"k": "tilesetReplaceImageFailedMsg", "v": "An error occurred while replacing the tileset image: {msg}", "ctx": "Notification body shown when replacing a tileset's image fails; {msg} is the error message"}
 {"k": "tilesetUploadReplaceExisting", "v": "Replace existing tilesets", "ctx": "Option group label in the tileset upload select for replacing existing tileset images"}
-{"k": "tilesetUploadReplaceImageOf", "v": "Replace image of {{id}}", "ctx": "Option label for replacing the image of a specific existing tileset; {{id}} is the tileset identifier"}
+{"k": "tilesetUploadReplaceImageOf", "v": "Replace image of {id}", "ctx": "Option label for replacing the image of a specific existing tileset; {id} is the tileset identifier"}
 {"k": "milestoneEditorWaypointsLegend", "v": "Waypoints", "ctx": "Fieldset legend for the waypoints section in the milestone editor right panel"}
 {"k": "milestoneEditorWaypointsInfo", "v": "These are waypoint-character pairings that will trigger when this milestone is satisfied. What this means is that when the milestone becomes satisfied, the character will automatically move to this waypoint. This saves you significant amount code which would otherwise be required to coordinate this common behavior."}
 {"k": "milestoneEditorAddWaypointPair", "v": "Add waypoint pair", "ctx": "Button label to open the add-waypoint modal in the milestone editor"}

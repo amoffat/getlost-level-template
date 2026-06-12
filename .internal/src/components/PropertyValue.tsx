@@ -97,6 +97,8 @@ interface PropertyValueProps<T> {
   allowUndefined?: boolean;
   allowCopy?: boolean;
   noReset?: boolean;
+  /** Additional action buttons to display next to the label */
+  actionButtons?: ReactNode[];
 }
 
 /**
@@ -124,6 +126,7 @@ function PropertyValueInner<T>({
   allowCopy = false,
   noReset = false,
   refreshKey,
+  actionButtons,
 }: PropertyValueProps<T> & { refreshKey: string }) {
   const { t } = useTranslation();
   const [resetCounter, setResetCounter] = useState(0);
@@ -448,6 +451,7 @@ function PropertyValueInner<T>({
                 </ActionIcon>
               </Tooltip>
             )}
+            {actionButtons}
           </Group>
           {description && <Input.Description>{description}</Input.Description>}
         </div>

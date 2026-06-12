@@ -38,3 +38,4 @@ assets.key
 .vite/
 *.wat
 __pycache__/
+.claude/settings.local.json

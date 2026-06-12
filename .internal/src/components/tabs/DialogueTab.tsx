@@ -51,7 +51,6 @@ import {
   Tooltip,
   Tree,
   TreeNodeData,
-  Typography,
   useTree,
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
@@ -790,31 +789,9 @@ export default function DialogueTab({
                           <>
                             {t("dialogueTabMilestonesLabel")}
                             <InfoTooltip>
-                              <Typography>
-                                <p>
-                                  When these story milestones are triggered in
-                                  the game, this dialogue becomes active for
-                                  this NPC. Interacting with the NPC will then
-                                  show this dialogue. You should write distinct
-                                  dialogues for different story milestones to
-                                  make the NPC feel more responsive to the
-                                  player's progress.
-                                </p>
-                                <p>
-                                  Usually, you only want one milestone per
-                                  dialogue, but you can assign multiple
-                                  milestones if you want the same dialogue to be
-                                  used in different parts of the story.
-                                </p>
-                                <p>
-                                  The "default" milestone is a special milestone
-                                  that applies when no other milestones are
-                                  active. You can use it to create a fallback
-                                  dialogue that will always have something to
-                                  say, even if you forget to assign milestones
-                                  to a new dialogue.
-                                </p>
-                              </Typography>
+                              <Text style={{ whiteSpace: "pre-line" }}>
+                                {t("dialogueTabMilestonesTooltip")}
+                              </Text>
                             </InfoTooltip>
                           </>
                         }

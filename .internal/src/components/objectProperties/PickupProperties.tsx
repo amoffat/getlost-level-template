@@ -11,11 +11,19 @@ import PropertyValue from "../PropertyValue";
 import TilesetGroup from "../TilesetGroup";
 import HiddenInput from "./inputs/HiddenInput";
 import IdInput from "./inputs/IdInput";
+import LocalizedDescriptionInput from "./inputs/LocalizedDescriptionInput";
 import LocalizedNameInput from "./inputs/LocalizedNameInput";
 import TagsInput from "./inputs/TagsInput";
 
 // Properties that collectPropertyValues needs to access
-const COLLECTED_PROPS = ["id", "tags", "nameKey", "assetId", "hidden"] as const;
+const COLLECTED_PROPS = [
+  "id",
+  "tags",
+  "nameKey",
+  "descriptionKey",
+  "assetId",
+  "hidden",
+] as const;
 
 // Additional properties needed for identification
 const TEMPLATE_PROPS = [] as const;
@@ -48,6 +56,25 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
         });
       }}
       required
+    />
+  );
+
+  const descInput = (
+    <LocalizedDescriptionInput
+      noTemplate
+      description={t("pickupPropDescriptionDescription")}
+      values={toCollect.descriptionKey}
+      context={t("pickupPropDescriptionContext")}
+      keyPrefix={["pickup"]}
+      onValueChange={({ value }): void => {
+        updateObjects({
+          objs,
+          changes: {
+            descriptionKey: value ?? null,
+            status: value ? null : "error",
+          },
+        });
+      }}
     />
   );
 
@@ -136,6 +163,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       <Stack p={0} gap="xl">
         {idInput}
         {nameInput}
+        {descInput}
         {tgIdInput}
         {tagsInput}
         {hiddenInput}

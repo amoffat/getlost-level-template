@@ -1,13 +1,19 @@
 import { defaultLocale } from "@/constants";
+import { useLocaleContextModal } from "@/contexts/LocaleContextModalContext";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors as localeSelectors } from "@/slices/locale";
 import { RootState } from "@/store/store";
 import { makeKey, syncLocaleField } from "@/utils/locale";
 import { Group, TextInput, TextInputProps } from "@mantine/core";
-import { useDebouncedCallback, useDisclosure } from "@mantine/hooks";
+import { useDebouncedCallback } from "@mantine/hooks";
 import { IconLanguage } from "@tabler/icons-react";
+import { forwardRef, useCallback, useImperativeHandle } from "react";
+import { useTranslation } from "react-i18next";
+
+export interface LocalizedTextInputHandle {
+  openCtx: () => void;
+}
 import ActionButton from "./ActionButton";
-import LocaleContextModal from "./LocaleContextModal";
 import LocalizedInputHoverCard from "./LocalizedInputHoverCard";
 import LocalizedInputLabel from "./LocalizedInputLabel";
 
@@ -44,17 +50,23 @@ interface LocalizedTextInputProps extends Omit<
  * Reads the current display value from the Redux locale store via `localeKey`,
  * debounces user input, and calls `syncLocaleField` to persist changes.
  */
-export default function LocalizedTextInput({
-  currentLocale,
-  contentKey,
-  keyPrefix = [],
-  defaultContext,
-  onLocaleKeyChange,
-  debounce = 300,
-  contextButton = "label",
-  ...rest
-}: LocalizedTextInputProps) {
+const LocalizedTextInput = forwardRef<LocalizedTextInputHandle, LocalizedTextInputProps>(
+  function LocalizedTextInput(
+    {
+      currentLocale,
+      contentKey,
+      keyPrefix = [],
+      defaultContext,
+      onLocaleKeyChange,
+      debounce = 300,
+      contextButton = "label",
+      ...rest
+    },
+    ref,
+  ) {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const { openLocaleContextModal } = useLocaleContextModal();
 
   const localeEntries = useAppSelector(localeSelectors.selectActiveEntries);
   const defaultEntry = useAppSelector((state: RootState) =>
@@ -62,8 +74,6 @@ export default function LocalizedTextInput({
   );
 
   const prevEntry = contentKey ? localeEntries[contentKey] : undefined;
-
-  const [ctxOpened, { open: openCtx, close: closeCtx }] = useDisclosure(false);
 
   const handleChange = useDebouncedCallback((newText: string) => {
     const newKey = syncLocaleField({
@@ -82,73 +92,66 @@ export default function LocalizedTextInput({
     }
   }, debounce);
 
-  const handleCtxSave = (newCtx: string | null | undefined) => {
-    if (!prevEntry && !defaultEntry) return;
-    syncLocaleField({
-      locale: currentLocale,
-      prevEntry,
-      defaultEntry,
-      makeKey: () => (prevEntry ?? defaultEntry)!.k,
-      dispatch,
-      updates: {
-        ctx: newCtx,
-      },
-    });
-  };
+  const handleCtxSave = useCallback(
+    (newCtx: string | null | undefined) => {
+      if (!prevEntry && !defaultEntry) return;
+      syncLocaleField({
+        locale: currentLocale,
+        prevEntry,
+        defaultEntry,
+        makeKey: () => (prevEntry ?? defaultEntry)!.k,
+        dispatch,
+        updates: {
+          ctx: newCtx,
+        },
+      });
+    },
+    [prevEntry, defaultEntry, currentLocale, dispatch],
+  );
 
   const originalText = defaultEntry?.v ?? prevEntry?.v;
+
+  const openCtx = useCallback(() => {
+    openLocaleContextModal({
+      originalText,
+      initialCtx: defaultEntry?.ctx,
+      onSave: handleCtxSave,
+    });
+  }, [openLocaleContextModal, originalText, defaultEntry?.ctx, handleCtxSave]);
+
+  useImperativeHandle(ref, () => ({ openCtx }), [openCtx]);
 
   if (contextButton === "inline") {
     const { style: wrapperStyle, ...inputRest } = rest;
     return (
-      <>
-        <Group gap="xs" wrap="nowrap" align="center" style={wrapperStyle}>
-          <LocalizedInputHoverCard ctx={defaultEntry?.ctx}>
-            <TextInput
-              defaultValue={prevEntry?.v ?? defaultEntry?.v}
-              onChange={(event) => handleChange(event.currentTarget.value)}
-              {...inputRest}
-              style={{ flex: 1 }}
-            />
-          </LocalizedInputHoverCard>
-          {currentLocale === defaultLocale && (
-            <ActionButton
-              tooltip="Translation context"
-              icon={<IconLanguage size={12} />}
-              onClick={openCtx}
-              disabled={!prevEntry && !defaultEntry}
-            />
-          )}
-        </Group>
-        <LocaleContextModal
-          key={originalText}
-          opened={ctxOpened}
-          onClose={closeCtx}
-          originalText={originalText}
-          initialCtx={defaultEntry?.ctx}
-          onSave={handleCtxSave}
-        />
-      </>
+      <Group gap="xs" wrap="nowrap" align="center" style={wrapperStyle}>
+        <LocalizedInputHoverCard ctx={defaultEntry?.ctx}>
+          <TextInput
+            defaultValue={prevEntry?.v ?? defaultEntry?.v}
+            onChange={(event) => handleChange(event.currentTarget.value)}
+            {...inputRest}
+            style={{ flex: 1 }}
+          />
+        </LocalizedInputHoverCard>
+        {currentLocale === defaultLocale && (
+          <ActionButton
+            tooltip={t("localeContextTitle")}
+            icon={<IconLanguage size={12} />}
+            onClick={openCtx}
+            disabled={!prevEntry && !defaultEntry}
+          />
+        )}
+      </Group>
     );
   }
 
   if (contextButton === false) {
     return (
-      <>
-        <TextInput
-          defaultValue={prevEntry?.v ?? defaultEntry?.v}
-          onChange={(event) => handleChange(event.currentTarget.value)}
-          {...rest}
-        />
-        <LocaleContextModal
-          key={originalText}
-          opened={ctxOpened}
-          onClose={closeCtx}
-          originalText={originalText}
-          initialCtx={defaultEntry?.ctx}
-          onSave={handleCtxSave}
-        />
-      </>
+      <TextInput
+        defaultValue={prevEntry?.v ?? defaultEntry?.v}
+        onChange={(event) => handleChange(event.currentTarget.value)}
+        {...rest}
+      />
     );
   }
 
@@ -161,23 +164,16 @@ export default function LocalizedTextInput({
   );
 
   return (
-    <>
-      <LocalizedInputHoverCard ctx={defaultEntry?.ctx}>
-        <TextInput
-          defaultValue={prevEntry?.v ?? defaultEntry?.v}
-          onChange={(event) => handleChange(event.currentTarget.value)}
-          {...rest}
-          label={labelWithCtx}
-        />
-      </LocalizedInputHoverCard>
-      <LocaleContextModal
-        key={originalText}
-        opened={ctxOpened}
-        onClose={closeCtx}
-        originalText={originalText}
-        initialCtx={defaultEntry?.ctx}
-        onSave={handleCtxSave}
+    <LocalizedInputHoverCard ctx={defaultEntry?.ctx}>
+      <TextInput
+        defaultValue={prevEntry?.v ?? defaultEntry?.v}
+        onChange={(event) => handleChange(event.currentTarget.value)}
+        {...rest}
+        label={labelWithCtx}
       />
-    </>
+    </LocalizedInputHoverCard>
   );
-}
+  },
+);
+
+export default LocalizedTextInput;

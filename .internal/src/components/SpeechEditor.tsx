@@ -39,7 +39,6 @@ import {
   Stack,
   Text,
   Tooltip,
-  Typography,
 } from "@mantine/core";
 import {
   IconCopy,
@@ -242,7 +241,7 @@ export default function SpeechEditor({
             key={remountKey}
             currentLocale={currentLocale}
             contentKey={data.contentKey}
-            keyPrefix={node.id}
+            keyPrefix={[node.id]}
             onLocaleKeyChange={(newKey) =>
               dispatch(
                 actions.updateNodeData({
@@ -257,15 +256,9 @@ export default function SpeechEditor({
               <>
                 {t("speechEditorTextLabel")}
                 <InfoTooltip>
-                  <Typography>
-                    <p>
-                      This is the contents of the NPC's dialogue to the player.
-                    </p>
-                    <p>
-                      You may use special variable placeholders to insert things
-                      like the player's name.
-                    </p>
-                  </Typography>
+                  <Text style={{ whiteSpace: "pre-line" }}>
+                    {t("speechEditorTextTooltip")}
+                  </Text>
                 </InfoTooltip>
               </>
             }
@@ -326,9 +319,9 @@ export default function SpeechEditor({
               <>
                 {t("speechEditorActivationsLabel")}
                 <InfoTooltip>
-                  <Typography>
-                    <p>{t("speechEditorActivationsTooltip")}</p>
-                  </Typography>
+                  <Text style={{ whiteSpace: "pre-line" }}>
+                    {t("speechEditorActivationsTooltip")}
+                  </Text>
                 </InfoTooltip>
               </>
             }
@@ -522,7 +515,7 @@ function SortableChoice({
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Group gap="xs" wrap="nowrap">
+      <Group gap="xs" wrap="nowrap" align="center">
         <IconGripVertical
           size={16}
           style={{ cursor: "grab" }}

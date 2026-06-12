@@ -36,10 +36,16 @@ import {
   useState,
   useTransition,
 } from "react";
+import { flushSync } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { shallowEqual } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  LocaleContextModalContext,
+  LocaleContextModalParams,
+} from "@/contexts/LocaleContextModalContext";
 import LocaleSelector from "./LocaleSelector";
+import LocaleContextModal from "./l10n/LocaleContextModal";
 import PanelLoader from "./PanelLoader";
 import PreviewTab from "./Preview";
 import Spotlight from "./Spotlight";
@@ -217,6 +223,23 @@ const ShellAppContent = memo(function ShellAppContent({
     useDisclosure(false);
   const [isPendingTab, startTransition] = useTransition();
 
+  const [ctxModalOpened, { open: openCtxModal, close: closeCtxModal }] =
+    useDisclosure(false);
+  const [ctxModalKey, setCtxModalKey] = useState(0);
+  const [ctxModalParams, setCtxModalParams] =
+    useState<LocaleContextModalParams | null>(null);
+
+  const openLocaleContextModal = useCallback(
+    (params: LocaleContextModalParams) => {
+      flushSync(() => {
+        setCtxModalParams(params);
+        setCtxModalKey((k) => k + 1);
+      });
+      openCtxModal();
+    },
+    [openCtxModal],
+  );
+
   const { activeTab, mountedTabs, loadingMessages } = useAppSelector(
     (state) => ({
       activeTab: state.ui.activeTab,
@@ -281,7 +304,15 @@ const ShellAppContent = memo(function ShellAppContent({
   }, [untranslatedCounts]);
 
   return (
-    <>
+    <LocaleContextModalContext.Provider value={{ openLocaleContextModal }}>
+      <LocaleContextModal
+        key={ctxModalKey}
+        opened={ctxModalOpened}
+        onClose={closeCtxModal}
+        originalText={ctxModalParams?.originalText}
+        initialCtx={ctxModalParams?.initialCtx}
+        onSave={ctxModalParams?.onSave ?? (() => {})}
+      />
       {draggedFiles && (
         <UploadAssetModal
           files={draggedFiles}
@@ -422,6 +453,6 @@ const ShellAppContent = memo(function ShellAppContent({
       </AppShell>
 
       <Spotlight />
-    </>
+    </LocaleContextModalContext.Provider>
   );
 });

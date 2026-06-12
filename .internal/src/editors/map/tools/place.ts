@@ -258,7 +258,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
         inst = {
           id,
           exitIds: [],
-          slug: undefined,
+          slug: null,
           type: MapObjType.Entry,
           x: pos.x,
           y: pos.y,
@@ -275,8 +275,8 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           id,
           force: false,
           preferredEntranceId: null,
-          sensorRadius: undefined,
-          slug: undefined,
+          sensorRadius: 64,
+          slug: null,
           type: MapObjType.Exit,
           x: pos.x,
           y: pos.y,
@@ -291,9 +291,10 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
       } else if (obj.id === pickupIcon) {
         inst = {
           id,
-          nameKey: undefined,
-          assetId: undefined,
-          tags: undefined,
+          nameKey: null,
+          descriptionKey: null,
+          assetId: null,
+          tags: [],
           type: MapObjType.Pickup,
           x: pos.x,
           y: pos.y,
@@ -304,12 +305,12 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           width: obj.pos.width,
           height: obj.pos.height,
           status: "error", // New pickups start as error until named
-          hidden: undefined,
+          hidden: false,
         } satisfies PickupObj;
       } else if (obj.id === waypointIcon) {
         inst = {
           id,
-          slug: undefined,
+          slug: null,
           type: MapObjType.Waypoint,
           x: pos.x,
           y: pos.y,
@@ -394,7 +395,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
         defaultAnimation: undefined,
         groundOffset: undefined,
         dampenWalkCollisions: undefined,
-        status: undefined,
+        status: null,
         speakerImageId: undefined,
       } satisfies NpcInstance;
     }

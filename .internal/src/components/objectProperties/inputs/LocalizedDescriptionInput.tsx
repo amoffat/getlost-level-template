@@ -5,61 +5,61 @@ import { resolveLocaleText } from "@/utils/locale";
 import { IconLanguage } from "@tabler/icons-react";
 import { ReactElement, ReactNode, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { ActionButton, LocalizedTextInput } from "../../l10n";
-import { LocalizedTextInputHandle } from "../../l10n/LocalizedTextInput";
+import { ActionButton, LocalizedTextarea } from "../../l10n";
+import { LocalizedTextareaHandle } from "../../l10n/LocalizedTextarea";
 import PropertyValue, {
   OnValueChangeArgs,
   PropertyValueInfo,
 } from "../../PropertyValue";
 
-interface LocalizedNameInputProps {
+interface LocalizedDescriptionInputProps {
   values: PropertyValueInfo<string | null>[];
   onValueChange: (args: OnValueChangeArgs<string | null>) => void;
-  context: string;
   keyPrefix?: string[];
   label?: string;
   description?: string;
   noTemplate?: boolean;
+  context: string;
+  contextButton?: boolean;
   debounceMs?: number;
   validator?: (value: string | undefined) => ReactNode | undefined;
   placeholder?: string;
-  required?: boolean;
 }
 
-export default function LocalizedNameInput({
+export default function LocalizedDescriptionInput({
   values,
   onValueChange,
   validator,
   keyPrefix = [],
   description: descriptionProp,
-  context,
   noTemplate,
+  context,
   debounceMs = 100,
   label: labelProp,
   placeholder: placeholderProp,
-  required,
-}: LocalizedNameInputProps) {
+}: LocalizedDescriptionInputProps) {
   const { t } = useTranslation();
-  const label = labelProp ?? t('localizedNameInputLabel');
-  const description = descriptionProp ?? t('localizedNameInputDescription');
-  const placeholder = placeholderProp ?? t('localizedNameInputPlaceholder');
+  const label = labelProp ?? t("localizedDescriptionInputLabel");
+  const description =
+    descriptionProp ?? t("localizedDescriptionInputDescription");
+  const placeholder =
+    placeholderProp ?? t("localizedDescriptionInputPlaceholder");
   const currentLocale = useAppSelector(localeSelectors.activeLocale);
   const defaultEntries = useAppSelector(localeSelectors.selectDefaultEntries);
 
-  const textInputRef = useRef<LocalizedTextInputHandle>(null);
+  const textareaRef = useRef<LocalizedTextareaHandle>(null);
 
   const contextModalButton =
     currentLocale === defaultLocale ? (
       <ActionButton
         tooltip={t("localeContextTitle")}
         icon={<IconLanguage size={12} />}
-        onClick={() => textInputRef.current?.openCtx()}
+        onClick={() => textareaRef.current?.openCtx()}
       />
     ) : undefined;
 
   return (
     <PropertyValue
-      actionButtons={[contextModalButton]}
       label={label}
       description={description}
       values={values}
@@ -67,24 +67,28 @@ export default function LocalizedNameInput({
       noTemplate={noTemplate}
       debounceMs={debounceMs}
       defaultValue=""
+      actionButtons={[contextModalButton]}
       renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
-        const name = resolveLocaleText({
+        const text = resolveLocaleText({
           key: value,
           primaryEntries: defaultEntries,
         });
 
         return (
-          <LocalizedTextInput
-            ref={textInputRef}
+          <LocalizedTextarea
+            ref={textareaRef}
             key={`${key}-${currentLocale}`}
-            error={validator?.(name)}
+            error={validator?.(text)}
             contextButton={false}
-            defaultContext={context}
             keyPrefix={keyPrefix}
+            defaultContext={context}
             currentLocale={currentLocale}
             contentKey={value ?? undefined}
-            placeholder={value === undefined ? t('localizedNameInputMixedValues') : placeholder}
-            required={required}
+            placeholder={
+              value === undefined
+                ? t("localizedDescriptionInputMixedValues")
+                : placeholder
+            }
             onLocaleKeyChange={(newKey) => {
               onChange(newKey ?? null);
             }}

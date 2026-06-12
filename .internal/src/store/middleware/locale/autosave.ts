@@ -112,6 +112,9 @@ function collectLiveKeys(state: RootState): Set<string> {
     } else if (isPickupObj(obj)) {
       const nameKey = selectPropertyValue(state, obj, "nameKey");
       if (nameKey) keys.add(nameKey);
+
+      const descKey = selectPropertyValue(state, obj, "descriptionKey");
+      if (descKey) keys.add(descKey);
     }
   }
 
