@@ -40,9 +40,9 @@ export default function LocalizedNameInput({
   required,
 }: LocalizedNameInputProps) {
   const { t } = useTranslation();
-  const label = labelProp ?? t('localizedNameInputLabel');
-  const description = descriptionProp ?? t('localizedNameInputDescription');
-  const placeholder = placeholderProp ?? t('localizedNameInputPlaceholder');
+  const label = labelProp ?? t("localizedNameInputLabel");
+  const description = descriptionProp ?? t("localizedNameInputDescription");
+  const placeholder = placeholderProp ?? t("localizedNameInputPlaceholder");
   const currentLocale = useAppSelector(localeSelectors.activeLocale);
   const defaultEntries = useAppSelector(localeSelectors.selectDefaultEntries);
 
@@ -66,7 +66,7 @@ export default function LocalizedNameInput({
       onValueChange={onValueChange}
       noTemplate={noTemplate}
       debounceMs={debounceMs}
-      defaultValue=""
+      defaultValue={null}
       renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         const name = resolveLocaleText({
           key: value,
@@ -83,7 +83,11 @@ export default function LocalizedNameInput({
             keyPrefix={keyPrefix}
             currentLocale={currentLocale}
             contentKey={value ?? undefined}
-            placeholder={value === undefined ? t('localizedNameInputMixedValues') : placeholder}
+            placeholder={
+              value === undefined
+                ? t("localizedNameInputMixedValues")
+                : placeholder
+            }
             required={required}
             onLocaleKeyChange={(newKey) => {
               onChange(newKey ?? null);

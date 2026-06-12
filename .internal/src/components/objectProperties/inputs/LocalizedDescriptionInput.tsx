@@ -66,7 +66,7 @@ export default function LocalizedDescriptionInput({
       onValueChange={onValueChange}
       noTemplate={noTemplate}
       debounceMs={debounceMs}
-      defaultValue=""
+      defaultValue={null}
       actionButtons={[contextModalButton]}
       renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         const text = resolveLocaleText({
