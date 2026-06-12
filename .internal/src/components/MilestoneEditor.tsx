@@ -131,7 +131,7 @@ export default function MilestoneEditor({
   }
 
   const nameError = isEmpty
-    ? t("milestoneEditorNameEmpty")
+    ? t("nameCannotBeEmpty")
     : isDuplicate
       ? t("milestoneEditorNameDuplicate")
       : undefined;

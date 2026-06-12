@@ -21,12 +21,12 @@ interface LocalizedNameInputProps {
   description?: string;
   noTemplate?: boolean;
   debounceMs?: number;
-  validator?: (value: string | undefined) => ReactNode | undefined;
+  validator?: (value: string) => ReactNode | undefined;
   placeholder?: string;
   required?: boolean;
 }
 
-export default function LocalizedNameInput({
+export default function LocalizedLineInput({
   values,
   onValueChange,
   validator,

@@ -11,8 +11,8 @@ import PropertyValue from "../PropertyValue";
 import TilesetGroup from "../TilesetGroup";
 import HiddenInput from "./inputs/HiddenInput";
 import IdInput from "./inputs/IdInput";
-import LocalizedDescriptionInput from "./inputs/LocalizedDescriptionInput";
-import LocalizedNameInput from "./inputs/LocalizedNameInput";
+import LocalizedLineInput from "./inputs/LocalizedLineInput";
+import LocalizedMultilineInput from "./inputs/LocalizedMultilineInput";
 import TagsInput from "./inputs/TagsInput";
 
 // Properties that collectPropertyValues needs to access
@@ -39,13 +39,16 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
   );
 
   const nameInput = (
-    <LocalizedNameInput
+    <LocalizedLineInput
       description={t("pickupPropNameDescription")}
       noTemplate
       values={toCollect.nameKey}
       context={t("pickupPropNameContext")}
       keyPrefix={["pickup"]}
       placeholder={t("pickupPropNamePlaceholder")}
+      validator={(value) =>
+        value.trim().length === 0 ? t("nameCannotBeEmpty") : null
+      }
       onValueChange={({ value }): void => {
         updateObjects({
           objs,
@@ -60,12 +63,15 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
   );
 
   const descInput = (
-    <LocalizedDescriptionInput
+    <LocalizedMultilineInput
       noTemplate
       description={t("pickupPropDescriptionDescription")}
       values={toCollect.descriptionKey}
       context={t("pickupPropDescriptionContext")}
       keyPrefix={["pickup"]}
+      validator={(value) =>
+        value.trim().length === 0 ? t("nameCannotBeEmpty") : null
+      }
       onValueChange={({ value }): void => {
         updateObjects({
           objs,

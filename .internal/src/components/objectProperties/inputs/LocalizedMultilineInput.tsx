@@ -22,11 +22,11 @@ interface LocalizedDescriptionInputProps {
   context: string;
   contextButton?: boolean;
   debounceMs?: number;
-  validator?: (value: string | undefined) => ReactNode | undefined;
+  validator?: (value: string) => ReactNode | undefined;
   placeholder?: string;
 }
 
-export default function LocalizedDescriptionInput({
+export default function LocalizedMultilineInput({
   values,
   onValueChange,
   validator,

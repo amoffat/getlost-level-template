@@ -1,3 +1,4 @@
+import * as constants from "@/constants";
 import {
   entranceIcon,
   exitIcon,
@@ -275,7 +276,7 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           id,
           force: false,
           preferredEntranceId: null,
-          sensorRadius: 64,
+          sensorRadius: constants.defaultExitSensorRadius,
           slug: null,
           type: MapObjType.Exit,
           x: pos.x,
