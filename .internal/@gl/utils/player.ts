@@ -7,7 +7,6 @@ import { Vec2 } from "./vec2";
 export class Player extends Character {
   private _hurtCooldown: Delay = new Delay(1000);
   private _invincible: boolean = false;
-  private _guideTarget: Vec2 | null = null;
 
   constructor() {
     super("player");
@@ -36,7 +35,6 @@ export class Player extends Character {
 
   public setGuideTarget(char: Character): void {
     const pos = char.getPos().subbed(new Vec2(0, 10));
-    this._guideTarget = pos;
     player.setGuideTarget(pos.x, pos.y);
   }
 }

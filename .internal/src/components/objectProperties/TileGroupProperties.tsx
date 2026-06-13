@@ -18,7 +18,7 @@ import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import FlipXInput from "./inputs/FlipXInput";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
 import HiddenInput from "./inputs/HiddenInput";
-import LocalizedLineInput from "./inputs/LocalizedLineInput";
+import LocalizedMultilineInput from "./inputs/LocalizedMultilineInput";
 import SwitchInput from "./inputs/SwitchInput";
 import TintInput from "./inputs/TintInput";
 
@@ -65,7 +65,8 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
   );
 
   const nameInput = (
-    <LocalizedLineInput
+    <LocalizedMultilineInput
+      label={t("localizedNameInputLabel")}
       description={t("tileGroupPropNameDescription")}
       values={toCollect.nameKey}
       context={t("tileGroupPropNameContext")}

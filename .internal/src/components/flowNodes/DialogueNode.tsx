@@ -64,7 +64,7 @@ export default function DialogueNode({
   );
 
   const resolveText = useCallback(
-    (key: string | undefined): string => {
+    (key: string | null | undefined): string => {
       if (!key) return "";
       return activeEntries[key]?.v ?? defaultLocaleEntries[key]?.v ?? "";
     },

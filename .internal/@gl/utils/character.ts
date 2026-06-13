@@ -36,7 +36,6 @@ export class Character {
   private _action: CharAction = CharAction.Idle;
   public id: string;
   private _isPlayer: boolean = false;
-  private _visible: boolean = true;
 
   private _falling: boolean = false;
   private _fallingVelocity: number = 0;
@@ -156,7 +155,6 @@ export class Character {
 
   public set visibility(enabled: boolean) {
     char.toggle(this.id, enabled);
-    this._visible = enabled;
   }
 
   public lookAt(

@@ -27,7 +27,7 @@ export interface EngineSpeechData extends Record<string, unknown> {
   choices: EngineChoice[];
   isOrigin: boolean;
   /** Per-node speaker image override. Overrides the object-level speakerImageId. */
-  speakerImageId?: string | null;
+  speakerImageId?: string | undefined;
   /**
    * Milestone slugs (`StoryNode.data.id`) activated when the player reaches
    * this speech node. Slugs are stable user-editable names, not internal UUIDs.

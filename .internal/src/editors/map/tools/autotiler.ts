@@ -181,7 +181,7 @@ class Painter extends Placer {
         match.id,
       ) as TileGroupTemplate;
 
-      let orderedCandidates: TileGroupTemplate[] = [];
+      let orderedCandidates: TileGroupTemplate[];
       if (excludedUnder) {
         // If we excluded the tile under the cursor, then include it at the end
         // of the candidates list

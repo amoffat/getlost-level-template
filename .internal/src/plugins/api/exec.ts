@@ -22,6 +22,7 @@ interface ScriptResponse {
 
 // POST endpoint to execute a script from the scripts directory
 router.post("/:scriptName", async (req, res) => {
+  // eslint-disable-next-line no-useless-assignment
   let statusCode = 500;
   let responseData: ScriptResponse = {};
 

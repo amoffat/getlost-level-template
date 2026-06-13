@@ -1,3 +1,4 @@
+import { LocalizedTextarea } from "@/components/l10n";
 import * as constants from "@/constants";
 import { requiredNpcAnimations as requiredNpcAnimationSlots } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
@@ -33,7 +34,6 @@ import {
 } from "@tabler/icons-react";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import LocalizedTextInput from "../../l10n/LocalizedTextInput";
 import TileAnimation from "../../TileAnimation";
 import Tip from "../../Tip";
 
@@ -159,7 +159,6 @@ export default function NpcTool() {
       groundOffset: 0,
       defaultAnimation: "Idle",
       dampenWalkCollisions: constants.defaultNpcDampen,
-      status: null,
       speakerImageId: null,
     };
     // Merge in existing properties of existing
@@ -306,12 +305,12 @@ export default function NpcTool() {
               </Table.Tbody>
             </Table>
 
-            <LocalizedTextInput
+            <LocalizedTextarea
               label={t("npcToolNameLabel")}
               description={t("npcToolNameDesc")}
               placeholder={t("npcToolNamePlaceholder")}
               keyPrefix={["char"]}
-              defaultContext="Character name"
+              defaultContext={t("npcPropNameContext")}
               disabled={!hasAll}
               currentLocale={currentLocale}
               contentKey={nameKey ?? undefined}

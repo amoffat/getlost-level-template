@@ -17,7 +17,7 @@ export function randIndex(count: number): number {
  */
 export function randIndexAvoid(
   count: number,
-  avoidIndex?: number | null
+  avoidIndex?: number | null,
 ): number {
   if (count <= 1) return 0;
   const avoid =
@@ -38,7 +38,7 @@ export function randIndexAvoid(
  */
 export function randIndexAvoidMany(
   count: number,
-  avoid: ReadonlySet<number> | ReadonlyArray<number>
+  avoid: ReadonlySet<number> | ReadonlyArray<number>,
 ): number {
   if (count <= 0) return -1;
   let avoidSet: ReadonlySet<number>;
@@ -77,7 +77,7 @@ export function sample<T>(arr: readonly T[]): T | undefined {
 export function sampleAvoid<T>(
   arr: readonly T[],
   avoid: T,
-  eq: (a: T, b: T) => boolean = (a, b) => a === b
+  eq: (a: T, b: T) => boolean = (a, b) => a === b,
 ): T | undefined {
   if (!arr.length) return undefined;
   const candidates = arr.filter((x) => !eq(x, avoid));
@@ -234,8 +234,11 @@ export function gaussian(mean = 0, stddev = 1): number {
     return mean + stddev * _gaussSpare;
   }
 
+  // eslint-disable-next-line no-useless-assignment
   let u = 0;
+  // eslint-disable-next-line no-useless-assignment
   let v = 0;
+
   // Avoid 0 for log
   do {
     u = 1 - float01(); // (0, 1]
@@ -265,7 +268,7 @@ export function gaussianVec2(meanX = 0, meanY = 0, std = 1): Vector2 {
 export function triangular(
   min: number,
   max: number,
-  mode: number = (min + max) * 0.5
+  mode: number = (min + max) * 0.5,
 ): number {
   const u = float01();
   const c = (mode - min) / (max - min);
@@ -281,6 +284,7 @@ export function triangular(
  * Useful for: random time gaps (e.g., Poisson-like events, spawns over time).
  */
 export function exponential(lambda = 1): number {
+  // eslint-disable-next-line no-useless-assignment
   let u = 0;
   do {
     u = float01();

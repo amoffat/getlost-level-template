@@ -84,7 +84,7 @@ export default function PreviewTab({
   });
   const [isDragging, setIsDragging] = useState(false);
   const [iframeActivated, setIframeActivated] = useState(true);
-  const [audioMode, _setAudioMode] = useLocalStorage<"audio" | "muted">({
+  const [_audioMode, _setAudioMode] = useLocalStorage<"audio" | "muted">({
     key: "gl-audio-mode",
     defaultValue: "audio",
   });

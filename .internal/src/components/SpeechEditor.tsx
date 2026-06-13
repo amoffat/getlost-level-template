@@ -50,7 +50,7 @@ import {
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import InfoTooltip from "./common/InfoTooltip";
-import { ActionButton, LocalizedTextarea, LocalizedTextInput } from "./l10n";
+import { ActionButton, LocalizedTextarea } from "./l10n";
 import ResettableInput from "./ResettableInput";
 
 interface SpeechEditorProps {
@@ -127,7 +127,7 @@ export default function SpeechEditor({
   );
 
   const updateChoiceTextKey = useCallback(
-    (choiceId: string, newKey: string | undefined) => {
+    (choiceId: string, newKey: string | null) => {
       if (!activeDialogueId) return;
       const choices = data.choices.map((c) =>
         c.id === choiceId ? { ...c, textKey: newKey } : c,
@@ -190,7 +190,7 @@ export default function SpeechEditor({
               setResetKey((k) => k + 1);
             }}
           >
-            <LocalizedTextInput
+            <LocalizedTextarea
               key={remountKey}
               currentLocale={currentLocale}
               contentKey={speakerNameKey}
@@ -265,7 +265,7 @@ export default function SpeechEditor({
             description={t("speechEditorContentDesc")}
             placeholder={t("speechEditorPlaceholder")}
           />
-          <DetectedVariables localeKey={data.contentKey} />
+          {data.contentKey && <DetectedVariables localeKey={data.contentKey} />}
         </Stack>
         <Input.Label mt="sm">{t("speechEditorResponsesLabel")}</Input.Label>
         <Input.Description mb="sm">
@@ -350,7 +350,7 @@ interface SpeakerImageSectionProps {
   objId: string;
   objSpeakerImageId: string | null | undefined;
   nodeSpeakerImageId: string | null | undefined;
-  onSetNodeOverride: (imageId: string | null) => void;
+  onSetNodeOverride: (imageId: string | undefined) => void;
 }
 
 /**
@@ -399,7 +399,7 @@ function SpeakerImageSection({
   };
 
   const handleRemoveOverride = () => {
-    onSetNodeOverride(null);
+    onSetNodeOverride(undefined);
   };
 
   return (
@@ -494,7 +494,7 @@ type SortableChoiceProps = {
   id: string;
   choice: Choice;
   currentLocale: string;
-  updateChoiceTextKey: (choiceId: string, newKey: string | undefined) => void;
+  updateChoiceTextKey: (choiceId: string, newKey: string | null) => void;
   removeChoice: (choiceId: string) => void;
 };
 
@@ -522,14 +522,14 @@ function SortableChoice({
           {...attributes}
           {...listeners}
         />
-        <LocalizedTextInput
+        <LocalizedTextarea
           currentLocale={currentLocale}
           contentKey={choice.textKey}
           keyPrefix={[id]}
           onLocaleKeyChange={(newKey) => updateChoiceTextKey(id, newKey)}
           style={{ flex: 1 }}
           placeholder={t("speechEditorChoicePlaceholder")}
-          contextButton="inline"
+          contextButton
         />
         <ActionButton
           tooltip={t("copyIdToClipboard")}

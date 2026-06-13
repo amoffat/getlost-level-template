@@ -6,7 +6,7 @@
   "license": "AGPL-3.0",
   "packageManager": "pnpm@11.3.0",
   "scripts": {
-    "lint": "eslint . && tsc --noEmit -p tsconfig.app.json",
+    "lint": "eslint . ; tsc --noEmit -p tsconfig.app.json",
     "dead-code": "knip",
     "license-check": "license-checker-rseidelsohn --production --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;EPL-2.0;' --excludePackages 'getlost-level-template'"
   },

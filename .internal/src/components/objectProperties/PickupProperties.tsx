@@ -11,7 +11,6 @@ import PropertyValue from "../PropertyValue";
 import TilesetGroup from "../TilesetGroup";
 import HiddenInput from "./inputs/HiddenInput";
 import IdInput from "./inputs/IdInput";
-import LocalizedLineInput from "./inputs/LocalizedLineInput";
 import LocalizedMultilineInput from "./inputs/LocalizedMultilineInput";
 import TagsInput from "./inputs/TagsInput";
 
@@ -39,13 +38,15 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
   );
 
   const nameInput = (
-    <LocalizedLineInput
+    <LocalizedMultilineInput
+      label={t("localizedNameInputLabel")}
       description={t("pickupPropNameDescription")}
       noTemplate
       values={toCollect.nameKey}
       context={t("pickupPropNameContext")}
       keyPrefix={["pickup"]}
       placeholder={t("pickupPropNamePlaceholder")}
+      required
       validator={(value) =>
         value.trim().length === 0 ? t("nameCannotBeEmpty") : null
       }
@@ -58,13 +59,15 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
           },
         });
       }}
-      required
     />
   );
 
   const descInput = (
     <LocalizedMultilineInput
+      label={t("localizedDescriptionInputLabel")}
+      multiline
       noTemplate
+      required
       description={t("pickupPropDescriptionDescription")}
       values={toCollect.descriptionKey}
       context={t("pickupPropDescriptionContext")}

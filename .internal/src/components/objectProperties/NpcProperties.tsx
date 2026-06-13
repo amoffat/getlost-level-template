@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
 import IdInput from "./inputs/IdInput";
-import LocalizedLineInput from "./inputs/LocalizedLineInput";
+import LocalizedMultilineInput from "./inputs/LocalizedMultilineInput";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
@@ -50,7 +50,8 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
   );
 
   const nameInput = (
-    <LocalizedLineInput
+    <LocalizedMultilineInput
+      label={t("localizedNameInputLabel")}
       description={t("npcPropNameDescription")}
       values={toCollect.nameKey}
       context={t("npcPropNameContext")}

@@ -12,11 +12,11 @@ import PropertyValue, {
   PropertyValueInfo,
 } from "../../PropertyValue";
 
-interface LocalizedDescriptionInputProps {
+interface LocalizedMultilineInputProps {
   values: PropertyValueInfo<string | null>[];
   onValueChange: (args: OnValueChangeArgs<string | null>) => void;
   keyPrefix?: string[];
-  label?: string;
+  label: string;
   description?: string;
   noTemplate?: boolean;
   context: string;
@@ -24,6 +24,8 @@ interface LocalizedDescriptionInputProps {
   debounceMs?: number;
   validator?: (value: string) => ReactNode | undefined;
   placeholder?: string;
+  required?: boolean;
+  multiline?: boolean;
 }
 
 export default function LocalizedMultilineInput({
@@ -31,19 +33,17 @@ export default function LocalizedMultilineInput({
   onValueChange,
   validator,
   keyPrefix = [],
-  description: descriptionProp,
+  description,
   noTemplate,
   context,
   debounceMs = 100,
-  label: labelProp,
-  placeholder: placeholderProp,
-}: LocalizedDescriptionInputProps) {
+  label,
+  placeholder,
+  required,
+  multiline = false,
+}: LocalizedMultilineInputProps) {
   const { t } = useTranslation();
-  const label = labelProp ?? t("localizedDescriptionInputLabel");
-  const description =
-    descriptionProp ?? t("localizedDescriptionInputDescription");
-  const placeholder =
-    placeholderProp ?? t("localizedDescriptionInputPlaceholder");
+
   const currentLocale = useAppSelector(localeSelectors.activeLocale);
   const defaultEntries = useAppSelector(localeSelectors.selectDefaultEntries);
 
@@ -52,6 +52,7 @@ export default function LocalizedMultilineInput({
   const contextModalButton =
     currentLocale === defaultLocale ? (
       <ActionButton
+        key="locale-context"
         tooltip={t("localeContextTitle")}
         icon={<IconLanguage size={12} />}
         onClick={() => textareaRef.current?.openCtx()}
@@ -83,11 +84,13 @@ export default function LocalizedMultilineInput({
             keyPrefix={keyPrefix}
             defaultContext={context}
             currentLocale={currentLocale}
-            contentKey={value ?? undefined}
+            contentKey={value}
+            withAsterisk={required}
+            autosize
+            minRows={1}
+            maxRows={multiline ? undefined : 1}
             placeholder={
-              value === undefined
-                ? t("localizedDescriptionInputMixedValues")
-                : placeholder
+              value === undefined ? t("localizedInputMixedValues") : placeholder
             }
             onLocaleKeyChange={(newKey) => {
               onChange(newKey ?? null);

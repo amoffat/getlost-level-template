@@ -3,17 +3,17 @@ import { Edge, Node } from "@xyflow/react";
 
 export interface Choice {
   id: string;
-  textKey: string | undefined;
+  textKey: string | null | undefined;
 }
 export interface SpeechData extends Record<string, unknown> {
   id: string;
-  speakerNameKey: string | undefined;
-  contentKey: string | undefined;
+  speakerNameKey: string | null | undefined;
+  contentKey: string | null | undefined;
   animated: boolean;
   choices: Choice[];
   isOrigin: boolean;
   /** Per-node speaker image override. Overrides the object-level speakerImageId. */
-  speakerImageId?: string | null;
+  speakerImageId?: string | undefined;
   /** Story milestone IDs activated when the player reaches this speech node. */
   activationMilestones?: string[];
 }

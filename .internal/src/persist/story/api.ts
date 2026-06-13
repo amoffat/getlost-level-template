@@ -155,6 +155,12 @@ function toEngineDialogue(
     if (!node) continue;
     const engineData: EngineSpeechData = {
       ...node.data,
+      choices: node.data.choices.map((c) => ({
+        id: c.id,
+        textKey: c.textKey ?? undefined,
+      })),
+      contentKey: node.data.contentKey ?? undefined,
+      speakerNameKey: node.data.speakerNameKey ?? undefined,
       activationMilestones:
         node.data.activationMilestones?.map(mapMilestoneSlug),
     };

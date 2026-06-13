@@ -498,9 +498,6 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         const sensorCircle = new P.Graphics();
         sensorCircle.eventMode = "passive";
         sensorCircle.label = "sensorCircle";
-        sensorCircle
-          .circle(0, 0, state.mapEditor.templates.exitGateways.sensorRadius)
-          .fill(exitFill);
         sensorCircle.position.set(
           sprite.width / 2 + texAtlasPadding,
           sprite.height / 2 + texAtlasPadding,

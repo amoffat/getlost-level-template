@@ -93,7 +93,7 @@ export const slice = createSlice({
     /** Default locale entry for the given key. */
     selectDefaultEntry: (
       state,
-      key: string | undefined,
+      key: string | undefined | null,
     ): LocaleEntry | undefined =>
       key ? state.entries[defaultLocale]?.entities[key] : undefined,
     selectDefaultEntries: (state) =>

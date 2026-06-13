@@ -180,11 +180,10 @@
 {"k": "localizedNameInputLabel", "v": "Name", "ctx": "Default label for a localized name input field"}
 {"k": "localizedNameInputDescription", "v": "A name for this object.", "ctx": "Default description for a localized name input field"}
 {"k": "localizedNameInputPlaceholder", "v": "Enter name", "ctx": "Default placeholder for a localized name input field"}
-{"k": "localizedNameInputMixedValues", "v": "Mixed values", "ctx": "Placeholder shown when multiple selected objects have different values"}
 {"k": "localizedDescriptionInputLabel", "v": "Description", "ctx": "Default label for a localized description input field"}
 {"k": "localizedDescriptionInputDescription", "v": "A description for this object.", "ctx": "Default description for a localized description input field"}
 {"k": "localizedDescriptionInputPlaceholder", "v": "Enter description", "ctx": "Default placeholder for a localized description input field"}
-{"k": "localizedDescriptionInputMixedValues", "v": "Mixed values", "ctx": "Placeholder shown when multiple selected objects have different values"}
+{"k": "localizedInputMixedValues", "v": "Mixed values", "ctx": "Placeholder shown when multiple selected objects have different values"}
 {"k": "npcPropLegend", "v": "NPC properties", "ctx": "Fieldset legend for NPC object properties panel"}
 {"k": "npcPropNameDescription", "v": "A name for this character. This will appear in dialogue.", "ctx": "Description for the NPC name input"}
 {"k": "npcPropNameContext", "v": "Character name"}

@@ -119,7 +119,11 @@ class Filler extends ClickDragListener<Mode> {
     // Track which candidate was chosen at each position for neighbor lookups
     const placedCandidates = new Map<string, number>();
 
+    // False positive
+    // eslint-disable-next-line no-useless-assignment
     let incY = gridSize.y;
+    // False positive
+    // eslint-disable-next-line no-useless-assignment
     let incX = gridSize.x;
 
     for (let y = bounds.y; y < bounds.y + bounds.height; y += incY) {

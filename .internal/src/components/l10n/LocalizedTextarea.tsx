@@ -20,14 +20,14 @@ interface LocalizedTextareaProps extends Omit<
   ref?: React.Ref<LocalizedTextareaHandle>;
   currentLocale: string;
   /** The locale key currently stored for this field. */
-  contentKey: string | undefined;
+  contentKey: string | null | undefined;
   /** Optional prefix passed to makeLocaleKey when generating a new key. */
   keyPrefix?: string[];
   defaultContext?: string;
   /**
    * Called when the locale key changes (main locale edits that rotate the key).
    */
-  onLocaleKeyChange?: (newKey: string) => void;
+  onLocaleKeyChange?: (newKey: string | null) => void;
   /** Debounce delay in ms. Defaults to 300. */
   debounce?: number;
   /** Whether to render the translation-context button in the label. Defaults to true. */
@@ -73,9 +73,7 @@ export default function LocalizedTextarea({
         ctx: defaultContext,
       },
     });
-    if (newKey !== undefined) {
-      onLocaleKeyChange?.(newKey);
-    }
+    onLocaleKeyChange?.(newKey ?? null);
   }, debounce);
 
   const handleCtxSave = useCallback(
