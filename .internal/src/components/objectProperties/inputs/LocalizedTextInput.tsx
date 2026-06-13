@@ -12,7 +12,7 @@ import PropertyValue, {
   PropertyValueInfo,
 } from "../../PropertyValue";
 
-interface LocalizedMultilineInputProps {
+interface LocalizedTextInputProps {
   values: PropertyValueInfo<string | null>[];
   onValueChange: (args: OnValueChangeArgs<string | null>) => void;
   keyPrefix?: string[];
@@ -28,7 +28,7 @@ interface LocalizedMultilineInputProps {
   multiline?: boolean;
 }
 
-export default function LocalizedMultilineInput({
+export default function LocalizedTextInput({
   values,
   onValueChange,
   validator,
@@ -41,7 +41,7 @@ export default function LocalizedMultilineInput({
   placeholder,
   required,
   multiline = false,
-}: LocalizedMultilineInputProps) {
+}: LocalizedTextInputProps) {
   const { t } = useTranslation();
 
   const currentLocale = useAppSelector(localeSelectors.activeLocale);
@@ -67,6 +67,7 @@ export default function LocalizedMultilineInput({
       onValueChange={onValueChange}
       noTemplate={noTemplate}
       debounceMs={debounceMs}
+      required={required}
       defaultValue={null}
       actionButtons={[contextModalButton]}
       renderInput={({ key, defaultValue: value, onChange }): ReactElement => {

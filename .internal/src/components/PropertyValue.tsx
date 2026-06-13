@@ -99,6 +99,7 @@ interface PropertyValueProps<T> {
   noReset?: boolean;
   /** Additional action buttons to display next to the label */
   actionButtons?: ReactNode[];
+  required?: boolean;
 }
 
 /**
@@ -125,6 +126,7 @@ function PropertyValueInner<T>({
   allowUndefined = false,
   allowCopy = false,
   noReset = false,
+  required = false,
   refreshKey,
   actionButtons,
 }: PropertyValueProps<T> & { refreshKey: string }) {
@@ -407,7 +409,9 @@ function PropertyValueInner<T>({
       {label && (
         <div>
           <Group gap={4} align="center" wrap="nowrap">
-            <Input.Label mb={0}>{label}</Input.Label>
+            <Input.Label mb={0} required={required}>
+              {label}
+            </Input.Label>
             {tooltip && <InfoTooltip>{tooltip}</InfoTooltip>}
             {!noReset && (
               <Tooltip label={t("resettableResetTooltip")}>

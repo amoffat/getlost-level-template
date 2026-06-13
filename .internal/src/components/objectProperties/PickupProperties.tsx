@@ -11,7 +11,7 @@ import PropertyValue from "../PropertyValue";
 import TilesetGroup from "../TilesetGroup";
 import HiddenInput from "./inputs/HiddenInput";
 import IdInput from "./inputs/IdInput";
-import LocalizedMultilineInput from "./inputs/LocalizedMultilineInput";
+import LocalizedTextInput from "./inputs/LocalizedTextInput";
 import TagsInput from "./inputs/TagsInput";
 
 // Properties that collectPropertyValues needs to access
@@ -38,7 +38,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
   );
 
   const nameInput = (
-    <LocalizedMultilineInput
+    <LocalizedTextInput
       label={t("localizedNameInputLabel")}
       description={t("pickupPropNameDescription")}
       noTemplate
@@ -48,7 +48,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       placeholder={t("pickupPropNamePlaceholder")}
       required
       validator={(value) =>
-        value.trim().length === 0 ? t("nameCannotBeEmpty") : null
+        value.trim().length === 0 ? t("mustNotBeEmpty") : null
       }
       onValueChange={({ value }): void => {
         updateObjects({
@@ -63,7 +63,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
   );
 
   const descInput = (
-    <LocalizedMultilineInput
+    <LocalizedTextInput
       label={t("localizedDescriptionInputLabel")}
       multiline
       noTemplate
@@ -73,7 +73,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       context={t("pickupPropDescriptionContext")}
       keyPrefix={["pickup"]}
       validator={(value) =>
-        value.trim().length === 0 ? t("nameCannotBeEmpty") : null
+        value.trim().length === 0 ? t("mustNotBeEmpty") : null
       }
       onValueChange={({ value }): void => {
         updateObjects({
@@ -126,23 +126,29 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       description={t("pickupPropImageAssetDescription")}
       values={toCollect.assetId}
       defaultValue={null}
+      required
       noTemplate={true}
       onValueChange={({
         value,
       }: {
         value: string | null | undefined;
       }): void => {
-        updateObjects({ objs, changes: { assetId: value } });
+        updateObjects({
+          objs,
+          changes: { assetId: value, status: value ? null : "error" },
+        });
       }}
       debounceMs={100}
       renderInput={({ key, defaultValue: value, onChange }): ReactElement => {
         const tilegroup = findTileGroup(value);
+        const error = value?.trim().length ? null : t("mustNotBeEmpty");
         return (
           <Stack key={key} gap="xs" p={0}>
             {value && tilegroup && (
               <TilesetGroup group={tilegroup} scale={4} bounded={false} />
             )}
             <TextInput
+              error={error}
               defaultValue={value ?? ""}
               placeholder={t("pickupPropImageAssetPlaceholder")}
               onChange={(e) => onChange(e.target.value)}

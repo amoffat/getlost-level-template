@@ -679,7 +679,7 @@
 {"k": "milestoneEditorDetailsLegend", "v": "Milestone Details", "ctx": "Fieldset legend for the main details section in the milestone editor"}
 {"k": "milestoneEditorNameLabel", "v": "Name", "ctx": "Label for the milestone name input in the milestone editor"}
 {"k": "milestoneEditorNameDesc", "v": "A name to reference this milestone. Must be unique.", "ctx": "Description under the milestone name input"}
-{"k": "nameCannotBeEmpty", "v": "Name cannot be empty.", "ctx": "Validation error shown if a name field is empty"}
+{"k": "mustNotBeEmpty", "v": "Must not be empty.", "ctx": "Validation error shown if a name field is empty"}
 {"k": "milestoneEditorNameDuplicate", "v": "This milestone name is already in use.", "ctx": "Validation error shown on the milestone name input when the name is not unique"}
 {"k": "milestoneEditorPermanentLabel", "v": "Permanent", "ctx": "Label for the permanent checkbox in the milestone editor"}
 {"k": "milestoneEditorPermanentDesc", "v": "Should this become part of the player's permanent action history?", "ctx": "Description under the permanent checkbox in the milestone editor"}

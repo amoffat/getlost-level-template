@@ -494,6 +494,14 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       spriteContainer.eventMode = "static";
       spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
 
+      // This is so that any error indicator does not become clickable
+      spriteContainer.boundsArea = new P.Rectangle(
+        0,
+        0,
+        sprite.width,
+        sprite.height,
+      );
+
       if (isExitObj(obj)) {
         const sensorCircle = new P.Graphics();
         sensorCircle.eventMode = "passive";
@@ -613,12 +621,11 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     const state = store.getState();
     const errorContainer = new P.Container();
     errorContainer.label = "errorIndicator";
-    errorContainer.eventMode = "passive";
+    errorContainer.eventMode = "none";
     errorContainer.visible = false;
 
     // Add error border (red rectangle outline)
     const errorBorder = new P.Graphics();
-    errorBorder.eventMode = "passive";
     errorBorder
       .rect(
         0,
@@ -648,7 +655,6 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
     });
 
     const errorIconSprite = new P.Sprite(iconTex);
-    errorIconSprite.eventMode = "passive";
     errorIconSprite.tint = 0xff0000; // Red tint
     errorIconSprite.position.set(
       sprite.width + texAtlasPadding,

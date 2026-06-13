@@ -8,8 +8,8 @@ import { AnimationTemplate } from "@/types/animation";
 import {
   isAnimatedInstance,
   isBackgroundImageObj,
+  isMapObjFromTileset,
   isNpcInstance,
-  isTileGroupInstance,
   isZoneObj,
   MapObj,
 } from "@/types/map";
@@ -45,15 +45,8 @@ export default function ObjSelHover() {
 
     return proposed?.objects.map((obj) => {
       let view: ReactNode | null = null;
-      if (isTileGroupInstance(obj)) {
-        const tsObj = tsSelectors.templateFromId(
-          state,
-          obj.tsObjId,
-        ) as TileGroupTemplate | null;
-        if (!tsObj) return null;
 
-        view = <TilesetGroup group={tsObj} scale={2} bounded />;
-      } else if (isAnimatedInstance(obj)) {
+      if (isAnimatedInstance(obj)) {
         const tsObj = tsSelectors.templateFromId(
           state,
           obj.tsObjId,
@@ -92,6 +85,14 @@ export default function ObjSelHover() {
             {t(typeMeta.label)}
           </Badge>
         );
+      } else if (isMapObjFromTileset(obj)) {
+        const tsObj = tsSelectors.templateFromId(
+          state,
+          obj.tsObjId,
+        ) as TileGroupTemplate | null;
+        if (!tsObj) return null;
+
+        view = <TilesetGroup group={tsObj} scale={2} bounded />;
       }
 
       const entry = (
