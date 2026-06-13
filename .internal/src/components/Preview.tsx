@@ -102,7 +102,7 @@ export default function PreviewTab({
   });
   const [volume, setVolume] = useLocalStorage<number>({
     key: "gl-preview-volume",
-    defaultValue: 100,
+    defaultValue: 1,
   });
   const [debugFlags, setDebugFlags] = useLocalStorage<DebugSchema["flags"]>({
     key: "gl-debug-flags",
@@ -227,6 +227,7 @@ export default function PreviewTab({
       overlays: enableOverlays,
       device: deviceType,
       flags: debugFlags,
+      volume,
       buildPathgraph: pathgraphHash,
       reloadCount, // use it so the linter doesn't complain about deps
     };
@@ -462,7 +463,7 @@ export default function PreviewTab({
 
   const handleVolumeChangeEnd = useCallback(
     (value: number) => {
-      setVolume(value);
+      setVolume(value / 100);
     },
     [setVolume],
   );
@@ -870,7 +871,7 @@ export default function PreviewTab({
                 </Text>
                 <Slider
                   mb="xs"
-                  defaultValue={volume}
+                  defaultValue={volume * 100}
                   min={0}
                   max={100}
                   step={1}
