@@ -692,3 +692,4 @@
 {"k": "zoneEnabledLabel", "v": "Enabled"}
 {"k": "zoneEnabledDescription", "v": "Should the zone start enabled?"}
 {"k": "changingPropertyAlert", "v": "Changing this property will set the same value for all selected objects"}
+{"k": "speechEditorAvatarSizeError", "v": "Speaker images must be exactly {width}×{height} pixels.", "ctx": "Error notification message when an uploaded speaker avatar image has incorrect dimensions"}

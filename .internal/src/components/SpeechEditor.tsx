@@ -33,13 +33,14 @@ import {
   CloseButton,
   Fieldset,
   Group,
-  Image,
   Input,
+  Image as MantineImage,
   MultiSelect,
   Stack,
   Text,
   Tooltip,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   IconCopy,
   IconGripVertical,
@@ -384,6 +385,21 @@ function SpeakerImageSection({
     if (!file) return;
     e.target.value = "";
 
+    const dims = await getImageDimensions(file);
+    if (
+      dims.width !== constants.speakerImageSize ||
+      dims.height !== constants.speakerImageSize
+    ) {
+      notifications.show({
+        color: "red",
+        message: t("speechEditorAvatarSizeError", {
+          width: constants.speakerImageSize,
+          height: constants.speakerImageSize,
+        }),
+      });
+      return;
+    }
+
     if (!objSpeakerImageId) {
       // No object-level image yet → upload and set at the object level
       await dispatch(uploadSpeakerImageThunk({ objId, file }));
@@ -422,7 +438,7 @@ function SpeakerImageSection({
 
       {activeImageUrl ? (
         <Group gap="xs" align="flex-start">
-          <Image
+          <MantineImage
             src={activeImageUrl}
             w={100}
             h={100}
@@ -540,6 +556,24 @@ function SortableChoice({
       </Group>
     </div>
   );
+}
+
+function getImageDimensions(
+  file: File,
+): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Failed to load image"));
+    };
+    img.src = url;
+  });
 }
 
 /** Renders a row of hoverable variable badges detected in the given text. */

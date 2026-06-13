@@ -52,6 +52,7 @@ export const exitTemplateId = "exitGatewaysTemplate";
 export const pickupTemplateId = "pickupsTemplate";
 
 export const defaultTileSize = 16;
+export const speakerImageSize = 38;
 export const defaultAnimTime = 1000;
 export const autosaveMapDebounce = 1000; // ms
 export const autosaveTilesetDebounce = 1000; // ms
