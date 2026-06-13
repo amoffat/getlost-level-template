@@ -32,6 +32,8 @@ interface LocalizedTextareaProps extends Omit<
   debounce?: number;
   /** Whether to render the translation-context button in the label. Defaults to true. */
   contextButton?: boolean;
+  /** Additional action buttons to display next to the label. */
+  actionButtons?: React.ReactNode[];
 }
 
 /**
@@ -49,6 +51,7 @@ export default function LocalizedTextarea({
   onLocaleKeyChange,
   debounce = 300,
   contextButton = true,
+  actionButtons,
   ...rest
 }: LocalizedTextareaProps) {
   const dispatch = useAppDispatch();
@@ -105,11 +108,14 @@ export default function LocalizedTextarea({
 
   useImperativeHandle(ref, () => ({ openCtx }), [openCtx]);
 
-  const labelWithCtx = contextButton && rest.label != null && (
+  const hasActionButtons = actionButtons && actionButtons.length > 0;
+  const labelWithCtx = (contextButton || hasActionButtons) && rest.label != null && (
     <LocalizedInputLabel
       locale={currentLocale}
       label={rest.label}
       onContextClick={openCtx}
+      showContextButton={contextButton}
+      actionButtons={actionButtons}
     />
   );
 

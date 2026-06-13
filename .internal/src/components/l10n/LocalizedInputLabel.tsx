@@ -11,6 +11,10 @@ interface LocalizedInputLabelProps {
   label: ReactNode;
   /** Called when the language context button is clicked. */
   onContextClick: () => void;
+  /** Whether to show the locale context button. Defaults to true. */
+  showContextButton?: boolean;
+  /** Additional action buttons to display next to the label. */
+  actionButtons?: ReactNode[];
 }
 
 /**
@@ -22,19 +26,22 @@ export default function LocalizedInputLabel({
   locale,
   label,
   onContextClick,
+  showContextButton = true,
+  actionButtons,
 }: LocalizedInputLabelProps) {
   const { t } = useTranslation();
 
   return (
     <Group gap={4} align="center" wrap="nowrap">
       {label}
-      {locale === defaultLocale && (
+      {showContextButton && locale === defaultLocale && (
         <ActionButton
           tooltip={t("localeContextTitle")}
           icon={<IconLanguage size={12} />}
           onClick={onContextClick}
         />
       )}
+      {actionButtons}
     </Group>
   );
 }

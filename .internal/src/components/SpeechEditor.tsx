@@ -45,6 +45,7 @@ import {
   IconCopy,
   IconGripVertical,
   IconPhoto,
+  IconPlus,
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
@@ -305,7 +306,13 @@ export default function SpeechEditor({
             </SortableContext>
 
             {canAddChoice && (
-              <Button variant="subtle" size="xs" fullWidth onClick={addChoice}>
+              <Button
+                variant="subtle"
+                size="xs"
+                fullWidth
+                onClick={addChoice}
+                leftSection={<IconPlus size={14} />}
+              >
                 {t("speechEditorAddResponse")}
               </Button>
             )}
@@ -541,18 +548,28 @@ function SortableChoice({
         <LocalizedTextarea
           currentLocale={currentLocale}
           contentKey={choice.textKey}
+          label={t("dialogueResponse")}
           keyPrefix={[id]}
           onLocaleKeyChange={(newKey) => updateChoiceTextKey(id, newKey)}
           style={{ flex: 1 }}
           placeholder={t("speechEditorChoicePlaceholder")}
           contextButton
+          minRows={2}
+          maxRows={2}
+          actionButtons={[
+            <ActionButton
+              key="copy"
+              tooltip={t("copyIdToClipboard")}
+              icon={<IconCopy size={12} />}
+              onClick={() => copyToClipboard({ value: id, t })}
+            />,
+            <CloseButton
+              key="remove"
+              size="xs"
+              onClick={() => removeChoice(id)}
+            />,
+          ]}
         />
-        <ActionButton
-          tooltip={t("copyIdToClipboard")}
-          icon={<IconCopy size={12} />}
-          onClick={() => copyToClipboard({ value: id, t })}
-        />
-        <CloseButton size="xs" onClick={() => removeChoice(id)} />
       </Group>
     </div>
   );
