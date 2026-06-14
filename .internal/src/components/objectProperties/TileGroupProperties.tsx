@@ -18,6 +18,7 @@ import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import FlipXInput from "./inputs/FlipXInput";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
 import HiddenInput from "./inputs/HiddenInput";
+import IdInput from "./inputs/IdInput";
 import LocalizedTextInput from "./inputs/LocalizedTextInput";
 import SwitchInput from "./inputs/SwitchInput";
 import TintInput from "./inputs/TintInput";
@@ -63,6 +64,8 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
     },
     [objs],
   );
+
+  const idInput = <IdInput values={toCollect.id} />;
 
   const nameInput = (
     <LocalizedTextInput
@@ -230,6 +233,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
   return (
     <Fieldset legend={t("tileGroupPropLegend")} p="xs">
       <Stack p={0} gap="xl">
+        {idInput}
         {nameInput}
         {talkableInput}
         {flipXInput}
