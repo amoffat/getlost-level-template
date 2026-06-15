@@ -1,3 +1,4 @@
+import { redo, undo } from "@/history";
 import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { duplicateSelectionThunk } from "@/thunks/map";
@@ -45,6 +46,24 @@ export function setupKeys(canvas: HTMLCanvasElement) {
       g: (keydown: boolean) => {
         if (!keydown) return;
         store.dispatch(mapEdActions.setMode("move"));
+      },
+      // Undo / redo for the "map" history channel. Register both Control and
+      // Meta variants so the shortcut works on Windows/Linux and macOS.
+      "Control-Z": (keydown: boolean) => {
+        if (!keydown) return;
+        store.dispatch(undo("map"));
+      },
+      "Meta-Z": (keydown: boolean) => {
+        if (!keydown) return;
+        store.dispatch(undo("map"));
+      },
+      "Control-Shift-Z": (keydown: boolean) => {
+        if (!keydown) return;
+        store.dispatch(redo("map"));
+      },
+      "Meta-Shift-Z": (keydown: boolean) => {
+        if (!keydown) return;
+        store.dispatch(redo("map"));
       },
       x: (keydown: boolean) => {
         if (!keydown) return;

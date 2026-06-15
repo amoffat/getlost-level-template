@@ -77,6 +77,13 @@ export async function init(): Promise<void> {
     volume: 0.2,
   });
 
+  const cameraZoomAnim = new Animator({
+    durationMs: 5000,
+    selfTick: true,
+    range: { start: startZoom, end: 0.38 },
+    forwardCurve: Easings.easeInOutQuad,
+  });
+
   events.on({
     type: "state-change",
     filter: { state: "think-of-sofia" },
@@ -90,26 +97,20 @@ export async function init(): Promise<void> {
       },
       ({ satisfied }) => {
         if (satisfied) {
-          const anim = new Animator({
-            durationMs: 5000,
-            selfTick: true,
-            range: { start: startZoom, end: 0.38 },
-            forwardCurve: Easings.easeInOutQuad,
-          });
-          anim.addProgressCallback(({ rangeProgress, progress }) => {
+          cameraZoomAnim.addProgressCallback(({ rangeProgress, progress }) => {
             setZoom(rangeProgress!);
             sound.setVolume({
               assetId: windAssetId,
               volume: lerp(startWind, maxWind, progress),
             });
           });
-          anim.play();
+          cameraZoomAnim.play();
         } else {
           sound.setVolume({
             assetId: windAssetId,
             volume: startWind,
           });
-          setZoom(startZoom);
+          cameraZoomAnim.reverse();
         }
       },
     ],

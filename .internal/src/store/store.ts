@@ -1,4 +1,5 @@
 import { globals as g } from "@/globals";
+import { slice as historySlice } from "@/history/slice";
 import { slice as dialogueSlice } from "@/slices/dialogue";
 import { slice as localeSlice } from "@/slices/locale";
 import { slice as mapEditorSlice } from "@/slices/mapEditor";
@@ -19,6 +20,7 @@ export const rootReducer = combineReducers({
   tilesetEditor: tilesetEditorSlice.reducer,
   mapEditor: mapEditorSlice.reducer,
   ui: uiSlice.reducer,
+  history: historySlice.reducer,
 });
 
 const mapSyncMiddleware = makeEditorSyncMiddleware(

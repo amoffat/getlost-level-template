@@ -1,5 +1,6 @@
 import { Tool } from "@/editors/common/tooldispatch";
 import { globals as gApp } from "@/globals";
+import { captureEntityChanges, recordTransaction } from "@/history";
 import {
   actions as mapEdActions,
   selectors as mapEdSelectors,
@@ -76,7 +77,25 @@ export class Mover extends ClickDragListener<Mode> implements Tool {
     this._moveEnabled = false;
 
     if (this.lastUpdates.length > 0) {
-      store.dispatch(mapEdActions.updateMany(this.lastUpdates));
+      const after = this.lastUpdates;
+      // Redux still holds the pre-move positions here: dragging only mutates
+      // the reconciler nodes, never Redux. So capture the "before" now, before
+      // dispatching the move.
+      const ids = after.map((u) => u.id);
+      const before = captureEntityChanges(
+        store.getState().mapEditor.objects.entities,
+        ids,
+        ["x", "y", "z"],
+      );
+
+      store.dispatch(mapEdActions.updateMany(after));
+      store.dispatch(
+        recordTransaction("map", {
+          label: "Move",
+          undo: [mapEdActions.updateMany(before)],
+          redo: [mapEdActions.updateMany(after)],
+        }),
+      );
       this.lastUpdates = [];
     }
 

@@ -694,3 +694,5 @@
 {"k": "changingPropertyAlert", "v": "Changing this property will set the same value for all selected objects"}
 {"k": "speechEditorAvatarSizeError", "v": "Speaker images must be exactly {width}×{height} pixels.", "ctx": "Error notification message when an uploaded speaker avatar image has incorrect dimensions"}
 {"k": "dialogueResponse", "v": "Response"}
+{"k": "undo", "v": "Undo"}
+{"k": "redo", "v": "Redo"}
