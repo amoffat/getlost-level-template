@@ -1,4 +1,5 @@
 import { Tool } from "@/editors/common/tooldispatch";
+import { globals as gApp } from "@/globals";
 import {
   actions as mapEdActions,
   selectors as mapEdSelectors,
@@ -20,6 +21,13 @@ export class Mover extends ClickDragListener<Mode> implements Tool {
   private _moveEnabled = false;
   private _cd: ClickDragger<Mode>;
   private startPositions: Map<string, Vector2> = new Map();
+
+  /** Stores the final changes that will be applied to the redux state on
+   * pointerUp */
+  private lastUpdates: Array<{
+    id: string;
+    changes: { x: number; y: number; z: number };
+  }> = [];
 
   constructor(cd: ClickDragger<Mode>) {
     super((state) => mapEdSelectors.selectMode(state));
@@ -54,6 +62,7 @@ export class Mover extends ClickDragListener<Mode> implements Tool {
 
     if (shouldMove || mode === "move") {
       this._moveEnabled = true;
+      this.lastUpdates = [];
       return true;
     } else {
       this._moveEnabled = false;
@@ -65,6 +74,11 @@ export class Mover extends ClickDragListener<Mode> implements Tool {
     if (!this._moveEnabled) return false;
 
     this._moveEnabled = false;
+
+    if (this.lastUpdates.length > 0) {
+      store.dispatch(mapEdActions.updateMany(this.lastUpdates));
+      this.lastUpdates = [];
+    }
 
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
@@ -129,7 +143,16 @@ export class Mover extends ClickDragListener<Mode> implements Tool {
         },
       });
     }
-    store.dispatch(mapEdActions.updateMany(updates));
+
+    this.lastUpdates = updates;
+    for (const { id, changes } of updates) {
+      const node = gApp.mapEditorReconciler.getNode(id);
+      if (node) {
+        node.x = changes.x;
+        node.y = changes.y;
+        node.zIndex = changes.z;
+      }
+    }
     return true;
   }
 

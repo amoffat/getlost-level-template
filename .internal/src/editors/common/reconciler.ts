@@ -75,6 +75,10 @@ export abstract class ReduxReconciler<
     this.scheduleFlush();
   }
 
+  public getNode(id: string): P.Container | undefined {
+    return this.nodes.get(id);
+  }
+
   // If you sometimes dispatch setAll, use this diffing helper:
   enqueueDiff(fullList: ObjType[]) {
     const nextIds = new Set(fullList.map(this.selectId));
