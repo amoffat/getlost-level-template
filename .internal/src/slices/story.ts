@@ -62,7 +62,10 @@ export const slice = createSlice({
     // the redux store has the authoritative data and RF just manages
     // positions, sizes, connections, etc.
     setNodes(state, action: PayloadAction<StoryNode[]>) {
-      state.nodes = action.payload.map((node) => {
+      const uniqueNodes = new Map(
+        action.payload.map((node) => [node.id, node]),
+      );
+      state.nodes = Array.from(uniqueNodes.values()).map((node) => {
         const oldNode = state.nodes.find((n) => n.id === node.id);
         if (oldNode) {
           return { ...node, data: oldNode.data };
@@ -75,6 +78,22 @@ export const slice = createSlice({
       // never persisted and cannot reappear on page reload.
       state.edges = action.payload.map(
         ({ style: _style, ...edge }) => edge as StoryEdge,
+      );
+    },
+    // Additive add for undo of a node deletion — restores a single node into
+    // the current graph without disturbing anything else. No-op on duplicate.
+    addNode(state, action: PayloadAction<StoryNode>) {
+      if (!state.nodes.some((n) => n.id === action.payload.id)) {
+        state.nodes.push(action.payload);
+      }
+    },
+    // Removes a node and any edge that would dangle from it. Used for redo of a
+    // node deletion (and as the inverse of addNode).
+    removeNode(state, action: PayloadAction<string>) {
+      const id = action.payload;
+      state.nodes = state.nodes.filter((n) => n.id !== id);
+      state.edges = state.edges.filter(
+        (e) => e.source !== id && e.target !== id,
       );
     },
     setNodeData(
@@ -110,6 +129,8 @@ export const {
   setNodes,
   setEdges,
   setNodeData,
+  addNode,
+  removeNode,
   setLoading,
   setError,
   resetInstance,

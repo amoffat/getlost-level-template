@@ -1,6 +1,7 @@
 // @refresh reset
 import { defaultMilestone } from "@/constants";
 import { globals as g } from "@/globals";
+import { recordTransaction, useUndoRedo } from "@/history";
 import { shallowEqual, useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
   createDialogue,
@@ -76,6 +77,7 @@ import {
   OnBeforeDelete,
   OnConnect,
   OnConnectEnd,
+  OnDelete,
   OnEdgesChange,
   OnNodesChange,
   Panel,
@@ -293,8 +295,8 @@ export default function DialogueTab({
     },
   });
 
-  const onNodesChange: OnNodesChange<DNode> = useDebouncedCallback(
-    (changes) => {
+  const onNodesChange = useDebouncedCallback(
+    (changes: Parameters<OnNodesChange<DNode>>[0]) => {
       if (!dlgId) return;
       const nodes = reactFlowInstance.getNodes();
       dispatch(
@@ -337,16 +339,66 @@ export default function DialogueTab({
     [activeNodes, t],
   );
 
-  const onEdgesChange: OnEdgesChange = useDebouncedCallback((changes) => {
+  const onEdgesChange = useDebouncedCallback(
+    (changes: Parameters<OnEdgesChange>[0]) => {
+      if (!dlgId) return;
+      const edges = reactFlowInstance.getEdges();
+      dispatch(
+        dActions.setEdges({
+          dialogueId: dlgId,
+          edges: applyEdgeChanges(changes, edges),
+        }),
+      );
+    },
+    200,
+  );
+
+  // Record an undoable transaction for node deletions only (edge-only deletions
+  // are ignored), scoped to the active dialogue. We capture just the deleted
+  // node(s) so undo re-adds them into the *current* graph additively.
+  const onDelete: OnDelete<DNode, Edge> = useCallback(
+    ({ nodes: deleted }) => {
+      if (deleted.length === 0 || !dlgId) return;
+
+      // At onDelete, Redux is still pre-delete (the delete's setNodes is
+      // debounced), so prefer the authoritative Redux node for its data; take
+      // the current position from the ReactFlow node.
+      const dlg = dSelectors.selectDialogue(store.getState(), dlgId);
+      const nodes = deleted.map((rf) => {
+        const authoritative = (dlg?.nodes.entities[rf.id] as DNode) ?? rf;
+        return { ...authoritative, position: rf.position, selected: false };
+      });
+
+      dispatch(
+        recordTransaction(`dialogue:${dlgId}`, {
+          label: "Delete node",
+          undo: nodes.map((node) =>
+            dActions.addNode({ dialogueId: dlgId, node }),
+          ),
+          redo: nodes.map((node) =>
+            dActions.removeNode({ dialogueId: dlgId, nodeId: node.id }),
+          ),
+        }),
+      );
+    },
+    [dispatch, dlgId],
+  );
+
+  // After an undo/redo, reconcile the uncontrolled canvas to match Redux by node
+  // identity only: keep existing canvas nodes (preserving live positions), add
+  // nodes that reappeared in Redux, drop nodes that are gone. Edges untouched.
+  const applyHistory = useCallback(() => {
     if (!dlgId) return;
-    const edges = reactFlowInstance.getEdges();
-    dispatch(
-      dActions.setEdges({
-        dialogueId: dlgId,
-        edges: applyEdgeChanges(changes, edges),
-      }),
-    );
-  }, 200);
+    const dlg = dSelectors.selectDialogue(store.getState(), dlgId);
+    if (!dlg) return;
+    const reduxNodes = Object.values(dlg.nodes.entities) as DNode[];
+    reactFlowInstance.setNodes((canvasNodes) => {
+      const byId = new Map(canvasNodes.map((n) => [n.id, n]));
+      return reduxNodes.map((rn) => byId.get(rn.id) ?? rn);
+    });
+  }, [reactFlowInstance, dlgId]);
+
+  useUndoRedo(dlgId ? `dialogue:${dlgId}` : "dialogue:none", applyHistory);
 
   const onConnect: OnConnect = useCallback(
     (connection) => {
@@ -724,6 +776,7 @@ export default function DialogueTab({
               onConnect={onConnect}
               onConnectEnd={onConnectEnd}
               onBeforeDelete={onBeforeDelete}
+              onDelete={onDelete}
               selectionOnDrag={false}
               selectionMode={SelectionMode.Partial}
               fitView

@@ -2,10 +2,17 @@ export function trackKeyPresses({
   handlers,
   pressedKeys = {},
   element,
+  ignoreEditableTargets = false,
 }: {
   handlers?: Record<string, (pressed: boolean) => void>;
   pressedKeys?: Record<string, boolean>;
-  element: HTMLElement;
+  element: HTMLElement | Window;
+  /**
+   * When true, key events whose target is an editable element (input, textarea,
+   * select, or contenteditable) are ignored. Useful for window-scoped handlers
+   * (e.g. app-wide undo/redo) that must not fire while the user is typing.
+   */
+  ignoreEditableTargets?: boolean;
 }): VoidFunction {
   // Order we want modifier keys to appear in combo names
   const modifierOrder = ["Control", "Shift", "Alt", "Meta"];
@@ -73,6 +80,7 @@ export function trackKeyPresses({
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.repeat) return; // Ignore repeats
+    if (ignoreEditableTargets && isEditableTarget(e.target)) return;
 
     const norm = normalizeKey(e);
     pressedKeys[norm] = true;
@@ -91,6 +99,7 @@ export function trackKeyPresses({
   };
 
   const handleKeyUp = (e: KeyboardEvent) => {
+    if (ignoreEditableTargets && isEditableTarget(e.target)) return;
     // Determine normalized key for release; events may report a different
     // shifted character than what was stored on keydown (e.g. "d" vs "D", "/"
     // vs "?", "1" vs "!").
@@ -124,20 +133,36 @@ export function trackKeyPresses({
     for (const k of Object.keys(pressedKeys)) pressedKeys[k] = false;
   };
 
-  element.addEventListener("keydown", handleKeyDown);
-  element.addEventListener("keyup", handleKeyUp);
+  // `element` may be an HTMLElement or the Window; treat it as a generic
+  // EventTarget so both are supported.
+  const target: EventTarget = element;
+  target.addEventListener("keydown", handleKeyDown as EventListener);
+  target.addEventListener("keyup", handleKeyUp as EventListener);
   window.addEventListener("blur", clearKeys);
   window.addEventListener("focus", clearKeys);
-  element.addEventListener("mouseleave", clearKeys);
+  target.addEventListener("mouseleave", clearKeys);
 
   // Return cleanup function to remove all event listeners
   return () => {
-    element.removeEventListener("keydown", handleKeyDown);
-    element.removeEventListener("keyup", handleKeyUp);
+    target.removeEventListener("keydown", handleKeyDown as EventListener);
+    target.removeEventListener("keyup", handleKeyUp as EventListener);
     window.removeEventListener("blur", clearKeys);
     window.removeEventListener("focus", clearKeys);
-    element.removeEventListener("mouseleave", clearKeys);
+    target.removeEventListener("mouseleave", clearKeys);
   };
+}
+
+/** True for elements where typed text undo should win over our handlers. */
+function isEditableTarget(eventTarget: EventTarget | null): boolean {
+  const el = eventTarget as HTMLElement | null;
+  if (!el || !el.tagName) return false;
+  const tag = el.tagName;
+  return (
+    tag === "INPUT" ||
+    tag === "TEXTAREA" ||
+    tag === "SELECT" ||
+    el.isContentEditable
+  );
 }
 
 /**

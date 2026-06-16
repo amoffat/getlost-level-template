@@ -69,6 +69,22 @@ export const slice = createSlice({
       if (!dlg) return;
       nodeAdapter.setOne(dlg.nodes, node);
     },
+    // Removes a node and any edge that would dangle from it. Used for redo of a
+    // node deletion (and as the inverse of addNode).
+    removeNode(
+      state,
+      action: PayloadAction<{ dialogueId: string; nodeId: string }>,
+    ) {
+      const { dialogueId, nodeId } = action.payload;
+      const dlg = state.dialogues.entities[dialogueId];
+      if (!dlg) return;
+      nodeAdapter.removeOne(dlg.nodes, nodeId);
+      const danglingEdgeIds = dlg.edges.ids.filter((id) => {
+        const edge = dlg.edges.entities[id];
+        return edge && (edge.source === nodeId || edge.target === nodeId);
+      });
+      edgeAdapter.removeMany(dlg.edges, danglingEdgeIds);
+    },
     // Syncing from React Flow is a bit more complex than just replacing the
     // nodes, because we want to preserve the data of the nodes. This is because
     // the redux store has the authoritative data, and RF just manages the
@@ -78,10 +94,13 @@ export const slice = createSlice({
       action: PayloadAction<{ dialogueId: string; nodes: DNode[] }>,
     ) {
       const { dialogueId, nodes } = action.payload;
+
+      const uniqueNodes = new Map(nodes.map((node) => [node.id, node]));
+
       const dlg = state.dialogues.entities[dialogueId];
       if (!dlg) return;
 
-      const preserved = nodes.map((node) => {
+      const preserved = Array.from(uniqueNodes.values()).map((node) => {
         const oldNode = dlg.nodes.entities[node.id];
         if (oldNode) {
           return { ...node, data: oldNode.data };
@@ -329,9 +348,9 @@ const selectFirstNodeText = createSelector(
     const dlg = dialogues.entities[dialogueId];
     if (!dlg) return "...";
 
-    const originNode = (Object.values(dlg.nodes.entities) as (DNode | undefined)[]).find(
-      (n) => n?.data.isOrigin,
-    );
+    const originNode = (
+      Object.values(dlg.nodes.entities) as (DNode | undefined)[]
+    ).find((n) => n?.data.isOrigin);
     if (!originNode) return "...";
 
     const contentKey = originNode.data.contentKey;

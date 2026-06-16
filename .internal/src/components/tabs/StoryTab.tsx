@@ -1,11 +1,14 @@
 // @refresh reset
+import { storyOriginNodeId } from "@/constants";
 import { AncestorHighlightContext } from "@/contexts/AncestorHighlightContext";
 import { WaypointModalContext } from "@/contexts/WaypointModalContext";
-import { storyOriginNodeId } from "@/constants";
+import { recordTransaction, useUndoRedo } from "@/history";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
+  addNode,
   JunctionNode,
   MilestoneWaypoint,
+  removeNode,
   setEdges,
   setNodeData,
   setNodes,
@@ -13,6 +16,7 @@ import {
   StoryNode,
 } from "@/slices/story";
 import type { RootState } from "@/store/store";
+import { store } from "@/store/store";
 import { reflowStoryThunk } from "@/thunks/story";
 import { showNotification } from "@/utils/notifications";
 import { Split } from "@gfazioli/mantine-split-pane";
@@ -48,6 +52,7 @@ import {
   type Edge,
   type OnBeforeDelete,
   type OnConnectEnd,
+  type OnDelete,
 } from "@xyflow/react";
 import {
   ReactNode,
@@ -210,8 +215,8 @@ export default function StoryTab({
     dispatch(setEdges(updatedEdges));
   }, [reactFlowInstance, dispatch]);
 
-  const onNodesChange: OnNodesChange<StoryNode> = useDebouncedCallback(
-    (changes) => {
+  const onNodesChange = useDebouncedCallback(
+    (changes: Parameters<OnNodesChange<StoryNode>>[0]) => {
       const currentNodes = reactFlowInstance.getNodes();
       const updatedNodes = applyNodeChanges(changes, currentNodes);
       dispatch(setNodes(updatedNodes));
@@ -222,6 +227,46 @@ export default function StoryTab({
     const currentEdges = reactFlowInstance.getEdges();
     dispatch(setEdges(applyEdgeChanges(changes, currentEdges)));
   }, 500);
+
+  // Record an undoable transaction for node deletions only. Edge-only deletions
+  // are ignored. We capture just the deleted node(s) so undo re-adds them into
+  // the *current* graph (additively) rather than restoring a stale snapshot.
+  const onDelete: OnDelete<StoryNode, StoryEdge> = useCallback(
+    ({ nodes: deleted }) => {
+      if (deleted.length === 0) return;
+
+      // At onDelete, Redux is still pre-delete (the delete's setNodes is
+      // debounced), so prefer the authoritative Redux node for its data; take
+      // the current position from the ReactFlow node.
+      const reduxNodes = store.getState().story.nodes;
+      const nodes = deleted.map((rf) => {
+        const authoritative = reduxNodes.find((n) => n.id === rf.id) ?? rf;
+        return { ...authoritative, position: rf.position, selected: false };
+      });
+
+      dispatch(
+        recordTransaction("story", {
+          label: "Delete node",
+          undo: nodes.map((n) => addNode(n)),
+          redo: nodes.map((n) => removeNode(n.id)),
+        }),
+      );
+    },
+    [dispatch],
+  );
+
+  // After an undo/redo, reconcile the uncontrolled canvas to match Redux by node
+  // identity only: keep existing canvas nodes (preserving live positions), add
+  // nodes that reappeared in Redux, drop nodes that are gone. Edges untouched.
+  const applyHistory = useCallback(() => {
+    const reduxNodes = store.getState().story.nodes;
+    reactFlowInstance.setNodes((canvasNodes) => {
+      const byId = new Map(canvasNodes.map((n) => [n.id, n]));
+      return reduxNodes.map((rn) => byId.get(rn.id) ?? rn);
+    });
+  }, [reactFlowInstance]);
+
+  useUndoRedo("story", applyHistory);
   const onConnect: OnConnect = useCallback(
     (connection) => {
       dispatch(setEdges(addEdge(connection, reactFlowInstance.getEdges())));
@@ -653,6 +698,7 @@ export default function StoryTab({
                   onConnectEnd={onConnectEnd}
                   onNodesDelete={onNodesDelete}
                   onBeforeDelete={onBeforeDelete}
+                  onDelete={onDelete}
                   onNodeDrag={onNodeDrag}
                   onNodeDragStop={onNodeDragStop}
                   defaultEdgeOptions={defaultEdgeOptions}

@@ -1,4 +1,4 @@
-import { trackKeyPresses } from "@/editors/common/keypress";
+import { trackKeyPresses } from "@/utils/keypress";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions } from "@/slices/tilesetEditor";
 import { BrushShape, PaintMode } from "@/types/zone";

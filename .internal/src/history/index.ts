@@ -9,3 +9,4 @@ export {
   type UndoableAction,
 } from "./slice";
 export { recordTransaction, redo, undo } from "./thunks";
+export { useUndoRedo } from "./useUndoRedo";

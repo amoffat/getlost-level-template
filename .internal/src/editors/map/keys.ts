@@ -3,7 +3,7 @@ import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
 import { duplicateSelectionThunk } from "@/thunks/map";
 import { isTileGroupInstance } from "@/types/map";
-import { trackKeyPresses } from "../common/keypress";
+import { trackKeyPresses } from "@/utils/keypress";
 
 export const pressedKeys: Record<string, boolean> = {};
 

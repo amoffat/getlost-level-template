@@ -1,7 +1,7 @@
 import { clamp } from "@/utils/math";
 import * as P from "pixi.js";
 import { ZoomPan } from "../../types/zoompan";
-import { trackKeyPresses } from "./keypress";
+import { trackKeyPresses } from "@/utils/keypress";
 
 export function setupWheelZoom({
   canvas,

@@ -1,5 +1,5 @@
 import { ZONE_TYPE_META } from "@/constants/zoneMeta";
-import { trackKeyPresses } from "@/editors/common/keypress";
+import { trackKeyPresses } from "@/utils/keypress";
 import { getZonePaintTool } from "@/editors/map/tools/zone";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/mapEditor";

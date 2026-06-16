@@ -1,5 +1,5 @@
 import TilesetGroup from "@/components/TilesetGroup";
-import { trackKeyPresses } from "@/editors/common/keypress";
+import { trackKeyPresses } from "@/utils/keypress";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as mapEdActions } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";

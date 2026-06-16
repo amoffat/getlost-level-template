@@ -1,4 +1,4 @@
-import { trackKeyPresses } from "../common/keypress";
+import { trackKeyPresses } from "@/utils/keypress";
 
 export const pressedKeys: Record<string, boolean> = {};
 
