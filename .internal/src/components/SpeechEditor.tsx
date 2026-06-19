@@ -13,6 +13,7 @@ import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import { Choice, DNode, SpeechData } from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
 import { copyToClipboard } from "@/utils/copy";
+import { validateSpeakerImageFile } from "@/utils/image";
 import { extractVariableKeys, getDescription } from "@/utils/variableMap";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
@@ -40,7 +41,6 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import {
   IconCopy,
   IconGripVertical,
@@ -392,20 +392,14 @@ function SpeakerImageSection({
     if (!file) return;
     e.target.value = "";
 
-    const dims = await getImageDimensions(file);
-    if (
-      dims.width !== constants.speakerImageSize ||
-      dims.height !== constants.speakerImageSize
-    ) {
-      notifications.show({
-        color: "red",
-        message: t("speechEditorAvatarSizeError", {
-          width: constants.speakerImageSize,
-          height: constants.speakerImageSize,
-        }),
-      });
-      return;
-    }
+    const valid = await validateSpeakerImageFile(
+      file,
+      t("speechEditorAvatarSizeError", {
+        width: constants.speakerImageSize,
+        height: constants.speakerImageSize,
+      }),
+    );
+    if (!valid) return;
 
     if (!objSpeakerImageId) {
       // No object-level image yet → upload and set at the object level
@@ -573,24 +567,6 @@ function SortableChoice({
       </Group>
     </div>
   );
-}
-
-function getImageDimensions(
-  file: File,
-): Promise<{ width: number; height: number }> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve({ width: img.naturalWidth, height: img.naturalHeight });
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Failed to load image"));
-    };
-    img.src = url;
-  });
 }
 
 /** Renders a row of hoverable variable badges detected in the given text. */

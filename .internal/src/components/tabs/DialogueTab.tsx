@@ -1,4 +1,5 @@
 // @refresh reset
+import * as constants from "@/constants";
 import { defaultMilestone } from "@/constants";
 import { globals as g } from "@/globals";
 import { recordTransaction, useUndoRedo } from "@/history";
@@ -31,6 +32,7 @@ import {
 import type { NpcRequiredAnimation, NpcTemplate } from "@/types/npc";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { createUrlPath } from "@/utils/dialogue";
+import { validateSpeakerImageFile } from "@/utils/image";
 import { showNotification } from "@/utils/notifications";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
@@ -937,8 +939,15 @@ function ObjLeaf({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Reset the input so the same file can be re-selected
     e.target.value = "";
+    const valid = await validateSpeakerImageFile(
+      file,
+      t("speechEditorAvatarSizeError", {
+        width: constants.speakerImageSize,
+        height: constants.speakerImageSize,
+      }),
+    );
+    if (!valid) return;
     await dispatch(uploadSpeakerImageThunk({ objId, file }));
   };
 

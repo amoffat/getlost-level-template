@@ -1,4 +1,6 @@
+import * as constants from "@/constants";
 import { Rect } from "@/types/rect";
+import { showNotification } from "@/utils/notifications";
 
 /**
  * Returns true if the integer extent of rect (floor ul, ceil br) lies entirely
@@ -123,5 +125,38 @@ export function hasSolidEdges(imageData: ImageData, rect: Rect): boolean {
     }
   }
 
+  return true;
+}
+
+export function getImageDimensions(
+  file: File,
+): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Failed to load image"));
+    };
+    img.src = url;
+  });
+}
+
+export async function validateSpeakerImageFile(
+  file: File,
+  errorMessage: string,
+): Promise<boolean> {
+  const dims = await getImageDimensions(file);
+  if (
+    dims.width !== constants.speakerImageSize ||
+    dims.height !== constants.speakerImageSize
+  ) {
+    showNotification({ color: "red", message: errorMessage });
+    return false;
+  }
   return true;
 }
