@@ -1,6 +1,9 @@
 import { iconTsId, lightIcon, waypointIcon } from "@/constants/tsObjs";
 import { globals as gApp, globals } from "@/globals";
-import { fetchBackgroundImageUrl } from "@/persist/background/api";
+import {
+  deleteBackgroundImage,
+  fetchBackgroundImageUrl,
+} from "@/persist/background/api";
 import { loadMap } from "@/persist/map/api";
 import { fetchSpeakerImageUrl as fetchSpeakerImageBlob } from "@/persist/speakerImage/api";
 import { router } from "@/router";
@@ -200,6 +203,13 @@ export const resetAllThunk = createAsyncThunk(
     const state = getState() as RootState;
 
     dispatch(uiActions.pushLoadingMessage(i18n.t("mapResetAllLoading")));
+
+    for (const id of state.mapEditor.objects.ids) {
+      const obj = state.mapEditor.objects.entities[id];
+      if (isBackgroundImageObj(obj)) {
+        deleteBackgroundImage(obj.imageId);
+      }
+    }
 
     await dispatch(resetStoryThunk()).unwrap();
     await dispatch(resetMapThunk()).unwrap();

@@ -354,7 +354,7 @@
 {"k": "storyTabInvalidConnectionMsg", "v": "Creating this connection would create a cycle.", "ctx": "Notification message explaining why a story node connection is invalid"}
 {"k": "storyTabCannotDeleteOrigin", "v": "Cannot delete", "ctx": "Notification title when user tries to delete the story origin (start) node"}
 {"k": "storyTabCannotDeleteOriginMsg", "v": "The start node cannot be deleted.", "ctx": "Notification message when user tries to delete the story origin (start) node"}
-{"k": "storyTabTip1", "v": "Create new story milestone nodes.", "ctx": "Tip shown in the story tab right panel when no nodes exist yet"}
+{"k": "storyTabTip1", "v": "Create new story milestone nodes by clicking the 'New Milestone' button.", "ctx": "Tip shown in the story tab right panel when no nodes exist yet"}
 {"k": "storyTabTip2", "v": "Give nodes good names by selecting them and editing them below.", "ctx": "Tip shown in the story tab right panel about naming milestone nodes"}
 {"k": "storyTabTip3", "v": "A milestone is a thing that can be achieved in the level. Achieving it progresses the story in a meaningful way.", "ctx": "Tip shown in the story tab right panel about what a milestone represents"}
 {"k": "storyTabTip4", "v": "New nodes can be created by dragging off of an existing node.", "ctx": "Tip shown in the story tab right panel about creating nodes via drag"}

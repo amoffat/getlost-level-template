@@ -1,6 +1,6 @@
 import { autosaveTilesetDebounce } from "@/constants";
 import { log } from "@/log";
-import { deleteTileset, saveTileset } from "@/persist/tileset/api";
+import { saveTileset } from "@/persist/tileset/api";
 import { slice, actions as tsActions } from "@/slices/tilesetEditor";
 import { AppStartListening } from "@/types/redux";
 import { makeGroupedDebouncer } from "@/utils/debounce";
@@ -38,17 +38,10 @@ startAppListening({
         catchError((e) => {
           log.error({ e }, "Autosave failed");
           return EMPTY;
-        })
+        }),
       );
 
     debounceSaves(ts.id, save);
-  },
-});
-
-startAppListening({
-  actionCreator: tsActions.removeTileset,
-  effect: async (action: ReturnType<typeof tsActions.removeTileset>) => {
-    await deleteTileset(action.payload);
   },
 });
 

@@ -8,6 +8,7 @@ import {
 import { globals as gApp } from "@/globals";
 import { log } from "@/log";
 import {
+  deleteTileset,
   loadTileset,
   loadTilesets,
   replaceTilesetImage,
@@ -280,6 +281,8 @@ export const removeTilesetThunk = createAsyncThunk(
       color: "green",
     });
     await router.navigate("/tilesets");
+
+    await deleteTileset(tsId);
   },
 );
 

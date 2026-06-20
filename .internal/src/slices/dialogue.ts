@@ -147,7 +147,7 @@ export const slice = createSlice({
   },
   extraReducers: (builder) => {
     // Also listen for a story/resetStory thunk, and reset our dialogue nodes
-    builder.addCase("story/resetStory", (state) => {
+    builder.addCase("story/resetStory/fulfilled", (state) => {
       state.dialogues = dialogueAdapter.getInitialState();
       state.activeDialogueId = null;
       state.dialogues.ids = [];

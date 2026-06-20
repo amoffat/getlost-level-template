@@ -6,6 +6,7 @@ import * as sound from "@gl/api/sound";
 import * as story from "@gl/api/story";
 import * as zone from "@gl/api/zone";
 
+import { createSnow } from "@gl/api/particles";
 import { setSunEvent } from "@gl/api/time";
 import { showhide } from "@gl/behaviors/showhide";
 import { ColorMatrixFilter } from "@gl/filters/colormatrix";
@@ -28,6 +29,15 @@ let musicAssetId!: number;
 export async function init(): Promise<void> {
   tiltShift = filter.addTiltShift(0.06);
   setSunEvent(SunEvent.SolarNoon, 0);
+
+  createSnow({
+    num: 2000,
+    tilesetId: "541d3d136dd085001b01e8b6940482e1d859452d",
+    tileId: "6be1cdaec365d7b7d1b59b29f36e36ca3180c33e",
+    opts: {
+      wind: { x: 30, y: 10 },
+    },
+  });
 
   const colors = new ColorMatrixFilter();
   // Warm, golden-hour feel: lift reds, soften greens, pull back blues
