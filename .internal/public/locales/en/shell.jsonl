@@ -696,3 +696,12 @@
 {"k": "dialogueResponse", "v": "Response"}
 {"k": "undo", "v": "Undo"}
 {"k": "redo", "v": "Redo"}
+{"k": "deleteObjectModalTitle", "v": "Delete objects?"}
+{"k": "confirmDelete", "v": "Yes, delete"}
+{"k": "confirmDeleteMessage", "v": "Are you sure you want to delete these objects? They contain references that cannot be restored."}
+{"k": "deleteNoSpeakableObjs", "v": "No selected objects are speakable.", "ctx": "Status message in delete confirmation when none of the selected objects are speakable"}
+{"k": "deleteSpeakableObjsWillBeAffected", "v": "{count} speakable object(s) will lose their speaker configuration.", "ctx": "Status message in delete confirmation when selected objects are speakable; {count} is the number"}
+{"k": "deleteNoLinkedDialogues", "v": "No dialogues are linked to these objects.", "ctx": "Status message in delete confirmation when no dialogues reference the selected objects"}
+{"k": "deleteLinkedDialoguesWillBeUnlinked", "v": "{count} dialogue(s) will be removed.", "ctx": "Status message in delete confirmation when dialogues reference the selected objects; {count} is the number"}
+{"k": "deleteNoWaypointPairings", "v": "No waypoint reference these objects.", "ctx": "Status message in delete confirmation when no waypoint pairings reference the selected objects"}
+{"k": "deleteWaypointPairingsWillBeAffected", "v": "{count} waypoint pairing(s) will be removed.", "ctx": "Status message in delete confirmation when waypoint pairings reference the selected objects; {count} is the number"}

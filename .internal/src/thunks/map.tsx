@@ -1,3 +1,4 @@
+import { ItemStatus } from "@/components/modals/ItemizedConfirmModal";
 import { iconTsId, lightIcon, waypointIcon } from "@/constants/tsObjs";
 import { globals as gApp, globals } from "@/globals";
 import {
@@ -7,6 +8,7 @@ import {
 import { loadMap } from "@/persist/map/api";
 import { fetchSpeakerImageUrl as fetchSpeakerImageBlob } from "@/persist/speakerImage/api";
 import { router } from "@/router";
+import { selectors as dSelectors } from "@/slices/dialogue";
 import { actions as mapActions, selectors } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
@@ -23,6 +25,7 @@ import {
   MapObj,
   TileGroupInstance,
 } from "@/types/map";
+import { isNpcTemplate } from "@/types/npc";
 import { TemplateObject } from "@/types/tilesetobject";
 import { mapLayerToName } from "@/utils/layer";
 import { loadTileGroup } from "@/utils/tileset";
@@ -35,6 +38,79 @@ import * as P from "pixi.js";
 import { globals as g } from "../editors/map/globals";
 import { resetStoryThunk } from "./story";
 import { removeTilesetThunk } from "./tileset";
+
+export const deleteObjectsThunk = createAsyncThunk(
+  "mapEditor/deleteObjectsThunk",
+  async (_, { dispatch, getState }) => {
+    const state = getState() as RootState;
+    const selection = state.mapEditor.selectedIds;
+
+    const doDelete = () => {
+      dispatch(mapActions.clearSelection());
+      dispatch(mapActions.removeMany(selection));
+    };
+
+    const selectedIdSet = new Set(selection);
+
+    const linkedDialogueCount = dSelectors
+      .allDialogues(state)
+      .filter(
+        (dlg) => dlg.subjectId !== null && selectedIdSet.has(dlg.subjectId),
+      ).length;
+    const waypointPairingCount = state.story.nodes.reduce((acc, node) => {
+      const wp = node.data.waypoints ?? [];
+      return (
+        acc +
+        wp.filter(
+          (p) =>
+            selectedIdSet.has(p.characterId) || selectedIdSet.has(p.waypointId),
+        ).length
+      );
+    }, 0);
+
+    if (!linkedDialogueCount && !waypointPairingCount) {
+      doDelete();
+      return;
+    }
+
+    modals.openContextModal({
+      modal: "confirm",
+      title: i18n.t("deleteObjectModalTitle"),
+      centered: true,
+      withCloseButton: true,
+      innerProps: {
+        makeItems: () => {
+          const items: ItemStatus[] = [];
+
+          items.push({
+            ok: linkedDialogueCount === 0,
+            message:
+              linkedDialogueCount === 0
+                ? i18n.t("deleteNoLinkedDialogues")
+                : i18n.t("deleteLinkedDialoguesWillBeUnlinked", {
+                    count: linkedDialogueCount,
+                  }),
+          });
+
+          items.push({
+            ok: waypointPairingCount === 0,
+            message:
+              waypointPairingCount === 0
+                ? i18n.t("deleteNoWaypointPairings")
+                : i18n.t("deleteWaypointPairingsWillBeAffected", {
+                    count: waypointPairingCount,
+                  }),
+          });
+
+          return items;
+        },
+        confirmLabel: i18n.t("confirmDelete"),
+        msg: i18n.t("confirmDeleteMessage"),
+        onConfirm: doDelete,
+      },
+    });
+  },
+);
 
 export const setActiveLayerThunk = createAsyncThunk(
   "mapEditor/setActiveLayerThunk",
@@ -51,7 +127,7 @@ export const setActiveLayerThunk = createAsyncThunk(
     if (layer === MapLayerName.Ground || layer === MapLayerName.Exterior) {
       const selectedObjs = selectors
         .selectedObjs(state)
-        .filter(isTileGroupInstance);
+        .filter((obj) => isTileGroupInstance(obj) || isAnimatedInstance(obj));
 
       if (selectedObjs.length > 0) {
         modals.openConfirmModal({
@@ -297,10 +373,20 @@ export const setPlaceThunk = createAsyncThunk(
 
     const state = getState() as RootState;
     const curLayer = state.mapEditor.layers.active;
+    let desiredLayer = curLayer;
+
     if (!paintLayerConstraints.includes(curLayer)) {
+      desiredLayer = paintLayerConstraints[0];
+    }
+
+    if (isNpcTemplate(obj)) {
+      desiredLayer = MapLayerName.Exterior;
+    }
+
+    if (curLayer !== desiredLayer) {
       await dispatch(
         setActiveLayerThunk({
-          layer: paintLayerConstraints[0],
+          layer: desiredLayer,
           notify: true,
         }),
       ).unwrap();

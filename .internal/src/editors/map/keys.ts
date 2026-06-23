@@ -1,7 +1,7 @@
 import { redo, undo } from "@/history";
 import { actions as mapEdActions, selectors } from "@/slices/mapEditor";
 import { store } from "@/store/store";
-import { duplicateSelectionThunk } from "@/thunks/map";
+import { deleteObjectsThunk, duplicateSelectionThunk } from "@/thunks/map";
 import { isTileGroupInstance } from "@/types/map";
 import { trackKeyPresses } from "@/utils/keypress";
 
@@ -35,13 +35,9 @@ export function setupKeys(canvas: HTMLCanvasElement) {
         if (!keydown) return;
 
         const state = store.getState();
-        const mode = selectors.selectMode(state);
+        if (selectors.selectMode(state) !== "select") return;
 
-        if (mode === "select") {
-          const selection = state.mapEditor.selectedIds;
-          store.dispatch(mapEdActions.clearSelection());
-          store.dispatch(mapEdActions.removeMany(selection));
-        }
+        store.dispatch(deleteObjectsThunk());
       },
       g: (keydown: boolean) => {
         if (!keydown) return;
