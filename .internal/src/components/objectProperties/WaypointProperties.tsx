@@ -8,6 +8,7 @@ import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Fieldset, Stack } from "@mantine/core";
 import { memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import IdInput from "./inputs/IdInput";
 import SlugInput from "./inputs/SlugInput";
 import { requiredUniqueName } from "./validators/name";
 
@@ -45,10 +46,12 @@ function WaypointProperties({ objs }: { objs: WaypointObj[] }) {
   );
 
   const singleSelected = objs.length === 1;
+  const idInput = <IdInput values={toCollect.id} />;
 
   return (
     <Fieldset legend={t("waypointPropLegend")} p="xs">
       <Stack p={0} gap="xl">
+        {idInput}
         {singleSelected && (
           <SlugInput
             description={t("waypointPropSlugDescription")}
