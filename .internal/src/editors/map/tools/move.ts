@@ -54,6 +54,11 @@ export class Mover extends ClickDragListener<Mode> implements Tool {
   }
 
   public override pointerDown(e: PointerEventData): boolean {
+    // Due to some complex interactions between the select ClickDragListener and
+    // this, _moveEnabled can end up true from a previous call to `pointerDown`
+    // and not cleared from `pointerUp`. So let's just ensure it is reset here.
+    this._moveEnabled = false;
+
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
     if (!(mode === "select" || mode === "move")) return false;
