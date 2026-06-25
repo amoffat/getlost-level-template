@@ -1,6 +1,6 @@
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
+import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
-import { collectPropertyValues } from "@/store/selectors";
 import { setToolThunk } from "@/thunks/map";
 import { BaseZoneObj } from "@/types/map";
 import { ZoneType } from "@/types/zone";
@@ -32,9 +32,7 @@ export default function BaseZoneProperties<T extends BaseZoneObj>({
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
-  const toCollect = useAppSelector((state) =>
-    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
-  );
+  const toCollect = useCollectPropertyValues(objs, COLLECTED_PROPS);
 
   const idInput = <IdInput values={toCollect.id} />;
 

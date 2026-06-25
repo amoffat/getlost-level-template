@@ -1,7 +1,7 @@
 import * as constants from "@/constants";
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
 import { useAppSelector } from "@/hooks/redux";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
-import { collectPropertyValues } from "@/store/selectors";
 import { ExitObj } from "@/types/map";
 import { updateObjects } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
@@ -38,9 +38,7 @@ function ExitProperties({ objs }: { objs: ExitObj[] }) {
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
 
-  const toCollect = useAppSelector((state) =>
-    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
-  );
+  const toCollect = useCollectPropertyValues(objs, COLLECTED_PROPS);
 
   const handleModalSubmit = useCallback(
     (gatewayId: string, numericRepoId: string | null) => {

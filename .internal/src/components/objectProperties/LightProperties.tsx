@@ -1,7 +1,7 @@
 import * as constants from "@/constants";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
+import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
-import { collectPropertyValues } from "@/store/selectors";
 import { LightFlicker, lightFlickerTypes } from "@/types/lights";
 import { LightObj } from "@/types/map";
 import { LightProps } from "@/types/properties";
@@ -40,9 +40,7 @@ function LightProperties({ objs }: { objs: LightObj[] }) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
-  const toCollect = useAppSelector((state) =>
-    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
-  );
+  const toCollect = useCollectPropertyValues(objs, COLLECTED_PROPS);
 
   // All light objects use the same global light template
   const templateUpdate = useCallback(

@@ -1,6 +1,6 @@
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
+import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
-import { collectPropertyValues } from "@/store/selectors";
 import { CameraZoneObj, MapObjType } from "@/types/map";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Vector2 } from "@/vec";
@@ -29,9 +29,7 @@ function CameraZoneProperties({ objs }: { objs: CameraZoneObj[] }) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
-  const toCollect = useAppSelector((state) =>
-    collectPropertyValues(state, objs, [...RELEVANT_PROPS]),
-  );
+  const toCollect = useCollectPropertyValues(objs, RELEVANT_PROPS);
 
   const updateObjs = useCallback(
     (changes: Partial<CameraZoneObj>) => {

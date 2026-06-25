@@ -1,6 +1,6 @@
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
+import { useAppDispatch } from "@/hooks/redux";
 import { actions as mapEditorActions } from "@/slices/mapEditor";
-import { collectPropertyValues } from "@/store/selectors";
 import { MapObjType, SoundZoneObj } from "@/types/map";
 import { createPropsEqualFn } from "@/utils/propertyKey";
 import { Slider, TextInput } from "@mantine/core";
@@ -15,9 +15,7 @@ function SoundZoneProperties({ objs }: { objs: SoundZoneObj[] }) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
-  const toCollect = useAppSelector((state) =>
-    collectPropertyValues(state, objs, [...RELEVANT_PROPS]),
-  );
+  const toCollect = useCollectPropertyValues(objs, RELEVANT_PROPS);
 
   const updateObjs = useCallback(
     (changes: Partial<SoundZoneObj>) => {

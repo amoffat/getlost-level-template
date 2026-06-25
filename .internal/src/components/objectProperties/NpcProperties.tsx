@@ -1,6 +1,5 @@
 import * as constants from "@/constants";
-import { useAppSelector } from "@/hooks/redux";
-import { collectPropertyValues } from "@/store/selectors";
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
 import { NpcInstance } from "@/types/map";
 import { NpcProps } from "@/types/properties";
 import {
@@ -33,9 +32,7 @@ const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 
 function NpcProperties({ objs }: { objs: NpcInstance[] }) {
   const { t } = useTranslation();
-  const toCollect = useAppSelector((state) =>
-    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
-  );
+  const toCollect = useCollectPropertyValues(objs, COLLECTED_PROPS);
 
   const updateProps = useCallback(
     (scope: PropertyValueScope, props: Partial<NpcProps>) => {

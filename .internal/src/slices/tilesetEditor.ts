@@ -654,10 +654,8 @@ export const slice = createSlice({
       );
   },
   selectors: {
-    selectTileset: createTsSelector(
-      [(state, tsId: string) => state.tilesets[tsId]],
-      (ts): Tileset | null => (ts ? ts : null),
-    ),
+    selectTileset: (state: TilesetEditorState, tsId: string): Tileset | null =>
+      state.tilesets[tsId] ?? null,
     activeTileset,
     activeTilesetGroups: createTsSelector(
       [activeTileset],

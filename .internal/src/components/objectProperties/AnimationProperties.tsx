@@ -1,5 +1,4 @@
-import { useAppSelector } from "@/hooks/redux";
-import { collectPropertyValues } from "@/store/selectors";
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
 import { AnimationInstance } from "@/types/map";
 import { AnimationProps } from "@/types/properties";
 import {
@@ -42,9 +41,7 @@ const RELEVANT_PROPS: readonly (keyof AnimationInstance)[] = [
 ];
 
 function AnimationProperties({ objs }: { objs: AnimationInstance[] }) {
-  const toCollect = useAppSelector((state) =>
-    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
-  );
+  const toCollect = useCollectPropertyValues(objs, COLLECTED_PROPS);
   const { t } = useTranslation();
 
   const updateProps = useCallback(

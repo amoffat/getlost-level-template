@@ -4,6 +4,7 @@ import type { LocaleEntry, LocaleStatePayload } from "@/types/locale";
 import { PartialNullable } from "@/types/util";
 import {
   createEntityAdapter,
+  createSelector,
   createSlice,
   EntityState,
   PayloadAction,
@@ -103,21 +104,24 @@ export const slice = createSlice({
      * `v` equals `original` (i.e. the value has not been translated).
      * Only entries that have an `original` field set are considered.
      */
-    untranslatedCounts: (state): Partial<Record<SupportedLang, number>> => {
-      const result: Partial<Record<SupportedLang, number>> = {};
-      for (const [locale, entityState] of Object.entries(state.entries)) {
-        if (locale === defaultLocale) continue;
-        let count = 0;
-        for (const key of entityState.ids as string[]) {
-          const entry = entityState.entities[key];
-          if (entry?.original !== undefined && entry.v === entry.original) {
-            count++;
+    untranslatedCounts: createSelector(
+      [(state: LocaleState) => state.entries],
+      (entries): Partial<Record<SupportedLang, number>> => {
+        const result: Partial<Record<SupportedLang, number>> = {};
+        for (const [locale, entityState] of Object.entries(entries)) {
+          if (locale === defaultLocale) continue;
+          let count = 0;
+          for (const key of entityState.ids as string[]) {
+            const entry = entityState.entities[key];
+            if (entry?.original !== undefined && entry.v === entry.original) {
+              count++;
+            }
           }
+          result[locale as SupportedLang] = count;
         }
-        result[locale as SupportedLang] = count;
-      }
-      return result;
-    },
+        return result;
+      },
+    ),
   },
 });
 

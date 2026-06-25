@@ -1,7 +1,7 @@
 import * as constants from "@/constants";
 import { WalkSound, walkSounds } from "@/constants";
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
 import { useAppSelector } from "@/hooks/redux";
-import { collectPropertyValues } from "@/store/selectors";
 import { MapLayerName } from "@/types/layer";
 import { TileGroupInstance } from "@/types/map";
 import { TileGroupProps } from "@/types/properties";
@@ -49,9 +49,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
     (state) => state.mapEditor.layers.active === MapLayerName.Ground,
   );
 
-  const toCollect = useAppSelector((state) =>
-    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
-  );
+  const toCollect = useCollectPropertyValues(objs, COLLECTED_PROPS);
 
   const updateProps = useCallback(
     (scope: PropertyValueScope, props: Partial<TileGroupProps>) => {

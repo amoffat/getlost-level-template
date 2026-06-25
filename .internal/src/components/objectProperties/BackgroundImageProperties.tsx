@@ -1,8 +1,8 @@
 import { globals as mapEditorGlobals } from "@/editors/map/globals";
 import { globals as g } from "@/globals";
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as mapActions } from "@/slices/mapEditor";
-import { collectPropertyValues } from "@/store/selectors";
 import { RootState } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { BackgroundImageObj, isBackgroundImageObj } from "@/types/map";
@@ -46,9 +46,7 @@ const COLLECTED_PROPS = [
 ] as const;
 
 function BackgroundImageProperties({ objs }: BackgroundImagePropertiesProps) {
-  const toCollect = useAppSelector((state) =>
-    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
-  );
+  const toCollect = useCollectPropertyValues(objs, COLLECTED_PROPS);
 
   const { t } = useTranslation();
   const dispatch = useAppDispatch();

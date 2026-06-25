@@ -1,5 +1,5 @@
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
 import { useAppSelector } from "@/hooks/redux";
-import { collectPropertyValues } from "@/store/selectors";
 import { PickupObj } from "@/types/map";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { updateObjects } from "@/utils/propertyEditor";
@@ -33,9 +33,7 @@ const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;
 function PickupProperties({ objs }: { objs: PickupObj[] }) {
   const { t } = useTranslation();
 
-  const toCollect = useAppSelector((state) =>
-    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
-  );
+  const toCollect = useCollectPropertyValues(objs, COLLECTED_PROPS);
 
   const nameInput = (
     <LocalizedTextInput

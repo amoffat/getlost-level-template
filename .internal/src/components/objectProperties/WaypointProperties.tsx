@@ -1,7 +1,7 @@
 import { waypointIcon } from "@/constants/tsObjs";
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
 import { useAppSelector } from "@/hooks/redux";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
-import { collectPropertyValues } from "@/store/selectors";
 import { WaypointObj } from "@/types/map";
 import { updateObjects } from "@/utils/propertyEditor";
 import { createPropsEqualFn } from "@/utils/propertyKey";
@@ -23,9 +23,7 @@ function WaypointProperties({ objs }: { objs: WaypointObj[] }) {
     mapSelectors.objectsByTemplateId(state, waypointIcon),
   ) as WaypointObj[];
 
-  const toCollect = useAppSelector((state) =>
-    collectPropertyValues(state, objs, [...COLLECTED_PROPS]),
-  );
+  const toCollect = useCollectPropertyValues(objs, COLLECTED_PROPS);
 
   const existingSlugs = useMemo(() => {
     const slugs = new Set<string>();
