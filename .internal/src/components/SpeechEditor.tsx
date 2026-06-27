@@ -89,7 +89,7 @@ export default function SpeechEditor({
 
   // The speaker defaults to the dialogue's subject; the listener defaults to
   // the player. Only player-listener nodes may branch via choices.
-  const speakerId = data.speakerId ?? dialogue?.subjectId ?? null;
+  const speakerId = data.speakerId ?? dialogue?.initiatingChar ?? null;
   const listenerId = data.listenerId ?? constants.playerParticipantId;
   const isPlayerListener = listenerId === constants.playerParticipantId;
   const participantOptions = useParticipantList();

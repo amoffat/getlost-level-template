@@ -55,7 +55,8 @@ export const deleteObjectsThunk = createAsyncThunk(
     const linkedDialogueCount = dSelectors
       .allDialogues(state)
       .filter(
-        (dlg) => dlg.subjectId !== null && selectedIdSet.has(dlg.subjectId),
+        (dlg) =>
+          dlg.initiatingChar !== null && selectedIdSet.has(dlg.initiatingChar),
       ).length;
     const waypointPairingCount = state.story.nodes.reduce((acc, node) => {
       const wp = node.data.waypoints ?? [];

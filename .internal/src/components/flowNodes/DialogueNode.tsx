@@ -58,7 +58,7 @@ export default function DialogueNode({
   )!;
 
   // Speaker defaults to the dialogue subject; listener defaults to the player.
-  const speakerId = data?.speakerId ?? dialogue?.subjectId ?? null;
+  const speakerId = data?.speakerId ?? dialogue?.initiatingChar ?? null;
   const listenerId = data?.listenerId ?? playerParticipantId;
   const isPlayerListener = listenerId === playerParticipantId;
   const speakerName = useParticipantName(speakerId);

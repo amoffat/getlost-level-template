@@ -22,21 +22,23 @@ export const setDefaultDialogueThunk =
     const dialogue = allDialogues.find((d) => d.id === dialogueId);
     if (!dialogue) return;
 
-    const npcId = dialogue.subjectId;
-    if (!npcId) return;
+    const charId = dialogue.initiatingChar;
+    if (!charId) return;
 
     allDialogues
       .filter(
         (d) =>
           d.id !== dialogueId &&
-          d.subjectId === npcId &&
+          d.initiatingChar === charId &&
           d.milestoneNodeIds.includes(defaultMilestone),
       )
       .forEach((d) => {
         dispatch(
           dActions.setMilestones({
             dialogueId: d.id,
-            milestoneNodeIds: d.milestoneNodeIds.filter((ms) => ms !== defaultMilestone),
+            milestoneNodeIds: d.milestoneNodeIds.filter(
+              (ms) => ms !== defaultMilestone,
+            ),
           }),
         );
       });

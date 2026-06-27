@@ -172,7 +172,7 @@ function toEngineDialogue(
 
   return {
     id: dialogue.id,
-    subjectId: dialogue.subjectId,
+    subjectId: dialogue.initiatingChar,
     participants: [...participantsOf(dialogue)],
     milestones: dialogue.milestoneNodeIds.map(mapMilestoneSlug),
     nodes: { ids: [...dialogue.nodes.ids], entities: engineEntities },

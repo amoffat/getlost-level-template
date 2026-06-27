@@ -407,7 +407,7 @@ export default function DialogueTab({
           choices: [],
           isOrigin: clear,
           // New nodes default to the dialogue's subject speaking to the player.
-          speakerId: dlg?.subjectId ?? null,
+          speakerId: dlg?.initiatingChar ?? null,
           listenerId: playerParticipantId,
         },
       };
@@ -569,8 +569,10 @@ export default function DialogueTab({
         return true;
       })
       .sort((a, b) => {
-        const an = idToName.get(a.subjectId ?? "") ?? a.subjectId ?? "";
-        const bn = idToName.get(b.subjectId ?? "") ?? b.subjectId ?? "";
+        const an =
+          idToName.get(a.initiatingChar ?? "") ?? a.initiatingChar ?? "";
+        const bn =
+          idToName.get(b.initiatingChar ?? "") ?? b.initiatingChar ?? "";
         return an.localeCompare(bn) || a.id.localeCompare(b.id);
       });
   }, [allDialogues, msFilter, participantFilter, idToName]);

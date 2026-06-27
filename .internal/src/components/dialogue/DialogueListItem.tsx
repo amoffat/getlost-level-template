@@ -54,8 +54,8 @@ export function DialogueListItem({
 
   // Subject first, then the remaining participants by display name.
   const parts = [...participantsOf(dialogue)].sort((a, b) => {
-    if (a === dialogue.subjectId) return -1;
-    if (b === dialogue.subjectId) return 1;
+    if (a === dialogue.initiatingChar) return -1;
+    if (b === dialogue.initiatingChar) return 1;
     return (idToName.get(a) ?? a).localeCompare(idToName.get(b) ?? b);
   });
 

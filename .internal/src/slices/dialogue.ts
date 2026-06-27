@@ -8,8 +8,8 @@ import {
   PayloadAction,
 } from "@reduxjs/toolkit";
 import { Edge } from "@xyflow/react";
-import { participantsOf } from "../utils/dialogue";
 import type { Dialogue, DNode } from "../types/dialogue";
+import { participantsOf } from "../utils/dialogue";
 
 // Entity adapters
 export const dialogueAdapter = createEntityAdapter<Dialogue>();
@@ -61,7 +61,7 @@ export const slice = createSlice({
       const { dialogueId, subjectId } = action.payload;
       const dlg = state.dialogues.entities[dialogueId];
       if (dlg) {
-        dlg.subjectId = subjectId;
+        dlg.initiatingChar = subjectId;
       }
     },
     addNode(state, action: PayloadAction<{ dialogueId: string; node: DNode }>) {
@@ -168,8 +168,8 @@ export const slice = createSlice({
         // Set subjectId to null for all dialogues that reference this NPC
         for (const dlgId of state.dialogues.ids) {
           const dlg = state.dialogues.entities[dlgId];
-          if (dlg && dlg.subjectId === removedId) {
-            dlg.subjectId = null;
+          if (dlg && dlg.initiatingChar === removedId) {
+            dlg.initiatingChar = null;
           }
         }
       },
@@ -186,8 +186,12 @@ export const slice = createSlice({
         // Set subjectId to null for all dialogues that reference deleted NPCs
         for (const dlgId of state.dialogues.ids) {
           const dlg = state.dialogues.entities[dlgId];
-          if (dlg && dlg.subjectId !== null && removedIds.has(dlg.subjectId)) {
-            dlg.subjectId = null;
+          if (
+            dlg &&
+            dlg.initiatingChar !== null &&
+            removedIds.has(dlg.initiatingChar)
+          ) {
+            dlg.initiatingChar = null;
           }
         }
       },
@@ -237,7 +241,7 @@ export const slice = createSlice({
       (dialogues, objId): Dialogue[] =>
         (dialogues.ids as string[])
           .map((id) => dialogues.entities[id] as Dialogue)
-          .filter((dlg) => dlg.subjectId === objId),
+          .filter((dlg) => dlg.initiatingChar === objId),
     ),
     // Dialogues in which the given participant (a SpeakableMapObj id or the
     // player sentinel) speaks or listens anywhere. Drives the tree listing and
@@ -257,7 +261,7 @@ export const slice = createSlice({
       (dialogues): Dialogue[] =>
         (dialogues.ids as string[])
           .map((id) => dialogues.entities[id] as Dialogue)
-          .filter((dlg) => dlg.subjectId === null),
+          .filter((dlg) => dlg.initiatingChar === null),
     ),
   },
 });
@@ -292,16 +296,16 @@ const availableMilestones = createSelector(
     if (!activeDialogueId) return allItems;
 
     const activeDlg = dialogues.entities[activeDialogueId];
-    if (!activeDlg?.subjectId) return allItems;
+    if (!activeDlg?.initiatingChar) return allItems;
 
-    const npcId = activeDlg.subjectId;
+    const npcId = activeDlg.initiatingChar;
 
     // Collect milestones used by sibling dialogues (same NPC, different dialogue)
     const usedByOthers = new Set<string>();
     for (const id of dialogues.ids) {
       if (id === activeDialogueId) continue;
       const dlg = dialogues.entities[id as string];
-      if (dlg && dlg.subjectId === npcId) {
+      if (dlg && dlg.initiatingChar === npcId) {
         for (const ms of dlg.milestoneNodeIds) {
           usedByOthers.add(ms);
         }
@@ -389,12 +393,12 @@ export const actions = slice.actions;
 /** Helper to create a new empty Dialogue entity. */
 export function createDialogue(
   id: string,
-  subjectId: string | null = null,
+  initiatingChar: string | null = null,
   milestoneNodeIds: string[] = [],
 ): Dialogue {
   return {
     id,
-    subjectId,
+    initiatingChar,
     nodes: nodeAdapter.getInitialState(),
     edges: edgeAdapter.getInitialState(),
     milestoneNodeIds,
