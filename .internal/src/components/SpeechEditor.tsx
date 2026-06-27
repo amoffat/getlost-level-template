@@ -1,6 +1,7 @@
 import * as constants from "@/constants";
 import { globals as g } from "@/globals";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useParticipantList } from "@/hooks/useParticipant";
 import { actions, selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as localeSelectors } from "@/slices/locale";
 import {
@@ -37,6 +38,7 @@ import {
   Input,
   Image as MantineImage,
   MultiSelect,
+  Select,
   Stack,
   Text,
   Tooltip,
@@ -52,6 +54,7 @@ import {
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import InfoTooltip from "./common/InfoTooltip";
+import { ParticipantAvatar } from "./dialogue/Participant";
 import { ActionButton, LocalizedTextarea } from "./l10n";
 import ResettableInput from "./ResettableInput";
 
@@ -84,9 +87,18 @@ export default function SpeechEditor({
     dSelectors.selectDialogue(state, activeDialogueId),
   );
 
+  // The speaker defaults to the dialogue's subject; the listener defaults to
+  // the player. Only player-listener nodes may branch via choices.
+  const speakerId = data.speakerId ?? dialogue?.subjectId ?? null;
+  const listenerId = data.listenerId ?? constants.playerParticipantId;
+  const isPlayerListener = listenerId === constants.playerParticipantId;
+  const participantOptions = useParticipantList();
+
   const obj = useAppSelector((state: RootState) => {
-    if (!dialogue?.subjectId) return undefined;
-    return mapSelectors.selectObject(state, dialogue.subjectId);
+    if (!speakerId || speakerId === constants.playerParticipantId) {
+      return undefined;
+    }
+    return mapSelectors.selectObject(state, speakerId);
   }) as SpeakableMapObj | undefined;
 
   const speakerNameKey = useAppSelector(
@@ -179,6 +191,33 @@ export default function SpeechEditor({
     <Stack p={0} gap="md">
       <Fieldset legend={t("speechEditorSpeakerLegend")} p="xs">
         <Stack gap="sm" p={0}>
+          <Select
+            label={t("speechEditorSpeakerSelectLabel")}
+            description={t("speechEditorSpeakerSelectDesc")}
+            placeholder={t("speechEditorSpeakerSelectPlaceholder")}
+            data={participantOptions}
+            value={speakerId}
+            searchable
+            renderOption={({ option }) => (
+              <Group gap="xs" wrap="nowrap">
+                <ParticipantAvatar
+                  participantId={option.value}
+                  scale={1.5}
+                  size={24}
+                />
+                <Text size="sm">{option.label}</Text>
+              </Group>
+            )}
+            onChange={(value) =>
+              dispatch(
+                actions.updateNodeData({
+                  dialogueId: activeDialogueId,
+                  id: node.id,
+                  data: { speakerId: value },
+                }),
+              )
+            }
+          />
           <ResettableInput
             disabled={data.speakerNameKey === undefined}
             onReset={() => {
@@ -237,6 +276,97 @@ export default function SpeechEditor({
         </Stack>
       </Fieldset>
 
+      <Fieldset legend={t("speechEditorListenerLegend")} p="xs">
+        <Stack gap="sm" p={0}>
+          <Select
+            label={t("speechEditorListenerSelectLabel")}
+            description={t("speechEditorListenerSelectDesc")}
+            placeholder={t("speechEditorListenerSelectPlaceholder")}
+            data={participantOptions}
+            value={listenerId}
+            searchable
+            renderOption={({ option }) => (
+              <Group gap="xs" wrap="nowrap">
+                <ParticipantAvatar
+                  participantId={option.value}
+                  scale={1.5}
+                  size={24}
+                />
+                <Text size="sm">{option.label}</Text>
+              </Group>
+            )}
+            onChange={(value) =>
+              dispatch(
+                actions.updateNodeData({
+                  dialogueId: activeDialogueId,
+                  id: node.id,
+                  data: { listenerId: value },
+                }),
+              )
+            }
+          />
+
+          {/* Only the player can be offered branching responses to choose from. */}
+          {isPlayerListener && (
+            <Stack gap={4} p={0}>
+              <Input.Label>{t("speechEditorResponsesLabel")}</Input.Label>
+              <Input.Description mb="xs">
+                {t("speechEditorResponsesDesc")}
+              </Input.Description>
+              <DndContext
+                collisionDetection={closestCenter}
+                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+                onDragEnd={(event: DragEndEvent) => {
+                  const { active, over } = event;
+                  if (!over || active.id === over.id) return;
+                  const fromIndex = data.choices.findIndex(
+                    (c) => c.id === active.id,
+                  );
+                  const toIndex = data.choices.findIndex(
+                    (c) => c.id === over.id,
+                  );
+                  if (fromIndex !== -1 && toIndex !== -1) {
+                    reorderChoices(fromIndex, toIndex);
+                  }
+                }}
+              >
+                <Stack p={0}>
+                  <SortableContext
+                    items={data.choices.map((c) => c.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <Stack p={0} gap="xs">
+                      {data.choices.map((c) => (
+                        <SortableChoice
+                          key={`${c.id}-${remountKey}`}
+                          id={c.id}
+                          choice={c}
+                          currentLocale={currentLocale}
+                          updateChoiceTextKey={updateChoiceTextKey}
+                          removeChoice={removeChoice}
+                        />
+                      ))}
+                    </Stack>
+                  </SortableContext>
+
+                  {canAddChoice && (
+                    <Button
+                      variant="subtle"
+                      size="xs"
+                      fullWidth
+                      onClick={addChoice}
+                      leftSection={<IconPlus size={14} />}
+                    >
+                      {t("speechEditorAddResponse")}
+                    </Button>
+                  )}
+                </Stack>
+              </DndContext>
+            </Stack>
+          )}
+        </Stack>
+      </Fieldset>
+
       <Fieldset legend={t("speechEditorContentLegend")} p="xs">
         <Stack gap="sm" p={0}>
           <LocalizedTextarea
@@ -269,55 +399,6 @@ export default function SpeechEditor({
           />
           {data.contentKey && <DetectedVariables localeKey={data.contentKey} />}
         </Stack>
-        <Input.Label mt="sm">{t("speechEditorResponsesLabel")}</Input.Label>
-        <Input.Description mb="sm">
-          {t("speechEditorResponsesDesc")}
-        </Input.Description>
-        <DndContext
-          collisionDetection={closestCenter}
-          modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-          onDragEnd={(event: DragEndEvent) => {
-            const { active, over } = event;
-            if (!over || active.id === over.id) return;
-            const fromIndex = data.choices.findIndex((c) => c.id === active.id);
-            const toIndex = data.choices.findIndex((c) => c.id === over.id);
-            if (fromIndex !== -1 && toIndex !== -1) {
-              reorderChoices(fromIndex, toIndex);
-            }
-          }}
-        >
-          <Stack p={0}>
-            <SortableContext
-              items={data.choices.map((c) => c.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <Stack p={0} gap="xs">
-                {data.choices.map((c) => (
-                  <SortableChoice
-                    key={`${c.id}-${remountKey}`}
-                    id={c.id}
-                    choice={c}
-                    currentLocale={currentLocale}
-                    updateChoiceTextKey={updateChoiceTextKey}
-                    removeChoice={removeChoice}
-                  />
-                ))}
-              </Stack>
-            </SortableContext>
-
-            {canAddChoice && (
-              <Button
-                variant="subtle"
-                size="xs"
-                fullWidth
-                onClick={addChoice}
-                leftSection={<IconPlus size={14} />}
-              >
-                {t("speechEditorAddResponse")}
-              </Button>
-            )}
-          </Stack>
-        </DndContext>
       </Fieldset>
 
       <Fieldset legend={t("speechEditorActivationsLegend")} p="xs">

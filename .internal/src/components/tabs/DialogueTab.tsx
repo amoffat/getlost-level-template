@@ -1,72 +1,46 @@
 // @refresh reset
-import * as constants from "@/constants";
-import { defaultMilestone } from "@/constants";
-import { globals as g } from "@/globals";
+import { defaultMilestone, playerParticipantId } from "@/constants";
 import { recordTransaction, useUndoRedo } from "@/history";
 import { shallowEqual, useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useParticipantList } from "@/hooks/useParticipant";
 import {
   createDialogue,
   actions as dActions,
   selectors as dSelectors,
 } from "@/slices/dialogue";
 import { selectors as localeSelectors } from "@/slices/locale";
-import {
-  actions as mapActions,
-  selectors as mapSelectors,
-} from "@/slices/mapEditor";
-import { selectors as tsSelectors } from "@/slices/tilesetEditor";
-import { speakers as speakersSelector } from "@/store/selectors";
 import { store } from "@/store/store";
 import {
   reflowDialogueThunk,
   setDefaultDialogueThunk,
-  unlinkDialogueThunk,
 } from "@/thunks/dialogue";
-import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
 import type { Dialogue, DNode } from "@/types/dialogue";
-import {
-  isNpcInstance,
-  isTileGroupInstance,
-  SpeakableMapObj,
-} from "@/types/map";
-import type { NpcRequiredAnimation, NpcTemplate } from "@/types/npc";
-import { TileGroupTemplate } from "@/types/tilegroup";
-import { createUrlPath } from "@/utils/dialogue";
-import { validateSpeakerImageFile } from "@/utils/image";
+import { createUrlPath, participantsOf } from "@/utils/dialogue";
 import { showNotification } from "@/utils/notifications";
 import { Split } from "@gfazioli/mantine-split-pane";
 import {
-  ActionIcon,
   Alert,
   Box,
   Button,
   Fieldset,
   Flex,
   Group,
-  Image,
   Menu,
   MultiSelect,
   Overlay,
-  RenderTreeNodePayload,
   ScrollArea,
+  Select,
   Stack,
   Text,
-  Tooltip,
-  Tree,
-  TreeNodeData,
-  useTree,
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import {
-  IconAlertTriangle,
   IconBubbleText,
   IconInfoCircle,
-  IconPhoto,
   IconPlus,
   IconSitemap,
   IconTrash,
-  IconUnlink,
 } from "@tabler/icons-react";
 import {
   addEdge,
@@ -89,7 +63,6 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import {
-  ReactElement,
   ReactNode,
   use,
   useCallback,
@@ -102,12 +75,12 @@ import {
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import InfoTooltip from "../common/InfoTooltip";
+import { DialogueListItem } from "../dialogue/DialogueListItem";
+import { ParticipantAvatar } from "../dialogue/Participant";
 import DialogueNode from "../flowNodes/DialogueNode";
 import { ItemStatus } from "../modals/ItemizedConfirmModal";
 import PanelLoader from "../PanelLoader";
 import SpeechEditor from "../SpeechEditor";
-import TileAnimation from "../TileAnimation";
-import TilesetGroup from "../TilesetGroup";
 import Tip from "../Tip";
 
 import "@/styles/react-flow.css";
@@ -116,21 +89,6 @@ const nodeTypes = {
   dialogue: DialogueNode,
   sign: DialogueNode,
 };
-
-interface ObjNodeProps {
-  getIcon: (isActive: boolean, expanded: boolean) => ReactElement;
-  objId: string;
-  onCreate: (dialogueId: string) => void;
-}
-
-interface DialogueNodeProps {
-  dialogue: Dialogue;
-  onSelect?: (value: string) => void;
-}
-
-function isObjNode(props: Record<string, any>): props is ObjNodeProps {
-  return "objId" in props;
-}
 
 export default function DialogueTab({
   initPromise,
@@ -142,17 +100,11 @@ export default function DialogueTab({
   const reactFlowInstance = useReactFlow<DNode, Edge>();
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const {
-    dlgid: dlgId,
-    milestone: msId,
-    nodeid: nodeIdParam,
-  } = useParams<{
+  const { dlgid: dlgId, nodeid: nodeIdParam } = useParams<{
     dlgid?: string;
-    milestone?: string;
     nodeid?: string;
   }>();
   const location = useLocation();
-  const speakers = useAppSelector(speakersSelector);
   const availableMilestones = useAppSelector(dSelectors.availableMilestones);
   const allDialogues = useAppSelector(dSelectors.allDialogues);
   const storyNodes = useAppSelector((state) => state.story.nodes);
@@ -168,8 +120,6 @@ export default function DialogueTab({
     (state) => state.dialogue.activeDialogueId,
   );
   const currentLocale = useAppSelector(localeSelectors.activeLocale);
-  const tree = useTree();
-  const treeSelectRef = useRef(tree.select);
   const navigate = useNavigate();
   // Track the currently selected node for the right-pane editor
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
@@ -179,11 +129,18 @@ export default function DialogueTab({
   // that subsequent user-driven selections don't re-center the viewport.
   const initialCenterDialogueRef = useRef<string | null>(null);
 
-  const sortedSpeakers = useMemo(() => {
-    return speakers.sort((a, b) => a[0].localeCompare(b[0]));
-  }, [speakers]);
+  // Left-pane filters (both clearable → null means "all").
+  const [msFilter, setMsFilter] = useState<string | null>(null);
+  const [participantFilter, setParticipantFilter] = useState<string | null>(
+    null,
+  );
 
-  // Sync activeDialogueId from URL parameter
+  // Player + every talkable character; doubles as the participant filter options
+  // and the "new dialogue" subject menu.
+  const participantOptions = useParticipantList();
+
+  // Load the active dialogue's graph into ReactFlow when the URL dialogue
+  // changes. Selection is driven separately by the node-id effect below.
   useEffect(() => {
     if (!dlgId) {
       // Only clear if we're still on the dialogue page
@@ -206,9 +163,6 @@ export default function DialogueTab({
 
     // Load our nodes and edges into react flow. Strip `selected` so that the
     // URL param effect (below) is the sole source of truth for selection.
-    // Leaving stale `selected: true` values in the store would cause
-    // reactFlowInstance.setNodes to re-select a node, firing
-    // useOnSelectionChange and navigating back to the node URL.
     const newNodes = (
       Object.values(activeDialogue.nodes.entities) as DNode[]
     ).map((n) => ({ ...n, selected: false }));
@@ -219,17 +173,8 @@ export default function DialogueTab({
     );
     reactFlowInstance.setEdges(newEdges);
 
-    // If the active selected dialogue and node doesn't match the url, update
-    // it.
-    if (
-      dlgId !== state.dialogue.activeDialogueId ||
-      !tree.selectedState.includes(
-        createUrlPath({ id: dlgId, milestone: msId }),
-      )
-    ) {
+    if (dlgId !== state.dialogue.activeDialogueId) {
       dispatch(dActions.setActiveDialogue(dlgId));
-      tree.select(createUrlPath({ id: dlgId, milestone: msId }));
-
       if (!nodeIdParam) {
         requestAnimationFrame(() => {
           reactFlowInstance.fitView({ padding: 0.25 });
@@ -237,10 +182,10 @@ export default function DialogueTab({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dlgId, msId, dispatch, navigate]);
+  }, [dlgId, dispatch, navigate]);
 
   // Sync node selection from URL parameter. Depends on activeDialogueId so
-  // that it runs after effect #2 has loaded the nodes into ReactFlow.
+  // that it runs after the effect above has loaded the nodes into ReactFlow.
   useEffect(() => {
     if (!nodeIdParam || !activeDialogueId) {
       if (!nodeIdParam) {
@@ -281,15 +226,15 @@ export default function DialogueTab({
       if (selectedNodes.length === 1) {
         const nodeId = selectedNodes[0].id;
         setSelectedNodeId(nodeId);
-        if (dlgId && msId) {
-          navigate(createUrlPath({ id: dlgId, milestone: msId, nodeId }), {
+        if (dlgId) {
+          navigate(createUrlPath({ id: dlgId, nodeId }), {
             replace: true,
           });
         }
       } else {
         setSelectedNodeId(null);
-        if (dlgId && msId) {
-          navigate(createUrlPath({ id: dlgId, milestone: msId }), {
+        if (dlgId) {
+          navigate(createUrlPath({ id: dlgId }), {
             replace: true,
           });
         }
@@ -446,6 +391,8 @@ export default function DialogueTab({
         position = screenToFlowPosition(centerScreen);
       }
 
+      const dlg = dSelectors.selectDialogue(store.getState(), dialogueId);
+
       const id = crypto.randomUUID();
       const newNode: DNode = {
         id,
@@ -459,6 +406,9 @@ export default function DialogueTab({
           animated: true,
           choices: [],
           isOrigin: clear,
+          // New nodes default to the dialogue's subject speaking to the player.
+          speakerId: dlg?.subjectId ?? null,
+          listenerId: playerParticipantId,
         },
       };
 
@@ -527,31 +477,56 @@ export default function DialogueTab({
     [dlgId, createSpeech, screenToFlowPosition],
   );
 
-  const onCreateDialogue = useCallback(
-    (dialogueId: string) => {
+  // Create a new dialogue owned by `subjectId` (a character or the player, for
+  // internal monologue), seed its origin speech, and open it.
+  const handleNewDialogue = useCallback(
+    (subjectId: string) => {
       const state = store.getState();
-      const dialogue = dSelectors.selectDialogue(state, dialogueId)!;
+      const hasDefault = dSelectors
+        .dialoguesForObj(state, subjectId)
+        .some((d) => d.milestoneNodeIds.includes(defaultMilestone));
+      const dId = crypto.randomUUID();
+      const milestones = hasDefault ? [] : [defaultMilestone];
 
-      createSpeech({ dialogueId, clear: true });
+      // Build the origin speech node and persist it straight to the *new*
+      // dialogue in Redux. We deliberately avoid createSpeech here: that helper
+      // mutates the live ReactFlow canvas, which still belongs to the currently
+      // open dialogue. Clearing it emits node-removal changes that the debounced
+      // onNodesChange would write back onto the previously open dialogue,
+      // wiping its nodes. Writing directly to Redux leaves existing dialogues
+      // untouched; the load effect repopulates the canvas after we navigate.
+      const nodeId = crypto.randomUUID();
+      const originNode: DNode = {
+        id: nodeId,
+        position: { x: 0, y: 0 },
+        selected: true,
+        type: "dialogue",
+        data: {
+          id: nodeId,
+          speakerNameKey: undefined,
+          contentKey: undefined,
+          animated: true,
+          choices: [],
+          isOrigin: true,
+          speakerId: subjectId,
+          listenerId: playerParticipantId,
+        },
+      };
 
-      // Navigate to the new dialogue URL
-      const milestone = dialogue.milestoneNodeIds[0] ?? null;
-      const path = createUrlPath({ id: dialogueId, milestone });
-      navigate(path);
+      dispatch(
+        dActions.addDialogue(createDialogue(dId, subjectId, milestones)),
+      );
+      dispatch(dActions.setNodes({ dialogueId: dId, nodes: [originNode] }));
+      navigate(createUrlPath({ id: dId }));
     },
-    [navigate, createSpeech],
+    [dispatch, navigate],
   );
 
-  const onSelectDialogue = useCallback(
-    (value: string) => {
-      // Select immediately (outside the transition) so the tree highlight
-      // updates before React renders the "pending" transition state.
-      // Use a ref to avoid adding `tree` as a dep (useTree returns a new
-      // object reference each render, which would make this callback and
-      // treeData unstable and cause an infinite update loop).
-      treeSelectRef.current(value);
+  // Open a dialogue from the list.
+  const openDialogue = useCallback(
+    (dlg: Dialogue) => {
       startDialogueTransition(() => {
-        navigate(value);
+        navigate(createUrlPath({ id: dlg.id }));
       });
     },
     [navigate],
@@ -565,106 +540,40 @@ export default function DialogueTab({
     });
   };
 
-  const treeData: TreeNodeData[] = useMemo(() => {
-    const state = store.getState();
-
-    // Map from ReactFlow node UUID → human-readable milestone name
-    const nodeIdToName = new Map(
+  // Participant id → display name, milestone id → name, and the set of
+  // milestones actually used by some dialogue (for the filter dropdown).
+  const { idToName, milestoneOptions } = useMemo(() => {
+    const idToName = new Map(participantOptions.map((o) => [o.value, o.label]));
+    const msIdToName = new Map(
       storyNodes.map((n) => [n.id, n.data.id] as [string, string]),
     );
+    const used = new Set<string>();
+    for (const dlg of allDialogues) {
+      for (const m of dlg.milestoneNodeIds) used.add(m);
+    }
+    const milestoneOptions = [...used].map((m) => ({
+      value: m,
+      label: msIdToName.get(m) ?? m,
+    }));
+    return { idToName, milestoneOptions };
+  }, [participantOptions, storyNodes, allDialogues]);
 
-    const tree: TreeNodeData[] = sortedSpeakers.map(([label, obj]) => {
-      let getIcon: (
-        isActive: boolean,
-        expanded: boolean,
-      ) => ReactElement = () => <></>;
-
-      if (isNpcInstance(obj)) {
-        const npcTemplate = tsSelectors.templateFromId(
-          state,
-          obj.tsObjId,
-        ) as NpcTemplate;
-
-        getIcon = (isActive: boolean, expanded: boolean) => {
-          let icon: ReactNode;
-          const animations = npcTemplate.animations;
-          let animName: NpcRequiredAnimation = "WalkRight";
-          if (expanded) animName = "WalkDown";
-
-          if (isActive) {
-            icon = (
-              <TileAnimation
-                frames={animations[animName].animation.frames}
-                scale={2}
-                bounded
-              />
-            );
-          } else {
-            const tg = animations[animName].animation.frames[0]!.tg;
-            icon = <TilesetGroup scale={2} group={tg} bounded />;
-          }
-          return icon;
-        };
-      } else if (isTileGroupInstance(obj)) {
-        getIcon = () => {
-          const template = tsSelectors.templateFromId(
-            state,
-            obj.tsObjId,
-          ) as TileGroupTemplate;
-          return <TilesetGroup scale={2} group={template} bounded />;
-        };
-      }
-
-      const objDialogues = allDialogues.filter(
-        (dlg) => dlg.subjectId === obj.id,
-      );
-
-      const children = objDialogues.flatMap((dlg) => {
-        if (dlg.milestoneNodeIds.length === 0) {
-          return [
-            {
-              value: createUrlPath({ id: dlg.id }),
-              label: dlg.id,
-              nodeProps: {
-                dialogue: dlg,
-                onSelect: onSelectDialogue,
-              } satisfies DialogueNodeProps,
-            },
-          ];
+  // The filtered, sorted dialogue list shown in the left pane.
+  const filteredDialogues = useMemo(() => {
+    return allDialogues
+      .filter((dlg) => {
+        if (msFilter && !dlg.milestoneNodeIds.includes(msFilter)) return false;
+        if (participantFilter && !participantsOf(dlg).has(participantFilter)) {
+          return false;
         }
-
-        return dlg.milestoneNodeIds.map((ms) => ({
-          value: createUrlPath({ id: dlg.id, milestone: ms }),
-          // Resolve the human-readable name; fall back to the raw value so
-          // the "default" sentinel and any unknown IDs still display.
-          label: nodeIdToName.get(ms) ?? ms,
-          nodeProps: {
-            dialogue: dlg,
-            onSelect: onSelectDialogue,
-          } satisfies DialogueNodeProps,
-        }));
+        return true;
+      })
+      .sort((a, b) => {
+        const an = idToName.get(a.subjectId ?? "") ?? a.subjectId ?? "";
+        const bn = idToName.get(b.subjectId ?? "") ?? b.subjectId ?? "";
+        return an.localeCompare(bn) || a.id.localeCompare(b.id);
       });
-
-      return {
-        value: obj.id,
-        label,
-        nodeProps: {
-          getIcon,
-          objId: obj.id,
-          onCreate: onCreateDialogue,
-        } satisfies ObjNodeProps,
-        children,
-      };
-    });
-
-    return tree;
-  }, [
-    storyNodes,
-    sortedSpeakers,
-    allDialogues,
-    onCreateDialogue,
-    onSelectDialogue,
-  ]);
+  }, [allDialogues, msFilter, participantFilter, idToName]);
 
   const onMilestoneChange = useCallback(
     (milestones: string[]) => {
@@ -690,6 +599,30 @@ export default function DialogueTab({
     [dlgId, activeMilestones, dispatch],
   );
 
+  // Delete the active dialogue entirely. Per-milestone removal is handled by the
+  // milestones MultiSelect in the right panel.
+  const handleDeleteActiveDialogue = useCallback(() => {
+    if (!dlgId) return;
+
+    modals.openContextModal({
+      modal: "confirm",
+      title: t("dialogueTabDeleteTitle"),
+      centered: true,
+      withCloseButton: true,
+      innerProps: {
+        makeItems: (): ItemStatus[] => [
+          { ok: false, message: t("dialogueTabDeleteItem4") },
+        ],
+        confirmLabel: t("dialogueTabDeleteConfirm"),
+        msg: t("dialogueTabDeleteMsg"),
+        onConfirm: () => {
+          dispatch(dActions.removeDialogue(dlgId));
+          navigate("/dialogues");
+        },
+      },
+    });
+  }, [dlgId, dispatch, navigate, t]);
+
   const handleReflow = useCallback(async () => {
     if (!dlgId) return;
     const resp = await dispatch(reflowDialogueThunk(dlgId)).unwrap();
@@ -712,42 +645,107 @@ export default function DialogueTab({
       tipItems.push(t("dialogueTabTip2"));
     }
 
-    if (!dlgId && speakers.length > 0) {
+    if (!dlgId && participantOptions.length > 1) {
       tipItems.push(t("dialogueTabTip3"));
     }
 
     return tipItems;
-  }, [activeNodes, dlgId, speakers.length, t]);
+  }, [activeNodes, dlgId, participantOptions.length, t]);
 
   return (
     <Split h="100dvh" style={{ flex: 1 }}>
-      {/* Left panel */}
+      {/* Left panel — flat dialogue list with filters */}
       <Split.Pane
-        initialWidth="15%"
-        minWidth={250}
+        initialWidth="18%"
+        minWidth={260}
         maxWidth="45%"
         onResizeEnd={handlePaneResize}
       >
-        <Stack h="100%" style={{ overflow: "hidden" }} p={0} pb="xl">
-          <ScrollArea type="never" style={{ flex: 1 }}>
-            <Stack p={0} pb="xl">
-              {treeData.length === 0 && (
-                <Box p="xs">
-                  <Alert
-                    title={t("dialogueTabNoDialogues")}
-                    variant="light"
-                    icon={<IconInfoCircle />}
+        <Stack h="100%" style={{ overflow: "hidden" }} gap="xs" p="xs">
+          <Group justify="space-between" wrap="nowrap">
+            <Text fw={600} fz="sm">
+              {t("dialogueTab")}
+            </Text>
+            <Menu position="bottom-end" withinPortal>
+              <Menu.Target>
+                <Button
+                  size="xs"
+                  variant="light"
+                  leftSection={<IconPlus size={16} />}
+                >
+                  {t("dialogueTabNewDialogue")}
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Label>{t("dialogueTabNewDialogueFor")}</Menu.Label>
+                {participantOptions.map((o) => (
+                  <Menu.Item
+                    key={o.value}
+                    onClick={() => handleNewDialogue(o.value)}
+                    leftSection={
+                      <Box
+                        w={20}
+                        h={20}
+                        style={{ overflow: "hidden", flexShrink: 0 }}
+                      >
+                        <ParticipantAvatar
+                          participantId={o.value}
+                          size={20}
+                          scale={1}
+                        />
+                      </Box>
+                    }
                   >
-                    {t("dialogueTabNoDialoguesMsg")}
-                  </Alert>
-                </Box>
+                    {o.label}
+                  </Menu.Item>
+                ))}
+              </Menu.Dropdown>
+            </Menu>
+          </Group>
+
+          <Select
+            clearable
+            searchable
+            placeholder={t("dialogueTabAllMilestones")}
+            data={milestoneOptions}
+            value={msFilter}
+            onChange={setMsFilter}
+          />
+          <Select
+            clearable
+            searchable
+            placeholder={t("dialogueTabAllParticipants")}
+            data={participantOptions}
+            value={participantFilter}
+            onChange={setParticipantFilter}
+          />
+
+          <ScrollArea type="never" style={{ flex: 1 }}>
+            <Stack gap={4} pb="xl" p={0}>
+              {filteredDialogues.length === 0 ? (
+                <Alert
+                  variant="light"
+                  icon={<IconInfoCircle />}
+                  title={
+                    allDialogues.length === 0
+                      ? t("dialogueTabNoDialoguesYet")
+                      : t("dialogueTabNoMatches")
+                  }
+                >
+                  {allDialogues.length === 0
+                    ? t("dialogueTabNoDialoguesYetMsg")
+                    : null}
+                </Alert>
+              ) : (
+                filteredDialogues.map((dlg) => (
+                  <DialogueListItem
+                    key={dlg.id}
+                    dialogue={dlg}
+                    active={dlg.id === dlgId}
+                    onOpen={openDialogue}
+                  />
+                ))
               )}
-              <Tree
-                data={treeData}
-                tree={tree}
-                selectOnClick
-                renderNode={(payload) => <Leaf {...payload} />}
-              />
             </Stack>
           </ScrollArea>
         </Stack>
@@ -801,6 +799,16 @@ export default function DialogueTab({
                   >
                     {t("dialogueTabOrganize")}
                   </Button>
+                  {dlgId && (
+                    <Button
+                      variant="filled"
+                      color="red"
+                      onClick={handleDeleteActiveDialogue}
+                      leftSection={<IconTrash size={20} />}
+                    >
+                      {t("dialogueTabDeleteDialogue")}
+                    </Button>
+                  )}
                 </Group>
               </Panel>
             </ReactFlow>
@@ -876,346 +884,4 @@ export default function DialogueTab({
       </Split.Pane>
     </Split>
   );
-}
-
-type LeafProps = Pick<
-  RenderTreeNodePayload,
-  "node" | "selected" | "elementProps" | "tree" | "expanded"
->;
-
-function ObjLeaf({
-  node,
-  selected,
-  expanded,
-  elementProps,
-  getIcon,
-  onCreate,
-  objId,
-  tree,
-}: LeafProps & ObjNodeProps) {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { t } = useTranslation();
-  const npcDialogues = useAppSelector((state) =>
-    dSelectors.dialoguesForObj(state, objId),
-  );
-  const hasDefaultMilestone = npcDialogues.some((dlg) =>
-    dlg.milestoneNodeIds.includes(defaultMilestone),
-  );
-  const activeDialogueId = useAppSelector(
-    (state) => state.dialogue.activeDialogueId,
-  );
-  const isChildSelected = npcDialogues.some(
-    (dlg) => dlg.id === activeDialogueId,
-  );
-  const isActive = selected || isChildSelected;
-  const icon = getIcon(isActive, expanded);
-
-  const obj = useAppSelector((state) =>
-    mapSelectors.selectObject(state, objId),
-  ) as SpeakableMapObj;
-  const speakerImageUrl = obj.speakerImageId
-    ? g.speakerImageObjectUrlCache.get(obj.speakerImageId)
-    : undefined;
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleAddDialogue = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    tree.expand(objId);
-
-    const dId = crypto.randomUUID();
-    const milestones = hasDefaultMilestone ? [] : [defaultMilestone];
-    dispatch(dActions.addDialogue(createDialogue(dId, objId, milestones)));
-    onCreate(dId);
-  };
-
-  const handleUploadSpeakerImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-    const valid = await validateSpeakerImageFile(
-      file,
-      t("speechEditorAvatarSizeError", {
-        width: constants.speakerImageSize,
-        height: constants.speakerImageSize,
-      }),
-    );
-    if (!valid) return;
-    await dispatch(uploadSpeakerImageThunk({ objId, file }));
-  };
-
-  const handleClick = useCallback(
-    (e: React.MouseEvent) => {
-      elementProps.onClick?.(e);
-      navigate("/dialogues");
-    },
-    [elementProps, navigate],
-  );
-
-  return (
-    <Box p="xs" {...elementProps} onClick={handleClick}>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={handleFileChange}
-      />
-      <Group gap="xs" wrap="nowrap">
-        <Box w="20%">
-          {speakerImageUrl ? (
-            <Image
-              src={speakerImageUrl}
-              w={38}
-              h={38}
-              fit="cover"
-              style={{
-                imageRendering: "pixelated",
-              }}
-            />
-          ) : (
-            <Box w={50} h={50}>
-              {icon}
-            </Box>
-          )}
-        </Box>
-        <Text fz="sm">{node.label}</Text>
-        <Box style={{ flexGrow: 1 }} />
-
-        <ActionIcon.Group>
-          {obj.speakerImageId ? (
-            <Menu withinPortal position="bottom-end">
-              <Tooltip label={t("dialogueTabChangeSpeakerImage")}>
-                <Menu.Target>
-                  <ActionIcon
-                    variant="default"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <IconPhoto size={16} />
-                  </ActionIcon>
-                </Menu.Target>
-              </Tooltip>
-              <Menu.Dropdown>
-                <Menu.Item
-                  leftSection={<IconPhoto size={14} />}
-                  onClick={handleUploadSpeakerImage}
-                >
-                  {t("dialogueTabReplaceImage")}
-                </Menu.Item>
-                <Menu.Item
-                  leftSection={<IconTrash size={14} />}
-                  color="red"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    dispatch(
-                      mapActions.updateOne({
-                        id: objId,
-                        changes: { speakerImageId: null },
-                      }),
-                    );
-                  }}
-                >
-                  {t("dialogueTabRemoveImage")}
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
-          ) : (
-            <Tooltip label={t("dialogueTabUploadSpeakerImage")}>
-              <ActionIcon variant="default" onClick={handleUploadSpeakerImage}>
-                <IconPhoto size={16} />
-              </ActionIcon>
-            </Tooltip>
-          )}
-          <Tooltip label={t("dialogueTabAddNewDialogue")}>
-            <ActionIcon variant="default" onClick={handleAddDialogue}>
-              <IconPlus size={16} />
-            </ActionIcon>
-          </Tooltip>
-        </ActionIcon.Group>
-      </Group>
-    </Box>
-  );
-}
-
-function DialogueLeaf({ node, elementProps, selected }: LeafProps) {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { t } = useTranslation();
-  const activeDialogueId = useAppSelector(
-    (state) => state.dialogue.activeDialogueId,
-  );
-  const props = node.nodeProps as DialogueNodeProps;
-
-  const handleClick = useCallback(
-    (e: React.MouseEvent) => {
-      elementProps.onClick?.(e);
-      props.onSelect?.(node.value);
-    },
-    [elementProps, props, node.value],
-  );
-
-  const dialogue = props.dialogue as Dialogue | undefined;
-  const milestoneCount = dialogue?.milestoneNodeIds.length ?? 0;
-
-  // node.value is the URL path for this leaf: "{dlgId}" or "{dlgId}/nodes/{milestoneNodeId}".
-  // Since the milestone node ID is now stored in the URL, we can read it directly here.
-  const milestoneNodeId = node.value.split("/")[1] as string | undefined;
-
-  let content: React.ReactNode;
-  if (milestoneCount === 0) {
-    content = (
-      <Group gap="xs">
-        <IconAlertTriangle size={16} color="orange" />
-        <Text fz="sm" variant="dimmed">
-          {t("dialogueTabNoMilestone")}
-        </Text>
-      </Group>
-    );
-  } else {
-    content = (
-      <Group gap="xs">
-        <Text fz="sm">{node.label}</Text>
-      </Group>
-    );
-  }
-
-  const handleUnlink = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!dialogue || !milestoneNodeId) return;
-
-    modals.openContextModal({
-      modal: "confirm",
-      title: t("dialogueTabUnlinkTitle"),
-      centered: true,
-      withCloseButton: true,
-      innerProps: {
-        makeItems: () => [
-          {
-            ok: true,
-            message: t("dialogueTabUnlinkItem1", { label: node.label }),
-          },
-          {
-            ok: true,
-            message: t("dialogueTabUnlinkItem2", {
-              count: milestoneCount - 1,
-            }),
-          },
-        ],
-        confirmLabel: t("dialogueTabUnlinkConfirm"),
-        msg: t("dialogueTabUnlinkMsg"),
-        onConfirm: () => {
-          const newId = dispatch(
-            unlinkDialogueThunk(dialogue.id, milestoneNodeId),
-          );
-          if (newId) {
-            navigate(createUrlPath({ id: newId, milestone: milestoneNodeId }));
-          }
-        },
-      },
-    });
-  };
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!dialogue) return;
-
-    const items: ItemStatus[] = [];
-
-    if (milestoneCount > 1) {
-      items.push({
-        ok: true,
-        message: t("dialogueTabDeleteItem1", { count: milestoneCount - 1 }),
-      });
-      items.push({
-        ok: true,
-        message: t("dialogueTabDeleteItem2"),
-      });
-    } else {
-      items.push({
-        ok: false,
-        message: t("dialogueTabDeleteItem3"),
-      });
-      items.push({
-        ok: false,
-        message: t("dialogueTabDeleteItem4"),
-      });
-    }
-
-    modals.openContextModal({
-      modal: "confirm",
-      title: t("dialogueTabDeleteTitle"),
-      centered: true,
-      withCloseButton: true,
-      innerProps: {
-        makeItems: () => items,
-        confirmLabel: t("dialogueTabDeleteConfirm"),
-        msg: t("dialogueTabDeleteMsg"),
-        onConfirm: () => {
-          if (milestoneCount > 1) {
-            // Remove only this milestone from the dialogue
-            dispatch(
-              dActions.setMilestones({
-                dialogueId: dialogue.id,
-                milestoneNodeIds: dialogue.milestoneNodeIds.filter(
-                  (ms) => ms !== milestoneNodeId,
-                ),
-              }),
-            );
-          } else {
-            // Last (or no) milestone — remove the dialogue entirely.
-            dispatch(dActions.removeDialogue(dialogue.id));
-          }
-          if (activeDialogueId === dialogue.id) {
-            navigate("/dialogues");
-          }
-        },
-      },
-    });
-  };
-
-  return (
-    <Box p="xs" {...elementProps} onClick={handleClick} pl="lg">
-      <Group gap="xs" wrap="nowrap">
-        <Box style={{ flexGrow: 1 }}>{content}</Box>
-        {selected && (
-          <Tooltip label={t("dialogueTabDeleteDialogue")}>
-            <ActionIcon variant="default" size="sm" onClick={handleDelete}>
-              <IconTrash size={14} />
-            </ActionIcon>
-          </Tooltip>
-        )}
-        {selected && milestoneCount > 1 && (
-          <Tooltip label={t("dialogueTabUnlinkDialogue")}>
-            <ActionIcon variant="default" size="sm" onClick={handleUnlink}>
-              <IconUnlink size={14} />
-            </ActionIcon>
-          </Tooltip>
-        )}
-      </Group>
-    </Box>
-  );
-}
-
-function Leaf(payload: RenderTreeNodePayload) {
-  const props = payload.node.nodeProps!;
-
-  if (isObjNode(props)) {
-    return (
-      <ObjLeaf
-        getIcon={props.getIcon}
-        objId={props.objId}
-        onCreate={props.onCreate}
-        {...payload}
-      />
-    );
-  }
-
-  return <DialogueLeaf {...payload} />;
 }

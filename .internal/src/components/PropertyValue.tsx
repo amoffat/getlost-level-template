@@ -298,7 +298,6 @@ function PropertyValueInner<T>({
   // The widget for the input field, passed in from props
   const inputField = useMemo(
     () =>
-      // eslint-disable-next-line react-hooks/refs
       renderInput({
         key: inputKey,
         defaultValue: localValue,

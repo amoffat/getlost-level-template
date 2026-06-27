@@ -12,6 +12,16 @@ export interface SpeechData extends Record<string, unknown> {
   animated: boolean;
   choices: Choice[];
   isOrigin: boolean;
+  /**
+   * Participant id (a SpeakableMapObj id or the player sentinel) who speaks this
+   * node. Defaults to the dialogue's subjectId.
+   */
+  speakerId: string | null;
+  /**
+   * Participant id who is listening. Defaults to the player. Choices/branching
+   * are only allowed when the listener is the player.
+   */
+  listenerId: string | null;
   /** Per-node speaker image override. Overrides the object-level speakerImageId. */
   speakerImageId?: string | undefined;
   /** Story milestone IDs activated when the player reaches this speech node. */

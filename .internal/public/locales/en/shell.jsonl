@@ -348,8 +348,15 @@
 {"k": "dialogueTabDeleteItem2", "v": "Deleting it will only remove the dialogue from the current milestone.", "ctx": "Info item in delete modal when dialogue is shared with other milestones"}
 {"k": "dialogueTabDeleteItem3", "v": "This dialogue does not belong to any other milestones.", "ctx": "Warning item in delete modal when dialogue has no other milestones"}
 {"k": "dialogueTabDeleteItem4", "v": "Deleting it will remove the dialogue permanently.", "ctx": "Warning item in delete modal indicating permanent deletion"}
-{"k": "dialogueTabDeleteDialogue", "v": "Delete this dialogue", "ctx": "Tooltip on the delete button in a dialogue tree leaf"}
+{"k": "dialogueTabDeleteDialogue", "v": "Delete dialogue", "ctx": "Tooltip on the delete button in a dialogue tree leaf"}
 {"k": "dialogueTabUnlinkDialogue", "v": "Unlink from active dialogue", "ctx": "Tooltip on the unlink button shown when a dialogue leaf is selected and has multiple milestones"}
+{"k": "dialogueTabNewDialogue", "v": "New dialogue", "ctx": "Button label that opens a menu to create a new dialogue for a chosen character"}
+{"k": "dialogueTabNewDialogueFor", "v": "New dialogue for…", "ctx": "Menu label above the list of characters to start a new dialogue for"}
+{"k": "dialogueTabAllMilestones", "v": "All milestones", "ctx": "Placeholder for the milestone filter dropdown in the dialogue list"}
+{"k": "dialogueTabAllParticipants", "v": "All participants", "ctx": "Placeholder for the participant filter dropdown in the dialogue list"}
+{"k": "dialogueTabNoDialoguesYet", "v": "No dialogues yet", "ctx": "Empty-state title in the dialogue list when no dialogues have been created"}
+{"k": "dialogueTabNoDialoguesYetMsg", "v": "Use the “New dialogue” button to create one.", "ctx": "Empty-state body prompting the user to create their first dialogue"}
+{"k": "dialogueTabNoMatches", "v": "No dialogues match the current filters.", "ctx": "Empty-state shown when milestone/participant filters exclude every dialogue"}
 {"k": "storyTabInvalidConnection", "v": "Invalid connection", "ctx": "Notification title shown when the user tries to create a connection that would form a cycle"}
 {"k": "storyTabInvalidConnectionMsg", "v": "Creating this connection would create a cycle.", "ctx": "Notification message explaining why a story node connection is invalid"}
 {"k": "storyTabCannotDeleteOrigin", "v": "Cannot delete", "ctx": "Notification title when user tries to delete the story origin (start) node"}
@@ -705,3 +712,11 @@
 {"k": "deleteLinkedDialoguesWillBeUnlinked", "v": "{count} dialogue(s) will be removed.", "ctx": "Status message in delete confirmation when dialogues reference the selected objects; {count} is the number"}
 {"k": "deleteNoWaypointPairings", "v": "No waypoint reference these objects.", "ctx": "Status message in delete confirmation when no waypoint pairings reference the selected objects"}
 {"k": "deleteWaypointPairingsWillBeAffected", "v": "{count} waypoint pairing(s) will be removed.", "ctx": "Status message in delete confirmation when waypoint pairings reference the selected objects; {count} is the number"}
+{"k": "dialoguePlayerName", "v": "Player", "ctx": "Display name for the player character in dialogues, shown in the dialogue tree, speaker/listener dropdowns, and on dialogue nodes"}
+{"k": "speechEditorSpeakerSelectLabel", "v": "Character", "ctx": "Label for the dropdown selecting which character is speaking a dialogue node in the SpeechEditor"}
+{"k": "speechEditorSpeakerSelectDesc", "v": "Which character is speaking this line.", "ctx": "Description under the speaker character dropdown in the SpeechEditor"}
+{"k": "speechEditorSpeakerSelectPlaceholder", "v": "Select a speaker", "ctx": "Placeholder for the speaker character dropdown in the SpeechEditor"}
+{"k": "speechEditorListenerLegend", "v": "Listener", "ctx": "Fieldset legend for the listener section in the SpeechEditor"}
+{"k": "speechEditorListenerSelectLabel", "v": "Character", "ctx": "Label for the dropdown selecting which character is being spoken to in the SpeechEditor"}
+{"k": "speechEditorListenerSelectDesc", "v": "Who is being spoken to. Only the player can be offered responses to choose from.", "ctx": "Description under the listener character dropdown in the SpeechEditor"}
+{"k": "speechEditorListenerSelectPlaceholder", "v": "Select a listener", "ctx": "Placeholder for the listener character dropdown in the SpeechEditor"}

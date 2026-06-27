@@ -32,7 +32,6 @@ export function useMakeRafDispatcher<AC extends ActionCreator>(
   // Build a throttled dispatcher bound to this action creator.
   const throttled = useMemo(
     () =>
-      // eslint-disable-next-line react-hooks/refs
       createRafThrottled((...args: Parameters<AC>) => {
         if (!mountedRef.current) return;
         dispatch(actionCreator(...args));

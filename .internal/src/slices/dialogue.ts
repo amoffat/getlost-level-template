@@ -8,6 +8,7 @@ import {
   PayloadAction,
 } from "@reduxjs/toolkit";
 import { Edge } from "@xyflow/react";
+import { participantsOf } from "../utils/dialogue";
 import type { Dialogue, DNode } from "../types/dialogue";
 
 // Entity adapters
@@ -238,6 +239,19 @@ export const slice = createSlice({
           .map((id) => dialogues.entities[id] as Dialogue)
           .filter((dlg) => dlg.subjectId === objId),
     ),
+    // Dialogues in which the given participant (a SpeakableMapObj id or the
+    // player sentinel) speaks or listens anywhere. Drives the tree listing and
+    // the character-row "child selected" highlight.
+    dialoguesWithParticipant: createDlgSelector(
+      [
+        (state) => state.dialogues,
+        (_: DialogueState, participantId: string) => participantId,
+      ],
+      (dialogues, participantId): Dialogue[] =>
+        (dialogues.ids as string[])
+          .map((id) => dialogues.entities[id] as Dialogue)
+          .filter((dlg) => participantsOf(dlg).has(participantId)),
+    ),
     unassignedDialogues: createDlgSelector(
       [(state) => state.dialogues],
       (dialogues): Dialogue[] =>
@@ -321,11 +335,9 @@ const dialogueForMilestone = createSelector(
     const msDialogues: Dialogue[] = [];
     for (const id of dialogues.ids) {
       const dlg = dialogues.entities[id as string];
-      if (
-        dlg &&
-        dlg.subjectId !== null &&
-        dlg.milestoneNodeIds.includes(milestoneId)
-      ) {
+      // Multi-participant dialogues have no single subject (subjectId is null);
+      // they're matched purely by their milestone linkage.
+      if (dlg && dlg.milestoneNodeIds.includes(milestoneId)) {
         msDialogues.push(dlg);
       }
     }

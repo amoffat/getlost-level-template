@@ -1,10 +1,7 @@
 import { defaultMilestone } from "@/constants";
 import {
-  createDialogue,
   actions as dActions,
   selectors as dSelectors,
-  edgeAdapter,
-  nodeAdapter,
 } from "@/slices/dialogue";
 import type { AppDispatch, RootState } from "@/store/store";
 import type { DNode } from "@/types/dialogue";
@@ -43,50 +40,6 @@ export const setDefaultDialogueThunk =
           }),
         );
       });
-  };
-
-/**
- * Unlinks a single milestone from a shared dialogue by creating a brand new
- * copy of the dialogue (same nodes, edges, and subjectId) that carries only the
- * given milestone. The milestone is then removed from the original dialogue so
- * every milestone independently owns its own copy.
- *
- * Returns the ID of the newly created dialogue copy, or null if the source
- * dialogue was not found.
- */
-export const unlinkDialogueThunk =
-  (dialogueId: string, milestone: string) =>
-  (dispatch: AppDispatch, getState: () => RootState): string | null => {
-    const state = getState();
-    const original = dSelectors.selectDialogue(state, dialogueId);
-    if (!original) return null;
-
-    const newId = crypto.randomUUID();
-    const newDialogue = createDialogue(newId, original.subjectId, [milestone]);
-
-    // Deep-copy nodes from the original dialogue
-    const nodesList = original.nodes.ids.map(
-      (id) => original.nodes.entities[id] as DNode,
-    );
-    newDialogue.nodes = nodeAdapter.setAll(newDialogue.nodes, nodesList);
-
-    // Deep-copy edges from the original dialogue
-    const edgesList = original.edges.ids.map(
-      (id) => original.edges.entities[id] as Edge,
-    );
-    newDialogue.edges = edgeAdapter.setAll(newDialogue.edges, edgesList);
-
-    dispatch(dActions.addDialogue(newDialogue));
-
-    // Remove the unlinked milestone from the original dialogue
-    dispatch(
-      dActions.setMilestones({
-        dialogueId: original.id,
-        milestoneNodeIds: original.milestoneNodeIds.filter((ms) => ms !== milestone),
-      }),
-    );
-
-    return newId;
   };
 
 export const reflowDialogueThunk = createAsyncThunk(

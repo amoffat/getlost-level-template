@@ -1,4 +1,6 @@
+import { playerParticipantId } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useParticipantName } from "@/hooks/useParticipant";
 import { actions, selectors as dSelectors } from "@/slices/dialogue";
 import { selectors as localeSelectors } from "@/slices/locale";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
@@ -6,7 +8,7 @@ import { selectPropertyValue } from "@/store/selectors";
 import { RootState } from "@/store/store";
 import { DNode, SpeechData } from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
-import { Fieldset, Stack, Text, Title } from "@mantine/core";
+import { Box, Fieldset, Group, Stack, Text, Tooltip } from "@mantine/core";
 import {
   Handle,
   NodeToolbar,
@@ -22,7 +24,9 @@ import {
   useMemo,
   useRef,
   useState,
+  type ReactNode,
 } from "react";
+import { ParticipantAvatar } from "../dialogue/Participant";
 import VariableText from "../VariableText";
 import styles from "./styles/DialogueNode.module.css";
 
@@ -53,9 +57,16 @@ export default function DialogueNode({
     dSelectors.selectDialogue(state, activeDialogueId),
   )!;
 
+  // Speaker defaults to the dialogue subject; listener defaults to the player.
+  const speakerId = data?.speakerId ?? dialogue?.subjectId ?? null;
+  const listenerId = data?.listenerId ?? playerParticipantId;
+  const isPlayerListener = listenerId === playerParticipantId;
+  const speakerName = useParticipantName(speakerId);
+  const listenerName = useParticipantName(listenerId);
+
   const obj = useAppSelector((state: RootState) => {
-    if (!dialogue?.subjectId) return undefined;
-    return mapSelectors.selectObject(state, dialogue.subjectId);
+    if (!speakerId || speakerId === playerParticipantId) return undefined;
+    return mapSelectors.selectObject(state, speakerId);
   }) as SpeakableMapObj | undefined;
 
   const activeEntries = useAppSelector(localeSelectors.selectActiveEntries);
@@ -157,47 +168,53 @@ export default function DialogueNode({
   if (!node) return null;
   if (!data) return null;
 
-  const handles = choicesData.map((c) => {
-    if (!c.textKey) return null;
-    const measuredTop = handleTopByChoiceId[c.id];
-    return (
-      <Handle
-        key={c.id}
-        type="source"
-        position={Position.Right}
-        id={c.id}
-        style={{ top: measuredTop }}
-      />
-    );
-  });
-
   const cls = classNames(styles.node, {
     "react-flow__node-default": true,
     [styles.selected]: selected,
   });
 
-  const visibleChoices = choicesData.filter((c) => Boolean(c.textKey));
+  // Only player-listener nodes branch via choices (one source handle per
+  // choice). A non-player listener gets a single linear outgoing connection.
+  let handles: ReactNode;
+  let choicesContainer: ReactNode = null;
+  if (isPlayerListener) {
+    handles = choicesData.map((c) => {
+      if (!c.textKey) return null;
+      const measuredTop = handleTopByChoiceId[c.id];
+      return (
+        <Handle
+          key={c.id}
+          type="source"
+          position={Position.Right}
+          id={c.id}
+          style={{ top: measuredTop }}
+        />
+      );
+    });
 
-  let choicesContainer = null;
-  if (visibleChoices.length > 0) {
-    choicesContainer = (
-      <Fieldset legend="Player responds..." p="xs">
-        <Stack p={0} gap="xs">
-          {visibleChoices.map((c) => (
-            <div
-              key={c.id}
-              ref={(element) => {
-                choiceRefs.current[c.id] = element;
-              }}
-            >
-              <Text size="sm">
-                <VariableText text={resolveText(c.textKey)} />
-              </Text>
-            </div>
-          ))}
-        </Stack>
-      </Fieldset>
-    );
+    const visibleChoices = choicesData.filter((c) => Boolean(c.textKey));
+    if (visibleChoices.length > 0) {
+      choicesContainer = (
+        <Fieldset legend="Player responds..." p="xs">
+          <Stack p={0} gap="xs">
+            {visibleChoices.map((c) => (
+              <div
+                key={c.id}
+                ref={(element) => {
+                  choiceRefs.current[c.id] = element;
+                }}
+              >
+                <Text size="sm">
+                  <VariableText text={resolveText(c.textKey)} />
+                </Text>
+              </div>
+            ))}
+          </Stack>
+        </Fieldset>
+      );
+    }
+  } else {
+    handles = <Handle type="source" position={Position.Right} />;
   }
 
   const resolvedContent = resolveText(data.contentKey);
@@ -221,7 +238,27 @@ export default function DialogueNode({
       <div ref={nodeRef} className={cls}>
         {!data.isOrigin && <Handle type="target" position={Position.Left} />}
         <Stack p={0}>
-          <Title order={4}>{label}</Title>
+          <Group gap="xs" wrap="nowrap" align="center">
+            <Tooltip label={label || speakerName} withArrow>
+              <Box w={38} h={38} style={{ flexShrink: 0 }}>
+                <ParticipantAvatar
+                  participantId={speakerId}
+                  scale={2}
+                  size={38}
+                />
+              </Box>
+            </Tooltip>
+            <Box style={{ flexGrow: 1 }} />
+            <Tooltip label={listenerName} withArrow>
+              <Box w={38} h={38} style={{ flexShrink: 0 }}>
+                <ParticipantAvatar
+                  participantId={listenerId}
+                  scale={2}
+                  size={38}
+                />
+              </Box>
+            </Tooltip>
+          </Group>
           {content}
           {choicesContainer}
         </Stack>

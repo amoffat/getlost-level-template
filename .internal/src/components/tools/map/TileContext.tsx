@@ -186,7 +186,10 @@ export default function TileContext({ placeObj }: TileContextProps) {
               }
               title={isCenter ? "Current tile" : "Click to place this tile"}
             >
-              <TilesetGroup group={tile} scale={Infinity} bounded />
+              {/* `bounded` fits the tile to its responsive grid cell; the
+                  scale is just an upscale cap (cells stay well under 8× a
+                  16px tile), so this fills the cell like auto-fit did. */}
+              <TilesetGroup group={tile} scale={8} bounded />
               {hovered && hintLabel && (
                 <Kbd className={classes.keyHint} size="md">
                   {hintLabel}

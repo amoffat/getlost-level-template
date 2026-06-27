@@ -8,10 +8,8 @@ import { MilestoneWaypoint, setNodeData, StoryNodeData } from "@/slices/story";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { selectPropertyValue } from "@/store/selectors";
 import { RootState, store } from "@/store/store";
-import { Dialogue } from "@/types/dialogue";
-import { NpcInstance, SpeakableMapObj, WaypointObj } from "@/types/map";
-import { isNpcTemplate, type NpcTemplate } from "@/types/npc";
-import { isTileGroupTemplate } from "@/types/tilegroup";
+import { NpcInstance, WaypointObj } from "@/types/map";
+import { type NpcTemplate } from "@/types/npc";
 import { createUrlPath } from "@/utils/dialogue";
 import { resolveLocaleText } from "@/utils/locale";
 import { sanitize } from "@/utils/slug";
@@ -35,6 +33,7 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { DialogueListItem } from "./dialogue/DialogueListItem";
 import FieldsetLegend from "./FieldsetLegend";
 import TilesetGroup from "./TilesetGroup";
 
@@ -175,11 +174,10 @@ export default function MilestoneEditor({
         >
           <Stack p={0} gap="xs">
             {dialogues.map((dlg) => (
-              <DialogueRow
+              <DialogueListItem
                 key={dlg.id}
                 dialogue={dlg}
-                milestoneNodeId={nodeId}
-                onNavigate={(path) => navigate(path)}
+                onOpen={(d) => navigate(createUrlPath({ id: d.id }))}
               />
             ))}
           </Stack>
@@ -215,56 +213,6 @@ export default function MilestoneEditor({
         </Stack>
       </Fieldset>
     </>
-  );
-}
-
-function DialogueRow({
-  dialogue,
-  milestoneNodeId,
-  onNavigate,
-}: {
-  dialogue: Dialogue;
-  milestoneNodeId: string;
-  onNavigate: (path: string) => void;
-}) {
-  const { t } = useTranslation();
-  const obj = useAppSelector((state: RootState) =>
-    dialogue.subjectId
-      ? mapSelectors.selectObject(state, dialogue.subjectId)
-      : undefined,
-  ) as SpeakableMapObj | undefined;
-  const template = useAppSelector((state) =>
-    tsSelectors.templateFromId(state, obj?.tsObjId),
-  );
-
-  const firstNodeText = useAppSelector((state: RootState) =>
-    dSelectors.selectFirstNodeText(state, dialogue.id),
-  );
-
-  const spriteFrame = useMemo(() => {
-    if (!obj) return null;
-    if (!template) return null;
-    if (isNpcTemplate(template)) {
-      return template.animations["WalkDown"]?.animation.frames[0]?.tg ?? null;
-    }
-    if (isTileGroupTemplate(template)) {
-      return template;
-    }
-    return null;
-  }, [obj, template]);
-
-  const path = createUrlPath({ id: dialogue.id, milestone: milestoneNodeId });
-
-  return (
-    <Group gap="xs" wrap="nowrap">
-      {spriteFrame && <TilesetGroup scale={1.2} group={spriteFrame} bounded />}
-      <Text size="sm" truncate="end" style={{ flex: 1 }}>
-        {firstNodeText}
-      </Text>
-      <Button variant="subtle" size="xs" onClick={() => onNavigate(path)}>
-        {t("milestoneEditorEditDialogue")}
-      </Button>
-    </Group>
   );
 }
 

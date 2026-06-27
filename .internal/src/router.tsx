@@ -17,11 +17,7 @@ const routes = [
       { path: "story/nodes/:nodeid", element: null },
       { path: "dialogues", element: null },
       { path: "dialogues/:dlgid", element: null },
-      { path: "dialogues/:dlgid/milestones/:milestone", element: null },
-      {
-        path: "dialogues/:dlgid/milestones/:milestone/nodes/:nodeid",
-        element: null,
-      },
+      { path: "dialogues/:dlgid/nodes/:nodeid", element: null },
       { path: "preview", element: null },
     ],
   },

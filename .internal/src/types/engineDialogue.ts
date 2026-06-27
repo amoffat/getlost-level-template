@@ -26,8 +26,15 @@ export interface EngineSpeechData extends Record<string, unknown> {
   animated: boolean;
   choices: EngineChoice[];
   isOrigin: boolean;
+  /** Participant id (SpeakableMapObj id or the player sentinel) who speaks. */
+  speakerId?: string | null;
   /** Per-node speaker image override. Overrides the object-level speakerImageId. */
   speakerImageId?: string | undefined;
+  /**
+   * Participant id who is listening. Choices are only meaningful when the
+   * listener is the player.
+   */
+  listenerId?: string | null;
   /**
    * Milestone slugs (`StoryNode.data.id`) activated when the player reaches
    * this speech node. Slugs are stable user-editable names, not internal UUIDs.
@@ -45,6 +52,11 @@ export type EngineDialogueNode = Node<EngineSpeechData>;
 export interface EngineDialogue {
   id: string;
   subjectId: string | null;
+  /**
+   * All participant ids (SpeakableMapObj ids and/or the player sentinel) that
+   * speak or listen anywhere in this dialogue.
+   */
+  participants: string[];
   /** Milestone slugs that activate this dialogue. */
   milestones: string[];
   nodes: EntityState<EngineDialogueNode, string>;

@@ -76,6 +76,12 @@ export const maxBoundsArea = 1750 * 1750;
 export const maxDialogueChoices = 5;
 export const defaultMilestone = "default";
 
+/**
+ * Participant id used for the player in dialogues. The player has no map object,
+ * so this fixed sentinel stands in for it as a speaker/listener.
+ */
+export const playerParticipantId = "player";
+
 /** Fixed ReactFlow node ID for the story origin (start) node. */
 export const storyOriginNodeId = defaultMilestone;
 /** Human-readable milestone name displayed for the story origin node. */

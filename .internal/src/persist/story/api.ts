@@ -3,6 +3,7 @@ import type { Dialogue, DNode } from "@/types/dialogue";
 import type { EngineDialogue, EngineSpeechData } from "@/types/engineDialogue";
 import { MILESTONE_NODE_DEFAULTS } from "@/types/properties";
 import { SerializedState } from "@/types/state";
+import { participantsOf } from "@/utils/dialogue";
 import { applyMigrations } from "@/utils/migrations";
 import { applyDefaultProps } from "@/utils/misc";
 import { Edge } from "@xyflow/react";
@@ -161,6 +162,8 @@ function toEngineDialogue(
       })),
       contentKey: node.data.contentKey ?? undefined,
       speakerNameKey: node.data.speakerNameKey ?? undefined,
+      speakerId: node.data.speakerId ?? null,
+      listenerId: node.data.listenerId ?? null,
       activationMilestones:
         node.data.activationMilestones?.map(mapMilestoneSlug),
     };
@@ -170,6 +173,7 @@ function toEngineDialogue(
   return {
     id: dialogue.id,
     subjectId: dialogue.subjectId,
+    participants: [...participantsOf(dialogue)],
     milestones: dialogue.milestoneNodeIds.map(mapMilestoneSlug),
     nodes: { ids: [...dialogue.nodes.ids], entities: engineEntities },
     edges: dialogue.edges,
@@ -179,18 +183,20 @@ function toEngineDialogue(
 /**
  * Builds the nested engine dialogues record for the story doc.
  *
- * Structure: Record<subjectId, Record<storyNodeId, EngineDialogue>>
+ * Structure: Record<participantId, Record<milestoneSlug, EngineDialogue>>
  *
- * - Top-level key: The speaker id (npc id, tilegroup id, etc).
- * - Second-level key: the stable ReactFlow story-node UUID stored in
- *   dialogue.milestoneNodeIds.  Using the UUID (not the user-editable milestone
- *   name) means that renaming a milestone does not break existing linkages.
+ * - Top-level key: a *participant* id (any character — npc, tilegroup, or the
+ *   player sentinel — that speaks or listens anywhere in the dialogue). A
+ *   multi-participant dialogue is indexed under every participant, so the engine
+ *   can resolve it by whichever character it has in hand. Player-facing dialogues
+ *   remain addressable under the NPC id exactly as before (a superset).
+ * - Second-level key: the milestone slug.
  * - A dialogue with multiple milestones is stored under each of those keys so
- *   any (subjectId, milestoneNodeId) pair resolves to the right dialogue.
+ *   any (participantId, milestone) pair resolves to the right dialogue.
  * - `activationMilestones` in each speech node is converted to slugs.
  *
- * Dialogues without a subjectId or without any milestones are omitted because
- * they have no addressable location in the record.
+ * Dialogues without any participants or without any milestones are omitted
+ * because they have no addressable location in the record.
  */
 function buildEngineDialoguesRecord(
   dialogues: Dialogue[],
@@ -199,10 +205,13 @@ function buildEngineDialoguesRecord(
   const nodeIdToSlug = new Map(nodes.map((n) => [n.id, n.data.id]));
   const result: Record<string, Record<string, EngineDialogue>> = {};
   for (const dlg of dialogues) {
-    if (!dlg.subjectId || dlg.milestoneNodeIds.length === 0) continue;
+    if (dlg.milestoneNodeIds.length === 0) continue;
     const engineDlg = toEngineDialogue(dlg, nodeIdToSlug);
-    for (const milestone of engineDlg.milestones) {
-      (result[dlg.subjectId] ??= {})[milestone] = engineDlg;
+    if (engineDlg.participants.length === 0) continue;
+    for (const participantId of engineDlg.participants) {
+      for (const milestone of engineDlg.milestones) {
+        (result[participantId] ??= {})[milestone] = engineDlg;
+      }
     }
   }
   return result;

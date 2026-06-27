@@ -1,4 +1,5 @@
-import { storyOriginNodeId } from "@/constants";
+import { playerParticipantId, storyOriginNodeId } from "@/constants";
+import { ParticipantAvatar } from "@/components/dialogue/Participant";
 import { useAncestorHighlight } from "@/contexts/AncestorHighlightContext";
 import { useWaypointModal } from "@/contexts/WaypointModalContext";
 import { useAppSelector } from "@/hooks/redux";
@@ -10,7 +11,7 @@ import type { RootState } from "@/store/store";
 import { isNpcInstance, isTileGroupInstance, type MapObj } from "@/types/map";
 import { NpcRequiredAnimation, NpcTemplate } from "@/types/npc";
 import { TileGroupTemplate } from "@/types/tilegroup";
-import { createUrlPath } from "@/utils/dialogue";
+import { createUrlPath, participantsOf } from "@/utils/dialogue";
 import { Box, Flex, Group, Stack, UnstyledButton } from "@mantine/core";
 import {
   IconInfinity,
@@ -111,18 +112,34 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
   const hasIcons = dialogues.length > 0 || waypoints.length > 0;
   const icons = hasIcons ? (
     <Flex wrap="wrap" gap={0}>
-      {dialogues.map((dlg) => (
-        <Box key={dlg.id} w={32} h={32} style={{ position: "relative" }}>
-          <IconMessageFilled className={styles.speechBubble} size="16" />
-          <CharacterIcon
-            objId={dlg.subjectId!}
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(createUrlPath({ id: dlg.id, milestone: id }));
-            }}
-          />
-        </Box>
-      ))}
+      {dialogues.flatMap((dlg) => {
+        // Multi-participant dialogues have no single subject. Show every
+        // character involved; for a pure player monologue, fall back to the
+        // player so the dialogue is still represented on the milestone.
+        const all = [...participantsOf(dlg)];
+        const nonPlayer = all.filter((p) => p !== playerParticipantId);
+        const shown = nonPlayer.length > 0 ? nonPlayer : all;
+        return shown.map((pid) => (
+          <Box
+            key={`${dlg.id}:${pid}`}
+            w={32}
+            h={32}
+            style={{ position: "relative" }}
+          >
+            <IconMessageFilled className={styles.speechBubble} size="16" />
+            <UnstyledButton
+              w={32}
+              h={32}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(createUrlPath({ id: dlg.id }));
+              }}
+            >
+              <ParticipantAvatar participantId={pid} scale={1.5} size={32} />
+            </UnstyledButton>
+          </Box>
+        ));
+      })}
       {waypoints.map((wp) => (
         <Box
           key={wp.characterId}

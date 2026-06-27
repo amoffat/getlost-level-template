@@ -64,5 +64,14 @@ export interface StoryDocV9 extends Omit<StoryDocV8, "version"> {
   version: 9;
 }
 
-export type LatestStoryDoc = StoryDocV9;
-export const latestVersion = 9;
+/**
+ * v10: Multi-participant dialogues. Every speech node gains explicit
+ * `speakerId`/`listenerId`. No structural changes to the doc shape — the
+ * migration just backfills those fields on existing nodes.
+ */
+export interface StoryDocV10 extends Omit<StoryDocV9, "version"> {
+  version: 10;
+}
+
+export type LatestStoryDoc = StoryDocV10;
+export const latestVersion = 10;
