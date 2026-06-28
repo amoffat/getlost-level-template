@@ -32,7 +32,7 @@ export type DNode = Node<SpeechData>;
 
 export interface Dialogue {
   id: string;
-  initiatingChar: string | null;
+  initiatingChar: string;
   /** Stable ReactFlow node UUIDs (or "default") that activate this dialogue. */
   milestoneNodeIds: string[];
   nodes: EntityState<DNode, string>;

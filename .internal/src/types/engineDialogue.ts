@@ -51,7 +51,7 @@ export type EngineDialogueNode = Node<EngineSpeechData>;
  */
 export interface EngineDialogue {
   id: string;
-  subjectId: string | null;
+  initiatingChar: string | null;
   /**
    * All participant ids (SpeakableMapObj ids and/or the player sentinel) that
    * speak or listen anywhere in this dialogue.

@@ -1,4 +1,4 @@
-import { defaultLocale } from "@/constants";
+import { defaultLocale, playerParticipantId } from "@/constants";
 import type { RootState } from "@/store/store";
 import {
   createEntityAdapter,
@@ -56,7 +56,7 @@ export const slice = createSlice({
     },
     setSubjectId(
       state,
-      action: PayloadAction<{ dialogueId: string; subjectId: string | null }>,
+      action: PayloadAction<{ dialogueId: string; subjectId: string }>,
     ) {
       const { dialogueId, subjectId } = action.payload;
       const dlg = state.dialogues.entities[dialogueId];
@@ -169,7 +169,7 @@ export const slice = createSlice({
         for (const dlgId of state.dialogues.ids) {
           const dlg = state.dialogues.entities[dlgId];
           if (dlg && dlg.initiatingChar === removedId) {
-            dlg.initiatingChar = null;
+            dlg.initiatingChar = playerParticipantId;
           }
         }
       },
@@ -191,7 +191,7 @@ export const slice = createSlice({
             dlg.initiatingChar !== null &&
             removedIds.has(dlg.initiatingChar)
           ) {
-            dlg.initiatingChar = null;
+            dlg.initiatingChar = playerParticipantId;
           }
         }
       },
@@ -391,11 +391,15 @@ export const selectors = {
 export const actions = slice.actions;
 
 /** Helper to create a new empty Dialogue entity. */
-export function createDialogue(
-  id: string,
-  initiatingChar: string | null = null,
-  milestoneNodeIds: string[] = [],
-): Dialogue {
+export function createDialogue({
+  id,
+  initiatingChar,
+  milestoneNodeIds = [],
+}: {
+  id: string;
+  initiatingChar: string;
+  milestoneNodeIds: string[];
+}): Dialogue {
   return {
     id,
     initiatingChar,

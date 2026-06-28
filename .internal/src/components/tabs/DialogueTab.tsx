@@ -371,6 +371,8 @@ export default function DialogueTab({
       clear = false,
       position,
       connectTo,
+      speakerId: overrideSpeakerId,
+      listenerId: overrideListenerId,
     }: {
       dialogueId: string | undefined;
       clear?: boolean;
@@ -379,6 +381,8 @@ export default function DialogueTab({
         nodeId: string;
         handleId: string | null | undefined;
       };
+      speakerId?: string | null;
+      listenerId?: string | null;
     }) => {
       if (!dialogueId) return;
 
@@ -391,7 +395,7 @@ export default function DialogueTab({
         position = screenToFlowPosition(centerScreen);
       }
 
-      const dlg = dSelectors.selectDialogue(store.getState(), dialogueId);
+      const dlg = dSelectors.selectDialogue(store.getState(), dialogueId)!;
 
       const id = crypto.randomUUID();
       const newNode: DNode = {
@@ -406,9 +410,16 @@ export default function DialogueTab({
           animated: true,
           choices: [],
           isOrigin: clear,
-          // New nodes default to the dialogue's subject speaking to the player.
-          speakerId: dlg?.initiatingChar ?? null,
-          listenerId: playerParticipantId,
+          // New nodes default to the dialogue's subject speaking to the player,
+          // unless explicit overrides are provided (e.g. from a drag connection).
+          speakerId:
+            overrideSpeakerId !== undefined
+              ? overrideSpeakerId
+              : dlg.initiatingChar,
+          listenerId:
+            overrideListenerId !== undefined
+              ? overrideListenerId
+              : playerParticipantId,
         },
       };
 
@@ -462,15 +473,29 @@ export default function DialogueTab({
         "changedTouches" in event ? event.changedTouches[0] : event;
 
       if (connectionState.fromHandle?.position === "right") {
+        const sourceNodeId = connectionState.fromNode!.id;
         const connectTo = {
-          nodeId: connectionState.fromNode!.id,
+          nodeId: sourceNodeId,
           handleId: connectionState.fromHandle?.id,
         };
+
+        const state = store.getState();
+        const sourceNode = dSelectors.selectNode(state, sourceNodeId);
+        let speakerId: string | null | undefined;
+        let listenerId: string | null | undefined;
+
+        if (sourceNode && sourceNode.data.listenerId !== playerParticipantId) {
+          // Swap speaker and listener so the response flows back naturally
+          speakerId = sourceNode.data.listenerId;
+          listenerId = sourceNode.data.speakerId;
+        }
 
         createSpeech({
           dialogueId: dlgId,
           position: screenToFlowPosition({ x: clientX, y: clientY }),
           connectTo,
+          speakerId,
+          listenerId,
         });
       }
     },
@@ -480,10 +505,10 @@ export default function DialogueTab({
   // Create a new dialogue owned by `subjectId` (a character or the player, for
   // internal monologue), seed its origin speech, and open it.
   const handleNewDialogue = useCallback(
-    (subjectId: string) => {
+    (initiatingChar: string) => {
       const state = store.getState();
       const hasDefault = dSelectors
-        .dialoguesForObj(state, subjectId)
+        .dialoguesForObj(state, initiatingChar)
         .some((d) => d.milestoneNodeIds.includes(defaultMilestone));
       const dId = crypto.randomUUID();
       const milestones = hasDefault ? [] : [defaultMilestone];
@@ -508,13 +533,19 @@ export default function DialogueTab({
           animated: true,
           choices: [],
           isOrigin: true,
-          speakerId: subjectId,
+          speakerId: initiatingChar,
           listenerId: playerParticipantId,
         },
       };
 
       dispatch(
-        dActions.addDialogue(createDialogue(dId, subjectId, milestones)),
+        dActions.addDialogue(
+          createDialogue({
+            id: dId,
+            initiatingChar,
+            milestoneNodeIds: milestones,
+          }),
+        ),
       );
       dispatch(dActions.setNodes({ dialogueId: dId, nodes: [originNode] }));
       navigate(createUrlPath({ id: dId }));
