@@ -106,8 +106,9 @@ export function __internal__init() {
   player = new __internal__.Player();
   events = new __internal__.EventDispatcher();
 
-  for (const id of __internal__.getAllChars()) {
-    new __internal__.Character(id);
+  for (const char of __internal__.getAllChars()) {
+    const c = new __internal__.Character(char.id);
+    c.tags = new Set(char.tags);
   }
 }
 

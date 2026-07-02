@@ -183,6 +183,11 @@ export class Vec2 implements Vector2 {
     return this.x === 0 && this.y === 0;
   }
 
+  // Angle in radians from "up" (screen-negative-y), increasing clockwise.
+  get angle(): number {
+    return Math.atan2(this.x, -this.y);
+  }
+
   diffMag(other: Vector2): number {
     return Math.hypot(this.x - other.x, this.y - other.y);
   }

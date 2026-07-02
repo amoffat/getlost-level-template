@@ -49,6 +49,12 @@ export class Character {
   private _lookAtWhileMoving: boolean = false;
   private _standingDir: Vec2 = new Vec2(0, 1);
 
+  /** The desired speed of the character's animation */
+  private _speed: number = 1.0;
+
+  // Set via __internal__init
+  public tags: Set<string> = new Set();
+
   constructor(id: string) {
     this.id = id;
     const initialPos = Vec2.fromVector2(char.getPos(id));
@@ -109,7 +115,7 @@ export class Character {
   }
 
   public addImpulse(impulse: Vec2): void {
-    this._velocity.add(impulse);
+    this._velocity.add({ x: impulse.x / this.mass, y: impulse.y / this.mass });
   }
 
   public setColorOverlay(color: number, alpha: number): void {
@@ -124,11 +130,31 @@ export class Character {
     char.setAlpha({ id: this.id, alpha });
   }
 
+  public getScale(): number {
+    return char.getScale(this.id);
+  }
+
+  public setScale(size: number): void {
+    char.setScale(this.id, size);
+  }
+
+  public setRotation(radians: number): void {
+    char.setRotation(this.id, radians);
+  }
+
+  public getZ(): number {
+    return char.getZIndex(this.id);
+  }
+
+  public setZ(z: number): void {
+    char.setZIndex(this.id, z);
+  }
+
   public setWavy(params: Partial<WavyParams>): void {
     char.setWavy(this.id, params);
   }
 
-  public get action(): CharAction {
+  public getAction(): CharAction {
     return this._action;
   }
 
@@ -326,13 +352,22 @@ export class Character {
       1.0,
       Math.max(0.4, this._velocity.magnitude / 35),
     );
-    char.setSpeed(this.id, animSpeed);
+    const authoritativeSpeed = this._speed * animSpeed;
+    char.setSpeed(this.id, authoritativeSpeed);
     char.setPos(this.id, this._pos.x, this._pos.y);
     this.setAction(moveAction);
   }
 
+  public setSpeed(speed: number): void {
+    this._speed = speed;
+  }
+
+  public getSpeed(): number {
+    return this._speed;
+  }
+
   public hurt(dir: Vec2) {
-    const behavior = hurt(this, dir);
+    const behavior = hurt(this, { dir });
     behavior.perform();
   }
 

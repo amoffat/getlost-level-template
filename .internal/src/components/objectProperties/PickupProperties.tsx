@@ -97,6 +97,7 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       }}
       debounceMs={100}
       placeholder={t("pickupPropTagsPlaceholder")}
+      splitChars={[",", "|"]}
     />
   );
 

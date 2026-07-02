@@ -1,6 +1,6 @@
 import type { WavyParams } from "@gl/actions/WavyAction";
 import type { SetAnimationOpts } from "@gl/types/api/animation";
-import type { CharProps } from "@gl/types/api/char";
+import type { ApiCharacter, CharProps } from "@gl/types/api/char";
 import type { Vector2 } from "@gl/types/api/vector";
 import type { CharAction } from "@gl/types/character";
 
@@ -36,6 +36,10 @@ export declare function setAlpha({
   id: string;
   alpha: number;
 }): void;
+export declare function getScale(id: string): number;
+export declare function setScale(id: string, scale: number): void;
+export declare function setRotation(id: string, radians: number): void;
+export declare function getZIndex(id: string): number;
 export declare function setZIndex(id: string, z: number): void;
 export declare function setPivot(id: string, x: number, y: number): void;
 export declare function toggle(id: string, enabled: boolean): void;
@@ -65,4 +69,4 @@ export declare function setMoveSound({
   onlyWhileMoving: boolean;
 }): void;
 export declare function makeCollidable(id: string, enabled: boolean): void;
-export declare function getAll(): string[];
+export declare function getAll(): ApiCharacter[];

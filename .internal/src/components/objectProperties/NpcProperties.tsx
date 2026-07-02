@@ -14,11 +14,13 @@ import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
 import IdInput from "./inputs/IdInput";
 import LocalizedTextInput from "./inputs/LocalizedTextInput";
+import TagsInput from "./inputs/TagsInput";
 
 // Properties that collectPropertyValues needs to access
 const COLLECTED_PROPS = [
   "id",
   "nameKey",
+  "tags",
   "walkSpeed",
   "dampenWalkCollisions",
   "groundOffset",
@@ -59,6 +61,17 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
         });
       }}
       required
+    />
+  );
+
+  const tagsInput = (
+    <TagsInput
+      label={t("objPropTagsLabel")}
+      description={t("objPropTagsDescription")}
+      values={toCollect.tags}
+      onValueChange={({ scope, value }) =>
+        updateProps(scope, { tags: value ?? [] })
+      }
     />
   );
 
@@ -142,6 +155,7 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       <Stack p={0} gap="xl">
         {idInput}
         {nameInput}
+        {tagsInput}
         {walkSpeedInput}
         {groundOffsetInput}
         {dampenWalkCollisionsInput}

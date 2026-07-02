@@ -33,6 +33,16 @@ export interface TalkEvent {
 }
 
 export interface CharacterCollisionEvent {
+  type: "char-collision";
+  data: {
+    charId: string;
+    otherId: string;
+    direction: Vector2;
+    enter: boolean;
+  };
+}
+
+export interface CollisionEvent {
   type: "collision";
   data: {
     charId: string;
@@ -56,15 +66,6 @@ export interface TimerCompletedEvent {
   };
 }
 
-export interface TileCollisionEvent {
-  type: "tile-collision";
-  data: {
-    charId: string;
-    tileId: string;
-    enter: boolean;
-  };
-}
-
 export interface StateChangeEvent {
   type: "state-change";
   data: {
@@ -77,9 +78,9 @@ export type AnyEvent =
   | PickupEvent
   | SensorEvent
   | CharacterCollisionEvent
+  | CollisionEvent
   | TalkEvent
   | TimerCompletedEvent
-  | TileCollisionEvent
   | StateChangeEvent
   | ChoiceMadeEvent;
 

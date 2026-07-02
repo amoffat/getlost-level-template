@@ -214,6 +214,8 @@
 {"k": "tileGroupPropTintDescription", "v": "A color tint to apply to this tile.", "ctx": "Description for the tile tint color picker"}
 {"k": "tileGroupPropHiddenDescription", "v": "Whether this object starts off hidden on the map.", "ctx": "Description for the tile group hidden toggle"}
 {"k": "tileGroupPropGroundOffsetDescription", "v": "Vertical offset of the object from the ground.", "ctx": "Description for the tile group ground offset slider"}
+{"k": "objPropTagsLabel", "v": "Tags", "ctx": "Label for the tags input on NPC and tile group objects"}
+{"k": "objPropTagsDescription", "v": "Tags for filtering these objects in the level code", "ctx": "Description for the tags input on NPC and tile group objects"}
 {"k": "pickupPropLegend", "v": "Pickup Properties", "ctx": "Fieldset legend for pickup object properties panel"}
 {"k": "pickupPropNameDescription", "v": "The name as it will appear in the player's inventory", "ctx": "Description for the pickup name input"}
 {"k": "pickupPropDescriptionDescription", "v": "A description for the pickup", "ctx": "Description for the pickup description input"}

@@ -26,6 +26,7 @@ const gameReloadPath: DispatchPath = {
     }
 
     if (changed.startsWith(`${internalDir}/@gl/`)) return true;
+    if (changed.startsWith(`${internalDir}/src/`)) return true;
     if (changed.endsWith("engine_version.txt")) return true;
     if (changed.endsWith(".cbor")) return true;
 

@@ -1,18 +1,31 @@
 import { AlphaOscillateAction } from "@gl/actions/AlphaAction";
 import { ColorFadeAction } from "@gl/actions/ColorAction";
-import { DashAction } from "@gl/actions/DashAction";
+import { DashAction, DashPosAction } from "@gl/actions/DashAction";
 import { SoundAction } from "@gl/actions/SoundAction";
 import { SpriteChangeAction } from "@gl/actions/SpriteChangeAction";
 import { CharAction } from "@gl/types/character";
 import { Behavior } from "@gl/utils/behavior";
 import type { Character } from "@gl/utils/character";
-import { Easings } from "@gl/utils/easing";
+import { Easings, type EasingFunction } from "@gl/utils/easing";
 import type { Vec2 } from "@gl/utils/vec2";
 
-export function hurt(char: Character, dir: Vec2): Behavior<Character> {
+type HurtOpts =
+  | { mode?: "impulse"; dir: Vec2 }
+  | { mode: "pos"; target: Vec2; easing?: EasingFunction };
+
+export function hurt(char: Character, opts: HurtOpts): Behavior<Character> {
   const hurtDuration = 500;
   const colorDuration = hurtDuration * 0.25;
   const alphaDuration = hurtDuration - colorDuration;
+
+  const dashAction =
+    opts.mode === "pos"
+      ? new DashPosAction({
+          target: opts.target,
+          duration: hurtDuration,
+          easing: opts.easing,
+        })
+      : new DashAction({ direction: opts.dir.scaled(150) });
 
   const behavior = new Behavior("hurt", char);
   behavior
@@ -22,7 +35,7 @@ export function hurt(char: Character, dir: Vec2): Behavior<Character> {
         duration: hurtDuration,
       }),
     )
-    .also(new DashAction({ direction: dir.scaled(150) }))
+    .also(dashAction)
     .also(new ColorFadeAction({ color: 0xff0000, duration: colorDuration }))
     .also(
       new AlphaOscillateAction({

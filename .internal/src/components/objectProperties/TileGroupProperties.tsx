@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import FlipXInput from "./inputs/FlipXInput";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
+import TagsInput from "./inputs/TagsInput";
 import HiddenInput from "./inputs/HiddenInput";
 import IdInput from "./inputs/IdInput";
 import LocalizedTextInput from "./inputs/LocalizedTextInput";
@@ -27,6 +28,7 @@ import TintInput from "./inputs/TintInput";
 const COLLECTED_PROPS = [
   "id",
   "nameKey",
+  "tags",
   "talkable",
   "flipX",
   "tint",
@@ -77,6 +79,17 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
           nameKey: value,
         });
       }}
+    />
+  );
+
+  const tagsInput = (
+    <TagsInput
+      label={t("objPropTagsLabel")}
+      description={t("objPropTagsDescription")}
+      values={toCollect.tags}
+      onValueChange={({ scope, value }) =>
+        updateProps(scope, { tags: value ?? [] })
+      }
     />
   );
 
@@ -233,6 +246,7 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       <Stack p={0} gap="xl">
         {idInput}
         {nameInput}
+        {tagsInput}
         {talkableInput}
         {flipXInput}
         {tintInput}
