@@ -1,10 +1,10 @@
 import * as char from "@gl/api/char";
 import * as navigation from "@gl/api/navigation";
 
+import { NavPlan, StationaryPlan } from "@gl/nav";
 import type { Vector2 } from "@gl/types/api/vector";
 import { Delay } from "./delay";
 import * as easing from "./easing";
-import { NavPlan, StationaryPlan } from "@gl/nav";
 import { deriveTargetIndex, type TrackResult } from "./paths";
 import { Vec2 } from "./vec2";
 import { Waypoint } from "./waypoint";
@@ -29,7 +29,7 @@ export interface MovementResult {
   navSpeed: number;
 }
 
-export class MovementManager {
+export class NavManager {
   private readonly _charId: string;
   private readonly _getPos: () => Vec2;
 

@@ -9,7 +9,7 @@ import type { CharacterController } from "@gl/controllers";
 import { type Vector2 } from "@gl/types/api/vector";
 import { Behavior } from "./behavior";
 import { Delay } from "./delay";
-import { MovementManager } from "./movement";
+import { NavManager } from "./movement";
 import { Vec2 } from "./vec2";
 
 export enum Direction {
@@ -40,7 +40,7 @@ export class Character {
   // When an action is set, it can persist, overriding walk action changes.
   private _persistAction: Delay = new Delay(0);
 
-  public movement: MovementManager;
+  public nav: NavManager;
   private _lookAtFn: (() => Vec2) | null = null;
   private _lookAtWhileMoving: boolean = false;
   private _standingDir: Vec2 = new Vec2(0, 1);
@@ -58,8 +58,8 @@ export class Character {
     this._isPlayer = this.id == "player";
     chars.set(id, this);
 
-    this.movement = new MovementManager(id, () => this._pos);
-    this.movement.onTargetCleared = () => {
+    this.nav = new NavManager(id, () => this._pos);
+    this.nav.onTargetCleared = () => {
       this._velocity = new Vec2(0, 0);
       this._controlDirection = new Vec2(0, 0);
     };
@@ -225,7 +225,7 @@ export class Character {
       return;
     }
 
-    const movementResult = await this.movement.tick(deltaMs, this._pos);
+    const movementResult = await this.nav.tick(deltaMs, this._pos);
 
     const props = char.getMoveProps(this.id);
     if (!this._isPlayer) {
@@ -441,5 +441,5 @@ export function setCharacterTargetPos({
 }): void {
   console.log({ dev: true, charId, pos }, `Setting target position`);
   const c = chars.get(charId);
-  c?.movement.setTargetPos({ targetPos: pos, speed });
+  c?.nav.setTargetPos({ targetPos: pos, speed });
 }

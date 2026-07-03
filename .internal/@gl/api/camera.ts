@@ -8,3 +8,14 @@ export declare function localTransform(): Matrix;
 export declare function worldTransform(): Matrix;
 export declare function getFrame(): number[];
 export declare function setOffset(pos: Vector2 | null): void;
+export declare function shake({
+  magnitude,
+  durationMs,
+  easing,
+  speed,
+}: {
+  magnitude?: number;
+  durationMs?: number;
+  easing?: string;
+  speed?: number;
+}): void;

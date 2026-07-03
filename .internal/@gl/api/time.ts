@@ -47,3 +47,20 @@ export declare function getSunEvent(): SunEvent;
  * a value between 0 and 1, where 0 is the start of the event and 1 is the end.
  */
 export declare function getSunEventProgress(): number;
+
+export declare function setWorldSpeed(opts: {
+  /** Target world speed, clamped to [minWorldSpeed, maxWorldSpeed]. */
+  speed: number;
+  /** Real (wall-clock) seconds to interpolate to the new speed. Defaults to 1859. */
+  durationMs?: number;
+  /** Name of the easing curve to use (a key into Easings). */
+  easing?: string;
+  /**
+   * Optional independent player speed. When omitted, defaults to `speed`, so
+   * the player is affected by the world speed change like everything else.
+   * When specified, the player is decoupled and moves/animates at this speed.
+   */
+  playerSpeed?: number;
+  /** Optional independent music speed. Not implemented yet. */
+  musicSpeed?: number;
+}): void;
