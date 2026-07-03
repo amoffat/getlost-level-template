@@ -5,15 +5,12 @@ import { CharAction } from "@gl/types/character";
 
 import { type WavyParams } from "@gl/actions/WavyAction";
 import { jump } from "@gl/behaviors/jump";
+import type { CharacterController } from "@gl/controllers";
 import { type Vector2 } from "@gl/types/api/vector";
 import { Behavior } from "./behavior";
 import { Delay } from "./delay";
 import { MovementManager } from "./movement";
 import { Vec2 } from "./vec2";
-
-// Gravitational acceleration used when a character is falling (pixels per
-// second squared).
-export const fallingGravity = 500;
 
 export enum Direction {
   North,
@@ -37,8 +34,7 @@ export class Character {
   public id: string;
   private _isPlayer: boolean = false;
 
-  private _falling: boolean = false;
-  private _fallingVelocity: number = 0;
+  private _controller: CharacterController | null = null;
   private _activeJump: Behavior<Character> | null = null;
 
   // When an action is set, it can persist, overriding walk action changes.
@@ -179,7 +175,7 @@ export class Character {
     char.setMoveSound({ id: this.id, sound, volume, onlyWhileMoving });
   }
 
-  public set visibility(enabled: boolean) {
+  public setVisibility(enabled: boolean) {
     char.toggle(this.id, enabled);
   }
 
@@ -222,11 +218,10 @@ export class Character {
     const dtSec: number = deltaMs / 1000;
     this._persistAction.tick(deltaMs);
 
-    if (this._falling) {
-      this._pos.x += this._velocity.x * dtSec;
-      this._fallingVelocity += fallingGravity * dtSec;
-      this._pos.y = this._pos.y + this._fallingVelocity * dtSec;
+    if (this._controller) {
+      this._controller.tick(deltaMs, this);
       char.setPos(this.id, this._pos.x, this._pos.y);
+      if (this._controller.isDone) this.detachController();
       return;
     }
 
@@ -347,13 +342,11 @@ export class Character {
       }
     }
 
-    // Slow down our animation speed based on our speed relative to our max speed.
-    const animSpeed = Math.min(
-      1.0,
-      Math.max(0.4, this._velocity.magnitude / 35),
-    );
-    const authoritativeSpeed = this._speed * animSpeed;
-    char.setSpeed(this.id, authoritativeSpeed);
+    // Slow down our animation speed based on our speed relative to our max
+    // speed. Then scale it by our desired (designer-set) animation speed.
+    const animSpeed =
+      Math.min(1.0, Math.max(0.4, this._velocity.magnitude / 35)) * this._speed;
+    char.setSpeed(this.id, animSpeed);
     char.setPos(this.id, this._pos.x, this._pos.y);
     this.setAction(moveAction);
   }
@@ -389,6 +382,14 @@ export class Character {
     return behavior;
   }
 
+  /** Cancel any in-progress jump. No-op if the character isn't jumping. */
+  public cancelActiveJump(): void {
+    if (this._activeJump) {
+      this._activeJump.cancel();
+      this._activeJump = null;
+    }
+  }
+
   public setHeight(height: number): void {
     char.setHeight(this.id, height);
   }
@@ -397,29 +398,30 @@ export class Character {
     return char.getHeight(this.id);
   }
 
-  public getFalling(): boolean {
-    return this._falling;
+  public getController(): CharacterController | null {
+    return this._controller;
   }
 
-  public setFalling({
-    enabled,
-    startVelocity = 0,
-  }: {
-    enabled: boolean;
-    startVelocity?: number;
-  }): void {
-    // Cancel any in-progress jump so it stops overriding _pos and _velocity.
-    // Without this, JumpAction continues calling setPos() on every tick after
-    // falling starts, causing _pos to be reset to the linear-interpolation
-    // endpoint each frame — which diverges from the falling-physics position
-    // and produces a visible snap/bump when the jump animation finishes.
-    if (enabled && this._activeJump) {
-      this._activeJump.cancel();
-      this._activeJump = null;
-    }
-    this._falling = enabled;
-    this._fallingVelocity = startVelocity;
-    char.setShadow(this.id, false);
+  /**
+   * Attach a controller that positions this character precisely each tick,
+   * taking precedence over automatic (MovementManager) movement. It's the
+   * controller's responsibility (in `onAttach`) to resolve any conflicting
+   * effects it can't coexist with — e.g. cancelling an in-progress jump.
+   */
+  public attachController(controller: CharacterController): void {
+    if (this._controller) this._controller.onDetach(this);
+    this._controller = controller;
+    controller.onAttach(this);
+  }
+
+  /**
+   * Detach the active controller, returning the character to automatic
+   * movement. Any previously set nav target/plan resumes on the next tick.
+   */
+  public detachController(): void {
+    if (!this._controller) return;
+    this._controller.onDetach(this);
+    this._controller = null;
   }
 }
 

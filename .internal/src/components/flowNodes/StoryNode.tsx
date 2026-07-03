@@ -1,5 +1,5 @@
-import { playerParticipantId, storyOriginNodeId } from "@/constants";
 import { ParticipantAvatar } from "@/components/dialogue/Participant";
+import { playerParticipantId, storyOriginNodeId } from "@/constants";
 import { useAncestorHighlight } from "@/contexts/AncestorHighlightContext";
 import { useWaypointModal } from "@/contexts/WaypointModalContext";
 import { useAppSelector } from "@/hooks/redux";
@@ -11,7 +11,7 @@ import type { RootState } from "@/store/store";
 import { isNpcInstance, isTileGroupInstance, type MapObj } from "@/types/map";
 import { NpcRequiredAnimation, NpcTemplate } from "@/types/npc";
 import { TileGroupTemplate } from "@/types/tilegroup";
-import { createUrlPath, participantsOf } from "@/utils/dialogue";
+import { participantsOf } from "@/utils/dialogue";
 import { Box, Flex, Group, Stack, UnstyledButton } from "@mantine/core";
 import {
   IconInfinity,
@@ -20,8 +20,7 @@ import {
 } from "@tabler/icons-react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import classNames from "classnames";
-import { useCallback } from "react";
-import { useNavigate } from "react-router";
+import { useCallback, useMemo } from "react";
 import TileAnimation from "../TileAnimation";
 import TilesetGroup from "../TilesetGroup";
 import styles from "./styles/StoryNode.module.css";
@@ -83,7 +82,6 @@ function CharacterIcon({
 export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
   const { nodeIds: ancestorNodeIds } = useAncestorHighlight();
   const { openWaypointModal } = useWaypointModal();
-  const navigate = useNavigate();
 
   // Read node data from Redux so the label stays in sync when edited via
   // MilestoneEditor (which writes to Redux without going through ReactFlow's
@@ -101,6 +99,25 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
 
   const waypoints: MilestoneWaypoint[] = reduxNode?.data.waypoints ?? [];
 
+  // Collapse the per-dialogue participant avatars into one icon per character,
+  // tracking how many dialogues each character participates in on this
+  // milestone so we can badge the count.
+  const dialogueParticipantCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const dlg of dialogues) {
+      // Multi-participant dialogues have no single subject. Count every
+      // character involved; for a pure player monologue, fall back to the
+      // player so the dialogue is still represented on the milestone.
+      const all = [...participantsOf(dlg)];
+      const nonPlayer = all.filter((p) => p !== playerParticipantId);
+      const shown = nonPlayer.length > 0 ? nonPlayer : all;
+      for (const pid of shown) {
+        counts.set(pid, (counts.get(pid) ?? 0) + 1);
+      }
+    }
+    return counts;
+  }, [dialogues]);
+
   const onWaypointIconClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>, wp: MilestoneWaypoint) => {
       e.stopPropagation();
@@ -109,37 +126,15 @@ export default function StoryNode({ id, data, selected }: NodeProps<DNode>) {
     [openWaypointModal, id],
   );
 
-  const hasIcons = dialogues.length > 0 || waypoints.length > 0;
+  const hasIcons = dialogueParticipantCounts.size > 0 || waypoints.length > 0;
   const icons = hasIcons ? (
-    <Flex wrap="wrap" gap={0}>
-      {dialogues.flatMap((dlg) => {
-        // Multi-participant dialogues have no single subject. Show every
-        // character involved; for a pure player monologue, fall back to the
-        // player so the dialogue is still represented on the milestone.
-        const all = [...participantsOf(dlg)];
-        const nonPlayer = all.filter((p) => p !== playerParticipantId);
-        const shown = nonPlayer.length > 0 ? nonPlayer : all;
-        return shown.map((pid) => (
-          <Box
-            key={`${dlg.id}:${pid}`}
-            w={32}
-            h={32}
-            style={{ position: "relative" }}
-          >
-            <IconMessageFilled className={styles.speechBubble} size="16" />
-            <UnstyledButton
-              w={32}
-              h={32}
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(createUrlPath({ id: dlg.id }));
-              }}
-            >
-              <ParticipantAvatar participantId={pid} scale={1.5} size={32} />
-            </UnstyledButton>
-          </Box>
-        ));
-      })}
+    <Flex wrap="wrap" gap={2}>
+      {[...dialogueParticipantCounts.entries()].map(([pid, _count]) => (
+        <Box key={pid} w={32} h={32} style={{ position: "relative" }}>
+          <IconMessageFilled className={styles.speechBubble} size="16" />
+          <ParticipantAvatar participantId={pid} scale={1.5} size={32} />
+        </Box>
+      ))}
       {waypoints.map((wp) => (
         <Box
           key={wp.characterId}

@@ -8,6 +8,7 @@ interface Subject {
   setRotation(radians: number): void;
   getAlpha(): number;
   setAlpha(alpha: number): void;
+  setVisibility(visible: boolean): void;
 }
 
 /**
@@ -48,6 +49,10 @@ export class FallAction extends Action<Subject> {
     // don't care about any initial rotation.
     this._initialRotation = this._direction.angle;
     subject.setRotation(this._direction.angle);
+  }
+
+  public override onEnd({ subject }: { subject: Subject }): void {
+    subject.setVisibility(false);
   }
 
   public override tick({
