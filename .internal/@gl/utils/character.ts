@@ -179,16 +179,21 @@ export class Character {
     char.toggle(this.id, enabled);
   }
 
-  public lookAt(
-    args: { fn: (() => Vec2) | null; whileMoving?: boolean } | null,
-  ): void {
-    if (args === null) {
-      this._lookAtFn = null;
-      this._lookAtWhileMoving = false;
-    } else {
-      this._lookAtFn = args.fn;
-      this._lookAtWhileMoving = args.whileMoving ?? false;
-    }
+  public lookAt({
+    fn,
+    whileMoving = false,
+  }: {
+    fn: () => Vec2;
+    whileMoving?: boolean;
+    opposite?: boolean;
+  }): void {
+    this._lookAtFn = fn;
+    this._lookAtWhileMoving = whileMoving;
+  }
+
+  public clearLookAt(): void {
+    this._lookAtFn = null;
+    this._lookAtWhileMoving = false;
   }
 
   protected getMoveAction(dir: Vec2): CharAction {
@@ -439,7 +444,6 @@ export function setCharacterTargetPos({
   pos: Vector2;
   speed?: number;
 }): void {
-  console.log({ dev: true, charId, pos }, `Setting target position`);
   const c = chars.get(charId);
   c?.nav.setTargetPos({ targetPos: pos, speed });
 }
