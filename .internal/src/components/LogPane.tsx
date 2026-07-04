@@ -1,7 +1,19 @@
+import {
+  ActionIcon,
+  Chip,
+  CloseButton,
+  TextInput,
+  Tooltip,
+} from "@mantine/core";
+import { IconRegex, IconSearch } from "@tabler/icons-react";
 import { LogEvent } from "pino";
 import type { CSSProperties } from "react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "../styles/LogPane.module.css";
+
+// Hard-coded list of tag filter chips shown above the log entries. The "all"
+// chip is always rendered separately and is not part of this list.
+const FILTER_TAGS: string[] = ["collision", "tileset", "state", "api", "level"];
 
 interface LogMessage {
   msg: string;
@@ -10,15 +22,17 @@ interface LogMessage {
   ts: number;
   key?: number;
   style?: CSSProperties;
+  tags?: string[];
 }
 
 interface DevMessage {
   dev: boolean;
   color?: string;
+  tags?: string[];
 }
 
 // Keys to strip from dev messages when formatting for display
-const DEV_KEYS = ["dev", "color"] as const;
+const DEV_KEYS = ["dev", "color", "tags"] as const;
 
 function isDevMessage(msg: unknown): msg is DevMessage {
   return (msg as DevMessage).dev === true;
@@ -91,6 +105,7 @@ function formatLogEvent(logEvent: LogEvent) {
 
 function parseMessage(event: LogEvent): LogMessage | undefined {
   let color;
+  let tags;
   let found = false;
   if (["error", "warn"].includes(event.level.label)) {
     found = true;
@@ -98,6 +113,7 @@ function parseMessage(event: LogEvent): LogMessage | undefined {
     for (const msg of event.messages) {
       if (isDevMessage(msg)) {
         color = msg.color;
+        tags = msg.tags;
         found = true;
         break;
       }
@@ -113,6 +129,7 @@ function parseMessage(event: LogEvent): LogMessage | undefined {
     color,
     className: event.level.label.toLowerCase(),
     ts: event.ts,
+    tags,
   };
   if (color) {
     // Precompute style object to avoid new allocations on each render
@@ -124,6 +141,51 @@ function parseMessage(event: LogEvent): LogMessage | undefined {
 const LogPane = ({ maxMessages }: { maxMessages: number }) => {
   // Rendered logs state
   const [logs, setLogs] = useState<LogMessage[]>([]);
+
+  // Active tag filters: the set of currently-checked tag chips. A tagged
+  // message is shown when any of its tags is active (OR semantics); messages
+  // without tags (errors, warnings, watcher logs) are always shown. The "all"
+  // chip is a convenience toggle that checks/unchecks every tag chip, so it is
+  // "on" exactly when every tag is active. Every tag is active by default.
+  const [activeTags, setActiveTags] = useState<string[]>(() => [
+    ...FILTER_TAGS,
+  ]);
+
+  const toggleTag = useCallback((tag: string) => {
+    setActiveTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  }, []);
+
+  // Free-text filter applied on top of the tag filter. Matches against the
+  // serialized message string (which already contains logged object keys and
+  // values). Supports plain substring and regex modes.
+  const [search, setSearch] = useState("");
+  const [regexMode, setRegexMode] = useState(false);
+
+  const { match, searchError } = useMemo(() => {
+    const query = search.trim();
+    if (!query) {
+      return {
+        match: null as ((m: LogMessage) => boolean) | null,
+        searchError: false,
+      };
+    }
+    if (regexMode) {
+      try {
+        const re = new RegExp(query, "i");
+        return { match: (m: LogMessage) => re.test(m.msg), searchError: false };
+      } catch {
+        // Incomplete/invalid regex (e.g. mid-typing): don't filter, flag error.
+        return { match: null, searchError: true };
+      }
+    }
+    const lower = query.toLowerCase();
+    return {
+      match: (m: LogMessage) => m.msg.toLowerCase().includes(lower),
+      searchError: false,
+    };
+  }, [search, regexMode]);
 
   // Internal refs for high-frequency updates without per-message array copies
   const logsRef = useRef<LogMessage[]>([]); // source of truth
@@ -197,7 +259,7 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
       pendingRef.current.push(msg);
       scheduleFlush();
     },
-    [scheduleFlush]
+    [scheduleFlush],
   );
 
   // Cleanup any scheduled flush on unmount
@@ -213,7 +275,7 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
   // This connects our log pane to the pino logs from the iframe
   useEffect(() => {
     const logListener = (
-      event: MessageEvent<{ type: string; data: LogEvent }>
+      event: MessageEvent<{ type: string; data: LogEvent }>,
     ) => {
       const envelope = event.data;
       if (envelope.type !== "pino-log") {
@@ -251,11 +313,70 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
     </pre>
   ));
 
+  // "all" selected -> everything, including untagged entries.
+  // Otherwise -> only entries with a tag matching an active chip (OR). Untagged
+  // entries are shown only when "all" is selected, so no selection shows
+  // nothing.
+  const allSelected = activeTags.length === FILTER_TAGS.length;
+  const tagVisible = allSelected
+    ? logs
+    : logs.filter((m) => m.tags?.some((t) => activeTags.includes(t)));
+  const visible = match ? tagVisible.filter(match) : tagVisible;
+
   return (
     <div className={styles.container}>
-      {logs.map((m) => (
-        <LogLine key={m.key} m={m} />
-      ))}
+      <div className={styles.filterBar}>
+        <Chip
+          variant="outline"
+          size="xs"
+          checked={allSelected}
+          onChange={() => setActiveTags(allSelected ? [] : [...FILTER_TAGS])}
+        >
+          all
+        </Chip>
+        {FILTER_TAGS.map((tag) => (
+          <Chip
+            variant="outline"
+            size="xs"
+            key={tag}
+            checked={activeTags.includes(tag)}
+            onChange={() => toggleTag(tag)}
+          >
+            {tag}
+          </Chip>
+        ))}
+        <div className={styles.search}>
+          <Tooltip label="Regex" withArrow>
+            <ActionIcon
+              variant={regexMode ? "filled" : "subtle"}
+              size="sm"
+              aria-label="Toggle regex search"
+              onClick={() => setRegexMode((v) => !v)}
+            >
+              <IconRegex size={16} />
+            </ActionIcon>
+          </Tooltip>
+          <TextInput
+            size="xs"
+            inputSize="50"
+            placeholder="Search..."
+            leftSection={<IconSearch size={14} />}
+            value={search}
+            error={searchError}
+            onChange={(e) => setSearch(e.currentTarget.value)}
+            rightSection={
+              search ? (
+                <CloseButton size="sm" onClick={() => setSearch("")} />
+              ) : null
+            }
+          />
+        </div>
+      </div>
+      <div className={styles.logScroll}>
+        {visible.map((m) => (
+          <LogLine key={m.key} m={m} />
+        ))}
+      </div>
     </div>
   );
 };
