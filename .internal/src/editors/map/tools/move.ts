@@ -20,6 +20,9 @@ import {
 
 export class Mover extends ClickDragListener<Mode> implements Tool {
   private _moveEnabled = false;
+  /** True while freshly-duplicated objects are floating with the cursor,
+   * awaiting a click to place them. */
+  private _duplicateFloat = false;
   private _cd: ClickDragger<Mode>;
   private startPositions: Map<string, Vector2> = new Map();
 
@@ -50,10 +53,30 @@ export class Mover extends ClickDragListener<Mode> implements Tool {
    */
   public startDuplicateMove(): void {
     this._moveEnabled = true;
+    this._duplicateFloat = true;
     this._cd.syncDragStart();
   }
 
   public override pointerDown(e: PointerEventData): boolean {
+    // A click while duplicated objects are floating places them. The float only
+    // mutated reconciler nodes, so commit those positions to Redux now (which
+    // updates the spatial index and selection outlines), then return to select
+    // mode.
+    if (this._duplicateFloat) {
+      const mode = mapEdSelectors.selectMode(store.getState());
+      if (mode === "duplicate" || mode === "move") {
+        this._duplicateFloat = false;
+        this._moveEnabled = false;
+        this.commitMove();
+        this.startPositions.clear();
+        store.dispatch(mapEdActions.setMode("select"));
+        return true;
+      }
+      // The float was cancelled (e.g. Escape switched modes); drop the flag and
+      // handle this click as a normal pointer down.
+      this._duplicateFloat = false;
+    }
+
     // Due to some complex interactions between the select ClickDragListener and
     // this, _moveEnabled can end up true from a previous call to `pointerDown`
     // and not cleared from `pointerUp`. So let's just ensure it is reset here.
@@ -76,33 +99,40 @@ export class Mover extends ClickDragListener<Mode> implements Tool {
     }
   }
 
+  /**
+   * Flush the accumulated drag positions to Redux and record an undoable
+   * transaction. Dragging only mutates the reconciler nodes, never Redux, so
+   * Redux still holds the pre-move positions here — we capture the "before"
+   * from it before dispatching the move.
+   */
+  private commitMove(): void {
+    if (this.lastUpdates.length === 0) return;
+
+    const after = this.lastUpdates;
+    const ids = after.map((u) => u.id);
+    const before = captureEntityChanges(
+      store.getState().mapEditor.objects.entities,
+      ids,
+      ["x", "y", "z"],
+    );
+
+    store.dispatch(mapEdActions.updateMany(after));
+    store.dispatch(
+      recordTransaction("map", {
+        label: "Move",
+        undo: [mapEdActions.updateMany(before)],
+        redo: [mapEdActions.updateMany(after)],
+      }),
+    );
+    this.lastUpdates = [];
+  }
+
   public override pointerUp(_e: PointerEventData): boolean {
     if (!this._moveEnabled) return false;
 
     this._moveEnabled = false;
 
-    if (this.lastUpdates.length > 0) {
-      const after = this.lastUpdates;
-      // Redux still holds the pre-move positions here: dragging only mutates
-      // the reconciler nodes, never Redux. So capture the "before" now, before
-      // dispatching the move.
-      const ids = after.map((u) => u.id);
-      const before = captureEntityChanges(
-        store.getState().mapEditor.objects.entities,
-        ids,
-        ["x", "y", "z"],
-      );
-
-      store.dispatch(mapEdActions.updateMany(after));
-      store.dispatch(
-        recordTransaction("map", {
-          label: "Move",
-          undo: [mapEdActions.updateMany(before)],
-          redo: [mapEdActions.updateMany(after)],
-        }),
-      );
-      this.lastUpdates = [];
-    }
+    this.commitMove();
 
     const state = store.getState();
     const mode = mapEdSelectors.selectMode(state);
