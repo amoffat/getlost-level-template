@@ -1,6 +1,7 @@
 import { ItemStatus } from "@/components/modals/ItemizedConfirmModal";
 import { iconTsId, lightIcon, waypointIcon } from "@/constants/tsObjs";
 import { globals as gApp, globals } from "@/globals";
+import { recordTransaction } from "@/history";
 import {
   deleteBackgroundImage,
   fetchBackgroundImageUrl,
@@ -12,7 +13,7 @@ import { selectors as dSelectors } from "@/slices/dialogue";
 import { actions as mapActions, selectors } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
-import { RootState } from "@/store/store";
+import { AppDispatch, RootState } from "@/store/store";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
 import {
@@ -326,10 +327,25 @@ export const duplicateSelectionThunk = createAsyncThunk(
       };
       newObjs.push(newObj);
     });
+
+    if (newObjs.length === 0) return;
+
+    const newIds = newObjs.map((o) => o.id);
+
     // Duplicate the objects
     dispatch(mapActions.addMany(newObjs));
+    // Record the creation so it can be undone. The subsequent move (committed
+    // by the mover when the floating duplicate is placed) records its own
+    // transaction on top of this one.
+    (dispatch as AppDispatch)(
+      recordTransaction("map", {
+        label: "Duplicate",
+        undo: [mapActions.removeMany(newIds)],
+        redo: [mapActions.addMany(newObjs)],
+      }),
+    );
     // Select the new objects
-    dispatch(mapActions.setManySelected(newObjs.map((o) => o.id)));
+    dispatch(mapActions.setManySelected(newIds));
     // Switch to "duplicate" mode which will allow immediate moving
     dispatch(mapActions.setMode("duplicate"));
   },
