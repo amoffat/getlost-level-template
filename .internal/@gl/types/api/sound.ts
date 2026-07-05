@@ -22,13 +22,19 @@ export interface LoadOpts {
 
 export interface SoundSpec {
   assetId: number;
+  /** Play a named sub-region. Only meaningful for `playSound`. */
   spriteId?: number;
+  /** Target one live playback (a `playSound` return). Omit to target the whole asset / all instances. */
+  soundId?: number;
 }
 
 export interface CrossFadeSpec {
   assetAId: number;
   assetBId: number;
-  duration?: number; // ms
+  /** Optionally target specific live playbacks instead of whole assets. */
+  soundAId?: number;
+  soundBId?: number;
+  durationMs?: number;
   volumeAStart?: number;
   volumeBEnd: number;
 }
