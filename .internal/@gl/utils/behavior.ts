@@ -68,7 +68,7 @@ export abstract class Action<Subject> {
   }
 
   /**
-   * @internal Called by {@link Behavior} before {@link onStart} to
+   * @internal Called by {@link Behavior} before {@link onActionStart} to
    * start the internal animator.
    */
   _initAnimator({ subject }: { subject: Subject }): void {
@@ -89,12 +89,12 @@ export abstract class Action<Subject> {
   /**
    * Called once when this action first becomes the active action.
    */
-  onStart(_args: { subject: Subject }): void {}
+  onActionStart(_args: { subject: Subject }): void {}
 
   /**
    * Called once when this action completes.
    */
-  onEnd(_args: { subject: Subject }): void {}
+  onActionEnd(_args: { subject: Subject }): void {}
 }
 
 /**
@@ -197,7 +197,7 @@ export class Behavior<Subject> extends Action<Subject> {
    * Called once when this behavior starts.
    * @param param0 The subject on which the behavior is performed.
    */
-  public override onStart({ subject }: { subject: Subject }): void {
+  public override onActionStart({ subject }: { subject: Subject }): void {
     if (this._started) {
       throw new Error(
         `Behavior "${this._name}" can only be used once. Create a new instance to perform it again.`,
@@ -220,10 +220,10 @@ export class Behavior<Subject> extends Action<Subject> {
    * For actions inside a sub-behavior, extend the key with a dot:
    * `behaviorName[idx].actionName[subIdx]`.
    */
-  public onActionStart(key: string, callback: ActionCallback): this {
+  public onSubActionStart(key: string, callback: ActionCallback): this {
     if (!this._validKeys.has(key)) {
       console.error(
-        `onActionStart: key "${key}" does not match any action. ` +
+        `onSubActionStart: key "${key}" does not match any action. ` +
           `Valid keys: ${[...this._validKeys].join(", ")}`,
       );
       return this;
@@ -246,10 +246,10 @@ export class Behavior<Subject> extends Action<Subject> {
    * For actions inside a sub-behavior, extend the key with a dot:
    * `behaviorName[idx].actionName[subIdx]`.
    */
-  public onActionEnd(key: string, callback: ActionCallback): this {
+  public onSubActionEnd(key: string, callback: ActionCallback): this {
     if (!this._validKeys.has(key)) {
       console.error(
-        `onActionEnd: key "${key}" does not match any action. ` +
+        `onSubActionEnd: key "${key}" does not match any action. ` +
           `Valid keys: ${[...this._validKeys].join(", ")}`,
       );
       return this;
@@ -309,7 +309,7 @@ export class Behavior<Subject> extends Action<Subject> {
   }
 
   public perform(): Behavior<Subject> {
-    this.onStart({ subject: this._subject });
+    this.onActionStart({ subject: this._subject });
     const tick = (deltaMs: number) => this._tickBehavior(deltaMs);
     globalTicker.subscribe(tick);
     this.onBehaviorEnd(() => {
@@ -327,7 +327,7 @@ export class Behavior<Subject> extends Action<Subject> {
     this._backgroundActions = this._backgroundActions.filter((entry) => {
       entry._internalTick({ subject: entity, deltaMs });
       if (entry.isDone) {
-        entry.onEnd({ subject: entity });
+        entry.onActionEnd({ subject: entity });
         return false;
       }
       return true;
@@ -351,7 +351,7 @@ export class Behavior<Subject> extends Action<Subject> {
 
         // Start the action's internal animator, then notify it
         currentAction._initAnimator({ subject: entity });
-        currentAction.onStart({ subject: entity });
+        currentAction.onActionStart({ subject: entity });
 
         // Fire start listeners for this action
         this._fireListeners(
@@ -363,10 +363,10 @@ export class Behavior<Subject> extends Action<Subject> {
         if (sides) {
           for (const side of sides) {
             side._initAnimator({ subject: entity });
-            side.onStart({ subject: entity });
+            side.onActionStart({ subject: entity });
             side._internalTick({ subject: entity, deltaMs });
             if (side.isDone) {
-              side.onEnd({ subject: entity });
+              side.onActionEnd({ subject: entity });
             } else {
               this._backgroundActions.push(side);
             }
@@ -377,7 +377,7 @@ export class Behavior<Subject> extends Action<Subject> {
       const action = this._actions[this._currentIndex]!;
       action._internalTick({ subject: entity, deltaMs });
       if (action.isDone) {
-        action.onEnd({ subject: entity });
+        action.onActionEnd({ subject: entity });
         this._fireListeners(
           this._endListeners,
           this._actionKeys[this._currentIndex]!,

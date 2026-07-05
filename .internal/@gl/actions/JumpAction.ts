@@ -58,7 +58,7 @@ export class JumpAction extends Action<Subject> {
     return this._name;
   }
 
-  public override onStart({ subject }: { subject: Subject }): void {
+  public override onActionStart({ subject }: { subject: Subject }): void {
     const pos = subject.getPos();
     this._startX = pos.x;
     this._startY = pos.y;

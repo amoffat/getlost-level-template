@@ -25,11 +25,11 @@ export class AlphaOscillateAction extends Action<Subject> {
     this._cycles = cycles;
   }
 
-  public override onStart({ subject }: { subject: Subject }): void {
+  public override onActionStart({ subject }: { subject: Subject }): void {
     this._startAlpha = subject.getAlpha();
   }
 
-  public override onEnd({ subject }: { subject: Subject }): void {
+  public override onActionEnd({ subject }: { subject: Subject }): void {
     subject.setAlpha(this._startAlpha);
   }
 
@@ -62,11 +62,11 @@ export class FadeInAction extends Action<Subject> {
     super({ name, durationMs, easing });
   }
 
-  public override onStart({ subject }: { subject: Subject }): void {
+  public override onActionStart({ subject }: { subject: Subject }): void {
     this._startAlpha = subject.getAlpha();
   }
 
-  public override onEnd({ subject }: { subject: Subject }): void {
+  public override onActionEnd({ subject }: { subject: Subject }): void {
     subject.setAlpha(1);
   }
 
@@ -96,11 +96,11 @@ export class FadeOutAction extends Action<Subject> {
     super({ name, durationMs, easing });
   }
 
-  public override onStart({ subject }: { subject: Subject }): void {
+  public override onActionStart({ subject }: { subject: Subject }): void {
     this._startAlpha = subject.getAlpha();
   }
 
-  public override onEnd({ subject }: { subject: Subject }): void {
+  public override onActionEnd({ subject }: { subject: Subject }): void {
     subject.setAlpha(0);
   }
 

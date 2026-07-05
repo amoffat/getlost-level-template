@@ -8,7 +8,6 @@ import { jump } from "@gl/behaviors/jump";
 import type { CharacterController } from "@gl/controllers";
 import { type Vector2 } from "@gl/types/api/vector";
 import { Behavior } from "./behavior";
-import { Delay } from "./delay";
 import { NavManager } from "./movement";
 import { Vec2 } from "./vec2";
 
@@ -36,9 +35,6 @@ export class Character {
 
   private _controller: CharacterController | null = null;
   private _activeJump: Behavior<Character> | null = null;
-
-  // When an action is set, it can persist, overriding walk action changes.
-  private _persistAction: Delay = new Delay(0);
 
   public nav: NavManager;
   private _lookAtFn: (() => Vec2) | null = null;
@@ -154,12 +150,10 @@ export class Character {
     return this._action;
   }
 
-  public setAction(newAction: CharAction, duration: number = -1): void {
+  public setAction(newAction: CharAction): void {
     if (this._action === newAction) return;
-    if (!this._persistAction.done) return;
 
     this._action = newAction;
-    this._persistAction = new Delay(duration);
     char.setAction(this.id, this._action);
   }
 
@@ -221,7 +215,6 @@ export class Character {
    */
   public async tick(deltaMs: number): Promise<void> {
     const dtSec: number = deltaMs / 1000;
-    this._persistAction.tick(deltaMs);
 
     if (this._controller) {
       this._controller.tick(deltaMs, this);

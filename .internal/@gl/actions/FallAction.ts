@@ -41,7 +41,7 @@ export class FallAction extends Action<Subject> {
     this._spinRate = spinRate;
   }
 
-  public override onStart({ subject }: { subject: Subject }): void {
+  public override onActionStart({ subject }: { subject: Subject }): void {
     this._initialScale = subject.getScale();
     this._initialAlpha = subject.getAlpha();
 
@@ -51,7 +51,7 @@ export class FallAction extends Action<Subject> {
     subject.setRotation(this._direction.angle);
   }
 
-  public override onEnd({ subject }: { subject: Subject }): void {
+  public override onActionEnd({ subject }: { subject: Subject }): void {
     subject.setVisibility(false);
   }
 

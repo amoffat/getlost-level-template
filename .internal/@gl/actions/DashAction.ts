@@ -28,7 +28,7 @@ export class DashAction extends Action<Subject> {
     this._direction = direction;
   }
 
-  public override onStart({ subject }: { subject: Subject }): void {
+  public override onActionStart({ subject }: { subject: Subject }): void {
     subject.addImpulse(this._direction);
   }
 }
@@ -52,7 +52,7 @@ export class DashPosAction extends Action<Subject> {
     this._target = target;
   }
 
-  public override onStart({ subject }: { subject: Subject }): void {
+  public override onActionStart({ subject }: { subject: Subject }): void {
     this._startPos = subject.getPos().clone();
   }
 

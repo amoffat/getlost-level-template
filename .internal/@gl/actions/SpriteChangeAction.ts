@@ -30,14 +30,14 @@ export class SpriteChangeAction extends Action<Subject> {
     this._speed = speed;
   }
 
-  public override onStart({ subject }: { subject: Subject }): void {
+  public override onActionStart({ subject }: { subject: Subject }): void {
     this._origAction = subject.getAction();
     subject.setAction(this._action, this.durationMs);
     this._origSpeed = subject.getSpeed();
     subject.setSpeed(this._speed);
   }
 
-  public override onEnd({ subject }: { subject: Subject }): void {
+  public override onActionEnd({ subject }: { subject: Subject }): void {
     subject.setAction(this._origAction!);
     subject.setSpeed(this._origSpeed!);
   }

@@ -28,11 +28,11 @@ export class ColorFadeAction extends Action<Subject> {
     this._alpha = alpha;
   }
 
-  public override onStart({ subject }: { subject: Subject }): void {
+  public override onActionStart({ subject }: { subject: Subject }): void {
     subject.setColorOverlay(this._color, this._alpha);
   }
 
-  public override onEnd({ subject }: { subject: Subject }): void {
+  public override onActionEnd({ subject }: { subject: Subject }): void {
     subject.setColorOverlay(this._color, 0);
   }
 

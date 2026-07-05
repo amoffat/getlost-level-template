@@ -43,7 +43,7 @@ export class SoundAction extends Action<unknown> {
     return SoundAction._loadedSounds.get(this._soundKey)!;
   }
 
-  public override onStart(): void {
+  public override onActionStart(): void {
     this.soundId().then((assetId) => {
       sound.setVolume({ assetId, volume: this._volume });
       sound.seek({ assetId, pos: 0 });

@@ -33,11 +33,11 @@ export class WavyAction extends Action<Subject> {
     this._params = params;
   }
 
-  public override onStart({ subject }: { subject: Subject }): void {
+  public override onActionStart({ subject }: { subject: Subject }): void {
     subject.setWavy(this._params);
   }
 
-  public override onEnd({ subject }: { subject: Subject }): void {
+  public override onActionEnd({ subject }: { subject: Subject }): void {
     subject.setWavy({ strength: 0 });
   }
 
