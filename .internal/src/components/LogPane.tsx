@@ -327,6 +327,7 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
     <div className={styles.container}>
       <div className={styles.filterBar}>
         <Chip
+          radius="xs"
           variant="outline"
           size="xs"
           checked={allSelected}
@@ -336,6 +337,7 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
         </Chip>
         {FILTER_TAGS.map((tag) => (
           <Chip
+            radius="xs"
             variant="outline"
             size="xs"
             key={tag}
