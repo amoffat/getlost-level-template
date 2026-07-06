@@ -22,24 +22,14 @@ export interface PlayOpts {
  * {@link load} factory, and every method calls the host directly.
  */
 export class Sound extends SoundControls {
-  /** sprite name -> spriteId (array index), built from `LoadOpts.sprites`. */
-  private _spriteIds: Map<string, number>;
-
-  private constructor(
-    assetId: number,
-    volume: number,
-    spriteIds: Map<string, number>,
-  ) {
+  private constructor(assetId: number, volume: number) {
     super(assetId, volume);
-    this._spriteIds = spriteIds;
   }
 
   /** Load a sound from the `sounds` folder and return a ready-to-use instance. */
   static async load(opts: LoadOpts): Promise<Sound> {
     const assetId = await sound.loadSound(opts);
-    const spriteIds = new Map<string, number>();
-    (opts.sprites ?? []).forEach((s, i) => spriteIds.set(s.name, i));
-    return new Sound(assetId, opts.volume ?? 1, spriteIds);
+    return new Sound(assetId, opts.volume ?? 1);
   }
 
   protected _spec(): SoundSpec {
@@ -48,14 +38,10 @@ export class Sound extends SoundControls {
 
   /** Start a new playback; returns a handle to that specific instance. */
   play(opts: PlayOpts = {}): SoundInstance {
-    let spriteId: number | undefined;
-    if (opts.sprite !== undefined) {
-      spriteId = this._spriteIds.get(opts.sprite);
-      if (spriteId === undefined) {
-        throw new Error(`Sound: unknown sprite "${opts.sprite}"`);
-      }
-    }
-    const soundId = sound.playSound({ assetId: this._assetId, spriteId });
+    const soundId = sound.playSound({
+      assetId: this._assetId,
+      spriteId: opts.sprite,
+    });
     return new SoundInstance(this._assetId, this._volume, soundId);
   }
 }

@@ -1,12 +1,3 @@
-interface Sprite {
-  /** The name of the sprite. */
-  name: string;
-  /** The start time of the sprite in seconds. */
-  start: number;
-  /** The length of the sprite in seconds. */
-  length: number;
-}
-
 export interface LoadOpts {
   /** The name of the sound to load from your `sounds` folder */
   name: string;
@@ -16,14 +7,15 @@ export interface LoadOpts {
   loop?: boolean;
   /** The volume of the sound. */
   volume?: number;
-  sprites?: Sprite[];
+  sprites?: Record<string, [number, number]>;
   offsetMs?: number;
+  rateExponent?: number;
 }
 
 export interface SoundSpec {
   assetId: number;
   /** Play a named sub-region. Only meaningful for `playSound`. */
-  spriteId?: number;
+  spriteId?: string;
   /** Target one live playback (a `playSound` return). Omit to target the whole asset / all instances. */
   soundId?: number;
 }

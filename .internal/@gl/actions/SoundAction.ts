@@ -33,7 +33,6 @@ export class SoundAction extends Action<unknown> {
         autoplay: false,
         loop: false,
         volume,
-        sprites: [],
       });
       SoundAction._loadedSounds.set(key, loadPromise);
     }
