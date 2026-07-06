@@ -303,6 +303,21 @@ export function weightedIndex(weights: ReadonlyArray<number>): number {
 }
 
 /**
+ * Pick an element from an array using per-element non-negative weights.
+ * Delegates to weightedIndex; returns undefined if the array is empty or all
+ * weights are zero/negative.
+ * Useful for: loot tables, weighted sound/animation selection.
+ */
+export function sampleWeighted<T>(
+  arr: readonly T[],
+  weights: ReadonlyArray<number>,
+): T | undefined {
+  const i = weightedIndex(weights);
+  if (i < 0) return undefined;
+  return arr[i];
+}
+
+/**
  * Choose a random element from a non-empty Array.
  * Useful for: picking random prefab, sound, or waypoint.
  */

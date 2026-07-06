@@ -13,7 +13,14 @@ import styles from "../styles/LogPane.module.css";
 
 // Hard-coded list of tag filter chips shown above the log entries. The "all"
 // chip is always rendered separately and is not part of this list.
-const FILTER_TAGS: string[] = ["collision", "tileset", "state", "api", "level"];
+const FILTER_TAGS: string[] = [
+  "collision",
+  "tileset",
+  "state",
+  "api",
+  "level",
+  "time",
+];
 
 interface LogMessage {
   msg: string;

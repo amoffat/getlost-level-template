@@ -60,6 +60,10 @@ export class NavManager {
     this._navPlan = new StationaryPlan(getPos());
   }
 
+  getNavPlan(): NavPlan {
+    return this._navPlan;
+  }
+
   setNavPlan(navPlan: NavPlan, navImmediately: boolean = true): void {
     this._navPlan = navPlan;
 

@@ -8,3 +8,5 @@ export { FollowPlan } from "./FollowPlan";
 export { AggressiveBasePlan } from "./AggressiveBasePlan";
 export { RandomThenAttackPlan } from "./RandomThenAttackPlan";
 export { DefaultThenAttackPlan } from "./DefaultThenAttackPlan";
+export { MutualAttackPlan, isMutualCombatant } from "./MutualAttackPlan";
+export type { MutualCombatant } from "./MutualAttackPlan";
