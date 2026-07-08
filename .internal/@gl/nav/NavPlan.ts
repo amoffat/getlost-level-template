@@ -47,10 +47,14 @@ export abstract class NavPlan {
   protected async _randomInCircle(
     curPos: Vec2,
     maxDistance: number,
+    isCandidateValid?: (candPos: Vec2) => boolean,
   ): Promise<Waypoint | null> {
     for (let i = 0; i < tryToFindValid; i++) {
       const rndPos = inCircle(maxDistance);
       const candPos = curPos.added(rndPos);
+      if (isCandidateValid && !isCandidateValid(candPos)) {
+        continue;
+      }
       if (await this._checkValid(curPos, candPos, true, maxDistance)) {
         const wp = new Waypoint(candPos.toVector());
         wp.nearestIsOk = true;
