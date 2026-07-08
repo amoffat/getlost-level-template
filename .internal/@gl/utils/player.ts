@@ -1,5 +1,4 @@
 import * as player from "@gl/api/player";
-import { CharAction } from "@gl/types/character";
 import { Character } from "./character";
 import { Delay } from "./delay";
 import { Vec2 } from "./vec2";
@@ -12,8 +11,8 @@ export class Player extends Character {
     super("player");
   }
 
-  protected override getMoveAction(dir: Vec2): CharAction {
-    return dir.x < 0 ? CharAction.WalkLeft : CharAction.WalkRight;
+  protected override getMoveAction(dir: Vec2): string {
+    return dir.x < 0 ? "WalkLeft" : "WalkRight";
   }
 
   public override hurt(dir: Vec2): boolean {

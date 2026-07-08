@@ -3,7 +3,6 @@ import { ColorFadeAction } from "@gl/actions/ColorAction";
 import { DashAction, DashPosAction } from "@gl/actions/DashAction";
 import { SoundAction } from "@gl/actions/SoundAction";
 import { SpriteChangeAction } from "@gl/actions/SpriteChangeAction";
-import { CharAction } from "@gl/types/character";
 import { Behavior } from "@gl/utils/behavior";
 import type { Character } from "@gl/utils/character";
 import { Easings, type EasingFunction } from "@gl/utils/easing";
@@ -31,8 +30,8 @@ export function hurt(char: Character, opts: HurtOpts): Behavior<Character> {
   behavior
     .then(
       new SpriteChangeAction({
-        action: CharAction.HurtLeft,
-        duration: hurtDuration,
+        action: "HurtLeft",
+        durationMs: hurtDuration,
       }),
     )
     .also(dashAction)

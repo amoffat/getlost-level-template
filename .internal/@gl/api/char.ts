@@ -2,7 +2,6 @@ import type { WavyParams } from "@gl/actions/WavyAction";
 import type { SetAnimationOpts } from "@gl/types/api/animation";
 import type { ApiCharacter, CharProps } from "@gl/types/api/char";
 import type { Vector2 } from "@gl/types/api/vector";
-import type { CharAction } from "@gl/types/character";
 
 /**
  * Fetches the merged stack of properties for a character. This is currently
@@ -17,7 +16,7 @@ export declare function getHeight(id: string): number;
 export declare function setHeight(id: string, h: number): void;
 export declare function setShadow(id: string, enabled: boolean): void;
 export declare function setSpeed(id: string, speed: number): void;
-export declare function setAction(id: string, anim: CharAction): void;
+export declare function setAction(id: string, anim: string): void;
 export declare function setWavy(id: string, params: Partial<WavyParams>): void;
 export declare function setColorOverlay({
   id,
