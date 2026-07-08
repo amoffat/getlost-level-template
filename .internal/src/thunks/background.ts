@@ -4,7 +4,7 @@ import { actions as mapActions } from "@/slices/mapEditor";
 import { RootState } from "@/store/store";
 import { MapLayerName } from "@/types/layer";
 import { MapObjType } from "@/types/map";
-import { sha1Hash } from "@/utils/hash";
+import { uuid5Hash } from "@/utils/hash";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import * as P from "pixi.js";
 
@@ -26,7 +26,7 @@ export const uploadBackgroundImageThunk = createAsyncThunk(
     }[] = await Promise.all(
       files.map(async (file) => {
         const arrayBuffer = await file.arrayBuffer();
-        const imageId = await sha1Hash(arrayBuffer);
+        const imageId = uuid5Hash(arrayBuffer);
         const blob = new Blob([arrayBuffer], { type: "image/png" });
         const objectUrl = URL.createObjectURL(blob);
         return {

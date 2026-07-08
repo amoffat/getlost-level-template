@@ -8,13 +8,14 @@ export const brokenTileGroups = createAppSelector(
   [
     (state) => state.mapEditor.objects.entities,
     (state) => state.tilesetEditor.tilesets,
+    (state) => state.tilesetEditor.objIdToTs,
   ],
-  (mapObjs, tilesets) => {
+  (mapObjs, tilesets, objIdToTs) => {
     const broken: TileGroupInstance[] = [];
 
     for (const obj of Object.values(mapObjs)) {
       if (isTileGroupInstance(obj)) {
-        const ts = tilesets[obj.tilesetId];
+        const ts = tilesets[objIdToTs[obj.tsObjId]];
         if (!ts) {
           broken.push(obj);
           continue;
@@ -28,5 +29,5 @@ export const brokenTileGroups = createAppSelector(
     }
 
     return broken;
-  }
+  },
 );

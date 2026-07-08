@@ -15,7 +15,7 @@ import { oklabHilbertIndex } from "@/utils/hilbert";
 import { amountOpaquePixels, subImageData } from "@/utils/image";
 import { subState } from "@/utils/redux";
 import { rectToBBox } from "@/utils/spatial";
-import { genImageId, genTileId } from "@/utils/tileset";
+import { genImageId } from "@/utils/tileset";
 import { Vector2 } from "@/vec";
 import { notifications } from "@mantine/notifications";
 import * as P from "pixi.js";
@@ -79,12 +79,10 @@ class Grouper extends ClickDragListener<Mode> implements Tool {
 
     let finishMode = false;
     if (isDelete) {
-      const tsId = tsState.activeTilesetId!;
-
       const searchBounds = rectToBBox(coords, 1);
       const hitIds = this._spatialIndex.search(searchBounds).map((h) => h.id);
 
-      store.dispatch(tsActions.deletePaletteObjects({ tsId, ids: hitIds }));
+      store.dispatch(tsActions.deletePaletteObjects({ ids: hitIds }));
       finishMode = true;
     }
 
@@ -111,11 +109,7 @@ class Grouper extends ClickDragListener<Mode> implements Tool {
       if (imgData) {
         const coverage = amountOpaquePixels(imgData);
         (async () => {
-          const imageId = await genImageId(imgData);
-          const id = await genTileId({
-            tsId,
-            pos: coords,
-          });
+          const id = genImageId(imgData);
           const avgColor = averageOklab(imgData);
 
           // One for the beginning and one for the end of the tile group
@@ -127,8 +121,6 @@ class Grouper extends ClickDragListener<Mode> implements Tool {
           const group: TileGroupTemplate = {
             id,
             type: TemplateType.TileGroup,
-            imageId,
-            tilesetId: tsId,
             pos: coords,
             gridSize: { x: gridSize, y: gridSize },
             zIndices,

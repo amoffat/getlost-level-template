@@ -131,8 +131,27 @@ export interface TilesetEditorState {
   };
   // obj id to tileset id
   objIdToTs: Record<string, string>;
-  // image id to tileset id. used for healing broken references
-  imageIdToTs: Record<string, string>;
+}
+
+/**
+ * Rebuilds the `objIdToTs` lookups from scratch across all loaded tilesets.
+ * Because tile ids is now a pure content hash, the same id can appear in
+ * multiple tilesets, so these lookups resolve to the most-recent tileset
+ * containing an id (later entries in `tilesetIds` win). A blind per-id delete
+ * on removal would orphan an id that another tileset still provides, so
+ * removals/deletes rebuild instead.
+ */
+function rebuildIdLookups(state: TilesetEditorState) {
+  const objIdToTs: Record<string, string> = {};
+  for (const tsId of state.tilesetIds) {
+    const ts = state.tilesets[tsId];
+    if (!ts) continue;
+    for (const obj of Object.values(ts.tiles.entities)) {
+      if (!obj) continue;
+      objIdToTs[obj.id] = tsId;
+    }
+  }
+  state.objIdToTs = objIdToTs;
 }
 
 const activeTileset = createTsSelector(
@@ -319,7 +338,6 @@ export const slice = createSlice({
 
     updateTilesetObject: {
       prepare: (payload: {
-        tsId: string;
         obj: TemplateObject;
         changes: Partial<TemplateObject>;
       }) => ({
@@ -338,7 +356,7 @@ export const slice = createSlice({
         }>,
       ) {
         const { obj, changes } = action.payload;
-        const ts = state.tilesets[obj.tilesetId];
+        const ts = state.tilesets[state.objIdToTs[obj.id]];
         if (!ts) return;
         tileAdapter.updateOne(ts.tiles, { id: obj.id, changes: changes });
         if (isTileGroupTemplate(ts.tiles.entities[obj.id])) {
@@ -444,9 +462,6 @@ export const slice = createSlice({
         state.tilesetIds.push(ts.id);
         for (const obj of Object.values(ts.tiles.entities)) {
           state.objIdToTs[obj.id] = ts.id;
-          if (isTileGroupTemplate(obj)) {
-            state.imageIdToTs[obj.imageId] = ts.id;
-          }
         }
       }
     },
@@ -461,17 +476,8 @@ export const slice = createSlice({
         state.bounds = { x: 0, y: 0, width: 0, height: 0 };
       }
       delete state.tilesetZoomPans[tsId];
-      // Clean up fast lookup
-      for (const id of Object.keys(state.objIdToTs)) {
-        if (state.objIdToTs[id] === tsId) {
-          delete state.objIdToTs[id];
-        }
-      }
-      for (const id of Object.keys(state.imageIdToTs)) {
-        if (state.imageIdToTs[id] === tsId) {
-          delete state.imageIdToTs[id];
-        }
-      }
+      // Rebuild lookups so ids shared with other tilesets aren't orphaned.
+      rebuildIdLookups(state);
     },
 
     setResliceSelection: (state, action: PayloadAction<Rect | null>) => {
@@ -554,15 +560,12 @@ export const slice = createSlice({
         tileAdapter.setMany(ts.tiles, objs);
         for (const obj of objs) {
           state.objIdToTs[obj.id] = tsId;
-          if (isTileGroupTemplate(obj)) {
-            state.imageIdToTs[obj.imageId] = tsId;
-          }
         }
       },
     },
 
     deletePaletteObjects: {
-      prepare: (payload: { tsId: string; ids: string[] }) => ({
+      prepare: (payload: { ids: string[] }) => ({
         meta: {
           reconcilePrefix,
           reconcileType: "remove" as const,
@@ -570,19 +573,24 @@ export const slice = createSlice({
         },
         payload,
       }),
-      reducer(state, action: PayloadAction<{ tsId: string; ids: string[] }>) {
-        const { tsId, ids } = action.payload;
-        const ts = state.tilesets[tsId];
+      reducer(state, action: PayloadAction<{ ids: string[] }>) {
+        const { ids } = action.payload;
 
+        const tsToRemoveIds: Record<string, string[]> = {};
         for (const id of ids) {
-          delete state.objIdToTs[id];
-          const obj = ts.tiles.entities[id];
-          if (isTileGroupTemplate(obj)) {
-            delete state.imageIdToTs[obj.imageId];
-          }
+          const tsId = state.objIdToTs[id];
+          const arr = (tsToRemoveIds[tsId] ??= []);
+          arr.push(tsId);
         }
 
-        tileAdapter.removeMany(ts.tiles, ids);
+        for (const [tsId, ids] of Object.entries(tsToRemoveIds)) {
+          const ts = state.tilesets[tsId];
+          tileAdapter.removeMany(ts.tiles, ids);
+        }
+
+        // Rebuild lookups: a deleted id may still exist in another tileset, and
+        // an id we deleted here may currently be attributed to a different one.
+        rebuildIdLookups(state);
       },
     },
 

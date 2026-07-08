@@ -45,5 +45,11 @@ export interface MapDocV10 extends Omit<MapDocV9, "version"> {
   version: 10;
 }
 
-export type LatestMapDoc = MapDocV10;
-export const latestVersion = 10;
+// Version 11: Asset ids (tilesetId / tsObjId / imageId / speakerImageId / sound)
+// migrated from SHA-1 hex to content-derived UUIDv5 via the shared id-remap table.
+export interface MapDocV11 extends Omit<MapDocV10, "version"> {
+  version: 11;
+}
+
+export type LatestMapDoc = MapDocV11;
+export const latestVersion = 11;

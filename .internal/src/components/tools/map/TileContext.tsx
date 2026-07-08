@@ -1,10 +1,10 @@
 import TilesetGroup from "@/components/TilesetGroup";
-import { trackKeyPresses } from "@/utils/keypress";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions as mapEdActions } from "@/slices/mapEditor";
 import { selectors as tsSelectors } from "@/slices/tilesetEditor";
 import { TileGroupTemplate, isTileGroupTemplate } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
+import { trackKeyPresses } from "@/utils/keypress";
 import { Kbd, SimpleGrid } from "@mantine/core";
 import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import classes from "./TileContext.module.css";
@@ -45,7 +45,10 @@ function buildGridIndex(ts: Tileset): Map<string, TileGroupTemplate> {
 export default function TileContext({ placeObj }: TileContextProps) {
   const dispatch = useAppDispatch();
   const tileset = useAppSelector((state) =>
-    tsSelectors.selectTileset(state, placeObj.tilesetId),
+    tsSelectors.selectTileset(
+      state,
+      state.tilesetEditor.objIdToTs[placeObj.id],
+    ),
   );
   const [hovered, setHovered] = useState(false);
 

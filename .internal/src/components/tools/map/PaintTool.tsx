@@ -71,7 +71,10 @@ export default function PaintTool() {
   // non-composite tileset – only then is tile context meaningful.
   const tileset = useAppSelector((state) =>
     placeObj && isTileGroupTemplate(placeObj)
-      ? tsSelectors.selectTileset(state, placeObj.tilesetId)
+      ? tsSelectors.selectTileset(
+          state,
+          state.tilesetEditor.objIdToTs[placeObj.id],
+        )
       : null,
   );
   const contextTile: TileGroupTemplate | null =
@@ -86,12 +89,7 @@ export default function PaintTool() {
 
   return (
     <>
-      <Tip
-        tips={[
-          t("paintToolTip1"),
-          t("paintToolTip2"),
-        ]}
-      />
+      <Tip tips={[t("paintToolTip1"), t("paintToolTip2")]} />
       <Stack p={0}>
         {!placeObj && (
           <Alert
@@ -123,7 +121,10 @@ export default function PaintTool() {
                   position="left"
                   withArrow
                 >
-                  <Radio value="place-once" label={t("paintToolPlaceOnceLabel")} />
+                  <Radio
+                    value="place-once"
+                    label={t("paintToolPlaceOnceLabel")}
+                  />
                 </Tooltip>
                 <Tooltip
                   label={t("paintToolOverwriteTooltip")}
@@ -131,7 +132,10 @@ export default function PaintTool() {
                   position="left"
                   withArrow
                 >
-                  <Radio value="overwrite" label={t("paintToolOverwriteLabel")} />
+                  <Radio
+                    value="overwrite"
+                    label={t("paintToolOverwriteLabel")}
+                  />
                 </Tooltip>
                 <Tooltip
                   label={t("paintToolStackTooltip")}

@@ -146,11 +146,14 @@ export function updateTilesetTemplates<TTemplate extends Record<string, any>>(
 ): void {
   // Object templates may come from different tilesets, so group by tileset ID
   const changesByTs = new Map<string, string[]>();
+  const state = store.getState();
   for (const obj of objs) {
-    if (!changesByTs.has(obj.tilesetId)) {
-      changesByTs.set(obj.tilesetId, []);
+    const tsId = state.tilesetEditor.objIdToTs[obj.tsObjId];
+
+    if (!changesByTs.has(tsId)) {
+      changesByTs.set(tsId, []);
     }
-    changesByTs.get(obj.tilesetId)!.push(obj.tsObjId);
+    changesByTs.get(tsId)!.push(obj.tsObjId);
   }
 
   // Apply the changes to each tileset's template objects

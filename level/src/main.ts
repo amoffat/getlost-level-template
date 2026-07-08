@@ -1,25 +1,26 @@
-import { setZoom } from "@gl/api/camera";
-import * as control from "@gl/api/control";
+import * as camera from "@gl/api/camera";
 import * as filter from "@gl/api/filter";
-import * as object from "@gl/api/object";
-import * as sound from "@gl/api/sound";
 import * as story from "@gl/api/story";
-import * as zone from "@gl/api/zone";
+import * as time from "@gl/api/time";
 
-import { createSnow } from "@gl/api/particles";
 import { setSunEvent } from "@gl/api/time";
-import { showhide } from "@gl/behaviors/showhide";
+import { fall } from "@gl/behaviors/fall";
+import { DoNothingController } from "@gl/controllers/DoNothingController";
 import { ColorMatrixFilter } from "@gl/filters/colormatrix";
+import { RandomWalk } from "@gl/nav";
+import { MutualAttackPlan } from "@gl/nav/MutualAttackPlan";
+import { Sound } from "@gl/sound/Sound";
+import { CharAction } from "@gl/types/character";
 import { SunEvent } from "@gl/types/time";
-import { Animator } from "@gl/utils/animation";
-import { Character } from "@gl/utils/character";
-import { Easings } from "@gl/utils/easing";
-import { lerp } from "@gl/utils/math";
+import { Rating } from "@gl/ui";
+import { chars } from "@gl/utils/character";
+import { sampleWeighted } from "@gl/utils/rand";
 import { Vec2 } from "@gl/utils/vec2";
 
 let tiltShift!: number;
 const fallThresholdX = 354;
 let musicAssetId!: number;
+let kickRating: Rating | null = null;
 
 /**
  * This function initializes your level. It's called once when the level is
@@ -30,133 +31,181 @@ export async function init(): Promise<void> {
   tiltShift = filter.addTiltShift(0.06);
   setSunEvent(SunEvent.SolarNoon, 0);
 
-  createSnow({
-    num: 2000,
-    tilesetId: "541d3d136dd085001b01e8b6940482e1d859452d",
-    tileId: "6be1cdaec365d7b7d1b59b29f36e36ca3180c33e",
-    opts: {
-      wind: { x: 30, y: 10 },
+  // const tech = Character.get("e0164411-13f4-4ec8-867a-3b2aba4c2a0f")!;
+  // tech.lookAt({ fn: () => player.getPos() });
+
+  const cm = new ColorMatrixFilter();
+
+  // Step 1: Heavily desaturate, but not to full grayscale —
+  // leaves just enough chroma for the warm cast to read.
+  cm.desaturate(false);
+  cm.saturate(0.65, true); // partially restore (since desaturate(-1) is full gray, pull back toward -0.65 net)
+
+  // Step 2: Push a warm bronze/amber tint over the desaturated base.
+  // Slightly boosts red/green, suppresses blue — the classic "300" amber grade.
+  cm.tint(1.08, 0.95, 0.78, true);
+
+  // Step 3: Punch up contrast hard — crushed blacks, compressed mids.
+  cm.contrast(0.55, true);
+
+  // Step 4: Slight brightness pulldown to deepen shadows after the contrast boost.
+  // cm.brightness(0.92, true);
+
+  // Step 5: Tiny hue nudge toward amber/orange to kill any residual cool cast.
+  cm.hue(-6, true);
+  cm.saturate(-0.7, true);
+
+  const leonidas = chars.get("dc8d07ea-de7f-43f3-877b-117476ecb16c")!;
+  const wellPos = Vec2.fromVector2({ x: 143, y: 150 });
+  const kickSfx = await Sound.load({
+    name: "gl:strike",
+  });
+
+  const crySprites: Record<string, [number, number]> = {
+    "1": [2196, 2315],
+    "2": [9676, 3027],
+    "3": [15434, 2374],
+    "4": [19648, 2671],
+    "5": [40662, 1039],
+    "6": [47459, 801],
+  };
+  const cries = await Sound.load({
+    name: "8372b9a7-8eaf-5680-96ce-8a34977b30c5",
+    sprites: crySprites,
+    volume: 0.5,
+  });
+
+  const cryKeys = Object.keys(crySprites);
+  // Tracks the two most recently played cries so we can down-weight them:
+  // [last, secondToLast]. The most recent pick is the least likely to repeat,
+  // the one before it the next-least likely.
+  const recentCries: string[] = [];
+
+  const persians = chars
+    .values()
+    .filter((c) => c.tags.has("persian"))
+    .toArray();
+
+  const soldiers = chars
+    .values()
+    .filter((c) => c.tags.has("soldier"))
+    .toArray();
+
+  persians.forEach((char) => {
+    char.lookAt({
+      fn: () => {
+        // Point away from the well
+        const p = char.getPos();
+        return p.subbed(wellPos).add(p);
+      },
+      whileMoving: true,
+    });
+  });
+
+  events.on({
+    type: "char-collision",
+    filter({ charId, enter }) {
+      return charId === "player" && enter;
     },
-  });
+    callback({ otherId, direction }) {
+      if (!story.isSatisfied("kick")) return;
 
-  const colors = new ColorMatrixFilter();
-  // Warm, golden-hour feel: lift reds, soften greens, pull back blues
-  colors.tint(1.05, 0.97, 0.9);
-  // Slight desaturation for a painterly softness with cross-channel bleed
-  colors.saturate(-0.1, true);
-  // Lift shadows with a subtle atmospheric haze
-  colors.overlay(0.04, 0.03, 0.04, true);
+      kickSfx.play();
+      // Weight each cry equally by default, but strongly down-weight the two
+      // most recent picks so the same cry rarely repeats back-to-back.
+      const weights = cryKeys.map((key) => {
+        if (key === recentCries[0]) return 0.1; // last played: least likely
+        if (key === recentCries[1]) return 0.4; // played before that
+        return 1;
+      });
+      const sprite = sampleWeighted(cryKeys, weights) ?? cryKeys[0]!;
+      recentCries.unshift(sprite);
+      recentCries.length = Math.min(recentCries.length, 2);
+      cries.play({ sprite });
+      const char = chars.get(otherId)!;
+      char.attachController(new DoNothingController());
+      const behavior = fall({
+        char,
+        dir: wellPos.subbed(char.getPos()),
+        target: wellPos,
+      });
+      behavior.onBehaviorEnd(() => {
+        char.setAction(CharAction.Idle);
+      });
+      behavior.perform();
+      kickRating!.value++;
 
-  // const bloom = filters.addBloom({
-  //   brightness: 0.5,
-  //   threshold: 0.3,
-  //   bloomScale: 0.55,
-  //   blur: 5,
-  // });
-
-  const sofia = Character.get("6b01ef44-a1a1-4021-aeca-e8b72477937c")!;
-  sofia.visibility = false;
-  const startZoom = 1;
-  const startWind = 0.3;
-  const maxWind = 1.2;
-
-  setZoom(startZoom);
-
-  const tech = Character.get("e0164411-13f4-4ec8-867a-3b2aba4c2a0f")!;
-  tech.lookAt({ fn: () => player.getPos() });
-  sofia.lookAt({ fn: () => player.getPos() });
-
-  // music
-  musicAssetId = await sound.loadSound({
-    name: "4de57fdcf89087acd6cd7774810bcd6536f1bea1",
-    autoplay: true,
-    loop: true,
-    offsetMs: 12000,
-  });
-
-  // wind
-  const windAssetId = await sound.loadSound({
-    name: "f5d2b9859d82ce4ff9c1676b3a9bde2568350ade",
-    autoplay: true,
-    loop: true,
-    volume: startWind,
-  });
-
-  const deathSndId = await sound.loadSound({
-    name: "gl:death",
-    volume: 0.2,
-  });
-
-  const cameraZoomAnim = new Animator({
-    durationMs: 5000,
-    selfTick: true,
-    range: { start: startZoom, end: 0.38 },
-    forwardCurve: Easings.easeInOutQuad,
+      if (kickRating!.value === persians.length) {
+        story.satisfy("soldiers-defeated", true);
+      }
+    },
   });
 
   events.on({
     type: "state-change",
-    filter: { state: "think-of-sofia" },
-    callbacks: [
-      ({ satisfied }) => {
-        zone.toggle("849f2b2d-522f-40c0-89da-b9de32fa0de9", satisfied);
-      },
-      ({ satisfied }) => {
-        const behavior = showhide({ char: sofia, show: satisfied });
-        behavior.perform();
-      },
-      ({ satisfied }) => {
-        if (satisfied) {
-          cameraZoomAnim.addProgressCallback(({ rangeProgress, progress }) => {
-            setZoom(rangeProgress!);
-            sound.setVolume({
-              assetId: windAssetId,
-              volume: lerp(startWind, maxWind, progress),
-            });
-          });
-          cameraZoomAnim.play();
-        } else {
-          sound.setVolume({
-            assetId: windAssetId,
-            volume: startWind,
-          });
-          cameraZoomAnim.reverse();
-        }
-      },
-    ],
+    filter({ state }) {
+      return state === "soldiers-defeated";
+    },
+    callback({ satisfied }) {
+      if (satisfied) {
+        time.setWorldSpeed({
+          speed: 1,
+        });
+        setTimeout(() => {
+          kickRating!.destroy();
+        }, 500);
+      }
+    },
   });
 
   events.on({
-    type: "sensor",
-    filter: {
-      sensorId: "f4620bb5-9056-4fe4-9038-2c44d3f66ea9",
-      charId: "player",
+    type: "state-change",
+    filter({ state }) {
+      return state === "kick";
     },
-    callbacks: [
-      ({ enter }) => {
-        if (enter && story.isReady("jump")) {
-          control.addButton({
-            labelKey: "jump",
-            onRelease: () => {
-              player.jump();
-            },
-          });
-        } else {
-          control.removeButton("jump");
-        }
-      },
-    ],
-  });
+    callback({ satisfied }) {
+      if (satisfied) {
+        // Kick
+        setTimeout(() => {
+          camera.shake({ magnitude: 10, speed: 20, durationMs: 800 });
+          kickSfx.play();
+        }, 400);
 
-  events.on({
-    type: "sensor",
-    filter: {
-      sensorId: "d9177cc0-90ed-4e5b-a103-a89857adc643",
-      charId: "player",
-    },
-    callback: ({ enter }) => {
-      if (enter) {
-        sound.playSound({ assetId: deathSndId });
+        // Bullet time
+        setTimeout(() => {
+          time.setWorldSpeed({
+            speed: 0.5,
+          });
+        }, 750);
+
+        persians.forEach((s) => {
+          s.nav.setNavPlan(
+            new MutualAttackPlan({
+              self: s,
+              combatants: soldiers,
+              defaultPlan: new RandomWalk({
+                maxDistance: 32,
+              }),
+              flankRadius: 32,
+            }),
+          );
+        });
+
+        kickRating ??= new Rating({
+          col: 0,
+          row: 0,
+          value: 0,
+          max: persians.length,
+          iconClass: "skull",
+          color: "red",
+        });
+      } else {
+        kickRating?.destroy();
+        kickRating = null;
+
+        time.setWorldSpeed({
+          speed: 1,
+        });
       }
     },
   });
@@ -182,25 +231,5 @@ export function movePlayer(dir: Vec2): void {
  * @param paused Whether the game is currently paused or not.
  */
 export async function tick(timestep: number, paused: boolean) {
-  if (!player.getFalling()) {
-    filter.setTiltShiftY(tiltShift, player.getPos().y - 10);
-  }
-
-  // Animate the clouds
-  object.translate("e397031f-ec42-4a1d-8146-50dd937baf1a", {
-    x: -0.02 * timestep,
-    y: 0,
-  });
-  // setSunTime(Date.now());
-
-  // This accounts for the player, walking on the edge, who walks over the edge
-  // (instead of jumping)
-  if (player.getPos().x > fallThresholdX && !player.getFalling()) {
-    sound.fade({ assetId: musicAssetId, durationMs: 1000 });
-    story.satisfy("jump", true);
-    player.setFalling({
-      enabled: true,
-      startVelocity: player.getVelocity().y,
-    });
-  }
+  filter.setTiltShiftY(tiltShift, player.getPos().y - 10);
 }

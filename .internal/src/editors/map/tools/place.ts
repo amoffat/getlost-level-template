@@ -248,7 +248,6 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           y: pos.y,
           z,
           tsObjId: obj.id,
-          tilesetId: obj.tilesetId,
           layer,
           width: obj.pos.width,
           height: obj.pos.height,
@@ -265,7 +264,6 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           y: pos.y,
           z,
           tsObjId: obj.id,
-          tilesetId: obj.tilesetId,
           layer,
           width: obj.pos.width,
           height: obj.pos.height,
@@ -283,7 +281,6 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           y: pos.y,
           z,
           tsObjId: obj.id,
-          tilesetId: obj.tilesetId,
           layer,
           width: obj.pos.width,
           height: obj.pos.height,
@@ -301,7 +298,6 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           y: pos.y,
           z,
           tsObjId: obj.id,
-          tilesetId: obj.tilesetId,
           layer,
           width: obj.pos.width,
           height: obj.pos.height,
@@ -317,7 +313,6 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           y: pos.y,
           z,
           tsObjId: obj.id,
-          tilesetId: obj.tilesetId,
           layer,
           width: obj.pos.width,
           height: obj.pos.height,
@@ -333,8 +328,6 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
           x: pos.x,
           y: pos.y,
           tsObjId: obj.id,
-          imageId: obj.imageId,
-          tilesetId: obj.tilesetId,
           z,
           layer,
           flipX: place.flipX ? true : undefined,
@@ -350,8 +343,6 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
         } satisfies TileGroupInstance;
       }
     } else if (isAnimationTemplate(obj)) {
-      const firstFrame = obj.frames[0]!.tg;
-
       inst = {
         id,
         nameKey: undefined,
@@ -359,7 +350,6 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
         tags: undefined,
         type: MapObjType.AnimationInstance,
         tsObjId: obj.id,
-        tilesetId: firstFrame.tilesetId,
         x: pos.x,
         y: pos.y,
         z,
@@ -382,7 +372,6 @@ export class Placer extends ClickDragListener<Mode> implements Tool {
         tags: undefined,
         type: MapObjType.NpcInstance,
         tsObjId: obj.id,
-        tilesetId: obj.tilesetId,
         x: pos.x,
         y: pos.y,
         z,
@@ -431,8 +420,9 @@ subState(
     (state) => state.mapEditor.place.obj,
     (state) => state.mapEditor.zoomPan.zoom,
     selectors.selectMode,
+    (state) => state.tilesetEditor.objIdToTs,
   ],
-  (placeObj, zoom, mode) => {
+  (placeObj, zoom, mode, objIdToTs) => {
     if (!g.initialized) return;
 
     const assetChanged = g.placableSprite?.label !== placeObj?.id;
@@ -447,7 +437,7 @@ subState(
       if (assetChanged) {
         if (isTileGroupTemplate(placeObj)) {
           const rect = placeObj.pos;
-          const tsTex = gApp.tilesetTextureCache.get(placeObj.tilesetId);
+          const tsTex = gApp.tilesetTextureCache.get(objIdToTs[placeObj.id]);
           if (!tsTex) {
             log.error("Tileset texture not found for placer");
             return;
@@ -468,7 +458,7 @@ subState(
           const pixiFrames: P.FrameObject[] = [];
           for (const frame of frames) {
             const rect = frame.tg.pos;
-            const tsTex = gApp.tilesetTextureCache.get(frame.tg.tilesetId);
+            const tsTex = gApp.tilesetTextureCache.get(objIdToTs[frame.tg.id]);
             if (!tsTex) {
               log.error("Tileset texture not found for placer");
               return;

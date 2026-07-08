@@ -73,5 +73,11 @@ export interface StoryDocV10 extends Omit<StoryDocV9, "version"> {
   version: 10;
 }
 
-export type LatestStoryDoc = StoryDocV10;
-export const latestVersion = 10;
+// v11: Asset ids (per-node `speakerImageId` overrides) migrated from SHA-1 hex to
+// content-derived UUIDv5 via the shared id-remap table.
+export interface StoryDocV11 extends Omit<StoryDocV10, "version"> {
+  version: 11;
+}
+
+export type LatestStoryDoc = StoryDocV11;
+export const latestVersion = 11;

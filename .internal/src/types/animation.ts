@@ -15,7 +15,6 @@ export interface AnimationTemplate extends AnimationProps {
   // or "Idle".
   slotNames: string[];
   type: TemplateType.Animation;
-  tilesetId: string;
   // The grid size this object is aligned to
   gridSize: Vector2;
   frames: TileAnimationFrame[];

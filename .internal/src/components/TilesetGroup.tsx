@@ -30,7 +30,9 @@ const TilesetGroup = ({
   ...divProps
 }: TilesetCropProps) => {
   const objectUrl = useAppSelector(
-    (state) => selectors.selectTileset(state, group.tilesetId)?.objectUrl
+    (state) =>
+      selectors.selectTileset(state, state.tilesetEditor.objIdToTs[group.id])
+        ?.objectUrl,
   );
 
   const width = Math.max(0, group.pos.width);
@@ -69,7 +71,10 @@ const TilesetGroup = ({
   // the divisions below Infinity, which Math.min simply ignores.)
   const effectiveScale = useMemo(() => {
     if (!bounded) return scale;
-    if (!Number.isFinite(containerSize.w) || !Number.isFinite(containerSize.h)) {
+    if (
+      !Number.isFinite(containerSize.w) ||
+      !Number.isFinite(containerSize.h)
+    ) {
       return scale;
     }
     const maxFittingScale = Math.min(

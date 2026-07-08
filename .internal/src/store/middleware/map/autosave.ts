@@ -3,7 +3,7 @@ import { globals } from "@/globals";
 import { log } from "@/log";
 import { saveMap as persistMap } from "@/persist/map/api";
 import { slice } from "@/slices/mapEditor";
-import { SavedMap } from "@/types/map";
+import { isMapObjFromTileset, MapObj, SavedMap } from "@/types/map";
 import { AppStartListening } from "@/types/redux";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { EMPTY, Subject, from } from "rxjs";
@@ -31,6 +31,28 @@ saveRequests$
   )
   .subscribe();
 
+/**
+ * Editor state no longer stores a `tilesetId` on tileset-backed map objects —
+ * we resolve it dynamically via `objIdToTs[tsObjId]` so an object's image data
+ * can re-bind to a different tileset (e.g. when tilesets are deleted/recreated).
+ * The engine, however, expects each tileset-backed object to carry a
+ * `tilesetId` for fast tileset lookups, so we stamp it on here at save time.
+ */
+function withEngineTilesetIds(
+  objects: SavedMap["objects"],
+  objIdToTs: Record<string, string>,
+): SavedMap["objects"] {
+  const entities: Record<string, MapObj & { tilesetId?: string }> = {};
+  for (const id of objects.ids) {
+    const obj = objects.entities[id];
+    if (!obj) continue;
+    entities[id] = isMapObjFromTileset(obj)
+      ? { ...obj, tilesetId: objIdToTs[obj.tsObjId] }
+      : obj;
+  }
+  return { ids: objects.ids, entities };
+}
+
 const startAppListening =
   listenerMiddleware.startListening as AppStartListening;
 
@@ -47,7 +69,7 @@ startAppListening({
     const map: SavedMap = {
       tileWidth: defaultTileSize,
       tileHeight: defaultTileSize,
-      objects: ms.objects,
+      objects: withEngineTilesetIds(ms.objects, state.tilesetEditor.objIdToTs),
       templates: ms.templates,
       bounds: ms.bounds,
       card: ms.card,

@@ -228,7 +228,6 @@ export default function TileAnimationTool({
         nameKey: null,
         talkable: false,
         type: TemplateType.Animation,
-        tilesetId: ts!.id,
         gridSize: candFrames[0]!.tileGroup.gridSize,
         frames,
         slotNames: [],

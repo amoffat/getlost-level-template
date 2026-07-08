@@ -11,10 +11,6 @@ export function tileGroupSort(
   const bArea = area(b.pos);
   if (aArea !== bArea) return bArea - aArea;
 
-  if (a.tilesetId !== b.tilesetId) {
-    return a.tilesetId.localeCompare(b.tilesetId);
-  }
-
   if (a.sliceCollection !== b.sliceCollection) {
     if (a.sliceCollection !== undefined && b.sliceCollection !== undefined) {
       return a.sliceCollection.localeCompare(b.sliceCollection);
@@ -38,10 +34,6 @@ export function objectAnimationSort(
   const aArea = area(aTg.pos);
   const bArea = area(bTg.pos);
   if (aArea !== bArea) return bArea - aArea;
-
-  if (aTg.tilesetId !== bTg.tilesetId) {
-    return aTg.tilesetId.localeCompare(bTg.tilesetId);
-  }
 
   if (aTg.hilbertIndex !== bTg.hilbertIndex) {
     return bTg.hilbertIndex - aTg.hilbertIndex;

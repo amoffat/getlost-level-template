@@ -32,7 +32,7 @@ const COLLECTED_PROPS = [
 ] as const;
 
 // Additional properties needed for template resolution
-const TEMPLATE_PROPS = ["tsObjId", "tilesetId"] as const;
+const TEMPLATE_PROPS = ["tsObjId"] as const;
 
 // All properties relevant for memo comparison
 const RELEVANT_PROPS: readonly (keyof AnimationInstance)[] = [

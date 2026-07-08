@@ -1,7 +1,7 @@
 import * as constants from "@/constants";
 import { WalkSound, walkSounds } from "@/constants";
-import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
 import { useAppSelector } from "@/hooks/redux";
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
 import { MapLayerName } from "@/types/layer";
 import { TileGroupInstance } from "@/types/map";
 import { TileGroupProps } from "@/types/properties";
@@ -17,11 +17,11 @@ import { useTranslation } from "react-i18next";
 import PropertyValue, { PropertyValueScope } from "../PropertyValue";
 import FlipXInput from "./inputs/FlipXInput";
 import GroundOffsetInput from "./inputs/GroundOffsetInput";
-import TagsInput from "./inputs/TagsInput";
 import HiddenInput from "./inputs/HiddenInput";
 import IdInput from "./inputs/IdInput";
 import LocalizedTextInput from "./inputs/LocalizedTextInput";
 import SwitchInput from "./inputs/SwitchInput";
+import TagsInput from "./inputs/TagsInput";
 import TintInput from "./inputs/TintInput";
 
 // Properties that collectPropertyValues needs to access
@@ -40,7 +40,7 @@ const COLLECTED_PROPS = [
 ] as const;
 
 // Additional properties needed for template resolution
-const TEMPLATE_PROPS = ["tsObjId", "tilesetId"] as const;
+const TEMPLATE_PROPS = ["tsObjId"] as const;
 
 // All properties relevant for memo comparison
 const RELEVANT_PROPS = [...TEMPLATE_PROPS, ...COLLECTED_PROPS] as const;

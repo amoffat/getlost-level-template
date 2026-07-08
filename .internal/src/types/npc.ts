@@ -23,7 +23,6 @@ export interface NpcTemplate extends NpcProps {
   // A random id
   id: string;
   type: TemplateType.Npc;
-  tilesetId: string;
   // The grid size this object is aligned to
   gridSize: Vector2;
   animations: NpcAnimationRecord;

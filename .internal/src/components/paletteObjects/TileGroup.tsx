@@ -8,12 +8,7 @@ export function renderTileGroup({
   selected,
 }: PaletteObjectProps<TileGroupTemplate>): React.ReactNode | null {
   return (
-    <div
-      data-tsid={obj.tilesetId}
-      data-objid={obj.id}
-      style={{ display: "contents" }}
-      key={`${obj.tilesetId}-${obj.id}`}
-    >
+    <div data-objid={obj.id} style={{ display: "contents" }} key={`${obj.id}`}>
       <TilesetGroup scale={scale} group={obj} selected={selected} />
     </div>
   );

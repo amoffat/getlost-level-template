@@ -153,6 +153,7 @@ export default function TilesetEditorTab({
   const selectedToolName = useAppSelector(
     (state) => state.tilesetEditor.selectedTool,
   );
+  const objIdToTs = useAppSelector((state) => state.tilesetEditor.objIdToTs);
   const paletteSelection = useAppSelector(selectors.paletteSelectedIds);
 
   // Defer visual updates to palette selection to keep interactions responsive
@@ -321,9 +322,9 @@ export default function TilesetEditorTab({
   const onSelectObject = useCallback(
     async (obj: TemplateObject, e: React.MouseEvent) => {
       if (e.button === 2) return;
-      await navigate(`/tilesets/${obj.tilesetId}/objects/${obj.id}`);
+      await navigate(`/tilesets/${objIdToTs[obj.id]}/objects/${obj.id}`);
     },
-    [navigate],
+    [navigate, objIdToTs],
   );
 
   const onToolActivated = useCallback(

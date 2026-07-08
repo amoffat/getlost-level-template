@@ -11,7 +11,7 @@ import { averageOklab } from "@/utils/color";
 import { oklabHilbertIndex } from "@/utils/hilbert";
 import { amountOpaquePixels, isTransparent, subImageData } from "@/utils/image";
 import { subState } from "@/utils/redux";
-import { genImageId, genTileId, loadTilesetImage } from "@/utils/tileset";
+import { genImageId, loadTilesetImage } from "@/utils/tileset";
 import * as P from "pixi.js";
 import { BBox } from "rbush";
 import { globals as g } from "./globals";
@@ -110,20 +110,14 @@ export async function sliceTileset(
       continue;
     }
 
-    const imageId = await genImageId(tileImageData);
-    const id = await genTileId({
-      tsId,
-      pos: coords,
-    });
+    const id = genImageId(tileImageData);
 
     const avgColor = averageOklab(tileImageData);
     const tg: TileGroupTemplate = {
       id,
       type: TemplateType.TileGroup,
       talkable: false,
-      imageId,
       pos: coords,
-      tilesetId: tsId,
       gridSize: { x: coords.width, y: coords.height },
       zIndices: structuredClone(constants.defaultZIndices),
       nameKey: null,

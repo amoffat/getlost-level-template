@@ -147,7 +147,6 @@ export default function NpcTool() {
       id,
       type: TemplateType.Npc,
       animations,
-      tilesetId: ts!.id,
       gridSize: animations["Idle"].animation.gridSize,
       nameKey,
       talkable: true,

@@ -1,10 +1,10 @@
-export const iconTsId = "709959c8b2a2c2d74ccb807c9e19d0e67378e4b7";
+export const iconTsId = "2c0731db-e1b9-5d5f-9611-b3e61568ab3e";
 
-export const entranceIcon = "fff64e376276e688970286c46fb4b04e31ff182f";
-export const exitIcon = "e57e5942a12563d0e6f90ec8ae00efe5a33baab7";
-export const lightIcon = "74dbc3085545a3aebdf3226ee361515a9901e152";
-export const waypointIcon = "bd704aa16ab0e8cb728e79705a195d3eb4781b87";
-export const soundIcon = "c04e0c00c3efcb420f448eaaa62c199798a61938";
-export const pickupIcon = "8a851d2812723421995c1a5fdd7464a6f1820933";
-export const transparentIcon = "1dbfc36648dd2eb6c86b337a183baff35928c1ee";
-export const errorIcon = "8806f762dbcf6eb5034c5ad039b0bb32959be416";
+export const entranceIcon = "6d95f62c-890b-572e-823e-dfff52a9eee6";
+export const exitIcon = "9152ff32-e96a-5284-9551-a820936d5ad1";
+export const lightIcon = "a867f5d0-00c5-5c16-85cb-49f6e727552e";
+export const waypointIcon = "8cc403d6-3e80-53e6-bd47-cb18e418a14d";
+export const soundIcon = "7dc2bf9b-cf76-5141-b8da-9bd6fd20ca98";
+export const pickupIcon = "a914a372-30f8-5fec-9088-b23e34c10df9";
+export const transparentIcon = "e5100e71-e2ec-580e-9215-8b906935c7a5";
+export const errorIcon = "aa4617be-f399-562d-a9e1-ab5309321a64";

@@ -6,14 +6,15 @@ import { TemplateObject } from "@/types/tilesetobject";
 
 export function objectsFilter(
   obj: TemplateObject,
-  filters: RootState["ui"]["paletteFilterSwitches"]
+  filters: RootState["ui"]["paletteFilterSwitches"],
 ): boolean {
   if (!isTileGroupTemplate(obj)) {
     return false;
   }
 
   const state = store.getState();
-  const animations = tsSelectors.animations(state, obj.tilesetId);
+  const tsId = state.tilesetEditor.objIdToTs[obj.id];
+  const animations = tsSelectors.animations(state, tsId);
 
   if (filters.objects.hideAnimations) {
     for (const anim of animations) {
@@ -25,10 +26,14 @@ export function objectsFilter(
     }
   }
 
-  const npcs = tsSelectors.npcs(state, obj.tilesetId);
+  const npcs = tsSelectors.npcs(state, tsId);
   if (filters.objects.hideNpcLeftovers) {
     for (const npc of npcs) {
-      if (npc.tilesetId === obj.tilesetId) {
+      const npcTsId =
+        state.tilesetEditor.objIdToTs[
+          npc.animations["Idle"].animation.frames[0].tg.id
+        ];
+      if (npcTsId === tsId) {
         return false;
       }
     }
@@ -49,14 +54,15 @@ export function objectsFilter(
 
 export function animationsFilter(
   obj: TemplateObject,
-  filters: RootState["ui"]["paletteFilterSwitches"]
+  filters: RootState["ui"]["paletteFilterSwitches"],
 ): boolean {
   if (!isAnimationTemplate(obj)) {
     return false;
   }
 
   const state = store.getState();
-  const npcs = tsSelectors.npcs(state, obj.tilesetId);
+  const tsId = state.tilesetEditor.objIdToTs[obj.id];
+  const npcs = tsSelectors.npcs(state, tsId);
   const objFrames = new Set();
   for (const frame of obj.frames) {
     objFrames.add(frame.tg.id);

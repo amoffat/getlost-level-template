@@ -1,7 +1,7 @@
 import { globals as g } from "@/globals";
 import { uploadSpeakerImage } from "@/persist/speakerImage/api";
 import { actions as mapActions } from "@/slices/mapEditor";
-import { sha1Hash } from "@/utils/hash";
+import { uuid5Hash } from "@/utils/hash";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 /**
@@ -19,7 +19,7 @@ export const uploadSpeakerImageThunk = createAsyncThunk(
     { dispatch },
   ): Promise<string> => {
     const arrayBuffer = await file.arrayBuffer();
-    const imageId = await sha1Hash(arrayBuffer);
+    const imageId = uuid5Hash(arrayBuffer);
 
     const objectUrl = URL.createObjectURL(
       new Blob([arrayBuffer], { type: "image/png" }),

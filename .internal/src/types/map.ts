@@ -57,14 +57,11 @@ export interface BaseMapObj {
 export interface TilesetMapObj extends BaseMapObj {
   // The id of the underlying tileset object
   tsObjId: string;
-  tilesetId: string;
 }
 
 export interface TileGroupInstance
   extends TilesetMapObj, RequiredButMaybeUndefined<TileGroupProps> {
   type: MapObjType.TileGroupInstance;
-
-  imageId: string; // for healing broken references
 }
 
 export interface TileAnimationFrame {
@@ -266,7 +263,7 @@ export function isSpeakableObject(obj: MapObj): obj is SpeakableMapObj {
 export function isMapObjFromTileset(
   obj: Partial<BaseMapObj>,
 ): obj is TilesetMapObj {
-  return Object.hasOwn(obj, "tsObjId") && Object.hasOwn(obj, "tilesetId");
+  return Object.hasOwn(obj, "tsObjId");
 }
 
 export function isLightInstance(obj: Partial<MapObj>): obj is LightObj {

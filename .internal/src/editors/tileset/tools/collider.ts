@@ -231,7 +231,9 @@ export class ColliderTool implements Tool {
     if (!this.currentObj) return false;
 
     const obj = this.currentObj;
-    const imageData = gApp.tilesetImageDataCache.get(obj.tilesetId);
+    const state = store.getState();
+    const tsId = state.tilesetEditor.objIdToTs[obj.id];
+    const imageData = gApp.tilesetImageDataCache.get(tsId);
     if (!imageData) return false;
 
     // Calculate the absolute position in the tileset texture
@@ -549,7 +551,6 @@ export class ColliderTool implements Tool {
       // Update the object with the UUID reference and collision shapes
       store.dispatch(
         actions.updateTilesetObject({
-          tsId: this.currentObj.tilesetId,
           obj: this.currentObj,
           changes: {
             collisions: {

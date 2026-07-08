@@ -183,7 +183,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       }
     }
 
-    if (props.tilesetId !== undefined || props.tsObjId !== undefined) {
+    if (props.tsObjId !== undefined) {
       // Recreate the node entirely, since the texture may have changed.
       recreate = true;
     }
@@ -329,21 +329,23 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
   }
 
   protected override createNode(obj: MapObj): P.Container | null {
+    const state = store.getState();
+
     if (isAnimatedInstance(obj)) {
+      const tsId = state.tilesetEditor.objIdToTs[obj.tsObjId];
       const pixiFrames: P.FrameObject[] = [];
-      const tsTex = this.getTilesetTex(obj.tilesetId);
+      const tsTex = this.getTilesetTex(tsId);
       if (!tsTex) {
         return this.makeErrorNode(obj);
       }
 
-      const state = store.getState();
       const tsObj = tsSelectors.templateFromId(
         state,
         obj.tsObjId,
       ) as AnimationTemplate | null;
       if (!tsObj) {
         this.debouncedError(
-          obj.tilesetId,
+          tsId,
           "Missing object",
           `The animation object with ID ${obj.tsObjId} could not be found in the tileset.`,
         );
@@ -383,19 +385,19 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       return spriteContainer;
     } else if (isNpcInstance(obj)) {
       const pixiFrames: P.FrameObject[] = [];
-      const tsTex = this.getTilesetTex(obj.tilesetId);
+      const tsId = state.tilesetEditor.objIdToTs[obj.tsObjId];
+      const tsTex = this.getTilesetTex(tsId);
       if (!tsTex) {
         return this.makeErrorNode(obj);
       }
 
-      const state = store.getState();
       const tsObj = tsSelectors.templateFromId(
         state,
         obj.tsObjId,
       ) as NpcTemplate | null;
       if (!tsObj) {
         this.debouncedError(
-          obj.tilesetId,
+          tsId,
           "Missing object",
           `The NPC object with ID ${obj.tsObjId} could not be found in the tileset.`,
         );
@@ -440,19 +442,19 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
 
       return spriteContainer;
     } else if (isMapObjFromTileset(obj)) {
-      const tsTex = this.getTilesetTex(obj.tilesetId);
+      const tsId = state.tilesetEditor.objIdToTs[obj.tsObjId];
+      const tsTex = this.getTilesetTex(tsId);
       if (!tsTex) {
         return this.makeErrorNode(obj);
       }
 
-      const state = store.getState();
       const tsObj = tsSelectors.templateFromId(
         state,
         obj.tsObjId,
       ) as TileGroupTemplate;
       if (!tsObj) {
         this.debouncedError(
-          obj.tilesetId,
+          tsId,
           "Missing object",
           `The tile object with ID ${obj.tsObjId} could not be found in the tileset.`,
         );

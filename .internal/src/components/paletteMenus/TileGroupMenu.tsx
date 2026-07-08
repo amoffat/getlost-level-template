@@ -1,3 +1,4 @@
+import { useAppSelector } from "@/hooks/redux";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import { copyToClipboard } from "@/utils/copy";
 import { Vector2 } from "@/vec";
@@ -26,12 +27,13 @@ export default function TileGroupMenu({
     copyToClipboard({ value: obj.id, t });
     closeMenu();
   }, [obj, closeMenu, t]);
+  const objIdToTs = useAppSelector((state) => state.tilesetEditor.objIdToTs);
 
   const onViewInTileset = useCallback(() => {
     if (!obj) return;
-    navigate(`/tilesets/${obj.tilesetId}/objects/${obj.id}`);
+    navigate(`/tilesets/${objIdToTs[obj.id]}/objects/${obj.id}`);
     closeMenu();
-  }, [obj, navigate, closeMenu]);
+  }, [obj, navigate, closeMenu, objIdToTs]);
 
   if (!obj) return null;
 

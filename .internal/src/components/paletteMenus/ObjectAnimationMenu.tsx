@@ -43,7 +43,10 @@ export default function ObjectAnimationMenu({
     if (!obj) return;
 
     const state = store.getState();
-    const ts = tsSelectors.selectTileset(state, obj.tilesetId)!;
+    const ts = tsSelectors.selectTileset(
+      state,
+      state.tilesetEditor.objIdToTs[obj.frames[0].tg.id],
+    )!;
 
     const items: ItemStatus[] = [];
 
@@ -91,7 +94,6 @@ export default function ObjectAnimationMenu({
     const onConfirm = () => {
       dispatch(
         tsActions.deletePaletteObjects({
-          tsId: obj.tilesetId,
           ids: [obj.id],
         }),
       );

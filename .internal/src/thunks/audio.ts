@@ -1,5 +1,5 @@
 import { uploadAudioFile } from "@/persist/audio/api";
-import { sha1Hash } from "@/utils/hash";
+import { uuid5Hash } from "@/utils/hash";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const uploadAudioThunk = createAsyncThunk(
@@ -10,7 +10,7 @@ export const uploadAudioThunk = createAsyncThunk(
     await Promise.all(
       files.map(async (file) => {
         const arrayBuffer = await file.arrayBuffer();
-        const id = await sha1Hash(arrayBuffer);
+        const id = uuid5Hash(arrayBuffer);
 
         const lastDot = file.name.lastIndexOf(".");
         const ext = lastDot !== -1 ? file.name.slice(lastDot).toLowerCase() : "";

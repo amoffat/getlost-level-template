@@ -11,7 +11,6 @@ import {
   deleteTileset,
   loadTileset,
   loadTilesets,
-  replaceTilesetImage,
   saveTileset,
 } from "@/persist/tileset/api";
 import { router } from "@/router";
@@ -25,15 +24,19 @@ import {
 import { actions as uiActions } from "@/slices/ui";
 import { RootState, store } from "@/store/store";
 import { AnimationTemplate, isAnimationTemplate } from "@/types/animation";
-import { TileGroupInstance } from "@/types/map";
+import { isMapObjFromTileset, TileGroupInstance } from "@/types/map";
 import { isNpcTemplate, NpcTemplate } from "@/types/npc";
 import { Rect } from "@/types/rect";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Mode, Tileset } from "@/types/tileset";
 import { TemplateObject } from "@/types/tilesetobject";
 import { schedulerYield } from "@/utils/async";
-import { hasSolidEdges, subImageData } from "@/utils/image";
-import { genTilesetId, loadTilesetImage } from "@/utils/tileset";
+import {
+  getImageDataFromBitmap,
+  hasSolidEdges,
+  subImageData,
+} from "@/utils/image";
+import { genImageId, genTilesetId, loadTilesetImage } from "@/utils/tileset";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import i18n from "i18next";
@@ -296,17 +299,20 @@ export const replaceTilesetImageThunk = createAsyncThunk(
     const ts = state.tilesetEditor.tilesets[tsId];
     if (!ts) {
       log.error(`replaceTilesetImageThunk: tileset ${tsId} not found`);
-      return;
+      return { replaced: false };
     }
 
-    // Client-side dimension check
+    // Decode the new image once: we need its dimensions (for the compatibility
+    // check) and its pixels (to recompute content-derived tile ids).
     const bitmap = await createImageBitmap(
       await fetch(objectUrl).then((r) => r.blob()),
     );
     const newWidth = bitmap.width;
     const newHeight = bitmap.height;
+    const newImageData = getImageDataFromBitmap(bitmap);
     bitmap.close();
 
+    // Dimensions must match so every template's `pos` rect stays valid.
     if (newWidth !== ts.width || newHeight !== ts.height) {
       notifications.show({
         title: i18n.t("tilesetReplaceImageDimensionMismatch"),
@@ -321,8 +327,67 @@ export const replaceTilesetImageThunk = createAsyncThunk(
       return { replaced: false };
     }
 
+    // The tileset id is derived from the image content, so replacing the image
+    // yields a new id. If it's unchanged, the bytes are identical — nothing to do.
+    const newTsId = await genTilesetId(objectUrl);
+    if (newTsId === tsId) {
+      return { replaced: true };
+    }
+    if (state.tilesetEditor.tilesets[newTsId]) {
+      notifications.show({
+        title: i18n.t("tilesetUploadDuplicateId"),
+        message: i18n.t("tilesetUploadDuplicateIdMsg", { tsId: newTsId }),
+        color: "red",
+      });
+      return { replaced: false };
+    }
+
+    const tsObjIdRemap = new Map<string, string>();
+    /**
+     * Recompute a tile group's content-derived id against a new tileset image
+     * (cropped at the group's `pos`) and repoint it at `newTsId`. Records the
+     * old→new id mappings so map instances can be re-linked.
+     */
+    function remapTileGroupToImage(tg: TileGroupTemplate) {
+      const crop = subImageData(newImageData, tg.pos);
+      const newImageId = genImageId(crop);
+      tsObjIdRemap.set(tg.id, newImageId);
+      tg.id = newImageId;
+    }
+
+    const newTs: Tileset = structuredClone(ts);
+    newTs.id = newTsId;
+    newTs.objectUrl = objectUrl;
+
+    const newEntities: Record<string, TemplateObject> = {};
+    const newIds: string[] = [];
+    for (const oldId of newTs.tiles.ids) {
+      const obj = newTs.tiles.entities[oldId];
+      if (!obj) continue;
+      let newId = oldId;
+      if (isTileGroupTemplate(obj)) {
+        remapTileGroupToImage(obj);
+        newId = obj.id;
+      } else if (isAnimationTemplate(obj)) {
+        for (const frame of obj.frames) {
+          remapTileGroupToImage(frame.tg);
+        }
+      } else if (isNpcTemplate(obj)) {
+        for (const { animation } of Object.values(obj.animations)) {
+          for (const frame of animation.frames) {
+            remapTileGroupToImage(frame.tg);
+          }
+        }
+      }
+      // Identical tile content now shares an id, so entries may merge.
+      if (!(newId in newEntities)) newIds.push(newId);
+      newEntities[newId] = obj;
+    }
+    newTs.tiles = { ids: newIds, entities: newEntities };
+
     try {
-      await replaceTilesetImage(tsId, objectUrl);
+      await saveTileset(newTs);
+      await deleteTileset(tsId);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       notifications.show({
@@ -333,8 +398,41 @@ export const replaceTilesetImageThunk = createAsyncThunk(
       return { replaced: false };
     }
 
-    // Reload the tileset to refresh Redux state, Pixi texture cache, and edge signatures
-    await dispatch(loadTilesetThunk({ tsId })).unwrap();
+    // Swap the tileset in Redux + caches: drop the old id, load the new one.
+    dispatch(tsActions.removeTileset(tsId));
+    await dispatch(loadTilesetThunk({ tsId: newTsId })).unwrap();
+
+    // Re-link every placed map instance that referenced the old tileset.
+    //
+    // Tile groups (and tile-group-derived objects like exits/pickups) get a
+    // brand new content-derived tsObjId via the remap. NPCs and animations keep
+    // their template id (it isn't content-derived, so it never changed), but
+    // their Pixi nodes still reference the old tileset's canvas source and must
+    // be recreated to pick up the new image.
+    //
+    // The update must be keyed by the map instance id (not the template id), and
+    // must always carry tsObjId so the reconciler treats it as a texture change
+    // and recreates the node. createNode then resolves the new tileset via the
+    // rebuilt objIdToTs lookup.
+    const oldTemplateIds = new Set(ts.tiles.ids);
+    const freshState = getState() as RootState;
+    const changes = [];
+    for (const obj of Object.values(freshState.mapEditor.objects.entities)) {
+      if (!obj) continue;
+      if (!isMapObjFromTileset(obj)) continue;
+      if (!oldTemplateIds.has(obj.tsObjId)) continue;
+      changes.push({
+        id: obj.id,
+        changes: {
+          tsObjId: tsObjIdRemap.get(obj.tsObjId) ?? obj.tsObjId,
+        },
+      });
+    }
+    dispatch(mapActions.updateMany(changes));
+
+    if (state.tilesetEditor.activeTilesetId === tsId) {
+      await router.navigate(`/tilesets/${newTsId}`);
+    }
 
     notifications.show({
       title: i18n.t("tilesetReplaceImageSuccess"),
@@ -381,7 +479,7 @@ export const retileThunk = createAsyncThunk(
         );
       })
       .map((obj) => obj.id);
-    dispatch(tsActions.deletePaletteObjects({ tsId, ids }));
+    dispatch(tsActions.deletePaletteObjects({ ids }));
     dispatch(tsActions.setTilesetGridSize({ tsId, gridSize }));
 
     const allCoords = generateGridAlignedCoords(tsId, gridSize);
@@ -528,16 +626,16 @@ export const addPaletteObjectsThunk = createAsyncThunk(
       // This lets us lookup all broken tile group instances by the imageId
       const lookup = new Map<string, TileGroupInstance[]>();
       for (const tg of brokenTgs) {
-        const arr = lookup.get(tg.imageId) || [];
+        const arr = lookup.get(tg.id) || [];
         arr.push(tg);
-        lookup.set(tg.imageId, arr);
+        lookup.set(tg.id, arr);
       }
 
       const updates = [];
 
       for (const tmplObj of tmplObjs) {
         if (isTileGroupTemplate(tmplObj)) {
-          const brokenInstances = lookup.get(tmplObj.imageId);
+          const brokenInstances = lookup.get(tmplObj.id);
           if (brokenInstances && brokenInstances.length > 0) {
             for (const b of brokenInstances) {
               updates.push({

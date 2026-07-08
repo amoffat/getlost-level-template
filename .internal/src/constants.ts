@@ -88,3 +88,5 @@ export const storyOriginNodeId = defaultMilestone;
 export const storyOriginNodeName = "start";
 
 export const defaultLocale = "main";
+
+export const uuidNs = "e3ad841d-83e8-4c93-bc39-f3bf76704525";

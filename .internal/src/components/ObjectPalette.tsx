@@ -102,18 +102,6 @@ function ObjectPalette<ObjType extends TemplateObject>({
     for (const obj of sorted) {
       if (seen.has(obj.id)) continue;
       seen.add(obj.id);
-
-      // Prevent visual duplicates from appearing in the palette. This *could*
-      // be the source of a bug if a user places a tile group from one tileset,
-      // adds another tileset with the same image, and then expects to be able
-      // to find the original tile group in the palette to edit it. However,
-      // this is a very edge case and the benefits of preventing visual
-      // duplicates outweigh the risks.
-      if (isTileGroupTemplate(obj)) {
-        if (seen.has(obj.imageId)) continue;
-        seen.add(obj.imageId);
-      }
-
       deduplicated.push(obj);
     }
 
@@ -166,10 +154,11 @@ function ObjectPalette<ObjType extends TemplateObject>({
       }
 
       e.stopPropagation();
-      const objId = target.dataset.objid!;
-      const tsId = target.dataset.tsid!;
-
       const state = store.getState();
+
+      const objId = target.dataset.objid!;
+      const tsId = state.tilesetEditor.objIdToTs[objId];
+
       const tilesets = selectors.selectTilesets(state);
 
       const obj = tilesets[tsId].tiles.entities[objId];

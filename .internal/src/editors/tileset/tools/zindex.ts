@@ -524,7 +524,6 @@ export class ZIndexTool implements Tool {
     const obj = this.currentObj!;
     store.dispatch(
       actions.updateTilesetObject({
-        tsId: obj.tilesetId,
         obj,
         changes: {
           zIndices: [...this.currentZIndices],
@@ -682,7 +681,6 @@ export class ZIndexTool implements Tool {
     const obj = this.currentObj!;
     store.dispatch(
       actions.updateTilesetObject({
-        tsId: obj.tilesetId,
         obj,
         changes: {
           zIndices: [...this.currentZIndices],
@@ -731,7 +729,6 @@ export class ZIndexTool implements Tool {
     // Dispatch the update
     store.dispatch(
       actions.updateTilesetObject({
-        tsId: obj.tilesetId,
         obj,
         changes: {
           zIndices: newZIndices,
@@ -790,7 +787,6 @@ export class ZIndexTool implements Tool {
     // Dispatch the update
     store.dispatch(
       actions.updateTilesetObject({
-        tsId: obj.tilesetId,
         obj,
         changes: {
           zIndices: newZIndices,

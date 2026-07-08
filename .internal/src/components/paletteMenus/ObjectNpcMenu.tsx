@@ -61,7 +61,6 @@ export default function ObjectNpcMenu({
     const onConfirm = () => {
       dispatch(
         tsActions.deletePaletteObjects({
-          tsId: obj.tilesetId,
           ids: [obj.id],
         }),
       );

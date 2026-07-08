@@ -1,34 +1,25 @@
 import { globals as gApp } from "@/globals";
 import { store } from "@/store/store";
-import { Rect } from "@/types/rect";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { Tileset } from "@/types/tileset";
 import * as P from "pixi.js";
-import { sha1Hash } from "./hash";
+import { uuid5Hash } from "./hash";
 import { getImageDataFromBitmap } from "./image";
 
+/** Generate a tileset id (UUIDv5) based on the image file contents */
 export async function genTilesetId(objectUrl: string): Promise<string> {
   const blob = await fetch(objectUrl).then((r) => r.blob());
   const data = await blob.arrayBuffer();
-  return sha1Hash(data);
+  return uuid5Hash(data);
 }
 
-export async function genImageId(imageData: ImageData): Promise<string> {
+/**
+ * Content hash (UUIDv5) of a tile/image region's decoded pixels. A tile group's
+ * `id` and `imageId` are both derived from this same value — see `genTileId`.
+ */
+export function genImageId(imageData: ImageData): string {
   const { data } = imageData;
-  return sha1Hash(data.buffer);
-}
-
-export async function genTileId({
-  tsId,
-  pos,
-}: {
-  tsId: string;
-  pos: Rect;
-}): Promise<string> {
-  const tsHash = await sha1Hash(
-    `${tsId}:${pos.x},${pos.y}:${pos.width},${pos.height}`
-  );
-  return tsHash;
+  return uuid5Hash(data.buffer);
 }
 
 export async function loadTilesetImage(ts: Tileset): Promise<P.Texture> {
@@ -53,7 +44,7 @@ export async function loadTilesetImage(ts: Tileset): Promise<P.Texture> {
   gApp.tilesetTextureCache.set(ts.id, shared);
 
   const bitmap = await createImageBitmap(
-    await fetch(ts.objectUrl).then((r) => r.blob())
+    await fetch(ts.objectUrl).then((r) => r.blob()),
   );
   const imageData = getImageDataFromBitmap(bitmap);
   gApp.tilesetImageDataCache.set(ts.id, imageData);

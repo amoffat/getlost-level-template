@@ -88,5 +88,13 @@ export interface TilesetDocV25 extends Omit<TilesetDocV24, "version"> {
   version: 25;
 }
 
-export type LatestTilesetDoc = TilesetDocV25;
-export const latestVersion = 25;
+// Version 26: Asset ids moved from SHA-1 hex to content-derived UUIDv5. The
+// on-disk conversion (file renames + pixel-recomputed tile ids) is performed by
+// the one-time `scripts/migrate-asset-ids.ts`; the client 25_to_26 migration only
+// bumps the version, since it cannot rename the tileset's file to match a new id.
+export interface TilesetDocV26 extends Omit<TilesetDocV25, "version"> {
+  version: 26;
+}
+
+export type LatestTilesetDoc = TilesetDocV26;
+export const latestVersion = 26;

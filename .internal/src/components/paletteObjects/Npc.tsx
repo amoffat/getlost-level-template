@@ -10,12 +10,7 @@ export function renderNpc({
   const tg = obj.animations.Idle.animation.frames[0]!.tg;
 
   return (
-    <div
-      data-tsid={obj.tilesetId}
-      data-objid={obj.id}
-      style={{ display: "contents" }}
-      key={`${obj.tilesetId}-${obj.id}`}
-    >
+    <div data-objid={obj.id} style={{ display: "contents" }} key={`${obj.id}`}>
       <TilesetGroup scale={scale} group={tg} selected={selected} />
     </div>
   );

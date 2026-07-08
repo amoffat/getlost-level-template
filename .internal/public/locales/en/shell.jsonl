@@ -662,6 +662,8 @@
 {"k": "tilesetReplaceImageSuccessMsg", "v": "The tileset image was replaced successfully.", "ctx": "Notification body shown after successfully replacing a tileset's image"}
 {"k": "tilesetReplaceImageFailed", "v": "Failed to replace tileset image", "ctx": "Notification title shown when replacing a tileset's image fails"}
 {"k": "tilesetReplaceImageFailedMsg", "v": "An error occurred while replacing the tileset image: {msg}", "ctx": "Notification body shown when replacing a tileset's image fails; {msg} is the error message"}
+{"k": "tilesetUploadDuplicateId", "v": "Tileset already exists", "ctx": "Notification title shown when an uploaded image is byte-identical to an existing tileset (same content-derived id)"}
+{"k": "tilesetUploadDuplicateIdMsg", "v": "A tileset with identical image content already exists ({tsId}). The upload was skipped to avoid overwriting it.", "ctx": "Notification body shown when an uploaded image duplicates an existing tileset; {tsId} is the existing tileset identifier"}
 {"k": "tilesetUploadReplaceExisting", "v": "Replace existing tilesets", "ctx": "Option group label in the tileset upload select for replacing existing tileset images"}
 {"k": "tilesetUploadReplaceImageOf", "v": "Replace image of {id}", "ctx": "Option label for replacing the image of a specific existing tileset; {id} is the tileset identifier"}
 {"k": "milestoneEditorWaypointsLegend", "v": "Waypoints", "ctx": "Fieldset legend for the waypoints section in the milestone editor right panel"}
