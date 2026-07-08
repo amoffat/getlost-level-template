@@ -48,7 +48,8 @@ export class Character {
   /** The desired speed of the character's animation */
   private _speed: number = 1.0;
 
-  // Set via __internal__init
+  /** Tags set in the editor. You may use and manipulate these in your level
+   * code */
   public tags: Set<string> = new Set();
 
   constructor(id: string) {
