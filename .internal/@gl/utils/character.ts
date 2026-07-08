@@ -24,6 +24,10 @@ const baseMoveForce: number = 10000;
 export class Character {
   private _pos: Vec2 = new Vec2(0, 0);
   private _velocity: Vec2 = new Vec2(0, 0);
+  // Knockback/impulse velocity, tracked separately from _velocity so it can be
+  // exempted from the maxVelocity cap (which would otherwise clip a strong
+  // impulse back down while the character is being driven by a nav plan).
+  private _impulseVelocity: Vec2 = new Vec2(0, 0);
   private _controlDirection: Vec2 = new Vec2(0, 0);
   public speed: number = 1.0;
   private _moveForce: Vec2 = Vec2.fromVal(baseMoveForce);
@@ -83,11 +87,11 @@ export class Character {
   }
 
   public getPos(): Vec2 {
-    return this._pos;
+    return this._pos.clone();
   }
 
   public setPos(newPos: Vec2): void {
-    this._pos = newPos;
+    this._pos = newPos.clone();
   }
 
   public setControlDirection(dir: Vec2): void {
@@ -107,7 +111,10 @@ export class Character {
   }
 
   public addImpulse(impulse: Vec2): void {
-    this._velocity.add({ x: impulse.x / this.mass, y: impulse.y / this.mass });
+    this._impulseVelocity.add({
+      x: impulse.x / this.mass,
+      y: impulse.y / this.mass,
+    });
   }
 
   public setColorOverlay(color: number, alpha: number): void {
@@ -275,8 +282,16 @@ export class Character {
       this._velocity.x *= frictionFactor;
       this._velocity.y *= frictionFactor;
 
+      // Impulse velocity is exempt from the cap above (so knockback isn't
+      // clipped to maxVelocity), but still decays via friction.
+      this._impulseVelocity.x *= frictionFactor;
+      this._impulseVelocity.y *= frictionFactor;
+      this._impulseVelocity.truncate(0.001);
+
       // Where would we ideally end up if no collisions?
-      const proposedTrans = this._velocity.scaled(dtSec);
+      const proposedTrans = this._velocity
+        .added(this._impulseVelocity)
+        .scale(dtSec);
 
       // Check for collisions and adjust proposed translation
       if (needsCollisionCheck) {
@@ -299,11 +314,16 @@ export class Character {
       // Only apply friction when idle to slow down gradually
       this._velocity.x *= frictionFactor;
       this._velocity.y *= frictionFactor;
+      this._impulseVelocity.x *= frictionFactor;
+      this._impulseVelocity.y *= frictionFactor;
 
       // Don't allow infinitely small velocities (which affect walk sound)
       this._velocity.truncate(0.001);
+      this._impulseVelocity.truncate(0.001);
 
-      const proposedTrans = this._velocity.scaled(dtSec);
+      const proposedTrans = this._velocity
+        .added(this._impulseVelocity)
+        .scale(dtSec);
 
       // Check for collisions and adjust proposed translation
       if (needsCollisionCheck) {
@@ -358,7 +378,7 @@ export class Character {
   }
 
   public hurt(dir: Vec2) {
-    const behavior = hurt(this, { dir });
+    const behavior = hurt(this, { mode: "impulse", dir });
     behavior.perform();
   }
 

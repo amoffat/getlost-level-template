@@ -10,7 +10,7 @@ import { Easings, type EasingFunction } from "@gl/utils/easing";
 import type { Vec2 } from "@gl/utils/vec2";
 
 type HurtOpts =
-  | { mode?: "impulse"; dir: Vec2 }
+  | { mode: "impulse"; dir: Vec2 }
   | { mode: "pos"; target: Vec2; easing?: EasingFunction };
 
 export function hurt(char: Character, opts: HurtOpts): Behavior<Character> {
@@ -25,7 +25,7 @@ export function hurt(char: Character, opts: HurtOpts): Behavior<Character> {
           duration: hurtDuration,
           easing: opts.easing,
         })
-      : new DashAction({ direction: opts.dir.scaled(150) });
+      : new DashAction({ direction: opts.dir });
 
   const behavior = new Behavior("hurt", char);
   behavior

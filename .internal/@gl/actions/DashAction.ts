@@ -18,13 +18,13 @@ export class DashAction extends Action<Subject> {
   constructor({
     name = "dash",
     direction,
-    duration = 0,
+    durationMs = 0,
   }: {
     name?: string;
     direction: Vec2;
-    duration?: number;
+    durationMs?: number;
   }) {
-    super({ name, durationMs: duration });
+    super({ name, durationMs });
     this._direction = direction;
   }
 
