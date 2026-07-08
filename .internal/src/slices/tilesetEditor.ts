@@ -340,11 +340,11 @@ export const slice = createSlice({
       prepare: (payload: {
         obj: TemplateObject;
         changes: Partial<TemplateObject>;
+        tsId: string;
       }) => ({
         meta: {
           reconcilePrefix,
           reconcileType: "update" as const,
-          reconcile: { id: payload.obj.id, changes: payload.changes },
         },
         payload,
       }),
@@ -353,10 +353,11 @@ export const slice = createSlice({
         action: PayloadAction<{
           obj: TemplateObject;
           changes: Partial<TemplateObject>;
+          tsId: string;
         }>,
       ) {
-        const { obj, changes } = action.payload;
-        const ts = state.tilesets[state.objIdToTs[obj.id]];
+        const { obj, changes, tsId } = action.payload;
+        const ts = state.tilesets[tsId];
         if (!ts) return;
         tileAdapter.updateOne(ts.tiles, { id: obj.id, changes: changes });
         if (isTileGroupTemplate(ts.tiles.entities[obj.id])) {
@@ -375,7 +376,6 @@ export const slice = createSlice({
         meta: {
           reconcilePrefix,
           reconcileType: "update" as const,
-          reconcile: payload.changes,
         },
         payload,
       }),
@@ -547,7 +547,6 @@ export const slice = createSlice({
         meta: {
           reconcilePrefix,
           reconcileType: "add" as const,
-          reconcile: payload.objs,
         },
         payload,
       }),
@@ -565,15 +564,14 @@ export const slice = createSlice({
     },
 
     deletePaletteObjects: {
-      prepare: (payload: { ids: string[] }) => ({
+      prepare: (payload: { ids: string[]; tsId: string }) => ({
         meta: {
           reconcilePrefix,
           reconcileType: "remove" as const,
-          reconcile: payload.ids,
         },
         payload,
       }),
-      reducer(state, action: PayloadAction<{ ids: string[] }>) {
+      reducer(state, action: PayloadAction<{ ids: string[]; tsId: string }>) {
         const { ids } = action.payload;
 
         const tsToRemoveIds: Record<string, string[]> = {};

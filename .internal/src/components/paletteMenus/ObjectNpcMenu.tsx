@@ -5,6 +5,7 @@ import { store } from "@/store/store";
 import { isMapObjFromTileset } from "@/types/map";
 import { NpcTemplate } from "@/types/npc";
 import { copyToClipboard } from "@/utils/copy";
+import { getTsId } from "@/utils/tileset";
 import { Vector2 } from "@/vec";
 import { Menu } from "@mantine/core";
 import { modals } from "@mantine/modals";
@@ -62,6 +63,7 @@ export default function ObjectNpcMenu({
       dispatch(
         tsActions.deletePaletteObjects({
           ids: [obj.id],
+          tsId: getTsId(obj.id),
         }),
       );
       notifications.show({

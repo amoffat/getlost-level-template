@@ -82,7 +82,12 @@ class Grouper extends ClickDragListener<Mode> implements Tool {
       const searchBounds = rectToBBox(coords, 1);
       const hitIds = this._spatialIndex.search(searchBounds).map((h) => h.id);
 
-      store.dispatch(tsActions.deletePaletteObjects({ ids: hitIds }));
+      store.dispatch(
+        tsActions.deletePaletteObjects({
+          ids: hitIds,
+          tsId: tsState.activeTilesetId!,
+        }),
+      );
       finishMode = true;
     }
 

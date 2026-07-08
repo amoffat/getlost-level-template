@@ -479,7 +479,7 @@ export const retileThunk = createAsyncThunk(
         );
       })
       .map((obj) => obj.id);
-    dispatch(tsActions.deletePaletteObjects({ ids }));
+    dispatch(tsActions.deletePaletteObjects({ ids, tsId }));
     dispatch(tsActions.setTilesetGridSize({ tsId, gridSize }));
 
     const allCoords = generateGridAlignedCoords(tsId, gridSize);

@@ -22,12 +22,15 @@ startAppListening({
     (action.meta as any)?.reconcileType !== undefined,
 
   effect: async (action, { dispatch, getState }) => {
-    // All matched actions carry a { ts: Tileset } payload
-    const tp = action.payload as any;
-    const tsId = tp?.tsId;
-    if (!tsId) return;
+    const state = getState();
+    const tsId = (action as any).payload?.tsId as string | undefined;
 
-    const ts = getState().tilesetEditor.tilesets[tsId];
+    if (!tsId) {
+      log.warn(`Action ${action.type} had no tileset`);
+      return;
+    }
+
+    const ts = state.tilesetEditor.tilesets[tsId];
 
     const save = () =>
       from(saveTileset(ts)).pipe(

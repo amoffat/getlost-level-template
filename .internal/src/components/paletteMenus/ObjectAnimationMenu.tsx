@@ -95,6 +95,7 @@ export default function ObjectAnimationMenu({
       dispatch(
         tsActions.deletePaletteObjects({
           ids: [obj.id],
+          tsId: ts.id,
         }),
       );
       notifications.show({

@@ -6,6 +6,11 @@ import * as P from "pixi.js";
 import { uuid5Hash } from "./hash";
 import { getImageDataFromBitmap } from "./image";
 
+/** Resolve the tileset id that currently contains the given object/tile id. */
+export function getTsId(objId: string): string {
+  return store.getState().tilesetEditor.objIdToTs[objId];
+}
+
 /** Generate a tileset id (UUIDv5) based on the image file contents */
 export async function genTilesetId(objectUrl: string): Promise<string> {
   const blob = await fetch(objectUrl).then((r) => r.blob());

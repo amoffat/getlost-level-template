@@ -8,6 +8,7 @@ import { BrushShape } from "@/types/zone";
 import { decodeMask, determineCoverage, encodeMask } from "@/utils/collider";
 import { collisionMaskStore } from "@/utils/maskStore";
 import { subState } from "@/utils/redux";
+import { getTsId } from "@/utils/tileset";
 import { OutlineFilter } from "pixi-filters";
 import * as P from "pixi.js";
 import "pixi.js/advanced-blend-modes";
@@ -559,6 +560,7 @@ export class ColliderTool implements Tool {
               simplify: opts.simplify,
             },
           },
+          tsId: getTsId(this.currentObj.id)!,
         }),
       );
     }

@@ -5,6 +5,7 @@ import { store } from "@/store/store";
 import { isTileGroupTemplate, TileGroupTemplate } from "@/types/tilegroup";
 import { clamp } from "@/utils/math";
 import { subState } from "@/utils/redux";
+import { getTsId } from "@/utils/tileset";
 import { Vector2 } from "@/vec";
 import * as P from "pixi.js";
 import { globals as g } from "../globals";
@@ -528,6 +529,7 @@ export class ZIndexTool implements Tool {
         changes: {
           zIndices: [...this.currentZIndices],
         },
+        tsId: getTsId(obj.id),
       }),
     );
 
@@ -685,6 +687,7 @@ export class ZIndexTool implements Tool {
         changes: {
           zIndices: [...this.currentZIndices],
         },
+        tsId: getTsId(obj.id),
       }),
     );
 
@@ -733,6 +736,7 @@ export class ZIndexTool implements Tool {
         changes: {
           zIndices: newZIndices,
         },
+        tsId: activeTsId,
       }),
     );
 
@@ -791,6 +795,7 @@ export class ZIndexTool implements Tool {
         changes: {
           zIndices: newZIndices,
         },
+        tsId: activeTsId,
       }),
     );
 
