@@ -345,6 +345,7 @@ export const slice = createSlice({
         meta: {
           reconcilePrefix,
           reconcileType: "update" as const,
+          reconcile: { id: payload.obj.id, changes: payload.changes },
         },
         payload,
       }),
@@ -376,6 +377,7 @@ export const slice = createSlice({
         meta: {
           reconcilePrefix,
           reconcileType: "update" as const,
+          reconcile: payload.changes,
         },
         payload,
       }),
@@ -547,6 +549,7 @@ export const slice = createSlice({
         meta: {
           reconcilePrefix,
           reconcileType: "add" as const,
+          reconcile: payload.objs,
         },
         payload,
       }),
@@ -568,6 +571,7 @@ export const slice = createSlice({
         meta: {
           reconcilePrefix,
           reconcileType: "remove" as const,
+          reconcile: payload.ids,
         },
         payload,
       }),
