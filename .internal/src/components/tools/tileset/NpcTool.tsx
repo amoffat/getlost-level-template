@@ -70,35 +70,61 @@ export default function NpcTool() {
     }));
   }, []);
 
-  // Collect ALL animations matching each slot (not just the first)
-  const allSlotAnimations = useMemo<
-    Record<NpcRequiredAnimation, AnimationTemplate[]>
-  >(() => {
-    const result = {} as Record<NpcRequiredAnimation, AnimationTemplate[]>;
-    if (!ts) {
-      for (const slot of requiredNpcAnimationSlots) result[slot] = [];
-      return result;
+  // Every slot name present across the tileset's animations. Required slots are
+  // always listed first (even when unused) so the validation UI can flag them;
+  // any additional custom slots follow.
+  const allSlotNames = useMemo<string[]>(() => {
+    const extras = new Set<string>();
+    if (ts) {
+      const allAnimations = Object.values(ts.tiles.entities).filter(
+        isAnimationTemplate,
+      );
+      for (const anim of allAnimations) {
+        for (const name of anim.slotNames) {
+          if (
+            !requiredNpcAnimationSlots.includes(name as NpcRequiredAnimation)
+          ) {
+            extras.add(name);
+          }
+        }
+      }
     }
-    const allAnimations = Object.values(ts.tiles.entities).filter(
-      isAnimationTemplate,
-    );
-    for (const slot of requiredNpcAnimationSlots) {
+    return [...requiredNpcAnimationSlots, ...extras];
+  }, [ts]);
+
+  // Collect ALL animations matching each slot (not just the first)
+  const allSlotAnimations = useMemo<Record<string, AnimationTemplate[]>>(() => {
+    const result: Record<string, AnimationTemplate[]> = {};
+    const allAnimations = ts
+      ? Object.values(ts.tiles.entities).filter(isAnimationTemplate)
+      : [];
+    for (const slot of allSlotNames) {
       result[slot] = allAnimations.filter((anim) =>
         anim.slotNames.includes(slot),
       );
     }
     return result;
-  }, [ts]);
+  }, [ts, allSlotNames]);
+
+  // Non-required slots present in the tileset. Shown as an informational list
+  // the user can flip but not exclude.
+  const extraSlotNames = useMemo<string[]>(
+    () =>
+      allSlotNames.filter(
+        (name) =>
+          !requiredNpcAnimationSlots.includes(name as NpcRequiredAnimation),
+      ),
+    [allSlotNames],
+  );
 
   // Track which animation index is selected per slot
-  const [selectedIndex, setSelectedIndex] = useState<
-    Record<NpcRequiredAnimation, number>
-  >(() => {
-    const state = {} as Record<NpcRequiredAnimation, number>;
-    for (const slot of requiredNpcAnimationSlots) {
-      state[slot] = 0;
-    }
-    return state;
+  const [selectedIndex, setSelectedIndex] = useState<Record<string, number>>(
+    () => {
+      const state: Record<string, number> = {};
+      for (const slot of requiredNpcAnimationSlots) {
+        state[slot] = 0;
+      }
+      return state;
     },
   );
 
@@ -119,12 +145,12 @@ export default function NpcTool() {
     const matches: Partial<NpcAnimationRecord> = {};
     for (const slot of allSlotNames) {
       const candidates = allSlotAnimations[slot];
-      const idx = selectedIndex[slot] % Math.max(candidates.length, 1);
+      const idx = (selectedIndex[slot] ?? 0) % Math.max(candidates.length, 1);
       const match = candidates[idx];
       if (match) {
         matches[slot] = {
           animation: match,
-          flipX: flipXState[slot],
+          flipX: flipXState[slot] ?? false,
         };
       }
     }
@@ -133,6 +159,9 @@ export default function NpcTool() {
 
   const saveNpc = useCallback(() => {
     const animations: NpcAnimationRecord = {
+      // Include every animation slot found in the tileset (custom slots too)...
+      ...animationMatches,
+      // ...while guaranteeing the required slots are present (canSave enforces this).
       Idle: animationMatches["Idle"]!,
       WalkUp: animationMatches["WalkUp"]!,
       WalkDown: animationMatches["WalkDown"]!,
@@ -230,35 +259,35 @@ export default function NpcTool() {
     animRecord: Partial<NpcAnimationRecord>[string],
   ) =>
     animRecord ? (
-                          <Group gap="xs">
-                            <div
-                              style={{
+      <Group gap="xs">
+        <div
+          style={{
             cursor: allSlotAnimations[slot].length > 1 ? "pointer" : "default",
-                              }}
-                              onClick={() => cycleAnimation(slot)}
-                            >
-                              <TileAnimation
-                                frames={animRecord.animation.frames}
-                                scale={2}
-                                bounded
-                                flipX={animRecord.flipX}
-                              />
-                            </div>
+          }}
+          onClick={() => cycleAnimation(slot)}
+        >
+          <TileAnimation
+            frames={animRecord.animation.frames}
+            scale={2}
+            bounded
+            flipX={animRecord.flipX}
+          />
+        </div>
 
-                            <Tooltip label={t("npcToolFlipTooltip")}>
-                              <ActionIcon
-                                variant={animRecord.flipX ? "filled" : "subtle"}
-                                size="sm"
-                                onClick={() => toggleFlipX(slot)}
-                              >
-                                <IconFlipVertical size={14} />
-                              </ActionIcon>
-                            </Tooltip>
-                          </Group>
-                        ) : (
+        <Tooltip label={t("npcToolFlipTooltip")}>
+          <ActionIcon
+            variant={animRecord.flipX ? "filled" : "subtle"}
+            size="sm"
+            onClick={() => toggleFlipX(slot)}
+          >
+            <IconFlipVertical size={14} />
+          </ActionIcon>
+        </Tooltip>
+      </Group>
+    ) : (
       <Anchor underline="hover" size="xs" onClick={activateAnimationTool}>
-                            {t("npcToolCreate")}
-                          </Anchor>
+        {t("npcToolCreate")}
+      </Anchor>
     );
 
   return (
