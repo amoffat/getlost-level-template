@@ -22,6 +22,17 @@ export enum Direction {
 export const chars: Map<string, Character> = new Map();
 const baseMoveForce: number = 10000;
 
+/** One entry on a character's custom-action stack. The top entry overrides the
+ * movement-derived action until it is popped or its duration elapses. */
+interface CustomAction {
+  id: number;
+  action: string;
+  /** Absolute animation speed for this action (not velocity-scaled). */
+  speed: number;
+  /** Timed expiry. When null, the entry persists until explicitly popped. */
+  duration: Delay | null;
+}
+
 export class Character {
   private _pos: Vec2 = new Vec2(0, 0);
   private _velocity: Vec2 = new Vec2(0, 0);
@@ -34,23 +45,32 @@ export class Character {
   private _moveForce: Vec2 = Vec2.fromVal(baseMoveForce);
   public mass: number = 40;
   public maxVelocity: Vec2 = Vec2.fromMagnitude(100);
-  private _action: string = "Idle";
   public id: string;
   private _isPlayer: boolean = false;
 
   private _controller: CharacterController | null = null;
   private _activeJump: Behavior<Character> | null = null;
 
-  /** When an action is set, it can persist, overriding walk action changes. */
-  private _persistAction: Delay = new Delay(0);
+  /** The action the movement system wants to play this frame (walk/stand). */
+  private _moveAction: string = "Idle";
+  /** Velocity-scaled animation speed for the movement action. */
+  private _moveAnimSpeed: number = 1.0;
+
+  /** LIFO stack of custom actions. While non-empty, the top entry overrides the
+   * movement action. Entries are added via pushCustomAction and removed via
+   * popCustomAction, clearCustomAction, or their own duration elapsing. */
+  private _customStack: CustomAction[] = [];
+  private _nextCustomId: number = 1;
+
+  /** Last values pushed to the engine, so redundant setAction/setSpeed calls are
+   * skipped. */
+  private _appliedAction: string | null = null;
+  private _appliedSpeed: number | null = null;
 
   public nav: NavManager;
   private _lookAtFn: (() => Vec2) | null = null;
   private _lookAtWhileMoving: boolean = false;
   private _standingDir: Vec2 = new Vec2(0, 1);
-
-  /** The desired speed of the character's animation */
-  private _speed: number = 1.0;
 
   /** Tags set in the editor. You may use and manipulate these in your level
    * code */
@@ -174,27 +194,76 @@ export class Character {
     char.setWavy(this.id, params);
   }
 
+  /** The action currently displayed: the top custom action if any, otherwise
+   * the movement-derived action. */
   public getAction(): string {
-    return this._action;
+    return this._customStack.at(-1)?.action ?? this._moveAction;
   }
 
   /**
-   * Set the character's animation
+   * Push a custom action onto the stack. While it is the top of the stack it
+   * overrides the movement-derived action, playing at its own absolute speed.
    *
-   * @param newAction The animation action to set
-   * @param durationMs How long to hold that action. Required for custom
-   * animations that you don't want the walk animation to override.
-   * @returns
+   * @param action The animation action to play.
+   * @param durationMs How long to hold the action before it removes itself. Omit
+   * to hold it until it is explicitly popped/cleared.
+   * @param speed The animation speed for this action (default 1.0). Unlike the
+   * movement action this is not scaled by velocity.
+   * @returns A handle that can be passed to popCustomAction to remove this exact
+   * entry.
    */
-  public setAction(newAction: string, durationMs?: number): void {
-    if (this._action === newAction) return;
-    if (!this._persistAction.done) return;
+  public pushCustomAction({
+    action,
+    durationMs,
+    speed = 1.0,
+  }: {
+    action: string;
+    durationMs?: number;
+    speed?: number;
+  }): number {
+    const id = this._nextCustomId++;
+    this._customStack.push({
+      id,
+      action,
+      speed,
+      duration: durationMs != null ? new Delay(durationMs) : null,
+    });
+    return id;
+  }
 
-    this._action = newAction;
-    if (durationMs) {
-      this._persistAction = new Delay(durationMs);
+  /**
+   * Remove a custom action from the stack. Pass the handle returned by
+   * pushCustomAction to remove that exact entry (a no-op if it already expired);
+   * omit it to remove the top entry.
+   */
+  public popCustomAction(id?: number): void {
+    if (id == null) {
+      this._customStack.pop();
+      return;
     }
-    char.setAction(this.id, this._action);
+    const idx = this._customStack.findIndex((e) => e.id === id);
+    if (idx !== -1) this._customStack.splice(idx, 1);
+  }
+
+  /** Remove all custom actions, returning the character to movement animation. */
+  public clearCustomAction(): void {
+    this._customStack = [];
+  }
+
+  /** Resolve the top custom action (or the movement action) and push it, plus
+   * the matching animation speed, to the engine — skipping redundant calls. */
+  private _applyAnimation(): void {
+    const top = this._customStack.at(-1) ?? null;
+    const action = top ? top.action : this._moveAction;
+    const speed = top ? top.speed : this._moveAnimSpeed;
+    if (action !== this._appliedAction) {
+      this._appliedAction = action;
+      char.setAction(this.id, action);
+    }
+    if (speed !== this._appliedSpeed) {
+      this._appliedSpeed = speed;
+      char.setSpeed(this.id, speed);
+    }
   }
 
   set collisions(enabled: boolean) {
@@ -255,7 +324,14 @@ export class Character {
    */
   public async tick(deltaMs: number): Promise<void> {
     const dtSec: number = deltaMs / 1000;
-    this._persistAction.tick(deltaMs);
+
+    // Count down timed custom actions and drop any that have elapsed, wherever
+    // they sit in the stack.
+    if (this._customStack.length) {
+      this._customStack = this._customStack.filter(
+        (e) => !e.duration?.tick(deltaMs),
+      );
+    }
 
     if (this._controller) {
       this._controller.tick(deltaMs, this);
@@ -296,7 +372,7 @@ export class Character {
     // disabled anyways while they're moving.
     const needsCollisionCheck = this._isPlayer;
 
-    let moveAction: string = this._action;
+    let moveAction: string = this._moveAction;
     if (moveDir.x != 0 || moveDir.y != 0) {
       if (movementResult?.timedVelocity) {
         // Timed move: drive velocity directly so we arrive within the
@@ -402,20 +478,15 @@ export class Character {
     }
 
     // Slow down our animation speed based on our speed relative to our max
-    // speed. Then scale it by our desired (designer-set) animation speed.
-    const animSpeed =
-      Math.min(1.0, Math.max(0.4, this._velocity.magnitude / 35)) * this._speed;
-    char.setSpeed(this.id, animSpeed);
+    // speed. This is the movement layer's speed; a custom action overrides it
+    // with its own absolute speed in _applyAnimation.
+    this._moveAnimSpeed = Math.min(
+      1.0,
+      Math.max(0.4, this._velocity.magnitude / 35),
+    );
+    this._moveAction = moveAction;
     char.setPos(this.id, this._pos.x, this._pos.y);
-    this.setAction(moveAction);
-  }
-
-  public setSpeed(speed: number): void {
-    this._speed = speed;
-  }
-
-  public getSpeed(): number {
-    return this._speed;
+    this._applyAnimation();
   }
 
   public hurt(dir: Vec2) {

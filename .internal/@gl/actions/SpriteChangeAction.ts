@@ -1,17 +1,18 @@
 import { Action } from "@gl/utils/behavior";
 
 interface Subject {
-  getAction(): string;
-  getSpeed(): number;
-  setSpeed(speed: number): void;
-  setAction(newAction: string, duration?: number): void;
+  pushCustomAction(opts: {
+    action: string;
+    durationMs?: number;
+    speed?: number;
+  }): number;
+  popCustomAction(id?: number): void;
 }
 
 export class SpriteChangeAction extends Action<Subject> {
   private readonly _action: string;
   private readonly _speed: number;
-  private _origAction: string | null = null;
-  private _origSpeed: number | null = null;
+  private _handle: number | null = null;
 
   constructor({
     name = "spriteChange",
@@ -30,14 +31,17 @@ export class SpriteChangeAction extends Action<Subject> {
   }
 
   public override onActionStart({ subject }: { subject: Subject }): void {
-    this._origAction = subject.getAction();
-    subject.setAction(this._action, this.durationMs);
-    this._origSpeed = subject.getSpeed();
-    subject.setSpeed(this._speed);
+    this._handle = subject.pushCustomAction({
+      action: this._action,
+      durationMs: this.durationMs,
+      speed: this._speed,
+    });
   }
 
   public override onActionEnd({ subject }: { subject: Subject }): void {
-    subject.setAction(this._origAction!);
-    subject.setSpeed(this._origSpeed!);
+    if (this._handle != null) {
+      subject.popCustomAction(this._handle);
+      this._handle = null;
+    }
   }
 }
