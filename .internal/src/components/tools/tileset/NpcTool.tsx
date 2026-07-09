@@ -55,17 +55,15 @@ export default function NpcTool() {
   );
 
   // Track flipX state for each animation, initialized from existingNpc if available
-  const [flipXState, setFlipXState] = useState<
-    Record<NpcRequiredAnimation, boolean>
-  >(() => {
-    const state = {} as Record<NpcRequiredAnimation, boolean>;
+  const [flipXState, setFlipXState] = useState<Record<string, boolean>>(() => {
+    const state: Record<string, boolean> = {};
     for (const animName of requiredNpcAnimationSlots) {
       state[animName] = existingNpc?.animations[animName]?.flipX ?? false;
     }
     return state;
   });
 
-  const toggleFlipX = useCallback((animName: NpcRequiredAnimation) => {
+  const toggleFlipX = useCallback((animName: string) => {
     setFlipXState((prev) => ({
       ...prev,
       [animName]: !prev[animName],
@@ -101,10 +99,11 @@ export default function NpcTool() {
       state[slot] = 0;
     }
     return state;
-  });
+    },
+  );
 
   const cycleAnimation = useCallback(
-    (slot: NpcRequiredAnimation) => {
+    (slot: string) => {
       setSelectedIndex((prev) => {
         const count = allSlotAnimations[slot].length;
         if (count <= 1) return prev;
@@ -114,10 +113,11 @@ export default function NpcTool() {
     [allSlotAnimations],
   );
 
-  // Derive current animation matches from selected indices
+  // Derive current animation matches from selected indices. Covers every slot
+  // present in the tileset, not just the required NPC slots.
   const animationMatches = useMemo<Partial<NpcAnimationRecord>>(() => {
     const matches: Partial<NpcAnimationRecord> = {};
-    for (const slot of requiredNpcAnimationSlots) {
+    for (const slot of allSlotNames) {
       const candidates = allSlotAnimations[slot];
       const idx = selectedIndex[slot] % Math.max(candidates.length, 1);
       const match = candidates[idx];
@@ -129,7 +129,7 @@ export default function NpcTool() {
       }
     }
     return matches;
-  }, [allSlotAnimations, selectedIndex, flipXState]);
+  }, [allSlotNames, allSlotAnimations, selectedIndex, flipXState]);
 
   const saveNpc = useCallback(() => {
     const animations: NpcAnimationRecord = {
@@ -170,7 +170,7 @@ export default function NpcTool() {
 
     notifications.show({
       title: t("npcToolNotifTitle"),
-      message: t("npcToolNotifMessage", { name: t(nameKey!) }),
+      message: t("npcToolNotifMessage"),
       autoClose: 3000,
     });
   }, [animationMatches, existingNpc, nameKey, ts, dispatch, t]);
@@ -223,50 +223,17 @@ export default function NpcTool() {
 
   const canSave = hasAll && nameKey !== null;
 
-  return (
-    <>
-      <Tip tips={tips} />
-      <form onSubmit={handleSubmit}>
-        <Fieldset legend={t("npcToolLegend")} p="xs">
-          <Stack p={0} gap="md">
-            <Table striped highlightOnHover>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>{t("npcToolTableRequired")}</Table.Th>
-                  <Table.Th>{t("npcToolTableAnimation")}</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {requiredNpcAnimationSlots.map((slot) => {
-                  const animRecord = animationMatches[slot];
-                  return (
-                    <Table.Tr key={slot}>
-                      <Table.Td>
-                        <Text
-                          size="sm"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                          }}
-                        >
-                          {animRecord ? (
-                            <IconCheck size={16} color="green" />
-                          ) : (
-                            <IconAlertTriangle size={16} color="orange" />
-                          )}
-                          {slot}
-                        </Text>
-                      </Table.Td>
-                      <Table.Td>
-                        {animRecord ? (
+  // Shared "Animation" cell: preview (click to cycle when >1 candidate) plus a
+  // flip-horizontal toggle. Falls back to a "Create" link when nothing matches.
+  const renderAnimationCell = (
+    slot: string,
+    animRecord: Partial<NpcAnimationRecord>[string],
+  ) =>
+    animRecord ? (
                           <Group gap="xs">
                             <div
                               style={{
-                                cursor:
-                                  allSlotAnimations[slot].length > 1
-                                    ? "pointer"
-                                    : "default",
+            cursor: allSlotAnimations[slot].length > 1 ? "pointer" : "default",
                               }}
                               onClick={() => cycleAnimation(slot)}
                             >
@@ -289,21 +256,17 @@ export default function NpcTool() {
                             </Tooltip>
                           </Group>
                         ) : (
-                          <Anchor
-                            underline="hover"
-                            size="xs"
-                            onClick={activateAnimationTool}
-                          >
+      <Anchor underline="hover" size="xs" onClick={activateAnimationTool}>
                             {t("npcToolCreate")}
                           </Anchor>
-                        )}
-                      </Table.Td>
-                    </Table.Tr>
-                  );
-                })}
-              </Table.Tbody>
-            </Table>
+    );
 
+  return (
+    <>
+      <Tip tips={tips} />
+      <form onSubmit={handleSubmit}>
+        <Fieldset legend={t("npcToolLegend")} p="xs">
+          <Stack p={0} gap="md">
             <LocalizedTextarea
               label={t("npcToolNameLabel")}
               description={t("npcToolNameDesc")}
@@ -315,6 +278,70 @@ export default function NpcTool() {
               contentKey={nameKey ?? undefined}
               onLocaleKeyChange={(newKey) => setNameKey(newKey)}
             />
+
+            <Table striped highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>{t("npcToolTableRequired")}</Table.Th>
+                  <Table.Th>{t("npcToolTableAnimation")}</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {requiredNpcAnimationSlots.map((slot) => {
+                  const animRecord = animationMatches[slot];
+                  return (
+                    <Table.Tr key={slot}>
+                      <Table.Td>
+                        <Text size="sm">
+                          <Group gap="xs">
+                            {animRecord ? (
+                              <IconCheck size={16} color="green" />
+                            ) : (
+                              <IconAlertTriangle size={16} color="orange" />
+                            )}
+                            {slot}
+                          </Group>
+                        </Text>
+                      </Table.Td>
+                      <Table.Td>
+                        {renderAnimationCell(slot, animRecord)}
+                      </Table.Td>
+                    </Table.Tr>
+                  );
+                })}
+              </Table.Tbody>
+            </Table>
+
+            {extraSlotNames.length > 0 && (
+              <Table striped highlightOnHover>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>{t("npcToolTableExtra")}</Table.Th>
+                    <Table.Th>{t("npcToolTableAnimation")}</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {extraSlotNames.map((slot) => {
+                    const animRecord = animationMatches[slot];
+                    return (
+                      <Table.Tr key={slot}>
+                        <Table.Td>
+                          <Text size="sm">
+                            <Group gap="xs">
+                              <IconCheck size={16} color="green" />
+                              {slot}
+                            </Group>
+                          </Text>
+                        </Table.Td>
+                        <Table.Td>
+                          {renderAnimationCell(slot, animRecord)}
+                        </Table.Td>
+                      </Table.Tr>
+                    );
+                  })}
+                </Table.Tbody>
+              </Table>
+            )}
 
             <Button
               variant="filled"

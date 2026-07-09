@@ -1,13 +1,14 @@
 import * as char from "@gl/api/char";
 import { hurt } from "@gl/behaviors/hurt";
 import { globalTicker } from "@gl/ticker";
-import { CharAction } from "@gl/types/character";
 
 import { type WavyParams } from "@gl/actions/WavyAction";
 import { jump } from "@gl/behaviors/jump";
 import type { CharacterController } from "@gl/controllers";
+import { NavPlan } from "@gl/nav";
 import { type Vector2 } from "@gl/types/api/vector";
 import { Behavior } from "./behavior";
+import { Delay } from "./delay";
 import { NavManager } from "./movement";
 import { Vec2 } from "./vec2";
 
@@ -33,12 +34,15 @@ export class Character {
   private _moveForce: Vec2 = Vec2.fromVal(baseMoveForce);
   public mass: number = 40;
   public maxVelocity: Vec2 = Vec2.fromMagnitude(100);
-  private _action: CharAction = CharAction.Idle;
+  private _action: string = "Idle";
   public id: string;
   private _isPlayer: boolean = false;
 
   private _controller: CharacterController | null = null;
   private _activeJump: Behavior<Character> | null = null;
+
+  /** When an action is set, it can persist, overriding walk action changes. */
+  private _persistAction: Delay = new Delay(0);
 
   public nav: NavManager;
   private _lookAtFn: (() => Vec2) | null = null;
@@ -85,6 +89,22 @@ export class Character {
     chars.forEach((char) => {
       char.tick(deltaMS);
     });
+  }
+
+  public setNavPlan(plan: NavPlan) {
+    this.nav.setNavPlan(plan);
+  }
+
+  public setTargetPos({
+    targetPos,
+    speed,
+    durationMs,
+  }: {
+    targetPos: Vector2;
+    speed?: number;
+    durationMs?: number;
+  }) {
+    this.nav.setTargetPos({ targetPos, speed, durationMs });
   }
 
   public getPos(): Vec2 {
@@ -154,14 +174,26 @@ export class Character {
     char.setWavy(this.id, params);
   }
 
-  public getAction(): CharAction {
+  public getAction(): string {
     return this._action;
   }
 
-  public setAction(newAction: CharAction): void {
+  /**
+   * Set the character's animation
+   *
+   * @param newAction The animation action to set
+   * @param durationMs How long to hold that action. Required for custom
+   * animations that you don't want the walk animation to override.
+   * @returns
+   */
+  public setAction(newAction: string, durationMs?: number): void {
     if (this._action === newAction) return;
+    if (!this._persistAction.done) return;
 
     this._action = newAction;
+    if (durationMs) {
+      this._persistAction = new Delay(durationMs);
+    }
     char.setAction(this.id, this._action);
   }
 
@@ -198,21 +230,21 @@ export class Character {
     this._lookAtWhileMoving = false;
   }
 
-  protected getMoveAction(dir: Vec2): CharAction {
+  protected getMoveAction(dir: Vec2): string {
     // Choose the walk action based on the direction of movement, considering
     // that this is a 2.5D game, so up and down are not as pronounced.
     if (Math.abs(dir.x) > Math.abs(dir.y * 0.5)) {
-      return dir.x < 0 ? CharAction.WalkLeft : CharAction.WalkRight;
+      return dir.x < 0 ? "WalkLeft" : "WalkRight";
     } else {
-      return dir.y < 0 ? CharAction.WalkUp : CharAction.WalkDown;
+      return dir.y < 0 ? "WalkUp" : "WalkDown";
     }
   }
 
-  protected getStandAction(dir: Vec2): CharAction {
+  protected getStandAction(dir: Vec2): string {
     if (Math.abs(dir.x) > Math.abs(dir.y)) {
-      return dir.x < 0 ? CharAction.StandLeft : CharAction.StandRight;
+      return dir.x < 0 ? "StandLeft" : "StandRight";
     } else {
-      return dir.y < 0 ? CharAction.StandUp : CharAction.StandDown;
+      return dir.y < 0 ? "StandUp" : "StandDown";
     }
   }
 
@@ -223,6 +255,7 @@ export class Character {
    */
   public async tick(deltaMs: number): Promise<void> {
     const dtSec: number = deltaMs / 1000;
+    this._persistAction.tick(deltaMs);
 
     if (this._controller) {
       this._controller.tick(deltaMs, this);
@@ -263,25 +296,32 @@ export class Character {
     // disabled anyways while they're moving.
     const needsCollisionCheck = this._isPlayer;
 
-    let moveAction: CharAction = this._action;
+    let moveAction: string = this._action;
     if (moveDir.x != 0 || moveDir.y != 0) {
-      // Low traction means our impulse is less effective
-      const adjForce = this._moveForce
-        // Character's innate speed * waypoint speed * waypoint easing
-        .scaled(this.speed * navSpeed * easingSpeed)
-        .scaled(traction)
-        .scaled(dtSec);
+      if (movementResult?.timedVelocity) {
+        // Timed move: drive velocity directly so we arrive within the
+        // duration, bypassing force accumulation, the maxVelocity cap, and
+        // friction.
+        this._velocity = movementResult.timedVelocity.clone();
+      } else {
+        // Low traction means our impulse is less effective
+        const adjForce = this._moveForce
+          // Character's innate speed * waypoint speed * waypoint easing
+          .scaled(this.speed * navSpeed * easingSpeed)
+          .scaled(traction)
+          .scaled(dtSec);
 
-      // Apply impulse to velocity based on mass
-      this._velocity.x += (moveDir.x * adjForce.x) / this.mass;
-      this._velocity.y += (moveDir.y * adjForce.y) / this.mass;
+        // Apply impulse to velocity based on mass
+        this._velocity.x += (moveDir.x * adjForce.x) / this.mass;
+        this._velocity.y += (moveDir.y * adjForce.y) / this.mass;
 
-      // Don't go faster than max velocity
-      this._velocity.cap(this.maxVelocity);
+        // Don't go faster than max velocity
+        this._velocity.cap(this.maxVelocity);
 
-      // Apply friction
-      this._velocity.x *= frictionFactor;
-      this._velocity.y *= frictionFactor;
+        // Apply friction
+        this._velocity.x *= frictionFactor;
+        this._velocity.y *= frictionFactor;
+      }
 
       // Impulse velocity is exempt from the cap above (so knockback isn't
       // clipped to maxVelocity), but still decays via friction.
@@ -459,5 +499,5 @@ export function setCharacterTargetPos({
   speed?: number;
 }): void {
   const c = chars.get(charId);
-  c?.nav.setTargetPos({ targetPos: pos, speed });
+  c?.setTargetPos({ targetPos: pos, speed });
 }

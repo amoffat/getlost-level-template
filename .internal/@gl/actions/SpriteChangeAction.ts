@@ -4,14 +4,14 @@ interface Subject {
   getAction(): string;
   getSpeed(): number;
   setSpeed(speed: number): void;
-  setAction(newAction: string): void;
+  setAction(newAction: string, duration?: number): void;
 }
 
 export class SpriteChangeAction extends Action<Subject> {
   private readonly _action: string;
   private readonly _speed: number;
   private _origAction: string | null = null;
-  private _origSpeed: number | null = 1.0;
+  private _origSpeed: number | null = null;
 
   constructor({
     name = "spriteChange",
@@ -31,7 +31,7 @@ export class SpriteChangeAction extends Action<Subject> {
 
   public override onActionStart({ subject }: { subject: Subject }): void {
     this._origAction = subject.getAction();
-    subject.setAction(this._action);
+    subject.setAction(this._action, this.durationMs);
     this._origSpeed = subject.getSpeed();
     subject.setSpeed(this._speed);
   }

@@ -27,6 +27,10 @@ export interface MovementResult {
   direction: Vec2;
   easingSpeed: number;
   navSpeed: number;
+  /** Set only for timed moves: the exact velocity (px/s) the character should
+   * move at this frame to complete the path within the requested duration.
+   * Bypasses force/friction/maxVelocity. */
+  timedVelocity?: Vec2;
 }
 
 export class NavManager {
@@ -43,6 +47,12 @@ export class NavManager {
   private _stuckTimer: number = 0;
   private _lastTrackResult: TrackResult = { index: -1, distance: 0, t: 0 };
   private _waypointPause: Delay = new Delay(1000, 0, true);
+
+  // When set, the active move must complete within this many ms. The character
+  // is then driven at the exact velocity needed to cover the remaining path in
+  // the remaining time (see the timedVelocity path in tick()).
+  private _moveDurationMs: number | null = null;
+  private _moveElapsedMs: number = 0;
 
   public startWalkMomentum: number = 5;
   public endWalkMomentum: number = 15;
@@ -102,10 +112,12 @@ export class NavManager {
     targetPos,
     nearestIsOk = true,
     speed = 1.0,
+    durationMs,
   }: {
     targetPos: Vector2;
     nearestIsOk?: boolean;
     speed?: number;
+    durationMs?: number;
   }): Promise<boolean> {
     this.clearTarget();
 
@@ -123,6 +135,8 @@ export class NavManager {
     if (this._targetPath.length > 0) {
       this._targetPos = Vec2.fromVector2(targetPos);
       this._navSpeed = speed;
+      this._moveDurationMs = durationMs ?? null;
+      this._moveElapsedMs = 0;
       char.makeCollidable(this._charId, false);
       this._state = NavState.moving;
     }
@@ -136,6 +150,8 @@ export class NavManager {
     this._targetPos = new Vec2(0, 0);
     this._lastTrackResult = { index: -1, distance: 0, t: 0 };
     this._stuckTimer = 0;
+    this._moveDurationMs = null;
+    this._moveElapsedMs = 0;
     char.makeCollidable(this._charId, true);
     navigation.clearPath(this._charId);
     this.onTargetCleared?.();
@@ -173,6 +189,10 @@ export class NavManager {
    * or null when there is no active movement (stopped or waiting).
    */
   async tick(deltaMs: number, curPos: Vec2): Promise<MovementResult | null> {
+    if (this._moveDurationMs !== null) {
+      this._moveElapsedMs += deltaMs;
+    }
+
     if (this._state === NavState.waiting) {
       if (this._waypointPause.tick(deltaMs)) {
         const wp = await this._navPlan.getNextWaypoint(curPos);
@@ -242,7 +262,20 @@ export class NavManager {
         0.3,
       );
 
-      return { direction, easingSpeed, navSpeed: this._navSpeed };
+      let timedVelocity: Vec2 | undefined;
+      if (this._moveDurationMs !== null) {
+        const remainingSec = (this._moveDurationMs - this._moveElapsedMs) / 1000;
+        if (remainingSec <= dtSec) {
+          // Final frame: step straight onto the goal node so we land exactly
+          // on time.
+          timedVelocity = adjustedGoal.subbed(curPos).scaled(1 / dtSec);
+        } else {
+          const remaining = Math.max(this._targetPathLen - progress, goalDist);
+          timedVelocity = direction.scaled(remaining / remainingSec);
+        }
+      }
+
+      return { direction, easingSpeed, navSpeed: this._navSpeed, timedVelocity };
     }
   }
 }
