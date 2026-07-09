@@ -109,17 +109,41 @@ export abstract class Action<Subject> {
  * "slide" behavior might be movement along the ground as an action with a
  * concurrent sound effect action.
  */
+/**
+ * A single action placed on the behavior's execution timeline with an absolute
+ * start time (ms from behavior start). {@link Behavior} schedules every main and
+ * side action as an entry and drives them by comparing {@link startTime} against
+ * the elapsed time.
+ */
+interface ScheduleEntry<Subject> {
+  action: Action<Subject>;
+  /** Absolute start time in ms from behavior start, clamped to `>= 0`. */
+  startTime: number;
+  /** Listener key for main actions; `null` for side (also) actions. */
+  key: string | null;
+  /** Stable tie-break for entries sharing a {@link startTime}. */
+  order: number;
+  /** Whether `action` is a {@link Behavior} (needs listener-context forwarding). */
+  isBehavior: boolean;
+  started: boolean;
+  active: boolean;
+}
+
 export class Behavior<Subject> extends Action<Subject> {
   // Build-time state
   private _actions: Action<Subject>[] = [];
   private _sideActions: Map<number, Action<Subject>[]> = new Map();
+  // Per-slot start offsets (ms). thenOffset shifts a slot's main action (and,
+  // via the build cursor, everything after it); alsoOffset shifts side actions
+  // relative to their slot start without moving the cursor.
+  private _leadOffsets: Map<number, number> = new Map();
+  private _sideOffsets: Map<number, number[]> = new Map();
 
   // Execution state (initialised in onStart)
   private _subject: Subject;
   private _started: boolean = false;
-  private _currentIndex: number = 0;
-  private _firedSidesForIndex: number = -1;
-  private _backgroundActions: Action<Subject>[] = [];
+  private _schedule: ScheduleEntry<Subject>[] = [];
+  private _cancelled: boolean = false;
 
   // Listener state
   private _prefix: string = "";
@@ -145,8 +169,8 @@ export class Behavior<Subject> extends Action<Subject> {
   override get isDone(): boolean {
     return (
       this._started &&
-      this._currentIndex >= this._actions.length &&
-      this._backgroundActions.length === 0
+      (this._cancelled ||
+        this._schedule.every((e) => e.started && !e.active))
     );
   }
 
@@ -161,7 +185,29 @@ export class Behavior<Subject> extends Action<Subject> {
   }
 
   public then(...actions: Action<Subject>[]): Behavior<Subject> {
+    return this.thenOffset(0, ...actions);
+  }
+
+  /**
+   * Like {@link then}, but shifts the start of the first chained action by
+   * `offsetMs`. A positive offset delays the action (inserting a gap after the
+   * previous action); a negative offset starts it earlier, overlapping the
+   * previous action. The shift is folded into the sequential timeline, so
+   * everything chained afterwards moves with it. Absolute start times are
+   * clamped to `>= 0`.
+   *
+   * When several actions are passed, `offsetMs` applies to the first; the rest
+   * chain sequentially after it with no additional offset.
+   */
+  public thenOffset(
+    offsetMs: number,
+    ...actions: Action<Subject>[]
+  ): Behavior<Subject> {
+    const firstIndex = this._actions.length;
     this._actions.push(...actions);
+    if (offsetMs !== 0 && actions.length > 0) {
+      this._leadOffsets.set(firstIndex, offsetMs);
+    }
     return this;
   }
 
@@ -170,11 +216,30 @@ export class Behavior<Subject> extends Action<Subject> {
    * The side actions start when the preceding action starts and do not block it.
    */
   public also(...actions: Action<Subject>[]): Behavior<Subject> {
+    return this.alsoOffset(0, ...actions);
+  }
+
+  /**
+   * Like {@link also}, but shifts the start of the side actions by `offsetMs`
+   * relative to their slot's start. A positive offset delays them; a negative
+   * offset starts them earlier, before their main action (overlapping into the
+   * previous slot). Unlike {@link thenOffset}, this never moves the sequential
+   * timeline. Absolute start times are clamped to `>= 0`.
+   */
+  public alsoOffset(
+    offsetMs: number,
+    ...actions: Action<Subject>[]
+  ): Behavior<Subject> {
     const prevIndex = this._actions.length - 1;
     if (!this._sideActions.has(prevIndex)) {
       this._sideActions.set(prevIndex, []);
+      this._sideOffsets.set(prevIndex, []);
     }
     this._sideActions.get(prevIndex)!.push(...actions);
+    const offsets = this._sideOffsets.get(prevIndex)!;
+    for (let i = 0; i < actions.length; i++) {
+      offsets.push(offsetMs);
+    }
     return this;
   }
 
@@ -207,6 +272,52 @@ export class Behavior<Subject> extends Action<Subject> {
     this._subject = subject;
     this._actionKeys = this._computeActionKeys();
     this._collectValidKeys(this._actions, this._prefix, this._validKeys);
+    this._buildSchedule();
+  }
+
+  /**
+   * Walk the sequential slots, assigning every main and side action an absolute
+   * start time on the behavior's timeline. The build cursor advances by each
+   * slot's main-action duration only (long side actions spill past their slot as
+   * background work rather than delaying the next slot). `thenOffset` shifts a
+   * slot's start (and, through the cursor, everything after it); `alsoOffset`
+   * shifts a side action relative to its slot start without moving the cursor.
+   */
+  private _buildSchedule(): void {
+    let cursor = 0;
+    let order = 0;
+    for (let slotIndex = 0; slotIndex < this._actions.length; slotIndex++) {
+      const main = this._actions[slotIndex]!;
+      const lead = this._leadOffsets.get(slotIndex) ?? 0;
+      const slotStart = Math.max(0, cursor + lead);
+      this._schedule.push({
+        action: main,
+        startTime: slotStart,
+        key: this._actionKeys[slotIndex]!,
+        order: order++,
+        isBehavior: main instanceof Behavior,
+        started: false,
+        active: false,
+      });
+
+      const sides = this._sideActions.get(slotIndex) ?? [];
+      const sideOffsets = this._sideOffsets.get(slotIndex) ?? [];
+      for (let j = 0; j < sides.length; j++) {
+        const side = sides[j]!;
+        const off = sideOffsets[j] ?? 0;
+        this._schedule.push({
+          action: side,
+          startTime: Math.max(0, slotStart + off),
+          key: null,
+          order: order++,
+          isBehavior: side instanceof Behavior,
+          started: false,
+          active: false,
+        });
+      }
+
+      cursor = slotStart + main.getDuration();
+    }
   }
 
   /**
@@ -271,19 +382,29 @@ export class Behavior<Subject> extends Action<Subject> {
   }
 
   /**
-   * Returns the total duration of this behavior in milliseconds, accounting
-   * for serial and concurrent action structure. For each sequential slot, the
-   * slot duration is the maximum of the main action's duration and any
-   * concurrent side-action durations added via {@link also}.
+   * Returns the total duration of this behavior in milliseconds: the latest
+   * finish time across every action on the timeline, accounting for `then`/
+   * `also` structure and any `thenOffset`/`alsoOffset` shifts. Computed by a
+   * pure re-walk of the slots so it is safe to call before the behavior starts
+   * (e.g. when a parent behavior sums its children's durations).
    */
   public override getDuration(): number {
+    let cursor = 0;
     let total = 0;
-    for (let i = 0; i < this._actions.length; i++) {
-      const mainDuration = this._actions[i]!.getDuration();
-      const sides = this._sideActions.get(i) ?? [];
-      const sideDuration =
-        sides.length > 0 ? Math.max(...sides.map((s) => s.getDuration())) : 0;
-      total += Math.max(mainDuration, sideDuration);
+    for (let slotIndex = 0; slotIndex < this._actions.length; slotIndex++) {
+      const main = this._actions[slotIndex]!;
+      const lead = this._leadOffsets.get(slotIndex) ?? 0;
+      const slotStart = Math.max(0, cursor + lead);
+      total = Math.max(total, slotStart + main.getDuration());
+
+      const sides = this._sideActions.get(slotIndex) ?? [];
+      const sideOffsets = this._sideOffsets.get(slotIndex) ?? [];
+      for (let j = 0; j < sides.length; j++) {
+        const start = Math.max(0, slotStart + (sideOffsets[j] ?? 0));
+        total = Math.max(total, start + sides[j]!.getDuration());
+      }
+
+      cursor = slotStart + main.getDuration();
     }
     return total;
   }
@@ -298,14 +419,13 @@ export class Behavior<Subject> extends Action<Subject> {
   }
 
   /**
-   * Immediately stops this behavior. Any in-progress background (also) actions
-   * are dropped. The next tick will detect completion and unsubscribe from the
-   * global ticker.
+   * Immediately stops this behavior. Any in-progress actions are dropped without
+   * their `onActionEnd` firing. The next tick will detect completion and
+   * unsubscribe from the global ticker.
    */
   public cancel(): void {
     if (!this._started || this._behaviorEndFired) return;
-    this._currentIndex = this._actions.length;
-    this._backgroundActions = [];
+    this._cancelled = true;
   }
 
   public perform(): Behavior<Subject> {
@@ -321,68 +441,39 @@ export class Behavior<Subject> extends Action<Subject> {
   private _tickBehavior(deltaMs: number): void {
     const entity = this._subject!;
 
-    this._elapsedMs += deltaMs;
+    if (!this._cancelled) {
+      this._elapsedMs += deltaMs;
 
-    // Tick background (also) actions, removing completed ones
-    this._backgroundActions = this._backgroundActions.filter((entry) => {
-      entry._internalTick({ subject: entity, deltaMs });
-      if (entry.isDone) {
-        entry.onActionEnd({ subject: entity });
-        return false;
+      // Phase A: tick already-active entries, retiring the ones that finish.
+      for (const entry of this._schedule) {
+        if (!entry.active) continue;
+        this._tickEntry(entry, entity, deltaMs);
       }
-      return true;
-    });
 
-    if (this._currentIndex < this._actions.length) {
-      // On the first tick of a new main action, fire its also-side actions
-      if (this._currentIndex !== this._firedSidesForIndex) {
-        this._firedSidesForIndex = this._currentIndex;
+      // Phase B: start any entries whose time has come (in `order`), giving each
+      // its first tick on the same frame it activates.
+      for (const entry of this._schedule) {
+        if (entry.started || this._elapsedMs < entry.startTime) continue;
+        entry.started = true;
+        entry.active = true;
 
         // If this action is a sub-behavior, forward listener context so its
         // actions can fire callbacks registered on the root.
-        const currentAction = this._actions[this._currentIndex]!;
-        if (currentAction instanceof Behavior) {
-          currentAction._setListenerContext(
-            this._actionKeys[this._currentIndex] + ".",
+        if (entry.isBehavior && entry.key) {
+          (entry.action as Behavior<Subject>)._setListenerContext(
+            entry.key + ".",
             this._startListeners,
             this._endListeners,
           );
         }
 
-        // Start the action's internal animator, then notify it
-        currentAction._initAnimator({ subject: entity });
-        currentAction.onActionStart({ subject: entity });
-
-        // Fire start listeners for this action
-        this._fireListeners(
-          this._startListeners,
-          this._actionKeys[this._currentIndex]!,
-        );
-
-        const sides = this._sideActions.get(this._currentIndex);
-        if (sides) {
-          for (const side of sides) {
-            side._initAnimator({ subject: entity });
-            side.onActionStart({ subject: entity });
-            side._internalTick({ subject: entity, deltaMs });
-            if (side.isDone) {
-              side.onActionEnd({ subject: entity });
-            } else {
-              this._backgroundActions.push(side);
-            }
-          }
+        entry.action._initAnimator({ subject: entity });
+        entry.action.onActionStart({ subject: entity });
+        if (entry.key) {
+          this._fireListeners(this._startListeners, entry.key);
         }
-      }
 
-      const action = this._actions[this._currentIndex]!;
-      action._internalTick({ subject: entity, deltaMs });
-      if (action.isDone) {
-        action.onActionEnd({ subject: entity });
-        this._fireListeners(
-          this._endListeners,
-          this._actionKeys[this._currentIndex]!,
-        );
-        this._currentIndex++;
+        this._tickEntry(entry, entity, deltaMs);
       }
     }
 
@@ -408,6 +499,25 @@ export class Behavior<Subject> extends Action<Subject> {
         }
       }
       this._progressCallbacks = keep;
+    }
+  }
+
+  /**
+   * Tick a single active schedule entry once, retiring it (firing `onActionEnd`
+   * and any end listeners) if it completes.
+   */
+  private _tickEntry(
+    entry: ScheduleEntry<Subject>,
+    subject: Subject,
+    deltaMs: number,
+  ): void {
+    entry.action._internalTick({ subject, deltaMs });
+    if (entry.action.isDone) {
+      entry.active = false;
+      entry.action.onActionEnd({ subject });
+      if (entry.key) {
+        this._fireListeners(this._endListeners, entry.key);
+      }
     }
   }
 
