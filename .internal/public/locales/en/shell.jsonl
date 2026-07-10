@@ -127,9 +127,10 @@
 {"k": "npcToolTipUseAnimator", "v": "To create a required animation, use the <1>Animator tool.</1>", "ctx": "NPC tool tip - <1> wraps a clickable Anchor link that activates the Animator tool"}
 {"k": "npcToolNameRequired", "v": "Name is required", "ctx": "NPC form validation error for empty name"}
 {"k": "npcToolNotifTitle", "v": "NPC saved", "ctx": "NPC save success notification title"}
-{"k": "npcToolNotifMessage", "v": "Saved NPC \"{name}\".", "ctx": "NPC save success notification message, {name} is the NPC name"}
+{"k": "npcToolNotifMessage", "v": "Saved NPC", "ctx": "NPC save success notification message"}
 {"k": "npcToolLegend", "v": "NPC animations", "ctx": "Fieldset legend for NPC tool"}
 {"k": "npcToolTableRequired", "v": "Required", "ctx": "Table column header for required animation slots"}
+{"k": "npcToolTableExtra", "v": "Extra", "ctx": "Table column header for extra (non-required) animation slots"}
 {"k": "npcToolTableAnimation", "v": "Animation", "ctx": "Table column header for assigned animation"}
 {"k": "npcToolFlipTooltip", "v": "Flip horizontally", "ctx": "Tooltip for the flip-horizontal action icon"}
 {"k": "npcToolCreate", "v": "Create", "ctx": "Anchor link text to navigate to the Animator tool to create an animation"}

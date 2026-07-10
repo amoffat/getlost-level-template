@@ -805,7 +805,7 @@ export default function PreviewTab({
 
             {/* Bottom pane */}
             <Split.Pane
-              initialHeight={275}
+              initialHeight={300}
               minHeight={100}
               maxHeight={500}
               onResizeStart={handlePaneResizeStart}

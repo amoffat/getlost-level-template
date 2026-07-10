@@ -24,6 +24,13 @@ function isGlApiModule(id: string): boolean {
 
 interface BundleOptions {
   minify?: boolean;
+  /**
+   * When true, the `@gl` test suite is compiled in and exposed via an injected
+   * `__internal__test()` entrypoint. Should only be set for local-dev builds;
+   * when false (production), nothing imports the tests so Rollup tree-shakes the
+   * suite and the test framework out of the bundle entirely.
+   */
+  includeTests?: boolean;
 }
 
 /**
@@ -45,7 +52,10 @@ interface ForceExportConfig {
  * Rollup plugin that forces specific symbols to be imported and exported,
  * even if they're not used in the code being bundled.
  */
-function forceExportPlugin(exports: ForceExportConfig[]): Plugin {
+function forceExportPlugin(
+  exports: ForceExportConfig[],
+  includeTests = false,
+): Plugin {
   if (exports.length === 0) {
     return { name: "force-export-noop" };
   }
@@ -92,8 +102,21 @@ function forceExportPlugin(exports: ForceExportConfig[]): Plugin {
           )
           .join("\n");
 
+        // Local-dev only: pull in the @gl test suite and expose it via an
+        // entrypoint the engine calls in development. Omitted in production so
+        // the suite (and its test framework) are tree-shaken out of the bundle.
+        const testImport = includeTests
+          ? `import { runAllTests as __forceExport_runAllTests__ } from "@gl/tests";`
+          : "";
+        const testExport = includeTests
+          ? `export function __internal__test() {
+  return __forceExport_runAllTests__();
+}`
+          : "";
+
         // Inject at the top of the file
         const injectedCode = `${imports}
+${testImport}
 
 // Force-exported symbols - prevents tree-shaking
 export const __internal__ = {
@@ -111,6 +134,8 @@ export function __internal__init() {
     c.tags = new Set(char.tags);
   }
 }
+
+${testExport}
 
 ${code}`;
         return {
@@ -140,7 +165,7 @@ export function createRollupConfig(
   options?: BundleOptions,
 ): RollupOptions {
   const plugins = [
-    forceExportPlugin(forceExports),
+    forceExportPlugin(forceExports, options?.includeTests),
     alias({
       entries: [
         {

@@ -8,9 +8,12 @@ import type { Character } from "@gl/utils/character";
 import { Easings, type EasingFunction } from "@gl/utils/easing";
 import type { Vec2 } from "@gl/utils/vec2";
 
-type HurtOpts =
+type SoundOpts = { sound?: string };
+type HurtOpts = (
   | { mode: "impulse"; dir: Vec2 }
-  | { mode: "pos"; target: Vec2; easing?: EasingFunction };
+  | { mode: "pos"; target: Vec2; easing?: EasingFunction }
+) &
+  SoundOpts;
 
 export function hurt(char: Character, opts: HurtOpts): Behavior<Character> {
   const hurtDuration = 500;
@@ -21,7 +24,7 @@ export function hurt(char: Character, opts: HurtOpts): Behavior<Character> {
     opts.mode === "pos"
       ? new DashPosAction({
           target: opts.target,
-          duration: hurtDuration,
+          durationMs: hurtDuration,
           easing: opts.easing,
         })
       : new DashAction({ direction: opts.dir });
@@ -43,6 +46,6 @@ export function hurt(char: Character, opts: HurtOpts): Behavior<Character> {
         easing: Easings.easeOutQuad,
       }),
     )
-    .also(new SoundAction({ key: "gl:hurt" }));
+    .also(new SoundAction({ key: opts.sound ?? "gl:hurt" }));
   return behavior;
 }

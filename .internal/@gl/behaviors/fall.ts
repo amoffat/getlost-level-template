@@ -1,10 +1,10 @@
+import { DashPosAction } from "@gl/actions/DashAction";
 import { FallAction } from "@gl/actions/FallAction";
 import { SoundAction } from "@gl/actions/SoundAction";
 import { SpriteChangeAction } from "@gl/actions/SpriteChangeAction";
 import { Behavior } from "@gl/utils/behavior";
 import type { Character } from "@gl/utils/character";
 import type { Vec2 } from "@gl/utils/vec2";
-import { hurt } from "./hurt";
 
 export function fall({
   char,
@@ -21,7 +21,7 @@ export function fall({
 
   const behavior = new Behavior("hurt", char);
   behavior
-    .then(hurt(char, { mode: "pos", target }))
+    .then(new DashPosAction({ durationMs: 500, target }))
     .also(
       new SpriteChangeAction({
         action: "WalkDown",

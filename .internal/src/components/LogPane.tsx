@@ -20,6 +20,7 @@ const FILTER_TAGS: string[] = [
   "api",
   "level",
   "time",
+  "test",
 ];
 
 interface LogMessage {
@@ -43,6 +44,66 @@ const DEV_KEYS = ["dev", "color", "tags"] as const;
 
 function isDevMessage(msg: unknown): msg is DevMessage {
   return (msg as DevMessage).dev === true;
+}
+
+// Structured record emitted by the @gl test harness (see
+// .internal/@gl/tests/harness.ts). Records carry their fields rather than a
+// rendered line, so rendering switches on `kind` rather than parsing text.
+type TestRecord = { gl: "test"; tags: string[] } & (
+  | { kind: "test"; name: string }
+  | { kind: "pass"; n: number; description: string }
+  | {
+      kind: "fail";
+      n: number;
+      description: string;
+      expected?: string;
+      actual?: string;
+    }
+  | { kind: "error"; name: string; error: string }
+  | { kind: "summary"; total: number; passed: number; failed: number }
+);
+
+// Recognizes a test-harness record. The harness logs the record object and the
+// engine's console bridge serializes it structurally, so it arrives as an
+// object; the `gl` sentinel makes that a single property read.
+function asTestRecord(value: unknown): TestRecord | undefined {
+  if (
+    value !== null &&
+    typeof value === "object" &&
+    (value as TestRecord).gl === "test"
+  ) {
+    return value as TestRecord;
+  }
+  return;
+}
+
+// Maps a test record to a CSS class and display text (icon + message). Rendered
+// into a <pre>, so embedded newlines lay out as their own lines.
+function classifyTest(record: TestRecord): { className: string; text: string } {
+  switch (record.kind) {
+    case "test":
+      return { className: "testHeader", text: record.name };
+    case "pass":
+      return { className: "testPass", text: "✅ " + record.description };
+    case "fail": {
+      let text = "❌ " + record.description;
+      if (record.expected !== undefined) {
+        text += "\n  expected: " + record.expected;
+        text += "\n  actual:   " + record.actual;
+      }
+      return { className: "testFail", text };
+    }
+    case "error":
+      return {
+        className: "testFail",
+        text: `❌ unexpected error in "${record.name}"\n  ${record.error}`,
+      };
+    case "summary":
+      return {
+        className: "testInfo",
+        text: `tests ${record.total}  pass ${record.passed}  fail ${record.failed}`,
+      };
+  }
 }
 
 function formatLogEvent(logEvent: LogEvent) {
@@ -111,6 +172,16 @@ function formatLogEvent(logEvent: LogEvent) {
 }
 
 function parseMessage(event: LogEvent): LogMessage | undefined {
+  // Test-harness records get bespoke rendering (icons + colors) and bypass the
+  // "[ts] LEVEL: <json>" formatting entirely.
+  for (const raw of event.messages) {
+    const record = asTestRecord(raw);
+    if (record) {
+      const { className, text } = classifyTest(record);
+      return { msg: text, className, ts: event.ts, tags: record.tags };
+    }
+  }
+
   let color;
   let tags;
   let found = false;
@@ -144,6 +215,14 @@ function parseMessage(event: LogEvent): LogMessage | undefined {
   }
   return msg;
 }
+
+// Memoized line component. Must stay at module scope: defined inside LogPane it
+// would get a fresh identity every render, remounting every visible line.
+const LogLine = memo(({ m }: { m: LogMessage }) => (
+  <pre className={styles[m.className]} style={m.style}>
+    {m.msg}
+  </pre>
+));
 
 const LogPane = ({ maxMessages }: { maxMessages: number }) => {
   // Rendered logs state
@@ -312,13 +391,6 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
       };
     }
   }, [addMessage]);
-
-  // Memoized line component to avoid rerendering unchanged lines
-  const LogLine = memo(({ m }: { m: LogMessage }) => (
-    <pre className={styles[m.className]} style={m.style}>
-      {m.msg}
-    </pre>
-  ));
 
   // "all" selected -> everything, including untagged entries.
   // Otherwise -> only entries with a tag matching an active chip (OR). Untagged

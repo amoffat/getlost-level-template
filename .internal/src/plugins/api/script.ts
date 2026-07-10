@@ -32,7 +32,10 @@ router.get("/", async (_req, res) => {
   console.log("Bundling JavaScript...");
 
   try {
-    const bundledJs = await bundleWithRollup(metadata, { minify: false });
+    const bundledJs = await bundleWithRollup(metadata, {
+      minify: false,
+      includeTests: true,
+    });
 
     const end = performance.now();
     const time = (end - start).toFixed(2);

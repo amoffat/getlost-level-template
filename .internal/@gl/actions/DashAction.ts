@@ -40,15 +40,15 @@ export class DashPosAction extends Action<Subject> {
   constructor({
     name = "dashPos",
     target,
-    duration,
+    durationMs,
     easing = Easings.easeOutQuad,
   }: {
     name?: string;
     target: Vec2;
-    duration: number;
+    durationMs: number;
     easing?: EasingFunction;
   }) {
-    super({ name, durationMs: duration, easing });
+    super({ name, durationMs, easing });
     this._target = target;
   }
 

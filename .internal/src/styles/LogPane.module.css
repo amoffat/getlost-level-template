@@ -53,3 +53,23 @@
   color: yellow;
   font-weight: bold;
 }
+
+/* Test-harness output (records tagged "test") */
+.testPass {
+  color: #4ade80;
+}
+
+.testFail {
+  color: #f87171;
+  font-weight: bold;
+}
+
+.testHeader {
+  color: #e5e7eb;
+  font-weight: bold;
+  margin-top: 6px;
+}
+
+.testInfo {
+  color: #9ca3af;
+}
