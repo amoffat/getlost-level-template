@@ -1,3 +1,4 @@
+import { Vector2 } from "@gl/types/api/vector";
 import { Action } from "@gl/utils/behavior";
 import { Vec2 } from "@gl/utils/vec2";
 
@@ -24,11 +25,11 @@ export class MoveAction extends Action<Subject> {
     durationMs,
   }: {
     name?: string;
-    target: Vec2;
+    target: Vector2;
     durationMs: number;
   }) {
     super({ name, durationMs });
-    this._target = target;
+    this._target = Vec2.fromVector2(target);
   }
 
   public override onActionStart({ subject }: { subject: Subject }): void {
