@@ -31,6 +31,7 @@ import {
   ScrollArea,
   Select,
   Stack,
+  Switch,
   Text,
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
@@ -63,6 +64,7 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import {
+  ChangeEvent,
   ReactNode,
   use,
   useCallback,
@@ -108,9 +110,15 @@ export default function DialogueTab({
   const availableMilestones = useAppSelector(dSelectors.availableMilestones);
   const allDialogues = useAppSelector(dSelectors.allDialogues);
   const storyNodes = useAppSelector((state) => state.story.nodes);
-  const { activeMilestones, activeNodes, activeEdges } = useAppSelector(
+  const {
+    activeMilestones,
+    activeExactMilestoneOnly,
+    activeNodes,
+    activeEdges,
+  } = useAppSelector(
     (state) => ({
       activeMilestones: dSelectors.activeMilestones(state),
+      activeExactMilestoneOnly: dSelectors.activeExactMilestoneOnly(state),
       activeNodes: dSelectors.activeNodes(state),
       activeEdges: dSelectors.activeEdges(state),
     }),
@@ -632,6 +640,20 @@ export default function DialogueTab({
     [dlgId, activeMilestones, dispatch],
   );
 
+  const onExactMilestoneOnlyChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      if (!dlgId) return;
+
+      dispatch(
+        dActions.setExactMilestoneOnly({
+          dialogueId: dlgId,
+          exactMilestoneOnly: e.currentTarget.checked,
+        }),
+      );
+    },
+    [dlgId, dispatch],
+  );
+
   // Delete the active dialogue entirely. Per-milestone removal is handled by the
   // milestones MultiSelect in the right panel.
   const handleDeleteActiveDialogue = useCallback(() => {
@@ -897,6 +919,23 @@ export default function DialogueTab({
                         onChange={onMilestoneChange}
                         data={availableMilestones}
                         nothingFoundMessage={t("dialogueTabNoMilestonesFound")}
+                        disabled={!dlgId}
+                      />
+
+                      <Switch
+                        label={
+                          <>
+                            {t("dialogueTabExactMilestoneOnlyLabel")}
+                            <InfoTooltip>
+                              <Text style={{ whiteSpace: "pre-line" }}>
+                                {t("dialogueTabExactMilestoneOnlyTooltip")}
+                              </Text>
+                            </InfoTooltip>
+                          </>
+                        }
+                        description={t("dialogueTabExactMilestoneOnlyDesc")}
+                        checked={activeExactMilestoneOnly}
+                        onChange={onExactMilestoneOnlyChange}
                         disabled={!dlgId}
                       />
                     </Stack>

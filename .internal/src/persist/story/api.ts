@@ -1,5 +1,5 @@
 import { ORIGIN_NODE, type StoryEdge, type StoryNode } from "@/slices/story";
-import type { Dialogue, DNode } from "@/types/dialogue";
+import { DIALOGUE_DEFAULTS, type Dialogue, type DNode } from "@/types/dialogue";
 import type { EngineDialogue, EngineSpeechData } from "@/types/engineDialogue";
 import { MILESTONE_NODE_DEFAULTS } from "@/types/properties";
 import { SerializedState } from "@/types/state";
@@ -103,6 +103,7 @@ export async function loadStory(): Promise<{
 
   // Defensive cleanup: remove any dangling edges from loaded dialogues.
   for (const dlg of dialogues) {
+    applyDefaultProps(dlg, DIALOGUE_DEFAULTS);
     cleanupDanglingEdges(dlg);
   }
 
@@ -175,6 +176,7 @@ function toEngineDialogue(
     initiatingChar: dialogue.initiatingChar,
     participants: [...participantsOf(dialogue)],
     milestones: dialogue.milestoneNodeIds.map(mapMilestoneSlug),
+    exactMilestoneOnly: dialogue.exactMilestoneOnly,
     nodes: { ids: [...dialogue.nodes.ids], entities: engineEntities },
     edges: dialogue.edges,
   };

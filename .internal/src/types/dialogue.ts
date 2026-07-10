@@ -35,6 +35,17 @@ export interface Dialogue {
   initiatingChar: string;
   /** Stable ReactFlow node UUIDs (or "default") that activate this dialogue. */
   milestoneNodeIds: string[];
+  /**
+   * When true, this dialogue activates only on an exact milestone match. The
+   * engine will not surface it as a graph-distance fallback candidate for
+   * milestones that aren't in `milestoneNodeIds`.
+   */
+  exactMilestoneOnly: boolean;
   nodes: EntityState<DNode, string>;
   edges: EntityState<Edge, string>;
 }
+
+/** Backfilled onto dialogues loaded from disk that predate a given field. */
+export const DIALOGUE_DEFAULTS: Partial<Dialogue> = {
+  exactMilestoneOnly: false,
+};

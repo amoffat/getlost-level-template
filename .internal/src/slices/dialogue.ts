@@ -145,6 +145,16 @@ export const slice = createSlice({
         dlg.milestoneNodeIds = milestoneNodeIds;
       }
     },
+    setExactMilestoneOnly(
+      state,
+      action: PayloadAction<{ dialogueId: string; exactMilestoneOnly: boolean }>,
+    ) {
+      const { dialogueId, exactMilestoneOnly } = action.payload;
+      const dlg = state.dialogues.entities[dialogueId];
+      if (dlg) {
+        dlg.exactMilestoneOnly = exactMilestoneOnly;
+      }
+    },
   },
   extraReducers: (builder) => {
     // Also listen for a story/resetStory thunk, and reset our dialogue nodes
@@ -230,6 +240,10 @@ export const slice = createSlice({
     activeMilestones: createDlgSelector(
       [activeDialogue],
       (dlg): string[] => dlg?.milestoneNodeIds ?? [],
+    ),
+    activeExactMilestoneOnly: createDlgSelector(
+      [activeDialogue],
+      (dlg): boolean => dlg?.exactMilestoneOnly ?? false,
     ),
     allDialogues: createDlgSelector(
       [(state) => state.dialogues],
@@ -395,10 +409,12 @@ export function createDialogue({
   id,
   initiatingChar,
   milestoneNodeIds = [],
+  exactMilestoneOnly = false,
 }: {
   id: string;
   initiatingChar: string;
   milestoneNodeIds: string[];
+  exactMilestoneOnly?: boolean;
 }): Dialogue {
   return {
     id,
@@ -406,5 +422,6 @@ export function createDialogue({
     nodes: nodeAdapter.getInitialState(),
     edges: edgeAdapter.getInitialState(),
     milestoneNodeIds,
+    exactMilestoneOnly,
   };
 }

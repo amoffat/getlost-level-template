@@ -59,6 +59,12 @@ export interface EngineDialogue {
   participants: string[];
   /** Milestone slugs that activate this dialogue. */
   milestones: string[];
+  /**
+   * When true, the engine will not surface this dialogue as a graph-distance
+   * fallback candidate — it activates only on an exact match against
+   * `milestones`.
+   */
+  exactMilestoneOnly: boolean;
   nodes: EntityState<EngineDialogueNode, string>;
   edges: EntityState<Edge, string>;
 }
