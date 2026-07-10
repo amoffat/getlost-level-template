@@ -582,7 +582,7 @@ export const slice = createSlice({
         for (const id of ids) {
           const tsId = state.objIdToTs[id];
           const arr = (tsToRemoveIds[tsId] ??= []);
-          arr.push(tsId);
+          arr.push(id);
         }
 
         for (const [tsId, ids] of Object.entries(tsToRemoveIds)) {

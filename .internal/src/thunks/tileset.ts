@@ -578,14 +578,6 @@ export const setAnimationFramesThunk = createAsyncThunk(
     dispatch(tsActions.addOneSelected(obj));
 
     dispatch(tsActions.setActiveTool("animate"));
-    notifications.show({
-      title: i18n.t("tilesetAnimationLoaded"),
-      message: i18n.t("tilesetAnimationLoadedMessage", {
-        count: obj.frames.length,
-        name: obj.slotNames.join(", "),
-      }),
-      color: "green",
-    });
   },
 );
 
@@ -594,11 +586,6 @@ export const setNpcThunk = createAsyncThunk(
   async (npc: NpcTemplate, { dispatch }) => {
     dispatch(tsActions.setOneSelected(npc));
     dispatch(tsActions.setActiveTool("make-npc"));
-    notifications.show({
-      title: i18n.t("tilesetNpcLoaded"),
-      message: i18n.t("tilesetNpcLoadedMessage", { name: npc.id }),
-      color: "green",
-    });
   },
 );
 
