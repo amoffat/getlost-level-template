@@ -571,6 +571,7 @@ export const setAnimationFramesThunk = createAsyncThunk(
     const candFrames = obj.frames.map((frame) => ({
       tileGroup: frame.tg,
       weight: totalTime > 0 ? frame.time / totalTime : 1 / obj.frames.length,
+      flipX: frame.flipX,
     }));
     dispatch(tsActions.setCandAnimTotalTime(totalTime));
     dispatch(tsActions.setCandAnimFrames(candFrames));

@@ -25,11 +25,12 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  ActionIcon,
   Alert,
   Button,
-  CloseButton,
   Fieldset,
   Group,
+  Menu,
   NumberInput,
   Slider,
   Stack,
@@ -40,7 +41,10 @@ import { notifications } from "@mantine/notifications";
 import {
   IconAlertTriangle,
   IconCheck,
+  IconDots,
+  IconFlipHorizontal,
   IconInfoCircle,
+  IconTrash,
 } from "@tabler/icons-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -213,6 +217,7 @@ export default function TileAnimationTool({
       (candFrame, idx) => ({
         tg: candFrame.tileGroup,
         time: result.byIdx[idx] ?? 0,
+        flipX: candFrame.flipX,
       }),
     );
     return { frames: framesForAnim, frameTimeByIdx: result.byIdx };
@@ -286,6 +291,10 @@ export default function TileAnimationTool({
       const current: Weights = prev.slice();
       return rebalanceAfterChange(current, idx, target);
     });
+  };
+
+  const toggleFlipFrame = (idx: number) => {
+    dispatch(actions.toggleCandAnimFrameFlipX(idx));
   };
 
   const removeFrame = (idx: number) => {
@@ -389,6 +398,8 @@ export default function TileAnimationTool({
                       totalTime={totalTime}
                       scaleFn={scaleFn}
                       removeFrame={removeFrame}
+                      toggleFlipFrame={toggleFlipFrame}
+                      flipX={candFrame.flipX}
                       disabled={candFrames.length <= 1}
                     />
                   );
@@ -472,6 +483,8 @@ type SortableFrameProps = {
   totalTime: number;
   scaleFn: (v: number) => number;
   removeFrame: (idx: number) => void;
+  toggleFlipFrame: (idx: number) => void;
+  flipX: boolean;
   disabled: boolean;
 };
 
@@ -486,8 +499,11 @@ function SortableFrame({
   totalTime,
   scaleFn,
   removeFrame,
+  toggleFlipFrame,
+  flipX,
   disabled,
 }: SortableFrameProps) {
+  const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
   const style: React.CSSProperties = {
@@ -524,7 +540,32 @@ function SortableFrame({
         }}
         disabled={disabled}
       />
-      <CloseButton size="xs" onClick={() => removeFrame(idx)} />
+      <Menu position="bottom-end" withinPortal shadow="md">
+        <Menu.Target>
+          <ActionIcon
+            size="xs"
+            variant={flipX ? "light" : "subtle"}
+            aria-label={t("tileAnimFrameMenu")}
+          >
+            <IconDots size={14} />
+          </ActionIcon>
+        </Menu.Target>
+        <Menu.Dropdown>
+          <Menu.Item
+            leftSection={<IconFlipHorizontal size={14} />}
+            onClick={() => toggleFlipFrame(idx)}
+          >
+            {flipX ? t("tileAnimFrameUnflip") : t("tileAnimFrameFlip")}
+          </Menu.Item>
+          <Menu.Item
+            color="red"
+            leftSection={<IconTrash size={14} />}
+            onClick={() => removeFrame(idx)}
+          >
+            {t("tileAnimFrameDelete")}
+          </Menu.Item>
+        </Menu.Dropdown>
+      </Menu>
     </Group>
   );
 }

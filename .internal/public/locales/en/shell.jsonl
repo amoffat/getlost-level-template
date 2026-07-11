@@ -38,10 +38,6 @@
 {"k": "tilesetRemovedMessage", "v": "Tileset {tsId} has been removed.", "ctx": "Notification message; tsId = tileset ID that was removed"}
 {"k": "tilesetAnimFrameSizeMismatch", "v": "Animation frame size mismatch", "ctx": "Notification title when an animation frame has a different size than the first frame"}
 {"k": "tilesetAnimFrameSizeMismatchMessage", "v": "The new frame is {newWidth}x{newHeight}, but the first frame is {firstWidth}x{firstHeight}. All frames must be the same size.", "ctx": "Notification message; dimensions are pixel sizes of the frames"}
-{"k": "tilesetAnimationLoaded", "v": "Animation loaded", "ctx": "Notification title when an animation template is loaded into the animator tool"}
-{"k": "tilesetAnimationLoadedMessage", "v": "Loaded {count} frames for animation \"{name}\".", "ctx": "Notification message; count = number of frames, name = comma-joined slot names"}
-{"k": "tilesetNpcLoaded", "v": "NPC loaded", "ctx": "Notification title when an NPC template is loaded into the NPC tool"}
-{"k": "tilesetNpcLoadedMessage", "v": "NPC \"{name}\" loaded.", "ctx": "Notification message; name = NPC name"}
 {"k": "paintToolTip1", "v": "The paint tool allows you to place tiles or objects on the map."}
 {"k": "paintToolTip2", "v": "Paint tiles on the ground layer and objects on the world layer."}
 {"k": "paintToolNoObjectTitle", "v": "No object selected"}
@@ -157,6 +153,10 @@
 {"k": "tileAnimNamesPlaceholder", "v": "MyAnimation", "ctx": "Placeholder for the animation names tags input"}
 {"k": "tileAnimRequiredForNpcs", "v": "Required for NPCs", "ctx": "Group label for the required NPC animation name suggestions"}
 {"k": "tileAnimSaveBtn", "v": "Save animation", "ctx": "Button text to save the animation"}
+{"k": "tileAnimFrameMenu", "v": "Frame actions", "ctx": "Accessible label for the per-frame actions dropdown button in the animation tool"}
+{"k": "tileAnimFrameFlip", "v": "Flip frame", "ctx": "Menu item that mirrors a single animation frame horizontally"}
+{"k": "tileAnimFrameUnflip", "v": "Unflip frame", "ctx": "Menu item that removes the horizontal mirror from a single animation frame"}
+{"k": "tileAnimFrameDelete", "v": "Delete frame", "ctx": "Menu item that removes a single animation frame"}
 {"k": "reslicerToolTipClickDrag", "v": "Click and drag on the tileset to select an area. Releasing the drag will reslice immediately.", "ctx": "Reslicer tool tip"}
 {"k": "reslicerToolTipGridSize", "v": "Adjust the grid size to change how the selection will be sliced.", "ctx": "Reslicer tool tip"}
 {"k": "reslicerToolLegend", "v": "Reslicer", "ctx": "Fieldset legend for the reslicer tool"}
@@ -332,6 +332,9 @@
 {"k": "dialogueTabMilestonesLabel", "v": "Milestones", "ctx": "Label for the milestone multi-select in the dialogue right panel"}
 {"k": "dialogueTabMilestonesDesc", "v": "Which story milestones activate this dialogue?", "ctx": "Description under the milestones multi-select"}
 {"k": "dialogueTabMilestonesTooltip", "v": "When these story milestones are triggered in the game, this dialogue becomes active for this NPC. Interacting with the NPC will then show this dialogue. You should write distinct  dialogues for different story milestones to make the NPC feel more responsive to the player's progress.\n\nUsually, you only want one milestone per dialogue, but you can assign multiple milestones if you want the same dialogue to be used in different parts of the story.\n\nThe \"default\" milestone is a special milestone that applies when no other milestones are active. You can use it to create a fallback dialogue that will always have something to say, even if you forget to assign milestones to a new dialogue."}
+{"k": "dialogueTabExactMilestoneOnlyLabel", "v": "Exact milestone match only", "ctx": "Label for the switch that restricts a dialogue to exact milestone matches"}
+{"k": "dialogueTabExactMilestoneOnlyDesc", "v": "Only activate on the milestones above", "ctx": "Description under the exact-milestone-only switch"}
+{"k": "dialogueTabExactMilestoneOnlyTooltip", "v": "Normally a dialogue stays active after the story moves past its milestones. If the current milestone has no dialogue of its own, the game falls back to the nearest earlier milestone that does, so you don't have to re-link the same dialogue to every later milestone.\n\nTurn this on to opt out of that fallback. The dialogue will go silent the moment the story moves past the milestones listed above, and will only play on an exact match.\n\nUse this for one-off, moment-specific dialogue that would feel stale if the NPC kept repeating it later in the story.", "ctx": "Tooltip explaining the exact-milestone-only switch"}
 {"k": "dialogueTabNoMilestonesFound", "v": "No milestones found", "ctx": "Empty state message in the milestones multi-select dropdown"}
 {"k": "dialogueTabChangeSpeakerImage", "v": "Change speaker image", "ctx": "Tooltip on the speaker image action icon button in the dialogue tree"}
 {"k": "dialogueTabReplaceImage", "v": "Replace image", "ctx": "Menu item to replace the current speaker image"}

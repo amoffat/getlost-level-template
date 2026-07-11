@@ -7,7 +7,9 @@ import type { TemplateObject } from "./tilesetobject";
 export interface TileAnimationFrame {
   tg: TileGroupTemplate;
   time: number; // ms to display this frame
+  flipX: boolean; // mirror this frame horizontally
 }
+
 export interface AnimationTemplate extends AnimationProps {
   // The unique, stable id which is based on a hash of the frame ids and times
   id: string;
@@ -19,6 +21,7 @@ export interface AnimationTemplate extends AnimationProps {
   gridSize: Vector2;
   frames: TileAnimationFrame[];
 }
+
 export function isAnimationTemplate(
   obj: TemplateObject,
 ): obj is AnimationTemplate {

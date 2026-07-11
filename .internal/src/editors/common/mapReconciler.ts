@@ -358,6 +358,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         const texture = new P.Texture({
           source: tsTex.source,
           frame: toPixiRect(rect),
+          rotate: animFrame.flipX ? P.groupD8.MIRROR_HORIZONTAL : 0,
         });
         pixiFrames.push({
           texture,
@@ -412,6 +413,7 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
         const texture = new P.Texture({
           source: tsTex.source,
           frame: toPixiRect(rect),
+          rotate: animFrame.flipX ? P.groupD8.MIRROR_HORIZONTAL : 0,
         });
         pixiFrames.push({
           texture,

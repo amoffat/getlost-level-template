@@ -466,6 +466,7 @@ subState(
             const texture = new P.Texture({
               source: tsTex.source,
               frame: toPixiRect(rect),
+              rotate: frame.flipX ? P.groupD8.MIRROR_HORIZONTAL : 0,
             });
             pixiFrames.push({
               texture,

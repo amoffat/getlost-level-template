@@ -39,6 +39,7 @@ export interface FillOpts {
 export interface CandidateAnimFrame {
   tileGroup: TileGroupTemplate;
   weight: number; // 0-1 fraction representing time allocation
+  flipX: boolean; // mirror this frame horizontally
 }
 
 export interface AnimatorOpts {

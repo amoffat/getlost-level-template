@@ -96,5 +96,12 @@ export interface TilesetDocV26 extends Omit<TilesetDocV25, "version"> {
   version: 26;
 }
 
-export type LatestTilesetDoc = TilesetDocV26;
-export const latestVersion = 26;
+// Version 27: Add required `flipX` (per-frame horizontal mirror) to every
+// animation frame — both AnimationTemplate.frames and the frames of each
+// NpcTemplate animation. Existing frames are backfilled with `flipX = false`.
+export interface TilesetDocV27 extends Omit<TilesetDocV26, "version"> {
+  version: 27;
+}
+
+export type LatestTilesetDoc = TilesetDocV27;
+export const latestVersion = 27;

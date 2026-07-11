@@ -258,6 +258,7 @@ export const slice = createSlice({
       frames.push({
         tileGroup: action.payload,
         weight: weights[newLength - 1],
+        flipX: false,
       });
     },
 
@@ -310,6 +311,11 @@ export const slice = createSlice({
       if (idx >= 0 && idx < frames.length) {
         frames[idx].weight = weight;
       }
+    },
+
+    toggleCandAnimFrameFlipX(state, action: PayloadAction<number>) {
+      const frame = state.toolOptions.animator.frames[action.payload];
+      if (frame) frame.flipX = !frame.flipX;
     },
 
     updateAllCandAnimFrameWeights(state, action: PayloadAction<number[]>) {

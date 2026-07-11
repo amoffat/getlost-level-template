@@ -26,7 +26,7 @@ export function fall({
       new SpriteChangeAction({
         action: "WalkDown",
         durationMs,
-        speed: 8.0,
+        speed: 2.0,
       }),
     )
     .also(new FallAction({ durationMs, direction: dir }));

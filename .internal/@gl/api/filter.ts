@@ -31,14 +31,14 @@ export declare function setTiltShiftBlur(id: number, blur: number): void;
  */
 export declare function setTiltShiftY(id: number, y: number): void;
 
-/** Don't use these directly, use the RippleFilter class */
+/** Don't use these directly, use the Ripple class from @gl/fx */
 export declare function addRippleFilter(opts: RippleFilterOpts): number;
 export declare function updateRippleFilter(
   id: number,
   opts: RippleFilterOpts,
 ): void;
 
-/** Do not use these directly. Use the ColorMatrixFilter class */
+/** Do not use these directly. Use the ColorMatrix class from @gl/fx */
 export declare function addColorMatrix(): number;
 export declare function setColorMatrix(id: number, matrix: number[]): void;
 

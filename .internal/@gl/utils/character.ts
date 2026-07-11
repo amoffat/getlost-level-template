@@ -340,6 +340,7 @@ export class Character {
     if (this._controller) {
       this._controller.tick(deltaMs, this);
       char.setPos(this.id, this._pos.x, this._pos.y);
+      this._applyAnimation();
       if (this._controller.isDone) this.detachController();
       return;
     }

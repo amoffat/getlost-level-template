@@ -34,14 +34,14 @@ const TileAnimation = ({
   ...tgOpts
 }: TileAnimationProps & TgProps) => {
   const [index, setIndex] = useState<number>(() =>
-    Math.min(Math.max(startIndex, 0), Math.max(frames.length - 1, 0))
+    Math.min(Math.max(startIndex, 0), Math.max(frames.length - 1, 0)),
   );
 
   // Reset the index when frames list or startIndex changes
   useEffect(() => {
     const next = Math.min(
       Math.max(startIndex, 0),
-      Math.max(frames.length - 1, 0)
+      Math.max(frames.length - 1, 0),
     );
     queueMicrotask(() => {
       setIndex(next);
@@ -90,7 +90,7 @@ const TileAnimation = ({
       scale={scale}
       className={className}
       style={style}
-      flipX={flipX}
+      flipX={Boolean(flipX) !== Boolean(frame.flipX)}
       {...tgOpts}
     />
   );

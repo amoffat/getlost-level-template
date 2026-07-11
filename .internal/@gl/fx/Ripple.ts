@@ -1,30 +1,27 @@
 import * as filters from "@gl/api/filter";
 import type { RippleFilterOpts } from "@gl/types/api/filter";
+import { Filter } from "./Filter";
 
-export class RippleFilter {
+/**
+ * A ripple/displacement effect that warps the scene, used for water, heat haze,
+ * and similar distortions. See {@link underwater} and {@link heat} for presets.
+ */
+export class Ripple extends Filter {
   private _size: number;
   private _speed: number;
   private _strength: number;
 
-  private _id: number;
-
   constructor(opts: RippleFilterOpts) {
+    super(filters.addRippleFilter(opts));
     this._size = opts.size;
     this._speed = opts.speed;
     this._strength = opts.strength;
-
-    this._id = filters.addRippleFilter(opts);
-  }
-
-  set influence(amt: number) {
-    filters.setFilterInfluence(this._id, amt);
   }
 
   set size(size: number) {
     this._size = size;
     this._sync();
   }
-
   get size(): number {
     return this._size;
   }
@@ -52,20 +49,22 @@ export class RippleFilter {
       strength: this._strength,
     });
   }
-}
 
-export function createUnderwaterFilter(
-  size: number = 0.9,
-  speed: number = 0.2,
-  strength: number = 0.7,
-): RippleFilter {
-  return new RippleFilter({ size, speed, strength });
-}
+  /** A slow, large-scale ripple that reads as being underwater. */
+  static underwater(
+    size: number = 0.9,
+    speed: number = 0.2,
+    strength: number = 0.7,
+  ): Ripple {
+    return new Ripple({ size, speed, strength });
+  }
 
-export function createHeatFilter(
-  size: number = 0.18,
-  speed: number = 1.7,
-  strength: number = 0.14,
-): RippleFilter {
-  return new RippleFilter({ size, speed, strength });
+  /** A fast, fine ripple that reads as heat haze. */
+  static heat(
+    size: number = 0.18,
+    speed: number = 1.7,
+    strength: number = 0.14,
+  ): Ripple {
+    return new Ripple({ size, speed, strength });
+  }
 }
