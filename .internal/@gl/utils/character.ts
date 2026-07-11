@@ -127,6 +127,10 @@ export class Character {
     this.nav.setTargetPos({ targetPos, speed, durationMs });
   }
 
+  public getCenterOfMass(): Vec2 {
+    return this._pos.subbed({ x: 0, y: 8 });
+  }
+
   public getPos(): Vec2 {
     return this._pos.clone();
   }

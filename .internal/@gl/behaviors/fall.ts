@@ -11,25 +11,25 @@ export function fall({
   dir,
   target,
   sound,
+  durationMs = 1800,
 }: {
   char: Character;
   dir: Vec2;
   target: Vec2;
   sound?: string;
+  durationMs?: number;
 }): Behavior<Character> {
-  const fallDuration = 1000;
-
   const behavior = new Behavior("hurt", char);
   behavior
     .then(new DashPosAction({ durationMs: 500, target }))
     .also(
       new SpriteChangeAction({
         action: "WalkDown",
-        durationMs: fallDuration,
+        durationMs,
         speed: 8.0,
       }),
     )
-    .also(new FallAction({ duration: fallDuration, direction: dir }));
+    .also(new FallAction({ durationMs, direction: dir }));
 
   if (sound) {
     behavior.also(new SoundAction({ key: sound }));

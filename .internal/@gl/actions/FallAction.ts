@@ -26,16 +26,16 @@ export class FallAction extends Action<Subject> {
   constructor({
     name = "fall",
     direction,
-    duration,
+    durationMs,
     spinRate = 0.005,
   }: {
     name?: string;
     direction: Vec2;
-    duration: number;
+    durationMs: number;
     /** In radians per ms */
     spinRate?: number;
   }) {
-    super({ name, durationMs: duration, easing: Easings.easeInQuad });
+    super({ name, durationMs, easing: Easings.easeInQuad });
     this._direction = direction;
     this._spinDir = Math.random() < 0.5 ? 1 : -1;
     this._spinRate = spinRate;
