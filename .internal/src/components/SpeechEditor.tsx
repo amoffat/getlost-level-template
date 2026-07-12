@@ -11,7 +11,13 @@ import {
 import { selectPropertyValue } from "@/store/selectors";
 import { RootState } from "@/store/store";
 import { uploadSpeakerImageThunk } from "@/thunks/speakerImage";
-import { Choice, DNode, SpeechData } from "@/types/dialogue";
+import {
+  Choice,
+  DialogAvatarEmotion,
+  DialogEmotion,
+  DNode,
+  SpeechData,
+} from "@/types/dialogue";
 import { SpeakableMapObj } from "@/types/map";
 import { copyToClipboard } from "@/utils/copy";
 import { validateSpeakerImageFile } from "@/utils/image";
@@ -51,7 +57,7 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { useCallback, useRef, useState } from "react";
+import { ReactNode, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import InfoTooltip from "./common/InfoTooltip";
 import { ParticipantAvatar } from "./dialogue/Participant";
@@ -62,6 +68,24 @@ interface SpeechEditorProps {
   node: DNode;
   currentLocale: string;
 }
+
+// Maps each emotion to its translation key, so labels are localized.
+const EMOTION_LABEL_KEYS: Record<DialogEmotion, string> = {
+  nervous: "speechEditorEmotionNervous",
+  embarrassed: "speechEditorEmotionEmbarrassed",
+  angry: "speechEditorEmotionAngry",
+  shocked: "speechEditorEmotionShocked",
+  confused: "speechEditorEmotionConfused",
+  idea: "speechEditorEmotionIdea",
+  love: "speechEditorEmotionLove",
+  sad: "speechEditorEmotionSad",
+  sick: "speechEditorEmotionSick",
+  sleepy: "speechEditorEmotionSleepy",
+  excited: "speechEditorEmotionExcited",
+  darkness: "speechEditorEmotionDarkness",
+};
+
+const EMOTION_VALUES = Object.keys(EMOTION_LABEL_KEYS) as DialogEmotion[];
 
 /**
  * Editing panel for a selected dialogue speech node.
@@ -101,11 +125,26 @@ export default function SpeechEditor({
     return mapSelectors.selectObject(state, speakerId);
   }) as SpeakableMapObj | undefined;
 
+  const listenerObj = useAppSelector((state: RootState) => {
+    if (!listenerId || listenerId === constants.playerParticipantId) {
+      return undefined;
+    }
+    return mapSelectors.selectObject(state, listenerId);
+  }) as SpeakableMapObj | undefined;
+
   const speakerNameKey = useAppSelector(
     (state: RootState) =>
       data.speakerNameKey ??
       (obj
         ? (selectPropertyValue(state, obj, "nameKey") ?? undefined)
+        : undefined),
+  );
+
+  const listenerNameKey = useAppSelector(
+    (state: RootState) =>
+      data.listenerNameKey ??
+      (listenerObj
+        ? (selectPropertyValue(state, listenerObj, "nameKey") ?? undefined)
         : undefined),
   );
 
@@ -189,183 +228,186 @@ export default function SpeechEditor({
 
   return (
     <Stack p={0} gap="md">
-      <Fieldset legend={t("speechEditorSpeakerLegend")} p="xs">
-        <Stack gap="sm" p={0}>
-          <Select
-            label={t("speechEditorSpeakerSelectLabel")}
-            description={t("speechEditorSpeakerSelectDesc")}
-            placeholder={t("speechEditorSpeakerSelectPlaceholder")}
-            data={participantOptions}
-            value={speakerId}
-            searchable
-            renderOption={({ option }) => (
-              <Group gap="xs" wrap="nowrap">
-                <ParticipantAvatar
-                  participantId={option.value}
-                  scale={1.5}
-                  size={24}
-                />
-                <Text size="sm">{option.label}</Text>
-              </Group>
-            )}
-            onChange={(value) =>
-              dispatch(
-                actions.updateNodeData({
-                  dialogueId: activeDialogueId,
-                  id: node.id,
-                  data: { speakerId: value },
-                }),
-              )
-            }
-          />
-          <ResettableInput
-            disabled={data.speakerNameKey === undefined}
-            onReset={() => {
-              dispatch(
-                actions.updateNodeData({
-                  dialogueId: activeDialogueId,
-                  id: node.id,
-                  data: { speakerNameKey: undefined },
-                }),
-              );
-              setResetKey((k) => k + 1);
-            }}
-          >
-            <LocalizedTextarea
-              key={remountKey}
-              currentLocale={currentLocale}
-              contentKey={speakerNameKey}
-              onLocaleKeyChange={(newKey) =>
-                dispatch(
-                  actions.updateNodeData({
-                    dialogueId: activeDialogueId,
-                    id: node.id,
-                    data: { speakerNameKey: newKey },
-                  }),
-                )
-              }
-              label={
-                <>
-                  {t("speechEditorSpeakerNameLabel")}
-                  <InfoTooltip>
-                    {t("speechEditorSpeakerNameTooltip")}
-                  </InfoTooltip>
-                </>
-              }
-              description={t("speechEditorSpeakerDesc")}
-            />
-          </ResettableInput>
+      <ParticipantFieldset
+        legend={t("speechEditorSpeakerLegend")}
+        selectDesc={t("speechEditorSpeakerSelectDesc")}
+        participantOptions={participantOptions}
+        participantId={speakerId}
+        onParticipantChange={(value) =>
+          dispatch(
+            actions.updateNodeData({
+              dialogueId: activeDialogueId,
+              id: node.id,
+              data: { speakerId: value },
+            }),
+          )
+        }
+        nameKey={speakerNameKey}
+        nameDisabled={data.speakerNameKey === undefined}
+        onNameChange={(newKey) =>
+          dispatch(
+            actions.updateNodeData({
+              dialogueId: activeDialogueId,
+              id: node.id,
+              data: { speakerNameKey: newKey },
+            }),
+          )
+        }
+        onNameReset={() => {
+          dispatch(
+            actions.updateNodeData({
+              dialogueId: activeDialogueId,
+              id: node.id,
+              data: { speakerNameKey: undefined },
+            }),
+          );
+          setResetKey((k) => k + 1);
+        }}
+        currentLocale={currentLocale}
+        remountKey={remountKey}
+        obj={obj}
+        nodeImageId={data.speakerImageId}
+        onImageOverrideChange={(imageId) => {
+          if (!activeDialogueId) return;
+          dispatch(
+            actions.updateNodeData({
+              dialogueId: activeDialogueId,
+              id: node.id,
+              data: { speakerImageId: imageId },
+            }),
+          );
+        }}
+        emotionFx={data.speakerEmotionFx}
+        onEmotionChange={(speakerEmotionFx) => {
+          if (!activeDialogueId) return;
+          dispatch(
+            actions.updateNodeData({
+              dialogueId: activeDialogueId,
+              id: node.id,
+              data: { speakerEmotionFx },
+            }),
+          );
+        }}
+      />
 
-          {obj && (
-            <SpeakerImageSection
-              objId={obj.id}
-              objSpeakerImageId={obj?.speakerImageId}
-              nodeSpeakerImageId={data.speakerImageId}
-              onSetNodeOverride={(imageId) => {
-                if (!activeDialogueId) return;
-                dispatch(
-                  actions.updateNodeData({
-                    dialogueId: activeDialogueId,
-                    id: node.id,
-                    data: { speakerImageId: imageId },
-                  }),
+      <ParticipantFieldset
+        legend={t("speechEditorListenerLegend")}
+        selectDesc={t("speechEditorListenerSelectDesc")}
+        participantOptions={participantOptions}
+        participantId={listenerId}
+        onParticipantChange={(value) =>
+          dispatch(
+            actions.updateNodeData({
+              dialogueId: activeDialogueId,
+              id: node.id,
+              data: { listenerId: value },
+            }),
+          )
+        }
+        nameKey={listenerNameKey}
+        nameDisabled={data.listenerNameKey === undefined}
+        onNameChange={(newKey) =>
+          dispatch(
+            actions.updateNodeData({
+              dialogueId: activeDialogueId,
+              id: node.id,
+              data: { listenerNameKey: newKey },
+            }),
+          )
+        }
+        onNameReset={() => {
+          dispatch(
+            actions.updateNodeData({
+              dialogueId: activeDialogueId,
+              id: node.id,
+              data: { listenerNameKey: undefined },
+            }),
+          );
+          setResetKey((k) => k + 1);
+        }}
+        currentLocale={currentLocale}
+        remountKey={remountKey}
+        obj={listenerObj}
+        nodeImageId={data.listenerImageId}
+        onImageOverrideChange={(imageId) => {
+          if (!activeDialogueId) return;
+          dispatch(
+            actions.updateNodeData({
+              dialogueId: activeDialogueId,
+              id: node.id,
+              data: { listenerImageId: imageId },
+            }),
+          );
+        }}
+        emotionFx={data.listenerEmotionFx}
+        onEmotionChange={(listenerEmotionFx) => {
+          if (!activeDialogueId) return;
+          dispatch(
+            actions.updateNodeData({
+              dialogueId: activeDialogueId,
+              id: node.id,
+              data: { listenerEmotionFx },
+            }),
+          );
+        }}
+      >
+        {/* Only the player can be offered branching responses to choose from. */}
+        {isPlayerListener && (
+          <Stack gap={4} p={0}>
+            <Input.Label>{t("speechEditorResponsesLabel")}</Input.Label>
+            <Input.Description mb="xs">
+              {t("speechEditorResponsesDesc")}
+            </Input.Description>
+            <DndContext
+              collisionDetection={closestCenter}
+              modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+              onDragEnd={(event: DragEndEvent) => {
+                const { active, over } = event;
+                if (!over || active.id === over.id) return;
+                const fromIndex = data.choices.findIndex(
+                  (c) => c.id === active.id,
                 );
+                const toIndex = data.choices.findIndex((c) => c.id === over.id);
+                if (fromIndex !== -1 && toIndex !== -1) {
+                  reorderChoices(fromIndex, toIndex);
+                }
               }}
-            />
-          )}
-        </Stack>
-      </Fieldset>
+            >
+              <Stack p={0}>
+                <SortableContext
+                  items={data.choices.map((c) => c.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <Stack p={0} gap="xs">
+                    {data.choices.map((c) => (
+                      <SortableChoice
+                        key={`${c.id}-${remountKey}`}
+                        id={c.id}
+                        choice={c}
+                        currentLocale={currentLocale}
+                        updateChoiceTextKey={updateChoiceTextKey}
+                        removeChoice={removeChoice}
+                      />
+                    ))}
+                  </Stack>
+                </SortableContext>
 
-      <Fieldset legend={t("speechEditorListenerLegend")} p="xs">
-        <Stack gap="sm" p={0}>
-          <Select
-            label={t("speechEditorListenerSelectLabel")}
-            description={t("speechEditorListenerSelectDesc")}
-            placeholder={t("speechEditorListenerSelectPlaceholder")}
-            data={participantOptions}
-            value={listenerId}
-            searchable
-            renderOption={({ option }) => (
-              <Group gap="xs" wrap="nowrap">
-                <ParticipantAvatar
-                  participantId={option.value}
-                  scale={1.5}
-                  size={24}
-                />
-                <Text size="sm">{option.label}</Text>
-              </Group>
-            )}
-            onChange={(value) =>
-              dispatch(
-                actions.updateNodeData({
-                  dialogueId: activeDialogueId,
-                  id: node.id,
-                  data: { listenerId: value },
-                }),
-              )
-            }
-          />
-
-          {/* Only the player can be offered branching responses to choose from. */}
-          {isPlayerListener && (
-            <Stack gap={4} p={0}>
-              <Input.Label>{t("speechEditorResponsesLabel")}</Input.Label>
-              <Input.Description mb="xs">
-                {t("speechEditorResponsesDesc")}
-              </Input.Description>
-              <DndContext
-                collisionDetection={closestCenter}
-                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-                onDragEnd={(event: DragEndEvent) => {
-                  const { active, over } = event;
-                  if (!over || active.id === over.id) return;
-                  const fromIndex = data.choices.findIndex(
-                    (c) => c.id === active.id,
-                  );
-                  const toIndex = data.choices.findIndex(
-                    (c) => c.id === over.id,
-                  );
-                  if (fromIndex !== -1 && toIndex !== -1) {
-                    reorderChoices(fromIndex, toIndex);
-                  }
-                }}
-              >
-                <Stack p={0}>
-                  <SortableContext
-                    items={data.choices.map((c) => c.id)}
-                    strategy={verticalListSortingStrategy}
+                {canAddChoice && (
+                  <Button
+                    variant="subtle"
+                    size="xs"
+                    fullWidth
+                    onClick={addChoice}
+                    leftSection={<IconPlus size={14} />}
                   >
-                    <Stack p={0} gap="xs">
-                      {data.choices.map((c) => (
-                        <SortableChoice
-                          key={`${c.id}-${remountKey}`}
-                          id={c.id}
-                          choice={c}
-                          currentLocale={currentLocale}
-                          updateChoiceTextKey={updateChoiceTextKey}
-                          removeChoice={removeChoice}
-                        />
-                      ))}
-                    </Stack>
-                  </SortableContext>
-
-                  {canAddChoice && (
-                    <Button
-                      variant="subtle"
-                      size="xs"
-                      fullWidth
-                      onClick={addChoice}
-                      leftSection={<IconPlus size={14} />}
-                    >
-                      {t("speechEditorAddResponse")}
-                    </Button>
-                  )}
-                </Stack>
-              </DndContext>
-            </Stack>
-          )}
-        </Stack>
-      </Fieldset>
+                    {t("speechEditorAddResponse")}
+                  </Button>
+                )}
+              </Stack>
+            </DndContext>
+          </Stack>
+        )}
+      </ParticipantFieldset>
 
       <Fieldset legend={t("speechEditorContentLegend")} p="xs">
         <Stack gap="sm" p={0}>
@@ -435,31 +477,141 @@ export default function SpeechEditor({
   );
 }
 
-interface SpeakerImageSectionProps {
+interface AvatarImageSectionProps {
   objId: string;
-  objSpeakerImageId: string | null | undefined;
-  nodeSpeakerImageId: string | null | undefined;
+  objImageId: string | null | undefined;
+  nodeImageId: string | null | undefined;
   onSetNodeOverride: (imageId: string | undefined) => void;
 }
 
+interface ParticipantFieldsetProps {
+  legend: string;
+
+  selectDesc: string;
+  participantOptions: { value: string; label: string }[];
+  participantId: string | null;
+  onParticipantChange: (value: string | null) => void;
+
+  nameKey: string | null | undefined;
+  nameDisabled: boolean;
+  onNameChange: (newKey: string | null) => void;
+  onNameReset: () => void;
+  currentLocale: string;
+  remountKey: string;
+
+  obj: SpeakableMapObj | undefined;
+  nodeImageId: string | null | undefined;
+  onImageOverrideChange: (imageId: string | undefined) => void;
+
+  emotionFx: DialogAvatarEmotion | undefined;
+  onEmotionChange: (emotionFx: DialogAvatarEmotion | undefined) => void;
+
+  children?: ReactNode;
+}
+
 /**
- * Renders the speaker portrait section inside the Speech fieldset.
+ * Renders a participant's (speaker or listener) fieldset in the SpeechEditor:
+ * character select, per-node name override, per-node avatar override, and
+ * per-node emotion FX. Only `legend` and `selectDesc` differ meaningfully by
+ * role; every other label/description is generic ("character") and shared.
+ */
+function ParticipantFieldset({
+  legend,
+  selectDesc,
+  participantOptions,
+  participantId,
+  onParticipantChange,
+  nameKey,
+  nameDisabled,
+  onNameChange,
+  onNameReset,
+  currentLocale,
+  remountKey,
+  obj,
+  nodeImageId,
+  onImageOverrideChange,
+  emotionFx,
+  onEmotionChange,
+  children,
+}: ParticipantFieldsetProps) {
+  const { t } = useTranslation();
+
+  return (
+    <Fieldset legend={legend} p="xs">
+      <Stack gap="sm" p={0}>
+        <Select
+          label={t("speechEditorParticipantSelectLabel")}
+          description={selectDesc}
+          placeholder={t("speechEditorParticipantSelectPlaceholder")}
+          data={participantOptions}
+          value={participantId}
+          searchable
+          renderOption={({ option }) => (
+            <Group gap="xs" wrap="nowrap">
+              <ParticipantAvatar
+                participantId={option.value}
+                scale={1.5}
+                size={24}
+              />
+              <Text size="sm">{option.label}</Text>
+            </Group>
+          )}
+          onChange={onParticipantChange}
+        />
+
+        <ResettableInput disabled={nameDisabled} onReset={onNameReset}>
+          <LocalizedTextarea
+            key={remountKey}
+            currentLocale={currentLocale}
+            contentKey={nameKey}
+            onLocaleKeyChange={onNameChange}
+            label={
+              <>
+                {t("speechEditorNameLabel")}
+                <InfoTooltip>{t("speechEditorNameTooltip")}</InfoTooltip>
+              </>
+            }
+            description={t("speechEditorNameDesc")}
+          />
+        </ResettableInput>
+
+        {obj && (
+          <AvatarImageSection
+            objId={obj.id}
+            objImageId={obj.speakerImageId}
+            nodeImageId={nodeImageId}
+            onSetNodeOverride={onImageOverrideChange}
+          />
+        )}
+
+        <EmotionSection emotionFx={emotionFx} onChange={onEmotionChange} />
+
+        {children}
+      </Stack>
+    </Fieldset>
+  );
+}
+
+/**
+ * Renders a participant portrait section (speaker or listener) inside a
+ * fieldset. The object-level image lives on the map object's `speakerImageId`
+ * (the character's shared portrait); the per-node override is role-specific.
  *
  * - No object image: shows an "Upload image" button → sets the object-level image.
  * - Object image, no node override: shows the object-level thumbnail + "Override" button.
  * - Node override present: shows the override thumbnail + "Remove override" button.
  */
-function SpeakerImageSection({
+function AvatarImageSection({
   objId,
-  objSpeakerImageId,
-  nodeSpeakerImageId,
+  objImageId,
+  nodeImageId,
   onSetNodeOverride,
-}: SpeakerImageSectionProps) {
+}: AvatarImageSectionProps) {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const activeImageId = nodeSpeakerImageId ?? objSpeakerImageId;
+  const activeImageId = nodeImageId ?? objImageId;
   const activeImageUrl = activeImageId
     ? g.speakerImageObjectUrlCache.get(activeImageId)
     : undefined;
@@ -482,7 +634,7 @@ function SpeakerImageSection({
     );
     if (!valid) return;
 
-    if (!objSpeakerImageId) {
+    if (!objImageId) {
       // No object-level image yet → upload and set at the object level
       await dispatch(uploadSpeakerImageThunk({ objId, file }));
     } else {
@@ -530,7 +682,7 @@ function SpeakerImageSection({
             }}
           />
           <Stack gap={4} p={0}>
-            {nodeSpeakerImageId ? (
+            {nodeImageId ? (
               <Tooltip label={t("speechEditorRemoveOverride")}>
                 <ActionIcon
                   variant="default"
@@ -584,6 +736,47 @@ function SpeakerImageSection({
           </Button>
         </Box>
       )}
+    </Stack>
+  );
+}
+
+interface EmotionSectionProps {
+  emotionFx: DialogAvatarEmotion | undefined;
+  onChange: (emotionFx: DialogAvatarEmotion | undefined) => void;
+}
+
+/**
+ * Lets the author pick (or clear) an optional per-node emotion FX for a
+ * participant (speaker or listener). `fxOpts` is populated by a separate
+ * downstream process, not authored here — this only ever writes `{ emotion }`,
+ * with no `fxOpts` key.
+ */
+function EmotionSection({ emotionFx, onChange }: EmotionSectionProps) {
+  const { t } = useTranslation();
+
+  const emotionOptions = EMOTION_VALUES.map((value) => ({
+    value,
+    label: t(EMOTION_LABEL_KEYS[value]),
+  }));
+
+  return (
+    <Stack gap={4} p={0}>
+      <Select
+        label={
+          <>
+            {t("speechEditorEmotionLabel")}
+            <InfoTooltip>{t("speechEditorEmotionDesc")}</InfoTooltip>
+          </>
+        }
+        description={t("speechEditorEmotionDesc")}
+        placeholder={t("speechEditorEmotionPlaceholder")}
+        data={emotionOptions}
+        value={emotionFx?.emotion ?? null}
+        clearable
+        onChange={(value) =>
+          onChange(value ? { emotion: value as DialogEmotion } : undefined)
+        }
+      />
     </Stack>
   );
 }

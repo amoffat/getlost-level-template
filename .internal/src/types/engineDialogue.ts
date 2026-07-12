@@ -1,5 +1,6 @@
 import { EntityState } from "@reduxjs/toolkit";
 import { Edge, Node } from "@xyflow/react";
+import type { DialogAvatarEmotion } from "./dialogue";
 
 /**
  * Engine-compatible parallel to `Choice`.
@@ -22,6 +23,8 @@ export interface EngineChoice {
 export interface EngineSpeechData extends Record<string, unknown> {
   id: string;
   speakerNameKey: string | undefined;
+  /** Per-node listener name override. Falls back to the listener's object name. */
+  listenerNameKey?: string | undefined;
   contentKey: string | undefined;
   animated: boolean;
   choices: EngineChoice[];
@@ -30,6 +33,12 @@ export interface EngineSpeechData extends Record<string, unknown> {
   speakerId?: string | null;
   /** Per-node speaker image override. Overrides the object-level speakerImageId. */
   speakerImageId?: string | undefined;
+  /** Per-node listener image override. Overrides the object-level speakerImageId. */
+  listenerImageId?: string | undefined;
+  /** Per-node speaker emotion FX override. */
+  speakerEmotionFx?: DialogAvatarEmotion;
+  /** Per-node listener emotion FX override. */
+  listenerEmotionFx?: DialogAvatarEmotion;
   /**
    * Participant id who is listening. Choices are only meaningful when the
    * listener is the player.

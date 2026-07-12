@@ -163,6 +163,7 @@ function toEngineDialogue(
       })),
       contentKey: node.data.contentKey ?? undefined,
       speakerNameKey: node.data.speakerNameKey ?? undefined,
+      listenerNameKey: node.data.listenerNameKey ?? undefined,
       speakerId: node.data.speakerId ?? null,
       listenerId: node.data.listenerId ?? null,
       activationMilestones:

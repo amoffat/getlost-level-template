@@ -7,6 +7,7 @@ RUN apt-get update \
     git-crypt \
     # For converting audio assets
     ffmpeg \
+    ripgrep \
     # cleanup
     && rm -rf /var/lib/apt/lists/*
 

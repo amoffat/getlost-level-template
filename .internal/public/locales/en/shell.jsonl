@@ -378,9 +378,9 @@
 {"k": "storyTabOrganize", "v": "Organize", "ctx": "Button label to auto-layout the story flow graph"}
 {"k": "speechEditorSelectPrompt", "v": "Select a speech node to edit its properties.", "ctx": "Empty state message in the SpeechEditor right pane when no node is selected"}
 {"k": "speechEditorSpeakerLegend", "v": "Speaker", "ctx": "Fieldset legend for the speaker section in the SpeechEditor"}
-{"k": "speechEditorSpeakerNameLabel", "v": "Name", "ctx": "Label for the speaker name input in the SpeechEditor"}
-{"k": "speechEditorSpeakerNameTooltip", "v": "By default, the speaker name is the NPC's name, but you can change it per-node. For example, instead of \"Guard\", you could set it to \"Guard (angry)\" to indicate a change in tone.", "ctx": "Tooltip explaining the speaker name override field"}
-{"k": "speechEditorSpeakerDesc", "v": "The character speaking this dialogue.", "ctx": "Description text under the speaker name input"}
+{"k": "speechEditorNameLabel", "v": "Name", "ctx": "Label for the participant name input in the SpeechEditor (shared by speaker and listener)"}
+{"k": "speechEditorNameTooltip", "v": "By default, the name is the character's name, but you can change it per-node. For example, instead of \"Guard\", you could set it to \"Guard (angry)\" to indicate a change in tone.", "ctx": "Tooltip explaining the participant name override field (shared by speaker and listener)"}
+{"k": "speechEditorNameDesc", "v": "Optionally override this character's displayed name for this line.", "ctx": "Description text under the participant name input (shared by speaker and listener)"}
 {"k": "speechEditorContentLegend", "v": "Content", "ctx": "Fieldset legend for the dialogue content section in the SpeechEditor"}
 {"k": "speechEditorTextLabel", "v": "Text", "ctx": "Label for the dialogue content textarea in the SpeechEditor"}
 {"k": "speechEditorContentDesc", "v": "The text that will be displayed to the player.", "ctx": "Description text under the dialogue content textarea"}
@@ -389,9 +389,24 @@
 {"k": "speechEditorResponsesLabel", "v": "Responses", "ctx": "Label for the responses list section in the SpeechEditor"}
 {"k": "speechEditorResponsesDesc", "v": "These are possible responses the player can choose from.", "ctx": "Description text above the responses list"}
 {"k": "speechEditorAddResponse", "v": "Add response", "ctx": "Button label to add a new player-response choice in the SpeechEditor"}
-{"k": "speechEditorAvatarLabel", "v": "Avatar", "ctx": "Label text for the speaker portrait/avatar section in SpeakerImageSection"}
-{"k": "speechEditorAvatarTooltip", "v": "A portrait image for the speaker. You can override this on a per-node basis. For example, to change it to a laughing portrait when the player says something funny.", "ctx": "Tooltip explaining the speaker avatar image and per-node override feature"}
-{"k": "speechEditorAvatarDesc", "v": "A visual for the character speaking.", "ctx": "Description text under the avatar label in SpeakerImageSection"}
+{"k": "speechEditorAvatarLabel", "v": "Avatar", "ctx": "Label text for the participant portrait/avatar section in AvatarImageSection (shared by speaker and listener)"}
+{"k": "speechEditorAvatarTooltip", "v": "A portrait image for this character. You can override this on a per-node basis. For example, to change it to a laughing portrait when the player says something funny.", "ctx": "Tooltip explaining the participant avatar image and per-node override feature (shared by speaker and listener)"}
+{"k": "speechEditorAvatarDesc", "v": "A visual for this character.", "ctx": "Description text under the avatar label in AvatarImageSection (shared by speaker and listener)"}
+{"k": "speechEditorEmotionLabel", "v": "Emotion", "ctx": "Label for the per-node emotion FX dropdown in the SpeechEditor (shared by speaker and listener)"}
+{"k": "speechEditorEmotionDesc", "v": "An optional emotion FX to play on this character's avatar for this line.", "ctx": "Description under the emotion FX dropdown in the SpeechEditor (shared by speaker and listener)"}
+{"k": "speechEditorEmotionPlaceholder", "v": "None", "ctx": "Placeholder for the speaker emotion FX dropdown when no emotion is selected"}
+{"k": "speechEditorEmotionNervous", "v": "Nervous", "ctx": "Option label in the speaker emotion FX dropdown"}
+{"k": "speechEditorEmotionEmbarrassed", "v": "Embarrassed", "ctx": "Option label in the speaker emotion FX dropdown"}
+{"k": "speechEditorEmotionAngry", "v": "Angry", "ctx": "Option label in the speaker emotion FX dropdown"}
+{"k": "speechEditorEmotionShocked", "v": "Shocked", "ctx": "Option label in the speaker emotion FX dropdown"}
+{"k": "speechEditorEmotionConfused", "v": "Confused", "ctx": "Option label in the speaker emotion FX dropdown"}
+{"k": "speechEditorEmotionIdea", "v": "Idea", "ctx": "Option label in the speaker emotion FX dropdown"}
+{"k": "speechEditorEmotionLove", "v": "Love", "ctx": "Option label in the speaker emotion FX dropdown"}
+{"k": "speechEditorEmotionSad", "v": "Sad", "ctx": "Option label in the speaker emotion FX dropdown"}
+{"k": "speechEditorEmotionSick", "v": "Sick", "ctx": "Option label in the speaker emotion FX dropdown"}
+{"k": "speechEditorEmotionSleepy", "v": "Sleepy", "ctx": "Option label in the speaker emotion FX dropdown"}
+{"k": "speechEditorEmotionExcited", "v": "Excited", "ctx": "Option label in the speaker emotion FX dropdown"}
+{"k": "speechEditorEmotionDarkness", "v": "Darkness", "ctx": "Option label in the speaker emotion FX dropdown"}
 {"k": "speechEditorRemoveOverride", "v": "Remove the per-node override; the object-level image will be used", "ctx": "Tooltip on the button that removes the per-node avatar override, reverting to the object-level image"}
 {"k": "speechEditorUploadOverride", "v": "Upload a different image for this speech node only", "ctx": "Tooltip on the button that uploads a per-node avatar override image"}
 {"k": "speechEditorRemoveSpeakerImage", "v": "Remove the speaker image", "ctx": "Tooltip on the button that removes the object-level speaker image entirely"}
@@ -721,10 +736,8 @@
 {"k": "deleteNoWaypointPairings", "v": "No waypoint reference these objects.", "ctx": "Status message in delete confirmation when no waypoint pairings reference the selected objects"}
 {"k": "deleteWaypointPairingsWillBeAffected", "v": "{count} waypoint pairing(s) will be removed.", "ctx": "Status message in delete confirmation when waypoint pairings reference the selected objects; {count} is the number"}
 {"k": "dialoguePlayerName", "v": "Player", "ctx": "Display name for the player character in dialogues, shown in the dialogue tree, speaker/listener dropdowns, and on dialogue nodes"}
-{"k": "speechEditorSpeakerSelectLabel", "v": "Character", "ctx": "Label for the dropdown selecting which character is speaking a dialogue node in the SpeechEditor"}
+{"k": "speechEditorParticipantSelectLabel", "v": "Character", "ctx": "Label for the participant character dropdown in the SpeechEditor (shared by speaker and listener)"}
+{"k": "speechEditorParticipantSelectPlaceholder", "v": "Select a character", "ctx": "Placeholder for the participant character dropdown in the SpeechEditor (shared by speaker and listener)"}
 {"k": "speechEditorSpeakerSelectDesc", "v": "Which character is speaking this line.", "ctx": "Description under the speaker character dropdown in the SpeechEditor"}
-{"k": "speechEditorSpeakerSelectPlaceholder", "v": "Select a speaker", "ctx": "Placeholder for the speaker character dropdown in the SpeechEditor"}
 {"k": "speechEditorListenerLegend", "v": "Listener", "ctx": "Fieldset legend for the listener section in the SpeechEditor"}
-{"k": "speechEditorListenerSelectLabel", "v": "Character", "ctx": "Label for the dropdown selecting which character is being spoken to in the SpeechEditor"}
 {"k": "speechEditorListenerSelectDesc", "v": "Who is being spoken to. Only the player can be offered responses to choose from.", "ctx": "Description under the listener character dropdown in the SpeechEditor"}
-{"k": "speechEditorListenerSelectPlaceholder", "v": "Select a listener", "ctx": "Placeholder for the listener character dropdown in the SpeechEditor"}
