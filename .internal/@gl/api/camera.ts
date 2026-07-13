@@ -3,8 +3,9 @@ import { CameraTargetFn } from "@gl/types/camera";
 import { Matrix } from "@gl/utils/mat";
 
 export declare function setPosition(x: number, y: number): void;
-export declare function getZoom(): number;
-export declare function setZoom(scale: number): void;
+export declare function getEffectiveZoom(): number;
+export declare function getUserZoom(): number;
+export declare function setUserZoom(scale: number): void;
 export declare function localTransform(): Matrix;
 export declare function worldTransform(): Matrix;
 export declare function getFrame(): number[];

@@ -82,12 +82,16 @@ export class Camera {
     camera.setPosition(x, y);
   }
 
+  getEffectiveZoom(): number {
+    return camera.getEffectiveZoom();
+  }
+
   getZoom(): number {
-    return camera.getZoom();
+    return camera.getUserZoom();
   }
 
   setZoom(scale: number): void {
-    camera.setZoom(scale);
+    camera.setUserZoom(scale);
   }
 
   localTransform(): Matrix {
@@ -124,7 +128,7 @@ export class Camera {
    */
   tick(_deltaMs: number): void {
     this._tiltShift.y = this.getTarget().y;
-    const t = 1 - (this.getZoom() - 1) / this._blurFalloffRange;
+    const t = 1 - (this.getEffectiveZoom() - 1) / this._blurFalloffRange;
     this._tiltShift.blur = this._baseBlur * Math.max(0, Math.min(1, t));
   }
 }
