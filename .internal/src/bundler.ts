@@ -128,6 +128,7 @@ ${directExports}
 export function __internal__init() {
   player = new __internal__.Player();
   events = new __internal__.EventDispatcher();
+  camera = new __internal__.Camera();
 
   for (const char of __internal__.getAllChars()) {
     const c = new __internal__.Character(char.id);
@@ -203,6 +204,7 @@ export function createRollupConfig(
   const intro = `
     let player;
     let events;
+    let camera;
   `;
 
   return {
@@ -241,6 +243,7 @@ export async function bundleWithRollup(
   // are included in the final bundle and are therefore accessible.
   const forceExports: ForceExportConfig[] = [
     { symbolNames: ["Player"], importPath: "@gl/utils/player" },
+    { symbolNames: ["Camera"], importPath: "@gl/camera" },
     {
       symbolNames: ["EventDispatcher"],
       importPath: "@gl/events",
