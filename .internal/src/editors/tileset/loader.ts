@@ -12,6 +12,7 @@ import { oklabHilbertIndex } from "@/utils/hilbert";
 import { amountOpaquePixels, isTransparent, subImageData } from "@/utils/image";
 import { subState } from "@/utils/redux";
 import { genImageId, loadTilesetImage } from "@/utils/tileset";
+import { Vector2 } from "@/vec";
 import * as P from "pixi.js";
 import { BBox } from "rbush";
 import { globals as g } from "./globals";
@@ -42,25 +43,25 @@ export async function setCanvasTileset(ts: Tileset | null) {
 /**
  * Generates grid-aligned coordinates for a tileset based on its dimensions and grid size.
  * @param tsId - The tileset ID
- * @param gridSize - The size of each grid cell
+ * @param gridSize - The (potentially non-uniform) width/height of each grid cell
  * @returns An array of Rect coordinates representing each grid-aligned tile position
  */
 export function generateGridAlignedCoords(
   tsId: string,
-  gridSize: number,
+  gridSize: Vector2,
 ): Rect[] {
   const texture = gApp.tilesetTextureCache.get(tsId)!;
-  const cols = Math.floor(texture.width / gridSize);
-  const rows = Math.floor(texture.height / gridSize);
+  const cols = Math.floor(texture.width / gridSize.x);
+  const rows = Math.floor(texture.height / gridSize.y);
   const coords: Rect[] = [];
 
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       coords.push({
-        x: x * gridSize,
-        y: y * gridSize,
-        width: gridSize,
-        height: gridSize,
+        x: x * gridSize.x,
+        y: y * gridSize.y,
+        width: gridSize.x,
+        height: gridSize.y,
       });
     }
   }

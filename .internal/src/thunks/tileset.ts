@@ -37,6 +37,7 @@ import {
   subImageData,
 } from "@/utils/image";
 import { genImageId, genTilesetId, loadTilesetImage } from "@/utils/tileset";
+import { Vector2 } from "@/vec";
 import { notifications } from "@mantine/notifications";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import i18n from "i18next";
@@ -140,7 +141,7 @@ export const uploadTilesetThunk = createAsyncThunk(
       saved: false,
       width: bitmap.width,
       height: bitmap.height,
-      gridSize: defaultTileSize,
+      gridSize: { x: defaultTileSize, y: defaultTileSize },
       tiles: { ids: [], entities: {} },
       composite,
       restricted,
@@ -450,7 +451,7 @@ export const retileThunk = createAsyncThunk(
       tsId,
       gridSize,
       bounds,
-    }: { tsId: string; gridSize: number; bounds: Rect },
+    }: { tsId: string; gridSize: Vector2; bounds: Rect },
     { dispatch },
   ) => {
     const state = store.getState();

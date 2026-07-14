@@ -34,9 +34,9 @@ function buildGridIndex(ts: Tileset): Map<string, TileGroupTemplate> {
   for (const obj of Object.values(ts.tiles.entities)) {
     if (!obj || !isTileGroupTemplate(obj)) continue;
     // Only include grid-sized tiles (exactly one grid cell)
-    if (obj.pos.width !== gs || obj.pos.height !== gs) continue;
-    const col = Math.round(obj.pos.x / gs);
-    const row = Math.round(obj.pos.y / gs);
+    if (obj.pos.width !== gs.x || obj.pos.height !== gs.y) continue;
+    const col = Math.round(obj.pos.x / gs.x);
+    const row = Math.round(obj.pos.y / gs.y);
     map.set(`${col},${row}`, obj);
   }
   return map;
@@ -56,13 +56,14 @@ export default function TileContext({ placeObj }: TileContextProps) {
     if (!tileset) return null;
     if (tileset.composite) return null;
     const gs = tileset.gridSize;
-    if (placeObj.pos.width !== gs || placeObj.pos.height !== gs) return null;
+    if (placeObj.pos.width !== gs.x || placeObj.pos.height !== gs.y)
+      return null;
     return {
       gs,
-      totalCols: Math.floor(tileset.width / gs),
-      totalRows: Math.floor(tileset.height / gs),
-      col: Math.round(placeObj.pos.x / gs),
-      row: Math.round(placeObj.pos.y / gs),
+      totalCols: Math.floor(tileset.width / gs.x),
+      totalRows: Math.floor(tileset.height / gs.y),
+      col: Math.round(placeObj.pos.x / gs.x),
+      row: Math.round(placeObj.pos.y / gs.y),
       gridIndex: buildGridIndex(tileset),
     };
   }, [tileset, placeObj]);

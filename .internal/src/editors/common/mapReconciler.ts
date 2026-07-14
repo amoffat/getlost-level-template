@@ -498,8 +498,12 @@ export class MapObjReconciler extends ReduxReconciler<MapObj> {
       spriteContainer.eventMode = "static";
       spriteContainer.scale.set(1 + texAtlasPadding); // avoid bleeding
 
-      // This is so that any error indicator does not become clickable
-      spriteContainer.boundsArea = new P.Rectangle(
+      // This is so that any error indicator does not become clickable. We use
+      // hitArea (not boundsArea) because boundsArea also shrinks getBounds(),
+      // which the Special layer's DropShadowFilter uses to size its render
+      // texture — under-counting the error indicator (which extends past the
+      // sprite's right edge) clips it once the object is the rightmost content.
+      spriteContainer.hitArea = new P.Rectangle(
         0,
         0,
         sprite.width,

@@ -11,6 +11,7 @@ import { AnimatorOpts, CandidateAnimFrame } from "@/types/tools";
 import { BrushShape, PaintMode } from "@/types/zone";
 import { Pan, Zoom, ZoomPan } from "@/types/zoompan";
 import { HasId } from "@/utils/misc";
+import { Vector2 } from "@/vec";
 import { resizeWeights } from "@/utils/normalizedSliders";
 import { calcDefaultZoomPan } from "@/utils/zoompan";
 import {
@@ -105,7 +106,7 @@ const createTsSelector = createSelector.withTypes<TilesetEditorState>();
 const createRootSelector = createSelector.withTypes<RootState>();
 export interface TilesetEditorState {
   grid: {
-    size: number;
+    size: Vector2;
     visible: boolean;
   };
   canvas: {
@@ -184,7 +185,7 @@ export const slice = createSlice({
   name: "tilesetEditor",
   initialState: {
     grid: {
-      size: 16,
+      size: { x: 16, y: 16 },
       visible: true,
     },
     canvas: {
@@ -227,7 +228,7 @@ export const slice = createSlice({
     setGridVisible(state, action: PayloadAction<boolean>) {
       state.grid.visible = action.payload;
     },
-    setGridSize(state, action: PayloadAction<number>) {
+    setGridSize(state, action: PayloadAction<Vector2>) {
       state.grid.size = action.payload;
     },
 
@@ -452,7 +453,7 @@ export const slice = createSlice({
               ts.height,
             );
 
-          state.grid.size = ts.gridSize;
+          state.grid.size = { ...ts.gridSize };
         }
         state.activeZoomPan = zoomPan;
       },
@@ -536,7 +537,7 @@ export const slice = createSlice({
 
     setTilesetGridSize(
       state,
-      action: PayloadAction<{ tsId: string; gridSize: number }>,
+      action: PayloadAction<{ tsId: string; gridSize: Vector2 }>,
     ) {
       const { tsId, gridSize } = action.payload;
       const ts = state.tilesets[tsId];

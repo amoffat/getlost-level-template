@@ -34,8 +34,7 @@ function getGridSize(): Vector2 {
   if (!ts || ts.composite) {
     return { x: 1, y: 1 };
   }
-  const size = state.tilesetEditor.grid.size;
-  return { x: size, y: size };
+  return { ...state.tilesetEditor.grid.size };
 }
 
 class Grouper extends ClickDragListener<Mode> implements Tool {
@@ -94,6 +93,7 @@ class Grouper extends ClickDragListener<Mode> implements Tool {
     if (isAdd) {
       const tsId = tsState.activeTilesetId!;
       const gridSize = tsState.grid.size;
+      const tileGridSize: Vector2 = { x: gridSize.x, y: gridSize.y };
 
       // The tile group id is a hash of the image data for it. This way a tile
       // can appear anywhere in any tileset, which makes it easier to fix maps
@@ -127,7 +127,7 @@ class Grouper extends ClickDragListener<Mode> implements Tool {
             id,
             type: TemplateType.TileGroup,
             pos: coords,
-            gridSize: { x: gridSize, y: gridSize },
+            gridSize: tileGridSize,
             zIndices,
             nameKey: null,
             talkable: false,

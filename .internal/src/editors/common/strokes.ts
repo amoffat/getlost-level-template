@@ -47,6 +47,15 @@ export const gridStroke: P.StrokeInput = {
   pixelLine: true,
 };
 
+// Grid lines that coincide with an image boundary (the grid size divides the
+// image evenly). Drawn green and more opaque so it's obvious the grid "fits".
+export const gridBoundaryStroke: P.StrokeInput = {
+  color: 0x22dd22,
+  width: 1,
+  alpha: 0.9,
+  pixelLine: true,
+};
+
 export const overlayFill: P.FillStyle = {
   color: 0x000000,
   alpha: gridStroke.alpha,

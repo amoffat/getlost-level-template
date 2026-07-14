@@ -82,8 +82,8 @@ export default function PaintTool() {
     isTileGroupTemplate(placeObj) &&
     tileset &&
     !tileset.composite &&
-    placeObj.pos.width === tileset.gridSize &&
-    placeObj.pos.height === tileset.gridSize
+    placeObj.pos.width === tileset.gridSize.x &&
+    placeObj.pos.height === tileset.gridSize.y
       ? placeObj
       : null;
 

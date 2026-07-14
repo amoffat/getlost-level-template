@@ -1,3 +1,7 @@
+import { PlacableLayer } from "@gl/types/api/layer";
+import { Vector2 } from "@gl/types/api/vector";
+import { WalkSound } from "@gl/types/api/walk";
+
 /**
  * Replaces a tile in the map with another tile. A tile can currently only be
  * replaced by another tile in the same tileset.
@@ -39,3 +43,63 @@ export declare function getTiles(
  * @param enabled Whether the tile should be enabled or disabled
  */
 export declare function toggle(id: string, enabled: boolean): void;
+
+export interface TileProps {
+  tags: string[];
+  walkSound: WalkSound;
+  friction: number;
+  traction: number;
+  hidden: boolean;
+  tint: string | null;
+  groundOffset: number;
+}
+
+export declare function createTileGroup({
+  tileset,
+  id,
+  pos,
+  pivot,
+  layer,
+  props,
+  updateGraph,
+}: {
+  tileset: string;
+  id: string;
+  pos: Vector2;
+  pivot?: Vector2;
+  layer?: PlacableLayer;
+  props?: TileProps;
+  updateGraph?: boolean;
+}): Promise<string | null>;
+
+export declare function createAnimation({
+  tileset,
+  id,
+  pos,
+  pivot,
+  layer,
+  autoplay,
+  destroyOnCompletion,
+  loop,
+  props,
+  updateGraph,
+}: {
+  tileset: string;
+  id: string;
+  pos: Vector2;
+  pivot?: Vector2;
+  layer?: PlacableLayer;
+  autoplay?: boolean;
+  destroyOnCompletion?: boolean;
+  loop?: boolean;
+  props?: TileProps;
+  updateGraph?: boolean;
+}): Promise<string | null>;
+
+export declare function destroy({
+  id,
+  updateGraph,
+}: {
+  id: string;
+  updateGraph?: boolean;
+}): Promise<boolean>;

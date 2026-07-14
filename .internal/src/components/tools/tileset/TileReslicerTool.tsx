@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/tilesetEditor";
+import { Vector2 } from "@/vec";
 import { Fieldset, Stack } from "@mantine/core";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,8 +14,7 @@ export default function TileReslicerTool() {
   const ts = useAppSelector(selectors.activeTileset);
 
   const changeGridSize = useCallback(
-    async (size: number | string) => {
-      if (typeof size === "string") return;
+    (size: Vector2) => {
       dispatch(actions.setGridSize(size));
     },
     [dispatch],
@@ -33,7 +33,7 @@ export default function TileReslicerTool() {
       <Fieldset legend={t('reslicerToolLegend')} p="xs">
         <Stack p={0}>
           {!ts.composite && (
-            <GridSizeInput defaultValue={grid.size} onChange={changeGridSize} />
+            <GridSizeInput value={grid.size} onChange={changeGridSize} />
           )}
         </Stack>
       </Fieldset>

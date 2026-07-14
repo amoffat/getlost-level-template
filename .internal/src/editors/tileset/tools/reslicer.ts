@@ -20,8 +20,7 @@ function getGridSize(): Vector2 {
   if (!ts || ts.composite) {
     return { x: 1, y: 1 };
   }
-  const size = state.tilesetEditor.grid.size;
-  return { x: size, y: size };
+  return { ...state.tilesetEditor.grid.size };
 }
 
 class Reslicer extends ClickDragListener<Mode> implements Tool {
@@ -46,7 +45,7 @@ class Reslicer extends ClickDragListener<Mode> implements Tool {
 
     const state = store.getState();
     const tsId = state.tilesetEditor.activeTilesetId;
-    const gridSize = state.tilesetEditor.grid.size;
+    const gridSize = { ...state.tilesetEditor.grid.size };
     const coords = snap(e.hitbox, getGridSize());
 
     if (tsId && coords.width > 0 && coords.height > 0) {

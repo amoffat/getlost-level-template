@@ -103,5 +103,13 @@ export interface TilesetDocV27 extends Omit<TilesetDocV26, "version"> {
   version: 27;
 }
 
-export type LatestTilesetDoc = TilesetDocV27;
-export const latestVersion = 27;
+// Version 28: Tile grid size becomes non-uniform. `tileset.gridSize` changes
+// from a single `number` (square tiles) to a `Vector2` (`{ x, y }`), letting a
+// tileset be sliced into non-square width×height tiles. Legacy numeric values
+// are widened to `{ x: n, y: n }`.
+export interface TilesetDocV28 extends Omit<TilesetDocV27, "version"> {
+  version: 28;
+}
+
+export type LatestTilesetDoc = TilesetDocV28;
+export const latestVersion = 28;
