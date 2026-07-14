@@ -2,8 +2,8 @@ import * as camera from "@gl/api/camera";
 import { TiltShift } from "@gl/fx";
 import { globalTicker } from "@gl/ticker";
 import type { Vector2 } from "@gl/types/api/vector";
-import type { CameraTargetFn } from "@gl/types/camera";
-import type { Matrix } from "@gl/utils/mat";
+import type { CameraTarget, CameraTargetFn, Frame } from "@gl/types/camera";
+import { Matrix } from "@gl/utils/mat";
 
 export interface ShakeOpts {
   magnitude?: number;
@@ -14,15 +14,18 @@ export interface ShakeOpts {
 
 export interface CameraOpts {
   /**
-   * Base tilt-shift blur at zoom 1.0. As you zoom in, blur falls off linearly to
-   * 0 over {@link CameraOpts.blurFalloffRange}. Defaults to 0.06.
+   * Base tilt-shift blur when all targets sit at the same y. Falls off linearly
+   * to 0 as the targets' y-spread grows toward {@link CameraOpts.blurSpreadFalloff}
+   * of the frame height. Defaults to 0.06.
    */
   blur?: number;
   /**
-   * The zoom-in amount (past 1.0) over which the blur falls from its base to 0.
-   * e.g. with the default 0.3, blur reaches 0 at zoom 1.3. Defaults to 0.3.
+   * The fraction of the camera frame's height (0–1) the targets must span
+   * vertically for blur to reach 0. e.g. with the default 0.6, blur is fully
+   * faded out once the targets are spread across 60% of the frame's height —
+   * so both stay in focus. Defaults to 0.6.
    */
-  blurFalloffRange?: number;
+  blurSpreadFalloff?: number;
 }
 
 /**
@@ -32,8 +35,9 @@ export interface CameraOpts {
  *
  * The camera also owns a {@link TiltShift} filter, because the two things a
  * tilt-shift naturally tracks are both the camera's: its focus band `y` follows
- * the camera target, and its blur is driven by zoom — inversely correlated to
- * how far you've zoomed in (zoomed-in reads as "in focus", so blur falls off).
+ * the camera target, and its blur is driven by how spread apart the targets
+ * are in screen space — clustered targets read as one focal point (blur up),
+ * while targets spread across the screen need to stay in focus (blur down).
  * Both are pushed every {@link tick}.
  *
  * A singleton: instantiated by the bundler (`__internal__init`) and ticked via
@@ -42,11 +46,11 @@ export interface CameraOpts {
 export class Camera {
   private _tiltShift: TiltShift;
   private _baseBlur: number;
-  private _blurFalloffRange: number;
+  private _blurSpreadFalloff: number;
 
   constructor(opts: CameraOpts = {}) {
-    this._baseBlur = opts.blur ?? 0.06;
-    this._blurFalloffRange = opts.blurFalloffRange ?? 0.3;
+    this._baseBlur = opts.blur ?? 0.08;
+    this._blurSpreadFalloff = opts.blurSpreadFalloff ?? 0.8;
     this._tiltShift = new TiltShift({ blur: this._baseBlur });
     globalTicker.subscribe((deltaMs) => this.tick(deltaMs));
   }
@@ -60,7 +64,7 @@ export class Camera {
     return this._tiltShift;
   }
 
-  /** Base tilt-shift blur at zoom 1.0. */
+  /** Base tilt-shift blur when the targets' y-spread is 0. */
   get baseBlur(): number {
     return this._baseBlur;
   }
@@ -68,12 +72,12 @@ export class Camera {
     this._baseBlur = blur;
   }
 
-  /** Zoom-in amount over which blur falls from its base to 0. */
-  get blurFalloffRange(): number {
-    return this._blurFalloffRange;
+  /** Fraction of frame height (0–1) the targets span at which blur reaches 0. */
+  get blurSpreadFalloff(): number {
+    return this._blurSpreadFalloff;
   }
-  set blurFalloffRange(range: number) {
-    this._blurFalloffRange = range;
+  set blurSpreadFalloff(fraction: number) {
+    this._blurSpreadFalloff = fraction;
   }
 
   // ---- Wrapped host camera API ----
@@ -95,14 +99,14 @@ export class Camera {
   }
 
   localTransform(): Matrix {
-    return camera.localTransform();
+    return Matrix.fromArray(camera.localTransform());
   }
 
   worldTransform(): Matrix {
-    return camera.worldTransform();
+    return Matrix.fromArray(camera.worldTransform());
   }
 
-  getFrame(): number[] {
+  getFrame(): Frame {
     return camera.getFrame();
   }
 
@@ -112,6 +116,10 @@ export class Camera {
 
   getTarget(): Vector2 {
     return camera.getTarget();
+  }
+
+  getTargets(): CameraTarget[] {
+    return camera.getTargets();
   }
 
   setOffset(pos: Vector2 | null): void {
@@ -128,7 +136,19 @@ export class Camera {
    */
   tick(_deltaMs: number): void {
     this._tiltShift.y = this.getTarget().y;
-    const t = 1 - (this.getEffectiveZoom() - 1) / this._blurFalloffRange;
+
+    // Drive blur from how much of the frame the targets span vertically: the
+    // wider their y-spread (relative to the frame height), the less blur, so
+    // spread-out characters stay in focus. getFrame() is world space, matching
+    // the targets' world-space positions.
+    const ys = this.getTargets()
+      .filter((target) => target.weight > 0)
+      .map((target) => target.pos.y);
+
+    const frameHeight = this.getFrame().height;
+    const range = ys.length >= 2 ? Math.max(...ys) - Math.min(...ys) : 0;
+    const spread = frameHeight > 0 ? range / frameHeight : 0;
+    const t = 1 - spread / this._blurSpreadFalloff;
     this._tiltShift.blur = this._baseBlur * Math.max(0, Math.min(1, t));
   }
 }

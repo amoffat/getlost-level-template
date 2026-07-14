@@ -1,4 +1,4 @@
-import { Vec2 } from "./vec2";
+import { Vector2 } from "@gl/types/api/vector";
 
 export class Matrix {
   a: number = 1.0;
@@ -40,12 +40,12 @@ export class Matrix {
     this.ty = dy;
   }
 
-  translate(t: Vec2): void {
+  translate(t: Vector2): void {
     this.tx += t.x * this.a + t.y * this.c;
     this.ty += t.x * this.b + t.y * this.d;
   }
 
-  scale(scale: Vec2): void {
+  scale(scale: Vector2): void {
     this.a *= scale.x;
     this.b *= scale.x;
     this.c *= scale.y;
@@ -67,10 +67,10 @@ export class Matrix {
     this.d = m22;
   }
 
-  apply(point: Vec2): Vec2 {
+  apply(point: Vector2): Vector2 {
     const newX = point.x * this.a + point.y * this.c + this.tx;
     const newY = point.x * this.b + point.y * this.d + this.ty;
-    return new Vec2(newX, newY);
+    return { x: newX, y: newY };
   }
 
   clone(): Matrix {
@@ -81,6 +81,21 @@ export class Matrix {
     m.d = this.d;
     m.tx = this.tx;
     m.ty = this.ty;
+    return m;
+  }
+
+  toArray(): Float32Array {
+    return new Float32Array([this.a, this.b, this.c, this.d, this.tx, this.ty]);
+  }
+
+  static fromArray(arr: Float32Array): Matrix {
+    const m = new Matrix();
+    m.a = arr[0];
+    m.b = arr[1];
+    m.c = arr[2];
+    m.d = arr[3];
+    m.tx = arr[4];
+    m.ty = arr[5];
     return m;
   }
 }

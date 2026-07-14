@@ -6,3 +6,10 @@ export interface CameraTarget {
 }
 
 export type CameraTargetFn = () => CameraTarget[];
+
+export interface Frame {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
