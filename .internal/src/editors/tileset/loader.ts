@@ -70,6 +70,21 @@ export function generateGridAlignedCoords(
 }
 
 /**
+ * Crops a single grid cell and content-hashes it. Returns `null` for fully
+ * transparent cells (which never become tiles). Single source of truth for the
+ * crop → transparency-skip → id derivation, shared by `sliceTileset` and the
+ * occurrence-map builder so the two can't drift.
+ */
+export function hashCell(
+  imageData: ImageData,
+  coords: Rect,
+): { id: string; tile: ImageData } | null {
+  const tile = subImageData(imageData, coords);
+  if (isTransparent(tile)) return null;
+  return { id: genImageId(tile), tile };
+}
+
+/**
  * Slices a tileset by creating tile groups for the specified coordinates.
  * @param tsId - The tileset ID
  * @param coordsList - Array of Rect coordinates to unpack into tile groups
@@ -104,14 +119,12 @@ export async function sliceTileset(
       continue;
     }
 
-    const tileImageData = subImageData(imageData, coords);
-
     // Skip empty tiles (all pixels fully transparent)
-    if (isTransparent(tileImageData)) {
+    const cell = hashCell(imageData, coords);
+    if (!cell) {
       continue;
     }
-
-    const id = genImageId(tileImageData);
+    const { id, tile: tileImageData } = cell;
 
     const avgColor = averageOklab(tileImageData);
     const tg: TileGroupTemplate = {

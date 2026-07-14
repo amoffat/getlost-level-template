@@ -1,3 +1,4 @@
+import { Rect } from "@/types/rect";
 import { SpatialIndex } from "@/types/spatial";
 import { TileGroupTemplate } from "@/types/tilegroup";
 import * as P from "pixi.js";
@@ -45,6 +46,14 @@ interface Globals {
 
   /** Spatial index for efficient collision detection and object lookup based on tile coordinates */
   spatialIndex: SpatialIndex<TileGroupTemplate>;
+
+  /**
+   * For each content-hash tile `id` that appears at more than one position in
+   * the active tileset, the extra (non-canonical) rects. Duplicate tiles
+   * collapse to one template `pos`; this holds the sheet's other copies so the
+   * overlays can highlight every occurrence. Rebuilt by `occurrences.ts`.
+   */
+  tileOccurrences: Map<string, Rect[]>;
 
   /** Container for rendering selection outlines around selected tile objects. */
   selectionOutlines: P.Container;

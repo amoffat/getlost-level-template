@@ -18,6 +18,7 @@ import { setupWheelZoom } from "../common/zoom";
 import { drawBounds } from "./bounds";
 import { globals as g } from "./globals";
 import { setupGrid } from "./grid";
+import { clearOccurrences } from "./occurrences";
 import { setupKeys } from "./keys";
 import { setupFrameSelector } from "./tools/animator";
 import { setupCollider } from "./tools/collider";
@@ -42,6 +43,9 @@ export async function init(): Promise<P.Application> {
     filterLayer: () => true,
   });
   g.spatialIndex = spatialIndex;
+  // Initialize duplicate-tile occurrence tracking (also registers the module's
+  // rebuild subscription — see occurrences.ts).
+  clearOccurrences();
 
   // Initialize the application
   await app.init({ backgroundAlpha: 0, useBackBuffer: true });

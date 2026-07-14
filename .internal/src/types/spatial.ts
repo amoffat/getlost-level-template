@@ -18,6 +18,18 @@ type LayerFilter = (params: {
 
 export class SpatialIndex<Obj> extends RBush<IndexItem> {
   private indexItems = new Map<string, IndexItem>();
+  /**
+   * Secondary tree holding "occurrence" rects: extra sheet positions where a
+   * tile whose content-hash `id` already lives in the main tree also appears.
+   * Content-hash ids collapse identical tiles into one entity/node/main-tree
+   * bbox, so without this the duplicate copies would be invisible to every
+   * hit-test. Populated wholesale via `setOccurrences`; the main tree
+   * (insert/update/removeById) is unaware of it. Empty unless a caller opts in,
+   * so consumers that never call `setOccurrences` (e.g. the map editor) are
+   * unaffected.
+   */
+  private occurrenceTree = new RBush<IndexItem>();
+  private occurrenceCount = 0;
   private selectById: (state: RootState, id: string) => Obj | undefined;
   private filterLayer: LayerFilter;
 
@@ -40,6 +52,28 @@ export class SpatialIndex<Obj> extends RBush<IndexItem> {
       maxX: pos.x,
       maxY: pos.y,
     });
+  }
+
+  /**
+   * Search the main tree AND the occurrence tree. `searchByPos` and
+   * `getObjects` both funnel through here, so every consumer transparently
+   * hit-tests duplicate tile positions in addition to canonical ones.
+   */
+  public override search(bbox: BBox): IndexItem[] {
+    const hits = super.search(bbox);
+    if (this.occurrenceCount === 0) return hits;
+    return hits.concat(this.occurrenceTree.search(bbox));
+  }
+
+  /**
+   * Replace the set of occurrence rects (extra, non-canonical positions of
+   * content-hash tiles). Each item carries the shared template `id` so hits
+   * resolve back to the one entity via `selectById`.
+   */
+  public setOccurrences(items: IndexItem[]): void {
+    this.occurrenceTree.clear();
+    if (items.length > 0) this.occurrenceTree.load(items);
+    this.occurrenceCount = items.length;
   }
 
   public removeById(id: string): void {

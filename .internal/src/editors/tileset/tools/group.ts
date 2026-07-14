@@ -26,6 +26,7 @@ import {
 } from "../../common/drag";
 import { groupStroke } from "../../common/strokes";
 import { globals as g } from "../globals";
+import { rectsForTemplate } from "../occurrences";
 import { shouldOutline } from "../utils/outline";
 
 function getGridSize(): Vector2 {
@@ -205,13 +206,14 @@ function drawGroups(groups: TileGroupTemplate[], zoom: number) {
   const stroke = { ...groupStroke, width: (groupStroke.width ?? 1) / zoom };
 
   for (const group of groups.filter(shouldOutline)) {
-    gfx
-      .rect(group.pos.x, group.pos.y, group.pos.width, group.pos.height)
-      .stroke(stroke);
-
-    mask
-      .rect(group.pos.x, group.pos.y, group.pos.width, group.pos.height)
-      .fill({ color: 0x000000, alpha: 1 });
+    // Outline every sheet position of this template, not just its canonical
+    // `pos`, so identical tiles all get an overlay (see occurrences.ts).
+    for (const rect of rectsForTemplate(group)) {
+      gfx.rect(rect.x, rect.y, rect.width, rect.height).stroke(stroke);
+      mask
+        .rect(rect.x, rect.y, rect.width, rect.height)
+        .fill({ color: 0x000000, alpha: 1 });
+    }
   }
   g.allGroupsOverlay.addChild(gfx);
 }

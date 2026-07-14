@@ -6,6 +6,7 @@ import { TileGroupTemplate } from "../../types/tilegroup";
 import { subState } from "../../utils/redux";
 import { drawGrid, GridRegion } from "../common/grid";
 import { globals as g } from "./globals";
+import { rectsForTemplate } from "./occurrences";
 import { shouldOutline } from "./utils/outline";
 
 /**
@@ -59,9 +60,13 @@ function drawGridMask(groups: TileGroupTemplate[]) {
 
   mask.fill({ color: 0x000000, alpha: 0 });
   for (const group of groups.filter(shouldOutline)) {
-    mask
-      .rect(group.pos.x, group.pos.y, group.pos.width, group.pos.height)
-      .fill({ color: 0x000000, alpha: 1 });
+    // Punch a hole at every sheet position of this template so identical tiles
+    // all read as grouped (see occurrences.ts).
+    for (const rect of rectsForTemplate(group)) {
+      mask
+        .rect(rect.x, rect.y, rect.width, rect.height)
+        .fill({ color: 0x000000, alpha: 1 });
+    }
   }
 
   g.grid.setMask({

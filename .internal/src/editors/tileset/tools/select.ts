@@ -19,6 +19,7 @@ import { drawOutline } from "../../common/outline";
 import { selectStroke } from "../../common/strokes";
 import { globals as g } from "../globals";
 import { pressedKeys } from "../keys";
+import { rectsForTemplate } from "../occurrences";
 
 const multiSelectModes: Set<Mode> = new Set(["select"]);
 
@@ -216,15 +217,17 @@ export function outlineObjects(objs: TemplateObject[], zoom: number) {
   for (const obj of objs) {
     if (!isTileGroupTemplate(obj)) continue;
 
-    const container = new P.Container();
-    g.selectionOutlines.addChild(container);
-    container.position.set(obj.pos.x, obj.pos.y);
+    // Draw at every sheet position of this template, not just its canonical
+    // `pos`, so all identical tiles are outlined (see occurrences.ts).
+    for (const rect of rectsForTemplate(obj)) {
+      const container = new P.Container();
+      g.selectionOutlines.addChild(container);
+      container.position.set(rect.x, rect.y);
 
-    if (isTileGroupTemplate(obj)) {
       drawOutline({
         container,
-        width: obj.pos.width,
-        height: obj.pos.height,
+        width: rect.width,
+        height: rect.height,
         stroke,
         // It's actually distracting if tiles have a fill when selected
         // fill: tileSelectFill,
