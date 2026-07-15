@@ -11,7 +11,7 @@ import { NavPlan } from "./NavPlan";
 export abstract class AggressiveBasePlan extends NavPlan {
   private _target: Character;
   private _attackDistance: number;
-  private _cooldown: Delay = new Delay(2000);
+  private _cooldown: Delay = new Delay({ timeMs: 2000 });
   private _attacking: boolean = false;
 
   constructor({

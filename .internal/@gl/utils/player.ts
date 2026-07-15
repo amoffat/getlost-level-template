@@ -4,7 +4,7 @@ import { Delay } from "./delay";
 import { Vec2 } from "./vec2";
 
 export class Player extends Character {
-  private _hurtCooldown: Delay = new Delay(1000);
+  private _hurtCooldown: Delay = new Delay({ timeMs: 1000 });
   private _invincible: boolean = false;
 
   constructor() {

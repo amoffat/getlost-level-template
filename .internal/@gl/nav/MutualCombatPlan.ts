@@ -62,7 +62,7 @@ export class MutualAttackPlan extends NavPlan implements MutualCombatant {
   private _onMeet: ((partner: Character) => void) | undefined;
 
   private _combatant: Character | null = null;
-  private _scanCooldown: Delay = new Delay(500);
+  private _scanCooldown: Delay = new Delay({ timeMs: 500 });
   /** True while the current pair is within `meetRadius`; gates `onMeet` so it
    * fires once per approach rather than every frame. */
   private _isMeeting: boolean = false;

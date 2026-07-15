@@ -7,7 +7,6 @@ import { Delay } from "./delay";
 import * as easing from "./easing";
 import { deriveTargetIndex, type TrackResult } from "./paths";
 import { Vec2 } from "./vec2";
-import { Waypoint } from "./waypoint";
 
 const stuckTRate: number = 0.1; // T units per second
 const stuckTimeout: number = 2000; // ms
@@ -46,13 +45,22 @@ export class NavManager {
   private _targetPathLen: number = 0;
   private _stuckTimer: number = 0;
   private _lastTrackResult: TrackResult = { index: -1, distance: 0, t: 0 };
-  private _waypointPause: Delay = new Delay(1000, 0, true);
+  private _waypointPause: Delay = new Delay({ timeMs: 1000, repeat: true });
 
   // When set, the active move must complete within this many ms. The character
   // is then driven at the exact velocity needed to cover the remaining path in
   // the remaining time (see the timedVelocity path in tick()).
   private _moveDurationMs: number | null = null;
   private _moveElapsedMs: number = 0;
+
+  // Monotonic id stamped on each navigation intent (a new plan, or a new
+  // target). Target-setting is async — it awaits pathfinding partway through —
+  // and is fired off from several places (setNavPlan, both tick branches,
+  // external setTargetPos). Without this, a stale pathfind that resolves *after*
+  // a newer intent arrived would still write its results and clobber the newer
+  // target, leaving the character walking to (or stopping at) the wrong place.
+  // Each async step captures the current id and bails if it's been superseded.
+  private _navRequestId: number = 0;
 
   public startWalkMomentum: number = 5;
   public endWalkMomentum: number = 15;
@@ -79,24 +87,48 @@ export class NavManager {
 
     if (navImmediately) {
       this._state = NavState.waiting;
-      navPlan.getNextWaypoint(this._getPos()).then((wp) => {
-        if (wp) {
-          this._setNavWaypoint(wp);
-        }
+      void this._requestNextWaypoint(this._getPos());
+    }
+  }
+
+  /**
+   * The single choke point for "consult the current plan for the next waypoint
+   * and start heading there." Opens a fresh navigation request — superseding any
+   * still in flight — and commits the waypoint only if this request is still the
+   * latest once the plan (and, downstream, pathfinding) resolves. Every path
+   * that (re)starts movement funnels through here, so the take-latest staleness
+   * guard lives in one place rather than duplicated at each call site.
+   */
+  private async _requestNextWaypoint(curPos: Vec2): Promise<void> {
+    const requestId = this._beginNavRequest();
+    const wp = await this._navPlan.getNextWaypoint(curPos);
+    if (wp && this._isCurrentNavRequest(requestId)) {
+      this._navigateTo(
+        { targetPos: wp.pos, nearestIsOk: wp.nearestIsOk },
+        requestId,
+      );
+      this._navSpeed = wp.speed;
+      this._waypointPause = new Delay({
+        timeMs: wp.pause,
+        initialDelay: wp.pause,
+        repeat: true,
       });
     }
   }
 
-  private _setNavWaypoint(wp: Waypoint): void {
-    const hasPath = this.setTargetPos({
-      targetPos: wp.pos,
-      nearestIsOk: wp.nearestIsOk,
-    });
-    this._navSpeed = wp.speed;
-    if (!hasPath) {
-      console.error(`Failed to find path to waypoint ${wp}`);
-    }
-    this._waypointPause = new Delay(wp.pause, wp.pause, true);
+  /**
+   * Opens a new navigation request, superseding any still in flight. Async work
+   * started under the returned id must re-check {@link _isCurrentNavRequest}
+   * after every await before committing results, so a stale request can never
+   * clobber a newer one (take-latest / cancel-stale).
+   */
+  private _beginNavRequest(): number {
+    return ++this._navRequestId;
+  }
+
+  /** True while `requestId` is still the latest navigation request. */
+  private _isCurrentNavRequest(requestId: number): boolean {
+    return requestId === this._navRequestId;
   }
 
   private _onReachTarget(curPos: Vec2): void {
@@ -108,21 +140,43 @@ export class NavManager {
     }
   }
 
-  async setTargetPos({
-    targetPos,
-    nearestIsOk = true,
-    speed = 1.0,
-    durationMs,
-  }: {
+  /** Navigates directly to a position, bypassing the navplan */
+  async setTargetPos(opts: {
     targetPos: Vector2;
     nearestIsOk?: boolean;
     speed?: number;
     durationMs?: number;
   }): Promise<boolean> {
+    // A direct target request supersedes any in-flight navigation.
+    return this._navigateTo(opts, this._beginNavRequest());
+  }
+
+  /**
+   * The raw underlying pathfinding function. All navigation goes through this
+   * to find the path.
+   *
+   * @param param0
+   * @param requestId
+   * @returns
+   */
+  private async _navigateTo(
+    {
+      targetPos,
+      nearestIsOk = true,
+      speed = 1.0,
+      durationMs,
+    }: {
+      targetPos: Vector2;
+      nearestIsOk?: boolean;
+      speed?: number;
+      durationMs?: number;
+    },
+    requestId: number,
+  ): Promise<boolean> {
     this.clearTarget();
 
     this._state = NavState.pending;
-    this._targetPath = (
+    const path = (
       await navigation.findPath({
         graphicsKey: this._charId,
         startPos: this._getPos().toVector(),
@@ -130,6 +184,15 @@ export class NavManager {
         nearestIsOk,
       })
     ).map((v) => Vec2.fromVector2(v));
+
+    // A newer navigation intent (plan swap, resetPos, or another target) arrived
+    // while we were pathfinding. Discard these now-stale results so we don't
+    // clobber the newer target and strand the character.
+    if (!this._isCurrentNavRequest(requestId)) {
+      return false;
+    }
+
+    this._targetPath = path;
     this._targetPathLen = this._pathProgress();
 
     if (this._targetPath.length > 0) {
@@ -139,6 +202,14 @@ export class NavManager {
       this._moveElapsedMs = 0;
       char.makeCollidable(this._charId, false);
       this._state = NavState.moving;
+    } else {
+      // No path was found (e.g. target already reached, or momentarily
+      // unreachable). Fall back to `waiting` rather than leaving the machine in
+      // `pending`: the tick loop only advances `waiting`/`moving`, so a
+      // stranded `pending` would silently freeze the character — it would never
+      // consult its plan again, so a combatant could never re-scan or re-pair.
+      // `waiting` re-consults the plan on the next pause, letting it recover.
+      this._state = NavState.waiting;
     }
 
     return this._targetPath.length > 0;
@@ -195,20 +266,14 @@ export class NavManager {
 
     if (this._state === NavState.waiting) {
       if (this._waypointPause.tick(deltaMs)) {
-        const wp = await this._navPlan.getNextWaypoint(curPos);
-        if (wp) {
-          this._setNavWaypoint(wp);
-        }
+        await this._requestNextWaypoint(curPos);
       }
     } else if (this._state === NavState.moving) {
       // This lets us interrupt our current nav plan. Useful if our plan is to
       // attack if the player is near, and we're moving randomly otherwise.
       const needsNewWaypoint = await this._navPlan.tick(deltaMs, curPos);
       if (needsNewWaypoint) {
-        const wp = await this._navPlan.getNextWaypoint(curPos);
-        if (wp) {
-          this._setNavWaypoint(wp);
-        }
+        await this._requestNextWaypoint(curPos);
       }
     }
 
@@ -264,7 +329,8 @@ export class NavManager {
 
       let timedVelocity: Vec2 | undefined;
       if (this._moveDurationMs !== null) {
-        const remainingSec = (this._moveDurationMs - this._moveElapsedMs) / 1000;
+        const remainingSec =
+          (this._moveDurationMs - this._moveElapsedMs) / 1000;
         if (remainingSec <= dtSec) {
           // Final frame: step straight onto the goal node so we land exactly
           // on time.
@@ -275,7 +341,12 @@ export class NavManager {
         }
       }
 
-      return { direction, easingSpeed, navSpeed: this._navSpeed, timedVelocity };
+      return {
+        direction,
+        easingSpeed,
+        navSpeed: this._navSpeed,
+        timedVelocity,
+      };
     }
   }
 }

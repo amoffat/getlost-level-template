@@ -235,7 +235,7 @@ export class Character {
       id,
       action,
       speed,
-      duration: durationMs != null ? new Delay(durationMs) : null,
+      duration: durationMs != null ? new Delay({ timeMs: durationMs }) : null,
     });
     return id;
   }

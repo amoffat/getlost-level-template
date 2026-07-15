@@ -9,11 +9,15 @@ export class Delay {
   private _done: boolean = false;
   private _repeat: boolean = false;
 
-  constructor(
-    timeMs: number,
-    initialDelay: number = 0,
-    repeat: boolean = false,
-  ) {
+  constructor({
+    timeMs,
+    initialDelay = 0,
+    repeat = false,
+  }: {
+    timeMs: number;
+    initialDelay?: number;
+    repeat?: boolean;
+  }) {
     this._done = timeMs <= 0 && !repeat;
     this._timeMs = timeMs;
     this._repeat = repeat;
@@ -42,6 +46,9 @@ export class Delay {
     return this._timeMs;
   }
 
+  /**
+   * Advances the delay, returns true IFF the delay completed during this tick.
+   * */
   public tick(deltaMs: number): boolean {
     if (this._done) return false;
 
