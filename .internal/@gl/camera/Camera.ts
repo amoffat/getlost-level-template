@@ -110,6 +110,10 @@ export class Camera {
     return camera.getFrame();
   }
 
+  setPlayerTarget(): void {
+    this.setTarget(() => [{ weight: 1, pos: player.getCenterOfMass() }]);
+  }
+
   setTarget(getTarget: CameraTargetFn): void {
     camera.setTarget(getTarget);
   }

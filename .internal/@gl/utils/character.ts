@@ -5,7 +5,7 @@ import { globalTicker } from "@gl/ticker";
 import { type WavyParams } from "@gl/actions/WavyAction";
 import { jump } from "@gl/behaviors/jump";
 import type { CharacterController } from "@gl/controllers";
-import { NavPlan } from "@gl/nav";
+import { NavPlan, StationaryPlan } from "@gl/nav";
 import { type Vector2 } from "@gl/types/api/vector";
 import { Behavior } from "./behavior";
 import { Delay } from "./delay";
@@ -34,6 +34,7 @@ interface CustomAction {
 }
 
 export class Character {
+  private _initialPos: Vec2;
   private _pos: Vec2 = new Vec2(0, 0);
   private _velocity: Vec2 = new Vec2(0, 0);
   // Knockback/impulse velocity, tracked separately from _velocity so it can be
@@ -78,8 +79,8 @@ export class Character {
 
   constructor(id: string) {
     this.id = id;
-    const initialPos = Vec2.fromVector2(char.getPos(id));
-    this._pos = initialPos.clone();
+    this._initialPos = Vec2.fromVector2(char.getPos(id));
+    this._pos = this._initialPos.clone();
     this._isPlayer = this.id == "player";
     chars.set(id, this);
 
@@ -99,6 +100,10 @@ export class Character {
       console.error(`No character with id ${id}`);
     }
     return chars.get(id);
+  }
+
+  public resetPos() {
+    this.nav.setNavPlan(new StationaryPlan(this._initialPos));
   }
 
   /**
