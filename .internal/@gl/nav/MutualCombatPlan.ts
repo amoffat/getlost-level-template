@@ -59,25 +59,22 @@ export class MutualAttackPlan extends NavPlan implements MutualCombatant {
   private _pause: number;
   private _attackDistance: number | undefined;
   private _isValidPosition: ((candPos: Vec2) => boolean) | undefined;
-  private _onMeet: ((partner: Character) => void) | undefined;
+  private _onEngage: ((args: { partner: Character }) => void) | undefined;
+  private _onDisengage: ((args: { partner: Character }) => void) | undefined;
 
   private _combatant: Character | null = null;
   private _scanCooldown: Delay = new Delay({ timeMs: 500 });
-  /** True while the current pair is within `meetRadius`; gates `onMeet` so it
-   * fires once per approach rather than every frame. */
-  private _isMeeting: boolean = false;
-  private _meetResetMultiplier: number;
 
   constructor({
     self,
     getCombatants,
     defaultPlan,
     meetRadius,
-    meetResetMultiplier = 2,
     pause = 250,
     attackDistance,
     isValidPosition,
-    onMeet,
+    onEngage,
+    onDisengage,
   }: {
     self: Character;
     /** Returns the current pool of characters eligible for pairing. Called
@@ -86,25 +83,26 @@ export class MutualAttackPlan extends NavPlan implements MutualCombatant {
     getCombatants: () => Character[];
     defaultPlan: NavPlan;
     meetRadius: number;
-    meetResetMultiplier?: number;
     pause?: number;
     attackDistance?: number;
     /** Returns false to reject a candidate meeting waypoint position. */
     isValidPosition?: (candPos: Vec2) => boolean;
-    /** Fired once per meeting when the pair first closes to within
-     * `meetRadius`. Fires on exactly one of the two combatants. */
-    onMeet?: (partner: Character) => void;
+    /** Fires when this combatant locks onto a new `partner`. */
+    onEngage?: (args: { partner: Character }) => void;
+    /** Fires when an existing pairing is dropped, reporting the `partner` that
+     * was cleared. Does not fire when there was no partner. */
+    onDisengage?: (args: { partner: Character }) => void;
   }) {
     super();
     this._self = self;
     this._getCombatants = getCombatants;
     this._defaultPlan = defaultPlan;
     this._meetRadius = meetRadius;
-    this._meetResetMultiplier = meetResetMultiplier;
     this._pause = pause;
     this._attackDistance = attackDistance;
     this._isValidPosition = isValidPosition;
-    this._onMeet = onMeet;
+    this._onEngage = onEngage;
+    this._onDisengage = onDisengage;
   }
 
   // --- MutualCombatant capability ---
@@ -115,13 +113,16 @@ export class MutualAttackPlan extends NavPlan implements MutualCombatant {
 
   public acceptCombat(partner: Character): void {
     this._combatant = partner;
-    this._isMeeting = false;
+    this._onEngage?.({ partner });
   }
 
   /** Break the current pairing, making this combatant available again. */
   public clearCombat(): void {
+    const partner = this._combatant;
     this._combatant = null;
-    this._isMeeting = false;
+    if (partner !== null) {
+      this._onDisengage?.({ partner });
+    }
   }
 
   /** The character we're currently locked onto, if any. */
@@ -162,8 +163,6 @@ export class MutualAttackPlan extends NavPlan implements MutualCombatant {
       }
       return false;
     }
-    // Paired: watch for the pair closing in so we can fire `onMeet`.
-    this._detectMeeting(curPos);
     return false;
   }
 
@@ -185,30 +184,7 @@ export class MutualAttackPlan extends NavPlan implements MutualCombatant {
       // (unavailable); if it frees up, it has dropped us, so we drop it too.
       if (!partnerPlan.isAvailableForCombat()) return;
     }
-    this._combatant = null;
-    this._isMeeting = false;
-  }
-
-  /**
-   * Fire `onMeet` once each time the pair closes to within `meetRadius`. A
-   * hysteresis band (must separate past `2 * meetRadius` before re-arming)
-   * prevents repeat fires while they hover near each other. Both combatants
-   * detect the meeting independently, so a stable id tiebreak ensures exactly
-   * one of the pair announces it.
-   */
-  private _detectMeeting(curPos: Vec2): void {
-    if (this._combatant === null || this._onMeet === undefined) return;
-    const dist = curPos.distanceTo(this._combatant.getPos());
-    if (!this._isMeeting) {
-      if (dist <= this._meetRadius) {
-        this._isMeeting = true;
-        if (this._self.id < this._combatant.id) {
-          this._onMeet(this._combatant);
-        }
-      }
-    } else if (dist > this._meetRadius * this._meetResetMultiplier) {
-      this._isMeeting = false;
-    }
+    this.clearCombat();
   }
 
   private _tryToPair(curPos: Vec2): void {
