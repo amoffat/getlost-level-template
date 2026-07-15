@@ -3,10 +3,25 @@ import { IndexItem } from "@/types/spatial";
 import { AllPropsLoose } from "@/types/union";
 import * as P from "pixi.js";
 
-// Create an RBush index item from a node's world-space bounds
+// Create an RBush index item from a node's world-space bounds. This index
+// drives click/selection hit-testing, so a node can declare a rectangular
+// `hitArea` to constrain its clickable region independently of its rendered
+// bounds — e.g. to exclude an error-indicator overlay that visually extends
+// past the sprite (and must stay in getLocalBounds so a layer filter doesn't
+// clip it).
 export function makeIndexItem(id: string, node: P.Container): IndexItem {
-  const r = node.getLocalBounds();
   const pos = node.position;
+  const hitArea = node.hitArea;
+  if (hitArea instanceof P.Rectangle) {
+    return {
+      id,
+      minX: hitArea.x + pos.x,
+      minY: hitArea.y + pos.y,
+      maxX: hitArea.x + hitArea.width + pos.x,
+      maxY: hitArea.y + hitArea.height + pos.y,
+    };
+  }
+  const r = node.getLocalBounds();
   return {
     id,
     minX: r.minX + pos.x,
