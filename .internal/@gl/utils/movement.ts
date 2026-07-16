@@ -16,8 +16,11 @@ enum NavState {
   stopped,
   /** Awaiting for a move command to be determined */
   pending,
-  /** Processing a move command */
+  /** Processing a plan-driven move command; the nav plan may preempt it. */
   moving,
+  /** Processing an uninterruptible direct move (setTargetPos): the nav plan is
+   * NOT consulted until the target is reached. */
+  powerMoving,
   /** Waiting for the next move command */
   waiting,
 }
@@ -103,10 +106,12 @@ export class NavManager {
     const requestId = this._beginNavRequest();
     const wp = await this._navPlan.getNextWaypoint(curPos);
     if (wp && this._isCurrentNavRequest(requestId)) {
-      this._navigateTo(
-        { targetPos: wp.pos, nearestIsOk: wp.nearestIsOk },
+      this._navigateTo({
+        targetPos: wp.pos,
+        nearestIsOk: wp.nearestIsOk,
         requestId,
-      );
+        interruptible: true,
+      });
       this._navSpeed = wp.speed;
       this._waypointPause = new Delay({
         timeMs: wp.pause,
@@ -140,7 +145,13 @@ export class NavManager {
     }
   }
 
-  /** Navigates directly to a position, bypassing the navplan */
+  /**
+   * Navigates directly to a position, overriding the nav plan for the duration
+   * of the move. Unlike a plan-driven move, the nav plan is not consulted while
+   * this move is in flight, so it cannot be preempted (see NavState.powerMoving
+   * in tick()). Control returns to the plan once the target is reached — or
+   * immediately if no path exists.
+   */
   async setTargetPos(opts: {
     targetPos: Vector2;
     nearestIsOk?: boolean;
@@ -148,7 +159,26 @@ export class NavManager {
     durationMs?: number;
   }): Promise<boolean> {
     // A direct target request supersedes any in-flight navigation.
-    return this._navigateTo(opts, this._beginNavRequest());
+    return this._navigateTo({
+      ...opts,
+      requestId: this._beginNavRequest(),
+      interruptible: false,
+    });
+  }
+
+  /**
+   * Re-issues the current target while preserving whether the active move is
+   * interruptible, so a stuck/off-path recovery of a plan-driven move doesn't
+   * silently upgrade it to an uninterruptible direct move (and vice versa).
+   */
+  private _reissueCurrentTarget(): void {
+    const interruptible = this._state !== NavState.powerMoving;
+    // `_targetPos` is captured here before _navigateTo's clearTarget() resets it.
+    void this._navigateTo({
+      targetPos: this._targetPos,
+      interruptible,
+      requestId: this._beginNavRequest(),
+    });
   }
 
   /**
@@ -159,20 +189,21 @@ export class NavManager {
    * @param requestId
    * @returns
    */
-  private async _navigateTo(
-    {
-      targetPos,
-      nearestIsOk = true,
-      speed = 1.0,
-      durationMs,
-    }: {
-      targetPos: Vector2;
-      nearestIsOk?: boolean;
-      speed?: number;
-      durationMs?: number;
-    },
-    requestId: number,
-  ): Promise<boolean> {
+  private async _navigateTo({
+    targetPos,
+    nearestIsOk = true,
+    speed = 1.0,
+    durationMs,
+    requestId,
+    interruptible = true,
+  }: {
+    targetPos: Vector2;
+    nearestIsOk?: boolean;
+    speed?: number;
+    durationMs?: number;
+    requestId: number;
+    interruptible?: boolean;
+  }): Promise<boolean> {
     this.clearTarget();
 
     this._state = NavState.pending;
@@ -201,7 +232,7 @@ export class NavManager {
       this._moveDurationMs = durationMs ?? null;
       this._moveElapsedMs = 0;
       char.makeCollidable(this._charId, false);
-      this._state = NavState.moving;
+      this._state = interruptible ? NavState.moving : NavState.powerMoving;
     } else {
       // No path was found (e.g. target already reached, or momentarily
       // unreachable). Fall back to `waiting` rather than leaving the machine in
@@ -296,7 +327,7 @@ export class NavManager {
     if (maybeStuck) {
       // FIXME
       if (this._stuckTimer > stuckTimeout) {
-        this.setTargetPos({ targetPos: this._targetPos });
+        this._reissueCurrentTarget();
         return null;
       } else {
         this._stuckTimer += deltaMs;
@@ -309,7 +340,7 @@ export class NavManager {
       this._onReachTarget(curPos);
       return null;
     } else if (trackResult.distance > 32) {
-      this.setTargetPos({ targetPos: this._targetPos });
+      this._reissueCurrentTarget();
       return null;
     } else {
       const targetNode = this._targetPath[trackResult.index]!;

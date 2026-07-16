@@ -14,6 +14,12 @@
   flex: 0 0 auto;
 }
 
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .search {
   margin-left: auto;
   display: flex;

@@ -1,7 +1,10 @@
 export { AggressiveBasePlan } from "./AggressiveBasePlan";
 export { DefaultThenAttackPlan } from "./DefaultThenAttackPlan";
 export { FollowPlan } from "./FollowPlan";
-export { isMutualCombatant, MutualAttackPlan } from "./MutualCombatPlan";
+export {
+  isMutualCombatant,
+  MutualCombatPlan as MutualAttackPlan,
+} from "./MutualCombatPlan";
 export type { MutualCombatant } from "./MutualCombatPlan";
 export { NavPlan } from "./NavPlan";
 export { PatrolPlan } from "./PatrolPlan";

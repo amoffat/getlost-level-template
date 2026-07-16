@@ -1,7 +1,8 @@
 import { type Vector2 } from "@gl/types/api/vector";
 import { Waypoint } from "@gl/types/api/waypoint";
 
-export declare function getWaypoint(id: string): Waypoint;
+export declare function getWaypointById(id: string): Waypoint | undefined;
+export declare function getWaypointByName(name: string): Waypoint | undefined;
 export declare function findPath({
   graphicsKey,
   startPos,

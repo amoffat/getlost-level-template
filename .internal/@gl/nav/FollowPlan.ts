@@ -1,9 +1,8 @@
+import type { Character } from "@gl/utils/character";
 import { inRing } from "@gl/utils/rand";
 import { Vec2 } from "@gl/utils/vec2";
 import { Waypoint } from "@gl/utils/waypoint";
-import type { Character } from "@gl/utils/character";
-import { tryToFindValid } from "./NavPlan";
-import { NavPlan } from "./NavPlan";
+import { NavPlan, tryToFindValid } from "./NavPlan";
 
 export class FollowPlan extends NavPlan {
   private _target: Character;
@@ -45,14 +44,14 @@ export class FollowPlan extends NavPlan {
         const candPos = curTargetPos.added(rndPos);
 
         if (await this._checkValid(curPos, candPos, true)) {
-          const wp = new Waypoint(candPos.toVector());
+          const wp = new Waypoint({ pos: candPos.toVector() });
           wp.pause = this._pause;
           wp.nearestIsOk = true;
           return wp;
         }
       }
     } else {
-      const wp = new Waypoint(curTargetPos.toVector());
+      const wp = new Waypoint({ pos: curTargetPos.toVector() });
       wp.pause = this._pause;
       wp.nearestIsOk = true;
       return wp;

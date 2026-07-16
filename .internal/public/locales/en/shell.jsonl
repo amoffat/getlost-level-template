@@ -741,3 +741,7 @@
 {"k": "speechEditorSpeakerSelectDesc", "v": "Which character is speaking this line.", "ctx": "Description under the speaker character dropdown in the SpeechEditor"}
 {"k": "speechEditorListenerLegend", "v": "Listener", "ctx": "Fieldset legend for the listener section in the SpeechEditor"}
 {"k": "speechEditorListenerSelectDesc", "v": "Who is being spoken to. Only the player can be offered responses to choose from.", "ctx": "Description under the listener character dropdown in the SpeechEditor"}
+{"k": "logPaneFilterTags", "v": "Filter tags", "ctx": "Tooltip, aria-label, and menu heading for the tag filter menu in the dev log pane"}
+{"k": "logPaneFilterAll", "v": "all", "ctx": "Label for the master switch that toggles every tag filter on/off in the dev log pane"}
+{"k": "logPaneClear", "v": "Clear log", "ctx": "Tooltip and aria-label for the button that empties the dev log pane"}
+{"k": "logPaneCopy", "v": "Copy visible messages", "ctx": "Tooltip and aria-label for the button that copies the visible log messages to the clipboard"}

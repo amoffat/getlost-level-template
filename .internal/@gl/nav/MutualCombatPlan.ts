@@ -21,7 +21,7 @@ export interface MutualCombatant {
 /**
  * Duck-typed type guard: narrows a plan to {@link MutualCombatant} when it
  * exposes the capability. Deliberately avoids `instanceof` so plans other than
- * {@link MutualAttackPlan} can opt in.
+ * {@link MutualCombatPlan} can opt in.
  */
 export function isMutualCombatant(
   plan: NavPlan,
@@ -51,7 +51,7 @@ export function isMutualCombatant(
  * pair closes to within `meetRadius` — a hook for attack sounds or randomized
  * "hurt" events.
  */
-export class MutualAttackPlan extends NavPlan implements MutualCombatant {
+export class MutualCombatPlan extends NavPlan implements MutualCombatant {
   private _self: Character;
   private _getCombatants: () => Character[];
   private _defaultPlan: NavPlan;
@@ -175,7 +175,7 @@ export class MutualAttackPlan extends NavPlan implements MutualCombatant {
   private _revalidatePairing(): void {
     if (this._combatant === null) return;
     const partnerPlan = this._combatant.nav.getNavPlan();
-    if (partnerPlan instanceof MutualAttackPlan) {
+    if (partnerPlan instanceof MutualCombatPlan) {
       // Same implementation: verify the back-reference points at us.
       if (partnerPlan.getCombatant() === this._self) return;
     } else if (isMutualCombatant(partnerPlan)) {
@@ -234,7 +234,7 @@ export class MutualAttackPlan extends NavPlan implements MutualCombatant {
       const candPos = midpoint.added(inCircle(this._meetRadius));
       if (this._isValidPosition && !this._isValidPosition(candPos)) continue;
       if (await this._checkValid(curPos, candPos, true, this._attackDistance)) {
-        const wp = new Waypoint(candPos.toVector());
+        const wp = new Waypoint({ pos: candPos.toVector() });
         wp.pause = this._pause;
         wp.nearestIsOk = true;
         return wp;

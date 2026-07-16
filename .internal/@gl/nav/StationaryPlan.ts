@@ -17,12 +17,12 @@ export class StationaryPlan extends NavPlan {
   }
 
   static fromWaypoint(name: string): StationaryPlan {
-    const wp = navigation.getWaypoint(name);
-    return new StationaryPlan(wp.pos);
+    const wp = navigation.getWaypointByName(name);
+    return new StationaryPlan(wp?.pos ?? { x: 0, y: 0 });
   }
 
   public override async getNextWaypoint(_curPos: Vec2): Promise<Waypoint> {
-    return new Waypoint(this._position.toVector());
+    return new Waypoint({ pos: this._position.toVector() });
   }
 
   public override hasNextWaypoint(_curPos: Vec2): boolean {

@@ -56,7 +56,7 @@ export abstract class NavPlan {
         continue;
       }
       if (await this._checkValid(curPos, candPos, true, maxDistance)) {
-        const wp = new Waypoint(candPos.toVector());
+        const wp = new Waypoint({ pos: candPos.toVector() });
         wp.nearestIsOk = true;
         return wp;
       }

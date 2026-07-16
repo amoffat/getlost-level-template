@@ -1,14 +1,23 @@
+import { copyToClipboard } from "@/utils/copy";
 import {
   ActionIcon,
-  Chip,
   CloseButton,
+  Menu,
+  Switch,
   TextInput,
   Tooltip,
 } from "@mantine/core";
-import { IconRegex, IconSearch } from "@tabler/icons-react";
+import {
+  IconCopy,
+  IconFilter,
+  IconRegex,
+  IconSearch,
+  IconTrash,
+} from "@tabler/icons-react";
 import { LogEvent } from "pino";
 import type { CSSProperties } from "react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "../styles/LogPane.module.css";
 
 // Hard-coded list of tag filter chips shown above the log entries. The "all"
@@ -19,6 +28,7 @@ const FILTER_TAGS: string[] = [
   "state",
   "api",
   "level",
+  "path",
   "time",
   "test",
 ];
@@ -185,16 +195,19 @@ function parseMessage(event: LogEvent): LogMessage | undefined {
   let color;
   let tags;
   let found = false;
+
+  // If it's an error/warn, we'll show it no matter what, even if we don't find
+  // color/tags/etc below.
   if (["error", "warn"].includes(event.level.label)) {
     found = true;
-  } else {
-    for (const msg of event.messages) {
-      if (isDevMessage(msg)) {
-        color = msg.color;
-        tags = msg.tags;
-        found = true;
-        break;
-      }
+  }
+
+  for (const msg of event.messages) {
+    if (isDevMessage(msg)) {
+      color = msg.color;
+      tags = msg.tags;
+      found = true;
+      break;
     }
   }
 
@@ -225,6 +238,8 @@ const LogLine = memo(({ m }: { m: LogMessage }) => (
 ));
 
 const LogPane = ({ maxMessages }: { maxMessages: number }) => {
+  const { t } = useTranslation();
+
   // Rendered logs state
   const [logs, setLogs] = useState<LogMessage[]>([]);
 
@@ -348,6 +363,14 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
     [scheduleFlush],
   );
 
+  // Clear all buffered and rendered logs. Resets both the pending buffer and
+  // the source-of-truth ref so nothing re-appears on the next rAF flush.
+  const clearLogs = useCallback(() => {
+    pendingRef.current = [];
+    logsRef.current = [];
+    setLogs([]);
+  }, []);
+
   // Cleanup any scheduled flush on unmount
   useEffect(() => {
     return () => {
@@ -405,27 +428,74 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
   return (
     <div className={styles.container}>
       <div className={styles.filterBar}>
-        <Chip
-          radius="xs"
-          variant="outline"
-          size="xs"
-          checked={allSelected}
-          onChange={() => setActiveTags(allSelected ? [] : [...FILTER_TAGS])}
-        >
-          all
-        </Chip>
-        {FILTER_TAGS.map((tag) => (
-          <Chip
-            radius="xs"
-            variant="outline"
-            size="xs"
-            key={tag}
-            checked={activeTags.includes(tag)}
-            onChange={() => toggleTag(tag)}
+        <div className={styles.toolbar}>
+          <Menu
+            shadow="md"
+            position="bottom-start"
+            withArrow
+            closeOnItemClick={false}
           >
-            {tag}
-          </Chip>
-        ))}
+            <Menu.Target>
+              <Tooltip label={t("logPaneFilterTags")} withArrow>
+                <ActionIcon
+                  size="sm"
+                  variant={allSelected ? "default" : "filled"}
+                  aria-label={t("logPaneFilterTags")}
+                >
+                  <IconFilter size={16} />
+                </ActionIcon>
+              </Tooltip>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Label>{t("logPaneFilterTags")}</Menu.Label>
+              <Menu.Item closeMenuOnClick={false}>
+                <Switch
+                  size="xs"
+                  label={t("logPaneFilterAll")}
+                  checked={allSelected}
+                  onChange={() =>
+                    setActiveTags(allSelected ? [] : [...FILTER_TAGS])
+                  }
+                />
+              </Menu.Item>
+              {FILTER_TAGS.map((tag) => (
+                <Menu.Item key={tag} closeMenuOnClick={false}>
+                  <Switch
+                    size="xs"
+                    label={tag}
+                    checked={activeTags.includes(tag)}
+                    onChange={() => toggleTag(tag)}
+                  />
+                </Menu.Item>
+              ))}
+            </Menu.Dropdown>
+          </Menu>
+          <Tooltip label={t("logPaneClear")} withArrow>
+            <ActionIcon
+              size="sm"
+              variant="subtle"
+              aria-label={t("logPaneClear")}
+              onClick={clearLogs}
+            >
+              <IconTrash size={16} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label={t("logPaneCopy")} withArrow>
+            <ActionIcon
+              size="sm"
+              variant="subtle"
+              aria-label={t("logPaneCopy")}
+              onClick={() =>
+                copyToClipboard({
+                  value: visible.map((m) => m.msg).join("\n"),
+                  t,
+                })
+              }
+            >
+              <IconCopy size={16} />
+            </ActionIcon>
+          </Tooltip>
+        </div>
         <div className={styles.search}>
           <Tooltip label="Regex" withArrow>
             <ActionIcon

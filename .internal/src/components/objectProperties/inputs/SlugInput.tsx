@@ -17,6 +17,7 @@ interface SlugInputProps {
   validator?: (value: string | undefined) => ReactNode | undefined;
   placeholder?: string;
   required?: boolean;
+  allowCopy?: boolean;
 }
 
 /**
@@ -61,6 +62,7 @@ export default function SlugInput({
   validator,
   description: descriptionProp,
   noTemplate,
+  allowCopy = true,
   debounceMs = 100,
   label: labelProp,
   placeholder: placeholderProp,
@@ -74,6 +76,7 @@ export default function SlugInput({
   return (
     <PropertyValue
       label={label}
+      allowCopy={allowCopy}
       description={description}
       values={values}
       onValueChange={onValueChange}
@@ -85,7 +88,11 @@ export default function SlugInput({
           key={key}
           defaultValue={value}
           error={validator?.(value ?? undefined)}
-          placeholder={value === undefined ? t("localizedNameInputMixedValues") : placeholder}
+          placeholder={
+            value === undefined
+              ? t("localizedNameInputMixedValues")
+              : placeholder
+          }
           required={required}
           onChange={(sanitized) => {
             onChange(sanitized || null);

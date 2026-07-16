@@ -1,6 +1,5 @@
 import * as navigation from "@gl/api/navigation";
 import { type Vector2 } from "@gl/types/api/vector";
-import { Waypoint as ApiWaypoint } from "@gl/types/api/waypoint";
 import { Vec2 } from "./vec2";
 
 export class Waypoint {
@@ -9,7 +8,15 @@ export class Waypoint {
   public pause: number = 1000; // ms
   public nearestIsOk: boolean = false;
 
-  constructor(pos: Vector2, pause: number = 1000, speed: number = 1.0) {
+  constructor({
+    pos,
+    pause = 1000,
+    speed = 1,
+  }: {
+    pos: Vector2;
+    pause?: number;
+    speed?: number;
+  }) {
     this.pos = Vec2.fromVector2(pos);
     this.speed = speed;
     this.pause = pause;
@@ -20,15 +27,10 @@ export class Waypoint {
     pause: number = 1000,
     speed: number = 1.0,
   ): Waypoint {
-    const awp = navigation.getWaypoint(name);
-    const wp = Waypoint.fromApi(awp);
-    wp.speed = speed;
-    wp.pause = pause;
+    const awp = navigation.getWaypointByName(name);
+    if (!awp) return new Waypoint({ pos: { x: 0, y: 0 } });
+    const wp = new Waypoint({ ...awp, speed, pause });
     return wp;
-  }
-
-  public static fromApi(wp: ApiWaypoint): Waypoint {
-    return new Waypoint(wp.pos);
   }
 
   public toString(): string {

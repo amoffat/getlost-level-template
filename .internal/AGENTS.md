@@ -52,6 +52,8 @@ The state of each pixi.js application must be kept in sync with the redux state.
 
 There's actually 2 systems being used for i18n and l10n. The first system is for the editor's UI, and it uses react-i18next and the associated `t("key")` calls. The translation files for this system are stored in `.internal/public/locales/{{locale}}/{{ns}}.json`. The second system is for the level translations, and this is a separate, custom localization system. Its translation files are stored in `level/locales/{{locale}}/ns.jsonl`. The level translation system doesn't use `t()` calls, because the editor has tooling to edit translation entries directly within different input fields. When a user edits a translation entry from within the editor, it syncs back to the translation files automatically. This is unlike the editor UI translation system, which just relies on the hard-coded translation files and the `t()` calls.
 
+All new React components that will appear in the editor's UI should have translation entries for their text labels/descriptions/etc.
+
 ## UI Preferences
 
 - Prefer CSS modules to many inline styles

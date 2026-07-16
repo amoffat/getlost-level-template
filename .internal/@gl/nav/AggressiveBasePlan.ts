@@ -61,7 +61,7 @@ export abstract class AggressiveBasePlan extends NavPlan {
       !this._attacking
     ) {
       const nd = this._normDistance(curPos);
-      const wp = new Waypoint(this._target.getPos().toVector());
+      const wp = new Waypoint({ pos: this._target.getPos().toVector() });
       wp.pause = nd * 1000 + 100;
       wp.nearestIsOk = true;
       this._attacking = true;

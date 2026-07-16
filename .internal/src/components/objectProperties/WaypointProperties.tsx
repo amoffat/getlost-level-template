@@ -1,6 +1,6 @@
 import { waypointIcon } from "@/constants/tsObjs";
-import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
 import { useAppSelector } from "@/hooks/redux";
+import { useCollectPropertyValues } from "@/hooks/useCollectPropertyValues";
 import { selectors as mapSelectors } from "@/slices/mapEditor";
 import { WaypointObj } from "@/types/map";
 import { updateObjects } from "@/utils/propertyEditor";
@@ -54,6 +54,7 @@ function WaypointProperties({ objs }: { objs: WaypointObj[] }) {
           <SlugInput
             description={t("waypointPropSlugDescription")}
             noTemplate
+            allowCopy
             values={toCollect.slug}
             validator={slugValidator}
             onValueChange={({ value }): void => {

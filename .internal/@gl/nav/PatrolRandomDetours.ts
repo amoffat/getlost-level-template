@@ -38,7 +38,7 @@ export class PatrolRandomDetours extends PatrolPlan {
       const rndPos = inCircle(this._maxDistance);
       const candPos = curPos.added(rndPos);
       if (await this._checkValid(curPos, candPos, true)) {
-        const wp = new Waypoint(candPos.toVector());
+        const wp = new Waypoint({ pos: candPos.toVector() });
         wp.nearestIsOk = true;
         return wp;
       }
