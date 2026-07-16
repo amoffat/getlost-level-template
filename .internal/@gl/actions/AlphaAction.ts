@@ -8,25 +8,24 @@ interface Subject {
 
 export class AlphaOscillateAction extends Action<Subject> {
   private readonly _cycles: number;
-  private _startAlpha: number = 1;
+  private readonly _startAlpha: number;
 
   constructor({
     name = "alphaOscillate",
     durationMs,
     cycles,
+    startAlpha = 1,
     easing = Easings.linear,
   }: {
     name?: string;
     durationMs: number;
     cycles: number;
+    startAlpha?: number;
     easing?: (t: number) => number;
   }) {
     super({ name, durationMs, easing });
     this._cycles = cycles;
-  }
-
-  public override onActionStart({ subject }: { subject: Subject }): void {
-    this._startAlpha = subject.getAlpha();
+    this._startAlpha = startAlpha;
   }
 
   public override onActionEnd({ subject }: { subject: Subject }): void {
@@ -41,7 +40,7 @@ export class AlphaOscillateAction extends Action<Subject> {
     progress: number;
   }): void {
     // cos^2 oscillates between 0 and 1, starting and ending at 1. Scaling by
-    // _startAlpha shifts the peak to match the subject's initial alpha.
+    // _startAlpha shifts the peak to match the subject's resting alpha.
     const cos = Math.cos(progress * this._cycles * Math.PI);
     subject.setAlpha(this._startAlpha * cos * cos);
   }
