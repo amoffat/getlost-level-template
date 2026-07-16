@@ -108,7 +108,7 @@ export interface Assert {
   fail(description?: string): void;
 }
 
-type Spec = (t: Assert) => void;
+type Spec = (t: Assert) => void | Promise<void>;
 
 interface TestCase {
   description: string;
@@ -131,17 +131,23 @@ interface State {
 }
 
 /**
- * Runs every registered test synchronously, emits structured records, and
- * returns `true` when all assertions passed.
+ * Runs every registered test, emits structured records, and resolves to `true`
+ * when all assertions passed.
+ *
+ * Each spec is awaited, so specs may be `async` and use `await` internally. This
+ * only works if the host drains the promise-job queue after `__internal__test()`
+ * returns; note that awaiting a *synchronous* spec still yields to the microtask
+ * queue, so the entire run — summary included — is promise-driven once this is
+ * async.
  */
-export function runAllTests(): boolean {
+export async function runAllTests(): Promise<boolean> {
   const state: State = { passed: 0, failed: 0, counter: 0 };
 
   for (const testCase of registry) {
     emit({ kind: "test", name: testCase.description });
     const t = createAssert(state);
     try {
-      testCase.spec(t);
+      await testCase.spec(t);
     } catch (e) {
       state.failed++;
       emit({ kind: "error", name: testCase.description, error: safe(e) });

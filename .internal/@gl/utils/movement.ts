@@ -1,4 +1,3 @@
-import * as char from "@gl/api/char";
 import * as navigation from "@gl/api/navigation";
 
 import { NavPlan, StationaryPlan } from "@gl/nav";
@@ -35,9 +34,28 @@ export interface MovementResult {
   timedVelocity?: Vec2;
 }
 
+/**
+ * The host functions NavManager reaches out to. Collected behind an interface
+ * (rather than called directly) so tests can inject a deterministic fake and
+ * drive navigation without the live pathfinder. Production code uses
+ * {@link hostNavDeps}. Host side effects that aren't pathfinding (toggling
+ * collision, clearing the rendered path) are delegated to the owner via the
+ * {@link NavManager.onInstallPath}/{@link NavManager.onClearTarget} callbacks
+ * instead, so NavManager stays decoupled from the char/collision APIs.
+ */
+export interface NavDeps {
+  findPath: typeof navigation.findPath;
+}
+
+/** The real host binding, used unless a caller injects a fake. */
+const hostNavDeps: NavDeps = {
+  findPath: navigation.findPath,
+};
+
 export class NavManager {
   private readonly _charId: string;
   private readonly _getPos: () => Vec2;
+  private readonly _deps: NavDeps;
 
   private _navPlan: NavPlan;
   private _navSpeed: number = 1.0;
@@ -71,13 +89,23 @@ export class NavManager {
   /**
    * Called whenever the active path is cleared — including when a target is
    * reached, a new path is started (clears the old one first), or clearTarget()
-   * is called directly. Character uses this to reset velocity and direction.
+   * is called directly. The owner uses this to reset velocity/direction and to
+   * run the host side effects of clearing (re-enable collision, clear the
+   * rendered path).
    */
-  public onTargetCleared: (() => void) | null = null;
+  public onClearTarget: (() => void) | null = null;
 
-  constructor(charId: string, getPos: () => Vec2) {
+  /**
+   * Called when a freshly-found path is adopted as the active move. The owner
+   * uses this to run the host side effects of starting to move (disable
+   * collision so the character can walk through others while navigating).
+   */
+  public onInstallPath: (() => void) | null = null;
+
+  constructor(charId: string, getPos: () => Vec2, deps: NavDeps = hostNavDeps) {
     this._charId = charId;
     this._getPos = getPos;
+    this._deps = deps;
     this._navPlan = new StationaryPlan(getPos());
   }
 
@@ -208,7 +236,7 @@ export class NavManager {
 
     this._state = NavState.pending;
     const path = (
-      await navigation.findPath({
+      await this._deps.findPath({
         graphicsKey: this._charId,
         startPos: this._getPos().toVector(),
         endPos: targetPos,
@@ -231,7 +259,7 @@ export class NavManager {
       this._navSpeed = speed;
       this._moveDurationMs = durationMs ?? null;
       this._moveElapsedMs = 0;
-      char.makeCollidable(this._charId, false);
+      this.onInstallPath?.();
       this._state = interruptible ? NavState.moving : NavState.powerMoving;
     } else {
       // No path was found (e.g. target already reached, or momentarily
@@ -254,9 +282,7 @@ export class NavManager {
     this._stuckTimer = 0;
     this._moveDurationMs = null;
     this._moveElapsedMs = 0;
-    char.makeCollidable(this._charId, true);
-    navigation.clearPath(this._charId);
-    this.onTargetCleared?.();
+    this.onClearTarget?.();
   }
 
   /**

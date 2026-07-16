@@ -1,4 +1,5 @@
 import * as char from "@gl/api/char";
+import * as navigation from "@gl/api/navigation";
 import { hurt } from "@gl/behaviors/hurt";
 import { globalTicker } from "@gl/ticker";
 
@@ -85,9 +86,14 @@ export class Character {
     chars.set(id, this);
 
     this.nav = new NavManager(id, () => this._pos);
-    this.nav.onTargetCleared = () => {
+    this.nav.onClearTarget = () => {
+      this.collisions = true;
+      navigation.clearPath(this.id);
       this._velocity = new Vec2(0, 0);
       this._controlDirection = new Vec2(0, 0);
+    };
+    this.nav.onInstallPath = () => {
+      this.collisions = false;
     };
 
     globalTicker.subscribe((deltaMs) => {
