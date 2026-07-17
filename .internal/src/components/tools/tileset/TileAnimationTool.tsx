@@ -159,8 +159,13 @@ export default function TileAnimationTool({
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   // Store fractional weights per frame (0..1), always normalized so sum == 1
-  // Local state for responsive slider interaction
-  const [weights, setWeights] = useState<Weights>([]);
+  // Local state for responsive slider interaction. Initialize lazily from
+  // candFrames so a first mount with pre-populated frames (e.g. loading an
+  // existing animation) starts with correct weights — otherwise the sync below
+  // is skipped because prevCandFrames === candFrames on the first render.
+  const [weights, setWeights] = useState<Weights>(() =>
+    candFrames.map((f) => f.weight),
+  );
 
   const form = useForm<FormValues>({
     name: "animation",
