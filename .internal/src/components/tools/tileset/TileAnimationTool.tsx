@@ -14,9 +14,9 @@ import {
   mapUiToWeight,
   mapWeightToUi,
   rebalanceAfterChange,
-  reorderWeights,
   type Weights,
 } from "@/utils/normalizedSliders";
+import { computeFrameTimes, MIN_FRAME_MS_60FPS } from "@/utils/frameTimes";
 import { closestCenter, DndContext, DragEndEvent } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -46,97 +46,14 @@ import {
   IconInfoCircle,
   IconTrash,
 } from "@tabler/icons-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TileAnimation from "../../TileAnimation";
 import TilesetGroup from "../../TilesetGroup";
 import Tip from "../../Tip";
 
-const MIN_FRAME_MS_60FPS = Math.ceil(1000 / 60); // ~16.7ms
-
-// Types for frame time calculation
-type FrameMsMap = number[]; // per-frame time in ms by index
-
-// Helpers for frame time calculation
+// Helper for the slider percent label
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-
-function getMinPer(totalTime: number, activeCount: number, minFrameMs: number) {
-  if (activeCount <= 0) return 0;
-  return Math.max(0, Math.min(minFrameMs, Math.floor(totalTime / activeCount)));
-}
-
-// Largest remainder rounding while honoring minPer per active frame
-function computeFrameTimes(
-  count: number,
-  weights: Weights,
-  totalTime: number,
-  minFrameMs: number,
-): { frames: { idx: number; time: number }[]; byIdx: FrameMsMap } {
-  const eps = 1e-9;
-  const indices = Array.from({ length: count }, (_, i) => i);
-  const active = indices.filter((i) => (weights[i] ?? 0) > eps);
-  const k = active.length;
-
-  const byIdx: FrameMsMap = Array(count).fill(0);
-  const frames: { idx: number; time: number }[] = [];
-
-  if (count === 0 || totalTime <= 0) return { frames, byIdx };
-  if (k === 0) {
-    for (let i = 0; i < count; i++) byIdx[i] = 0;
-    for (let i = 0; i < count; i++) frames.push({ idx: i, time: 0 });
-    return { frames, byIdx };
-  }
-
-  const minPer = getMinPer(totalTime, k, minFrameMs);
-  const totalMin = minPer * k;
-  const remaining = Math.max(0, totalTime - totalMin);
-
-  let sumActiveW = 0;
-  for (const i of active) sumActiveW += weights[i] ?? 0;
-
-  // Exact values before rounding
-  const exacts: number[] = Array(count).fill(0);
-  if (remaining <= 0) {
-    for (let i = 0; i < count; i++) exacts[i] = active.includes(i) ? minPer : 0;
-  } else if (sumActiveW <= eps) {
-    const extra = remaining / k;
-    for (let i = 0; i < count; i++)
-      exacts[i] = active.includes(i) ? minPer + extra : 0;
-  } else {
-    for (let i = 0; i < count; i++) {
-      const w = weights[i] ?? 0;
-      exacts[i] = w > eps ? minPer + (w / sumActiveW) * remaining : 0;
-    }
-  }
-
-  // Largest remainder method
-  let sumFloor = 0;
-  const floors: number[] = Array(count).fill(0);
-  const fracs: { idx: number; frac: number }[] = [];
-  for (let i = 0; i < count; i++) {
-    const exact = exacts[i] ?? 0;
-    const f = Math.floor(exact);
-    floors[i] = f;
-    sumFloor += f;
-    fracs.push({ idx: i, frac: exact - f });
-  }
-  let diff = totalTime - sumFloor;
-  if (diff > 0) {
-    fracs.sort((a, b) => b.frac - a.frac);
-    for (let j = 0; j < fracs.length && diff > 0; j++) {
-      const { idx } = fracs[j];
-      // Only add to active frames (inactive get 0)
-      if ((weights[idx] ?? 0) > eps) {
-        floors[idx] = (floors[idx] ?? 0) + 1;
-        diff -= 1;
-      }
-    }
-  }
-
-  for (let i = 0; i < count; i++) byIdx[i] = Math.max(0, floors[i] ?? 0);
-  for (let i = 0; i < count; i++) frames.push({ idx: i, time: byIdx[i] });
-  return { frames, byIdx };
-}
 
 interface FormValues {
   names: string[];
@@ -158,14 +75,20 @@ export default function TileAnimationTool({
   );
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  // Store fractional weights per frame (0..1), always normalized so sum == 1
-  // Local state for responsive slider interaction. Initialize lazily from
-  // candFrames so a first mount with pre-populated frames (e.g. loading an
-  // existing animation) starts with correct weights — otherwise the sync below
-  // is skipped because prevCandFrames === candFrames on the first render.
-  const [weights, setWeights] = useState<Weights>(() =>
-    candFrames.map((f) => f.weight),
+
+  // Redux (candFrames) is the single source of truth for weights. These are the
+  // fractional weights (0..1, summing to 1) derived straight from it.
+  const candFrameWeights = useMemo(
+    () => candFrames.map((f) => f.weight),
+    [candFrames],
   );
+  // During an active slider drag we keep a transient local "draft" so the UI
+  // stays responsive without dispatching to Redux on every mousemove. It is
+  // null whenever no drag is in flight, and is flushed to Redux + cleared on
+  // drag end. draftRef mirrors it so onChangeEnd reads the freshest value.
+  const [draftWeights, setDraftWeights] = useState<Weights | null>(null);
+  const draftRef = useRef<Weights | null>(null);
+  const effectiveWeights = draftWeights ?? candFrameWeights;
 
   const form = useForm<FormValues>({
     name: "animation",
@@ -216,7 +139,12 @@ export default function TileAnimationTool({
   const uiFromWeight = useCallback((t: number) => mapWeightToUi(t, n), [n]);
 
   const { frames, frameTimeByIdx } = useMemo(() => {
-    const result = computeFrameTimes(n, weights, totalTime, MIN_FRAME_MS_60FPS);
+    const result = computeFrameTimes(
+      n,
+      effectiveWeights,
+      totalTime,
+      MIN_FRAME_MS_60FPS,
+    );
     // Adapt to TileAnimation shape
     const framesForAnim: TileAnimationFrame[] = candFrames.map(
       (candFrame, idx) => ({
@@ -226,7 +154,7 @@ export default function TileAnimationTool({
       }),
     );
     return { frames: framesForAnim, frameTimeByIdx: result.byIdx };
-  }, [n, candFrames, weights, totalTime]);
+  }, [n, candFrames, effectiveWeights, totalTime]);
 
   const saveAnimation = useCallback(
     (values: FormValues) => {
@@ -271,15 +199,6 @@ export default function TileAnimationTool({
 
   const formSubmit = form.onSubmit(saveAnimation);
 
-  // Derived state: sync weights when candFrames reference changes (frames added/removed
-  // or weights flushed to Redux). Does not fire during local slider drags because
-  // candFrames is unchanged then.
-  const [prevCandFrames, setPrevCandFrames] = useState(candFrames);
-  if (prevCandFrames !== candFrames) {
-    setPrevCandFrames(candFrames);
-    setWeights(candFrames.map((f) => f.weight));
-  }
-
   // Derived state: sync form names when the selected animation changes.
   const [prevAnimId, setPrevAnimId] = useState(selectedAnimation?.id);
   if (prevAnimId !== selectedAnimation?.id) {
@@ -289,13 +208,24 @@ export default function TileAnimationTool({
 
   // Rebalance all weights when a single slider is changed so that the sum
   // across frames remains exactly 1.0. We preserve other frames' relative
-  // proportions by scaling them uniformly.
+  // proportions by scaling them uniformly. Updates only the transient draft;
+  // Redux is flushed on drag end via flushWeights.
   const updateWeight = (idx: number, target: number) => {
-    setWeights((prev) => {
-      if (prev.length === 0) return [1];
-      const current: Weights = prev.slice();
-      return rebalanceAfterChange(current, idx, target);
-    });
+    const base = draftRef.current ?? candFrameWeights;
+    const next: Weights =
+      base.length === 0 ? [1] : rebalanceAfterChange(base.slice(), idx, target);
+    draftRef.current = next;
+    setDraftWeights(next);
+  };
+
+  // Flush the in-progress draft to Redux and release it (Redux is authoritative
+  // again). Called on slider drag end.
+  const flushWeights = () => {
+    if (draftRef.current) {
+      dispatch(actions.updateAllCandAnimFrameWeights(draftRef.current));
+    }
+    draftRef.current = null;
+    setDraftWeights(null);
   };
 
   const toggleFlipFrame = (idx: number) => {
@@ -310,8 +240,8 @@ export default function TileAnimationTool({
     if (numIdsInFrames <= 1) {
       dispatch(actions.removeOneSelected(id));
     }
+    // The reducer rebalances the remaining frames' weights in Redux.
     dispatch(actions.removeCandAnimIdx(idx));
-    // Local weights will be updated via useEffect when Redux state changes
   };
 
   const hasAllNpcAnims = useMemo(() => {
@@ -367,10 +297,9 @@ export default function TileAnimationTool({
                 const from = Number(active.id);
                 const to = Number(over.id);
                 if (!Number.isInteger(from) || !Number.isInteger(to)) return;
-                // Update redux frames (weights stay with their frames during reorder)
+                // Each frame carries its own weight, so the reducer moves the
+                // weight along with the frame — no separate local update needed.
                 dispatch(actions.reorderCandAnimFrames({ from, to }));
-                // Update local weights to match reordered state immediately
-                setWeights((prev) => reorderWeights(prev, from, to));
               }}
             >
               <SortableContext
@@ -379,7 +308,7 @@ export default function TileAnimationTool({
                 strategy={verticalListSortingStrategy}
               >
                 {candFrames.map((candFrame, idx) => {
-                  const w = weights[idx] ?? 0;
+                  const w = effectiveWeights[idx] ?? 0;
                   const uiValue = uiFromWeight(w);
 
                   return (
@@ -393,12 +322,7 @@ export default function TileAnimationTool({
                         const targetWeight = scaleFn(v);
                         updateWeight(idx, targetWeight);
                       }}
-                      onChangeEnd={() => {
-                        // Sync weights to Redux when drag completes
-                        dispatch(
-                          actions.updateAllCandAnimFrameWeights(weights),
-                        );
-                      }}
+                      onChangeEnd={flushWeights}
                       labelMs={frameTimeByIdx[idx]}
                       totalTime={totalTime}
                       scaleFn={scaleFn}
