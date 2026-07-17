@@ -63,7 +63,7 @@ export class MutualCombatPlan extends NavPlan implements MutualCombatant {
   private _onDisengage: ((args: { partner: Character }) => void) | undefined;
 
   private _combatant: Character | null = null;
-  private _scanCooldown: Delay = new Delay({ timeMs: 500 });
+  private _scanCooldown: Delay = new Delay({ timeMs: 500, repeat: true });
 
   constructor({
     self,

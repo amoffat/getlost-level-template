@@ -3,7 +3,7 @@ import { Action } from "@gl/utils/behavior";
 import { Vec2 } from "@gl/utils/vec2";
 
 interface Subject {
-  setTargetPos(args: {
+  navigateTo(args: {
     targetPos: Vec2;
     speed?: number;
     durationMs?: number;
@@ -33,7 +33,7 @@ export class MoveAction extends Action<Subject> {
   }
 
   public override onActionStart({ subject }: { subject: Subject }): void {
-    subject.setTargetPos({
+    subject.navigateTo({
       targetPos: this._target,
       durationMs: this.durationMs,
     });

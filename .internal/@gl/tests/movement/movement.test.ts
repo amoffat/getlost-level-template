@@ -1,3 +1,4 @@
+import { PATH_DEBOUNCED } from "@gl/api/navigation";
 import { NavPlan } from "@gl/nav/NavPlan";
 import { StationaryPlan } from "@gl/nav/StationaryPlan";
 import type { Vector2 } from "@gl/types/api/vector";
@@ -20,19 +21,20 @@ import { test } from "../harness";
  */
 class FakeNavDeps implements NavDeps {
   public findPathCalls = 0;
-  /** The path the next findPath call resolves to; consumed once when read. */
-  public nextPath: Vector2[] = [];
+  /**
+   * What the next findPath call resolves to; consumed once, then reverts to
+   * `null` (the host's "no path found" signal). Mirrors the real tri-state
+   * return: a route (`Vector2[]`), no route (`null`), or superseded
+   * (`PATH_DEBOUNCED`).
+   */
+  public nextPath: Vector2[] | null | typeof PATH_DEBOUNCED = null;
 
-  findPath = (_opts: {
-    graphicsKey?: string;
-    startPos: Vector2;
-    endPos: Vector2;
-    nearestIsOk: boolean;
-    max?: number;
-  }): Promise<Vector2[]> => {
+  // Typed off NavDeps so the fake's signature can't drift from the real host
+  // binding (param shape and the tri-state return come straight from it).
+  findPath: NavDeps["findPath"] = () => {
     this.findPathCalls++;
     const path = this.nextPath;
-    this.nextPath = [];
+    this.nextPath = null;
     return Promise.resolve(path);
   };
 }
@@ -87,7 +89,7 @@ function makeNav(startPos: Vector2 = { x: 0, y: 0 }): {
 } {
   const deps = new FakeNavDeps();
   const pos = Vec2.fromVector2(startPos);
-  const nav = new NavManager("hero", () => pos, deps);
+  const nav = new NavManager({ charId: "hero", getPos: () => pos, deps });
   const events: CallbackSpy = { installPath: 0, clearTarget: 0 };
   nav.onInstallPath = () => events.installPath++;
   nav.onClearTarget = () => events.clearTarget++;
@@ -95,17 +97,22 @@ function makeNav(startPos: Vector2 = { x: 0, y: 0 }): {
 }
 
 /**
- * Installs a direct (uninterruptible) move along the scripted `path` and awaits
- * it — the async pathfind completes before we return, so the move is active.
+ * Installs a direct (uninterruptible) move along the scripted `path` and settles
+ * pending microtasks so the async pathfind completes and the move is active. It
+ * deliberately does NOT await the setTargetPos promise: under the new semantics
+ * that promise stays pending until the character actually *arrives* (or fails),
+ * so awaiting it here would hang. Tests that need the terminal result call
+ * setTargetPos directly and hold onto the promise (see the resolution tests).
  */
-function goTo(
+async function goTo(
   nav: NavManager,
   deps: FakeNavDeps,
   path: Vector2[],
   opts: { speed?: number; durationMs?: number } = {},
-): Promise<boolean> {
+): Promise<void> {
   deps.nextPath = path;
-  return nav.setTargetPos({ targetPos: path[path.length - 1]!, ...opts });
+  void nav.navigateTo({ targetPos: path[path.length - 1]!, ...opts });
+  await settle();
 }
 
 /** Flush pending microtasks so a fire-and-forget nav request settles. */
@@ -118,7 +125,10 @@ const B = { x: 100, y: 0 };
 
 test("a fresh NavManager is stationary and produces no movement", async (t) => {
   const { nav } = makeNav();
-  t.ok(nav.getNavPlan() instanceof StationaryPlan, "defaults to a StationaryPlan");
+  t.ok(
+    nav.getNavPlan() instanceof StationaryPlan,
+    "defaults to a StationaryPlan",
+  );
   t.is(await nav.tick(16, new Vec2(0, 0)), null, "no path -> no movement");
 });
 
@@ -130,8 +140,14 @@ test("a move heads toward the goal and disables collision", async (t) => {
   const result = await nav.tick(16, new Vec2(0, 0));
   t.ok(result !== null, "produces a movement result");
   t.ok(result!.direction.x > 0.99, "heads in +x toward the goal");
-  t.ok(Math.abs(result!.direction.y) < 0.01, "no vertical drift on a horizontal path");
-  t.ok(Math.abs(result!.direction.magnitude - 1) < 1e-6, "direction is normalized");
+  t.ok(
+    Math.abs(result!.direction.y) < 0.01,
+    "no vertical drift on a horizontal path",
+  );
+  t.ok(
+    Math.abs(result!.direction.magnitude - 1) < 1e-6,
+    "direction is normalized",
+  );
 });
 
 test("navSpeed from the move flows into the movement result", async (t) => {
@@ -182,11 +198,18 @@ test("reaching the goal clears the target and notifies the owner", async (t) => 
 test("a plan with a next waypoint waits (not stops) on arrival", async (t) => {
   const { nav, deps, intern } = makeNav();
   // Set the plan without navigating immediately, then arrive at a direct target.
-  nav.setNavPlan(new ScriptedPlan([new Waypoint({ pos: { x: 200, y: 0 } })]), false);
+  nav.setNavPlan(
+    new ScriptedPlan([new Waypoint({ pos: { x: 200, y: 0 } })]),
+    false,
+  );
   await goTo(nav, deps, [A, B]);
 
   await nav.tick(16, new Vec2(100, 0));
-  t.is(intern._state, NavState.waiting, "waits to consult the plan for the next hop");
+  t.is(
+    intern._state,
+    NavState.waiting,
+    "waits to consult the plan for the next hop",
+  );
 });
 
 test("straying far off the path triggers a re-navigation", async (t) => {
@@ -197,7 +220,11 @@ test("straying far off the path triggers a re-navigation", async (t) => {
   // >32px away from the polyline: recovery re-issues the current target.
   const result = await nav.tick(16, new Vec2(50, 50));
   t.is(result, null, "no movement on the recovery frame");
-  t.eq(deps.findPathCalls, before + 1, "a re-navigation (findPath) was kicked off");
+  t.eq(
+    deps.findPathCalls,
+    before + 1,
+    "a re-navigation (findPath) was kicked off",
+  );
 });
 
 test("staying on the path (near it) does not trigger a re-navigation", async (t) => {
@@ -233,7 +260,11 @@ test("no progress eventually trips the stuck timeout and re-navigates", async (t
       break;
     }
   }
-  t.is(recoveryResult, null, "the stuck frame gives up moving and re-navigates");
+  t.is(
+    recoveryResult,
+    null,
+    "the stuck frame gives up moving and re-navigates",
+  );
 });
 
 test("making progress keeps the stuck timer from accumulating", async (t) => {
@@ -246,7 +277,11 @@ test("making progress keeps the stuck timer from accumulating", async (t) => {
     await nav.tick(16, new Vec2(x, 0));
   }
   t.eq(intern._stuckTimer, 0, "stuck timer stays reset while advancing");
-  t.eq(deps.findPathCalls, before, "no stuck-recovery re-navigation while progressing");
+  t.eq(
+    deps.findPathCalls,
+    before,
+    "no stuck-recovery re-navigation while progressing",
+  );
 });
 
 test("a timed move reports the velocity to finish on schedule", async (t) => {
@@ -254,17 +289,27 @@ test("a timed move reports the velocity to finish on schedule", async (t) => {
   // 100px path that must be covered in 1000ms => ~100 px/s.
   await goTo(nav, deps, [A, B], { durationMs: 1000 });
   const result = await nav.tick(16, new Vec2(0, 0));
-  t.ok(result!.timedVelocity !== undefined, "timed moves carry a timedVelocity");
+  t.ok(
+    result!.timedVelocity !== undefined,
+    "timed moves carry a timedVelocity",
+  );
   const speed = result!.timedVelocity!.magnitude;
   // ~remaining-distance / remaining-time; the first frame has consumed 16ms.
-  t.ok(speed > 100 && speed < 103, "velocity is ~100 px/s (remaining / remaining-time)");
+  t.ok(
+    speed > 100 && speed < 103,
+    "velocity is ~100 px/s (remaining / remaining-time)",
+  );
 });
 
 test("a non-timed move carries no timedVelocity", async (t) => {
   const { nav, deps } = makeNav();
   await goTo(nav, deps, [A, B]);
   const result = await nav.tick(16, new Vec2(0, 0));
-  t.is(result!.timedVelocity, undefined, "plain moves leave timedVelocity unset");
+  t.is(
+    result!.timedVelocity,
+    undefined,
+    "plain moves leave timedVelocity unset",
+  );
 });
 
 test("clearTarget stops movement and notifies the owner", async (t) => {
@@ -274,6 +319,70 @@ test("clearTarget stops movement and notifies the owner", async (t) => {
   nav.clearTarget();
   t.eq(intern._targetPath.length, 0, "path is emptied");
   t.is(intern._state, NavState.waiting, "returns to waiting");
-  t.ok(events.clearTarget > clearsBefore, "onClearTarget fired (owner restores collision)");
+  t.ok(
+    events.clearTarget > clearsBefore,
+    "onClearTarget fired (owner restores collision)",
+  );
   t.is(await nav.tick(16, new Vec2(0, 0)), null, "no movement after clear");
+});
+
+test("the move promise resolves with the traveled route on arrival", async (t) => {
+  const { nav, deps } = makeNav();
+  deps.nextPath = [A, B];
+  // Hold the promise: it must stay pending across ticks until the goal is hit.
+  const reached = nav.navigateTo({ targetPos: B });
+  await settle(); // let the pathfind resolve and install the path
+
+  const result = await nav.tick(16, new Vec2(100, 0)); // arrive within 1px of B
+  t.is(result, null, "no movement once the goal is reached");
+
+  const route = await reached;
+  t.ok(Array.isArray(route), "resolves to the path array, not false");
+  t.eq((route as Vec2[]).length, 2, "resolves with the route it took (A -> B)");
+});
+
+test("the move promise resolves false when no path is found", async (t) => {
+  const { nav, deps } = makeNav();
+  deps.nextPath = null; // host signals "no path found"
+  const result = await nav.navigateTo({ targetPos: B });
+  t.is(result, false, "an unreachable target resolves false");
+});
+
+test("a debounced findPath response bails without clobbering a newer move", async (t) => {
+  const { nav, deps, intern } = makeNav();
+
+  // Older move A: the host debounces it (superseded), resolving PATH_DEBOUNCED.
+  deps.nextPath = PATH_DEBOUNCED;
+  const a = nav.navigateTo({ targetPos: { x: 50, y: 50 } });
+  // Newer move B (the trailing request) resolves a real path.
+  deps.nextPath = [A, B];
+  void nav.navigateTo({ targetPos: B });
+  await settle();
+
+  t.is(await a, false, "the superseded (debounced) move resolves false");
+  t.ok(
+    intern._targetPath.length > 0,
+    "the newer move installed its path (debounced result was not mistaken for one)",
+  );
+  // nav.navigateTo issues uninterruptible direct moves, so the installed state
+  // is powerMoving (not moving) — see "setTargetPos is an uninterruptible move".
+  t.is(
+    intern._state,
+    NavState.powerMoving,
+    "ends in the newer (direct) move, not stranded",
+  );
+});
+
+test("a superseded move resolves false (interrupted)", async (t) => {
+  const { nav, deps } = makeNav();
+  deps.nextPath = [A, B];
+  const first = nav.navigateTo({ targetPos: B });
+  await settle(); // install the first (in-flight) move
+
+  // A second direct move supersedes the first before it can arrive.
+  deps.nextPath = [A, { x: 50, y: 50 }];
+  void nav.navigateTo({ targetPos: { x: 50, y: 50 } });
+
+  t.is(await first, false, "the interrupted move resolves false");
+  await settle();
 });

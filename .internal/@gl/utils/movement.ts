@@ -68,20 +68,39 @@ export class NavManager {
   private _lastTrackResult: TrackResult = { index: -1, distance: 0, t: 0 };
   private _waypointPause: Delay = new Delay({ timeMs: 1000, repeat: true });
 
-  // When set, the active move must complete within this many ms. The character
-  // is then driven at the exact velocity needed to cover the remaining path in
-  // the remaining time (see the timedVelocity path in tick()).
+  /**
+   * When set, the active move must complete within this many ms. The character
+   * is then driven at the exact velocity needed to cover the remaining path in
+   * the remaining time (see the timedVelocity path in tick()).
+   */
   private _moveDurationMs: number | null = null;
   private _moveElapsedMs: number = 0;
 
-  // Monotonic id stamped on each navigation intent (a new plan, or a new
-  // target). Target-setting is async — it awaits pathfinding partway through —
-  // and is fired off from several places (setNavPlan, both tick branches,
-  // external setTargetPos). Without this, a stale pathfind that resolves *after*
-  // a newer intent arrived would still write its results and clobber the newer
-  // target, leaving the character walking to (or stopping at) the wrong place.
-  // Each async step captures the current id and bails if it's been superseded.
+  /**
+   * Monotonic id stamped on each navigation intent (a new plan, or a new
+   * target). Target-setting is async — it awaits pathfinding partway through —
+   * and is fired off from several places (setNavPlan, both tick branches,
+   * external setTargetPos). Without this, a stale pathfind that resolves
+   * *after* a newer intent arrived would still write its results and clobber
+   * the newer target, leaving the character walking to (or stopping at) the
+   * wrong place. Each async step captures the current id and bails if it's been
+   * superseded.
+   */
   private _navRequestId: number = 0;
+
+  /**
+   * The single in-flight navigation's deferred result. A navigation resolves
+   * long after its pathfind completes — only once the character actually
+   * *arrives* (with the route it took), or fails (false: no path, interrupted
+   * by a newer intent, or a recovery re-path that finds no route). There is at
+   * most one pending navigation at a time, since a new intent supersedes the
+   * old. Carried across stuck/off-path recovery re-issues (see
+   * _reissueCurrentTarget) so a transparent re-path doesn't settle the awaiter.
+   */
+  private _pendingNav: {
+    promise: Promise<Vec2[] | false>;
+    resolve: (r: Vec2[] | false) => void;
+  } | null = null;
 
   public startWalkMomentum: number = 5;
   public endWalkMomentum: number = 15;
@@ -102,7 +121,15 @@ export class NavManager {
    */
   public onInstallPath: (() => void) | null = null;
 
-  constructor(charId: string, getPos: () => Vec2, deps: NavDeps = hostNavDeps) {
+  constructor({
+    charId,
+    getPos,
+    deps = hostNavDeps,
+  }: {
+    charId: string;
+    getPos: () => Vec2;
+    deps?: NavDeps;
+  }) {
     this._charId = charId;
     this._getPos = getPos;
     this._deps = deps;
@@ -133,7 +160,12 @@ export class NavManager {
   private async _requestNextWaypoint(curPos: Vec2): Promise<void> {
     const requestId = this._beginNavRequest();
     const wp = await this._navPlan.getNextWaypoint(curPos);
-    if (wp && this._isCurrentNavRequest(requestId)) {
+    // Guard first: if a newer request superseded us while awaiting the plan, it
+    // owns the pending deferred — don't touch it (neither install nor settle).
+    if (!this._isCurrentNavRequest(requestId)) {
+      return;
+    }
+    if (wp) {
       this._navigateTo({
         targetPos: wp.pos,
         nearestIsOk: wp.nearestIsOk,
@@ -146,6 +178,11 @@ export class NavManager {
         initialDelay: wp.pause,
         repeat: true,
       });
+    } else {
+      // The plan yielded no waypoint (e.g. resetPos → StationaryPlan). No fresh
+      // _navigateTo will run to settle it, so interrupt any pending direct move
+      // here so its awaiter doesn't hang forever.
+      this._settleNav(false);
     }
   }
 
@@ -164,8 +201,35 @@ export class NavManager {
     return requestId === this._navRequestId;
   }
 
+  /** Creates a fresh externally-resolvable navigation deferred. */
+  private _makeDeferred(): {
+    promise: Promise<Vec2[] | false>;
+    resolve: (r: Vec2[] | false) => void;
+  } {
+    let resolve!: (r: Vec2[] | false) => void;
+    const promise = new Promise<Vec2[] | false>((res) => {
+      resolve = res;
+    });
+    return { promise, resolve };
+  }
+
+  /**
+   * Settles the pending navigation exactly once with its terminal result — the
+   * route taken on arrival, or `false` on failure/interruption. Idempotent: a
+   * no-op when nothing is pending (already settled, or never started).
+   */
+  private _settleNav(result: Vec2[] | false): void {
+    const pending = this._pendingNav;
+    this._pendingNav = null;
+    pending?.resolve(result);
+  }
+
   private _onReachTarget(curPos: Vec2): void {
-    this.clearTarget();
+    // Capture the route before _resetPathState empties it — the awaiter resolves
+    // to the path the character actually took to get here.
+    const path = this._targetPath;
+    this._resetPathState();
+    this._settleNav(path);
     if (this._navPlan.hasNextWaypoint(curPos)) {
       this._state = NavState.waiting;
     } else {
@@ -180,12 +244,12 @@ export class NavManager {
    * in tick()). Control returns to the plan once the target is reached — or
    * immediately if no path exists.
    */
-  async setTargetPos(opts: {
+  async navigateTo(opts: {
     targetPos: Vector2;
     nearestIsOk?: boolean;
     speed?: number;
     durationMs?: number;
-  }): Promise<boolean> {
+  }): Promise<Vec2[] | false> {
     // A direct target request supersedes any in-flight navigation.
     return this._navigateTo({
       ...opts,
@@ -201,11 +265,15 @@ export class NavManager {
    */
   private _reissueCurrentTarget(): void {
     const interruptible = this._state !== NavState.powerMoving;
-    // `_targetPos` is captured here before _navigateTo's clearTarget() resets it.
+    // `_targetPos` is captured here before _navigateTo's reset empties it.
+    // `continuation: true` preserves the pending deferred: a stuck/off-path
+    // recovery re-path of the *same* target must not settle the awaiter — it
+    // keeps waiting until arrival (or until the recovery finds no route).
     void this._navigateTo({
       targetPos: this._targetPos,
       interruptible,
       requestId: this._beginNavRequest(),
+      continuation: true,
     });
   }
 
@@ -224,6 +292,7 @@ export class NavManager {
     durationMs,
     requestId,
     interruptible = true,
+    continuation = false,
   }: {
     targetPos: Vector2;
     nearestIsOk?: boolean;
@@ -231,24 +300,56 @@ export class NavManager {
     durationMs?: number;
     requestId: number;
     interruptible?: boolean;
-  }): Promise<boolean> {
-    this.clearTarget();
+    /**
+     * When true this call continues an existing navigation intent (a
+     * stuck/off-path recovery re-path of the same target) rather than starting a
+     * fresh one, so it reuses the pending deferred instead of interrupting it.
+     */
+    continuation?: boolean;
+  }): Promise<Vec2[] | false> {
+    if (!continuation) {
+      // A fresh intent: settle any prior pending navigation as interrupted, then
+      // open a new deferred. This runs synchronously before the first await, so
+      // there is no window for a settle/create interleaving.
+      this._settleNav(false);
+      this._pendingNav = this._makeDeferred();
+    }
+    // Capture the promise up front: a superseding fresh request may reassign
+    // `_pendingNav` while we await, so we must return *our* deferred, not
+    // whatever occupies the slot later.
+    const navPromise = this._pendingNav?.promise ?? Promise.resolve(false);
+
+    this._resetPathState();
 
     this._state = NavState.pending;
-    const path = (
-      await this._deps.findPath({
-        graphicsKey: this._charId,
-        startPos: this._getPos().toVector(),
-        endPos: targetPos,
-        nearestIsOk,
-      })
-    ).map((v) => Vec2.fromVector2(v));
+    // `id` groups this character's move pathfinds so the host debounces a burst
+    // (leading+trailing) down to the latest — the client no longer rate-limits.
+    const result = await this._deps.findPath({
+      id: this._charId,
+      graphicsKey: this._charId,
+      startPos: this._getPos().toVector(),
+      endPos: targetPos,
+      nearestIsOk,
+    });
+
+    // Superseded at the host by a newer same-id request; the trailing request
+    // owns the outcome. Bail without settling — the same treatment as the
+    // _isCurrentNavRequest guard below (and in practice the superseding
+    // _navigateTo has already bumped _navRequestId, so that guard would catch
+    // it too — but we must handle the sentinel before it reaches `.map`).
+    if (result === navigation.PATH_DEBOUNCED) {
+      return navPromise;
+    }
+    // `null` is the host's sole "no path found" signal; normalize it to an empty
+    // path so the existing `length > 0` no-route handling below applies.
+    const path = (result ?? []).map((v) => Vec2.fromVector2(v));
 
     // A newer navigation intent (plan swap, resetPos, or another target) arrived
     // while we were pathfinding. Discard these now-stale results so we don't
-    // clobber the newer target and strand the character.
+    // clobber the newer target and strand the character. The superseding request
+    // owns the deferred now, so we must not settle it here.
     if (!this._isCurrentNavRequest(requestId)) {
-      return false;
+      return navPromise;
     }
 
     this._targetPath = path;
@@ -269,12 +370,27 @@ export class NavManager {
       // consult its plan again, so a combatant could never re-scan or re-pair.
       // `waiting` re-consults the plan on the next pause, letting it recover.
       this._state = NavState.waiting;
+      // The navigation failed: no route (including a recovery re-path that came
+      // up empty, i.e. the "stuck" case). Resolve the awaiter false.
+      this._settleNav(false);
     }
 
-    return this._targetPath.length > 0;
+    return navPromise;
   }
 
+  /** Cancels the active navigation, resolving any awaiter `false`. */
   clearTarget(): void {
+    this._settleNav(false);
+    this._resetPathState();
+  }
+
+  /**
+   * Resets the path/tracker/state, firing onClearTarget, WITHOUT settling the
+   * pending navigation deferred. Internal transitions that manage the deferred
+   * themselves (starting a fresh move, arriving) use this; external cancels go
+   * through {@link clearTarget}, which also settles.
+   */
+  private _resetPathState(): void {
     this._state = NavState.waiting;
     this._targetPath = [];
     this._targetPos = new Vec2(0, 0);
@@ -322,6 +438,9 @@ export class NavManager {
     }
 
     if (this._state === NavState.waiting) {
+      // Pause at the reached waypoint for the plan-specified idle, then consult
+      // the plan for the next one. A `pause: 0` plan re-requesting every frame is
+      // safe: the move pathfind is debounced host-side (see _navigateTo's `id`).
       if (this._waypointPause.tick(deltaMs)) {
         await this._requestNextWaypoint(curPos);
       }

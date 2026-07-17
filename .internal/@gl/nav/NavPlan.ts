@@ -24,14 +24,17 @@ export abstract class NavPlan {
     nearestIsOk: boolean,
     lengthBound?: number,
   ): Promise<boolean> {
-    const path = await navigation.findPath({
+    // No `id`: candidate probes are intentionally un-debounced. Grouping the
+    // sequential probes of one waypoint search under a shared id would debounce
+    // them against each other and collapse the search. `null` (no path) — and,
+    // defensively, the debounced sentinel — mean "not reachable".
+    const result = await navigation.findPath({
       startPos: start.toVector(),
       endPos: end.toVector(),
       nearestIsOk,
       max: lengthBound,
     });
-    const hasPath = path.length > 0;
-    return hasPath;
+    return Array.isArray(result) && result.length > 0;
   }
 
   protected _pathLength(path: Vec2[]): number {

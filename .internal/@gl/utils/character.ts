@@ -85,7 +85,7 @@ export class Character {
     this._isPlayer = this.id == "player";
     chars.set(id, this);
 
-    this.nav = new NavManager(id, () => this._pos);
+    this.nav = new NavManager({ charId: id, getPos: () => this._pos });
     this.nav.onClearTarget = () => {
       this.collisions = true;
       navigation.clearPath(this.id);
@@ -126,7 +126,14 @@ export class Character {
     this.nav.setNavPlan(plan);
   }
 
-  public setTargetPos({
+  /**
+   * Sends the character to `targetPos` (pathfinding around obstacles). The
+   * returned promise stays pending until the character arrives — resolving to
+   * the route it took — or resolves `false` if the move never completes (no
+   * path, or interrupted by a newer navigation intent). Await it to sequence on
+   * arrival.
+   */
+  public navigateTo({
     targetPos,
     speed,
     durationMs,
@@ -134,8 +141,8 @@ export class Character {
     targetPos: Vector2;
     speed?: number;
     durationMs?: number;
-  }) {
-    this.nav.setTargetPos({ targetPos, speed, durationMs });
+  }): Promise<Vec2[] | false> {
+    return this.nav.navigateTo({ targetPos, speed, durationMs });
   }
 
   public getCenterOfMass(): Vec2 {
@@ -586,5 +593,5 @@ export function setCharacterTargetPos({
   speed?: number;
 }): void {
   const c = chars.get(charId);
-  c?.setTargetPos({ targetPos: pos, speed });
+  c?.navigateTo({ targetPos: pos, speed });
 }
