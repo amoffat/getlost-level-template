@@ -386,3 +386,102 @@ test("a superseded move resolves false (interrupted)", async (t) => {
   t.is(await first, false, "the interrupted move resolves false");
   await settle();
 });
+
+// --- reach watchers (settle-at-coordinate) --------------------------------
+// These fire from the single arrival choke point (_onReachTarget), so only a
+// genuine settle at a target triggers them — never an interior node walked
+// through. onReachWaypoint just resolves a name to coords (host getWaypointByName)
+// and delegates to onReach; that host lookup isn't available to the pure harness,
+// so the delegation is exercised structurally through onReach below.
+
+test("onReach fires when the character settles at the watched coordinate", async (t) => {
+  const { nav, deps } = makeNav();
+  await goTo(nav, deps, [A, B]);
+  let hits = 0;
+  nav.onReach(B, () => hits++);
+  await nav.tick(16, new Vec2(100, 0)); // arrive/settle within 1px of B
+  t.eq(hits, 1, "settling at the target fires the watcher once");
+});
+
+test("onReach does NOT fire for a point merely passed through", async (t) => {
+  const { nav, deps } = makeNav();
+  const mid = { x: 50, y: 0 }; // on the path, but not the destination
+  await goTo(nav, deps, [A, B]); // destination is B (100,0)
+  let midHits = 0;
+  let goalHits = 0;
+  nav.onReach(mid, () => midHits++);
+  nav.onReach(B, () => goalHits++);
+
+  await nav.tick(16, new Vec2(50, 0)); // walk THROUGH the midpoint
+  t.eq(midHits, 0, "no arrival choke point at an interior node -> no fire");
+
+  await nav.tick(16, new Vec2(100, 0)); // settle at the destination
+  t.eq(goalHits, 1, "settling at the destination fires");
+  t.eq(midHits, 0, "the passed-through point still never fired");
+});
+
+test("onReach honors epsilon around the settle point", async (t) => {
+  const { nav, deps } = makeNav();
+  await goTo(nav, deps, [A, B]); // settles at (100,0)
+  let near = 0;
+  let far = 0;
+  nav.onReach({ x: 103, y: 0 }, () => near++); // 3px away, default epsilon 4
+  nav.onReach({ x: 110, y: 0 }, () => far++, { epsilon: 4 }); // 10px away
+  await nav.tick(16, new Vec2(100, 0));
+  t.eq(near, 1, "within epsilon of the settle point fires");
+  t.eq(far, 0, "outside epsilon does not fire");
+});
+
+test("onReach's unsubscribe stops future fires", async (t) => {
+  const { nav, deps } = makeNav();
+  await goTo(nav, deps, [A, B]);
+  let hits = 0;
+  const off = nav.onReach(B, () => hits++);
+  off();
+  await nav.tick(16, new Vec2(100, 0));
+  t.eq(hits, 0, "an unsubscribed watcher does not fire");
+});
+
+test("whenReached resolves once the character settles near the coordinate", async (t) => {
+  const { nav, deps } = makeNav();
+  await goTo(nav, deps, [A, B]);
+  let resolved = false;
+  void nav.whenReached(B).then(() => {
+    resolved = true;
+  });
+  await nav.tick(16, new Vec2(100, 0)); // arrive
+  await settle();
+  t.ok(resolved, "the whenReached promise resolves on arrival");
+});
+
+// --- progress watchers ----------------------------------------------------
+
+test("onProgress fires once when normalized progress reaches the threshold", async (t) => {
+  const { nav, deps } = makeNav();
+  await goTo(nav, deps, [A, B]); // 100px path
+  const seen: number[] = [];
+  nav.onProgress(0.5, (p) => seen.push(p));
+
+  await nav.tick(16, new Vec2(20, 0)); // ~0.2 -> below threshold
+  t.eq(seen.length, 0, "does not fire before the threshold");
+
+  await nav.tick(16, new Vec2(60, 0)); // ~0.6 -> crosses 0.5
+  t.eq(seen.length, 1, "fires once at/after the threshold");
+  t.ok(seen[0]! >= 0.5, "reports a normalized progress >= threshold");
+
+  await nav.tick(16, new Vec2(80, 0)); // still past threshold
+  t.eq(seen.length, 1, "does not re-fire within the same navigation");
+});
+
+test("onProgress re-arms on a new navigation", async (t) => {
+  const { nav, deps } = makeNav();
+  await goTo(nav, deps, [A, B]);
+  let hits = 0;
+  nav.onProgress(0.5, () => hits++);
+  await nav.tick(16, new Vec2(60, 0)); // crosses -> hit 1
+  t.eq(hits, 1, "fires on the first navigation");
+
+  await goTo(nav, deps, [A, B]); // fresh navigation re-arms the watcher
+  await nav.tick(16, new Vec2(60, 0)); // crosses again -> hit 2
+  t.eq(hits, 2, "fires again for the new navigation");
+});

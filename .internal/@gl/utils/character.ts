@@ -70,7 +70,7 @@ export class Character {
   private _appliedSpeed: number | null = null;
 
   public nav: NavManager;
-  private _lookAtFn: (() => Vec2) | null = null;
+  private _lookAtFn: (() => Vector2) | null = null;
   private _lookAtWhileMoving: boolean = false;
   private _standingDir: Vec2 = new Vec2(0, 1);
 
@@ -143,6 +143,56 @@ export class Character {
     durationMs?: number;
   }): Promise<Vec2[] | false> {
     return this.nav.navigateTo({ targetPos, speed, durationMs });
+  }
+
+  /**
+   * Registers a callback fired when the character settles within `epsilon` of
+   * `pos`. Returns an unsubscribe function. Delegates to {@link NavManager.onReach}.
+   */
+  public onReach(
+    pos: Vector2,
+    cb: () => void,
+    opts?: { epsilon?: number },
+  ): VoidFunction {
+    return this.nav.onReach(pos, cb, opts);
+  }
+
+  /** Callback fired when the character settles at the named waypoint. */
+  public onReachWaypoint(
+    name: string,
+    cb: () => void,
+    opts?: { epsilon?: number },
+  ): VoidFunction {
+    return this.nav.onReachWaypoint(name, cb, opts);
+  }
+
+  /** Promise resolving the first time the character settles near `pos`. */
+  public whenReached(pos: Vector2, opts?: { epsilon?: number }): Promise<void> {
+    return this.nav.whenReached(pos, opts);
+  }
+
+  /** Promise resolving the first time the character settles at the waypoint. */
+  public whenReachedWaypoint(
+    name: string,
+    opts?: { epsilon?: number },
+  ): Promise<void> {
+    return this.nav.whenReachedWaypoint(name, opts);
+  }
+
+  /**
+   * Registers a callback fired once when navigation progress (0..1 along the
+   * current path) first reaches `threshold`. Re-arms each new navigation.
+   */
+  public onProgress(
+    threshold: number,
+    cb: (progress: number) => void,
+  ): VoidFunction {
+    return this.nav.onProgress(threshold, cb);
+  }
+
+  /** Promise resolving the first time progress reaches `threshold`. */
+  public whenProgress(threshold: number): Promise<void> {
+    return this.nav.whenProgress(threshold);
   }
 
   public getCenterOfMass(): Vec2 {
@@ -308,7 +358,7 @@ export class Character {
     fn,
     whileMoving = false,
   }: {
-    fn: () => Vec2;
+    fn: () => Vector2;
     whileMoving?: boolean;
     opposite?: boolean;
   }): void {
@@ -488,7 +538,7 @@ export class Character {
     // whileMoving option. When false (default), lookAt only applies while the
     // character is standing still; when true it also applies while moving.
     if (this._lookAtFn !== null) {
-      const target = this._lookAtFn();
+      const target = Vec2.fromVector2(this._lookAtFn());
       const dir = target.subbed(this._pos);
       if (!dir.isZero) {
         const isMoving = moveDir.x != 0 || moveDir.y != 0;

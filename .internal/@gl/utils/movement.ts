@@ -10,6 +10,37 @@ import { Vec2 } from "./vec2";
 const stuckTRate: number = 0.1; // T units per second
 const stuckTimeout: number = 2000; // ms
 
+/**
+ * Default radius (px) around a watched coordinate that counts as "reached". Kept
+ * a little larger than the final-goal arrival threshold (goalDist < 1) because a
+ * `nearestIsOk` move settles at the nearest reachable point, not exactly on the
+ * requested coordinate.
+ */
+const DEFAULT_REACH_EPSILON: number = 4;
+
+/**
+ * Fires when the character *settles* at a coordinate. Settling is defined by the
+ * nav machine's own arrival choke point ({@link NavManager._onReachTarget}) — not
+ * a velocity heuristic — so only genuine targets (plan waypoints, direct
+ * navigateTo destinations) trigger it, never interior path nodes walked through.
+ */
+interface ReachWatcher {
+  pos: Vec2;
+  epsilon: number;
+  cb: () => void;
+}
+
+/**
+ * Fires once when normalized navigation progress (0..1 along the current path)
+ * first reaches `threshold`. Re-arms whenever a new path is installed, so it is
+ * one-shot *per navigation*.
+ */
+interface ProgressWatcher {
+  threshold: number;
+  fired: boolean;
+  cb: (progress: number) => void;
+}
+
 enum NavState {
   /** All movement stopped */
   stopped,
@@ -67,6 +98,11 @@ export class NavManager {
   private _stuckTimer: number = 0;
   private _lastTrackResult: TrackResult = { index: -1, distance: 0, t: 0 };
   private _waypointPause: Delay = new Delay({ timeMs: 1000, repeat: true });
+
+  /** Coordinate-settle watchers, evaluated at the arrival choke point. */
+  private _reachWatchers: ReachWatcher[] = [];
+  /** Progress-threshold watchers, evaluated per tick while moving. */
+  private _progressWatchers: ProgressWatcher[] = [];
 
   /**
    * When set, the active move must complete within this many ms. The character
@@ -230,11 +266,146 @@ export class NavManager {
     const path = this._targetPath;
     this._resetPathState();
     this._settleNav(path);
+    // The single settle point: notify any coordinate watcher whose location the
+    // character has just come to rest near. Interior path nodes never reach here.
+    this._fireReachWatchers(curPos);
     if (this._navPlan.hasNextWaypoint(curPos)) {
       this._state = NavState.waiting;
     } else {
       this._state = NavState.stopped;
     }
+  }
+
+  /**
+   * Fires every reach watcher whose watched coordinate is within its epsilon of
+   * `arrivedPos`. Iterates a copy because a watcher's callback may unsubscribe
+   * itself (the {@link whenReached} promise convenience does exactly this).
+   */
+  private _fireReachWatchers(arrivedPos: Vec2): void {
+    for (const w of [...this._reachWatchers]) {
+      if (arrivedPos.distanceTo(w.pos) <= w.epsilon) {
+        w.cb();
+      }
+    }
+  }
+
+  /**
+   * Fires progress watchers whose threshold the current path progress has reached
+   * (once each, until the next navigation re-arms them). `progress` is a distance
+   * along the path; it is normalized to 0..1 against the total path length.
+   * Iterates a copy since a callback may unsubscribe itself.
+   */
+  private _fireProgressWatchers(progress: number): void {
+    const norm = this._targetPathLen > 0 ? progress / this._targetPathLen : 0;
+    for (const w of [...this._progressWatchers]) {
+      if (!w.fired && norm >= w.threshold) {
+        w.fired = true;
+        w.cb(norm);
+      }
+    }
+  }
+
+  /**
+   * Registers a callback fired whenever the character *settles* (reaches a
+   * navigation target and comes to rest / pauses) within `epsilon` of `pos`.
+   * Returns an unsubscribe function. Fly-throughs never trigger it — only genuine
+   * targets funnel through the arrival choke point.
+   */
+  onReach(
+    pos: Vector2,
+    cb: () => void,
+    opts?: { epsilon?: number },
+  ): VoidFunction {
+    const w: ReachWatcher = {
+      pos: Vec2.fromVector2(pos),
+      epsilon: opts?.epsilon ?? DEFAULT_REACH_EPSILON,
+      cb,
+    };
+    this._reachWatchers.push(w);
+    return () => {
+      const i = this._reachWatchers.indexOf(w);
+      if (i !== -1) this._reachWatchers.splice(i, 1);
+    };
+  }
+
+  /**
+   * Like {@link onReach}, but resolves the waypoint `name` to its coordinates
+   * (via the host waypoint API) and delegates to {@link onReach}. No-ops with a
+   * console error if the name is unknown.
+   */
+  onReachWaypoint(
+    name: string,
+    cb: () => void,
+    opts?: { epsilon?: number },
+  ): VoidFunction {
+    const awp = navigation.getWaypointByName(name);
+    if (!awp) {
+      console.error(`onReachWaypoint: no waypoint named ${name}`);
+      return () => {};
+    }
+    return this.onReach(awp.pos, cb, opts);
+  }
+
+  /**
+   * One-shot promise variant of {@link onReach}: resolves the first time the
+   * character settles within `epsilon` of `pos`, then unsubscribes. Never
+   * resolves if that never happens — pair with a timeout/cancel if that matters.
+   */
+  whenReached(pos: Vector2, opts?: { epsilon?: number }): Promise<void> {
+    return new Promise((resolve) => {
+      const off = this.onReach(
+        pos,
+        () => {
+          off();
+          resolve();
+        },
+        opts,
+      );
+    });
+  }
+
+  /** One-shot promise variant of {@link onReachWaypoint}. */
+  whenReachedWaypoint(
+    name: string,
+    opts?: { epsilon?: number },
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      const off = this.onReachWaypoint(
+        name,
+        () => {
+          off();
+          resolve();
+        },
+        opts,
+      );
+    });
+  }
+
+  /**
+   * Registers a callback fired once when normalized navigation progress (0..1
+   * along the current path) first reaches `threshold`. Re-arms on each new
+   * navigation. Returns an unsubscribe function.
+   */
+  onProgress(threshold: number, cb: (progress: number) => void): VoidFunction {
+    const w: ProgressWatcher = { threshold, fired: false, cb };
+    this._progressWatchers.push(w);
+    return () => {
+      const i = this._progressWatchers.indexOf(w);
+      if (i !== -1) this._progressWatchers.splice(i, 1);
+    };
+  }
+
+  /**
+   * One-shot promise variant of {@link onProgress}: resolves the first time
+   * progress reaches `threshold`, then unsubscribes.
+   */
+  whenProgress(threshold: number): Promise<void> {
+    return new Promise((resolve) => {
+      const off = this.onProgress(threshold, () => {
+        off();
+        resolve();
+      });
+    });
   }
 
   /**
@@ -360,6 +531,9 @@ export class NavManager {
       this._navSpeed = speed;
       this._moveDurationMs = durationMs ?? null;
       this._moveElapsedMs = 0;
+      // Progress is relative to the current path, so re-arm every threshold
+      // watcher for this fresh navigation.
+      for (const w of this._progressWatchers) w.fired = false;
       this.onInstallPath?.();
       this._state = interruptible ? NavState.moving : NavState.powerMoving;
     } else {
@@ -493,6 +667,7 @@ export class NavManager {
       const direction = Vec2.zero().add(adjust).normalize();
 
       const progress = this._pathProgress(trackResult.index, trackResult.t);
+      this._fireProgressWatchers(progress);
       const easingSpeed = Math.max(
         easing.rampHoldRamp(
           this._targetPathLen,
