@@ -78,6 +78,11 @@ export class Character {
    * code */
   public tags: Set<string> = new Set();
 
+  /** Reference counts for tags added programmatically via {@link addTags}. Tags
+   * already present before addTags (e.g. editor-set tags in `tags`) are not
+   * counted here and are never removed by {@link removeTags}. */
+  private _tagCounts: Map<string, number> = new Map();
+
   constructor(id: string) {
     this.id = id;
     this._initialPos = Vec2.fromVector2(char.getPos(id));
@@ -110,6 +115,41 @@ export class Character {
 
   public resetPos() {
     this.nav.setNavPlan(new StationaryPlan(this._initialPos));
+  }
+
+  /**
+   * Adds tags to this character. Reference-counted: multiple overlapping callers
+   * can each add the same tag, and it persists until every caller removes it.
+   * A tag already present before it was ever added here (e.g. set in the editor)
+   * is treated as permanent and is not reference-counted.
+   */
+  public addTags(tags: string[]): void {
+    for (const tag of tags) {
+      if (this.tags.has(tag) && !this._tagCounts.has(tag)) {
+        // Pre-existing (editor-set) tag — leave it permanent, don't count it.
+        continue;
+      }
+      this._tagCounts.set(tag, (this._tagCounts.get(tag) ?? 0) + 1);
+      this.tags.add(tag);
+    }
+  }
+
+  /**
+   * Removes tags previously added via {@link addTags}. A tag is only cleared
+   * from `tags` once its reference count reaches zero. Tags not added via
+   * addTags are left untouched.
+   */
+  public removeTags(tags: string[]): void {
+    for (const tag of tags) {
+      const count = this._tagCounts.get(tag);
+      if (count == null) continue; // not added by us — leave it alone
+      if (count <= 1) {
+        this._tagCounts.delete(tag);
+        this.tags.delete(tag);
+      } else {
+        this._tagCounts.set(tag, count - 1);
+      }
+    }
   }
 
   /**

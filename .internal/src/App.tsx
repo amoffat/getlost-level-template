@@ -33,6 +33,13 @@ const theme: MantineThemeOverride = {
     Modal: {
       defaultProps: { overlayProps },
     },
+    Select: {
+      defaultProps: {
+        scrollAreaProps: {
+          scrollbarSize: 20,
+        },
+      },
+    },
     // Title: { defaultProps: { order: 3 } },
   },
 };

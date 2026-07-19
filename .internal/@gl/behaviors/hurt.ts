@@ -3,6 +3,7 @@ import { ColorFadeAction } from "@gl/actions/ColorAction";
 import { DashAction, DashPosAction } from "@gl/actions/DashAction";
 import { SoundAction } from "@gl/actions/SoundAction";
 import { SpriteChangeAction } from "@gl/actions/SpriteChangeAction";
+import { TagAction } from "@gl/actions/TagAction";
 import { Behavior } from "@gl/utils/behavior";
 import type { Character } from "@gl/utils/character";
 import { Easings, type EasingFunction } from "@gl/utils/easing";
@@ -37,8 +38,9 @@ export function hurt(char: Character, opts: HurtOpts): Behavior<Character> {
         durationMs: hurtDuration,
       }),
     )
+    .also(new TagAction({ tags: ["hurt"], durationMs: hurtDuration }))
     .also(dashAction)
-    .also(new ColorFadeAction({ color: 0xff0000, duration: colorDuration }))
+    .also(new ColorFadeAction({ color: 0xff0000, durationMs: colorDuration }))
     .also(
       new AlphaOscillateAction({
         durationMs: alphaDuration,

@@ -16,14 +16,14 @@ export class ColorFadeAction extends Action<Subject> {
     name = "color",
     color,
     alpha = 1,
-    duration = 0,
+    durationMs = 0,
   }: {
     name?: string;
     color: number;
     alpha?: number;
-    duration?: number;
+    durationMs?: number;
   }) {
-    super({ name, durationMs: duration });
+    super({ name, durationMs });
     this._color = color;
     this._alpha = alpha;
   }
