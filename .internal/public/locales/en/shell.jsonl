@@ -396,6 +396,7 @@
 {"k": "speechEditorEmotionDesc", "v": "An optional emotion FX to play on this character's avatar for this line.", "ctx": "Description under the emotion FX dropdown in the SpeechEditor (shared by speaker and listener)"}
 {"k": "speechEditorEmotionPlaceholder", "v": "None", "ctx": "Placeholder for the speaker emotion FX dropdown when no emotion is selected"}
 {"k": "speechEditorEmotionNervous", "v": "Nervous", "ctx": "Option label in the speaker emotion FX dropdown"}
+{"k": "speechEditorEmotionShy", "v": "Shy"}
 {"k": "speechEditorEmotionEmbarrassed", "v": "Embarrassed", "ctx": "Option label in the speaker emotion FX dropdown"}
 {"k": "speechEditorEmotionAngry", "v": "Angry", "ctx": "Option label in the speaker emotion FX dropdown"}
 {"k": "speechEditorEmotionShocked", "v": "Shocked", "ctx": "Option label in the speaker emotion FX dropdown"}

@@ -83,6 +83,7 @@ const EMOTION_LABEL_KEYS: Record<DialogEmotion, string> = {
   sleepy: "speechEditorEmotionSleepy",
   excited: "speechEditorEmotionExcited",
   darkness: "speechEditorEmotionDarkness",
+  shy: "speechEditorEmotionShy",
 };
 
 const EMOTION_VALUES = Object.keys(EMOTION_LABEL_KEYS) as DialogEmotion[];

@@ -48,13 +48,17 @@ export interface DialogFxOptsByEmotion {
     voidSize?: number;
     speed?: number;
   };
+  shy: {
+    handX?: number;
+    handY?: number;
+    speed?: number;
+    gap?: number;
+  };
 }
 
 export type DialogEmotion = keyof DialogFxOptsByEmotion;
 
-export interface DialogAvatarEmotion<
-  E extends DialogEmotion = DialogEmotion,
-> {
+export interface DialogAvatarEmotion<E extends DialogEmotion = DialogEmotion> {
   emotion: E;
   fxOpts?: DialogFxOptsByEmotion[E];
 }
