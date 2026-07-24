@@ -41,7 +41,7 @@ function writeEntries(
   // JSON.stringify preserves insertion order, so we build a new object with
   // keys in the desired order. Known keys come first (skipped if absent),
   // then any unrecognised keys are appended at the end.
-  const keyOrder = ["k", "v", "ctx", "original"];
+  const keyOrder = ["id", "v", "hash", "ctx", "original"];
   const content =
     entries
       .map((e) => {

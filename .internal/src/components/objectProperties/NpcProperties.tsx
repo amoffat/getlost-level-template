@@ -54,7 +54,6 @@ function NpcProperties({ objs }: { objs: NpcInstance[] }) {
       description={t("npcPropNameDescription")}
       values={toCollect.nameKey}
       context={t("npcPropNameContext")}
-      keyPrefix={["char"]}
       onValueChange={({ scope, value }): void => {
         updateProps(scope, {
           nameKey: value,

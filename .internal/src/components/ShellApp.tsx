@@ -2,6 +2,7 @@ import "@gfazioli/mantine-split-pane/styles.css";
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
 import "@xyflow/react/dist/style.css";
+import "mantine-datatable/styles.css";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
@@ -53,6 +54,7 @@ import DialogueTab from "./tabs/DialogueTab";
 import MapEditorTab from "./tabs/MapEditor";
 import StoryTab from "./tabs/StoryTab";
 import TilesetEditorTab from "./tabs/TilesetEditor";
+import TranslationsTab from "./translations/TranslationsTab";
 import UploadAssetModal from "./uploadAssets/UploadAssetModal";
 
 // Get the cached init promises that persist across HMR
@@ -287,21 +289,23 @@ const ShellAppContent = memo(function ShellAppContent({
     [dispatch],
   );
 
-  const untranslatedCounts = useAppSelector(localeSelectors.untranslatedCounts);
+  const needsAttentionCounts = useAppSelector(
+    localeSelectors.needsAttentionCounts,
+  );
   const untranslatedBadges: Map<SupportedLang, ReactElement> = useMemo(() => {
     return new Map(
       supportedLangs
-        .filter((l) => (untranslatedCounts[l] ?? 0) > 0)
+        .filter((l) => (needsAttentionCounts[l] ?? 0) > 0)
         .map((l) => {
           return [
             l,
             <Badge size="xs" color="orange" variant="filled">
-              {untranslatedCounts[l]}
+              {needsAttentionCounts[l]}
             </Badge>,
           ];
         }),
     );
-  }, [untranslatedCounts]);
+  }, [needsAttentionCounts]);
 
   return (
     <LocaleContextModalContext.Provider value={{ openLocaleContextModal }}>
@@ -372,6 +376,7 @@ const ShellAppContent = memo(function ShellAppContent({
               <Tabs.Tab value="tileset-editor">{t("tilesetsTab")}</Tabs.Tab>
               <Tabs.Tab value="story-editor">{t("storyTab")}</Tabs.Tab>
               <Tabs.Tab value="dialogue-editor">{t("dialogueTab")}</Tabs.Tab>
+              <Tabs.Tab value="translations">{t("translationsTab")}</Tabs.Tab>
               <Tabs.Tab value="preview">{t("previewTab")}</Tabs.Tab>
               <Box style={{ marginLeft: "auto" }} pr="sm">
                 <Group gap={0}>
@@ -434,6 +439,12 @@ const ShellAppContent = memo(function ShellAppContent({
                     <DialogueTab initPromise={storyInitPromise} />
                   </ReactFlowProvider>
                 </Suspense>
+              </Tabs.Panel>
+            )}
+
+            {mountedTabs["translations"] && (
+              <Tabs.Panel value="translations">
+                <TranslationsTab />
               </Tabs.Panel>
             )}
 

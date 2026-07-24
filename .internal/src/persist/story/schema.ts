@@ -79,5 +79,13 @@ export interface StoryDocV11 extends Omit<StoryDocV10, "version"> {
   version: 11;
 }
 
-export type LatestStoryDoc = StoryDocV11;
-export const latestVersion = 11;
+// v12: Locale keys decoupled from content. Every stored locale reference
+// (contentKey / speakerNameKey / listenerNameKey / choices[].textKey) is
+// remapped from the old content-derived key to a stable UUID via uuid5Hash,
+// matching the locale-file migration.
+export interface StoryDocV12 extends Omit<StoryDocV11, "version"> {
+  version: 12;
+}
+
+export type LatestStoryDoc = StoryDocV12;
+export const latestVersion = 12;

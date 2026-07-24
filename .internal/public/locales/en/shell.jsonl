@@ -3,6 +3,19 @@
 {"k": "storyTab", "v": "Story", "ctx": "A heading for the story tab"}
 {"k": "dialogueTab", "v": "Dialogue", "ctx": "A heading for the dialogue tab"}
 {"k": "previewTab", "v": "Preview", "ctx": "A heading for the preview tab"}
+{"k": "translationsTab", "v": "Translations", "ctx": "A heading for the translations tab"}
+{"k": "translationsKeyCol", "v": "Key", "ctx": "Column header for the stable translation key/id in the translations table"}
+{"k": "translationsTextCol", "v": "Text", "ctx": "Column header for the editable translated text in the translations table"}
+{"k": "translationsContextCol", "v": "Context", "ctx": "Column header for the translator context note in the translations table"}
+{"k": "translationsOriginalCol", "v": "Original", "ctx": "Column header for the original/source text shown when editing a non-main locale"}
+{"k": "translationsStatusCol", "v": "Status", "ctx": "Column header for the translation status (out of date / untranslated) in the translations table"}
+{"k": "translationsContextPlaceholder", "v": "Add context for translators…", "ctx": "Placeholder for the editable context cell in the translations table"}
+{"k": "translationsSearchPlaceholder", "v": "Search key, text, or original…", "ctx": "Placeholder for the search box in the translations table"}
+{"k": "translationsOnlyNeedsAttention", "v": "Only needs attention", "ctx": "Toggle label to filter the translations table to untranslated or out-of-date rows"}
+{"k": "translationsEmpty", "v": "No strings for this language", "ctx": "Empty-state text when the translations table has no rows"}
+{"k": "translationsTranslated", "v": "Translated", "ctx": "Tooltip on the green status icon when a string is translated and up to date"}
+{"k": "translationsOutOfDate", "v": "Out of date", "ctx": "Badge shown when a translation's source text changed since it was translated"}
+{"k": "translationsUntranslated", "v": "Untranslated", "ctx": "Badge shown when a string has not yet been translated for this locale"}
 {"k": "updateAvailable", "v": "Update Available", "ctx": "Modal title shown when a newer engine version is detected"}
 {"k": "editorWillUpdate", "v": "The editor will update", "ctx": "Upgrade modal list item (positive outcome)"}
 {"k": "migrateAssetsAutomatically", "v": "It will migrate your assets automatically", "ctx": "Upgrade modal list item (positive outcome)"}

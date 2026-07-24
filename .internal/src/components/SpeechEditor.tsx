@@ -416,7 +416,6 @@ export default function SpeechEditor({
             key={remountKey}
             currentLocale={currentLocale}
             contentKey={data.contentKey}
-            keyPrefix={[node.id]}
             onLocaleKeyChange={(newKey) =>
               dispatch(
                 actions.updateNodeData({
@@ -818,7 +817,6 @@ function SortableChoice({
           currentLocale={currentLocale}
           contentKey={choice.textKey}
           label={t("dialogueResponse")}
-          keyPrefix={[id]}
           onLocaleKeyChange={(newKey) => updateChoiceTextKey(id, newKey)}
           style={{ flex: 1 }}
           placeholder={t("speechEditorChoicePlaceholder")}

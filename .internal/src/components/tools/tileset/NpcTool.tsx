@@ -300,7 +300,6 @@ export default function NpcTool() {
               label={t("npcToolNameLabel")}
               description={t("npcToolNameDesc")}
               placeholder={t("npcToolNamePlaceholder")}
-              keyPrefix={["char"]}
               defaultContext={t("npcPropNameContext")}
               disabled={!hasAll}
               currentLocale={currentLocale}
