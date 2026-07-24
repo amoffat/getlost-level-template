@@ -3,18 +3,14 @@ import { LOCALE_FILE } from "@/constants/locale";
 import { log } from "@/log";
 import { saveLocaleFile } from "@/persist/locale/api";
 import { actions as localeActions } from "@/slices/locale";
-import { selectPropertyValue } from "@/store/selectors";
-import { type RootState } from "@/store/store";
 import { supportedLangs } from "@/types/i18n";
 import type { LocaleEntry, LocaleStatePayload } from "@/types/locale";
-import { isPickupObj, isSpeakableObject } from "@/types/map";
-import { isNpcTemplate } from "@/types/npc";
 import { AppStartListening } from "@/types/redux";
-import { isTileGroupTemplate } from "@/types/tilegroup";
 import { computeSourceHash } from "@/utils/locale";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { EMPTY, from, Subject } from "rxjs";
 import { catchError, concatMap, debounceTime } from "rxjs/operators";
+import { collectLiveKeys } from "./references";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -87,54 +83,6 @@ const loadActionTypes = new Set<string>([
   localeActions.upsertEntry.type,
   localeActions.removeEntry.type,
 ]);
-
-/** Collect all locale keys that are currently referenced by live state. */
-function collectLiveKeys(state: RootState): Set<string> {
-  const keys = new Set<string>();
-
-  // Dialogue nodes: speakerNameKey, contentKey, choices[].textKey
-  for (const dlgId of state.dialogue.dialogues.ids) {
-    const dlg = state.dialogue.dialogues.entities[dlgId as string];
-    if (!dlg) continue;
-    for (const nodeId of dlg.nodes.ids) {
-      const node = dlg.nodes.entities[nodeId as string];
-      if (!node) continue;
-      if (node.data.speakerNameKey) keys.add(node.data.speakerNameKey);
-      if (node.data.contentKey) keys.add(node.data.contentKey);
-      for (const choice of node.data.choices) {
-        if (choice.textKey) keys.add(choice.textKey);
-      }
-    }
-  }
-
-  // Map objects
-  for (const objId of state.mapEditor.objects.ids) {
-    const obj = state.mapEditor.objects.entities[objId as string];
-    if (isSpeakableObject(obj)) {
-      const nameKey = selectPropertyValue(state, obj, "nameKey");
-      if (nameKey) keys.add(nameKey);
-    } else if (isPickupObj(obj)) {
-      const nameKey = selectPropertyValue(state, obj, "nameKey");
-      if (nameKey) keys.add(nameKey);
-
-      const descKey = selectPropertyValue(state, obj, "descriptionKey");
-      if (descKey) keys.add(descKey);
-    }
-  }
-
-  // Tileset objects
-  for (const ts of Object.values(state.tilesetEditor.tilesets)) {
-    for (const objId of ts.tiles.ids) {
-      const obj = ts.tiles.entities[objId as string];
-      if (!obj) continue;
-      if (isNpcTemplate(obj) || isTileGroupTemplate(obj)) {
-        if (obj.nameKey) keys.add(obj.nameKey);
-      }
-    }
-  }
-
-  return keys;
-}
 
 const startAppListening =
   listenerMiddleware.startListening as AppStartListening;

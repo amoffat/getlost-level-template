@@ -1,11 +1,15 @@
 import { defaultLocale } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors as localeSelectors } from "@/slices/locale";
-import { loadDialogueLocaleThunk } from "@/thunks/locale";
+import {
+  deleteLocaleEntriesThunk,
+  loadDialogueLocaleThunk,
+} from "@/thunks/locale";
 import type { LocaleEntry } from "@/types/locale";
 import { syncLocaleField } from "@/utils/locale";
 import {
   Box,
+  Button,
   Group,
   Stack,
   Switch,
@@ -15,11 +19,13 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
+import { modals } from "@mantine/modals";
 import {
   IconAlertTriangleFilled,
   IconCircleCheckFilled,
   IconLanguage,
   IconSearch,
+  IconTrash,
 } from "@tabler/icons-react";
 import { DataTable, type DataTableColumn } from "mantine-datatable";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -86,12 +92,22 @@ export default function TranslationsTab() {
 
   const [query, setQuery] = useState("");
   const [onlyNeedsAttention, setOnlyNeedsAttention] = useState(false);
+  const [selectedRecords, setSelectedRecords] = useState<LocaleEntry[]>([]);
 
   // Re-sync this locale from disk whenever the tab's locale changes, so the
   // grid reflects the on-disk file even if edited elsewhere.
   useEffect(() => {
     dispatch(loadDialogueLocaleThunk(activeLocale));
   }, [dispatch, activeLocale]);
+
+  // A selection belongs to one locale, so drop it when the locale changes.
+  // Adjusting state during render (rather than in an effect) is the pattern
+  // React recommends for resetting state in response to a prop/value change.
+  const [selectionLocale, setSelectionLocale] = useState(activeLocale);
+  if (selectionLocale !== activeLocale) {
+    setSelectionLocale(activeLocale);
+    setSelectedRecords([]);
+  }
 
   const rows = useMemo(
     () => Object.values(entries).filter((e): e is LocaleEntry => !!e),
@@ -162,6 +178,27 @@ export default function TranslationsTab() {
     },
     [activeLocale, dispatch],
   );
+
+  // Batch actions operate on the currently selected rows. Each is guarded by a
+  // confirmation and clears the selection afterward.
+  const confirmDeleteSelected = useCallback(() => {
+    if (selectedRecords.length === 0) return;
+    modals.openConfirmModal({
+      title: t("translationsDeleteConfirmTitle", {
+        count: selectedRecords.length,
+      }),
+      centered: true,
+      children: <Text size="sm">{t("translationsDeleteConfirmBody")}</Text>,
+      labels: { confirm: t("translationsDelete"), cancel: t("no") },
+      confirmProps: { color: "red" },
+      onConfirm: () => {
+        // Delete everywhere (all locales) and clear any dangling references,
+        // regardless of which locale is currently displayed.
+        dispatch(deleteLocaleEntriesThunk(selectedRecords.map((e) => e.id)));
+        setSelectedRecords([]);
+      },
+    });
+  }, [t, dispatch, selectedRecords]);
 
   const columns = useMemo(() => {
     const cols: DataTableColumn<LocaleEntry>[] = [
@@ -270,13 +307,28 @@ export default function TranslationsTab() {
   return (
     <Stack gap="xs" p="sm" h="calc(100vh - 60px)">
       <Group justify="space-between">
-        <TextInput
-          value={query}
-          onChange={(e) => setQuery(e.currentTarget.value)}
-          placeholder={t("translationsSearchPlaceholder")}
-          leftSection={<IconSearch size={14} />}
-          w={320}
-        />
+        <Group gap="xs">
+          {/* Batch actions — operate on the checkbox-selected rows. More can be
+              added here as siblings of Delete. */}
+          <Button
+            size="md"
+            color="red"
+            variant="light"
+            leftSection={<IconTrash size={16} />}
+            disabled={selectedRecords.length === 0}
+            onClick={confirmDeleteSelected}
+          >
+            {t("translationsDelete")}
+          </Button>
+          <TextInput
+            size="md"
+            value={query}
+            onChange={(e) => setQuery(e.currentTarget.value)}
+            placeholder={t("translationsSearchPlaceholder")}
+            leftSection={<IconSearch size={14} />}
+            w={320}
+          />
+        </Group>
         {!isMain && (
           <Switch
             checked={onlyNeedsAttention}
@@ -292,12 +344,14 @@ export default function TranslationsTab() {
           verticalAlign="top"
           withTableBorder
           withColumnBorders
-          storeColumnsKey="translations-table"
+          storeColumnsKey="translations-table-v2"
           striped
           highlightOnHover
           idAccessor="id"
           records={filtered}
           columns={columns}
+          selectedRecords={selectedRecords}
+          onSelectedRecordsChange={setSelectedRecords}
           noRecordsText={t("translationsEmpty")}
           styles={{ table: { width: "100%" } }}
         />

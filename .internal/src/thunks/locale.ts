@@ -1,5 +1,7 @@
 import { codeToLanguage } from "@/constants/locale";
 import { actions } from "@/slices/locale";
+import { clearLocaleReferences } from "@/store/middleware/locale/references";
+import type { RootState } from "@/store/store";
 import { SupportedLang, supportedLangs } from "@/types/i18n";
 import type { LocaleEntry } from "@/types/locale";
 import { notifications } from "@mantine/notifications";
@@ -45,6 +47,36 @@ export const loadAllLocalesThunk = createAsyncThunk(
         dispatch(actions.setEntries({ locale, entries }));
       }),
     );
+  },
+);
+
+/**
+ * Delete locale entries everywhere: drop them from every locale file AND clear
+ * any object references that point at them, so nothing is left dangling.
+ *
+ * Both halves are driven by the single reference registry in
+ * `store/middleware/locale/references.ts` — the same source of truth the autosave
+ * middleware uses to decide which entries are live — so there is no per-slice
+ * traversal to maintain here.
+ */
+export const deleteLocaleEntriesThunk = createAsyncThunk(
+  "locale/deleteEntries",
+  async (ids: string[], { dispatch, getState }) => {
+    if (ids.length === 0) return;
+    const state = getState() as RootState;
+
+    // Null out every dangling reference to these ids across the whole store.
+    for (const action of clearLocaleReferences(state, new Set(ids))) {
+      dispatch(action);
+    }
+
+    // Then remove the entries from every locale bucket. This keeps the store
+    // consistent and triggers the locale autosave, which prunes them from disk.
+    for (const locale of supportedLangs) {
+      for (const id of ids) {
+        dispatch(actions.removeEntry({ locale, key: id }));
+      }
+    }
   },
 );
 

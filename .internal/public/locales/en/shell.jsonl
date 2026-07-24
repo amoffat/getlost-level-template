@@ -16,6 +16,9 @@
 {"k": "translationsTranslated", "v": "Translated", "ctx": "Tooltip on the green status icon when a string is translated and up to date"}
 {"k": "translationsOutOfDate", "v": "Out of date", "ctx": "Badge shown when a translation's source text changed since it was translated"}
 {"k": "translationsUntranslated", "v": "Untranslated", "ctx": "Badge shown when a string has not yet been translated for this locale"}
+{"k": "translationsDelete", "v": "Delete", "ctx": "Label for the batch Delete button that deletes all selected rows in the translations table"}
+{"k": "translationsDeleteConfirmTitle", "v": "Delete {count} string(s)?", "ctx": "Title of the confirmation dialog before batch-deleting translation rows; {count} is the number of selected rows"}
+{"k": "translationsDeleteConfirmBody", "v": "This removes the selected string(s) from this language. This can't be undone.", "ctx": "Body text of the confirmation dialog shown before batch-deleting translation rows"}
 {"k": "updateAvailable", "v": "Update Available", "ctx": "Modal title shown when a newer engine version is detected"}
 {"k": "editorWillUpdate", "v": "The editor will update", "ctx": "Upgrade modal list item (positive outcome)"}
 {"k": "migrateAssetsAutomatically", "v": "It will migrate your assets automatically", "ctx": "Upgrade modal list item (positive outcome)"}
@@ -29,7 +32,7 @@
 {"k": "upgradeSuccessMsg", "v": "The editor has been upgraded successfully. The page will now reload.", "ctx": "Notification body after a successful upgrade"}
 {"k": "dragAssetsHere", "v": "Drag assets here", "ctx": "Primary text shown in the full-screen dropzone overlay"}
 {"k": "attachAssetsMsg", "v": "Attach as many assets as you like.", "ctx": "Secondary/hint text in the full-screen dropzone overlay"}
-{"k": "yourLanguage", "v": "Your language", "ctx": "Label for the locale selector that sets the editor UI language"}
+{"k": "editorLanguage", "v": "Editor language", "ctx": "Label for the locale selector that sets the editor UI language"}
 {"k": "levelLanguage", "v": "Level language", "ctx": "Label for the locale selector that sets the active level/game language"}
 {"k": "mapMovedObjects", "v": "Moved objects", "ctx": "Notification title when selected objects are moved to a different map layer"}
 {"k": "mapMovedObjectsMessage", "v": "{count} objects were moved to the \"{name}\" layer.", "ctx": "Notification message; count = number of objects, name = layer name"}

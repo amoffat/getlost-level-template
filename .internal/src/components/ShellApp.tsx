@@ -4,6 +4,10 @@ import "@mantine/dropzone/styles.css";
 import "@xyflow/react/dist/style.css";
 import "mantine-datatable/styles.css";
 
+import {
+  LocaleContextModalContext,
+  LocaleContextModalParams,
+} from "@/contexts/LocaleContextModalContext";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
   getMapInitPromise,
@@ -41,12 +45,8 @@ import { flushSync } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { shallowEqual } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  LocaleContextModalContext,
-  LocaleContextModalParams,
-} from "@/contexts/LocaleContextModalContext";
-import LocaleSelector from "./LocaleSelector";
 import LocaleContextModal from "./l10n/LocaleContextModal";
+import LocaleSelector from "./LocaleSelector";
 import PanelLoader from "./PanelLoader";
 import PreviewTab from "./Preview";
 import Spotlight from "./Spotlight";
@@ -381,8 +381,8 @@ const ShellAppContent = memo(function ShellAppContent({
               <Box style={{ marginLeft: "auto" }} pr="sm">
                 <Group gap={0}>
                   <LocaleSelector
-                    key="your-lang"
-                    label={t("yourLanguage")}
+                    key="editor-lang"
+                    label={t("editorLanguage")}
                     locale={userLocale}
                     hideMain
                     onLocaleChange={handleUserLocaleChange}
