@@ -49,6 +49,7 @@ export function selectPropertyValue<
   type TProps = ExtractProps<TInstance>;
   const instanceValue = obj[propName as unknown as keyof TInstance];
 
+  // We're cascading to the template
   if (instanceValue === undefined) {
     const tmpl = selectTemplateProps(state, obj) as MapObjProps | null;
     const templateValue = tmpl

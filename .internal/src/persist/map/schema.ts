@@ -51,5 +51,12 @@ export interface MapDocV11 extends Omit<MapDocV10, "version"> {
   version: 11;
 }
 
-export type LatestMapDoc = MapDocV11;
-export const latestVersion = 11;
+// Version 12: Locale keys decoupled from content. Every `nameKey` /
+// `descriptionKey` reference is remapped from the old content-derived key to a
+// stable UUID via uuid5Hash, matching the locale-file migration.
+export interface MapDocV12 extends Omit<MapDocV11, "version"> {
+  version: 12;
+}
+
+export type LatestMapDoc = MapDocV12;
+export const latestVersion = 12;

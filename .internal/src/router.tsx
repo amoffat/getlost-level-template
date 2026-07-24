@@ -18,6 +18,7 @@ const routes = [
       { path: "dialogues", element: null },
       { path: "dialogues/:dlgid", element: null },
       { path: "dialogues/:dlgid/nodes/:nodeid", element: null },
+      { path: "translations", element: null },
       { path: "preview", element: null },
     ],
   },

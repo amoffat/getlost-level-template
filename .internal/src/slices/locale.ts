@@ -12,7 +12,7 @@ import {
 import i18next from "i18next";
 
 const entryAdapter = createEntityAdapter<LocaleEntry, string>({
-  selectId: (entry) => entry.k,
+  selectId: (entry) => entry.id,
 });
 
 type LocaleEntityState = EntityState<LocaleEntry, string>;
@@ -24,11 +24,49 @@ interface LocaleState {
   entries: Record<string, LocaleEntityState>;
 }
 
-function ensureLocale(state: LocaleState, locale: string): LocaleEntityState {
-  if (!state.entries[locale]) {
-    state.entries[locale] = entryAdapter.getInitialState();
-  }
-  return state.entries[locale];
+/**
+ * Return the entity bucket for a locale, or a fresh empty one if it does not
+ * exist yet. This does NOT assign the bucket into state — callers must assign
+ * the entity-adapter operation's *return value* back to `state.entries[locale]`.
+ *
+ * Why: under Immer, a freshly-assigned plain object read back inside the same
+ * producer is not a draft, so an entity-adapter op on it runs in immutable mode
+ * and returns a new bucket instead of mutating in place. Assigning that return
+ * value back is the only pattern that works for both first-time creation and
+ * subsequent edits.
+ */
+function localeBucket(state: LocaleState, locale: string): LocaleEntityState {
+  return state.entries[locale] ?? entryAdapter.getInitialState();
+}
+
+export interface RowStatus {
+  /** The translated value still equals the source text (never translated). */
+  untranslated: boolean;
+  /** The source text changed since this translation was written (hash drift). */
+  outOfDate: boolean;
+  /** Either untranslated or out of date — needs a translator's attention. */
+  needsAttention: boolean;
+}
+
+/**
+ * Compute the translation status of a non-main entry relative to its main
+ * (source) counterpart. `mainEntry` is looked up by the same id.
+ */
+function computeRowStatus(
+  entry: LocaleEntry,
+  mainEntry: LocaleEntry | undefined,
+): RowStatus {
+  const untranslated =
+    entry.original !== undefined && entry.v === entry.original;
+  const outOfDate =
+    entry.hash !== undefined &&
+    mainEntry?.hash !== undefined &&
+    entry.hash !== mainEntry.hash;
+  return {
+    untranslated,
+    outOfDate,
+    needsAttention: untranslated || outOfDate,
+  };
 }
 
 export const slice = createSlice({
@@ -51,14 +89,19 @@ export const slice = createSlice({
     },
 
     setEntries(state, action: PayloadAction<LocaleStatePayload>) {
-      const bucket = ensureLocale(state, action.payload.locale);
-      entryAdapter.setAll(bucket, action.payload.entries);
+      const { locale, entries } = action.payload;
+      state.entries[locale] = entryAdapter.setAll(
+        localeBucket(state, locale),
+        entries,
+      );
     },
 
     setAllLocaleEntries(state, action: PayloadAction<LocaleStatePayload[]>) {
       for (const { locale, entries } of action.payload) {
-        const bucket = ensureLocale(state, locale);
-        entryAdapter.setAll(bucket, entries);
+        state.entries[locale] = entryAdapter.setAll(
+          localeBucket(state, locale),
+          entries,
+        );
       }
     },
 
@@ -66,18 +109,31 @@ export const slice = createSlice({
       state,
       action: PayloadAction<{
         locale: string;
-        entry: PartialNullable<LocaleEntry> & { k: string };
+        entry: PartialNullable<LocaleEntry> & { id: string };
       }>,
     ) {
       const { locale, entry } = action.payload;
-      const bucket = ensureLocale(state, locale);
-      entryAdapter.upsertOne(bucket, entry as LocaleEntry);
+      // `upsertOne` shallow-merges onto any existing entry, so an explicitly
+      // `undefined` field would clobber a stored value (e.g. wiping `ctx` on a
+      // plain text edit). Drop undefined keys before merging; `null` is kept,
+      // since callers use it to intentionally clear a field.
+      const patch = { ...entry };
+      for (const key of Object.keys(patch) as (keyof typeof patch)[]) {
+        if (patch[key] === undefined) delete patch[key];
+      }
+      state.entries[locale] = entryAdapter.upsertOne(
+        localeBucket(state, locale),
+        patch as LocaleEntry,
+      );
     },
 
     removeEntry(state, action: PayloadAction<{ locale: string; key: string }>) {
-      const bucket = state.entries[action.payload.locale];
-      if (bucket) {
-        entryAdapter.removeOne(bucket, action.payload.key);
+      const { locale, key } = action.payload;
+      if (state.entries[locale]) {
+        state.entries[locale] = entryAdapter.removeOne(
+          state.entries[locale],
+          key,
+        );
       }
     },
   },
@@ -99,21 +155,36 @@ export const slice = createSlice({
       key ? state.entries[defaultLocale]?.entities[key] : undefined,
     selectDefaultEntries: (state) =>
       state.entries[defaultLocale]?.entities ?? {},
+    /** All entries for the given locale, as a dict keyed by id. */
+    selectEntriesForLocale: (state, locale: string) =>
+      state.entries[locale]?.entities ?? {},
+    /** Translation status (untranslated / out-of-date) for a single entry. */
+    selectRowStatus: (state, locale: string, id: string): RowStatus => {
+      const entry = state.entries[locale]?.entities[id];
+      if (!entry) {
+        return { untranslated: false, outOfDate: false, needsAttention: false };
+      }
+      const mainEntry = state.entries[defaultLocale]?.entities[id];
+      return computeRowStatus(entry, mainEntry);
+    },
     /**
-     * For each non-default loaded locale, returns the count of entries where
-     * `v` equals `original` (i.e. the value has not been translated).
-     * Only entries that have an `original` field set are considered.
+     * For each non-default loaded locale, returns the count of entries that
+     * need a translator's attention — either untranslated (`v` still equals
+     * `original`) or out of date (its stored source `hash` no longer matches
+     * the main entry's current `hash`).
      */
-    untranslatedCounts: createSelector(
+    needsAttentionCounts: createSelector(
       [(state: LocaleState) => state.entries],
       (entries): Partial<Record<SupportedLang, number>> => {
         const result: Partial<Record<SupportedLang, number>> = {};
+        const mainEntities = entries[defaultLocale]?.entities ?? {};
         for (const [locale, entityState] of Object.entries(entries)) {
           if (locale === defaultLocale) continue;
           let count = 0;
-          for (const key of entityState.ids as string[]) {
-            const entry = entityState.entities[key];
-            if (entry?.original !== undefined && entry.v === entry.original) {
+          for (const id of entityState.ids as string[]) {
+            const entry = entityState.entities[id];
+            if (!entry) continue;
+            if (computeRowStatus(entry, mainEntities[entry.id]).needsAttention) {
               count++;
             }
           }

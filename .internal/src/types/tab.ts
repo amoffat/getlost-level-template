@@ -3,6 +3,7 @@ export type MainTabName =
   | "tileset-editor"
   | "dialogue-editor"
   | "story-editor"
+  | "translations"
   | "preview";
 
 export type TilesetTabName = "objects" | "animations" | "npcs";

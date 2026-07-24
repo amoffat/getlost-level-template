@@ -42,7 +42,6 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       noTemplate
       values={toCollect.nameKey}
       context={t("pickupPropNameContext")}
-      keyPrefix={["pickup"]}
       placeholder={t("pickupPropNamePlaceholder")}
       required
       validator={(value) =>
@@ -69,7 +68,6 @@ function PickupProperties({ objs }: { objs: PickupObj[] }) {
       description={t("pickupPropDescriptionDescription")}
       values={toCollect.descriptionKey}
       context={t("pickupPropDescriptionContext")}
-      keyPrefix={["pickup"]}
       validator={(value) =>
         value.trim().length === 0 ? t("mustNotBeEmpty") : null
       }

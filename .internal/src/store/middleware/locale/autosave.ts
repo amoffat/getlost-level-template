@@ -11,6 +11,7 @@ import { isPickupObj, isSpeakableObject } from "@/types/map";
 import { isNpcTemplate } from "@/types/npc";
 import { AppStartListening } from "@/types/redux";
 import { isTileGroupTemplate } from "@/types/tilegroup";
+import { computeSourceHash } from "@/utils/locale";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import { EMPTY, from, Subject } from "rxjs";
 import { catchError, concatMap, debounceTime } from "rxjs/operators";
@@ -45,18 +46,20 @@ function getSubject(locale: string): Subject<() => LocaleEntry[]> {
 /**
  * Merge main-locale entries into a non-main locale's existing entries.
  * - Entries absent from main are dropped (stale removal).
- * - Missing entries are seeded with v, original, and ctx from main.
- * - Existing entries keep their translated v, but have ctx overwritten from main.
+ * - Missing entries are seeded with v, original, hash, and ctx from main.
+ * - Existing entries keep their translated v AND their own `hash` (the source
+ *   version this translation was written against — the staleness anchor), but
+ *   have `original` and `ctx` refreshed from main.
  */
 function mergeNonMainEntries(
   mainEntries: LocaleEntry[],
   existingEntries: LocaleEntry[],
 ): LocaleEntry[] {
-  const existingMap = new Map(existingEntries.map((e) => [e.k, e]));
+  const existingMap = new Map(existingEntries.map((e) => [e.id, e]));
   return mainEntries.map((mainEntry) => {
-    const current = existingMap.get(mainEntry.k);
+    const current = existingMap.get(mainEntry.id);
     if (current) {
-      const updated: LocaleEntry = { ...current };
+      const updated: LocaleEntry = { ...current, original: mainEntry.v };
       if ("ctx" in mainEntry && mainEntry.ctx !== undefined) {
         updated.ctx = mainEntry.ctx;
       } else {
@@ -65,9 +68,10 @@ function mergeNonMainEntries(
       return updated;
     } else {
       const seeded: LocaleEntry = {
-        k: mainEntry.k,
+        id: mainEntry.id,
         v: mainEntry.v,
         original: mainEntry.v,
+        hash: mainEntry.hash,
       };
       if ("ctx" in mainEntry && mainEntry.ctx !== undefined) {
         seeded.ctx = mainEntry.ctx;
@@ -156,7 +160,11 @@ startAppListening({
         const mainEntries = mainLocaleState
           ? (mainLocaleState.ids as string[])
               .map((k) => mainLocaleState.entities[k])
-              .filter((e): e is LocaleEntry => !!e && liveKeys.has(e.k))
+              .filter((e): e is LocaleEntry => !!e && liveKeys.has(e.id))
+              // Recompute each main entry's source hash from its current text so
+              // the persisted hash (and every translation's staleness check
+              // against it) is always in sync, no matter how it was edited.
+              .map((e) => ({ ...e, hash: computeSourceHash(e.v) }))
           : [];
 
         if (locale === defaultLocale) {

@@ -111,5 +111,12 @@ export interface TilesetDocV28 extends Omit<TilesetDocV27, "version"> {
   version: 28;
 }
 
-export type LatestTilesetDoc = TilesetDocV28;
-export const latestVersion = 28;
+// Version 29: Locale keys decoupled from content. Every `nameKey` reference on
+// npc/tilegroup/animation templates is remapped from the old content-derived
+// key to a stable UUID via uuid5Hash, matching the locale-file migration.
+export interface TilesetDocV29 extends Omit<TilesetDocV28, "version"> {
+  version: 29;
+}
+
+export type LatestTilesetDoc = TilesetDocV29;
+export const latestVersion = 29;

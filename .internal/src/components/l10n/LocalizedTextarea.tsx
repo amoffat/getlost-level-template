@@ -2,7 +2,7 @@ import { useLocaleContextModal } from "@/contexts/LocaleContextModalContext";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors as localeSelectors } from "@/slices/locale";
 import { RootState } from "@/store/store";
-import { makeKey, syncLocaleField } from "@/utils/locale";
+import { syncLocaleField } from "@/utils/locale";
 import { Textarea, TextareaProps } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
 import React, { useCallback, useImperativeHandle } from "react";
@@ -21,8 +21,6 @@ interface LocalizedTextareaProps extends Omit<
   currentLocale: string;
   /** The locale key currently stored for this field. */
   contentKey: string | null | undefined;
-  /** Optional prefix passed to makeLocaleKey when generating a new key. */
-  keyPrefix?: string[];
   defaultContext?: string;
   /**
    * Called when the locale key changes (main locale edits that rotate the key).
@@ -46,7 +44,6 @@ export default function LocalizedTextarea({
   ref,
   currentLocale,
   contentKey,
-  keyPrefix = [],
   defaultContext,
   onLocaleKeyChange,
   debounce = 300,
@@ -65,18 +62,20 @@ export default function LocalizedTextarea({
   const prevEntry = contentKey ? localeEntries[contentKey] : undefined;
 
   const handleChange = useDebouncedCallback((newText: string) => {
-    const newKey = syncLocaleField({
+    const ref = syncLocaleField({
       locale: currentLocale,
       prevEntry,
       defaultEntry,
-      makeKey: ({ text, context }) => makeKey(...keyPrefix, context, text),
       dispatch,
       updates: {
         v: newText.trim() === "" ? null : newText,
         ctx: defaultContext,
       },
     });
-    onLocaleKeyChange?.(newKey ?? null);
+    // `undefined` means "leave the stored reference as-is" (edited an existing
+    // entry, or a translation edit). A string (new id) or `null` (cleared) is
+    // an actual reference change to propagate to the owning object.
+    if (ref !== undefined) onLocaleKeyChange?.(ref);
   }, debounce);
 
   const handleCtxSave = useCallback(
@@ -86,7 +85,6 @@ export default function LocalizedTextarea({
         locale: currentLocale,
         prevEntry,
         defaultEntry,
-        makeKey: () => (prevEntry ?? defaultEntry)!.k,
         dispatch,
         updates: {
           ctx: newCtx,

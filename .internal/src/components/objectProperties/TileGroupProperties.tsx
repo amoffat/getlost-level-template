@@ -73,7 +73,6 @@ function TileGroupProperties({ objs }: { objs: TileGroupInstance[] }) {
       description={t("tileGroupPropNameDescription")}
       values={toCollect.nameKey}
       context={t("tileGroupPropNameContext")}
-      keyPrefix={["tg"]}
       onValueChange={({ scope, value }): void => {
         updateProps(scope, {
           nameKey: value,

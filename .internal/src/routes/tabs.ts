@@ -12,6 +12,8 @@ export const tabToPath = (tab: MainTabName): string => {
       return "/story";
     case "dialogue-editor":
       return "/dialogues";
+    case "translations":
+      return "/translations";
     case "preview":
       return "/preview";
   }
@@ -30,6 +32,8 @@ export const pathToTab = (path: string): MainTabName => {
       return "story-editor";
     case "/dialogues":
       return "dialogue-editor";
+    case "/translations":
+      return "translations";
     case "/preview":
       return "preview";
     default:

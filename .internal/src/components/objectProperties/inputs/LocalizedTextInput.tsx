@@ -15,7 +15,6 @@ import PropertyValue, {
 interface LocalizedTextInputProps {
   values: PropertyValueInfo<string | null>[];
   onValueChange: (args: OnValueChangeArgs<string | null>) => void;
-  keyPrefix?: string[];
   label: string;
   description?: string;
   noTemplate?: boolean;
@@ -32,7 +31,6 @@ export default function LocalizedTextInput({
   values,
   onValueChange,
   validator,
-  keyPrefix = [],
   description,
   noTemplate,
   context,
@@ -82,7 +80,6 @@ export default function LocalizedTextInput({
             key={`${key}-${currentLocale}`}
             error={validator?.(text)}
             contextButton={false}
-            keyPrefix={keyPrefix}
             defaultContext={context}
             currentLocale={currentLocale}
             contentKey={value}
