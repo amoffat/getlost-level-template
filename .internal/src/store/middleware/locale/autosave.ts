@@ -4,7 +4,7 @@ import { log } from "@/log";
 import { saveLocaleFile } from "@/persist/locale/api";
 import { actions as localeActions } from "@/slices/locale";
 import { supportedLangs } from "@/types/i18n";
-import type { LocaleEntry, LocaleStatePayload } from "@/types/locale";
+import type { LocaleEntry } from "@/types/locale";
 import { AppStartListening } from "@/types/redux";
 import { computeSourceHash } from "@/utils/locale";
 import { createListenerMiddleware } from "@reduxjs/toolkit";
@@ -91,9 +91,7 @@ startAppListening({
   predicate: (action) => {
     return loadActionTypes.has(action.type);
   },
-  effect: async (_action, { dispatch, getState }) => {
-    const allEntries: LocaleStatePayload[] = [];
-
+  effect: async (_action, { getState }) => {
     for (const locale of supportedLangs) {
       getSubject(locale).next(() => {
         // Important that state is snapshotted at the time the entries are being
@@ -102,13 +100,17 @@ startAppListening({
 
         // Find all main entries that are *live*, meaning, used by some object
         // in the map/dialogue/story. If they're not live, we don't want to save
-        // them, so filter them out.
+        // them, so filter them out. Pinned entries are a second liveness source:
+        // they are manually authored and kept even with zero references, until
+        // explicitly deleted.
         const liveKeys = collectLiveKeys(state);
         const mainLocaleState = state.locale.entries[defaultLocale];
         const mainEntries = mainLocaleState
           ? (mainLocaleState.ids as string[])
               .map((k) => mainLocaleState.entities[k])
-              .filter((e): e is LocaleEntry => !!e && liveKeys.has(e.id))
+              .filter(
+                (e): e is LocaleEntry => !!e && (liveKeys.has(e.id) || !!e.pin),
+              )
               // Recompute each main entry's source hash from its current text so
               // the persisted hash (and every translation's staleness check
               // against it) is always in sync, no matter how it was edited.
@@ -127,15 +129,9 @@ startAppListening({
         // Merge with main, so the locale's entries are up to date with main's
         // entries.
         const merged = mergeNonMainEntries(mainEntries, existingEntries);
-
-        // Now that we have an authoritative view of the entries (because it's
-        // going to be written to the locale's file), let's go ahead and set the
-        // locale's entries.
-        allEntries.push({ locale, entries: merged });
         return merged;
       });
     }
-    dispatch(localeActions.setAllLocaleEntries(allEntries));
   },
 });
 

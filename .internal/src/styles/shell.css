@@ -52,3 +52,16 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+/*
+ * mantine-datatable's built-in row-selector cell hardcodes `padding: xs` (10px),
+ * while regular cells use the Table's verticalSpacing (7px). With top vertical
+ * alignment that 3px gap leaves the selection checkbox sitting lower than the
+ * pin checkbox and the id text. Pin every body cell's vertical padding to the
+ * same value so all columns top-align. The `td` type selector raises specificity
+ * above both the selector-cell class and Mantine's cell class.
+ */
+.mantine-datatable-table td {
+  padding-top: var(--table-vertical-spacing);
+  padding-bottom: var(--table-vertical-spacing);
+}

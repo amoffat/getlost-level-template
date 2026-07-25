@@ -1,15 +1,26 @@
 import { defaultLocale } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { selectors as localeSelectors } from "@/slices/locale";
+import {
+  actions as localeActions,
+  selectors as localeSelectors,
+} from "@/slices/locale";
 import {
   deleteLocaleEntriesThunk,
   loadDialogueLocaleThunk,
+  setEntriesPinThunk,
 } from "@/thunks/locale";
 import type { LocaleEntry } from "@/types/locale";
-import { syncLocaleField } from "@/utils/locale";
+import { copyToClipboard } from "@/utils/copy";
+import {
+  computeSourceHash,
+  newLocaleId,
+  syncLocaleField,
+} from "@/utils/locale";
 import {
   Box,
   Button,
+  Checkbox,
+  type CheckboxProps,
   Group,
   Stack,
   Switch,
@@ -17,19 +28,23 @@ import {
   Textarea,
   TextInput,
   Tooltip,
+  UnstyledButton,
 } from "@mantine/core";
-import { useDebouncedCallback } from "@mantine/hooks";
+import { useDebouncedCallback, useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import {
   IconAlertTriangleFilled,
   IconCircleCheckFilled,
   IconLanguage,
+  IconPin,
+  IconPlus,
   IconSearch,
   IconTrash,
 } from "@tabler/icons-react";
 import { DataTable, type DataTableColumn } from "mantine-datatable";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import AddEntryModal from "./AddEntryModal";
 
 interface RowStatus {
   untranslated: boolean;
@@ -44,29 +59,58 @@ const OK_STATUS: RowStatus = {
 };
 
 /**
+ * Renders the pin glyph as a Checkbox's checked indicator, so a pinned row
+ * shows a filled (yellow) pin instead of the default checkmark.
+ */
+const PinCheckIcon: CheckboxProps["icon"] = ({ className }) => (
+  <IconPin className={className} />
+);
+
+/**
  * An unstyled, autosizing textarea cell that owns its own debounce, so edits to
  * different rows never collapse into one another.
+ *
+ * It is controlled so it can reflect out-of-band changes to the underlying
+ * value — e.g. an entry created/edited in the Dialogue tab while this (still
+ * mounted) tab is in the background. We resync from `value` only while the
+ * field is NOT focused, so a background update never clobbers active typing.
  */
 function EditableCell({
-  initialValue,
+  value: externalValue,
   onSave,
   placeholder,
 }: {
-  initialValue: string;
+  value: string;
   onSave: (value: string) => void;
   placeholder?: string;
 }) {
   const save = useDebouncedCallback(onSave, 300);
+  const [value, setValue] = useState(externalValue);
+  const focusedRef = useRef(false);
+
+  useEffect(() => {
+    if (!focusedRef.current) setValue(externalValue);
+  }, [externalValue]);
+
   return (
     <Textarea
-      defaultValue={initialValue}
+      value={value}
       autosize
       minRows={1}
       maxRows={6}
       size="xs"
       variant="unstyled"
       placeholder={placeholder}
-      onChange={(ev) => save(ev.currentTarget.value)}
+      onFocus={() => {
+        focusedRef.current = true;
+      }}
+      onBlur={() => {
+        focusedRef.current = false;
+      }}
+      onChange={(ev) => {
+        setValue(ev.currentTarget.value);
+        save(ev.currentTarget.value);
+      }}
       styles={{ input: { padding: 0 } }}
     />
   );
@@ -93,6 +137,7 @@ export default function TranslationsTab() {
   const [query, setQuery] = useState("");
   const [onlyNeedsAttention, setOnlyNeedsAttention] = useState(false);
   const [selectedRecords, setSelectedRecords] = useState<LocaleEntry[]>([]);
+  const [addOpen, { open: openAdd, close: closeAdd }] = useDisclosure(false);
 
   // Re-sync this locale from disk whenever the tab's locale changes, so the
   // grid reflects the on-disk file even if edited elsewhere.
@@ -200,28 +245,110 @@ export default function TranslationsTab() {
     });
   }, [t, dispatch, selectedRecords]);
 
+  // Per-row pin toggle. Pinning is immediate; unpinning is guarded by a
+  // confirmation, since it re-exposes the entry to auto-pruning. Pin lives on
+  // the main entry, so writes always target it (via the thunk).
+  const togglePin = useCallback(
+    (entry: LocaleEntry, pinned: boolean) => {
+      if (!pinned) {
+        dispatch(setEntriesPinThunk({ ids: [entry.id], pin: true }));
+        return;
+      }
+      modals.openConfirmModal({
+        title: t("translationsUnpinConfirmTitle"),
+        centered: true,
+        children: <Text size="sm">{t("translationsUnpinConfirmBody")}</Text>,
+        labels: { confirm: t("translationsUnpin"), cancel: t("no") },
+        onConfirm: () =>
+          dispatch(setEntriesPinThunk({ ids: [entry.id], pin: false })),
+      });
+    },
+    [t, dispatch],
+  );
+
+  // Create a standalone, pinned entry on the main locale. It is attached to no
+  // object, so `pin` keeps it from being auto-pruned. Autosave recomputes the
+  // hash, but we seed it so the entry is immediately consistent.
+  const onAddEntry = useCallback(
+    (text: string, ctx: string | undefined) => {
+      dispatch(
+        localeActions.upsertEntry({
+          locale: defaultLocale,
+          entry: {
+            id: newLocaleId(),
+            v: text,
+            ctx,
+            pin: true,
+            hash: computeSourceHash(text),
+          },
+        }),
+      );
+    },
+    [dispatch],
+  );
+
   const columns = useMemo(() => {
     const cols: DataTableColumn<LocaleEntry>[] = [
       {
+        accessor: "pin",
+        title: (
+          <IconPin
+            size={20}
+            title={t("translationsPinColumn")}
+            style={{ color: "var(--mantine-color-dimmed)", display: "block" }}
+          />
+        ),
+        textAlign: "center",
+        width: "1%",
+        // Pin lives on the main entry, so read it from there to reflect and
+        // toggle the pin on every locale.
+        render: (e) => {
+          const pinned = !!(isMain ? e.pin : mainEntries[e.id]?.pin);
+          return (
+            <Checkbox
+              checked={pinned}
+              color="yellow"
+              icon={PinCheckIcon}
+              aria-label={t("translationsPinColumn")}
+              onChange={() => togglePin(e, pinned)}
+            />
+          );
+        },
+      },
+      {
         accessor: "id",
         title: t("translationsKeyCol"),
-        width: 130,
         resizable: true,
         ellipsis: true,
+        width: "5%",
+        // Click the id to copy it; copyToClipboard shows the shared "copied"
+        // notification used elsewhere in the app.
         render: (e) => (
-          <Text ff="monospace" fz="10px" c="dimmed" title={e.id}>
-            {e.id}
-          </Text>
+          <Tooltip
+            label={t("translationsCopyKeyTooltip")}
+            withArrow
+            openDelay={400}
+          >
+            <UnstyledButton
+              onClick={() => copyToClipboard({ value: e.id, t })}
+              style={{ display: "block", width: "100%", cursor: "pointer" }}
+            >
+              <Text size="xs" c="dimmed" truncate>
+                {e.id}
+              </Text>
+            </UnstyledButton>
+          </Tooltip>
         ),
       },
       {
         accessor: "v",
         title: t("translationsTextCol"),
+        width: "30%",
         resizable: true,
         render: (e) => (
           <EditableCell
             key={`${e.id}:${activeLocale}`}
-            initialValue={e.v}
+            value={e.v}
             onSave={(value) => saveText(e, value)}
           />
         ),
@@ -229,6 +356,7 @@ export default function TranslationsTab() {
       {
         accessor: "original",
         title: t("translationsOriginalCol"),
+        width: "30%",
         resizable: true,
         // Match the editable "text" cell, which preserves newlines. In the main
         // (source) locale the original IS the text, so mirror it.
@@ -241,13 +369,13 @@ export default function TranslationsTab() {
       {
         accessor: "ctx",
         title: t("translationsContextCol"),
-        width: 200,
+        width: "30%",
         resizable: true,
         render: (e) =>
           isMain ? (
             <EditableCell
               key={`${e.id}:ctx`}
-              initialValue={e.ctx ?? ""}
+              value={e.ctx ?? ""}
               placeholder={t("translationsContextPlaceholder")}
               onSave={(value) => saveCtx(e, value)}
             />
@@ -261,12 +389,12 @@ export default function TranslationsTab() {
         accessor: "status",
         title: (
           <IconLanguage
-            size={16}
+            size={20}
             title={t("translationsStatusCol")}
             style={{ color: "var(--mantine-color-dimmed)", display: "block" }}
           />
         ),
-        width: 44,
+        width: "1%",
         textAlign: "center",
         // The main (source) locale is translated by definition, so a main row
         // is never flagged (statusById returns an all-false status for it).
@@ -302,14 +430,29 @@ export default function TranslationsTab() {
     ];
 
     return cols;
-  }, [t, isMain, activeLocale, saveText, saveCtx, statusById]);
+  }, [
+    t,
+    isMain,
+    activeLocale,
+    saveText,
+    saveCtx,
+    statusById,
+    mainEntries,
+    togglePin,
+  ]);
 
   return (
     <Stack gap="xs" p="sm" h="calc(100vh - 60px)">
       <Group justify="space-between">
         <Group gap="xs">
-          {/* Batch actions — operate on the checkbox-selected rows. More can be
-              added here as siblings of Delete. */}
+          <Button
+            size="md"
+            variant="light"
+            leftSection={<IconPlus size={16} />}
+            onClick={openAdd}
+          >
+            {t("translationsAddEntry")}
+          </Button>
           <Button
             size="md"
             color="red"
@@ -344,9 +487,7 @@ export default function TranslationsTab() {
           verticalAlign="top"
           withTableBorder
           withColumnBorders
-          storeColumnsKey="translations-table-v2"
-          striped
-          highlightOnHover
+          storeColumnsKey="translations-table-v16"
           idAccessor="id"
           records={filtered}
           columns={columns}
@@ -356,6 +497,12 @@ export default function TranslationsTab() {
           styles={{ table: { width: "100%" } }}
         />
       </Box>
+
+      <AddEntryModal
+        opened={addOpen}
+        onClose={closeAdd}
+        onSubmit={onAddEntry}
+      />
     </Stack>
   );
 }

@@ -5,6 +5,7 @@
 {"k": "previewTab", "v": "Preview", "ctx": "A heading for the preview tab"}
 {"k": "translationsTab", "v": "Translations", "ctx": "A heading for the translations tab"}
 {"k": "translationsKeyCol", "v": "Key", "ctx": "Column header for the stable translation key/id in the translations table"}
+{"k": "translationsCopyKeyTooltip", "v": "Click to copy", "ctx": "Tooltip on the translation key/id cell, which copies the id to the clipboard when clicked"}
 {"k": "translationsTextCol", "v": "Text", "ctx": "Column header for the editable translated text in the translations table"}
 {"k": "translationsContextCol", "v": "Context", "ctx": "Column header for the translator context note in the translations table"}
 {"k": "translationsOriginalCol", "v": "Original", "ctx": "Column header for the original/source text shown when editing a non-main locale"}
@@ -19,6 +20,21 @@
 {"k": "translationsDelete", "v": "Delete", "ctx": "Label for the batch Delete button that deletes all selected rows in the translations table"}
 {"k": "translationsDeleteConfirmTitle", "v": "Delete {count} string(s)?", "ctx": "Title of the confirmation dialog before batch-deleting translation rows; {count} is the number of selected rows"}
 {"k": "translationsDeleteConfirmBody", "v": "This removes the selected string(s) from this language. This can't be undone.", "ctx": "Body text of the confirmation dialog shown before batch-deleting translation rows"}
+{"k": "translationsAddEntry", "v": "Add entry", "ctx": "Label for the button that opens the modal to add a new standalone translation entry"}
+{"k": "translationsAddEntryTitle", "v": "Add translation entry", "ctx": "Title of the modal for authoring a new standalone translation entry"}
+{"k": "translationsAddEntryDescription", "v": "Create a standalone string that isn't attached to any object. It won't be removed automatically and must be deleted manually.", "ctx": "Explanatory text at the top of the add-translation-entry modal"}
+{"k": "translationsAddEntryTextLabel", "v": "Text", "ctx": "Field label for the source text of the new translation entry in the add-entry modal"}
+{"k": "translationsAddEntryTextPlaceholder", "v": "The source text for this string…", "ctx": "Placeholder for the source text field in the add-translation-entry modal"}
+{"k": "translationsAddEntryTextRequired", "v": "Text is required", "ctx": "Validation message shown when the text field is empty in the add-translation-entry modal"}
+{"k": "translationsAddEntryContextLabel", "v": "Context", "ctx": "Field label for the optional translator context of the new translation entry in the add-entry modal"}
+{"k": "translationsAddEntryContextPlaceholder", "v": "Add context for translators… (optional)", "ctx": "Placeholder for the optional context field in the add-translation-entry modal"}
+{"k": "translationsAddEntrySubmit", "v": "Add entry", "ctx": "Submit button label in the add-translation-entry modal"}
+{"k": "translationsPinColumn", "v": "Pinned", "ctx": "Header/aria label for the per-row pin checkbox column in the translations table"}
+{"k": "translationsPinned", "v": "Pinned — kept even without references", "ctx": "Tooltip on a row's pin checkbox when it is pinned (exempt from automatic pruning)"}
+{"k": "translationsPin", "v": "Pin", "ctx": "Tooltip on a row's pin checkbox when it is not pinned, indicating clicking will pin it"}
+{"k": "translationsUnpin", "v": "Unpin", "ctx": "Confirm button label in the dialog shown before unpinning a translation entry"}
+{"k": "translationsUnpinConfirmTitle", "v": "Unpin this string?", "ctx": "Title of the confirmation dialog shown before unpinning a translation entry"}
+{"k": "translationsUnpinConfirmBody", "v": "Unpinning allows this string to be removed automatically unless it's attached to an existing object.", "ctx": "Body text of the confirmation dialog shown before unpinning a translation entry"}
 {"k": "updateAvailable", "v": "Update Available", "ctx": "Modal title shown when a newer engine version is detected"}
 {"k": "editorWillUpdate", "v": "The editor will update", "ctx": "Upgrade modal list item (positive outcome)"}
 {"k": "migrateAssetsAutomatically", "v": "It will migrate your assets automatically", "ctx": "Upgrade modal list item (positive outcome)"}

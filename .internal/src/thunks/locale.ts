@@ -1,3 +1,4 @@
+import { defaultLocale } from "@/constants";
 import { codeToLanguage } from "@/constants/locale";
 import { actions } from "@/slices/locale";
 import { clearLocaleReferences } from "@/store/middleware/locale/references";
@@ -75,6 +76,35 @@ export const deleteLocaleEntriesThunk = createAsyncThunk(
     for (const locale of supportedLangs) {
       for (const id of ids) {
         dispatch(actions.removeEntry({ locale, key: id }));
+      }
+    }
+  },
+);
+
+/**
+ * Set the `pin` flag on locale entries by id. Pinned entries are exempt from
+ * autosave pruning (see `store/middleware/locale/autosave.ts`), so this is how
+ * authors mark an existing entry to survive without any object reference — or
+ * drop that exemption again.
+ *
+ * The flag is authoritative on the main (source) entry only, so writes always
+ * target the default locale regardless of which locale is currently displayed.
+ * Being an `upsertEntry`, each write triggers the autosave/prune pass.
+ */
+export const setEntriesPinThunk = createAsyncThunk(
+  "locale/setPin",
+  async (
+    { ids, pin }: { ids: string[]; pin: boolean },
+    { dispatch, getState },
+  ) => {
+    if (ids.length === 0) return;
+    const mainEntities =
+      (getState() as RootState).locale.entries[defaultLocale]?.entities ?? {};
+    for (const id of ids) {
+      // Only entries that exist in the source locale can be pinned; a bare
+      // {id, pin} upsert must never mint a phantom main entry.
+      if (mainEntities[id]) {
+        dispatch(actions.upsertEntry({ locale: defaultLocale, entry: { id, pin } }));
       }
     }
   },

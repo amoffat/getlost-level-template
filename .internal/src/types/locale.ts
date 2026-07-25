@@ -15,6 +15,13 @@ export interface LocaleEntry {
   hash?: string;
   original?: string;
   ctx?: string;
+  /**
+   * When true, this entry is kept by the autosave pruner even if no object
+   * references its id. Set on manually-authored ("Add entry") keys, which must
+   * be removed via explicit Delete rather than being auto-pruned. Only ever
+   * stored on the main (source) entry — it is the single source of truth.
+   */
+  pin?: boolean;
 }
 
 export interface LocaleStatePayload {
