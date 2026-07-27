@@ -1,3 +1,5 @@
+import { STORAGE_KEYS } from "@/constants/localStorage";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { copyToClipboard } from "@/utils/copy";
 import {
   ActionIcon,
@@ -24,6 +26,7 @@ import styles from "../styles/LogPane.module.css";
 // chip is always rendered separately and is not part of this list.
 const FILTER_TAGS: string[] = [
   "collision",
+  "engine",
   "tileset",
   "state",
   "api",
@@ -247,16 +250,18 @@ const LogPane = ({ maxMessages }: { maxMessages: number }) => {
   // message is shown when any of its tags is active (OR semantics); messages
   // without tags (errors, warnings, watcher logs) are always shown. The "all"
   // chip is a convenience toggle that checks/unchecks every tag chip, so it is
-  // "on" exactly when every tag is active. Every tag is active by default.
-  const [activeTags, setActiveTags] = useState<string[]>(() => [
-    ...FILTER_TAGS,
-  ]);
+  // "on" exactly when every tag is active. Every tag is active by default, and
+  // the selection is persisted to localStorage so it survives reloads.
+  const [activeTags, setActiveTags] = useLocalStorage<string[]>({
+    key: STORAGE_KEYS.LOG_PANE_TAGS,
+    defaultValue: FILTER_TAGS,
+  });
 
   const toggleTag = useCallback((tag: string) => {
     setActiveTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
     );
-  }, []);
+  }, [setActiveTags]);
 
   // Free-text filter applied on top of the tag filter. Matches against the
   // serialized message string (which already contains logged object keys and

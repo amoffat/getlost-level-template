@@ -43,3 +43,8 @@ export declare function setRating({
 }): void;
 
 export declare function clearElement(col: number, row: number): void;
+
+export declare function showTextOverlay(opts: {
+  heading: string;
+  subheading?: string;
+}): Promise<void>;

@@ -1,9 +1,6 @@
 import { codeToFlag, codeToLanguage } from "@/constants/locale";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import {
-  actions as localeActions,
-  selectors as localeSelectors,
-} from "@/slices/locale";
+import { selectors as localeSelectors } from "@/slices/locale";
 import {
   deleteLocaleEntriesThunk,
   loadDialogueLocaleThunk,
@@ -13,7 +10,7 @@ import {
 import type { SupportedLang } from "@/types/i18n";
 import type { LocaleEntry } from "@/types/locale";
 import { copyToClipboard } from "@/utils/copy";
-import { computeSourceHash, newLocaleId, sourceLangOf } from "@/utils/locale";
+import { newLocaleId, sourceLangOf } from "@/utils/locale";
 import {
   Box,
   Button,
@@ -266,20 +263,15 @@ export default function TranslationsTab() {
   const onAddEntry = useCallback(
     (text: string, ctx: string | undefined) => {
       dispatch(
-        localeActions.upsertEntry({
-          locale: activeLocale,
-          entry: {
-            id: newLocaleId(),
-            v: text,
-            ctx,
-            pin: true,
-            srcLang: activeLocale,
-            hash: computeSourceHash(text),
-          },
+        upsertLocaleEntry({
+          id: newLocaleId(),
+          v: text,
+          ctx,
+          pin: true,
         }),
       );
     },
-    [dispatch, activeLocale],
+    [dispatch],
   );
 
   const columns = useMemo(() => {
