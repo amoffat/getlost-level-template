@@ -16,6 +16,14 @@ export interface LocaleEntry {
   original?: string;
   ctx?: string;
   /**
+   * The real language the source text was authored in (e.g. "en", "fr"). Only
+   * meaningful on `main` (source) entries — it is how the tooling knows what
+   * language each source string is written in, so translators (and staleness
+   * checks) can tell a native string from one that still needs translating.
+   * Never "main". Legacy entries without it are treated as `defaultSourceLang`.
+   */
+  srcLang?: string;
+  /**
    * When true, this entry is kept by the autosave pruner even if no object
    * references its id. Set on manually-authored ("Add entry") keys, which must
    * be removed via explicit Delete rather than being auto-pruned. Only ever

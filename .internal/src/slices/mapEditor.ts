@@ -1,5 +1,4 @@
 import * as constants from "@/constants";
-import { globals } from "@/globals";
 import { Card } from "@/types/card";
 import { Mode } from "@/types/editor";
 import { MapLayerName } from "@/types/layer";
@@ -32,6 +31,7 @@ import {
   addToTemplateIndex,
   clearTemplateIndex,
   removeFromTemplateIndex,
+  templateIndex,
   updateTemplateIndex,
 } from "@/utils/templateIndex";
 import { Vector2 } from "@/vec";
@@ -345,7 +345,7 @@ export const slice = createSlice({
       }),
       reducer: (state, action: PayloadAction<MapObj>) => {
         objectsAdapter.addOne(state.objects, action.payload);
-        addToTemplateIndex(globals.templateIndex, action.payload);
+        addToTemplateIndex(templateIndex, action.payload);
       },
     },
     addMany: {
@@ -356,7 +356,7 @@ export const slice = createSlice({
       reducer: (state, action: PayloadAction<MapObj[]>) => {
         objectsAdapter.addMany(state.objects, action.payload);
         for (const obj of action.payload) {
-          addToTemplateIndex(globals.templateIndex, obj);
+          addToTemplateIndex(templateIndex, obj);
         }
       },
     },
@@ -369,9 +369,9 @@ export const slice = createSlice({
         for (const obj of action.payload) {
           const existing = state.objects.entities[obj.id];
           if (existing) {
-            updateTemplateIndex(globals.templateIndex, existing, obj);
+            updateTemplateIndex(templateIndex, existing, obj);
           } else {
-            addToTemplateIndex(globals.templateIndex, obj);
+            addToTemplateIndex(templateIndex, obj);
           }
         }
         objectsAdapter.upsertMany(state.objects, action.payload);
@@ -389,7 +389,7 @@ export const slice = createSlice({
         const oldObj = state.objects.entities[action.payload.id];
         if (oldObj) {
           const newObj = { ...oldObj, ...action.payload.changes } as MapObj;
-          updateTemplateIndex(globals.templateIndex, oldObj as MapObj, newObj);
+          updateTemplateIndex(templateIndex, oldObj as MapObj, newObj);
         }
         objectsAdapter.updateOne(state.objects, action.payload);
       },
@@ -408,7 +408,7 @@ export const slice = createSlice({
           if (oldObj) {
             const newObj = { ...oldObj, ...update.changes } as MapObj;
             updateTemplateIndex(
-              globals.templateIndex,
+              templateIndex,
               oldObj as MapObj,
               newObj,
             );
@@ -425,7 +425,7 @@ export const slice = createSlice({
       reducer: (state, action: PayloadAction<string>) => {
         const obj = state.objects.entities[action.payload];
         if (obj) {
-          removeFromTemplateIndex(globals.templateIndex, obj);
+          removeFromTemplateIndex(templateIndex, obj);
         }
         objectsAdapter.removeOne(state.objects, action.payload);
         // Keep selectedIds in sync — a stale ID would cause selectedObjs to
@@ -444,7 +444,7 @@ export const slice = createSlice({
         for (const id of action.payload) {
           const obj = state.objects.entities[id];
           if (obj) {
-            removeFromTemplateIndex(globals.templateIndex, obj);
+            removeFromTemplateIndex(templateIndex, obj);
           }
         }
         objectsAdapter.removeMany(state.objects, action.payload);
@@ -464,9 +464,9 @@ export const slice = createSlice({
       }),
       reducer: (state, action: PayloadAction<MapObj[]>) => {
         // Rebuild the entire template index
-        clearTemplateIndex(globals.templateIndex);
+        clearTemplateIndex(templateIndex);
         for (const obj of action.payload) {
-          addToTemplateIndex(globals.templateIndex, obj);
+          addToTemplateIndex(templateIndex, obj);
         }
         objectsAdapter.setAll(state.objects, action.payload);
       },
@@ -556,7 +556,7 @@ export const slice = createSlice({
     objectsByTemplateId: createMapSelector(
       [(state) => state.objects.entities, (_, tmplId: string) => tmplId],
       (entities, tmplId): MapObj[] => {
-        const ids = globals.templateIndex.get(tmplId);
+        const ids = templateIndex.get(tmplId);
         if (!ids) return [];
 
         const objs = [];

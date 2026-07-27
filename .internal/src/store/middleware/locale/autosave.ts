@@ -1,9 +1,9 @@
-import { autosaveLocaleDebounce, defaultLocale } from "@/constants";
+import { autosaveLocaleDebounce, mainLocale } from "@/constants";
 import { LOCALE_FILE } from "@/constants/locale";
 import { log } from "@/log";
 import { saveLocaleFile } from "@/persist/locale/api";
 import { actions as localeActions } from "@/slices/locale";
-import { supportedLangs } from "@/types/i18n";
+import { allLocales } from "@/types/i18n";
 import type { LocaleEntry } from "@/types/locale";
 import { AppStartListening } from "@/types/redux";
 import { computeSourceHash } from "@/utils/locale";
@@ -92,7 +92,7 @@ startAppListening({
     return loadActionTypes.has(action.type);
   },
   effect: async (_action, { getState }) => {
-    for (const locale of supportedLangs) {
+    for (const locale of allLocales) {
       getSubject(locale).next(() => {
         // Important that state is snapshotted at the time the entries are being
         // fetched to be saved.
@@ -104,7 +104,7 @@ startAppListening({
         // they are manually authored and kept even with zero references, until
         // explicitly deleted.
         const liveKeys = collectLiveKeys(state);
-        const mainLocaleState = state.locale.entries[defaultLocale];
+        const mainLocaleState = state.locale.entries[mainLocale];
         const mainEntries = mainLocaleState
           ? (mainLocaleState.ids as string[])
               .map((k) => mainLocaleState.entities[k])
@@ -117,7 +117,7 @@ startAppListening({
               .map((e) => ({ ...e, hash: computeSourceHash(e.v) }))
           : [];
 
-        if (locale === defaultLocale) {
+        if (locale === mainLocale) {
           return mainEntries;
         }
 

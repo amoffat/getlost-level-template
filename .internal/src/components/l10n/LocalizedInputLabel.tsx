@@ -1,4 +1,4 @@
-import { defaultLocale } from "@/constants";
+import { mainLocale } from "@/constants";
 import { Group } from "@mantine/core";
 import { IconLanguage } from "@tabler/icons-react";
 import { ReactNode } from "react";
@@ -34,7 +34,7 @@ export default function LocalizedInputLabel({
   return (
     <Group gap={4} align="center" wrap="nowrap">
       {label}
-      {showContextButton && locale === defaultLocale && (
+      {showContextButton && locale === mainLocale && (
         <ActionButton
           tooltip={t("localeContextTitle")}
           icon={<IconLanguage size={12} />}

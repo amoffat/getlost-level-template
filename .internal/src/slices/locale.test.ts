@@ -102,6 +102,7 @@ describe("locale slice: selectRowStatus", () => {
   it("reports all-false for a missing entry", () => {
     const status = sel.selectRowStatus(seed({ v: "Hola" }), "es", "missing");
     expect(status).toEqual({
+      isSource: false,
       untranslated: false,
       outOfDate: false,
       needsAttention: false,
@@ -184,5 +185,77 @@ describe("locale slice: needsAttentionCounts", () => {
     const counts = sel.needsAttentionCounts(state);
     expect(counts).toEqual({ es: 1, fr: 1 });
     expect(counts).not.toHaveProperty("main");
+  });
+});
+
+describe("locale slice: source-aware status", () => {
+  // A string authored in French: source in `main` (srcLang "fr"), a native `fr`
+  // row that mirrors it, and an untranslated `de` row.
+  const setup = () => {
+    let state = init();
+    const hash = computeSourceHash("Bonjour");
+    state = slice.reducer(
+      state,
+      actions.setEntries({
+        locale: "main",
+        entries: [{ id: "s1", v: "Bonjour", hash, srcLang: "fr" }],
+      }),
+    );
+    state = slice.reducer(
+      state,
+      actions.setEntries({
+        locale: "fr",
+        entries: [{ id: "s1", v: "Bonjour", original: "Bonjour", hash }],
+      }),
+    );
+    state = slice.reducer(
+      state,
+      actions.setEntries({
+        locale: "de",
+        entries: [{ id: "s1", v: "Bonjour", original: "Bonjour", hash }],
+      }),
+    );
+    return state;
+  };
+
+  it("marks the source-language row as source, not needing attention", () => {
+    const s = sel.selectRowStatus(setup(), "fr", "s1");
+    expect(s.isSource).toBe(true);
+    expect(s.needsAttention).toBe(false);
+  });
+
+  it("flags an untranslated non-source locale", () => {
+    const s = sel.selectRowStatus(setup(), "de", "s1");
+    expect(s.isSource).toBe(false);
+    expect(s.untranslated).toBe(true);
+    expect(s.needsAttention).toBe(true);
+  });
+
+  it("excludes the source-language row from needsAttentionCounts", () => {
+    const counts = sel.needsAttentionCounts(setup());
+    expect(counts.fr ?? 0).toBe(0);
+    expect(counts.de).toBe(1);
+  });
+
+  it("treats a legacy entry with no srcLang as English", () => {
+    let state = init();
+    const hash = computeSourceHash("Hello");
+    state = slice.reducer(
+      state,
+      actions.setEntries({
+        locale: "main",
+        entries: [{ id: "s2", v: "Hello", hash }],
+      }),
+    );
+    state = slice.reducer(
+      state,
+      actions.setEntries({
+        locale: "en",
+        entries: [{ id: "s2", v: "Hello", original: "Hello", hash }],
+      }),
+    );
+    const s = sel.selectRowStatus(state, "en", "s2");
+    expect(s.isSource).toBe(true);
+    expect(s.needsAttention).toBe(false);
   });
 });

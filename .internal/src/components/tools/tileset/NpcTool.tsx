@@ -2,7 +2,6 @@ import { LocalizedTextarea } from "@/components/l10n";
 import * as constants from "@/constants";
 import { requiredNpcAnimations as requiredNpcAnimationSlots } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { selectors as localeSelectors } from "@/slices/locale";
 import { actions, selectors } from "@/slices/tilesetEditor";
 import { actions as uiActions } from "@/slices/ui";
 import { setToolThunk } from "@/thunks/tileset";
@@ -41,7 +40,6 @@ export default function NpcTool() {
   const ts = useAppSelector(selectors.activeTileset);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const currentLocale = useAppSelector(localeSelectors.activeLocale);
 
   const existingNpc = useMemo(() => {
     const npcs = ts?.tiles.ids
@@ -302,9 +300,8 @@ export default function NpcTool() {
               placeholder={t("npcToolNamePlaceholder")}
               defaultContext={t("npcPropNameContext")}
               disabled={!hasAll}
-              currentLocale={currentLocale}
               contentKey={nameKey ?? undefined}
-              onLocaleKeyChange={(newKey) => setNameKey(newKey)}
+              onLocaleRefChange={(newRef) => setNameKey(newRef)}
             />
 
             <Table striped highlightOnHover>

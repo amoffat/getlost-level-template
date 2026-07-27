@@ -1,8 +1,6 @@
 import * as constants from "@/constants";
-import { actions as localeActions } from "@/slices/locale";
-import type { AppDispatch } from "@/store/store";
+import { store } from "@/store/store";
 import type { LocaleEntry } from "@/types/locale";
-import { PartialNullable } from "@/types/util";
 import { x64 } from "murmurhash3js";
 import { v4 as uuidv4 } from "uuid";
 
@@ -26,6 +24,32 @@ export function newLocaleId(): string {
   return uuidv4();
 }
 
+/**
+ * The real language a source string is authored in, read from its `main`
+ * entry. Legacy entries (and missing entries) fall back to `defaultSourceLang`.
+ */
+export function sourceLangOf(mainEntry: LocaleEntry | undefined): string {
+  return mainEntry?.srcLang ?? constants.defaultSourceLang;
+}
+
+/**
+ * Whether editing a string in `activeLocale` writes the *source* (`main`) entry
+ * rather than a translation. Editing a string in its own authored language — or
+ * one that has no source entry / no recorded `srcLang` yet — is a source edit;
+ * any other language is a translation.
+ *
+ * Note the `srcLang` fallback is the *active* locale (not `defaultSourceLang`),
+ * so an untagged existing entry counts as a source edit in whatever language
+ * it's being edited. This is the single source of truth for the routing in
+ * `upsertLocaleEntry`; keep the two in lockstep.
+ */
+export function isSourceEdit(mainEntry: LocaleEntry | undefined): boolean {
+  const state = store.getState();
+  const activeLocale = state.locale.activeLocale;
+  const srcLang = mainEntry?.srcLang ?? activeLocale;
+  return !mainEntry || activeLocale === srcLang;
+}
+
 export function resolveLocaleText({
   key,
   primaryEntries,
@@ -45,84 +69,4 @@ export function resolveLocaleText({
   }
 
   return primaryEntries[key]?.v ?? fallbackEntries?.[key]?.v ?? defaultText;
-}
-
-/**
- * Syncs a locale text field to the store. Identity (`id`) is stable — it is
- * minted once when an entry is first created and never rotates on edit.
- *
- * Return value signals what should happen to the *reference* stored on the
- * owning object (contentKey / nameKey / …):
- * - `string` — a brand-new entry was created; store this id as the reference.
- * - `null`   — the source text was cleared; clear the reference.
- * - `undefined` — leave the reference untouched (edited an existing entry, or
- *   this was a non-main/translation edit which never changes identity).
- */
-export function syncLocaleField({
-  locale,
-  prevEntry,
-  defaultEntry,
-  dispatch,
-  updates,
-}: {
-  locale: string;
-  prevEntry?: LocaleEntry;
-  /** The corresponding entry from the default locale, used for cascade logic
-   *  and for populating the `original`/`hash` fields in translations. */
-  defaultEntry?: LocaleEntry;
-  dispatch: AppDispatch;
-  updates: PartialNullable<LocaleEntry>;
-}): string | null | undefined {
-  // If the default locale has no entry for this key yet, assume we are
-  // creating a brand-new entry in the default locale regardless of which
-  // locale is active.
-  locale = defaultEntry ? locale : constants.defaultLocale;
-  const main = locale === constants.defaultLocale;
-
-  // Clearing the source text drops the reference (main locale only). A cleared
-  // translation must never remove the shared, locale-independent identity.
-  if (updates.v === null) {
-    return main ? null : undefined;
-  }
-
-  if (main) {
-    const existing = prevEntry ?? defaultEntry;
-    const id = existing?.id ?? newLocaleId();
-    const v = updates.v ?? existing?.v ?? "";
-
-    dispatch(
-      localeActions.upsertEntry({
-        locale,
-        entry: {
-          ...updates,
-          id,
-          hash: computeSourceHash(v),
-        },
-      }),
-    );
-
-    // Only signal a reference change when a brand-new entry was created.
-    return existing ? undefined : id;
-  } else {
-    // Should never happen, since if defaultEntry is not defined, we switch to
-    // the main locale. We only do this for typescript linting.
-    if (!prevEntry && !defaultEntry) return undefined;
-
-    const id = (prevEntry ?? defaultEntry)!.id;
-
-    dispatch(
-      localeActions.upsertEntry({
-        locale,
-        entry: {
-          // Persist original + the source hash this translation matches, so we
-          // can both show translators the source text and detect staleness.
-          original: defaultEntry?.v,
-          hash: defaultEntry?.hash,
-          ...updates,
-          id,
-        },
-      }),
-    );
-    return undefined;
-  }
 }

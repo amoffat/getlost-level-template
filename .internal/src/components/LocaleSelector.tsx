@@ -9,7 +9,6 @@ type LocaleSelectorProps = {
   locale: SupportedLang;
   rightSection?: Map<SupportedLang, ReactElement>;
   onLocaleChange: (locale: SupportedLang) => void;
-  hideMain?: boolean;
 };
 
 export default function LocaleSelector({
@@ -17,18 +16,16 @@ export default function LocaleSelector({
   locale,
   rightSection,
   onLocaleChange,
-  hideMain = false,
 }: LocaleSelectorProps) {
+  // `main` is the internal source bucket, never a language a user picks.
   const supportedLocales = useMemo(
     () =>
-      supportedLangs
-        .filter((l) => (hideMain ? l !== "main" : true))
-        .map((l) => ({
-          value: l,
-          flag: codeToFlag[l],
-          label: codeToLanguage[l],
-        })),
-    [hideMain],
+      supportedLangs.map((l) => ({
+        value: l,
+        flag: codeToFlag[l],
+        label: codeToLanguage[l],
+      })),
+    [],
   );
 
   return (

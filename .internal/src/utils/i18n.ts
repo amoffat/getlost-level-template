@@ -1,17 +1,23 @@
-import { codeToLanguage } from "@/constants/locale";
-import { SupportedLang, supportedLangs } from "@/types/i18n";
+import { supportedLangs } from "@/types/i18n";
 import { CSSProperties } from "react";
 import { log } from "../log";
 
-// These fallbacks apply on a per-key basis.
-export const fallbacks: Partial<Record<string, SupportedLang[]>> = {
-  zh: ["zh-cn"],
-  "zh-hk": ["zh-tw", "zh-cn"],
-  "zh-mo": ["zh-tw", "zh-cn"],
-  pt: ["pt-br"],
-  // Falling back to "en" means missing languages will default to English. And
-  // eventually falling back to main allows our local development environment to
-  // work without needing to translate to "en"
+// These fallbacks apply on a per-key basis. i18next uses a specific entry
+// *instead of* `default` (it never appends default), and it resolves a region
+// code with no own entry via its language part — so "pt-br" also picks up the
+// "pt" entry. Every list must therefore END with the "en" → "main" chain, or
+// the language dead-ends and `t()` returns raw keys (e.g. pt/pt-br had this bug
+// because their chain terminated at the untranslated "pt-br").
+//
+// Falling back to "en" means missing languages default to English; falling back
+// to "main" lets local development work without translating to "en" first.
+// Values are locale codes (which include the internal "main" source locale, not
+// a user-facing language), so they are typed as plain strings.
+export const fallbacks: Partial<Record<string, string[]>> = {
+  zh: ["zh-cn", "en", "main"],
+  "zh-hk": ["zh-tw", "zh-cn", "en", "main"],
+  "zh-mo": ["zh-tw", "zh-cn", "en", "main"],
+  pt: ["pt-br", "en", "main"],
   default: ["en", "main"],
 };
 
@@ -33,22 +39,6 @@ export function normLang(lang: string): string {
   // Normalize language codes to lowercase and use only the first part if
   // region is present (e.g. 'pt-br' -> 'pt')
   return lang.toLowerCase().replace("_", "-").split("-")[0];
-}
-
-export function resolveLangName(lang: string): string | undefined {
-  let name =
-    codeToLanguage[lang as SupportedLang] ??
-    codeToLanguage[normLang(lang) as SupportedLang];
-  if (!name) {
-    for (const fallback of fallbacks[lang as SupportedLang] ??
-      fallbacks.default!) {
-      name =
-        codeToLanguage[fallback] ??
-        codeToLanguage[normLang(fallback) as SupportedLang];
-      if (name) break;
-    }
-  }
-  return name;
 }
 
 export function langDirection(lang: string): CSSProperties["direction"] {

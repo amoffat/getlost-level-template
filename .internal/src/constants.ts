@@ -87,6 +87,13 @@ export const storyOriginNodeId = defaultMilestone;
 /** Human-readable milestone name displayed for the story origin node. */
 export const storyOriginNodeName = "start";
 
-export const defaultLocale = "main";
+export const mainLocale = "main";
+
+/**
+ * The source language assumed for a `main` entry that predates the `srcLang`
+ * field. The existing content was authored in English, and this matches the
+ * historical `en → main` fallback, so untagged entries resolve as English.
+ */
+export const defaultSourceLang = "en";
 
 export const uuidNs = "e3ad841d-83e8-4c93-bc39-f3bf76704525";

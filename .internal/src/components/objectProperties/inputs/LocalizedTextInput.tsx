@@ -1,7 +1,6 @@
-import { defaultLocale } from "@/constants";
 import { useAppSelector } from "@/hooks/redux";
 import { selectors as localeSelectors } from "@/slices/locale";
-import { resolveLocaleText } from "@/utils/locale";
+import { isSourceEdit, resolveLocaleText } from "@/utils/locale";
 import { IconLanguage } from "@tabler/icons-react";
 import { ReactElement, ReactNode, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,20 +41,30 @@ export default function LocalizedTextInput({
 }: LocalizedTextInputProps) {
   const { t } = useTranslation();
 
-  const currentLocale = useAppSelector(localeSelectors.activeLocale);
   const defaultEntries = useAppSelector(localeSelectors.selectDefaultEntries);
 
   const textareaRef = useRef<LocalizedTextareaHandle>(null);
 
-  const contextModalButton =
-    currentLocale === defaultLocale ? (
-      <ActionButton
-        key="locale-context"
-        tooltip={t("localeContextTitle")}
-        icon={<IconLanguage size={12} />}
-        onClick={() => textareaRef.current?.openCtx()}
-      />
-    ) : undefined;
+  // Translator context is authored on the source string, so the context button
+  // only makes sense when this edit routes to the source (`main`) entry — i.e.
+  // it's a source edit, not a translation — mirroring `upsertLocaleEntry`. With
+  // a mixed selection there is no single entry to reason about, so hide it.
+  const contentKey =
+    values.length > 0 && values.every((v) => v.value === values[0].value)
+      ? values[0].value
+      : undefined;
+  const showContextButton =
+    contentKey !== undefined &&
+    isSourceEdit(contentKey ? defaultEntries[contentKey] : undefined);
+
+  const contextModalButton = showContextButton ? (
+    <ActionButton
+      key="locale-context"
+      tooltip={t("localeContextTitle")}
+      icon={<IconLanguage size={12} />}
+      onClick={() => textareaRef.current?.openCtx()}
+    />
+  ) : undefined;
 
   return (
     <PropertyValue
@@ -77,11 +86,10 @@ export default function LocalizedTextInput({
         return (
           <LocalizedTextarea
             ref={textareaRef}
-            key={`${key}-${currentLocale}`}
+            key={key}
             error={validator?.(text)}
             contextButton={false}
             defaultContext={context}
-            currentLocale={currentLocale}
             contentKey={value}
             withAsterisk={required}
             autosize
@@ -90,8 +98,8 @@ export default function LocalizedTextInput({
             placeholder={
               value === undefined ? t("localizedInputMixedValues") : placeholder
             }
-            onLocaleKeyChange={(newKey) => {
-              onChange(newKey ?? null);
+            onLocaleRefChange={(newRef) => {
+              onChange(newRef ?? null);
             }}
           />
         );

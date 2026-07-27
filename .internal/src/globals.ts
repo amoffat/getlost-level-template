@@ -21,10 +21,10 @@ interface Globals {
   mapEditorReconciler: MapObjReconciler;
   collisionEditorReconciler: MapObjReconciler;
   tilesetEditorReconciler: TileReconciler;
-  // Template index mapping template IDs to sets of object IDs that use them.
-  // This enables O(1) lookups of all objects using a given template,
-  // which is critical for performance when updating template properties.
-  templateIndex: Map<string, Set<string>>;
+  // NOTE: the template index used to live here, but was moved to
+  // `@/utils/templateIndex` (`templateIndex`) so the mapEditor slice can
+  // maintain it without importing this module — that import closed a load-order
+  // cycle through mapReconciler → store/selectors.
   autosaveMap: boolean;
 }
 
@@ -42,6 +42,5 @@ export const globals: Globals = {
   mapEditorReconciler: new MapObjReconciler(tilesetTextureCache),
   collisionEditorReconciler: new MapObjReconciler(tilesetTextureCache),
   tilesetEditorReconciler: new TileReconciler(),
-  templateIndex: new Map(),
   autosaveMap: true,
 };

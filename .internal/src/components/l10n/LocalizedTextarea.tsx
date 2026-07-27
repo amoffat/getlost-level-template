@@ -2,7 +2,8 @@ import { useLocaleContextModal } from "@/contexts/LocaleContextModalContext";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectors as localeSelectors } from "@/slices/locale";
 import { RootState } from "@/store/store";
-import { syncLocaleField } from "@/utils/locale";
+import { upsertLocaleEntry } from "@/thunks/locale";
+import { newLocaleId } from "@/utils/locale";
 import { Textarea, TextareaProps } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
 import React, { useCallback, useImperativeHandle } from "react";
@@ -18,14 +19,15 @@ interface LocalizedTextareaProps extends Omit<
   "ref" | "defaultValue" | "value" | "onChange" | "required"
 > {
   ref?: React.Ref<LocalizedTextareaHandle>;
-  currentLocale: string;
   /** The locale key currently stored for this field. */
   contentKey: string | null | undefined;
   defaultContext?: string;
   /**
-   * Called when the locale key changes (main locale edits that rotate the key).
+   * Called when the locale *reference* this field should store changes: the id
+   * of a newly created source string, or `null` when the source text is cleared.
+   * Not called for edits that leave the reference untouched.
    */
-  onLocaleKeyChange?: (newKey: string | null) => void;
+  onLocaleRefChange?: (newRef: string | null) => void;
   /** Debounce delay in ms. Defaults to 300. */
   debounce?: number;
   /** Whether to render the translation-context button in the label. Defaults to true. */
@@ -42,10 +44,9 @@ interface LocalizedTextareaProps extends Omit<
  */
 export default function LocalizedTextarea({
   ref,
-  currentLocale,
   contentKey,
   defaultContext,
-  onLocaleKeyChange,
+  onLocaleRefChange,
   debounce = 300,
   contextButton = true,
   actionButtons,
@@ -54,6 +55,7 @@ export default function LocalizedTextarea({
   const dispatch = useAppDispatch();
   const { openLocaleContextModal } = useLocaleContextModal();
 
+  const currentLocale = useAppSelector(localeSelectors.activeLocale);
   const localeEntries = useAppSelector(localeSelectors.selectActiveEntries);
   const defaultEntry = useAppSelector((state: RootState) =>
     localeSelectors.selectDefaultEntry(state, contentKey),
@@ -62,36 +64,32 @@ export default function LocalizedTextarea({
   const prevEntry = contentKey ? localeEntries[contentKey] : undefined;
 
   const handleChange = useDebouncedCallback((newText: string) => {
-    const ref = syncLocaleField({
-      locale: currentLocale,
-      prevEntry,
-      defaultEntry,
-      dispatch,
-      updates: {
+    const id = contentKey ?? newLocaleId();
+    const result = dispatch(
+      upsertLocaleEntry({
+        id,
         v: newText.trim() === "" ? null : newText,
         ctx: defaultContext,
-      },
-    });
-    // `undefined` means "leave the stored reference as-is" (edited an existing
-    // entry, or a translation edit). A string (new id) or `null` (cleared) is
-    // an actual reference change to propagate to the owning object.
-    if (ref !== undefined) onLocaleKeyChange?.(ref);
+      }),
+    );
+    // Only "created"/"cleared" are actual reference changes to propagate to the
+    // owning object; "unchanged" (edited an existing entry, or a translation
+    // edit) leaves the stored reference alone.
+    if (result === "created") onLocaleRefChange?.(id);
+    else if (result === "cleared") onLocaleRefChange?.(null);
   }, debounce);
 
   const handleCtxSave = useCallback(
     (newCtx: string | null | undefined) => {
       if (!prevEntry && !defaultEntry) return;
-      syncLocaleField({
-        locale: currentLocale,
-        prevEntry,
-        defaultEntry,
-        dispatch,
-        updates: {
+      dispatch(
+        upsertLocaleEntry({
+          id: contentKey ?? newLocaleId(),
           ctx: newCtx,
-        },
-      });
+        }),
+      );
     },
-    [prevEntry, defaultEntry, currentLocale, dispatch],
+    [prevEntry, defaultEntry, dispatch, contentKey],
   );
 
   const originalText = defaultEntry?.v ?? prevEntry?.v;
@@ -107,15 +105,16 @@ export default function LocalizedTextarea({
   useImperativeHandle(ref, () => ({ openCtx }), [openCtx]);
 
   const hasActionButtons = actionButtons && actionButtons.length > 0;
-  const labelWithCtx = (contextButton || hasActionButtons) && rest.label != null && (
-    <LocalizedInputLabel
-      locale={currentLocale}
-      label={rest.label}
-      onContextClick={openCtx}
-      showContextButton={contextButton}
-      actionButtons={actionButtons}
-    />
-  );
+  const labelWithCtx = (contextButton || hasActionButtons) &&
+    rest.label != null && (
+      <LocalizedInputLabel
+        locale={currentLocale}
+        label={rest.label}
+        onContextClick={openCtx}
+        showContextButton={contextButton}
+        actionButtons={actionButtons}
+      />
+    );
 
   return (
     <LocalizedInputHoverCard ctx={defaultEntry?.ctx}>

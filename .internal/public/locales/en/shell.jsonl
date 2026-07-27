@@ -8,7 +8,9 @@
 {"k": "translationsCopyKeyTooltip", "v": "Click to copy", "ctx": "Tooltip on the translation key/id cell, which copies the id to the clipboard when clicked"}
 {"k": "translationsTextCol", "v": "Text", "ctx": "Column header for the editable translated text in the translations table"}
 {"k": "translationsContextCol", "v": "Context", "ctx": "Column header for the translator context note in the translations table"}
-{"k": "translationsOriginalCol", "v": "Original", "ctx": "Column header for the original/source text shown when editing a non-main locale"}
+{"k": "translationsOriginalCol", "v": "Original", "ctx": "Column header for the original/source text shown when editing a translation"}
+{"k": "translationsSourceLangCol", "v": "Src", "ctx": "Short column header (flag) for the language a string's source text is authored in, in the translations table"}
+{"k": "translationsSourceRow", "v": "Source language", "ctx": "Tooltip on the status icon when the viewed language is the string's own source language, so it needs no translation"}
 {"k": "translationsStatusCol", "v": "Status", "ctx": "Column header for the translation status (out of date / untranslated) in the translations table"}
 {"k": "translationsContextPlaceholder", "v": "Add context for translators…", "ctx": "Placeholder for the editable context cell in the translations table"}
 {"k": "translationsSearchPlaceholder", "v": "Search key, text, or original…", "ctx": "Placeholder for the search box in the translations table"}
@@ -48,8 +50,7 @@
 {"k": "upgradeSuccessMsg", "v": "The editor has been upgraded successfully. The page will now reload.", "ctx": "Notification body after a successful upgrade"}
 {"k": "dragAssetsHere", "v": "Drag assets here", "ctx": "Primary text shown in the full-screen dropzone overlay"}
 {"k": "attachAssetsMsg", "v": "Attach as many assets as you like.", "ctx": "Secondary/hint text in the full-screen dropzone overlay"}
-{"k": "editorLanguage", "v": "Editor language", "ctx": "Label for the locale selector that sets the editor UI language"}
-{"k": "levelLanguage", "v": "Level language", "ctx": "Label for the locale selector that sets the active level/game language"}
+{"k": "language", "v": "Language", "ctx": "Label for the single language selector that sets the editor UI, the dialogue view, and the authoring language all at once"}
 {"k": "mapMovedObjects", "v": "Moved objects", "ctx": "Notification title when selected objects are moved to a different map layer"}
 {"k": "mapMovedObjectsMessage", "v": "{count} objects were moved to the \"{name}\" layer.", "ctx": "Notification message; count = number of objects, name = layer name"}
 {"k": "mapLayerSwitched", "v": "Layer switched", "ctx": "Notification title when the active map editing layer changes"}

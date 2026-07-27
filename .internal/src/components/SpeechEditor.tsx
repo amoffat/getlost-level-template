@@ -66,7 +66,6 @@ import ResettableInput from "./ResettableInput";
 
 interface SpeechEditorProps {
   node: DNode;
-  currentLocale: string;
 }
 
 // Maps each emotion to its translation key, so labels are localized.
@@ -92,10 +91,7 @@ const EMOTION_VALUES = Object.keys(EMOTION_LABEL_KEYS) as DialogEmotion[];
  * Editing panel for a selected dialogue speech node.
  * Renders in the right pane of the DialogueTab.
  */
-export default function SpeechEditor({
-  node,
-  currentLocale,
-}: SpeechEditorProps) {
+export default function SpeechEditor({ node }: SpeechEditorProps) {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -103,6 +99,7 @@ export default function SpeechEditor({
   const activeDialogueId = useAppSelector(
     (state: RootState) => state.dialogue.activeDialogueId,
   )!;
+  const currentLocale = useAppSelector(localeSelectors.activeLocale);
 
   const allMilestones = useAppSelector(dSelectors.allMilestones);
 
@@ -264,7 +261,6 @@ export default function SpeechEditor({
           );
           setResetKey((k) => k + 1);
         }}
-        currentLocale={currentLocale}
         remountKey={remountKey}
         obj={obj}
         nodeImageId={data.speakerImageId}
@@ -326,7 +322,6 @@ export default function SpeechEditor({
           );
           setResetKey((k) => k + 1);
         }}
-        currentLocale={currentLocale}
         remountKey={remountKey}
         obj={listenerObj}
         nodeImageId={data.listenerImageId}
@@ -385,7 +380,6 @@ export default function SpeechEditor({
                         key={`${c.id}-${remountKey}`}
                         id={c.id}
                         choice={c}
-                        currentLocale={currentLocale}
                         updateChoiceTextKey={updateChoiceTextKey}
                         removeChoice={removeChoice}
                       />
@@ -414,14 +408,13 @@ export default function SpeechEditor({
         <Stack gap="sm" p={0}>
           <LocalizedTextarea
             key={remountKey}
-            currentLocale={currentLocale}
             contentKey={data.contentKey}
-            onLocaleKeyChange={(newKey) =>
+            onLocaleRefChange={(newRef) =>
               dispatch(
                 actions.updateNodeData({
                   dialogueId: activeDialogueId,
                   id: node.id,
-                  data: { contentKey: newKey },
+                  data: { contentKey: newRef },
                 }),
               )
             }
@@ -496,7 +489,6 @@ interface ParticipantFieldsetProps {
   nameDisabled: boolean;
   onNameChange: (newKey: string | null) => void;
   onNameReset: () => void;
-  currentLocale: string;
   remountKey: string;
 
   obj: SpeakableMapObj | undefined;
@@ -525,7 +517,6 @@ function ParticipantFieldset({
   nameDisabled,
   onNameChange,
   onNameReset,
-  currentLocale,
   remountKey,
   obj,
   nodeImageId,
@@ -562,9 +553,8 @@ function ParticipantFieldset({
         <ResettableInput disabled={nameDisabled} onReset={onNameReset}>
           <LocalizedTextarea
             key={remountKey}
-            currentLocale={currentLocale}
             contentKey={nameKey}
-            onLocaleKeyChange={onNameChange}
+            onLocaleRefChange={onNameChange}
             label={
               <>
                 {t("speechEditorNameLabel")}
@@ -784,7 +774,6 @@ function EmotionSection({ emotionFx, onChange }: EmotionSectionProps) {
 type SortableChoiceProps = {
   id: string;
   choice: Choice;
-  currentLocale: string;
   updateChoiceTextKey: (choiceId: string, newKey: string | null) => void;
   removeChoice: (choiceId: string) => void;
 };
@@ -792,7 +781,6 @@ type SortableChoiceProps = {
 function SortableChoice({
   id,
   choice,
-  currentLocale,
   updateChoiceTextKey,
   removeChoice,
 }: SortableChoiceProps) {
@@ -814,10 +802,9 @@ function SortableChoice({
           {...listeners}
         />
         <LocalizedTextarea
-          currentLocale={currentLocale}
           contentKey={choice.textKey}
           label={t("dialogueResponse")}
-          onLocaleKeyChange={(newKey) => updateChoiceTextKey(id, newKey)}
+          onLocaleRefChange={(newRef) => updateChoiceTextKey(id, newRef)}
           style={{ flex: 1 }}
           placeholder={t("speechEditorChoicePlaceholder")}
           contextButton

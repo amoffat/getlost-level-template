@@ -8,7 +8,6 @@ import {
   actions as dActions,
   selectors as dSelectors,
 } from "@/slices/dialogue";
-import { selectors as localeSelectors } from "@/slices/locale";
 import { store } from "@/store/store";
 import {
   reflowDialogueThunk,
@@ -127,7 +126,6 @@ export default function DialogueTab({
   const activeDialogueId = useAppSelector(
     (state) => state.dialogue.activeDialogueId,
   );
-  const currentLocale = useAppSelector(localeSelectors.activeLocale);
   const navigate = useNavigate();
   // Track the currently selected node for the right-pane editor
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
@@ -942,11 +940,7 @@ export default function DialogueTab({
                   </Fieldset>
 
                   {selectedNodeId && selectedNode && (
-                    <SpeechEditor
-                      key={selectedNodeId}
-                      currentLocale={currentLocale}
-                      node={selectedNode}
-                    />
+                    <SpeechEditor key={selectedNodeId} node={selectedNode} />
                   )}
                 </>
               )}

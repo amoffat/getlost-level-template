@@ -19,7 +19,7 @@ import { pathToTab, tabToPath } from "@/routes/tabs";
 import { selectors as localeSelectors } from "@/slices/locale";
 import { actions as uiActions } from "@/slices/ui";
 import { store } from "@/store/store";
-import { setActiveLocaleThunk, setUserLocaleThunk } from "@/thunks/locale";
+import { setLanguageThunk } from "@/thunks/locale";
 import { SupportedLang, supportedLangs } from "@/types/i18n";
 import { MainTabName } from "@/types/tab";
 import { hasNewerEngineVersion } from "@/utils/version";
@@ -252,7 +252,6 @@ const ShellAppContent = memo(function ShellAppContent({
   );
 
   const activeLocale = useAppSelector(localeSelectors.activeLocale);
-  const userLocale = useAppSelector(localeSelectors.userLocale);
 
   const onDrop = useCallback(
     (files: FileWithPath[]) => {
@@ -275,16 +274,9 @@ const ShellAppContent = memo(function ShellAppContent({
     [activeTab, onTabChange],
   );
 
-  const handleLevelLocaleChange = useCallback(
+  const handleLanguageChange = useCallback(
     (locale: SupportedLang) => {
-      dispatch(setActiveLocaleThunk(locale));
-    },
-    [dispatch],
-  );
-
-  const handleUserLocaleChange = useCallback(
-    (locale: SupportedLang) => {
-      dispatch(setUserLocaleThunk(locale));
+      dispatch(setLanguageThunk(locale));
     },
     [dispatch],
   );
@@ -379,22 +371,13 @@ const ShellAppContent = memo(function ShellAppContent({
               <Tabs.Tab value="translations">{t("translationsTab")}</Tabs.Tab>
               <Tabs.Tab value="preview">{t("previewTab")}</Tabs.Tab>
               <Box style={{ marginLeft: "auto" }} pr="sm">
-                <Group gap={0}>
-                  <LocaleSelector
-                    key="editor-lang"
-                    label={t("editorLanguage")}
-                    locale={userLocale}
-                    hideMain
-                    onLocaleChange={handleUserLocaleChange}
-                  />
-                  <LocaleSelector
-                    key="level-lang"
-                    label={t("levelLanguage")}
-                    locale={activeLocale}
-                    onLocaleChange={handleLevelLocaleChange}
-                    rightSection={untranslatedBadges}
-                  />
-                </Group>
+                <LocaleSelector
+                  key="language"
+                  label={t("language")}
+                  locale={activeLocale}
+                  onLocaleChange={handleLanguageChange}
+                  rightSection={untranslatedBadges}
+                />
               </Box>
             </Tabs.List>
 

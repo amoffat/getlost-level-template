@@ -22,7 +22,6 @@ export const codeToFlag = {
 } as const;
 
 export const codeToLanguage = {
-  main: "Your language",
   en: "English", // English
   es: "Español", // Spanish
   pt: "Português", // Portuguese

@@ -1,4 +1,4 @@
-import { defaultLocale, playerParticipantId } from "@/constants";
+import { mainLocale, playerParticipantId } from "@/constants";
 import type { RootState } from "@/store/store";
 import {
   createEntityAdapter,
@@ -147,7 +147,10 @@ export const slice = createSlice({
     },
     setExactMilestoneOnly(
       state,
-      action: PayloadAction<{ dialogueId: string; exactMilestoneOnly: boolean }>,
+      action: PayloadAction<{
+        dialogueId: string;
+        exactMilestoneOnly: boolean;
+      }>,
     ) {
       const { dialogueId, exactMilestoneOnly } = action.payload;
       const dlg = state.dialogues.entities[dialogueId];
@@ -390,7 +393,7 @@ const selectFirstNodeText = createSelector(
     const activeText = locale.entries[activeLocale]?.entities[contentKey]?.v;
     if (activeText) return activeText;
 
-    const defaultText = locale.entries[defaultLocale]?.entities[contentKey]?.v;
+    const defaultText = locale.entries[mainLocale]?.entities[contentKey]?.v;
     return defaultText ?? "...";
   },
 );

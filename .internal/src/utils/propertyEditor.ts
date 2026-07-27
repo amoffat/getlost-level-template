@@ -1,11 +1,11 @@
 import { PropertyValueScope } from "@/components/PropertyValue";
-import { globals } from "@/globals";
 import { log } from "@/log";
 import { actions as mapActions } from "@/slices/mapEditor";
 import { actions as tsActions } from "@/slices/tilesetEditor";
 import { selectTemplateProps } from "@/store/selectors";
 import { store } from "@/store/store";
 import { ExtractProps, MapObj, TilesetMapObj } from "@/types/map";
+import { templateIndex } from "@/utils/templateIndex";
 
 export function updateObjects<TInstance extends MapObj>({
   objs,
@@ -91,7 +91,7 @@ export function updateObjectOrTemplate<
       changes: Partial<TInstance>;
     }[] = [];
     for (const tmplId of allTmplIds) {
-      const objIds = globals.templateIndex.get(tmplId);
+      const objIds = templateIndex.get(tmplId);
       if (!objIds) continue;
 
       for (const objId of objIds) {

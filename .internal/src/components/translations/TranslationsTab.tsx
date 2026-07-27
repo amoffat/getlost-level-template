@@ -1,4 +1,4 @@
-import { defaultLocale } from "@/constants";
+import { codeToFlag, codeToLanguage } from "@/constants/locale";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import {
   actions as localeActions,
@@ -8,14 +8,12 @@ import {
   deleteLocaleEntriesThunk,
   loadDialogueLocaleThunk,
   setEntriesPinThunk,
+  upsertLocaleEntry,
 } from "@/thunks/locale";
+import type { SupportedLang } from "@/types/i18n";
 import type { LocaleEntry } from "@/types/locale";
 import { copyToClipboard } from "@/utils/copy";
-import {
-  computeSourceHash,
-  newLocaleId,
-  syncLocaleField,
-} from "@/utils/locale";
+import { computeSourceHash, newLocaleId, sourceLangOf } from "@/utils/locale";
 import {
   Box,
   Button,
@@ -40,6 +38,7 @@ import {
   IconPlus,
   IconSearch,
   IconTrash,
+  IconWorld,
 } from "@tabler/icons-react";
 import { DataTable, type DataTableColumn } from "mantine-datatable";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -47,16 +46,12 @@ import { useTranslation } from "react-i18next";
 import AddEntryModal from "./AddEntryModal";
 
 interface RowStatus {
+  /** The viewed locale is this string's own source language. */
+  isSource: boolean;
   untranslated: boolean;
   outOfDate: boolean;
   needsAttention: boolean;
 }
-
-const OK_STATUS: RowStatus = {
-  untranslated: false,
-  outOfDate: false,
-  needsAttention: false,
-};
 
 /**
  * Renders the pin glyph as a Checkbox's checked indicator, so a pinned row
@@ -129,7 +124,6 @@ export default function TranslationsTab() {
   const dispatch = useAppDispatch();
 
   const activeLocale = useAppSelector(localeSelectors.activeLocale);
-  const isMain = activeLocale === defaultLocale;
 
   const entries = useAppSelector(localeSelectors.selectActiveEntries);
   const mainEntries = useAppSelector(localeSelectors.selectDefaultEntries);
@@ -159,28 +153,30 @@ export default function TranslationsTab() {
     [entries],
   );
 
-  // Per-row translation status (only meaningful for non-main locales).
+  // Per-row translation status. A row whose source language is the viewed
+  // locale IS the source (no translation needed); every other row is a
+  // translation that can be untranslated or out of date.
   const statusById = useMemo(() => {
     const map: Record<string, RowStatus> = {};
     for (const e of rows) {
-      if (isMain) {
-        map[e.id] = OK_STATUS;
-        continue;
-      }
       const main = mainEntries[e.id];
-      const untranslated = e.original !== undefined && e.v === e.original;
+      const isSource = sourceLangOf(main) === activeLocale;
+      const untranslated =
+        !isSource && e.original !== undefined && e.v === e.original;
       const outOfDate =
+        !isSource &&
         e.hash !== undefined &&
         main?.hash !== undefined &&
         e.hash !== main.hash;
       map[e.id] = {
+        isSource,
         untranslated,
         outOfDate,
         needsAttention: untranslated || outOfDate,
       };
     }
     return map;
-  }, [rows, isMain, mainEntries]);
+  }, [rows, activeLocale, mainEntries]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -197,31 +193,28 @@ export default function TranslationsTab() {
 
   const saveText = useCallback(
     (entry: LocaleEntry, value: string) => {
-      // A translation with no source counterpart cannot be resolved; skip it
-      // rather than accidentally writing into the main locale.
-      if (!isMain && !mainEntries[entry.id]) return;
-      syncLocaleField({
-        locale: activeLocale,
-        prevEntry: entry,
-        defaultEntry: isMain ? entry : mainEntries[entry.id],
-        dispatch,
-        updates: { v: value.trim() === "" ? null : value },
-      });
+      dispatch(
+        upsertLocaleEntry({
+          id: entry.id,
+          v: value.trim() === "" ? null : value,
+        }),
+      );
     },
-    [activeLocale, isMain, mainEntries, dispatch],
+    [dispatch],
   );
 
+  // Context is authored on the source string, so this is only wired up for
+  // source rows. Pass the main entry so `syncLocaleField` routes it to `main`.
   const saveCtx = useCallback(
     (entry: LocaleEntry, value: string) => {
-      syncLocaleField({
-        locale: activeLocale,
-        prevEntry: entry,
-        defaultEntry: entry,
-        dispatch,
-        updates: { ctx: value.trim() === "" ? null : value },
-      });
+      dispatch(
+        upsertLocaleEntry({
+          id: entry.id,
+          ctx: value.trim() === "" ? null : value,
+        }),
+      );
     },
-    [activeLocale, dispatch],
+    [dispatch],
   );
 
   // Batch actions operate on the currently selected rows. Each is guarded by a
@@ -266,25 +259,27 @@ export default function TranslationsTab() {
     [t, dispatch],
   );
 
-  // Create a standalone, pinned entry on the main locale. It is attached to no
-  // object, so `pin` keeps it from being auto-pruned. Autosave recomputes the
-  // hash, but we seed it so the entry is immediately consistent.
+  // Create a standalone, pinned source entry. It is attached to no object, so
+  // `pin` keeps it from being auto-pruned. The thunk writes it to `main` and
+  // seeds it into the active locale so the new row appears immediately. The
+  // active language is the language this source string is authored in.
   const onAddEntry = useCallback(
     (text: string, ctx: string | undefined) => {
       dispatch(
         localeActions.upsertEntry({
-          locale: defaultLocale,
+          locale: activeLocale,
           entry: {
             id: newLocaleId(),
             v: text,
             ctx,
             pin: true,
+            srcLang: activeLocale,
             hash: computeSourceHash(text),
           },
         }),
       );
     },
-    [dispatch],
+    [dispatch, activeLocale],
   );
 
   const columns = useMemo(() => {
@@ -303,7 +298,7 @@ export default function TranslationsTab() {
         // Pin lives on the main entry, so read it from there to reflect and
         // toggle the pin on every locale.
         render: (e) => {
-          const pinned = !!(isMain ? e.pin : mainEntries[e.id]?.pin);
+          const pinned = !!mainEntries[e.id]?.pin;
           return (
             <Checkbox
               checked={pinned}
@@ -354,15 +349,31 @@ export default function TranslationsTab() {
         ),
       },
       {
+        accessor: "srcLang",
+        title: t("translationsSourceLangCol"),
+        width: "1%",
+        textAlign: "center",
+        // The language the source text is written in, so a translator always
+        // knows what they are translating from. Read from the main entry.
+        render: (e) => {
+          const lang = sourceLangOf(mainEntries[e.id]) as SupportedLang;
+          return (
+            <Tooltip label={codeToLanguage[lang] ?? lang} withArrow>
+              <Text size="sm">{codeToFlag[lang] ?? "🏳️"}</Text>
+            </Tooltip>
+          );
+        },
+      },
+      {
         accessor: "original",
         title: t("translationsOriginalCol"),
         width: "30%",
         resizable: true,
-        // Match the editable "text" cell, which preserves newlines. In the main
-        // (source) locale the original IS the text, so mirror it.
+        // Match the editable "text" cell, which preserves newlines. On a source
+        // row the original IS the text, so mirror it.
         render: (e) => (
           <Text size="xs" c="dimmed" style={{ whiteSpace: "pre-wrap" }}>
-            {isMain ? e.v : e.original}
+            {statusById[e.id]?.isSource ? e.v : e.original}
           </Text>
         ),
       },
@@ -371,8 +382,10 @@ export default function TranslationsTab() {
         title: t("translationsContextCol"),
         width: "30%",
         resizable: true,
+        // Context is authored on the source string, so it is only editable on a
+        // source row; other locales see it read-only.
         render: (e) =>
-          isMain ? (
+          statusById[e.id]?.isSource ? (
             <EditableCell
               key={`${e.id}:ctx`}
               value={e.ctx ?? ""}
@@ -396,10 +409,20 @@ export default function TranslationsTab() {
         ),
         width: "1%",
         textAlign: "center",
-        // The main (source) locale is translated by definition, so a main row
-        // is never flagged (statusById returns an all-false status for it).
+        // A source row (its source language IS the viewed locale) is the source
+        // of truth, not a translation — mark it distinctly, never flagged.
         render: (e) => {
           const s = statusById[e.id];
+          if (s?.isSource) {
+            return (
+              <Tooltip label={t("translationsSourceRow")} withArrow>
+                <IconWorld
+                  size={18}
+                  style={{ color: "var(--mantine-color-blue-5)" }}
+                />
+              </Tooltip>
+            );
+          }
           if (!s?.needsAttention) {
             return (
               <Tooltip label={t("translationsTranslated")} withArrow>
@@ -430,16 +453,7 @@ export default function TranslationsTab() {
     ];
 
     return cols;
-  }, [
-    t,
-    isMain,
-    activeLocale,
-    saveText,
-    saveCtx,
-    statusById,
-    mainEntries,
-    togglePin,
-  ]);
+  }, [t, activeLocale, saveText, saveCtx, statusById, mainEntries, togglePin]);
 
   return (
     <Stack gap="xs" p="sm" h="calc(100vh - 60px)">
@@ -472,13 +486,11 @@ export default function TranslationsTab() {
             w={320}
           />
         </Group>
-        {!isMain && (
-          <Switch
-            checked={onlyNeedsAttention}
-            onChange={(e) => setOnlyNeedsAttention(e.currentTarget.checked)}
-            label={t("translationsOnlyNeedsAttention")}
-          />
-        )}
+        <Switch
+          checked={onlyNeedsAttention}
+          onChange={(e) => setOnlyNeedsAttention(e.currentTarget.checked)}
+          label={t("translationsOnlyNeedsAttention")}
+        />
       </Group>
 
       <Box style={{ flex: 1, minHeight: 0 }}>

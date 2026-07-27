@@ -9,6 +9,21 @@ import {
 } from "@/types/map";
 
 /**
+ * App-wide index mapping template IDs → the set of object IDs that use them,
+ * enabling O(1) lookup of every instance of a given template (critical for
+ * template-property updates).
+ *
+ * It lives here, beside its helper functions, rather than on the `globals` bag
+ * so that redux slices (which mutate it while reducing) can reach it without
+ * importing `@/globals`. That import was the return edge of a load-order cycle
+ * — globals → mapReconciler → store/selectors → mapEditor slice → globals —
+ * whose eager `createSelector` in store/selectors crashed under isolated unit
+ * tests. This module only depends on constants + type guards, so it is safe for
+ * any layer to import.
+ */
+export const templateIndex = new Map<string, Set<string>>();
+
+/**
  * Get the template ID for a map object.
  * Returns the template ID that this object uses, or null if it doesn't use a template.
  */

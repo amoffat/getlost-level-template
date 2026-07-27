@@ -1,7 +1,8 @@
-import { defaultLocale } from "@/constants";
-import { SupportedLang } from "@/types/i18n";
+import { defaultSourceLang, mainLocale } from "@/constants";
+import { SupportedLang, supportedLangs } from "@/types/i18n";
 import type { LocaleEntry, LocaleStatePayload } from "@/types/locale";
 import { PartialNullable } from "@/types/util";
+import { normLang } from "@/utils/i18n";
 import {
   createEntityAdapter,
   createSelector,
@@ -11,6 +12,18 @@ import {
 } from "@reduxjs/toolkit";
 import i18next from "i18next";
 
+/**
+ * The language to open the editor in, derived from the browser. Normalized to a
+ * real supported language key — never `main` — falling back to the default
+ * source language when the browser language is unsupported.
+ */
+const detectedLang: SupportedLang = (() => {
+  const n = normLang(i18next.language ?? "");
+  return (supportedLangs as string[]).includes(n) && n !== mainLocale
+    ? (n as SupportedLang)
+    : (defaultSourceLang as SupportedLang);
+})();
+
 const entryAdapter = createEntityAdapter<LocaleEntry, string>({
   selectId: (entry) => entry.id,
 });
@@ -19,7 +32,6 @@ type LocaleEntityState = EntityState<LocaleEntry, string>;
 
 interface LocaleState {
   activeLocale: SupportedLang;
-  userLocale: SupportedLang;
   /** All loaded locale entries, keyed by locale string. */
   entries: Record<string, LocaleEntityState>;
 }
@@ -40,6 +52,9 @@ function localeBucket(state: LocaleState, locale: string): LocaleEntityState {
 }
 
 export interface RowStatus {
+  /** The viewed locale is this string's own source language — it IS the source
+   * and needs no translation. */
+  isSource: boolean;
   /** The translated value still equals the source text (never translated). */
   untranslated: boolean;
   /** The source text changed since this translation was written (hash drift). */
@@ -48,21 +63,34 @@ export interface RowStatus {
   needsAttention: boolean;
 }
 
+const OK_ROW_STATUS: RowStatus = {
+  isSource: false,
+  untranslated: false,
+  outOfDate: false,
+  needsAttention: false,
+};
+
 /**
- * Compute the translation status of a non-main entry relative to its main
- * (source) counterpart. `mainEntry` is looked up by the same id.
+ * Compute the translation status of an entry in `locale` relative to its `main`
+ * (source) counterpart, looked up by the same id. A row whose source language
+ * equals `locale` is the source itself, so it never needs attention.
  */
 function computeRowStatus(
   entry: LocaleEntry,
   mainEntry: LocaleEntry | undefined,
+  locale: string,
 ): RowStatus {
+  const srcLang = mainEntry?.srcLang ?? defaultSourceLang;
+  const isSource = locale === srcLang;
   const untranslated =
-    entry.original !== undefined && entry.v === entry.original;
+    !isSource && entry.original !== undefined && entry.v === entry.original;
   const outOfDate =
+    !isSource &&
     entry.hash !== undefined &&
     mainEntry?.hash !== undefined &&
     entry.hash !== mainEntry.hash;
   return {
+    isSource,
     untranslated,
     outOfDate,
     needsAttention: untranslated || outOfDate,
@@ -72,20 +100,13 @@ function computeRowStatus(
 export const slice = createSlice({
   name: "locale",
   initialState: {
-    // The locale of the user. This changes the editor UI
-    userLocale: i18next.language,
-    // The locale of the level, for checking/editing translations in the dialogue tab.
-    activeLocale: defaultLocale,
+    activeLocale: detectedLang,
     entries: {},
   } as LocaleState,
 
   reducers: {
     setActiveLocale(state, action: PayloadAction<SupportedLang>) {
       state.activeLocale = action.payload;
-    },
-
-    setUserLocale(state, action: PayloadAction<SupportedLang>) {
-      state.userLocale = action.payload;
     },
 
     setEntries(state, action: PayloadAction<LocaleStatePayload>) {
@@ -121,6 +142,7 @@ export const slice = createSlice({
       for (const key of Object.keys(patch) as (keyof typeof patch)[]) {
         if (patch[key] === undefined) delete patch[key];
       }
+
       state.entries[locale] = entryAdapter.upsertOne(
         localeBucket(state, locale),
         patch as LocaleEntry,
@@ -140,7 +162,6 @@ export const slice = createSlice({
 
   selectors: {
     activeLocale: (state) => state.activeLocale,
-    userLocale: (state) => state.userLocale,
     /** Active locale entry for the given key. */
     selectEntry: (state, key: string): LocaleEntry | undefined =>
       state.entries[state.activeLocale]?.entities[key],
@@ -152,9 +173,8 @@ export const slice = createSlice({
       state,
       key: string | undefined | null,
     ): LocaleEntry | undefined =>
-      key ? state.entries[defaultLocale]?.entities[key] : undefined,
-    selectDefaultEntries: (state) =>
-      state.entries[defaultLocale]?.entities ?? {},
+      key ? state.entries[mainLocale]?.entities[key] : undefined,
+    selectDefaultEntries: (state) => state.entries[mainLocale]?.entities ?? {},
     /** All entries for the given locale, as a dict keyed by id. */
     selectEntriesForLocale: (state, locale: string) =>
       state.entries[locale]?.entities ?? {},
@@ -162,10 +182,10 @@ export const slice = createSlice({
     selectRowStatus: (state, locale: string, id: string): RowStatus => {
       const entry = state.entries[locale]?.entities[id];
       if (!entry) {
-        return { untranslated: false, outOfDate: false, needsAttention: false };
+        return OK_ROW_STATUS;
       }
-      const mainEntry = state.entries[defaultLocale]?.entities[id];
-      return computeRowStatus(entry, mainEntry);
+      const mainEntry = state.entries[mainLocale]?.entities[id];
+      return computeRowStatus(entry, mainEntry, locale);
     },
     /**
      * For each non-default loaded locale, returns the count of entries that
@@ -177,14 +197,17 @@ export const slice = createSlice({
       [(state: LocaleState) => state.entries],
       (entries): Partial<Record<SupportedLang, number>> => {
         const result: Partial<Record<SupportedLang, number>> = {};
-        const mainEntities = entries[defaultLocale]?.entities ?? {};
+        const mainEntities = entries[mainLocale]?.entities ?? {};
         for (const [locale, entityState] of Object.entries(entries)) {
-          if (locale === defaultLocale) continue;
+          if (locale === mainLocale) continue;
           let count = 0;
           for (const id of entityState.ids as string[]) {
             const entry = entityState.entities[id];
             if (!entry) continue;
-            if (computeRowStatus(entry, mainEntities[entry.id]).needsAttention) {
+            if (
+              computeRowStatus(entry, mainEntities[entry.id], locale)
+                .needsAttention
+            ) {
               count++;
             }
           }
