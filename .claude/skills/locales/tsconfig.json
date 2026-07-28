@@ -1,0 +1,23 @@
+{
+  // Editor/type-check config for this skill's tsx scripts ONLY. These scripts
+  // run via `tsx` (which does not type-check) and are not part of the app build.
+  // Because there is no node_modules between the repo root and this directory,
+  // the IDE can't otherwise find @types/node — so we point typeRoots at the
+  // copy installed under .internal. No install is required.
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["esnext"],
+    "types": ["node"],
+    "typeRoots": ["../../../.internal/node_modules/@types"],
+    // The scripts import each other with explicit .ts extensions (e.g.
+    // `import { ... } from "./lib.ts"`), which tsx requires and this allows.
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["scripts/**/*.ts"]
+}

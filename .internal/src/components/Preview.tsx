@@ -883,6 +883,7 @@ export default function PreviewTab({
 
             <Fieldset legend={t("previewVisualizationFieldset")}>
               <Stack gap="sm" p={0}>
+                {createDebugSwitch(t("previewShowCamera"), "camera")}
                 {createDebugSwitch(t("previewShowCollisions"), "collisions")}
                 {createDebugSwitch(t("previewShowPathfinding"), "pathfinding")}
                 {createDebugSwitch(t("previewShowSceneDepth"), "zSorting")}

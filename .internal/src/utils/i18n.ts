@@ -55,8 +55,8 @@ export function jsonLinesParse(data: string): Record<string, string> {
   for (const line of lines) {
     try {
       const obj = JSON.parse(line);
-      if (typeof obj.k === "string" && typeof obj.v === "string") {
-        result[obj.k] = obj.v;
+      if (typeof obj.id === "string" && typeof obj.v === "string") {
+        result[obj.id] = obj.v;
       }
     } catch (error) {
       log.error({ error }, `Failed to parse JSON line: ${line}`);

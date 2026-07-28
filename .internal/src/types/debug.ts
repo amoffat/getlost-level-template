@@ -3,6 +3,7 @@ export const debugFlagKeys = [
   "pathfinding",
   "objDetails",
   "zSorting",
+  "camera",
 ] as const;
 
 export type DebugFlagKey = (typeof debugFlagKeys)[number];
