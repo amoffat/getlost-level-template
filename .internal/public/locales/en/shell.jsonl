@@ -32,8 +32,6 @@
 {"id": "translationsAddEntryContextPlaceholder", "v": "Add context for translators… (optional)", "ctx": "Placeholder for the optional context field in the add-translation-entry modal"}
 {"id": "translationsAddEntrySubmit", "v": "Add entry", "ctx": "Submit button label in the add-translation-entry modal"}
 {"id": "translationsPinColumn", "v": "Pinned", "ctx": "Header/aria label for the per-row pin checkbox column in the translations table"}
-{"id": "translationsPinned", "v": "Pinned — kept even without references", "ctx": "Tooltip on a row's pin checkbox when it is pinned (exempt from automatic pruning)"}
-{"id": "translationsPin", "v": "Pin", "ctx": "Tooltip on a row's pin checkbox when it is not pinned, indicating clicking will pin it"}
 {"id": "translationsUnpin", "v": "Unpin", "ctx": "Confirm button label in the dialog shown before unpinning a translation entry"}
 {"id": "translationsUnpinConfirmTitle", "v": "Unpin this string?", "ctx": "Title of the confirmation dialog shown before unpinning a translation entry"}
 {"id": "translationsUnpinConfirmBody", "v": "Unpinning allows this string to be removed automatically unless it's attached to an existing object.", "ctx": "Body text of the confirmation dialog shown before unpinning a translation entry"}
@@ -51,8 +49,6 @@
 {"id": "dragAssetsHere", "v": "Drag assets here", "ctx": "Primary text shown in the full-screen dropzone overlay"}
 {"id": "attachAssetsMsg", "v": "Attach as many assets as you like.", "ctx": "Secondary/hint text in the full-screen dropzone overlay"}
 {"id": "language", "v": "Language", "ctx": "Label for the single language selector that sets the editor UI, the dialogue view, and the authoring language all at once"}
-{"id": "mapMovedObjects", "v": "Moved objects", "ctx": "Notification title when selected objects are moved to a different map layer"}
-{"id": "mapMovedObjectsMessage", "v": "{count} objects were moved to the \"{name}\" layer.", "ctx": "Notification message; count = number of objects, name = layer name"}
 {"id": "mapLayerSwitched", "v": "Layer switched", "ctx": "Notification title when the active map editing layer changes"}
 {"id": "mapLayerSwitchedMessage", "v": "You're now editing the \"{name}\" layer.", "ctx": "Notification message; name = layer name"}
 {"id": "mapLoading", "v": "Loading map...", "ctx": "Loading spinner message while the map is being loaded"}
@@ -109,12 +105,6 @@
 {"id": "fillToolNoTilesMsg", "v": "Please select tile groups from the palette."}
 {"id": "fillToolDensityLabel", "v": "Density"}
 {"id": "fillToolFillButton", "v": "Fill"}
-{"id": "mapColliderTip1", "v": "Use the collider tool to create collision areas."}
-{"id": "mapColliderTip2", "v": "Hold <1>Ctrl</1> to snap the collider to the grid.", "ctx": "Keyboard shortcut tip with Kbd component - <1> represents the Kbd element"}
-{"id": "mapColliderTip3", "v": "Only use colliders for large areas. Small areas should use colliders set on the tile."}
-{"id": "mapColliderOptionsLegend", "v": "Collider options"}
-{"id": "mapColliderBoxLabel", "v": "Box collider"}
-{"id": "mapColliderCircleLabel", "v": "Circle collider"}
 {"id": "autotilerTip1", "v": "The autotiler lets you quickly place ground tiles that adapt to their surroundings."}
 {"id": "autotilerTip2", "v": "If you don't like the selected tile, press number keys to choose a different candidate."}
 {"id": "autotilerTip3", "v": "Moving the cursor slightly within a grid cell will result in candidates that allow more change in that direction."}
@@ -154,7 +144,6 @@
 {"id": "npcToolTipAllAssigned", "v": "Once every animation is assigned, enter a name and click 'Create NPC' to finalize.", "ctx": "NPC tool tip shown when all animation slots are filled"}
 {"id": "npcToolTipDefineAnimations", "v": "Create an NPC by defining its required animations.", "ctx": "NPC tool tip shown when animations are missing"}
 {"id": "npcToolTipUseAnimator", "v": "To create a required animation, use the <1>Animator tool.</1>", "ctx": "NPC tool tip - <1> wraps a clickable Anchor link that activates the Animator tool"}
-{"id": "npcToolNameRequired", "v": "Name is required", "ctx": "NPC form validation error for empty name"}
 {"id": "npcToolNotifTitle", "v": "NPC saved", "ctx": "NPC save success notification title"}
 {"id": "npcToolNotifMessage", "v": "Saved NPC", "ctx": "NPC save success notification message"}
 {"id": "npcToolLegend", "v": "NPC animations", "ctx": "Fieldset legend for NPC tool"}
@@ -215,8 +204,6 @@
 {"id": "localizedNameInputDescription", "v": "A name for this object.", "ctx": "Default description for a localized name input field"}
 {"id": "localizedNameInputPlaceholder", "v": "Enter name", "ctx": "Default placeholder for a localized name input field"}
 {"id": "localizedDescriptionInputLabel", "v": "Description", "ctx": "Default label for a localized description input field"}
-{"id": "localizedDescriptionInputDescription", "v": "A description for this object.", "ctx": "Default description for a localized description input field"}
-{"id": "localizedDescriptionInputPlaceholder", "v": "Enter description", "ctx": "Default placeholder for a localized description input field"}
 {"id": "localizedInputMixedValues", "v": "Mixed values", "ctx": "Placeholder shown when multiple selected objects have different values"}
 {"id": "npcPropLegend", "v": "NPC properties", "ctx": "Fieldset legend for NPC object properties panel"}
 {"id": "npcPropNameDescription", "v": "A name for this character. This will appear in dialogue.", "ctx": "Description for the NPC name input"}
@@ -227,9 +214,6 @@
 {"id": "npcPropDampenWalkCollisionsDescription", "v": "How much to slow the player's movement when colliding with this NPC.", "ctx": "Description for the NPC dampen walk collisions slider"}
 {"id": "npcPropGroundOffsetDescription", "v": "Vertical offset of the NPC from the ground.", "ctx": "Description for the NPC ground offset slider"}
 {"id": "npcPropGroundOffsetTooltip", "v": "The ground offset adjusts the NPC's vertical position relative to the ground. Positive values will raise the NPC above the ground, while negative values will sink it below. This can be useful for NPCs that need to appear to be floating or partially submerged. Normally, this should be set to 0 for most NPCs.", "ctx": "Detailed tooltip for the NPC ground offset slider"}
-{"id": "npcPropIdLabel", "v": "ID", "ctx": "Label for the read-only NPC object ID field"}
-{"id": "npcPropIdDescription", "v": "The object's unique identifier.", "ctx": "Description for the read-only NPC object ID field"}
-{"id": "npcPropCopyIdTooltip", "v": "Copy id", "ctx": "Tooltip for the button that copies the NPC object ID to clipboard"}
 {"id": "tileGroupPropLegend", "v": "Object properties", "ctx": "Fieldset legend for tile group object properties panel"}
 {"id": "tileGroupPropNameDescription", "v": "A name for this object. Does not have to be unique.", "ctx": "Description for the tile group name input"}
 {"id": "tileGroupPropNameContext", "v": "Object name"}
@@ -273,7 +257,6 @@
 {"id": "entrancePropGatewayPlaceholder", "v": "Select an exit", "ctx": "Placeholder for the exit gateway selector in the entrance connection modal"}
 {"id": "entrancePropGatewayDescription", "v": "Enter a Github repository ID first", "ctx": "Description shown in the entrance connection modal to guide the user"}
 {"id": "exitPropLegend", "v": "Exit properties", "ctx": "Fieldset legend for exit object properties panel"}
-{"id": "exitPropNameDescription", "v": "A name of the exit. Must be unique.", "ctx": "Description for the exit name input"}
 {"id": "exitPropPreferredEntranceLabel", "v": "Preferred entrance", "ctx": "Label for the exit preferred entrance input"}
 {"id": "exitPropPreferredEntranceDescription", "v": "If an entrance matching this id attaches to this exit, it will be permanently attached.", "ctx": "Description for the exit preferred entrance input"}
 {"id": "exitPropPreferredEntrancePlaceholder", "v": "Enter entrance id", "ctx": "Placeholder for the preferred entrance ID text field"}
@@ -356,8 +339,6 @@
 {"id": "dialogueTabTip1", "v": "Click 'New Speech' to add a new speech node connected to this one.", "ctx": "Tip shown in the dialogue editor when only one node exists"}
 {"id": "dialogueTabTip2", "v": "If your node has responses, you can drag a connection from the right handle to create a new connected node.", "ctx": "Tip shown in the dialogue editor about creating connected nodes via drag"}
 {"id": "dialogueTabTip3", "v": "Select a dialogue from the left panel, or create a new dialogue by clicking the '+' icon in the left panel.", "ctx": "Tip shown when no dialogue is selected but speakers exist"}
-{"id": "dialogueTabNoDialogues", "v": "No dialogues", "ctx": "Alert title in the dialogue tab left panel when no speakable objects exist in the scene"}
-{"id": "dialogueTabNoDialoguesMsg", "v": "There are no objects in the scene that the player can talk with.", "ctx": "Alert body when no speakable objects exist in the scene"}
 {"id": "dialogueTabNewSpeech", "v": "New Speech", "ctx": "Button label to create a new speech node in the dialogue flow editor"}
 {"id": "dialogueTabOrganize", "v": "Organize", "ctx": "Button label to auto-layout the dialogue flow graph"}
 {"id": "dialogueTabSelectPrompt", "v": "Please select a dialogue from the left panel.", "ctx": "Overlay text shown over the dialogue flow canvas when no dialogue is selected"}
@@ -369,26 +350,12 @@
 {"id": "dialogueTabExactMilestoneOnlyDesc", "v": "Only activate on the milestones above", "ctx": "Description under the exact-milestone-only switch"}
 {"id": "dialogueTabExactMilestoneOnlyTooltip", "v": "Normally a dialogue stays active after the story moves past its milestones. If the current milestone has no dialogue of its own, the game falls back to the nearest earlier milestone that does, so you don't have to re-link the same dialogue to every later milestone.\n\nTurn this on to opt out of that fallback. The dialogue will go silent the moment the story moves past the milestones listed above, and will only play on an exact match.\n\nUse this for one-off, moment-specific dialogue that would feel stale if the NPC kept repeating it later in the story.", "ctx": "Tooltip explaining the exact-milestone-only switch"}
 {"id": "dialogueTabNoMilestonesFound", "v": "No milestones found", "ctx": "Empty state message in the milestones multi-select dropdown"}
-{"id": "dialogueTabChangeSpeakerImage", "v": "Change speaker image", "ctx": "Tooltip on the speaker image action icon button in the dialogue tree"}
-{"id": "dialogueTabReplaceImage", "v": "Replace image", "ctx": "Menu item to replace the current speaker image"}
-{"id": "dialogueTabRemoveImage", "v": "Remove image", "ctx": "Menu item to remove the speaker image entirely"}
-{"id": "dialogueTabUploadSpeakerImage", "v": "Upload speaker image", "ctx": "Tooltip on the upload speaker image button when no image exists yet"}
-{"id": "dialogueTabAddNewDialogue", "v": "Add new dialogue for this NPC", "ctx": "Tooltip on the add-dialogue button in the NPC tree node"}
 {"id": "dialogueTabNoMilestone", "v": "No milestone", "ctx": "Label shown for a dialogue leaf that has no milestone assigned"}
-{"id": "dialogueTabUnlinkTitle", "v": "Unlink dialogue?", "ctx": "Title of the confirmation modal for unlinking a milestone from a shared dialogue"}
-{"id": "dialogueTabUnlinkMsg", "v": "Are you sure you want to unlink this milestone into its own separate dialogue?", "ctx": "Body text of the unlink dialogue confirmation modal"}
-{"id": "dialogueTabUnlinkConfirm", "v": "Yes, unlink", "ctx": "Confirm button label in the unlink dialogue modal"}
-{"id": "dialogueTabUnlinkItem1", "v": "A new copy of this dialogue will be created for the \"{label}\" milestone.", "ctx": "Info item in the unlink dialogue modal; {label} is the milestone name"}
-{"id": "dialogueTabUnlinkItem2", "v": "The original dialogue will keep its remaining {count} milestone(s).", "ctx": "Info item in the unlink dialogue modal; {count} is the number of remaining milestones"}
 {"id": "dialogueTabDeleteTitle", "v": "Delete dialogue?", "ctx": "Title of the delete dialogue confirmation modal"}
 {"id": "dialogueTabDeleteMsg", "v": "Are you sure you want to delete this dialogue? This action cannot be undone.", "ctx": "Body text of the delete dialogue confirmation modal"}
 {"id": "dialogueTabDeleteConfirm", "v": "Yes, delete", "ctx": "Confirm button label in the delete dialogue modal"}
-{"id": "dialogueTabDeleteItem1", "v": "This dialogue belongs to {count} other milestones.", "ctx": "Info item in delete modal when dialogue is shared; {count} is other-milestone count"}
-{"id": "dialogueTabDeleteItem2", "v": "Deleting it will only remove the dialogue from the current milestone.", "ctx": "Info item in delete modal when dialogue is shared with other milestones"}
-{"id": "dialogueTabDeleteItem3", "v": "This dialogue does not belong to any other milestones.", "ctx": "Warning item in delete modal when dialogue has no other milestones"}
 {"id": "dialogueTabDeleteItem4", "v": "Deleting it will remove the dialogue permanently.", "ctx": "Warning item in delete modal indicating permanent deletion"}
 {"id": "dialogueTabDeleteDialogue", "v": "Delete dialogue", "ctx": "Tooltip on the delete button in a dialogue tree leaf"}
-{"id": "dialogueTabUnlinkDialogue", "v": "Unlink from active dialogue", "ctx": "Tooltip on the unlink button shown when a dialogue leaf is selected and has multiple milestones"}
 {"id": "dialogueTabNewDialogue", "v": "New dialogue", "ctx": "Button label that opens a menu to create a new dialogue for a chosen character"}
 {"id": "dialogueTabNewDialogueFor", "v": "New dialogue for…", "ctx": "Menu label above the list of characters to start a new dialogue for"}
 {"id": "dialogueTabAllMilestones", "v": "All milestones", "ctx": "Placeholder for the milestone filter dropdown in the dialogue list"}
@@ -562,7 +529,6 @@
 {"id": "previewGuidelinesRequired", "v": "You must agree to the story guidelines", "ctx": "Validation error shown when the story guidelines checkbox is unchecked on publish"}
 {"id": "previewAssetsRequired", "v": "You must disclose third-party assets", "ctx": "Validation error shown when the third-party assets disclosure checkbox is unchecked on publish"}
 {"id": "previewCommitMsgRequired", "v": "Commit message is required", "ctx": "Validation error shown when the publish commit message field is empty"}
-{"id": "previewNoAudioTip", "v": "No audio? Click in the preview window, or enable overlays below.", "ctx": "Tip shown in the preview left panel for if audio isn't working"}
 {"id": "previewEngineFieldset", "v": "Engine", "ctx": "Legend text for the engine settings fieldset in the preview panel"}
 {"id": "previewEnvironmentLabel", "v": "Environment", "ctx": "Label for the game environment select (local/production/QA)"}
 {"id": "previewEnvLocalhost", "v": "Localhost", "ctx": "Option label for the local game environment"}
@@ -576,7 +542,6 @@
 {"id": "previewDeviceEmulationFieldset", "v": "Device emulation", "ctx": "Legend text for the device emulation fieldset in the preview panel"}
 {"id": "previewDeviceDesktop", "v": "Desktop", "ctx": "Option label for desktop device emulation mode"}
 {"id": "previewDeviceMobile", "v": "Mobile", "ctx": "Option label for mobile device emulation mode"}
-{"id": "previewPathfindingFieldset", "v": "Pathfinding", "ctx": "Legend text for the pathfinding fieldset in the preview left panel"}
 {"id": "previewRebuildGraphBtn", "v": "Rebuild graph", "ctx": "Button label to force a pathfinding graph rebuild in the preview panel"}
 {"id": "previewPublishFieldset", "v": "Publish", "ctx": "Legend text for the publish fieldset in the preview panel"}
 {"id": "previewAgreeToThe", "v": "I agree to the", "ctx": "Start of the license agreement checkbox label (followed by a link)"}
@@ -622,14 +587,6 @@
 {"id": "spotlightResetMsg", "v": "Are you sure you want to reset everything? This action cannot be undone.", "ctx": "Body message in the reset project confirmation modal"}
 {"id": "spotlightNothingFound", "v": "Nothing found...", "ctx": "Message shown in the spotlight search when no actions match the query"}
 {"id": "spotlightSearchPlaceholder", "v": "Search...", "ctx": "Placeholder text in the spotlight search input"}
-{"id": "mapColliderTipDraw", "v": "Paint a freehand collision mask directly on the map. The mask is converted to polygon colliders automatically.", "ctx": "Map collider tool tip"}
-{"id": "mapColliderTipPaintErase", "v": "Paint mode adds collision areas, erase mode removes them.", "ctx": "Map collider tool tip"}
-{"id": "mapColliderTipHoldCtrl", "v": "Hold <1>Ctrl</1> to temporarily switch to erase mode.", "ctx": "Keyboard shortcut tip - <1> wraps the Kbd element"}
-{"id": "mapColliderTipPressS", "v": "Press <1>S</1> to toggle brush shape.", "ctx": "Keyboard shortcut tip - <1> wraps the Kbd element"}
-{"id": "mapColliderTipScrollWheel", "v": "Hold <1>Ctrl</1> and scroll the mouse wheel to adjust brush size.", "ctx": "Keyboard shortcut tip - <1> wraps the Kbd element"}
-{"id": "mapColliderLegend", "v": "Collider", "ctx": "Fieldset legend for the map collider tool"}
-{"id": "mapColliderClear", "v": "Clear mask", "ctx": "Button label to clear the drawn collision mask and remove the collider from the map"}
-{"id": "mapColliderShowCollidersDesc", "v": "Display computed collision polygons as overlays", "ctx": "Switch description for show-colliders option in map collider tool"}
 {"id": "mapZoneTipDraw", "v": "Paint a freehand zone mask directly on the map. The mask is converted to polygon shapes automatically.", "ctx": "Zone paint tool tip"}
 {"id": "mapZoneTipPaintErase", "v": "Paint mode adds to the zone, erase mode removes from it.", "ctx": "Zone paint tool tip"}
 {"id": "mapZoneTipHoldCtrl", "v": "Hold <1>Ctrl</1> to temporarily switch to erase mode.", "ctx": "Keyboard shortcut tip - <1> wraps the Kbd element"}
@@ -645,21 +602,12 @@
 {"id": "zoneTypeSound", "v": "Sound", "ctx": "Zone type label for sound zones"}
 {"id": "cameraTypeZone", "v": "Camera", "ctx": "Zone type label for camera zoom zones"}
 {"id": "zoneTypeSensor", "v": "Sensor", "ctx": "Zone type label for sensor trigger zones"}
-{"id": "zoneTypeTooltipSink", "v": "Makes characters sink into the ground", "ctx": "Sink zone type tooltip"}
-{"id": "zoneTypeTooltipCollision", "v": "Blocks characters from moving through", "ctx": "Collision zone type tooltip"}
-{"id": "zoneTypeTooltipSound", "v": "Plays some sound as the player approaches", "ctx": "Sound zone type tooltip"}
-{"id": "zoneTypeTooltipSensor", "v": "Triggers a code event", "ctx": "Sensor zone type tooltip"}
 {"id": "groundLayerName", "v": "Ground", "ctx": "The layer name for the ground"}
 {"id": "exteriorLayerName", "v": "Exterior", "ctx": "The layer name for the ground"}
 {"id": "zonesLayerName", "v": "Zones", "ctx": "The layer name for zones"}
 {"id": "specialLayerName", "v": "Special", "ctx": "The layer name for special objects"}
 {"id": "backgroundLayerName", "v": "Background", "ctx": "The layer name background objects"}
 {"id": "sinkZoneDepthDescription", "v": "How far beneath the surface can the character sink?", "ctx": "The description for the 'depth' property of a sink zone."}
-{"id": "zonePaddingLabel", "v": "Padding", "ctx": "Zone padding label"}
-{"id": "zonePaddingDescription", "v": "How far into the zone must the character travel for the maximum effect?", "ctx": "Zone padding description"}
-{"id": "zonePropNameLabel", "v": "Name", "ctx": "Label for zone name field used by all zone property panels"}
-{"id": "zonePropNameDescription", "v": "This is how you refer to your zone in the level code", "ctx": "Description for the zone name field used by all zones"}
-{"id": "zonePropNamePlaceholder", "v": "Zone name", "ctx": "Placeholder for zone name input"}
 {"id": "zonePropEditLabel", "v": "Edit boundary", "ctx": "Label for the Edit button that activates the zone paint tool"}
 {"id": "collisionZonePropLegend", "v": "Collision Zone", "ctx": "Fieldset legend for collision zone properties"}
 {"id": "sensorZonePropLegend", "v": "Sensor Zone", "ctx": "Fieldset legend for sensor zone properties"}
@@ -670,7 +618,6 @@
 {"id": "cameraZonePropLegend", "v": "Camera Zone", "ctx": "Legend title for Camera Zone properties"}
 {"id": "soundZonePropSoundLabel", "v": "Sound", "ctx": "Label for the sound asset input in Sound Zone properties"}
 {"id": "soundZonePropSoundPlaceholder", "v": "Sound asset path", "ctx": "Placeholder for the sound asset input in Sound Zone properties"}
-{"id": "soundZonePropPaddingLabel", "v": "Padding", "ctx": "Label for the padding value input in Sound Zone properties"}
 {"id": "soundZonePropVolumeLabel", "v": "Volume", "ctx": "Label for the volume value input in Sound Zone properties"}
 {"id": "soundZonePropLegend", "v": "Sound Zone", "ctx": "Legend title for Sound Zone properties"}
 {"id": "sinkZonePropLegend", "v": "Sink Zone", "ctx": "Legend title for Sink Zone properties"}
@@ -748,7 +695,6 @@
 {"id": "milestoneEditorNameDuplicate", "v": "This milestone name is already in use.", "ctx": "Validation error shown on the milestone name input when the name is not unique"}
 {"id": "milestoneEditorPermanentLabel", "v": "Permanent", "ctx": "Label for the permanent checkbox in the milestone editor"}
 {"id": "milestoneEditorPermanentDesc", "v": "Should this become part of the player's permanent action history?", "ctx": "Description under the permanent checkbox in the milestone editor"}
-{"id": "milestoneEditorEditDialogue", "v": "Edit", "ctx": "Button label to open the dialogue editor from a dialogue row in the milestone editor"}
 {"id": "previewSoundFieldset", "v": "Sound", "ctx": "Legend text for the sound control fieldset in the preview right panel"}
 {"id": "previewVolumeLabel", "v": "Volume", "ctx": "Label above the volume slider in the preview right panel"}
 {"id": "cameraZonePropOffsetLabel", "v": "Target offset", "ctx": "Label for camera offset 2D input in Camera Zone properties"}
@@ -764,8 +710,6 @@
 {"id": "deleteObjectModalTitle", "v": "Delete objects?"}
 {"id": "confirmDelete", "v": "Yes, delete"}
 {"id": "confirmDeleteMessage", "v": "Are you sure you want to delete these objects? They contain references that cannot be restored."}
-{"id": "deleteNoSpeakableObjs", "v": "No selected objects are speakable.", "ctx": "Status message in delete confirmation when none of the selected objects are speakable"}
-{"id": "deleteSpeakableObjsWillBeAffected", "v": "{count} speakable object(s) will lose their speaker configuration.", "ctx": "Status message in delete confirmation when selected objects are speakable; {count} is the number"}
 {"id": "deleteNoLinkedDialogues", "v": "No dialogues are linked to these objects.", "ctx": "Status message in delete confirmation when no dialogues reference the selected objects"}
 {"id": "deleteLinkedDialoguesWillBeUnlinked", "v": "{count} dialogue(s) will be removed.", "ctx": "Status message in delete confirmation when dialogues reference the selected objects; {count} is the number"}
 {"id": "deleteNoWaypointPairings", "v": "No waypoint reference these objects.", "ctx": "Status message in delete confirmation when no waypoint pairings reference the selected objects"}
