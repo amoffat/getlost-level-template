@@ -604,6 +604,7 @@
 {"id": "previewShowPathfinding", "v": "Show pathfinding", "ctx": "Switch label to toggle pathfinding visualization overlay in the game preview"}
 {"id": "previewShowSceneDepth", "v": "Show scene depth", "ctx": "Switch label to toggle z-sorting/depth visualization overlay in the game preview"}
 {"id": "previewShowObjDetails", "v": "Show object details", "ctx": "Switch label to toggle object details overlay in the game preview"}
+{"id": "previewShowCamera", "v": "Show camera", "ctx": "The debug flag title for camera visualizations"}
 {"id": "previewDeveloperToolsFieldset", "v": "Developer Tools", "ctx": "Legend text for the developer tools fieldset in the preview panel advanced section"}
 {"id": "previewOpenCompiledLevelJs", "v": "Open compiled level js", "ctx": "Link that opens the compiled level JavaScript file in a new tab"}
 {"id": "spotlightResetAllLabel", "v": "Reset all", "ctx": "Spotlight command label to reset everything in the project"}
