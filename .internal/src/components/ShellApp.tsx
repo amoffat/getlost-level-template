@@ -23,7 +23,16 @@ import { setLanguageThunk } from "@/thunks/locale";
 import { SupportedLang, supportedLangs } from "@/types/i18n";
 import { MainTabName } from "@/types/tab";
 import { hasNewerEngineVersion } from "@/utils/version";
-import { AppShell, Badge, Box, Group, Tabs, Text } from "@mantine/core";
+import {
+  Anchor,
+  AppShell,
+  Badge,
+  Button,
+  Group,
+  Stack,
+  Tabs,
+  Text,
+} from "@mantine/core";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
@@ -42,7 +51,7 @@ import {
   useTransition,
 } from "react";
 import { flushSync } from "react-dom";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { shallowEqual } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import LocaleContextModal from "./l10n/LocaleContextModal";
@@ -281,6 +290,29 @@ const ShellAppContent = memo(function ShellAppContent({
     [dispatch],
   );
 
+  const openTranslationProblemModal = useCallback(() => {
+    modals.open({
+      title: t("translationProblem"),
+      centered: true,
+      children: (
+        <Stack>
+          <Text>
+            <Trans i18nKey="translationProblemBody">
+              If you see an issue with your language's translation, please edit
+              <Anchor
+                target="blank"
+                href={`https://github.com/amoffat/getlost-level-template/tree/qa/.internal/public/locales/${activeLocale}/shell.jsonl`}
+              >
+                these files
+              </Anchor>
+              with the fixes.
+            </Trans>
+          </Text>
+        </Stack>
+      ),
+    });
+  }, [t, activeLocale]);
+
   const needsAttentionCounts = useAppSelector(
     localeSelectors.needsAttentionCounts,
   );
@@ -370,7 +402,7 @@ const ShellAppContent = memo(function ShellAppContent({
               <Tabs.Tab value="dialogue-editor">{t("dialogueTab")}</Tabs.Tab>
               <Tabs.Tab value="translations">{t("translationsTab")}</Tabs.Tab>
               <Tabs.Tab value="preview">{t("previewTab")}</Tabs.Tab>
-              <Box style={{ marginLeft: "auto" }} pr="sm">
+              <Group gap="sm" style={{ marginLeft: "auto" }} pr="sm">
                 <LocaleSelector
                   key="language"
                   label={t("language")}
@@ -378,7 +410,14 @@ const ShellAppContent = memo(function ShellAppContent({
                   onLocaleChange={handleLanguageChange}
                   rightSection={untranslatedBadges}
                 />
-              </Box>
+                <Button
+                  variant="subtle"
+                  size="compact-xs"
+                  onClick={openTranslationProblemModal}
+                >
+                  {t("translationProblem")}
+                </Button>
+              </Group>
             </Tabs.List>
 
             <PanelLoader visible={isPendingTab} />

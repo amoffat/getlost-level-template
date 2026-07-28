@@ -1,10 +1,10 @@
 import { ZONE_TYPE_META } from "@/constants/zoneMeta";
-import { trackKeyPresses } from "@/utils/keypress";
 import { getZonePaintTool } from "@/editors/map/tools/zone";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { actions, selectors } from "@/slices/mapEditor";
 import { isZoneObj } from "@/types/map";
 import { BrushShape, PaintMode, ZoneType, zoneTypes } from "@/types/zone";
+import { trackKeyPresses } from "@/utils/keypress";
 import { capitalize } from "@/utils/string";
 import {
   Badge,

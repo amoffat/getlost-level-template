@@ -724,3 +724,5 @@
 {"id": "logPaneFilterAll", "v": "all", "ctx": "Label for the master switch that toggles every tag filter on/off in the dev log pane"}
 {"id": "logPaneClear", "v": "Clear log", "ctx": "Tooltip and aria-label for the button that empties the dev log pane"}
 {"id": "logPaneCopy", "v": "Copy visible messages", "ctx": "Tooltip and aria-label for the button that copies the visible log messages to the clipboard"}
+{"id": "translationProblem", "v": "Translation problem?", "ctx": "Label for a button next to the language selector, and the title of the modal it opens, for reporting a problem with the UI translation"}
+{"id": "translationProblemBody", "v": "If you see an issue with your language's translation, please edit <1>these files</1> with the fixes.", "ctx": "Body text of the translation-problem modal. <1> wraps a clickable link (the words 'these files') pointing to the translation source files to edit"}

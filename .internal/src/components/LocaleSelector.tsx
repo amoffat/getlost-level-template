@@ -40,7 +40,7 @@ export default function LocaleSelector({
         </Button>
       </Menu.Target>
       <Menu.Dropdown>
-        <ScrollArea.Autosize mah={320} type="scroll">
+        <ScrollArea.Autosize mah={320} type="auto">
           {supportedLocales.map((l) => {
             return (
               <Menu.Item key={l.value} onClick={() => onLocaleChange(l.value)}>
