@@ -110,11 +110,6 @@ export const slice = createSlice({
     setError(state, action: PayloadAction<string | undefined>) {
       state.error = action.payload;
     },
-    resetInstance(state) {
-      state.nodes = [ORIGIN_NODE];
-      state.edges = [];
-      state.instanceKey += 1;
-    },
     // Replaces nodes wholesale from a persisted source (e.g. disk load).
     // Unlike setNodes, this does NOT preserve existing node data, so loaded
     // data (e.g. waypoints on the origin node) is never silently discarded.
@@ -133,7 +128,6 @@ export const {
   removeNode,
   setLoading,
   setError,
-  resetInstance,
   loadNodes,
 } = slice.actions;
 

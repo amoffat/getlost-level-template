@@ -3,6 +3,7 @@ import {
   useSpotlightActions,
   useSpotlightActionsStore,
 } from "@/hooks/useSpotlightActions";
+import { fetchResetInfo } from "@/persist/reset/api";
 import { store } from "@/store/store";
 import { resetAllThunk } from "@/thunks/map";
 import { modals } from "@mantine/modals";
@@ -22,7 +23,16 @@ export default function Spotlight() {
         id: "reset-all",
         label: t("spotlightResetAllLabel"),
         description: t("spotlightResetAllDesc"),
-        onClick: () => {
+        onClick: async () => {
+          // Fetch the on-disk asset count before opening the modal, since
+          // makeItems runs synchronously. On failure we simply omit the line.
+          let assetCount: number | null = null;
+          try {
+            assetCount = (await fetchResetInfo()).assetCount;
+          } catch (e) {
+            console.error("Failed to fetch reset info:", e);
+          }
+
           modals.openContextModal({
             modal: "confirm",
             title: t("spotlightResetModalTitle"),
@@ -70,6 +80,16 @@ export default function Spotlight() {
                       ? t("spotlightNoStoryNodes")
                       : t("spotlightStoryNodesWillBeDeleted", { count: storyNodes }),
                 });
+
+                if (assetCount !== null) {
+                  items.push({
+                    ok: assetCount === 0,
+                    message:
+                      assetCount === 0
+                        ? t("spotlightNoAssets")
+                        : t("spotlightAssetsWillBeDeleted", { count: assetCount }),
+                  });
+                }
 
                 return items;
               },

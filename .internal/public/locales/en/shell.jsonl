@@ -583,6 +583,8 @@
 {"id": "spotlightNpcDialoguesWillBeDeleted", "v": "{count} NPC dialogues will be deleted.", "ctx": "Status message in reset confirmation when there are NPC dialogues; {count} is the number"}
 {"id": "spotlightNoStoryNodes", "v": "You have no story nodes.", "ctx": "Status message in reset confirmation when there are no story nodes"}
 {"id": "spotlightStoryNodesWillBeDeleted", "v": "{count} story nodes will be deleted.", "ctx": "Status message in reset confirmation when there are story nodes; {count} is the number"}
+{"id": "spotlightNoAssets", "v": "You have no level assets.", "ctx": "Status message in reset confirmation when there are no on-disk level assets to delete"}
+{"id": "spotlightAssetsWillBeDeleted", "v": "{count} level assets will be deleted.", "ctx": "Status message in reset confirmation for on-disk level asset files (art, sounds, tilesets, etc.); {count} is the number"}
 {"id": "spotlightResetConfirmLabel", "v": "Yes, reset all", "ctx": "Confirm button label in the reset project confirmation modal"}
 {"id": "spotlightResetMsg", "v": "Are you sure you want to reset everything? This action cannot be undone.", "ctx": "Body message in the reset project confirmation modal"}
 {"id": "spotlightNothingFound", "v": "Nothing found...", "ctx": "Message shown in the spotlight search when no actions match the query"}
