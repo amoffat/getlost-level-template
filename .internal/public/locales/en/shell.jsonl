@@ -56,8 +56,8 @@
 {"id": "mapReset", "v": "Map reset", "ctx": "Notification title after the map has been cleared"}
 {"id": "mapResetMessage", "v": "The map has been cleared.", "ctx": "Notification message after the map is reset"}
 {"id": "mapResetAllLoading", "v": "Resetting all data...", "ctx": "Loading spinner message while all editor data is being reset"}
-{"id": "mapAllDataReset", "v": "All data reset", "ctx": "Notification title after all editor data has been cleared"}
-{"id": "mapAllDataResetMessage", "v": "All data has been cleared.", "ctx": "Notification message after a full reset of all data"}
+{"id": "mapResetAllErrorTitle", "v": "Reset failed", "ctx": "Notification title shown when a full reset of all editor data fails"}
+{"id": "mapResetAllErrorMessage", "v": "Something went wrong while resetting. Please try again.", "ctx": "Notification message shown when a full reset of all editor data fails"}
 {"id": "tilesetLoadingIds", "v": "Loading tilesets ids...", "ctx": "Loading spinner message while tileset IDs are being fetched"}
 {"id": "tilesetLoadFailed", "v": "Failed to load tileset", "ctx": "Notification title when a tileset fails to load"}
 {"id": "tilesetLoadFailedMessage", "v": "Tileset {tsId} failed to load: {message}", "ctx": "Notification message; tsId = tileset ID, message = error message"}

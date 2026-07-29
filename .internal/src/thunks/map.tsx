@@ -2,11 +2,9 @@ import { ItemStatus } from "@/components/modals/ItemizedConfirmModal";
 import { iconTsId, lightIcon, waypointIcon } from "@/constants/tsObjs";
 import { globals as gApp, globals } from "@/globals";
 import { recordTransaction } from "@/history";
-import {
-  deleteBackgroundImage,
-  fetchBackgroundImageUrl,
-} from "@/persist/background/api";
+import { fetchBackgroundImageUrl } from "@/persist/background/api";
 import { loadMap } from "@/persist/map/api";
+import { resetLevel } from "@/persist/reset/api";
 import { fetchSpeakerImageUrl as fetchSpeakerImageBlob } from "@/persist/speakerImage/api";
 import { router } from "@/router";
 import { selectors as dSelectors } from "@/slices/dialogue";
@@ -37,8 +35,6 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import i18n from "i18next";
 import * as P from "pixi.js";
 import { globals as g } from "../editors/map/globals";
-import { resetStoryThunk } from "./story";
-import { removeTilesetThunk } from "./tileset";
 
 export const deleteObjectsThunk = createAsyncThunk(
   "mapEditor/deleteObjectsThunk",
@@ -277,32 +273,30 @@ export const resetMapThunk = createAsyncThunk(
 
 export const resetAllThunk = createAsyncThunk(
   "mapEditor/resetAllThunk",
-  async (_, { dispatch, getState }) => {
-    const state = getState() as RootState;
-
+  async (_, { dispatch }) => {
     dispatch(uiActions.pushLoadingMessage(i18n.t("mapResetAllLoading")));
 
-    for (const id of state.mapEditor.objects.ids) {
-      const obj = state.mapEditor.objects.entities[id];
-      if (isBackgroundImageObj(obj)) {
-        deleteBackgroundImage(obj.imageId);
-      }
+    try {
+      // Delete all authored level assets (map, story, tilesets, backgrounds,
+      // speakers, sounds, locales, art, pnpm env) and restore bare templates
+      // on the backend. Assets that aren't tracked in editor state (sounds,
+      // locales, raw art) can only be cleared this way.
+      await resetLevel();
+    } catch (e) {
+      console.error("Failed to reset level:", e);
+      dispatch(uiActions.popLoadingMessage());
+      notifications.show({
+        title: i18n.t("mapResetAllErrorTitle"),
+        message: i18n.t("mapResetAllErrorMessage"),
+        color: "red",
+      });
+      return;
     }
 
-    await dispatch(resetStoryThunk()).unwrap();
-    await dispatch(resetMapThunk()).unwrap();
-    for (const tsId of state.tilesetEditor.tilesetIds) {
-      await dispatch(removeTilesetThunk(tsId)).unwrap();
-    }
-
-    // TODO Potentially other slices to reset in the future
-    dispatch(uiActions.popLoadingMessage());
-    notifications.show({
-      title: i18n.t("mapAllDataReset"),
-      message: i18n.t("mapAllDataResetMessage"),
-      autoClose: 3000,
-    });
-    router.navigate("/");
+    // A full reload rebuilds all editor state from the now-empty backend. The
+    // reload discards the page, so there's no success notification or loading
+    // pop to do here.
+    window.location.reload();
   },
 );
 
